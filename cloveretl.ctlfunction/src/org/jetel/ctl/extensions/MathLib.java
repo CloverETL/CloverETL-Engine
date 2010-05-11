@@ -24,56 +24,34 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.extensions.TLFunctionLibrary;
-import org.jetel.ctl.extensions.TLFunctionPrototype;
-import org.jetel.ctl.extensions.StringLib.CharAtFunction;
-import org.jetel.ctl.extensions.StringLib.ChopFunction;
-import org.jetel.ctl.extensions.StringLib.ConcatFunction;
-import org.jetel.ctl.extensions.StringLib.CountCharFunction;
-import org.jetel.ctl.extensions.StringLib.CutFunction;
-import org.jetel.ctl.extensions.StringLib.FindFunction;
-import org.jetel.ctl.extensions.StringLib.GetAlphanumericCharsFunction;
-import org.jetel.ctl.extensions.StringLib.IndexOfFunction;
-import org.jetel.ctl.extensions.StringLib.IsAsciiFunction;
-import org.jetel.ctl.extensions.StringLib.IsBlankFunction;
-import org.jetel.ctl.extensions.StringLib.IsDateFunction;
-import org.jetel.ctl.extensions.StringLib.IsIntegerFunction;
-import org.jetel.ctl.extensions.StringLib.IsLongFunction;
-import org.jetel.ctl.extensions.StringLib.IsNumberFunction;
-import org.jetel.ctl.extensions.StringLib.JoinFunction;
-import org.jetel.ctl.extensions.StringLib.LeftFunction;
-import org.jetel.ctl.extensions.StringLib.LengthFunction;
-import org.jetel.ctl.extensions.StringLib.LowerCaseFunction;
-import org.jetel.ctl.extensions.StringLib.RemoveBlankSpaceFunction;
-import org.jetel.ctl.extensions.StringLib.RemoveDiacriticFunction;
-import org.jetel.ctl.extensions.StringLib.RemoveNonAsciiFunction;
-import org.jetel.ctl.extensions.StringLib.RemoveNonPrintableFunction;
-import org.jetel.ctl.extensions.StringLib.ReplaceFunction;
-import org.jetel.ctl.extensions.StringLib.RightFunction;
-import org.jetel.ctl.extensions.StringLib.SoundexFunction;
-import org.jetel.ctl.extensions.StringLib.SplitFunction;
-import org.jetel.ctl.extensions.StringLib.SubstringFunction;
-import org.jetel.ctl.extensions.StringLib.TranslateFunction;
-import org.jetel.ctl.extensions.StringLib.TrimFunction;
-import org.jetel.ctl.extensions.StringLib.UpperCaseFunction;
-import org.jetel.interpreter.TransformLangExecutorRuntimeException;
-import org.jetel.interpreter.data.TLNumericValue;
-import org.jetel.interpreter.data.TLValue;
-import org.jetel.interpreter.data.TLValueType;
-import org.jetel.interpreter.extensions.TLContext;
+import org.jetel.util.DataGenerator;
 
 
 public class MathLib extends TLFunctionLibrary {
     
+	private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
+	
+	private static synchronized DataGenerator getGenerator(Thread key) {
+    	DataGenerator generator = dataGenerators.get(key);
+    	if (generator == null) {
+    		generator = new DataGenerator();
+    		dataGenerators.put(key, generator);
+    	}
+    	return generator;
+    }
+	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
 			"sqrt".equals(functionName) ? new SqrtFunction() :
 			"log".equals(functionName) ? new LogFunction() :
 			"log10".equals(functionName) ? new Log10Function() :
+			"exp".equals(functionName) ? new ExpFunction() :
 			"round".equals(functionName) ? new RoundFunction() :
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
@@ -86,6 +64,10 @@ public class MathLib extends TLFunctionLibrary {
 			"bit_lshift".equals(functionName) ? new BitLShiftFunction() :
 			"bit_rshift".equals(functionName) ? new BitRShiftFunction() :
 			/*TODO: bit_is_set bit_set*/
+			"random_gaussian".equals(functionName) ? new RandomGaussianFunction() :
+		    "random_boolean".equals(functionName) ? new RandomBooleanFunction() : 
+		    "random_int".equals(functionName) ? new RandomIntFunction() :
+		    "random_long".equals(functionName) ? new RandomLongFunction() :
 			null;
 			
 		if (ret == null) {
@@ -463,6 +445,159 @@ public class MathLib extends TLFunctionLibrary {
 			} 
 		} 
     }
+    
+    @TLFunctionAnnotation("Random Gaussian number.")
+    public static final Double random_gaussian() {
+    	return getGenerator(Thread.currentThread()).nextGaussian();
+    }
+    
+    @TLFunctionAnnotation("Random Gaussian number. Allows changing seed.")
+    public static final Double random_gaussian(Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextGaussian();
+    }
+    
+    // RANDOM Gaussian
+    class RandomGaussianFunction implements TLFunctionPrototype {
 
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams.length == 1) {
+				stack.push(random_gaussian(stack.popLong()));
+			} else {
+				stack.push(random_gaussian());
+			}
+		}
+    }
+    
+    @TLFunctionAnnotation("Random boolean.")
+    public static final Boolean random_boolean() {
+    	return getGenerator(Thread.currentThread()).nextBoolean();
+    }
+    
+    @TLFunctionAnnotation("Random boolean. Allows changing seed.")
+    public static final Boolean random_boolean(Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextBoolean();
+    }
+    // RANDOM Boolean
+    class RandomBooleanFunction implements TLFunctionPrototype {
+        
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams.length == 1) {
+				stack.push(random_boolean(stack.popLong()));
+			} else {
+				stack.push(random_boolean());
+			}
+		}
+    }
+    
+    @TLFunctionAnnotation("Random integer.")
+    public static final Integer random_int() {
+    	return getGenerator(Thread.currentThread()).nextInt();
+    }
+    
+    @TLFunctionAnnotation("Random integer. Allows changing seed.")
+    public static final Integer random_int(Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextInt();
+    }
+    
+    @TLFunctionAnnotation("Random integer. Allows changing start and end value.")
+    public static final Integer random_int(Integer min, Integer max) {
+    	return getGenerator(Thread.currentThread()).nextInt(min, max);
+    }
+    
+    @TLFunctionAnnotation("Random integer. Allows changing start, end value and seed.")
+    public static final Integer random_int(Integer min, Integer max, Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextInt(min, max);
+    }
+    
+    // RANDOM_INT
+    class RandomIntFunction implements TLFunctionPrototype {
+    	
+		public void execute(Stack stack, TLType[] actualParams) {
+			Long seed;
+			Integer max;
+			Integer min;
+			switch (actualParams.length) {
+				case 3:
+					seed = stack.popLong();
+					max = stack.popInt();
+					min = stack.popInt();
+					stack.push(random_int(min, max, seed));
+					break;
+				case 2:
+					max = stack.popInt();
+					min = stack.popInt();
+					stack.push(random_int(min, max));
+					break;
+				case 1:
+					seed = stack.popLong();
+					stack.push(random_int(seed));
+					break;
+				case 0:
+					stack.push(random_int());
+					break;
+			}
+		}
+    }
 
+    @TLFunctionAnnotation("Random long.")
+    public static final Long random_long() {
+    	return getGenerator(Thread.currentThread()).nextLong();
+    }
+    
+    @TLFunctionAnnotation("Random long. Allows changing seed.")
+    public static final Long random_long(Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextLong();
+    }
+    
+    @TLFunctionAnnotation("Random long. Allows changing start and end value.")
+    public static final Long random_long(Long min, Long max) {
+    	return getGenerator(Thread.currentThread()).nextLong(min, max);
+    }
+    
+    @TLFunctionAnnotation("Random long. Allows changing start, end value and seed.")
+    public static final Long random_long(Long min, Long max, Long seed) {
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(seed);
+    	return generator.nextLong(min, max);
+    }
+    
+    // RANDOM_LONG
+    class RandomLongFunction implements TLFunctionPrototype {
+        
+		public void execute(Stack stack, TLType[] actualParams) {
+			Long seed;
+			Long max;
+			Long min;
+			switch (actualParams.length) {
+				case 3:
+					seed = stack.popLong();
+					max = stack.popLong();
+					min = stack.popLong();
+					stack.push(random_long(min, max, seed));
+					break;
+				case 2:
+					max = stack.popLong();
+					min = stack.popLong();
+					stack.push(random_long(min, max));
+					break;
+				case 1:
+					seed = stack.popLong();
+					stack.push(random_long(seed));
+					break;
+				case 0:
+					stack.push(random_long());
+					break;
+			}
+		}
+    }
 }
