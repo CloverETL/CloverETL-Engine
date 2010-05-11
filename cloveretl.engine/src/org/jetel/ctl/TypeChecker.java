@@ -109,14 +109,6 @@ public class TypeChecker extends NavigatingVisitor {
 		SimpleNode lhs = (SimpleNode) node.jjtGetChild(0);
 		SimpleNode rhs = (SimpleNode) node.jjtGetChild(1);
 
-		// string concatenation
-		if (lhs.getType().isString() || rhs.getType().isString()) {
-			castIfNeeded(node,0,TLTypePrimitive.STRING);
-			castIfNeeded(node,1,TLTypePrimitive.STRING);
-			node.setType(TLTypePrimitive.STRING);
-			return data;
-		}
-		
 		// (mixed) list concatenation
 		if (lhs.getType().isList()) {
 			if (lhs.getType().canAssign(rhs.getType())) {
@@ -145,6 +137,14 @@ public class TypeChecker extends NavigatingVisitor {
 				return data;
 			}
 			node.setType(TLType.ERROR);
+			return data;
+		}
+		
+		// string concatenation
+		if (lhs.getType().isString() || rhs.getType().isString()) {
+			castIfNeeded(node,0,TLTypePrimitive.STRING);
+			castIfNeeded(node,1,TLTypePrimitive.STRING);
+			node.setType(TLTypePrimitive.STRING);
 			return data;
 		}
 		
