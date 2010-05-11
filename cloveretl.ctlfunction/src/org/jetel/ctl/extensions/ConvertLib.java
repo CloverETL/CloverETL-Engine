@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jetel.ctl.Stack;
@@ -37,13 +36,12 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.extensions.TLFunctionAnnotation;
-import org.jetel.ctl.extensions.TLFunctionLibrary;
-import org.jetel.ctl.extensions.TLFunctionPrototype;
-import org.jetel.data.DataField;
-import org.jetel.data.Defaults;
-import org.jetel.data.primitive.StringFormat;
+import org.jetel.data.DataRecord;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.PackedDecimal;
+import org.jetel.util.crypto.Digest;
+import org.jetel.util.crypto.Digest.DigestType;
 
 public class ConvertLib extends TLFunctionLibrary {
 
@@ -74,6 +72,18 @@ public class ConvertLib extends TLFunctionLibrary {
 			"to_string".equals(functionName) ? new ToStringFunction() :
 			"long2date".equals(functionName) ? new Long2DateFunction() :
 			"date2long".equals(functionName) ? new Date2LongFunction() : 
+			"base64byte".equals(functionName) ? new Base64ByteFunction() : 
+		    "byte2base64".equals(functionName) ? new Byte2Base64Function() : 
+		    "bits2str".equals(functionName) ? new Bits2StrFunction() : 
+		    "str2bits".equals(functionName) ? new Str2BitsFunction() : 
+		    "hex2byte".equals(functionName) ? new Hex2ByteFunction() : 
+		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
+		    "long2pacdecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
+		    "packdecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
+		    "md5".equals(functionName) ? new MD5Function() : 
+		    "sha".equals(functionName) ? new SHAFunction() : 
+		    "get_field_name".equals(functionName) ? new GetFieldNameFunction() : 
+		    "get_field_type".equals(functionName) ? new GetFieldTypeFunction() : 
 			null;
 		
 		if (ret == null) {
@@ -512,585 +522,211 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 
 	}
-
+	
+	@TLFunctionAnnotation("Converts binary data encoded in base64 to array of bytes.")
+	public static final ByteArray base64byte(String src) {
+		ByteArray array = new ByteArray();
+		array.decodeBase64(src);
+		return array;
+	}	
+	
 	// BASE64BYTE
-//	public class Base64ByteFunction implements TLFunctionPrototype {
-//
-//		public Base64ByteFunction() {
-//			super("convert", "base64byte",
-//					"Converts binary data encoded in base64 to array of bytes",
-//					new TLType[][] { { TLTypePrimitive.STRING } },
-//					TLType.BYTEARRAY);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
-//			value.getByteAraray().decodeBase64(params[0].toString());
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createByteContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.STRING) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLType.BYTEARRAY;
-//		// }
-//	}
-//
-//	// BYTE2BASE64
-//	public class Byte2Base64Function implements TLFunctionPrototype {
-//
-//		public Byte2Base64Function() {
-//			super("convert", "byte2base64",
-//					"Converts binary data into their base64 representation",
-//					new TLType[][] { { TLType.BYTEARRAY } },
-//					TLTypePrimitive.STRING);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLStringValue value = (TLStringValue) context.getContext();
-//			value.setValue(((TLByteArrayValue) params[0]).getByteAraray()
-//					.encodeBase64());
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createStringContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1 ) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLType.BYTEARRAY) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.STRING;
-//		// }
-//	}
-//
-//	// BITS2STR
-//	public class Bits2StrFunction implements TLFunctionPrototype {
-//
-//		public Bits2StrFunction() {
-//			super("convert", "bits2str",
-//					"Converts bits into their string representation",
-//					new TLType[][] { { TLType.BYTEARRAY } },
-//					TLTypePrimitive.STRING);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLStringValue value = (TLStringValue) context.getContext();
-//			if (params[0].getType() != TLValueType.BYTE) {
-//				throw new TransformLangExecutorRuntimeException(params,
-//						"bits2str - can't convert \"" + params[0] + "\" to "
-//								+ TLValueType.STRING.getName());
-//			}
-//			ByteArray bits = ((TLByteArrayValue) params[0]).getByteAraray();
-//			value.setValue(bits
-//					.decodeBitString('1', '0', 0, bits.length() << 3));
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createStringContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLType.BYTEARRAY) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.STRING;
-//		// }
-//	}
-//
-//	// STR2BITS
-//	public class Str2BitsFunction implements TLFunctionPrototype {
-//
-//		public Str2BitsFunction() {
-//			super("convert", "str2bits",
-//					"Converts string representation of bits into binary value",
-//					new TLType[][] { { TLTypePrimitive.STRING } },
-//					TLType.BYTEARRAY);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
-//			if (params[0].getType() != TLValueType.STRING) {
-//				throw new TransformLangExecutorRuntimeException(params,
-//						"str2bits - can't convert \"" + params[0] + "\" to "
-//								+ TLValueType.BYTE.getName());
-//			}
-//			value.getByteAraray().encodeBitString((TLStringValue) params[0],
-//					'1', true);
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createByteContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.STRING) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLType.BYTEARRAY;
-//		// }
-//	}
-//
-//	// BYTE2HEX
-//	public class Byte2HexFunction implements TLFunctionPrototype {
-//
-//		public Byte2HexFunction() {
-//			super("convert", "byte2hex",
-//					"Converts binary data into hex string",
-//					new TLType[][] { { TLType.BYTEARRAY } },
-//					TLTypePrimitive.STRING);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLStringValue value = (TLStringValue) context.getContext();
-//			if (params[0].getType() != TLValueType.BYTE) {
-//				throw new TransformLangExecutorRuntimeException(params,
-//						"byte2hex - can't convert \"" + params[0] + "\" to "
-//								+ TLValueType.STRING.getName());
-//			}
-//			StringBuilder strVal = (StringBuilder) value.getValue();
-//			ByteArray bytes = ((TLByteArrayValue) params[0]).getByteAraray();
-//			strVal.setLength(0);
-//			strVal.ensureCapacity(bytes.length());
-//			for (int i = 0; i < bytes.length(); i++) {
-//				strVal.append(Character.forDigit(
-//						(bytes.getByte(i) & 0xF0) >> 4, 16));
-//				strVal.append(Character.forDigit(bytes.getByte(i) & 0x0F, 16));
-//			}
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createStringContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLType.BYTEARRAY) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLTypePrimitive.STRING;
-//		// }
-//	}
-//
-//	// HEX2BYTE
-//	public class Hex2ByteFunction implements TLFunctionPrototype {
-//
-//		public Hex2ByteFunction() {
-//			super("convert", "hex2byte", "Converts hex string into binary",
-//					new TLType[][] { { TLTypePrimitive.STRING } },
-//					TLType.BYTEARRAY);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLByteArrayValue value = (TLByteArrayValue) context.getContext();
-//			if (params[0].getType() != TLValueType.STRING) {
-//				throw new TransformLangExecutorRuntimeException(params,
-//						"hex2byte - can't convert \"" + params[0] + "\" to "
-//								+ TLValueType.BYTE.getName());
-//			}
-//			ByteArray bytes = value.getByteAraray();
-//			bytes.reset();
-//			CharSequence chars = (TLStringValue) params[0];
-//			for (int i = 0; i < chars.length() - 1; i = i + 2) {
-//				bytes.append((byte) (((byte) Character.digit(chars.charAt(i),
-//						16) << 4) | (byte) Character.digit(chars.charAt(i + 1),
-//						16)));
-//			}
-//			return value;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			return TLContext.createByteContext();
-//		}
-//
-//		// @Override
-//		// public TLType checkParameters(TLType[] parameters) {
-//		// if (parameters.length != 1) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// if (parameters[0] != TLTypePrimitive.STRING) {
-//		// return TLType.ERROR;
-//		// }
-//		//			
-//		// return TLType.BYTEARRAY;
-//		// }
-//	}
-//
-//	// TRY_CONVERT
-//	class TryConvertFunction implements TLFunctionPrototype {
-//
-//		public TryConvertFunction() {
-//			super("convert", "try_convert",
-//					"Tries to convert variable of one type to another",
-//					new TLType[][] { { TLType.OBJECT }, { TLType.OBJECT } },
-//					TLType.OBJECT, 3, 2);
-//		}
-//
-//		@Override
-//		public TLValue execute(TLValue[] params, TLContext context) {
-//			TLValueType fromType = params[0].type;
-//			TLValueType toType = params[1].type;
-//
-//			boolean canConvert = false;
-//			if (fromType == toType) {
-//				if (fromType == TLValueType.DECIMAL) {// check precision
-//					TLValue candidate = TLValue.create(toType);
-//					candidate.setValue(params[0].getNumeric());
-//					canConvert = candidate.compareTo(params[0]) == 0;
-//					if (!canConvert) {
-//						return TLBooleanValue.FALSE;
-//					}
-//				}
-//				params[1].setValue(params[0].getValue());
-//				return TLBooleanValue.TRUE;
-//			}
-//
-//			TLFunctionPrototype convertFunction = getConvertToFunction(
-//					fromType, toType);
-//			if (convertFunction == null) {
-//				return TLBooleanValue.FALSE;
-//			}
-//
-//			try {
-//				params[1].setValue(convertFunction.execute(getConvertParams(
-//						convertFunction, params), getConvertContext(
-//						convertFunction, context)));
-//			} catch (TransformLangExecutorRuntimeException e) {
-//				return TLBooleanValue.FALSE;
-//			}
-//
-//			return TLBooleanValue.TRUE;
-//		}
-//
-//		@Override
-//		public TLContext createContext() {
-//			TLContext<TLValue> context = new TLContext<TLValue>();
-//			context.setContext(null);
-//			return context;
-//		}
-//
-//		@Override
-//		public TLType checkParameters(TLType[] parameters) {
-//			if (parameters.length < minParams || parameters.length > maxParams) {
-//				return TLType.ERROR;
-//			}
-//
-//			return TLType.OBJECT;
-//		}
-//
-//		private TLContext getConvertContext(TLFunctionPrototype function,
-//				TLContext context) {
-//			if ((function instanceof Num2StrFunction || function instanceof ToStringFunction)
-//					&& !(context.getContext() instanceof TLStringValue)) {
-//				return TLContext.createStringContext();
-//			}
-//			if (function instanceof Date2StrFunction
-//					&& !(context.getContext() instanceof Date2StrContext)) {
-//				return Date2StrContext.createContex();
-//			}
-//			if (function instanceof Str2DateFunction
-//					&& !(context.getContext() instanceof Str2DateContext)) {
-//				return Str2DateContext.createContext();
-//			}
-//			if (function instanceof Num2NumFunction
-//					|| function instanceof Bool2NumFunction
-//					|| function instanceof Date2LongFunction
-//					&& !(context.getContext() instanceof TLNumericValue)) {
-//				return TLContext.createNullContext();
-//			}
-//			if (function instanceof Long2DateFunction
-//					&& !(context.getContext() instanceof TLDateValue)) {
-//				return TLContext.createDateContext();
-//			}
-//			if (function instanceof Str2NumFunction
-//					&& !(context.getContext() instanceof Str2NumContext)) {
-//				return Str2NumContext.createContext();
-//			}
-//			return null;
-//		}
-//
-//		private TLValue[] getConvertParams(TLFunctionPrototype function,
-//				TLValue[] convertParams) {
-//			if (function instanceof Num2StrFunction) {
-//				return new TLValue[] {
-//						convertParams[0],
-//						new TLNumericValue<CloverInteger>(TLValueType.INTEGER,
-//								new CloverInteger(DEFAULT_RADIX)) };
-//			}
-//			if (function instanceof Date2StrFunction
-//					|| function instanceof Str2DateFunction) {
-//				return new TLValue[] { convertParams[0], convertParams[2] };
-//			}
-//			if (function instanceof Num2NumFunction
-//					|| function instanceof Bool2NumFunction) {
-//				return new TLValue[] {
-//						convertParams[0],
-//						new TLNumericValue(TLValueType.SYM_CONST,
-//								new CloverInteger(TLFunctionUtils
-//										.valueType2astToken(convertParams[1]
-//												.getType()))) };
-//			}
-//			if (function instanceof Str2NumFunction) {
-//				TLValue[] result = new TLValue[convertParams.length];
-//				result[0] = convertParams[0];
-//				result[1] = new TLNumericValue(
-//						TLValueType.SYM_CONST,
-//						new CloverInteger(TLFunctionUtils
-//								.valueType2astToken(convertParams[1].getType())));
-//				if (result.length > 2) {
-//					result[2] = convertParams[2];
-//				}
-//				return result;
-//			}
-//			return new TLValue[] { convertParams[0] };
-//		}
-//
-//	}
-//
-//	private TLFunctionPrototype getConvertToFunction(TLValueType fromType,
-//			TLValueType toType) {
-//		if (fromType != TLValueType.BOOLEAN
-//				&& toType != TLValueType.BOOLEAN
-//				&& !(fromType.isCompatible(toType) || toType
-//						.isCompatible(fromType))) {
-//			return null;
-//		}
-//		switch (fromType) {
-//		case INTEGER:
-//		case LONG:
-//		case NUMBER:
-//		case DECIMAL:
-//			switch (toType) {
-//			case INTEGER:
-//			case LONG:
-//			case NUMBER:
-//			case DECIMAL:
-//				return new Num2NumFunction();
-//			case BOOLEAN:
-//				return new Num2BoolFunction();
-//			case DATE:
-//				return fromType == TLValueType.LONG ? new Long2DateFunction()
-//						: null;
-//			case BYTE:
-//			case STRING:
-//				return new Num2StrFunction();
-//			default:
-//				return null;
-//			}
-//		case BOOLEAN:
-//			switch (toType) {
-//			case INTEGER:
-//			case LONG:
-//			case NUMBER:
-//			case DECIMAL:
-//				return new Bool2NumFunction();
-//			case BYTE:
-//			case STRING:
-//				return new ToStringFunction();
-//			default:
-//				return null;
-//			}
-//		case DATE:
-//			switch (toType) {
-//			case LONG:
-//				return new Date2LongFunction();
-//			case STRING:
-//				return new Date2StrFunction();
-//			default:
-//				return null;
-//			}
-//		case STRING:
-//			switch (toType) {
-//			case INTEGER:
-//			case LONG:
-//			case NUMBER:
-//			case DECIMAL:
-//				return new Str2NumFunction();
-//			case BOOLEAN:
-//				return new Str2BoolFunction();
-//			case DATE:
-//				return new Str2DateFunction();
-//			default:
-//				return null;
-//			}
-//		default:
-//			return new ToStringFunction();
-//		}
-//	}
-//
-//}
-//
-//class Date2StrContext {
-//	TLValue value;
-//	SimpleDateFormat format;
-//
-//	static TLContext createContex() {
-//		Date2StrContext con = new Date2StrContext();
-//		con.value = TLValue.create(TLValueType.STRING);
-//		con.format = new SimpleDateFormat();
-//
-//		TLContext<Date2StrContext> context = new TLContext<Date2StrContext>();
-//		context.setContext(con);
-//
-//		return context;
-//	}
-//}
-//
-//class Str2DateContext {
-//	TLValue value;
-//	SimpleDateFormat formatter;
-//	ParsePosition position;
-//	String locale;
-//
-//	public void init(String locale, String pattern) {
-//		formatter = (SimpleDateFormat) MiscUtils.createFormatter(
-//				DataFieldMetadata.DATE_FIELD, locale, pattern);
-//		this.locale = locale;
-//		position = new ParsePosition(0);
-//	}
-//
-//	public void reset(String newLocale, String newPattern) {
-//		if (!newLocale.equals(locale)) {
-//			formatter = (SimpleDateFormat) MiscUtils.createFormatter(
-//					DataFieldMetadata.DATE_FIELD, newLocale, newPattern);
-//			this.locale = newLocale;
-//		}
-//		resetPattern(newPattern);
-//	}
-//
-//	public void resetPattern(String newPattern) {
-//		if (!newPattern.equals(formatter.toPattern())) {
-//			formatter.applyPattern(newPattern);
-//		}
-//		position.setIndex(0);
-//	}
-//
-//	public void setLenient(boolean lenient) {
-//		formatter.setLenient(lenient);
-//	}
-//
-//	static TLContext createContext() {
-//		Str2DateContext con = new Str2DateContext();
-//		con.value = TLValue.create(TLValueType.DATE);
-//
-//		TLContext<Str2DateContext> context = new TLContext<Str2DateContext>();
-//		context.setContext(con);
-//
-//		return context;
-//	}
-//}
-//
-//class Str2NumContext {
-//	TLValue value;
-//	NumberFormat format;
-//
-//	public void init(String pattern, TLValueType type) {
-//		if (pattern != null) {
-//			switch (type) {
-//			case DECIMAL:
-//			case NUMBER:
-//				format = new NumericFormat(pattern);
-//				break;
-//			case INTEGER:
-//			case LONG:
-//				format = new DecimalFormat(pattern);
-//				break;
-//			default:
-//				throw new IllegalArgumentException(
-//						"Str2NumContex can't be defined for " + type.getName());
-//			}
-//		}
-//		if (type == TLValueType.DECIMAL) {
-//			value = null;
-//		} else if (value == null || value.type != type) {
-//			value = TLValue.create(type);
-//		}
-//
-//	}
-//
-//	public String toPattern() {
-//		if (format != null) {
-//			if (format instanceof NumericFormat) {
-//				return ((NumericFormat) format).toPattern();
-//			}
-//			return ((DecimalFormat) format).toPattern();
-//		}
-//		return null;
-//	}
-//
-//	public void reset(String newPattern, TLValueType newType) {
-//		if (newType == TLValueType.DECIMAL || value == null
-//				|| newType != value.type) {
-//			init(newPattern, newType);
-//		} else if (newPattern != null && !newPattern.equals(toPattern())) {
-//			if (format == null) {
-//				init(newPattern, newType);
-//			} else if (format instanceof NumericFormat) {
-//				((NumericFormat) format).applyPattern(newPattern);
-//			} else {
-//				((DecimalFormat) format).applyPattern(newPattern);
-//			}
-//		}
-//	}
-//
-//	static TLContext createContext() {
-//		Str2NumContext con = new Str2NumContext();
-//		con.init(null, TLValueType.DECIMAL);
-//
-//		TLContext<Str2NumContext> context = new TLContext<Str2NumContext>();
-//		context.setContext(con);
-//
-//		return context;
-//	}
+	public class Base64ByteFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(base64byte(stack.popString()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts binary data into their base64 representation.")
+	public static final String byte2base64(ByteArray src) {
+		return src.encodeBase64();
+	}
+	
+	// BYTE2BASE64
+	public class Byte2Base64Function implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(byte2base64(stack.popByteArray()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts bits into their string representation.")
+	public static final String bits2str(ByteArray src) {
+		int length = src.length();
+		return src.decodeBitString('1', '0', 0, length == 0 ? 0 : (src.length() << 3) - 1).toString();
+	}
+
+	// BITS2STR
+	public class Bits2StrFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(bits2str(stack.popByteArray()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts string representation of bits into binary value.")
+	public static final ByteArray str2bits(String src) {
+		ByteArray array = new ByteArray();
+		array.encodeBitString(src, '1', true);
+		return array;
+	}
+
+	// STR2BITS
+	public class Str2BitsFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(str2bits(stack.popString()));
+		}
+	}
+
+	@TLFunctionAnnotation("Converts binary data into hex string.")
+	public static final String byte2hex(ByteArray src) {
+		StringBuilder strVal = new StringBuilder(src.length());
+		for (int i = 0; i < src.length(); i++) {
+			strVal.append(Character.forDigit((src.getByte(i) & 0xF0) >> 4, 16));
+			strVal.append(Character.forDigit(src.getByte(i) & 0x0F, 16));
+		}
+		return strVal.toString();
+	}
+	
+	// BYTE2HEX
+	public class Byte2HexFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(byte2hex(stack.popByteArray()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts hex string into binary.")
+	public static final ByteArray hex2byte(String src) {
+		ByteArray array = new ByteArray();
+		char[] charArray = src.toCharArray();
+		for (int i = 0; i < charArray.length - 1; i = i + 2) {
+			array.append((byte) (((byte) Character.digit(charArray[i], 16) << 4) | (byte) Character.digit(charArray[i + 1], 16)));
+		}
+    	return array;
+	}
+
+	// HEX2BYTE
+	public class Hex2ByteFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(hex2byte(stack.popString()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts long into packed decimal representation (bytes).")
+	public static final ByteArray long2packdecimal(Long src) {
+		ByteArray bytes = new ByteArray(16);
+		byte[] tmp = new byte[16];
+		int length = PackedDecimal.format(src, tmp);
+		bytes.setValue(tmp);
+		bytes.setLength(length);
+		return bytes;
+	}
+	
+	// LONG2PACKEDDECIMAL
+	class Long2PackedDecimalFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(long2packdecimal(stack.popLong()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts packed decimal(bytes) into long value.")
+	public static final Long packdecimal2long(ByteArray array) {
+		return PackedDecimal.parse(array.getValue());
+	}
+	
+	// PACKEDDECIMAL2LONG
+	class PackedDecimal2LongFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(packdecimal2long(stack.popByteArray()));
+		}
+	}
+
+	@TLFunctionAnnotation("Calculates MD5 hash of input string.")
+	public static final ByteArray md5(String src) {
+		return new ByteArray(Digest.digest(DigestType.MD5, src));
+	}
+	
+	@TLFunctionAnnotation("Calculates MD5 hash of input bytes.")
+	public static final ByteArray md5(ByteArray src) {
+		return new ByteArray(Digest.digest(DigestType.MD5, src.getValue()));
+	}
+	
+	// MD5
+	class MD5Function implements TLFunctionPrototype {
+	
+		public void execute(Stack stack, TLType[] actualParams) {
+			if(actualParams[0].isString()) {
+				stack.push(md5(stack.popString()));
+			} else {
+				stack.push(md5(stack.popByteArray()));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Calculates SHA hash of input bytes.")
+	public static final ByteArray sha(ByteArray src) {
+		return new ByteArray(Digest.digest(DigestType.SHA, src.getValue()));
+	}
+	
+	@TLFunctionAnnotation("Calculates SHA hash of input string.")
+	public static final ByteArray sha(String src) {
+		return new ByteArray(Digest.digest(DigestType.SHA, src));
+	}
+	
+	// SHA
+	class SHAFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if(actualParams[0].isString()) {
+				stack.push(sha(stack.popString()));
+			} else {
+				stack.push(sha(stack.popByteArray()));
+			}
+		}
+	}
+
+	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
+	public static final String get_field_name(DataRecord record, Integer position) {
+		
+		try {
+			return record.getField(position).getMetadata().getName();
+		} catch (Exception ex) {
+			return new String();
+		}
+	}
+	
+	//GET_FIELD_NAME
+	class GetFieldNameFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			Integer position = stack.popInt();
+			DataRecord record = stack.popRecord();
+			stack.push(get_field_name(record, position));
+		}
+	}
+	
+	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
+	public static final String get_field_type(DataRecord record, Integer position) {
+		try {
+			return record.getField(position).getMetadata().getTypeAsString();
+		} catch (Exception ex) {
+			return new String();
+		}
+	}
+
+	//GET_FIELD_TYPE
+	class GetFieldTypeFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			Integer position = stack.popInt();
+			DataRecord record = stack.popRecord();
+			stack.push(get_field_type(record, position));
+		}
+	}
 }
