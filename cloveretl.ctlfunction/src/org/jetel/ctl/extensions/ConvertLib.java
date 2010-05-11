@@ -693,12 +693,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
 	public static final String get_field_name(DataRecord record, Integer position) {
-		
-		try {
-			return record.getField(position).getMetadata().getName();
-		} catch (Exception ex) {
-			return new String();
-		}
+		return record.getField(position).getMetadata().getName();
 	}
 	
 	//GET_FIELD_NAME
@@ -713,11 +708,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
 	public static final String get_field_type(DataRecord record, Integer position) {
-		try {
-			return record.getField(position).getMetadata().getTypeAsString();
-		} catch (Exception ex) {
-			return new String();
-		}
+		return record.getField(position).getMetadata().getTypeAsString();
 	}
 
 	//GET_FIELD_TYPE
