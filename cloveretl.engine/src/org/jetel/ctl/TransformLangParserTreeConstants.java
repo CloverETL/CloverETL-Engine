@@ -35,26 +35,28 @@ public interface TransformLangParserTreeConstants
   public int JJTPRINTLOGNODE = 29;
   public int JJTPRINTSTACKNODE = 30;
   public int JJTRAISEERRORNODE = 31;
-  public int JJTFIELDACCESSEXPRESSION = 32;
-  public int JJTIDENTIFIER = 33;
-  public int JJTARGUMENTS = 34;
-  public int JJTDATEFIELD = 35;
-  public int JJTLOGLEVEL = 36;
-  public int JJTLITERAL = 37;
-  public int JJTLISTOFLITERALS = 38;
-  public int JJTBLOCK = 39;
-  public int JJTIFSTATEMENT = 40;
-  public int JJTSWITCHSTATEMENT = 41;
-  public int JJTCASESTATEMENT = 42;
-  public int JJTWHILESTATEMENT = 43;
-  public int JJTFORSTATEMENT = 44;
-  public int JJTFOREACHSTATEMENT = 45;
-  public int JJTDOSTATEMENT = 46;
-  public int JJTBREAKSTATEMENT = 47;
-  public int JJTCONTINUESTATEMENT = 48;
-  public int JJTRETURNSTATEMENT = 49;
-  public int JJTSEQUENCENODE = 50;
-  public int JJTLOOKUPNODE = 51;
+  public int JJTDICTGETSTRNODE = 32;
+  public int JJTDICTPUTSTRNODE = 33;
+  public int JJTFIELDACCESSEXPRESSION = 34;
+  public int JJTIDENTIFIER = 35;
+  public int JJTARGUMENTS = 36;
+  public int JJTDATEFIELD = 37;
+  public int JJTLOGLEVEL = 38;
+  public int JJTLITERAL = 39;
+  public int JJTLISTOFLITERALS = 40;
+  public int JJTBLOCK = 41;
+  public int JJTIFSTATEMENT = 42;
+  public int JJTSWITCHSTATEMENT = 43;
+  public int JJTCASESTATEMENT = 44;
+  public int JJTWHILESTATEMENT = 45;
+  public int JJTFORSTATEMENT = 46;
+  public int JJTFOREACHSTATEMENT = 47;
+  public int JJTDOSTATEMENT = 48;
+  public int JJTBREAKSTATEMENT = 49;
+  public int JJTCONTINUESTATEMENT = 50;
+  public int JJTRETURNSTATEMENT = 51;
+  public int JJTSEQUENCENODE = 52;
+  public int JJTLOOKUPNODE = 53;
 
 
   public String[] jjtNodeName = {
@@ -90,6 +92,8 @@ public interface TransformLangParserTreeConstants
     "PrintLogNode",
     "PrintStackNode",
     "RaiseErrorNode",
+    "DictGetStrNode",
+    "DictPutStrNode",
     "FieldAccessExpression",
     "Identifier",
     "Arguments",
@@ -112,4 +116,4 @@ public interface TransformLangParserTreeConstants
     "LookupNode",
   };
 }
-/* JavaCC - OriginalChecksum=4bff5a329fe263e3f021f2363a3c826f (do not edit this line) */
+/* JavaCC - OriginalChecksum=3c46996fcddc0d7fbe0ee1b114279fe5 (do not edit this line) */

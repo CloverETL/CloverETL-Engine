@@ -450,6 +450,11 @@ TOKEN:
  < PRINT_STACK: "print_stack" >
 |
  < RAISE_ERROR: "raise_error" >
+|
+ < DICT_PUT_STR: "dict_put_str" >
+|
+ < DICT_GET_STR: "dict_get_str" >
+ 
 }
 
 TOKEN: 
@@ -1334,6 +1339,8 @@ void BuiltInFunctionCall() #void:
 	 | ( t = <PRINT_LOG> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintLogNode(1) )
 	 | ( t = <PRINT_STACK> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintStackNode(1) )
 	 | ( t = <RAISE_ERROR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #RaiseErrorNode(1) )
+	 | ( t = <DICT_GET_STR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DictGetStrNode(1) )
+	 | ( t = <DICT_PUT_STR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DictPutStrNode(1) )
 	)
 	
 }

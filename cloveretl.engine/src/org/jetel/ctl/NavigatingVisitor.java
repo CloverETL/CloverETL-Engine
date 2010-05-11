@@ -13,6 +13,8 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
+import org.jetel.ctl.ASTnode.CLVFDictGetStrNode;
+import org.jetel.ctl.ASTnode.CLVFDictPutStrNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFEvalNode;
@@ -264,6 +266,16 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 
 	public Object visit(CLVFPrintLogNode node, Object data) {
 
+		return visitNode(node, data);
+	}
+	
+	public Object visit(CLVFDictGetStrNode node, Object data) {
+		
+		return visitNode(node, data);
+	}
+	
+	public Object visit(CLVFDictPutStrNode node, Object data) {
+		
 		return visitNode(node, data);
 	}
 
