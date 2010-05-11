@@ -26,6 +26,8 @@ package org.jetel.ctl.extensions;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -37,19 +39,29 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.extensions.TLFunctionAnnotation;
-import org.jetel.ctl.extensions.TLFunctionLibrary;
-import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.ByteArray;
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.exception.JetelException;
+import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
 
 	private static final String LIBRARY_NAME = "String";
 
+	private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
+
+	private static synchronized DataGenerator getGenerator(Thread key) {
+		DataGenerator generator = dataGenerators.get(key);
+		if (generator == null) {
+			generator = new DataGenerator();
+			dataGenerators.put(key, generator);
+		}
+		return generator;
+	}
+	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
@@ -82,7 +94,11 @@ public class StringLib extends TLFunctionLibrary {
 			"count_char".equals(functionName) ? new CountCharFunction() :
 			"find".equals(functionName) ? new FindFunction() :
 			"chop".equals(functionName) ? new ChopFunction() :
-			"cut".equals(functionName) ? new CutFunction() : null;
+			"cut".equals(functionName) ? new CutFunction() :
+			"edit_distance".equals(functionName) ? new EditDistanceFunction() :
+			"metaphone".equals(functionName) ? new MetaphoneFunction() :
+			"nysiis".equals(functionName) ? new NYSIISFunction() :
+			"random_string".equals(functionName) ? new RandomStringFunction() : null;
 		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -779,6 +795,7 @@ public class StringLib extends TLFunctionLibrary {
 
 	}
 
+	//CUT
 	@TLFunctionAnnotation("Cuts substring from specified string based on list consisting of pairs position,length")
 	public static final List<String> cut(String input, List<Integer> indexes) {
 		if (indexes.size() % 2 != 0) {
@@ -806,5 +823,148 @@ public class StringLib extends TLFunctionLibrary {
 			stack.push(cut(input, TLFunctionLibrary.<Integer>convertTo(indices)));
 		}
 	}
+	
+	// EDIT DISTANCE
+	@TLFunctionAnnotation("Calculates edit distance between two strings.")
+	public static final Integer edit_distance(String str1, String str2) {
+		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, null, -1);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strength of comparsion.")
+	public static final Integer edit_distance(String str1, String str2, int strength) {
+		return edit_distance(str1, str2, strength, null, -1);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion.")
+	public static final Integer edit_distance(String str1, String str2, String locale) {
+		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, -1);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion and maximum amount of letters to be changed.")
+	public static final Integer edit_distance(String str1, String str2, String locale, int maxDifference) {
 
+		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, maxDifference);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and locale for comparsion.")
+	public static final Integer edit_distance(String str1, String str2, int strength, String locale) {
+
+		return edit_distance(str1, str2, strength, locale, -1);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and maximum amount of letters to be changed.")
+	public static final Integer edit_distance(String str1, String str2, int strength, int maxDifference)
+			throws JetelException {
+
+		return edit_distance(str1, str2, strength, null, maxDifference);
+	}
+	
+	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion, locale for comparsion and maximum amount of letters to be changed.")
+	public static final Integer edit_distance(String str1, String str2, int strength, String locale, int maxDifference) {
+
+		boolean[] s = new boolean[4];
+		Arrays.fill(s, false);
+		s[4 - strength] = true;
+		StringAproxComparator comparator = null;
+		try {
+			comparator = StringAproxComparator.createComparator(locale, s);
+		} catch (JetelException e) {
+			throw new TransformLangExecutorRuntimeException(e.getMessage());
+		}
+		if (maxDifference > -1) {
+			comparator.setMaxLettersToChange(maxDifference);
+		}
+		return comparator.distance(str1, str2)/comparator.getMaxCostForOneLetter();
+	}
+
+	class EditDistanceFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] parameters) {
+			Integer maxDifference = -1;
+			String locale = null;
+			Integer strength = StringAproxComparator.IDENTICAL;
+			switch (parameters.length) {
+			case 5:
+				maxDifference = stack.popInt();
+			case 4:
+				if (parameters[3].isString())
+					locale = stack.popString();
+				else
+					maxDifference = stack.popInt();
+			case 3:
+				if (parameters[2].isString())
+					locale = stack.popString();
+				else
+					strength = stack.popInt();
+
+			}
+			final String string2 = stack.popString();
+			final String string1 = stack.popString();
+			stack.push(edit_distance(string1, string2, strength, locale, maxDifference));
+		}
+	}
+	
+	@TLFunctionAnnotation("Finds the metaphone value of a String.")
+	public static final String metaphone(String input) {
+		return StringUtils.metaphone(input);
+	}
+
+	@TLFunctionAnnotation("Finds the metaphone value of a String. Allows changing maximal length of output string.")
+	public static final String metaphone(String input, int maxLength) {
+		return StringUtils.metaphone(input, maxLength);
+	}
+	
+	class MetaphoneFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams.length > 1) {
+				Integer maxLength = stack.popInt();
+				stack.push(metaphone(stack.popString(), maxLength));
+			} else {
+				stack.push(metaphone(stack.popString()));
+			}
+		}
+	}
+
+	@TLFunctionAnnotation("Finds The New York State Identification and Intelligence System Phonetic Code.")	
+	public static final String nysiis(String input) {
+		return StringUtils.NYSIIS(input);
+	}
+	
+	class NYSIISFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(nysiis(stack.popString()));
+		}
+	}
+	
+	@TLFunctionAnnotation("Generates a random string.")
+	public static String random_string(int minLength, int maxLength) {
+		return getGenerator(Thread.currentThread()).nextString(minLength, maxLength);
+	}
+	
+	@TLFunctionAnnotation("Generates a random string. Allows changing seed.")
+	public static String random_string(int minLength, int maxLength, long randomSeed) {
+		DataGenerator generator = getGenerator(Thread.currentThread());
+		generator.setSeed(randomSeed);
+		return generator.nextString(minLength, maxLength);
+	}
+	
+	class RandomStringFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			Integer maxLength;
+			Integer minLength;
+			if (actualParams.length > 2) {
+				Long seed = stack.popLong();
+				maxLength = stack.popInt();
+				minLength = stack.popInt();
+				stack.push(random_string(minLength, maxLength, seed));
+			} else {
+				maxLength = stack.popInt();
+				minLength = stack.popInt();
+				stack.push(random_string(minLength, maxLength));
+			}
+		}
+	}
 }
