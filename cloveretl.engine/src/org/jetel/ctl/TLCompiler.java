@@ -257,7 +257,11 @@ public class TLCompiler implements ITLCompiler {
 				"return " + expression + ";" +
 				" }";
 	}
-	
+
+	public String getSourceCode() {
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * @return Instance of {@link TransformLangExecutor} that can be used to interpret the CTL code.
 	 * 			This method calls {@link TransformLangExecutor#init()} automatically.  
