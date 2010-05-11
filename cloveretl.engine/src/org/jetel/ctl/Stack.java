@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jetel.ctl.data.Scope;
 import org.jetel.data.DataRecord;
+import org.jetel.data.primitive.ByteArray;
 
 /**
  * @author David Palis <david.pavlis@javlin.cz>
@@ -124,6 +125,10 @@ public class Stack {
 	
 	public DataRecord popRecord() {
 		return (DataRecord)pop();
+	}
+	
+	public ByteArray popByteArray() {
+		return (ByteArray)pop();
 	}
 
 	
