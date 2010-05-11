@@ -33,6 +33,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -81,7 +82,7 @@ public class DBFAnalyzer {
 		dbfFile.close();
 	}
 
-	int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
+	public int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
 
 		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE_BASIC);
 	    buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -233,6 +234,8 @@ public class DBFAnalyzer {
         System.out.println("Codepage: "+dbf.dbfCodePage+" - corresponds to: "+DBFTypes.dbfCodepage2Java(dbf.dbfCodePage));
         System.out.println("Record size (bytes): "+dbf.dbfRecSize);
         }
+        
+        EngineInitializer.initEngine((String)null, null, null);
         
 		try{
 			OutputStream outstream;
