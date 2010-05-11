@@ -48,7 +48,7 @@ options {
                       
                                 
    JAVA_UNICODE_ESCAPE = true;
-                             // change to true only if new Node has been added 
+                            // change to true only if new Node has been added 
    DEBUG_PARSER = false;	
    DEBUG_TOKEN_MANAGER = false;
    
@@ -454,6 +454,11 @@ TOKEN:
  < PRINT_STACK: "print_stack" >
 |
  < RAISE_ERROR: "raise_error" >
+|
+ < DICT_PUT_STR: "dict_put_str" >
+|
+ < DICT_GET_STR: "dict_get_str" >
+ 
 }
 
 TOKEN: 
@@ -2436,6 +2441,44 @@ void BuiltInFunctionCall()      :
                                                    jjtree.closeNodeScope(jjtn008,  1);
                                                  }
                                                }
+/*@egen*/                    )
+	 | ( t = <DICT_GET_STR> Arguments(null)/*@bgen(jjtree) #DictGetStrNode( 1) */
+                                                {
+                                                  CLVFDictGetStrNode jjtn009 = new CLVFDictGetStrNode(this, JJTDICTGETSTRNODE);
+                                                  boolean jjtc009 = true;
+                                                  jjtree.openNodeScope(jjtn009);
+                                                }
+                                                try {
+/*@egen*//*@bgen(jjtree)*/
+                                                {
+                                                  jjtree.closeNodeScope(jjtn009,  1);
+                                                  jjtc009 = false;
+                                                }
+/*@egen*/ { jjtn009.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
+                                                } finally {
+                                                  if (jjtc009) {
+                                                    jjtree.closeNodeScope(jjtn009,  1);
+                                                  }
+                                                }
+/*@egen*/                    )
+	 | ( t = <DICT_PUT_STR> Arguments(null)/*@bgen(jjtree) #DictPutStrNode( 1) */
+                                                {
+                                                  CLVFDictPutStrNode jjtn010 = new CLVFDictPutStrNode(this, JJTDICTPUTSTRNODE);
+                                                  boolean jjtc010 = true;
+                                                  jjtree.openNodeScope(jjtn010);
+                                                }
+                                                try {
+/*@egen*//*@bgen(jjtree)*/
+                                                {
+                                                  jjtree.closeNodeScope(jjtn010,  1);
+                                                  jjtc010 = false;
+                                                }
+/*@egen*/ { jjtn010.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
+                                                } finally {
+                                                  if (jjtc010) {
+                                                    jjtree.closeNodeScope(jjtn010,  1);
+                                                  }
+                                                }
 /*@egen*/                    )
 	)
 	

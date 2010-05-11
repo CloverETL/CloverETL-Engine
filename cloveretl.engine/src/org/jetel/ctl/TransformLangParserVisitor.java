@@ -13,6 +13,8 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
+import org.jetel.ctl.ASTnode.CLVFDictGetStrNode;
+import org.jetel.ctl.ASTnode.CLVFDictPutStrNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
@@ -88,6 +90,8 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFPrintLogNode node, Object data);
   public Object visit(CLVFPrintStackNode node, Object data);
   public Object visit(CLVFRaiseErrorNode node, Object data);
+  public Object visit(CLVFDictGetStrNode node, Object data);
+  public Object visit(CLVFDictPutStrNode node, Object data);
   public Object visit(CLVFFieldAccessExpression node, Object data);
   public Object visit(CLVFIdentifier node, Object data);
   public Object visit(CLVFArguments node, Object data);
@@ -109,4 +113,4 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFSequenceNode node, Object data);
   public Object visit(CLVFLookupNode node, Object data);
 }
-/* JavaCC - OriginalChecksum=315ff6f8fcf17c48a17a76c58eedb23e (do not edit this line) */
+/* JavaCC - OriginalChecksum=3a1b68721ac7f6190d1cdecbd30f9a38 (do not edit this line) */
