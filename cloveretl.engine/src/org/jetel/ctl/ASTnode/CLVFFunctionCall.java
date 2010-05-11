@@ -43,6 +43,7 @@ public class CLVFFunctionCall extends SimpleNode {
 	}
 	
 	public String getName() {
+		// this piece of code makes prefixing of functions in the AST post processing step possible
 		return (localFunc != null) ? localFunc.getName() : name;
 	}
 

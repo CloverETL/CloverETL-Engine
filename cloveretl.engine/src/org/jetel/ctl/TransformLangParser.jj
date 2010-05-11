@@ -32,23 +32,7 @@
 	    If not done, most of the syntactic errors will not be correctly reported by the parser
 	    and javacc does not provide token_error() method mentioned in documentation anymore.
 	    
-	4. Modify org.jetel.ctl.ASTnode.CLVFFunctionCall.getName():
-
-		public String getName() {
-			return (localFunc != null) ? localFunc.getName() : name;
-		}
-
-		If not done, prefixing of local functions in AST post processing step fails.
-
-	5. Modify org.jetel.ctl.ASTnode.CLVFIdentifier.getName():
-
-		public String getName() {
-			return (variable != null) ? variable.getName() : name;
-		}
-
-		If not done, prefixing of variables in AST post processing step fails.
-
-	6. Before making a commit of production parser be sure to set the 
+	4. Before making a commit of production parser be sure to set the 
 		DEBUG_PARSER = false;
    		DEBUG_TOKEN_MANAGER = false;
    		Otherwise the parser generates amounts of debug messages iin background and is much slower.
