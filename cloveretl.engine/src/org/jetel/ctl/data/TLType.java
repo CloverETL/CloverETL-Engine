@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.data.DataRecord;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.metadata.DataRecordMetadata;
 
 public abstract class TLType {
@@ -405,7 +406,7 @@ public abstract class TLType {
 
 		@Override
 		public String name() {
-			return "bytearray";
+			return "byte";
 		}
 
 		@Override
@@ -430,7 +431,7 @@ public abstract class TLType {
 
 		@Override
 		public String name() {
-			return "cbytearray";
+			return "cbyte";
 		}
 
 		@Override
@@ -781,6 +782,10 @@ public abstract class TLType {
 			return TLType.RECORD;
 		}
 		
+		if (ByteArray.class.equals(type)) {
+				return TLType.BYTEARRAY;
+		}
+		
 		throw new IllegalArgumentException("Type is not representable in CTL: " + type.getName() );
 	}
 
@@ -944,6 +949,16 @@ public abstract class TLType {
 			return Integer.MAX_VALUE;
 		}
 		
+		if (from.isByteArray()) {
+			return	to.isByteArray() ?	0 :
+				    to.isCByteArray() ? 1 : Integer.MAX_VALUE;
+		}
+
+		if (from.isCByteArray()) {
+			return	to.isCByteArray() ?	0 :
+				    to.isByteArray() ? 1 : Integer.MAX_VALUE;
+		}
+
 		
 		throw new IllegalArgumentException(" Unknown types for type-distance calculation: '" 
 				+ from.name() +  "' and '" + to.name() + "'");
