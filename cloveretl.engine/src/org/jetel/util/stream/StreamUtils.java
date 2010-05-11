@@ -108,11 +108,34 @@ public class StreamUtils {
      * @throws IOException
      */
     public static void copy(InputStream in, OutputStream out) throws IOException {
-    	byte[] b = new byte[IO_BUFFER_SIZE];
-    	int read;
-    	while ((read = in.read(b)) != -1) {
-    		out.write(b, 0, read);
-    	}
+    	copy(in, out, false, false);
     }
 
+    /**
+     * Read all available bytes from one stream and copy them to the other stream or to nothing.
+ 	 * Stream may be automatic closed if specified. 
+     * @param in input stream
+     * @param out target stream, may be null
+     * @param closeSrc if true, close input stream finally
+     * @param closeDst if true, close output stream finally
+     * @throws IOException
+     */
+    public static void copy(InputStream src, OutputStream dst, boolean closeSrc, boolean closeDst) throws IOException {
+    	try {
+			try {
+				final byte[] buffer = new byte[IO_BUFFER_SIZE];
+				for (int l; -1 != (l = src.read(buffer));) {
+					if ( dst != null ) {
+						dst.write(buffer, 0, l);
+					}
+				}
+			} finally {
+				if(closeSrc)
+				    src.close();
+			}
+    	} finally {
+    	    if(closeDst && dst != null)
+    	        dst.close();
+    	}
+    }
 }
