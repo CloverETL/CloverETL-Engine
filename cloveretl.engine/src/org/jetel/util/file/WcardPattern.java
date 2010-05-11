@@ -474,7 +474,7 @@ public class WcardPattern {
 	 */
 	private boolean hasWildcard(URL url) {
 		// check if the url has wildcards
-		String fileName = url.getFile().substring(url.getPath().length());
+		String fileName = new File(url.getFile()).getName();
 		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
 			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
 				return true;

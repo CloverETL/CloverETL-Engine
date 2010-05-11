@@ -16,6 +16,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertyRefResolver;
@@ -223,10 +224,17 @@ public class ReadableChannelIterator {
 
 	private String unificateFileName(String fileName) {
 		try {
+			// standard console -> do nothing
 			if (currentFileName.equals(FileUtils.STD_CONSOLE)) return currentFileName;
+
+			// remote file -> do nothing
+			if (FileURLParser.isServerURL(fileName)) return currentFileName;
+			
+			// unify only local files
 			URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
 			if (fileURL.getProtocol().equals(PROTOCOL_FILE)) {
-				currentFileName = new File(fileURL.getFile()).getCanonicalFile().toString();
+				String sPath = fileURL.getRef() != null ? fileURL.getFile() + "#" + fileURL.getRef() : fileURL.getFile();
+				currentFileName = new File(sPath).getCanonicalFile().toString();
 			}
 		} catch (Exception e) {
 			//NOTHING

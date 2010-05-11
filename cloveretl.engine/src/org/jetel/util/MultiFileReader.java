@@ -181,7 +181,8 @@ public class MultiFileReader {
 				if (FileURLParser.isArchiveURL(fName)) {
 					// test if the archive file exists
 					// getReadableChannel is too long for archives
-					if (new File(url.getFile()).exists()) continue;
+					String path = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
+					if (new File(path).exists()) continue;
 					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
 				}
 				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
