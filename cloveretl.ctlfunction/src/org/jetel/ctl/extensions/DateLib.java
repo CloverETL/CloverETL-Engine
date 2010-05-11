@@ -23,22 +23,46 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.extensions.TLFunctionAnnotation;
-import org.jetel.ctl.extensions.TLFunctionLibrary;
-import org.jetel.ctl.extensions.TLFunctionPrototype;
-
+import org.jetel.util.DataGenerator;
 
 public class DateLib extends TLFunctionLibrary {
 
     private static final String LIBRARY_NAME = "Date";
-
+    
+    private static Map<Thread, Calendar> calendars = new HashMap<Thread, Calendar>();
+    private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
+    
+    private static synchronized Calendar getCalendar(Thread key) {
+    	Calendar cal = calendars.get(key);
+    	if (cal == null) {
+    		cal = Calendar.getInstance();
+    		calendars.put(key, cal);
+    	}
+    	return cal;
+    }
+    
+    private static synchronized DataGenerator getGenerator(Thread key) {
+    	DataGenerator generator = dataGenerators.get(key);
+    	if (generator == null) {
+    		generator = new DataGenerator();
+    		dataGenerators.put(key, generator);
+    	}
+    	return generator;
+    }
     
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
@@ -48,9 +72,10 @@ public class DateLib extends TLFunctionLibrary {
     		"today".equals(functionName) ? new TodayFunction() :
     		"zero_date".equals(functionName) ? new ZeroDateFunction() :
     		"extract_date".equals(functionName) ? new ExtractDateFunction() :
-    		"extract_time".equals(functionName) ? new ExtractTimeFunction() : 
-    		null;
-    				
+    		"extract_time".equals(functionName) ? new ExtractTimeFunction() :
+    		"trunc".equals(functionName) ? new TruncFunction() :
+    	    "trunc_date".equals(functionName)? new TruncDateFunction() :
+    	    "random_date".equals(functionName) ? new RandomDateFunction() : null;
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -77,7 +102,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Adds to a component of a date (i.e. month)")
     public static final Date dateadd(Date lhs, Integer shift, DateFieldEnum unit) {
-    	Calendar c = Calendar.getInstance();
+    	Calendar c = getCalendar(Thread.currentThread());
     	c.setTime(lhs);
     	c.add(unit.asCalendarField(),shift);
     	
@@ -104,8 +129,7 @@ public class DateLib extends TLFunctionLibrary {
 		long diffSec = lhs.getTime() - rhs.getTime() / 1000;
         int diff = 0;
         
-        Calendar start = null;
-        Calendar end = null;
+        Calendar cal = null;
         switch (unit) {
         case SECOND:
             // we have the difference in seconds
@@ -127,19 +151,18 @@ public class DateLib extends TLFunctionLibrary {
             diff = (int) (diffSec / 604800L);
             break;
         case MONTH:
-        	start = Calendar.getInstance();
-            start.setTime(lhs);
-            end = Calendar.getInstance();
-            end.setTime(rhs);
-            diff = ( start.get(Calendar.MONTH) + start.get(Calendar.YEAR) * 12)
-                    - (end.get(Calendar.MONTH) + end.get(Calendar.YEAR) * 12);
+        	cal = getCalendar(Thread.currentThread());
+            cal.setTime(lhs);
+            diff = cal.get(Calendar.MONTH) + cal.get(Calendar.YEAR) * 12; 
+            cal.setTime(rhs);
+            diff -= cal.get(Calendar.MONTH) + cal.get(Calendar.YEAR) * 12;
             break;
         case YEAR:
-        	start = Calendar.getInstance();
-        	start.setTime(lhs);
-        	end = Calendar.getInstance();
-            end.setTime(rhs);
-            diff = start.get(Calendar.YEAR) - end.get(Calendar.YEAR);
+        	cal = getCalendar(Thread.currentThread());
+        	cal.setTime(lhs);
+        	diff = cal.get(Calendar.YEAR);
+        	cal.setTime(rhs);
+            diff -= cal.get(Calendar.YEAR);
             break;
         default:
             throw new TransformLangExecutorRuntimeException("Unknown time unit " + unit);
@@ -179,14 +202,14 @@ public class DateLib extends TLFunctionLibrary {
 	public static final Date extract_date(Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
-    	Calendar orig = Calendar.getInstance();
-    	orig.setTime(d);
-    	Calendar ret = Calendar.getInstance();
-    	ret.clear();
-    	for (int field  : new int[]{Calendar.DAY_OF_MONTH,Calendar.MONTH, Calendar.YEAR}) {
-    		ret.set(field, orig.get(field));
-    	}
-    	return ret.getTime();
+    	Calendar cal = getCalendar(Thread.currentThread());
+    	cal.setTime(d);
+    	int[] portion = new int[]{cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)};
+    	cal.clear();
+    	cal.set(Calendar.DAY_OF_MONTH, portion[0]);
+    	cal.set(Calendar.MONTH, portion[1]);
+    	cal.set(Calendar.YEAR, portion[2]);
+    	return cal.getTime();
     }
     
     // TODO: add test case
@@ -202,14 +225,15 @@ public class DateLib extends TLFunctionLibrary {
 	public static final Date extract_time(Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
-    	Calendar orig = Calendar.getInstance();
-    	orig.setTime(d);
-    	Calendar ret = Calendar.getInstance();
-    	ret.clear();
-    	for (int field  : new int[]{Calendar.HOUR_OF_DAY,Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND}) {
-    		ret.set(field, orig.get(field));
-    	}
-    	return ret.getTime();
+    	Calendar cal = getCalendar(Thread.currentThread());
+    	cal.setTime(d);
+    	int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
+    	cal.clear();
+    	cal.set(Calendar.HOUR_OF_DAY, portion[0]);
+    	cal.set(Calendar.MINUTE, portion[1]);
+    	cal.set(Calendar.SECOND, portion[2]);
+    	cal.set(Calendar.MILLISECOND, portion[3]);
+    	return cal.getTime();
     }
     
     // TODO: add test case
@@ -219,5 +243,211 @@ public class DateLib extends TLFunctionLibrary {
 			stack.push(extract_time(stack.popDate()));
 		}
 	}
+    
+    @TLFunctionAnnotation("Truncates BigDecimal - returns long part of number, decimal part is discarded.")
+    public static final Long trunc(BigDecimal value) {
+    	return value.longValue();
+    }
+    
+    @TLFunctionAnnotation("Truncates Double - returns long part of double, decimal part is discarded.")
+    public static final Long trunc(Double value) {
+    	return value.longValue();
+    }
+    
+    @TLFunctionAnnotation("Returns date with the same year,month and day, but hour, minute, second and millisecond are set to zero values.")
+    public static final Date trunc(Date value) {
+    	Calendar cal = getCalendar(Thread.currentThread());
+    	cal.setTime(value);
+    	cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE , 0);
+        cal.set(Calendar.SECOND , 0);
+        cal.set(Calendar.MILLISECOND , 0);
+        value.setTime(cal.getTimeInMillis());
+        return value;
+    }
+    
+    @TLFunctionAnnotation("Emptyes the passed List and returns null.")
+    public static final List<Object> trunc(List<Object> value) {
+    	value.clear();
+    	return null;
+    }
+    
+    @TLFunctionAnnotation("Emptyes the passed Map and returns null.")
+    public static final Map<Object, Object> trunc(Map<Object, Object> value) {
+    	value.clear();
+    	return null;
+    }
+    
+    //Trunc
+    class TruncFunction implements TLFunctionPrototype {
 
+		public void execute(Stack stack, TLType[] actualParams) {
+			if(actualParams[0].isDecimal()) {
+				stack.push(trunc(stack.popDecimal()));
+			} else if (actualParams[0].isDouble()) {
+				stack.push(trunc(stack.popDouble()));
+			} else if (actualParams[0].isDate()) {
+				stack.push(trunc(stack.popDate()));
+			} else if (actualParams[0].isMap()) {
+				stack.push(trunc(stack.popMap()));
+			} else {
+				stack.push(trunc(stack.popList()));
+			}
+		}
+    }
+    
+    @TLFunctionAnnotation("Returns the date with the same hour, minute, second and millisecond, but year, month and day are set to zero values.")
+    public static final Date trunc_date(Date date) {
+    	Calendar cal = getCalendar(Thread.currentThread());
+    	cal.setTime(date);
+    	cal.set(Calendar.YEAR,0);
+        cal.set(Calendar.MONTH,0);
+        cal.set(Calendar.DAY_OF_MONTH,1);
+        date.setTime(cal.getTimeInMillis());
+        return date;
+    }
+    
+    //Trunc date
+    class TruncDateFunction implements TLFunctionPrototype {
+    	
+		public void execute(Stack stack, TLType[] actualParams) {
+			stack.push(trunc_date(stack.popDate()));
+		}
+    }
+
+    @TLFunctionAnnotation("Generates a random date from interval specified by two dates.")
+    public static final Date random_date(Date from, Date to) {
+    	return random_date(from.getTime(), to.getTime());
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
+    public static final Date random_date(Long from, Long to) {
+    	if (to > from) {
+    		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
+    	}
+    	return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by two dates. Allows changing seed.")
+    public static final Date random_date(Date from, Date to, Long randomSeed) {
+    	return random_date(from.getTime(), to.getTime(), randomSeed);
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
+    public static final Date random_date(Long from, Long to, Long randomSeed) {
+    	if (to > from) {
+    		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
+    	}
+    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	generator.setSeed(randomSeed);
+    	return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
+    public static final Date random_date(String from, String to, String format) {
+    	SimpleDateFormat sdf = new SimpleDateFormat(format);
+    	return random_date(from, to, sdf);
+    }
+    
+    @TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
+    public static final Date random_date(String from, String to, String format, String locale) {
+    	SimpleDateFormat sdf = new SimpleDateFormat(format, parseLocale(locale));
+    	return random_date(from, to, sdf);
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format. Allows changing seed.")
+    public static final Date random_date(String from, String to, String format, Long randomSeed) {
+    	SimpleDateFormat sdf = new SimpleDateFormat(format);
+    	return random_date(from, to, randomSeed, sdf);
+    }
+    
+    @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format and locale. Allows changing seed.")
+    public static final Date random_date(String from, String to, String format, String locale, Long randomSeed) {
+    	SimpleDateFormat sdf = new SimpleDateFormat(format, parseLocale(locale));
+    	return random_date(from, to, randomSeed, sdf);
+    }
+    
+    private static final Locale parseLocale(String locale) {
+    	String[] aLocale = locale.split("\\.");// '.' standard delimiter
+		return aLocale.length < 2 ? new Locale(aLocale[0]) : new Locale(aLocale[0], aLocale[1]);
+    }
+    
+    private static final Date random_date(String from, String to, SimpleDateFormat formatter) {
+    	try {
+			long fromTime = formatter.parse(from).getTime();
+			long toTime = formatter.parse(to).getTime();
+			return random_date(fromTime, toTime);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("random_date - " + e.getMessage());
+		}
+    }
+    
+    private static final Date random_date(String from, String to, Long randomSeed, SimpleDateFormat formatter) {
+    	try {
+			long fromTime = formatter.parse(from).getTime();
+			long toTime = formatter.parse(to).getTime();
+			return random_date(fromTime, toTime, randomSeed);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("random_date - " + e.getMessage());
+		}
+    }
+    
+    //Random date
+    class RandomDateFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			Long randomSeed = null;
+			String locale = null;
+			String format;
+			if (actualParams.length > 3) {
+				if (actualParams.length > 4) {
+					randomSeed = stack.popLong();
+				}
+				if (actualParams.length > 3) {
+					if (actualParams[3].isLong()) {
+						randomSeed = stack.popLong();
+					} else {
+						locale = stack.popString();
+					}
+				}
+				format = stack.popString();
+				String to = stack.popString();
+				String from = stack.popString();
+				if (randomSeed == null) {
+					random_date(from, to, format, locale);
+				} else {
+					random_date(from, to, format, locale, randomSeed);
+				}
+				
+			} else if (actualParams.length > 2){
+				if (actualParams[2].isLong()) {
+					randomSeed = stack.popLong();
+					if (actualParams[1].isDate()) {
+						Date from = stack.popDate();
+						Date to = stack.popDate();
+						stack.push(random_date(from, to, randomSeed));
+					} else {
+						Long from = stack.popLong();
+						Long to = stack.popLong();
+						stack.push(random_date(from, to, randomSeed));
+					}
+				} else {
+					format = stack.popString();
+					String to = stack.popString();
+					String from = stack.popString();
+					stack.push(random_date(from, to, format));
+				}
+			} else {
+				if (actualParams[1].isDate()) {
+					Date to = stack.popDate();
+					Date from = stack.popDate();
+					stack.push(random_date(from, to));
+				} else {
+					Long from = stack.popLong();
+					Long to = stack.popLong();
+					stack.push(random_date(from, to));
+				}
+			}
+		}
+    }
 }
