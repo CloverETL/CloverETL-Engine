@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.ByteArray;
 import org.jetel.metadata.DataRecordMetadata;
 
 public abstract class TLType {
@@ -737,6 +736,11 @@ public abstract class TLType {
 	}
 	
 	public static TLType fromJavaType(Class<?> type) {
+	
+		if (byte.class.equals(type) || Byte.class.equals(type)) {
+			return TLTypePrimitive.BYTEARRAY;
+		}
+		
 		if (int.class.equals(type) || Integer.class.equals(type)) {
 			return TLTypePrimitive.INTEGER;
 		}
@@ -780,10 +784,6 @@ public abstract class TLType {
 		
 		if (DataRecord.class.equals(type)) {
 			return TLType.RECORD;
-		}
-		
-		if (ByteArray.class.equals(type)) {
-				return TLType.BYTEARRAY;
 		}
 		
 		throw new IllegalArgumentException("Type is not representable in CTL: " + type.getName() );
