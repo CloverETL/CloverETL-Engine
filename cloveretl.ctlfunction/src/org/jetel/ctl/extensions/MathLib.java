@@ -63,6 +63,7 @@ public class MathLib extends TLFunctionLibrary {
 			"bit_xor".equals(functionName) ? new BitXorFunction() :
 			"bit_lshift".equals(functionName) ? new BitLShiftFunction() :
 			"bit_rshift".equals(functionName) ? new BitRShiftFunction() :
+			"bit_negate".equals(functionName) ? new BitNegateFunction() :
 			/*TODO: bit_is_set bit_set*/
 			"random_gaussian".equals(functionName) ? new RandomGaussianFunction() :
 		    "random_boolean".equals(functionName) ? new RandomBooleanFunction() : 
@@ -445,6 +446,34 @@ public class MathLib extends TLFunctionLibrary {
 			} 
 		} 
     }
+    
+        
+    @TLFunctionAnnotation("Inverts all bits in argument")
+    public static final Long bit_negate(Long i) {
+    	return ~i;
+    }
+    
+    @TLFunctionAnnotation("Inverts all bits in argument")
+    public static final Integer bit_negate(Integer i) {
+    	return ~i;
+    }
+    
+    class BitNegateFunction implements TLFunctionPrototype {
+    	
+    	public void execute(Stack stack, TLType[] actualParams) {
+    		if (actualParams[0].isInteger()) {
+    			stack.push(bit_negate(stack.popInt()));
+    			return;
+    		}
+    		if (actualParams[0].isLong()) {
+    			stack.push(bit_negate(stack.popLong()));
+    			return;
+    		}
+    	}
+    	
+    }
+    
+//    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
     
     @TLFunctionAnnotation("Random Gaussian number.")
     public static final Double random_gaussian() {
