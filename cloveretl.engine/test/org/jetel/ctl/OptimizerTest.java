@@ -3932,6 +3932,12 @@ public class OptimizerTest extends CompilerTestCase {
 		check("resultLong3", 4l);
 		check("resultLong4", 2l);
 	}
+	
+	public void test_bitwise_negate() {
+		doCompile("test_bitwise_negate");
+		check("resultInt", -59081717);
+		check("resultLong", -3321654987654105969L);
+	}
 
 
 	public void test_list_concatenate() {
