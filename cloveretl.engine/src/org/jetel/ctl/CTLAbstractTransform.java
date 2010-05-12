@@ -27,7 +27,7 @@ import org.jetel.graph.TransformationGraph;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 12th May 2010
  * @created 5th May 2010
 */
 public abstract class CTLAbstractTransform {
@@ -48,7 +48,7 @@ public abstract class CTLAbstractTransform {
      *
      * @param graph a <code>TransformationGraph</code> graph to be set
      */
-	public void setGraph(TransformationGraph graph) {
+	public final void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
 
@@ -56,7 +56,7 @@ public abstract class CTLAbstractTransform {
 	 * @return a <code>TransformationGraph</code> associated with this CTL transform, or <code>null</code>
 	 * if no graph is associated
 	 */
-	public TransformationGraph getGraph() {
+	public final TransformationGraph getGraph() {
 		return graph;
 	}
 
