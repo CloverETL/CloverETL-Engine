@@ -158,7 +158,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				wb.removeSheet(sheetIndex);
 				sheet = wb.createSheet(tmpName, wb.getNumberOfSheets());
 			}
-		}else if (sheetNumber > -1){
+		}else if (open && sheetNumber > -1){
 			try {
 				sheet = wb.getSheet(sheetNumber);
 				tmpName = sheet.getName();

@@ -79,6 +79,9 @@ public class XLSXDataFormatter extends XLSFormatter {
 	/** the output stream used to output the workbook */
 	private OutputStream outputStream;
 
+	// if output file exists -> true
+	private boolean isOutputFile;
+	
 	/**
 	 * Creates a XLSX data formatter.
 	 *
@@ -107,11 +110,12 @@ public class XLSXDataFormatter extends XLSFormatter {
         		// input stream
         		try {
             		InputStream inputStream = FileUtils.getInputStream(url, fName);
-        			workbook = (inputStream.available() > 0) ? new XSSFWorkbook(inputStream) : new XSSFWorkbook();
+        			workbook = (isOutputFile = (inputStream.available() > 0)) ? new XSSFWorkbook(inputStream) : new XSSFWorkbook();
     				inputStream.close();
         		} catch (Throwable t) {
         			//NOTHING - create new xlsx
     				workbook = new XSSFWorkbook();
+    				isOutputFile = false;
         		}
 				
 				// output stream
@@ -120,6 +124,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 			} else if (dataTarget instanceof WritableByteChannel) {
 				workbook = new XSSFWorkbook();
 				outputStream = Channels.newOutputStream((WritableByteChannel) dataTarget);
+				isOutputFile = false;
 			} else {
 				throw new IllegalArgumentException(dataTarget.getClass() + " not supported as a data target");
 			}
@@ -172,7 +177,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 					rowIterator.remove();
 				}
 			}
-		} else if (sheetNumber > -1) {
+		} else if (isOutputFile && sheetNumber > -1) {
 			if (sheetNumber >= workbook.getNumberOfSheets()) {
 				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
 			}
