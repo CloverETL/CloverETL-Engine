@@ -2254,9 +2254,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return	return value of executed function
 	 * @throws TransformLangExecutorRuntimeException	if function with such a name does not exist
 	 */
-	public Object executeFunction(String functionName, Object[] arguments, DataRecord[] inputRecords, DataRecord[] outputRecords) 
+	public Object executeFunction(String functionName, Object[] arguments, TLType[] dataTypes, DataRecord[] inputRecords, DataRecord[] outputRecords) 
 	throws TransformLangExecutorRuntimeException {
-		CLVFFunctionDeclaration d = getFunction(functionName);
+		CLVFFunctionDeclaration d = getFunction(functionName, dataTypes);
 
 		if (d == null ) {
 			throw new TransformLangExecutorRuntimeException("Function " + functionName + ": declaration not found");
@@ -2301,8 +2301,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param arguments
 	 * @return
 	 */
-	public Object executeFunction(String functionName, Object[] arguments) {
-		return executeFunction(functionName,arguments,null,null);
+	public Object executeFunction(String functionName, Object[] arguments, TLType[] argumentTypes) {
+		return executeFunction(functionName, arguments, argumentTypes, null, null);
 	}
 	
 	/**
@@ -2438,12 +2438,35 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return new Object[]{keyFields,keyRecordMetadata};
 	}
 
-	public CLVFFunctionDeclaration getFunction(String functionName) {
+	public CLVFFunctionDeclaration getFunction(String functionName, TLType... params) {
 		final List<CLVFFunctionDeclaration> l = parser.getFunctions().get(functionName);
 		if (l == null || l.isEmpty()) {
 			return null;
 		}
-		
-		return l.get(0);
+		for (CLVFFunctionDeclaration function : l) {
+			TLType[] formalParams = function.getFormalParameters();
+			if (equalParameters(formalParams, params)) {
+				return function;
+			}
+		}
+		return null;
+	}
+	
+	private boolean equalParameters(TLType[] params1, TLType[] params2) {
+		if (params1 == params2)
+			return true;
+		if (params1 == null || params2 == null)
+			return false;
+		int length = params1.length;
+		if (params2.length != length)
+			return false;
+
+		for (int i = 0; i < length; i++) {
+			TLType o1 = params1[i];
+			TLType o2 = params2[i];
+			if (!(o1 == null ? o2 == null : o1.getClass().equals(o2.getClass())))
+				return false;
+		}
+		return true;
 	}
 }
