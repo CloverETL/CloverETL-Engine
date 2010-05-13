@@ -13,8 +13,7 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
-import org.jetel.ctl.ASTnode.CLVFDictGetStrNode;
-import org.jetel.ctl.ASTnode.CLVFDictPutStrNode;
+import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFEvalNode;
@@ -45,6 +44,7 @@ import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
 import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
 import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.ctl.ASTnode.CLVFReadDictNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -55,6 +55,7 @@ import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
+import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 
@@ -269,16 +270,6 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 	
-	public Object visit(CLVFDictGetStrNode node, Object data) {
-		
-		return visitNode(node, data);
-	}
-	
-	public Object visit(CLVFDictPutStrNode node, Object data) {
-		
-		return visitNode(node, data);
-	}
-
 	public Object visit(CLVFSequenceNode node, Object data) {
 
 		return visitNode(node, data);
@@ -341,9 +332,21 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node,data);
 	}
 	
+	public Object visit(CLVFReadDictNode node, Object data) {
+		return visitNode(node,data);
+	}
+
+	public Object visit(CLVFWriteDictNode node, Object data) {
+		return visitNode(node,data);
+	}
+
+	public Object visit(CLVFDeleteDictNode node, Object data) {
+		return visitNode(node,data);
+	}
+	
+	
 	/* ************************ Synthetic nodes ********************/
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
-
 }

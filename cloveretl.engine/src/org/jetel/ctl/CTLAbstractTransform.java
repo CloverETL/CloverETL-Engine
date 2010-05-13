@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.StringDictionaryType;
 
 /**
  * Base class of all CTL transform classes.
@@ -65,6 +66,21 @@ public abstract class CTLAbstractTransform {
 	 */
 	@CTLEntryPoint(name = "globalScopeInit", required = true)
 	protected abstract void globalScopeInit() throws ComponentNotReadyException;
+	
+	
+	/**
+	 * Inserts value into Dictionary under specified key. if put fails transforms checked exception into runtime one.
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	protected final void writeDict(String key, String value) {
+		try {
+			graph.getDictionary().setValue(key, StringDictionaryType.TYPE_ID, value);
+		} catch (ComponentNotReadyException e) {
+			throw new TransformLangExecutorRuntimeException(e.getMessage());
+		}
+	}
 
 	// TODO: All common methods should be moved here when there is a common transformation interface.
 

@@ -455,9 +455,11 @@ TOKEN:
 |
  < RAISE_ERROR: "raise_error" >
 |
- < DICT_PUT_STR: "dict_put_str" >
+ < READ_DICT: "read_dict" >
 |
- < DICT_GET_STR: "dict_get_str" >
+ < WRITE_DICT: "write_dict" >
+|
+ < DELETE_DICT: "delete_dict" >
  
 }
 
@@ -2442,43 +2444,62 @@ void BuiltInFunctionCall()      :
                                                  }
                                                }
 /*@egen*/                    )
-	 | ( t = <DICT_GET_STR> Arguments(null)/*@bgen(jjtree) #DictGetStrNode( 1) */
-                                                {
-                                                  CLVFDictGetStrNode jjtn009 = new CLVFDictGetStrNode(this, JJTDICTGETSTRNODE);
-                                                  boolean jjtc009 = true;
-                                                  jjtree.openNodeScope(jjtn009);
-                                                }
-                                                try {
+	 | ( t = <READ_DICT> Arguments(null)/*@bgen(jjtree) #ReadDictNode( 1) */
+                                             {
+                                               CLVFReadDictNode jjtn009 = new CLVFReadDictNode(this, JJTREADDICTNODE);
+                                               boolean jjtc009 = true;
+                                               jjtree.openNodeScope(jjtn009);
+                                             }
+                                             try {
 /*@egen*//*@bgen(jjtree)*/
-                                                {
-                                                  jjtree.closeNodeScope(jjtn009,  1);
-                                                  jjtc009 = false;
-                                                }
+                                             {
+                                               jjtree.closeNodeScope(jjtn009,  1);
+                                               jjtc009 = false;
+                                             }
 /*@egen*/ { jjtn009.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
-                                                } finally {
-                                                  if (jjtc009) {
-                                                    jjtree.closeNodeScope(jjtn009,  1);
-                                                  }
-                                                }
-/*@egen*/                    )
-	 | ( t = <DICT_PUT_STR> Arguments(null)/*@bgen(jjtree) #DictPutStrNode( 1) */
-                                                {
-                                                  CLVFDictPutStrNode jjtn010 = new CLVFDictPutStrNode(this, JJTDICTPUTSTRNODE);
-                                                  boolean jjtc010 = true;
-                                                  jjtree.openNodeScope(jjtn010);
-                                                }
-                                                try {
+                                             } finally {
+                                               if (jjtc009) {
+                                                 jjtree.closeNodeScope(jjtn009,  1);
+                                               }
+                                             }
+/*@egen*/                  )
+	 | ( t = <WRITE_DICT> Arguments(null)/*@bgen(jjtree) #WriteDictNode( 1) */
+                                              {
+                                                CLVFWriteDictNode jjtn010 = new CLVFWriteDictNode(this, JJTWRITEDICTNODE);
+                                                boolean jjtc010 = true;
+                                                jjtree.openNodeScope(jjtn010);
+                                              }
+                                              try {
 /*@egen*//*@bgen(jjtree)*/
-                                                {
-                                                  jjtree.closeNodeScope(jjtn010,  1);
-                                                  jjtc010 = false;
-                                                }
+                                              {
+                                                jjtree.closeNodeScope(jjtn010,  1);
+                                                jjtc010 = false;
+                                              }
 /*@egen*/ { jjtn010.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
-                                                } finally {
-                                                  if (jjtc010) {
-                                                    jjtree.closeNodeScope(jjtn010,  1);
-                                                  }
+                                              } finally {
+                                                if (jjtc010) {
+                                                  jjtree.closeNodeScope(jjtn010,  1);
                                                 }
+                                              }
+/*@egen*/                   )
+	 | ( t = <DELETE_DICT> Arguments(null)/*@bgen(jjtree) #DeleteDictNode( 1) */
+                                               {
+                                                 CLVFDeleteDictNode jjtn011 = new CLVFDeleteDictNode(this, JJTDELETEDICTNODE);
+                                                 boolean jjtc011 = true;
+                                                 jjtree.openNodeScope(jjtn011);
+                                               }
+                                               try {
+/*@egen*//*@bgen(jjtree)*/
+                                               {
+                                                 jjtree.closeNodeScope(jjtn011,  1);
+                                                 jjtc011 = false;
+                                               }
+/*@egen*/ { jjtn011.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
+                                               } finally {
+                                                 if (jjtc011) {
+                                                   jjtree.closeNodeScope(jjtn011,  1);
+                                                 }
+                                               }
 /*@egen*/                    )
 	)
 	

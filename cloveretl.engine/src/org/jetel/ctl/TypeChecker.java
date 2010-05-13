@@ -21,6 +21,7 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
+import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFEvalNode;
@@ -51,6 +52,7 @@ import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
 import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
 import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.ctl.ASTnode.CLVFReadDictNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -61,6 +63,7 @@ import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
+import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
@@ -1206,6 +1209,83 @@ public class TypeChecker extends NavigatingVisitor {
 
 	}
 
+	@Override
+	public Object visit(CLVFDeleteDictNode node, Object data) {
+		super.visit(node, data);
+
+		if (!checkChildren(node)) {
+			return data;
+		}
+
+		CLVFArguments args = (CLVFArguments) node.jjtGetChild(0);
+		TLType[] formal = new TLType[] { TLTypePrimitive.STRING };
+		TLType[] actual = new TLType[args.jjtGetNumChildren()];
+		for (int i = 0; i < actual.length; i++) {
+			actual[i] = ((SimpleNode) args.jjtGetChild(i)).getType();
+		}
+		if (actual.length == 1) {
+			if (formal[0].canAssign(actual[0])) {
+				node.setType(TLType.VOID);
+				return data;
+			}
+		}
+
+		error(node, functionErrorMessage("delete_dict", formal, actual));
+		node.setType(TLType.ERROR);
+		return data;
+	}
+	
+	@Override
+	public Object visit(CLVFReadDictNode node, Object data) {
+		super.visit(node, data);
+
+		if (!checkChildren(node)) {
+			return data;
+		}
+
+		CLVFArguments args = (CLVFArguments) node.jjtGetChild(0);
+		TLType[] formal = new TLType[] { TLTypePrimitive.STRING };
+		TLType[] actual = new TLType[args.jjtGetNumChildren()];
+		for (int i = 0; i < actual.length; i++) {
+			actual[i] = ((SimpleNode) args.jjtGetChild(i)).getType();
+		}
+		if (actual.length == 1) {
+			if (formal[0].canAssign(actual[0])) {
+				node.setType(TLType.VOID);
+				return data;
+			}
+		}
+
+		error(node, functionErrorMessage("read_dict", formal, actual));
+		node.setType(TLType.ERROR);
+		return data;
+	}
+	
+	@Override
+	public Object visit(CLVFWriteDictNode node, Object data) {
+		super.visit(node, data);
+
+		if (!checkChildren(node)) {
+			return data;
+		}
+
+		CLVFArguments args = (CLVFArguments) node.jjtGetChild(0);
+		TLType[] formal = new TLType[] { TLTypePrimitive.STRING, TLTypePrimitive.STRING };
+		TLType[] actual = new TLType[args.jjtGetNumChildren()];
+		for (int i = 0; i < actual.length; i++) {
+			actual[i] = ((SimpleNode) args.jjtGetChild(i)).getType();
+		}
+		if (actual.length == 2) {
+			if (formal[0].canAssign(actual[0]) && formal[1].canAssign(actual[1])) {
+				node.setType(TLType.VOID);
+				return data;
+			}
+		}
+
+		error(node, functionErrorMessage("write_dict", formal, actual));
+		node.setType(TLType.ERROR);
+		return data;
+	}
 	
 	@Override
 	public Object visit(CLVFPrintErrNode node, Object data) {
