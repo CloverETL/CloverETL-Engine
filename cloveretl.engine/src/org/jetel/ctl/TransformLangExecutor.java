@@ -1073,6 +1073,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	public Object visit(CLVFWriteDictNode node, Object data) {
 		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
+		node.jjtGetChild(0).jjtGetChild(1).jjtAccept(this, data);
 		
 		final String value = stack.popString();
 		final String key = stack.popString();
