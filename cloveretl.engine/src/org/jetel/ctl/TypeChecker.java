@@ -1251,7 +1251,7 @@ public class TypeChecker extends NavigatingVisitor {
 		}
 		if (actual.length == 1) {
 			if (formal[0].canAssign(actual[0])) {
-				node.setType(TLType.VOID);
+				node.setType(TLTypePrimitive.STRING);
 				return data;
 			}
 		}

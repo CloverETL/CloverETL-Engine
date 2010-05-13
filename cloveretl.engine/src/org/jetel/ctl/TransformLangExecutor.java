@@ -1066,11 +1066,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	public Object visit(CLVFReadDictNode node, Object data) {
+		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
 		stack.push(graph.getDictionary().getValue(stack.popString()));
 		return data;
 	}
 
 	public Object visit(CLVFWriteDictNode node, Object data) {
+		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
+		
 		final String value = stack.popString();
 		final String key = stack.popString();
 		try {
@@ -1084,6 +1087,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 
 	public Object visit(CLVFDeleteDictNode node, Object data) {
+		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
+		
 		final String key = stack.popString();
 		try {
 			graph.getDictionary().setValue(key, null);
