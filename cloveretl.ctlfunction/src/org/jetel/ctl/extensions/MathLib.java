@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
+import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.util.DataGenerator;
 
 
@@ -64,7 +65,8 @@ public class MathLib extends TLFunctionLibrary {
 			"bit_lshift".equals(functionName) ? new BitLShiftFunction() :
 			"bit_rshift".equals(functionName) ? new BitRShiftFunction() :
 			"bit_negate".equals(functionName) ? new BitNegateFunction() :
-			/*TODO: bit_is_set bit_set*/
+			"bit_set".equals(functionName) ? new BitSetFunction() :
+			"bit_is_set".equals(functionName) ? new BitIsSetFunction() :
 			"random_gaussian".equals(functionName) ? new RandomGaussianFunction() :
 		    "random_boolean".equals(functionName) ? new RandomBooleanFunction() : 
 		    "random_int".equals(functionName) ? new RandomIntFunction() :
@@ -464,14 +466,85 @@ public class MathLib extends TLFunctionLibrary {
     		if (actualParams[0].isInteger()) {
     			stack.push(bit_negate(stack.popInt()));
     			return;
-    		}
-    		if (actualParams[0].isLong()) {
+    		} else if (actualParams[0].isLong()) {
     			stack.push(bit_negate(stack.popLong()));
     			return;
     		}
     	}
     	
     }
+
+    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+	public static final Boolean bit_is_set(Integer input, Integer bitPosition) {
+    	return ((input & ( 1 << bitPosition)) != 0);
+	}
+    
+    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+	public static final Boolean bit_is_set(Long input, Integer bitPosition) {
+    	return ((input & ( 1l << bitPosition)) != 0);
+	}
+
+    
+    class BitIsSetFunction implements TLFunctionPrototype {
+
+		public void execute(Stack stack, TLType[] actualParams) {
+			if (actualParams[0].isInteger()) {
+				int bitPosition = stack.popInt();
+				stack.push(bit_is_set(stack.popInt(), bitPosition));
+			} else if (actualParams[0].isLong()) {
+				int bitPosition = stack.popInt();
+				stack.push(bit_is_set(stack.popLong(), bitPosition));
+			}
+			
+		}
+
+		/**
+		 * @param popInt
+		 * @param popInt2
+		 * @return
+		 */
+
+    }
+    
+    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+	public static final Long bit_set(Long input, Integer bitPosition, boolean value) {
+    	Long result;
+    	if (value)
+    		result = input | (1l << bitPosition); 
+		else
+			result = input & (~(1l << bitPosition));
+    	
+    	return result;
+    }    	
+    
+    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+	public static final Integer bit_set(Integer input, Integer bitPosition, boolean value) {
+    	Integer result;
+    	if (value)
+    		result = input | (1 << bitPosition); 
+		else
+			result = input & (~(1 << bitPosition));
+    	
+    	return result;
+	}
+
+
+    
+    class BitSetFunction implements TLFunctionPrototype {
+
+    	public void execute(Stack stack, TLType[] actualParams) {
+    		boolean value = stack.popBoolean();
+    		int bitPosition = stack.popInt();
+			if (actualParams[0].isInteger()) {
+				stack.push(bit_set(stack.popInt(), bitPosition, value));
+			} else if (actualParams[0].isLong()) {
+				stack.push(bit_set(stack.popLong(), bitPosition, value));
+			}
+			
+		}
+    	
+    }
+
     
 //    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
     

@@ -3938,7 +3938,18 @@ public class OptimizerTest extends CompilerTestCase {
 		check("resultInt", -59081717);
 		check("resultLong", -3321654987654105969L);
 	}
-
+	
+	public void test_set_bit() {
+		doCompile("test_set_bit");
+		check("resultInt1", 0x2FF);
+		check("resultInt2", 0xFB);
+		check("resultLong1", 0x4000000000000l);
+		check("resultLong2", 0xFFDFFFFFFFFFFFFl);
+		check("resultBool1", true);
+		check("resultBool2", false);
+		check("resultBool3", true);
+		check("resultBool4", false);
+	}
 
 	public void test_list_concatenate() {
 		// test case for issue 
