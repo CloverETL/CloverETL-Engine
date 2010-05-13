@@ -25,6 +25,8 @@ import org.apache.commons.logging.Log;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -103,7 +105,7 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 		
 		this.init = executor.getFunction(INIT_FUNCTION_NAME);
 		this.count = executor.getFunction(COUNT_FUNCTION_NAME);
-		this.transform = executor.getFunction(TRANSFORM_FUNCTION_NAME);
+		this.transform = executor.getFunction(TRANSFORM_FUNCTION_NAME, TLTypePrimitive.INTEGER);
 		this.clean = executor.getFunction(CLEAN_FUNCTION_NAME);
 		this.finished = executor.getFunction(FINISHED_FUNCTION_NAME);
 		

@@ -23,6 +23,8 @@ import java.util.Properties;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -113,11 +115,11 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
 		executor.init();
 
 		// initialize required CTL functions
-		functionInitGroup = executor.getFunction(RecordRollupTL.FUNCTION_INIT_GROUP_NAME);
-		functionUpdateGroup = executor.getFunction(RecordRollupTL.FUNCTION_UPDATE_GROUP_NAME);
-		functionFinishGroup = executor.getFunction(RecordRollupTL.FUNCTION_FINISH_GROUP_NAME);
-		functionUpdateTransform = executor.getFunction(RecordRollupTL.FUNCTION_UPDATE_TRANSFORM_NAME);
-		functionTransform = executor.getFunction(RecordRollupTL.FUNCTION_TRANSFORM_NAME);
+		functionInitGroup = executor.getFunction(RecordRollupTL.FUNCTION_INIT_GROUP_NAME, TLType.RECORD);
+		functionUpdateGroup = executor.getFunction(RecordRollupTL.FUNCTION_UPDATE_GROUP_NAME, TLType.RECORD);
+		functionFinishGroup = executor.getFunction(RecordRollupTL.FUNCTION_FINISH_GROUP_NAME, TLType.RECORD);
+		functionUpdateTransform = executor.getFunction(RecordRollupTL.FUNCTION_UPDATE_TRANSFORM_NAME, TLTypePrimitive.INTEGER, TLType.RECORD);
+		functionTransform = executor.getFunction(RecordRollupTL.FUNCTION_TRANSFORM_NAME, TLTypePrimitive.INTEGER, TLType.RECORD);
 
 		// check if all required functions are present, otherwise we cannot continue
 		checkRequiredFunctions();

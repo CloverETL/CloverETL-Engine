@@ -27,6 +27,8 @@ import org.apache.commons.logging.Log;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -92,7 +94,7 @@ public class CTLRecordPartitionAdapter implements PartitionFunction {
 		executor.keepGlobalScope();
 		executor.init();
 		
-		this.init = executor.getFunction(INIT_FUNCTION_NAME);
+		this.init = executor.getFunction(INIT_FUNCTION_NAME, TLTypePrimitive.INTEGER);
 		this.getOuputPort= executor.getFunction(GETOUTPUTPORT_FUNCTION_NAME);
 		
 		if (getOuputPort == null ) {
