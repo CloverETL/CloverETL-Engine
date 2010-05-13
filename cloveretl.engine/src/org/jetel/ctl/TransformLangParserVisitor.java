@@ -13,8 +13,7 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
-import org.jetel.ctl.ASTnode.CLVFDictGetStrNode;
-import org.jetel.ctl.ASTnode.CLVFDictPutStrNode;
+import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
@@ -44,6 +43,7 @@ import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
 import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
 import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.ctl.ASTnode.CLVFReadDictNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -54,6 +54,7 @@ import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
+import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 
 public interface TransformLangParserVisitor extends SyntheticNodeVisitor
@@ -90,8 +91,9 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFPrintLogNode node, Object data);
   public Object visit(CLVFPrintStackNode node, Object data);
   public Object visit(CLVFRaiseErrorNode node, Object data);
-  public Object visit(CLVFDictGetStrNode node, Object data);
-  public Object visit(CLVFDictPutStrNode node, Object data);
+  public Object visit(CLVFReadDictNode node, Object data);
+  public Object visit(CLVFWriteDictNode node, Object data);
+  public Object visit(CLVFDeleteDictNode node, Object data);
   public Object visit(CLVFFieldAccessExpression node, Object data);
   public Object visit(CLVFIdentifier node, Object data);
   public Object visit(CLVFArguments node, Object data);
@@ -113,4 +115,4 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFSequenceNode node, Object data);
   public Object visit(CLVFLookupNode node, Object data);
 }
-/* JavaCC - OriginalChecksum=3a1b68721ac7f6190d1cdecbd30f9a38 (do not edit this line) */
+/* JavaCC - OriginalChecksum=ceb53fd470f00ef6b3c0bfc074239cc7 (do not edit this line) */

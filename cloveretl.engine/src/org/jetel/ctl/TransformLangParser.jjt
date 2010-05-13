@@ -451,9 +451,11 @@ TOKEN:
 |
  < RAISE_ERROR: "raise_error" >
 |
- < DICT_PUT_STR: "dict_put_str" >
+ < READ_DICT: "read_dict" >
 |
- < DICT_GET_STR: "dict_get_str" >
+ < WRITE_DICT: "write_dict" >
+|
+ < DELETE_DICT: "delete_dict" >
  
 }
 
@@ -1339,8 +1341,9 @@ void BuiltInFunctionCall() #void:
 	 | ( t = <PRINT_LOG> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintLogNode(1) )
 	 | ( t = <PRINT_STACK> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintStackNode(1) )
 	 | ( t = <RAISE_ERROR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #RaiseErrorNode(1) )
-	 | ( t = <DICT_GET_STR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DictGetStrNode(1) )
-	 | ( t = <DICT_PUT_STR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DictPutStrNode(1) )
+	 | ( t = <READ_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #ReadDictNode(1) )
+	 | ( t = <WRITE_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #WriteDictNode(1) )
+	 | ( t = <DELETE_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DeleteDictNode(1) )
 	)
 	
 }

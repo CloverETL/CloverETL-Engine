@@ -45,8 +45,7 @@ import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
-import org.jetel.ctl.ASTnode.CLVFDictGetStrNode;
-import org.jetel.ctl.ASTnode.CLVFDictPutStrNode;
+import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFEvalNode;
@@ -77,6 +76,7 @@ import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
 import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
 import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.ctl.ASTnode.CLVFReadDictNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -87,6 +87,7 @@ import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
+import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -1063,6 +1064,37 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		return data;
 	}
+	
+	public Object visit(CLVFReadDictNode node, Object data) {
+		stack.push(graph.getDictionary().getValue(stack.popString()));
+		return data;
+	}
+
+	public Object visit(CLVFWriteDictNode node, Object data) {
+		final String value = stack.popString();
+		final String key = stack.popString();
+		try {
+			graph.getDictionary().setValue(key, value);
+			//stack.push(Boolean.TRUE);
+		} catch (ComponentNotReadyException e) {
+			//stack.push(Boolean.FALSE);
+			throw new TransformLangExecutorRuntimeException(node, e.getMessage());
+		}
+		return data;
+	}
+
+	public Object visit(CLVFDeleteDictNode node, Object data) {
+		final String key = stack.popString();
+		try {
+			graph.getDictionary().setValue(key, null);
+			//stack.push(Boolean.TRUE); if somebody changes his mind and 
+			//TODO 
+		} catch (ComponentNotReadyException e) {
+			//stack.push(Boolean.FALSE);
+			throw new TransformLangExecutorRuntimeException(node, e.getMessage()); 
+		}
+		return data;
+	}
 
 	public Object visit(CLVFPrintErrNode node, Object data) {
 		final Node args = node.jjtGetChild(0);
@@ -1089,15 +1121,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
-	
-	public Object visit(CLVFDictGetStrNode node, Object data) {
-		return null;
-	}
-	
-	public Object visit(CLVFDictPutStrNode node, Object data) {
-		return null;	
-	}
-
 
 	public Object visit(CLVFForStatement node, Object data) {
 		stack.enteredBlock(node.getScope());
@@ -2417,6 +2440,4 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		return l.get(0);
 	}
-
-	
 }
