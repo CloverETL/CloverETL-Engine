@@ -267,13 +267,13 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Emptyes the passed List and returns null.")
-    public static final List<Object> trunc(List<Object> value) {
+    public static final <E> List<E> trunc(List<E> value) {
     	value.clear();
     	return null;
     }
     
     @TLFunctionAnnotation("Emptyes the passed Map and returns null.")
-    public static final Map<Object, Object> trunc(Map<Object, Object> value) {
+    public static final <E, F> Map<E, F> trunc(Map<E, F> value) {
     	value.clear();
     	return null;
     }
