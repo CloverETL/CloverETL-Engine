@@ -836,6 +836,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTBREAKSTATEMENT:
 			case TransformLangParserTreeConstants.JJTCASESTATEMENT:
 			case TransformLangParserTreeConstants.JJTCONTINUESTATEMENT:
+			case TransformLangParserTreeConstants.JJTDELETEDICTNODE:
 			case TransformLangParserTreeConstants.JJTDOSTATEMENT:
 			case TransformLangParserTreeConstants.JJTFOREACHSTATEMENT:
 			case TransformLangParserTreeConstants.JJTFORSTATEMENT:
@@ -847,12 +848,14 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTPRINTLOGNODE:
 			case TransformLangParserTreeConstants.JJTPRINTSTACKNODE:
 			case TransformLangParserTreeConstants.JJTRAISEERRORNODE:
+			case TransformLangParserTreeConstants.JJTREADDICTNODE:
 			case TransformLangParserTreeConstants.JJTRETURNSTATEMENT:
 			case TransformLangParserTreeConstants.JJTSEQUENCENODE:
 			case TransformLangParserTreeConstants.JJTSWITCHSTATEMENT:
 			case TransformLangParserTreeConstants.JJTUNARYEXPRESSION:
 			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
 			case TransformLangParserTreeConstants.JJTWHILESTATEMENT:
+			case TransformLangParserTreeConstants.JJTWRITEDICTNODE:
 				// all expression statements that can occur within block
 				break;
 			case TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION:
