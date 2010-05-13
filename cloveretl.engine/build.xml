@@ -777,6 +777,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
 					<include name="**/*Test.java"/>
+					<exclude name="${test.exclude}"/>
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
