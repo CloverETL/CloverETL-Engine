@@ -750,6 +750,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			
 	<target name="runtests-engine" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests">
 		<mkdir dir="${dir.testsresult}"/>
+		<echo message="Running all tests from ${dir.src.test} excludes ${test.exclude}"/>
 		<junit 
 				haltonerror="false" 
 				haltonfailure="false" 

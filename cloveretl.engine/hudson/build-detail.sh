@@ -11,7 +11,7 @@ cd cloveretl.engine
 	-Dcte.environment.config=2.8_detail \
 	-Dcte.logpath=/data/cte-logs \
 	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER
-	-Dtest.exlude=org/jetel/graph/ResetTest.java
+	-Dtest.exclude=org/jetel/graph/ResetTest.java
 	
 if  [ "$(hostname)" != "klara" ] ; then
 	rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs
