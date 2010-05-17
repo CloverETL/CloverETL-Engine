@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.normalize.CTLRecordNormalize;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
@@ -43,7 +42,6 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.metadata.DataRecordMetadata;
@@ -239,7 +237,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	    	if (ret instanceof org.jetel.ctl.TransformLangExecutor) {
 	    		// setup interpreted runtime
 	    		filter = new CTLRecordFilterAdapter((org.jetel.ctl.TransformLangExecutor)ret, logger);
-	    	} else if (ret instanceof CTLRecordNormalize){
+	    	} else if (ret instanceof CTLRecordFilter){
 	    		filter = (CTLRecordFilter)ret;
 	    	} else {
 	    		// this should never happen as compiler always generates correct interface
