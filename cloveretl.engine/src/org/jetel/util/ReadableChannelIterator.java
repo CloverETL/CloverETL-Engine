@@ -228,7 +228,7 @@ public class ReadableChannelIterator {
 			if (currentFileName.equals(FileUtils.STD_CONSOLE)) return currentFileName;
 
 			// remote file -> do nothing
-			if (FileURLParser.isServerURL(fileName)) return currentFileName;
+			if (FileURLParser.isServerURL(fileName) || FileURLParser.isArchiveURL(fileName)) return currentFileName;
 			
 			// unify only local files
 			URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
