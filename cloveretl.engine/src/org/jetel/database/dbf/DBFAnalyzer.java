@@ -37,6 +37,7 @@ import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -66,14 +67,14 @@ public class DBFAnalyzer {
 	private int dbfNumFields;
 	private int dbfRecSize;
 	private DBFFieldMetadata[] dbfFields;
-	private int dbfType;
+	private byte dbfType;
 	private int dbfDataOffset;
 	private byte dbfCodePage;
 	private Charset charset;
 	private String dbfTableName;
     
 	public DBFAnalyzer(){
-		
+		reset();
 	}
 
 	void analyze(String dbfFileName) throws IOException,DBFErrorException{
@@ -82,6 +83,17 @@ public class DBFAnalyzer {
 		dbfFile.close();
 	}
 
+	private void reset(){
+		dbfNumRows = -1;
+		dbfNumFields = -1;
+		dbfRecSize = -1;
+		dbfFields = new DBFFieldMetadata[0];
+		dbfType = 0;
+		dbfDataOffset = -1;
+		dbfCodePage = 0;
+		dbfTableName = null;
+	}
+	
 	public int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
 
 		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE_BASIC);
@@ -111,10 +123,15 @@ public class DBFAnalyzer {
 		dbfRecSize=buffer.getShort();
 
         int filedInfoLength=dbfDataOffset-DBF_HEADER_SIZE_BASIC;//dbfNumFields*DBF_FIELD_DEF_SIZE+1;
+		if (filedInfoLength < 0){
+			reset();
+			throw new DBFErrorException("Invalid header!");
+		}
 		buffer=ByteBuffer.allocate(filedInfoLength);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         read += filedInfoLength;
         if (dbfFile.read(buffer)!=filedInfoLength){
+            reset();
             throw new DBFErrorException("Problem reading DBF fields directory - too short !");
         }
         buffer.flip();
@@ -123,7 +140,8 @@ public class DBFAnalyzer {
 		//dbfNumFields = (dbfType>0x03) ? (dbfDataOffset-296)/32 : (dbfDataOffset-33)/32;
         int subFieldEofMark = findSubRecordEofMark(buffer);
         if (subFieldEofMark == -1) {
-        	throw new DBFErrorException("Problem reading DBF fields directory - wrong format !");
+            reset();
+            throw new DBFErrorException("Problem reading DBF fields directory - wrong format !");
         }
         boolean shortFieldDesc = subFieldEofMark%32 == 0;
         
@@ -228,7 +246,7 @@ public class DBFAnalyzer {
 		}
         
         if(verbose){
-        System.out.println("DBF type: "+dbf.dbfType+" - "+dbf.getDBFTypeName(dbf.dbfType));
+        System.out.println("DBF type: "+ dbf.dbfType +" - "+dbf.getDBFTypeName(dbf.dbfType));
         System.out.println("Number of rows in table: "+dbf.dbfNumRows);
         System.out.println("Number of fields in table: "+dbf.dbfNumFields);
         System.out.println("Codepage: "+dbf.dbfCodePage+" - corresponds to: "+DBFTypes.dbfCodepage2Java(dbf.dbfCodePage));
@@ -255,38 +273,38 @@ public class DBFAnalyzer {
 
 	/**
 	 * @return Returns the dbfFields array - contains description if individual
-	 * fields in dBase table header
+	 * fields in dBase table header. If analyzed file has invalid header empty array is returned. 
 	 */
 	public DBFFieldMetadata[] getFields() {
 		return dbfFields;
 	}
 	/**
-	 * @return Returns number of fields defined in table
+	 * @return Returns number of fields defined in table. If analyzed file has invalid header returns -1.
 	 */
 	public int getNumFields() {
 		return dbfNumFields;
 	}
 	/**
-	 * @return Returns number of rows present in dBase datafile.
+	 * @return Returns number of rows present in dBase data file. If analyzed file has invalid header returns -1.
 	 */
 	public int getNumRows() {
 		return dbfNumRows;
 	}
 	/**
-	 * @return Returns the dbfType - can be used to distinguis which dBase
-	 * version (dBase, FoxBase, FoxPRO) created the datafile
+	 * @return Returns the dbfType - can be used to distinguish which dBase
+	 * version (dBase, FoxBase, FoxPRO) created the data file. If analyzed file has invalid header returns 0.
 	 */
-	public int getDBFType() {
+	public byte getDBFType() {
 		return dbfType;
 	}
 	
 	/**
 	 * Method which returns name (String) of the dBase variant which
-	 * created analyzed DBF file.
+	 * created analyzed DBF file. For unknown types or if analyzed file has invalid header returns null.
 	 * 
 	 * @return
 	 */
-	public String getDBFTypeName(int type){
+	public String getDBFTypeName(byte type){
 	    for (int i=0;i<DBFTypes.KNOWN_TYPES.length;i++){
 	        if (type==DBFTypes.KNOWN_TYPES[i]){
 	            return DBFTypes.KNOWN_TYPES_NAMES[i];
@@ -296,7 +314,7 @@ public class DBFAnalyzer {
 	}
 	
 	/**
-	 * @return Returns the dbfRecSize.
+	 * @return Returns the dbfRecSize. If analyzed file has invalid header returns -1.
 	 */
 	public int getRecSize() {
 		return dbfRecSize;
@@ -320,7 +338,7 @@ public class DBFAnalyzer {
 	}
 	
 	public DataRecordMetadata getCloverMetadata(){
-		DataRecordMetadata record=new DataRecordMetadata(dbfTableName.replace('.','_'),
+		DataRecordMetadata record=new DataRecordMetadata(StringUtils.normalizeName(dbfTableName),
 							DataRecordMetadata.FIXEDLEN_RECORD);
 	
 		// set record properties - additional info for DBF-type of data 
@@ -347,13 +365,13 @@ public class DBFAnalyzer {
 		return record;
 	}
 	/**
-	 * @return Returns the dbfCodePage.
+	 * @return Returns the dbfCodePage. If analyzed file has invalid header returns 0.
 	 */
 	public byte getDBFCodePage() {
 		return dbfCodePage;
 	}
 	/**
-	 * @return Returns the dbfDataOffset.
+	 * @return Returns the dbfDataOffset. If analyzed file has invalid header returns -1.
 	 */
 	public int getDBFDataOffset() {
 		return dbfDataOffset;

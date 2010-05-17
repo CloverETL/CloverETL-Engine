@@ -29,8 +29,9 @@ package org.jetel.database.dbf;
  */
 public class DBFTypes  {
 	
-	/*package*/ static final int[] KNOWN_TYPES={0x02,0x03,0x30,0x43,0x63,
-										0x83,0x8b,0x0cb,0x0f5,0x0fb};
+	/*package*/ static final byte[] KNOWN_TYPES={0x02,0x03,0x30,0x43,
+												0x63,(byte) 0x83,(byte) 0x8b,(byte) 0x0cb,
+												(byte) 0x0f5,(byte) 0x0fb};
 	
 	/*package*/ static final String[] KNOWN_TYPES_NAMES={
 							"FoxBase","FoxBase+","VisualFoxPro","dBaseIV",
@@ -47,19 +48,26 @@ public class DBFTypes  {
 	 * @param dBase codepage ID
 	 * @return Java/Clover ETL codepage name (IANA string)
 	 */
-	public static String dbfCodepage2Java(int codepage){
+	public static String dbfCodepage2Java(byte codepage){
 		switch (codepage){
 			case 0x00: return "US-ASCII";
-			case 0x01: 
+			case 0x01: return "IBM437";
 			case 0x02:return "ISO-8859-1";
 			case 0x03: return "windows-1252";
 			case 0x7D: return "windows-1255";
 			case 0x7E: return "windows-1256";
-			case 0x64:return "ISO-8859-2"; // TODO: !! this is not 100% correct
-			case 0x0C8:return "windows-1250";
-			case 0x0C9: return "windows-1251";
-			case 0x0CB: return "windows-1253";
-			case 0x0CA: return "windows-1254";
+			case 0x64:return "IBM852"; 
+			case 0x65:return "IBM865"; 
+			case 0x66:return "IBM866"; 
+			case 0x67:return "IBM861"; 
+			case 0x68:return "KEYBCS2"; 
+			case 0x6A:return "IBM737"; 
+			case 0x6B:return "IBM857"; 
+			case (byte) 0x98:return "x-mac-greek"; 
+			case (byte) 0xC8:return "windows-1250";
+			case (byte) 0xC9: return "windows-1251";
+			case (byte) 0xCB: return "windows-1253";
+			case (byte) 0xCA: return "windows-1254";
             default:
                 return "US-ASCII";
 		}
