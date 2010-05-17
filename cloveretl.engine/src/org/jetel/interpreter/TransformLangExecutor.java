@@ -1682,11 +1682,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			break;
 		case Field2Field:
 			try {
-				if (node.srcField==null){
-					CLVFInputFieldLiteral childNode=((CLVFInputFieldLiteral)node.jjtGetChild(0));
-					childNode.bindToField(inputRecords);
-					node.srcField=childNode.field;
-				}
+				CLVFInputFieldLiteral childNode=((CLVFInputFieldLiteral)node.jjtGetChild(0));
+				childNode.bindToField(inputRecords);
+				node.srcField=childNode.field;
 				field.setValue(node.srcField);
 			} catch (BadDataFormatException ex) {
 				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable() && node.srcField.isNull()) {

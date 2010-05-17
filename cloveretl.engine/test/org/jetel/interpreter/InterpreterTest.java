@@ -43,6 +43,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLBooleanValue;
@@ -3229,8 +3230,57 @@ public class InterpreterTest extends CloverTestCase {
 		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
-    
-    
+
+	// This method tests fix of issue 4140. Copying failed in case the input data records were swapped.
+    public void test_dataFieldCopy() {
+		String expStr = "function test() { $0.Name := $0.Name; }\n";
+
+		DataRecordMetadata inputMetadata[] = { metaOut.duplicate() };
+		DataRecordMetadata outputMetadata[] = { metaOut.duplicate() };
+
+		TransformLangParser parser = new TransformLangParser(inputMetadata, outputMetadata,
+				new ByteArrayInputStream(expStr.getBytes()), "UTF-8");
+		CLVFStart parseTree = null;
+
+		try {
+			parseTree = parser.Start();
+			parseTree.init();
+		} catch (ParseException exception) {
+			exception.printStackTrace();
+			fail();
+		}
+
+		// prepare multiple input and output data records to simulate swapping
+		DataRecord[] inputRecords = new DataRecord[2];
+		DataRecord[] outputRecords = new DataRecord[inputRecords.length];
+
+		for (int i = 0; i < inputRecords.length; i++) {
+			// init input records with their ordinal
+			inputRecords[i] = new DataRecord(inputMetadata[0]);
+			inputRecords[i].init();
+			inputRecords[i].getField("Name").setValue(Integer.toString(i + 1));
+
+			// keep output records blank
+			outputRecords[i] = new DataRecord(outputMetadata[0]);
+			outputRecords[i].init();
+		}
+
+		CLVFFunctionDeclaration testFunction = (CLVFFunctionDeclaration) parser.getFunctions().get("test");
+
+		// execute the test() function multiple times for different input data records
+		for (int i = 0; i < inputRecords.length; i++) {
+			TransformLangExecutor executor = new TransformLangExecutor();
+			executor.setParser(parser);
+			executor.setInputRecords(new DataRecord[] { inputRecords[i] });
+			executor.setOutputRecords(new DataRecord[] { outputRecords[i] });
+			executor.executeFunction(testFunction, null);
+
+			if (!inputRecords[i].getField("Name").equals(outputRecords[i].getField("Name"))) {
+				fail("Field copy failed!");
+			}
+		}
+    }
+
     public void test_TryCatch(){
 		System.out.println("\nDate Error:");
 		String expStr = "string exception;\n"+
