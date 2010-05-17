@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation license." modified="Wed Jul 01 12:21:39 CEST 2009" modifiedBy="avackova" name="Testing Reformat" revision="1.10">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Mon May 17 10:43:28 CEST 2010" modifiedBy="avackova" name="Testing Reformat" revision="1.12">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
-<attr name="transform"><![CDATA[int key;
+<attr name="transform"><![CDATA[integer key;
 
 
  
@@ -23,7 +24,7 @@ function number sum(number a, number b){
 }
 
 
-function int transform() {
+function integer transform() {
 	$0.CUSTOMERID = $0.CustomerID;
 	$0.PRODUCTID = ++key;
 	$0.ORDERID = $0.OrderID;
@@ -35,7 +36,7 @@ function int transform() {
 
 ]]></attr>
 </Node>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REF:0"/>
-<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
+<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
