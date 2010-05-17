@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation license." modified="Wed Jul 01 12:10:50 CEST 2009" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.16">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Mon May 17 10:36:47 CEST 2010" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.19">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="customers" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -9,6 +9,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
@@ -18,20 +19,20 @@
 <attr name="normalize"><![CDATA[//#CTL
 string[] customers;
 
-function int transform(int idx) {
+function integer transform(integer idx) {
 	customers = split($customers,"\\s*-\\s*");
 	$customers = customers[idx];
 	$EmployeeID = $EmployeeID;
 	return 0;
 }
 
-function int count() {
+function integer count() {
 	return $cust_no;
 }
 ]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
-<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="NORMALIZE:0"/>
+<Edge debugMode="false" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
 </Phase>
 </Graph>
