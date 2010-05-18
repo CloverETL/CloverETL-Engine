@@ -1912,23 +1912,6 @@ public class TypeChecker extends NavigatingVisitor {
 		return msg.toString();
 	}
 
-	/**
-	 * Checks if given node is a reference to one of the following 1. local variable reference (function parameter) 2.
-	 * list field reference
-	 * 
-	 * @return true if the node represents a direct variable reference
-	 */
-	private boolean isVariableReference(SimpleNode node) {
-		switch (node.getId()) {
-		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
-		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
-		case TransformLangParserTreeConstants.JJTIDENTIFIER:
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	private TLType checkArithmeticOperator(SimpleNode lhs, SimpleNode rhs) {
 		if (lhs.getType().isNumeric()) {
 			if (rhs.getType().isNumeric()) {
@@ -1966,18 +1949,6 @@ public class TypeChecker extends NavigatingVisitor {
 
 	}
 	
-	private TLType[] getActualTypes(SimpleNode node ) {
-		SimpleNode args = (SimpleNode)node.jjtGetChild(0);
-		TLType[] actual = new TLType[args.jjtGetNumChildren()];
-		for (int i = 0; i<args.jjtGetNumChildren(); i++) {
-			actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
-		}
-		
-		return actual;
-	}
-
-	
-	
 	// ----------------- Error Reporting --------------------------
 
 	private void error(SimpleNode node, String error) {
@@ -1992,9 +1963,4 @@ public class TypeChecker extends NavigatingVisitor {
 		problemReporter.warn(node.getBegin(), node.getEnd(), error, null);
 	}
 
-	private void warn(SimpleNode node, String error, String hint) {
-		problemReporter.warn(node.getBegin(), node.getEnd(), error, hint);
-	}
-
-	
 }
