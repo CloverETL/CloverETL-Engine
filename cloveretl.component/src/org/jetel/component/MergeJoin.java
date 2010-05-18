@@ -417,7 +417,7 @@ public class MergeJoin extends Node {
 				inRecords[i] = minIndicator[i] ? reader[i].next() : NullRecord.NULL_RECORD;
 		}
 		while (true) {
-//			outRecords[0].reset();
+			outRecords[0].reset();
 			int transformResult = transformation.transform(inRecords, outRecords);
 			if (transformResult >= 0) {
 				outPort.writeRecord(outRecords[0]);
