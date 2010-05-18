@@ -280,7 +280,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="OrdersTLNewReformat" graphFile="graph/graphOrdersTLNewReformat.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersTLReformat.out"/>
+	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out/orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 
