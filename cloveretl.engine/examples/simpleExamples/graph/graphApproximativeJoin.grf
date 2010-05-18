@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Mon Mar 22 14:03:17 CET 2010" modifiedBy="cloveruser" name="graphFixedLengthData" revision="1.174">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Tue May 18 12:06:23 CEST 2010" modifiedBy="avackova" name="graphFixedLengthData" revision="1.178">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -96,7 +96,7 @@
 <Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
 <Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
-<Field locale="en.US" name="key" nullable="true" shift="0" size="7" type="string"/>
+<Field name="key" nullable="true" shift="0" size="7" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -121,7 +121,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
-<Record fieldDelimiter=";" name="employee_with_key" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="employee_with_key"  recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="employee_id" nullable="true" shift="0" type="integer"/>
 <Field name="full_name" nullable="true" shift="0" type="string"/>
 <Field name="first_name" nullable="true" shift="0" type="string"/>
@@ -139,7 +139,7 @@
 <Field name="marital_status" nullable="true" shift="0" type="string"/>
 <Field name="gender" nullable="true" shift="0" type="string"/>
 <Field name="management_role" nullable="true" shift="0" type="string"/>
-<Field locale="en.US" name="key" nullable="true" shift="0" type="string"/>
+<Field name="key" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata5">
@@ -158,10 +158,10 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="510" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ApproximativeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="820" x="2" y="-504">
 <attr name="text"><![CDATA[
 This graph shows the use of ApproximativeJoin.
@@ -328,16 +328,16 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
-<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
-<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT7:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN1:1"/>
-<Edge debugMode="false" fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT6:0"/>
-<Edge debugMode="false" fromNode="REFORMAT6:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT7:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:1"/>
+<Edge debugMode="false" fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT6:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="1">
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="447" guiY="450" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
@@ -430,16 +430,16 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO3:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:2" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO2:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:3" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO3:0"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:1"/>
-<Edge debugMode="true" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN2:0"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO1:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
-<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:2" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:3" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO1:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
 </Phase>
 <Phase number="2">
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="773" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
@@ -532,16 +532,16 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO5:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:1" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO4:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:2" guiBendpoints="" id="Edge29" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO4:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:3" guiBendpoints="" id="Edge26" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO5:0"/>
-<Edge fromNode="DATA_READER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT3:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:1"/>
-<Edge debugMode="true" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN3:0"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO2:0" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT2:0"/>
-<Edge fromNode="REFORMAT2:0" guiBendpoints="" id="Edge28" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT5:0"/>
-<Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT4:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:1" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:2" guiBendpoints="" id="Edge29" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:3" guiBendpoints="" id="Edge26" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO2:0" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT2:0"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" id="Edge28" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT5:0"/>
+<Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT4:0"/>
 </Phase>
 <Phase number="3">
 <Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
@@ -634,15 +634,15 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN4:0" guiBendpoints="" id="Edge36" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" toNode="FIXLEN_DATA_WRITER_NIO6:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:1" guiBendpoints="" id="Edge37" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" toNode="DELIMITED_DATA_WRITER_NIO6:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:2" guiBendpoints="" id="Edge33" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" toNode="FIXLEN_DATA_WRITER_NIO7:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:3" guiBendpoints="" id="Edge31" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" toNode="DELIMITED_DATA_WRITER_NIO7:0"/>
-<Edge fromNode="DATA_READER3:0" guiBendpoints="" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT5:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT6:0" guiBendpoints="" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT7:0" guiBendpoints="" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" toNode="APROX_MERGE_JOIN4:1"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO3:0" guiBendpoints="" id="Edge34" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT4:0"/>
-<Edge fromNode="REFORMAT4:0" guiBendpoints="" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT6:0"/>
-<Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT7:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN4:0" guiBendpoints="" id="Edge36" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:1" guiBendpoints="" id="Edge37" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:2" guiBendpoints="" id="Edge33" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:3" guiBendpoints="" id="Edge31" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="DATA_READER3:0" guiBendpoints="" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT5:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT6:0" guiBendpoints="" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT7:0" guiBendpoints="" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO3:0" guiBendpoints="" id="Edge34" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT4:0"/>
+<Edge fromNode="REFORMAT4:0" guiBendpoints="" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT7:0"/>
 </Phase>
 </Graph>
