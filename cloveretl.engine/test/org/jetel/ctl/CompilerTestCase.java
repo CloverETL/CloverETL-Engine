@@ -38,6 +38,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.StringUtils;
 
 public abstract class CompilerTestCase extends CloverTestCase {
 
@@ -180,23 +181,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			throw new RuntimeException(ex);
 		}
 
-		/* 
-		 * ********* POPULATING CODE ************* DataRecord lkpRecord =
-		 * createEmptyRecord(createDefaultMetadata("lookupResponse"));
-		 * 
-		 * lkpRecord.getField("Name").setValue("Alpha"); lkpRecord.getField("Value").setValue(1);
-		 * lkpRecord.getField("City").setValue("Andorra la Vella"); lkp.put(lkpRecord);
-		 * 
-		 * lkpRecord.getField("Name").setValue("Bravo"); lkpRecord.getField("Value").setValue(2);
-		 * lkpRecord.getField("City").setValue("Bruxelles"); lkp.put(lkpRecord);
-		 * 
-		 * // duplicate entry lkpRecord.getField("Name").setValue("Charlie"); lkpRecord.getField("Value").setValue(3);
-		 * lkpRecord.getField("City").setValue("Chamonix"); lkp.put(lkpRecord);
-		 * lkpRecord.getField("Name").setValue("Charlie"); lkpRecord.getField("Value").setValue(3);
-		 * lkpRecord.getField("City").setValue("Chomutov"); lkp.put(lkpRecord);
-		 * 
-		 * ************ END OF POPULATING CODE ************
-		 */
+		// ********* POPULATING CODE *************
+		/*DataRecord lkpRecord = createEmptyRecord(createDefaultMetadata("lookupResponse"));
+
+		lkpRecord.getField("Name").setValue("Alpha");
+		lkpRecord.getField("Value").setValue(1);
+		lkpRecord.getField("City").setValue("Andorra la Vella");
+		lkp.put(lkpRecord);
+
+		lkpRecord.getField("Name").setValue("Bravo");
+		lkpRecord.getField("Value").setValue(2);
+		lkpRecord.getField("City").setValue("Bruxelles");
+		lkp.put(lkpRecord);
+
+		// duplicate entry lkpRecord.getField("Name").setValue("Charlie"); lkpRecord.getField("Value").setValue(3);
+		lkpRecord.getField("City").setValue("Chamonix");
+		lkp.put(lkpRecord);
+		lkpRecord.getField("Name").setValue("Charlie");
+		lkpRecord.getField("Value").setValue(3);
+		lkpRecord.getField("City").setValue("Chomutov");
+		lkp.put(lkpRecord);*/
+
+		// ************ END OF POPULATING CODE ************
+		 
 		return lkp;
 	}
 
@@ -629,6 +636,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 //-------------------------- Data Types Tests ---------------------
 
+	public void test_void() {
+		doCompileExpectErrors("test_void", Arrays.asList("Syntax error on token 'void'",
+				"Variable 'voidVar' is not declared",
+				"Variable 'voidVar' is not declared",
+				"Syntax error on token 'void'"));
+	}
 	
 	public void test_int() {
 		doCompile("test_int");
@@ -827,6 +840,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("b3", false);
 		checkNull("nullValue");
 		checkNull("varWithNullInitializer");
+	}
+	
+	public void test_boolean_compare() {
+		doCompileExpectErrors("test_boolean_compare", Arrays.asList(
+				"Operator '>' is not defined for types 'boolean' and 'boolean'", 
+				"Operator '>=' is not defined for types 'boolean' and 'boolean'",
+				"Operator '<' is not defined for types 'boolean' and 'boolean'",
+				"Operator '<=' is not defined for types 'boolean' and 'boolean'",
+				"Operator '<' is not defined for types 'boolean' and 'boolean'",
+				"Operator '>' is not defined for types 'boolean' and 'boolean'",
+				"Operator '>=' is not defined for types 'boolean' and 'boolean'",
+				"Operator '<=' is not defined for types 'boolean' and 'boolean'"));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1385,6 +1410,344 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res8", createList("0123", "123", "23", "3", "4", "3"));
 	}
 	
+	public void test_non_int_switch(){
+		doCompile("test_non_int_switch");
+		
+		// simple switch
+		check("cond1", "1");
+		check("res11", true);
+		check("res12", false);
+		check("res13", false);
+
+		// first case is not followed by a break
+		check("cond2", "1");
+		check("res21", true);
+		check("res22", true);
+		check("res23", false);
+
+		// first and second case have multiple labels
+		check("cond3", "12");
+		check("res31", false);
+		check("res32", true);
+		check("res33", false);
+
+		// first and second case have multiple labels and no break after first group
+		check("cond4", "11");
+		check("res41", true);
+		check("res42", true);
+		check("res43", false);
+
+		// default case intermixed with other case labels in the second group
+		check("cond5", "11");
+		check("res51", true);
+		check("res52", true);
+		check("res53", true);
+
+		// default case intermixed, with break
+		check("cond6", "16");
+		check("res61", false);
+		check("res62", true);
+		check("res63", false);
+
+		// continue test
+		check("res7", createList(
+		/* i=0 */false, false, false,
+		/* i=1 */true, true, false,
+		/* i=2 */true, true, false,
+		/* i=3 */false, true, false,
+		/* i=4 */false, true, false,
+		/* i=5 */false, false, true));
+
+		// return test
+		check("res8", createList("0123", "123", "23", "3", "4", "3"));		
+	}
+	
+	public void test_while() {
+		doCompile("test_while");
+		// simple while
+		check("res1", createList(0, 1, 2));
+		// continue
+		check("res2", createList(0, 2));
+		// break
+		check("res3", createList(0));
+	}
+
+	public void test_do_while() {
+		doCompile("test_do_while");
+		// simple while
+		check("res1", createList(0, 1, 2));
+		// continue
+		check("res2", createList(0, null, 2));
+		// break
+		check("res3", createList(0));
+	}
+	
+	public void test_for() {
+		doCompile("test_for");
+		
+		// simple loop
+		check("res1", createList(0,1,2));
+		// continue
+		check("res2", createList(0,null,2));
+		// break
+		check("res3", createList(0));
+		// empty init
+		check("res4", createList(0,1,2));
+		// empty update
+		check("res5", createList(0,1,2));
+		// empty final condition
+		check("res6", createList(0,1,2));
+		// all conditions empty
+		check("res7", createList(0,1,2));
+	}
+	
+	public void test_foreach() {
+		doCompile("test_foreach");
+		check("intRes", createList(VALUE_VALUE));
+		check("longRes", createList(BORN_MILLISEC_VALUE));
+		check("doubleRes", createList(AGE_VALUE));
+		check("decimalRes", createList(CURRENCY_VALUE));
+		check("booleanRes", createList(FLAG_VALUE));
+		check("stringRes", createList(NAME_VALUE, CITY_VALUE));
+		check("dateRes", createList(BORN_VALUE));
+	}
+	
+	public void test_return(){
+		doCompile("test_return");
+		check("lhs", Integer.valueOf(1));
+		check("rhs", Integer.valueOf(2));
+		check("res", Integer.valueOf(3));
+	}
+	
+	public void test_overloading() {
+		doCompile("test_overloading");
+		check("res1", Integer.valueOf(3));
+		check("res2", "Memento mori");
+	}
+	
+	public void test_built_in_functions(){
+		doCompile("test_built_in_functions");
+		
+		check("notNullValue", Integer.valueOf(1));
+		checkNull("nullValue");
+		check("isNullRes1", false);
+		check("isNullRes2", true);
+		assertEquals("nvlRes1", getVariable("notNullValue"), getVariable("nvlRes1"));
+		check("nvlRes2", Integer.valueOf(2));
+		assertEquals("nvl2Res1", getVariable("notNullValue"), getVariable("nvl2Res1"));
+		check("nvl2Res2", Integer.valueOf(2));
+		check("iifRes1", Integer.valueOf(2));
+		check("iifRes2", Integer.valueOf(1));
+	}
+	
+	public void test_mapping(){
+		doCompile("test_mapping");
+//TODO: somehow adapt		
+//		// simple mappings
+//		assertEquals(NAME_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("Name")).getValue()).toString());
+//		assertEquals(AGE_VALUE, ((NumericDataField)outputRecords[0].getField("Age")).getValue());
+//		assertEquals(CITY_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("City")).getValue()).toString());
+//		assertEquals(BORN_VALUE, ((DateDataField)outputRecords[0].getField("Born")).getValue());
+//		
+//		// * mapping
+//		assertTrue(recordEquals(inputRecords[1],outputRecords[1]));
+	}
+	
+	public void test_sequence(){
+		doCompile("test_sequence");
+		check("intRes", createList(1,2,3));
+		check("longRes", createList(Long.valueOf(1),Long.valueOf(2),Long.valueOf(3)));
+		check("stringRes", createList("1","2","3"));
+		check("intCurrent", Integer.valueOf(3));
+		check("longCurrent", Long.valueOf(3));
+		check("stringCurrent", "3");
+	}
+	
+	//TODO: default lookup table doesn't work/is not populated?
+	public void test_lookup(){
+        doCompile("test_lookup");
+		check("alphaResult", createList("Andorra la Vella","Andorra la Vella"));
+		check("bravoResult", createList("Bruxelles","Bruxelles"));
+		check("charlieResult", createList("Chamonix","Chomutov","Chamonix","Chomutov"));
+		check("countResult", createList(2,2));
+	}
+	
+//------------------------- ContainerLib Tests---------------------
+	
+	
+	// TODO: distribute functions into separate tests
+	@SuppressWarnings("unchecked")
+	public void test_container_lib() {
+		doCompile("test_container_lib");
+
+		// copy
+		check("copyList", createList(1, 2, 3, 4, 5));
+		// pop
+		check("popElem", Integer.valueOf(5));
+		check("popList", createList(1, 2, 3, 4));
+		// poll
+		check("pollElem", Integer.valueOf(1));
+		check("pollList", createList(2, 3, 4));
+		// push
+		check("pushElem", Integer.valueOf(6));
+		check("pushList", createList(2, 3, 4, 6));
+		// insert
+		check("insertElem", Integer.valueOf(7));
+		check("insertIndex", Integer.valueOf(1));
+		check("insertList", createList(2, 7, 3, 4, 6));
+		// remove
+		check("removeElem", Integer.valueOf(3));
+		check("removeIndex", Integer.valueOf(2));
+		check("removeList", createList(2, 7, 4, 6));
+		// sort
+		check("sortList", createList(2, 4, 6, 7));
+		// reverse
+		check("reverseList", createList(7, 6, 4, 2));
+		// remove_all
+		assertTrue(((List<Integer>) getVariable("removeAllList")).isEmpty());
+	}
+	
+//---------------------- StringLib Tests ------------------------
+
+	public void test_stringlib() {
+		doCompile("test_stringlib");
+		check("subs", "ello ");
+		check("upper", "ELLO ");
+		check("lower", "ello hi   ");
+		check("t", "im  ello hi");
+		check("l", new BigDecimal(5));
+		//check("c", "ello hi   ELLO 2,today is " + new Date());
+		//TODO: enable
+		//check("datum", BORN_VALUE);
+		//check("ddiff", -1);
+		check("isn", false);
+		check("s1", Double.valueOf(6));
+		//check("rep", ("etto hi   EttO 2,today is " + new Date()).replaceAll("[lL]", "t"));
+		check("stdecimal", 0.25125);
+		check("stdouble", 0.25125);
+		check("stlong", 805421451215l);
+		check("stint", -152456);
+		check("i", 1234);
+		check("nts", "22");
+		check("dtn", 11.0);
+		check("ii", 21);
+		check("dts", "02.12.24");
+		check("lef", "02.12");
+		check("righ", "12.24");
+		check("charCount", 3);
+	}
+
+	public void test_is_format() {
+		doCompile("test_is_format");
+		check("test", "test");
+		check("isBlank", Boolean.FALSE);
+		check("blank", "");
+		checkNull("nullValue");
+		check("isBlank2", true);
+		check("isAscii1", true);
+		check("isAscii2", false);
+		check("isNumber", false);
+		check("isNumber1", false);
+		check("isNumber2", true);
+		check("isNumber3", true);
+		check("isNumber4", false);
+		check("isNumber5", true);
+		check("isNumber6", true);
+		check("isInteger", false);
+		check("isInteger1", false);
+		check("isInteger2", false);
+		check("isInteger3", true);
+		check("isLong", true);
+		check("isDate", true);
+		check("isDate1", false);
+		// "kk" allows hour to be 1-24 (as opposed to HH allowing hour to be 0-23)
+		check("isDate2", true);
+		check("isDate3", true);
+		check("isDate4", false);
+		check("isDate5", true);
+		check("isDate6", true);
+		check("isDate7", false);
+		// illegal month: 15
+		check("isDate9", false);
+		check("isDate10", false);
+		check("isDate11", true);
+		check("isDate12", true);
+		check("isDate13", false);
+		check("isDate14", true);
+		check("isDate15", false);
+		// 24 is an illegal value for pattern HH (it allows only 0-23)
+		check("isDate16", false);
+		// empty string in strict mode: invalid
+		check("isDate17", false);
+		// empty string in lenient mode: valid
+		check("isDate18", true);
+	}
+	
+	public void test_remove_blank_space() {
+		String expStr = 
+			"string r1;\n" +
+			"function integer transform() {\n" +
+				"r1=remove_blank_space(\"" + StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") +	"\");\n" +
+				"print_err(r1);\n" +
+				"return 0;\n" +
+			"}\n";
+		doCompile(expStr, "test_remove_blank_space");
+		check("r1", "abcdef");
+	}
+	
+	public void test_get_alphanumeric_chars() {
+		String expStr = 
+			"string an1;\n" +
+			"string an2;\n" +
+			"string an3;\n" +
+			"string an4;\n" +
+			"function integer transform() {\n" +
+				"an1=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
+				"print_err(an1);\n" +
+				"an2=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,true);\n" +
+				"print_err(an2);\n" +
+				"an3=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,false);\n" +
+				"print_err(an3);\n" +
+				"an4=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,true);\n" +
+				"print_err(an4);\n" +
+				"return 0;\n" +
+			"}\n";
+		doCompile(expStr, "test_get_alphanumeric_chars");
+
+		check("an1", "a1bcde2f");
+		check("an2", "a1bcde2f");
+		check("an3", "abcdef");
+		check("an4", "12");
+	}
+	
+    public void test_stringlib2(){
+        doCompile("test_stringlib2");
+        
+    	check("test","tescik");
+    	check("test1","zabicka");
+		check("t","hippi");
+		check("t1","hipp");
+		check("t2","hippi");
+		check("t3","");
+		check("t4","y lanuaX nXXd thX lXttXr X");
+		check("index",2);
+		check("index1",9);
+		check("index2",0);
+		check("index3",-1);
+		check("index4",6);              
+    }
+
+	public void test_chop() {
+		doCompile("test_chop");
+		check("s1", "hello");
+		check("s6", "hello");
+		check("s5", "hello");
+		check("s2", "hello");
+		check("s7", "hello\nworld");
+		check("s3", "hello ");
+		check("s4", "hello");
+	}
+	
 //-------------------------- MathLib Tests ------------------------
 	public void test_bitwise_or() {
 		doCompile("test_bitwise_or");
@@ -1492,1673 +1855,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		System.out.println("length() test:");
 		doCompile("test_length_function");
 	}
-
-//################################################################	
-//TODO: adapt
-//
-//public void test_int_switch(){
-//	System.out.println("\nSwitch using non-int variable test:");
-//	String expStr =
-//		// simple switch using int
-//		"int cond1 = 1;\n" +
-//		"boolean res11 = false;\n" + 
-//		"boolean res12 = false;\n" + 
-//		"boolean res13 = false;\n" +
-//		"switch (cond1) {\n" +
-//		"case 1:\n" +
-//		"	res11 = true;\n" +
-//		"	break;\n" + 	
-//		"case 12:\n" +
-//		"	res12 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res13 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first case is not followed by a break
-//		"int cond2 = 1;\n" +
-//		"boolean res21 = false;\n" + 
-//		"boolean res22 = false;\n" + 
-//		"boolean res23 = false;\n" +
-//		"switch (cond2) {\n" +
-//		"case 1:\n" +
-//		"	res21 = true;\n" +
-//		"case 12:\n" +
-//		"	res22 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res23 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first and second case have multiple labels
-//		"int cond3 = 12;\n" +
-//		"boolean res31 = false;\n" + 
-//		"boolean res32 = false;\n" + 
-//		"boolean res33 = false;\n" +
-//		"switch (cond3) {\n" +
-//		"case 10:\n" +
-//		"case 11:\n" +
-//		"	res31 = true;\n" +
-//		"	break;\n" + 	
-//		"case 12:\n" +
-//		"case 13:\n" +
-//		"	res32 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res33 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first and second case have multiple labels and no break after first group
-//		"int cond4 = 11;\n" +
-//		"boolean res41 = false;\n" + 
-//		"boolean res42 = false;\n" + 
-//		"boolean res43 = false;\n" +
-//		"switch (cond4) {\n" +
-//		"case 10:\n" +
-//		"case 11:\n" +
-//		"	res41 = true;\n" +
-//		"case 12:\n" +
-//		"case 13:\n" +
-//		"	res42 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res43 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// default case intermixed with other case labels in the second group
-//		"int cond5 = 11;\n" +
-//		"boolean res51 = false;\n" + 
-//		"boolean res52 = false;\n" + 
-//		"boolean res53 = false;\n" +
-//		"switch (cond5) {\n" +
-//		"case 10:\n" +
-//		"case 11:\n" +
-//		"	res51 = true;\n" +
-//		"case 12:\n" +
-//		"default:\n" +
-//		"case 13:\n" +
-//		"	res52 = true;\n" +
-//		"case 14:\n" +
-//		"	res53 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// default case intermixed, with break
-//		"int cond6 = 16;\n" +
-//		"boolean res61 = false;\n" + 
-//		"boolean res62 = false;\n" + 
-//		"boolean res63 = false;\n" +
-//		"switch (cond6) {\n" +
-//		"case 10:\n" +
-//		"case 11:\n" +
-//		"	res61 = true;\n" +
-//		"case 12:\n" +
-//		"default:\n" +
-//		"case 13:\n" +
-//		"	res62 = true;\n" +
-//		"	break;\n" + 
-//		"case 14:\n" +
-//		"	res63 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// continue test
-//		"int i = 0;\n" +
-//		"boolean[]  res7;\n" + 
-//		"boolean res71 = false;\n" +
-//		"boolean res72 = false;\n" +
-//		"boolean res73 = false;\n" + 
-//		"while (i < 6) {\n" +
-//		"	print_err(res7);\n" +
-//		"	res7[i*3] = res71;\n" +
-//		"	res7[i*3+1] = res72;\n" +
-//		"	res7[i*3+2] = res73;\n" +
-//		"						\n" +
-//		"	res71 = false;\n" +
-//		"	res72 = false;\n" +
-//		"	res73 = false;\n" +
-//		"						\n" +
-//		"	switch (i) {\n" +
-//		"	case 0:\n" +
-//		"	case 1:\n" +
-//		"		res71 = true;\n" +
-//		"		print_err('res71: ' + res71);\n" +
-//		"	case 2:\n" +
-//		"	default:\n" +
-//		"	case 3:\n" +
-//		"		res72 = true;\n" +
-//		"		print_err('res72: ' + res72);\n" +
-//		"		i++;\n" + 
-//		"		continue;\n" + 
-//		"	case 4:\n" +
-//		"		res73 = true;\n" +
-//		"		print_err('res73: ' + res73);\n" +
-//		"		break;\n" + 
-//		"	}\n" + 
-//		"	i++;\n" + 
-//		"}\n" + 
-//		"print_err(res7);\n" +			
-//		// return test
-//		"function string switchFunction(int cond) {\n" + 
-//		"	string ret = '';\n" + 
-//		"	switch (cond) {\n" +
-//		"	case 0:\n" +
-//		"		ret = ret + 0;\n" +
-//		"	case 1:\n" +
-//		"		ret = ret + 1;\n" +
-//		"	case 2:\n" +
-//		"		ret = ret + 2;\n" + 
-//		"	default:\n" +
-//		"	case 3:\n" +
-//		"		ret = ret + 3;\n" + 
-//		"		return ret;\n" + 
-//		"	case 4:\n" +
-//		"		ret = ret + 4;\n" +
-//		"		return ret;\n" + 
-//		"	}\n" + 
-//		"}\n\n" +
-//		"string[] res8;\n" +
-//		"for (int i=0; i<6; i++) {\n" +
-//		"	res8[i] = switchFunction(i);\n" +
-//		"}\n";	
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//
-//	
-//	// simple switch
-//	assertEquals("cond1", 1, executor.getVariableValue("cond1"));
-//	assertEquals("res11", true, executor.getVariableValue("res11"));
-//	assertEquals("res12", false, executor.getVariableValue("res12"));
-//	assertEquals("res13", false, executor.getVariableValue("res13"));
-//	
-//	// first case is not followed by a break
-//	assertEquals("cond2", 1, executor.getVariableValue("cond2"));
-//	assertEquals("res21", true, executor.getVariableValue("res21"));
-//	assertEquals("res22", true, executor.getVariableValue("res22"));
-//	assertEquals("res23", false, executor.getVariableValue("res23"));
-//
-//	// first and second case have multiple labels
-//	assertEquals("cond3", 12, executor.getVariableValue("cond3"));
-//	assertEquals("res31", false, executor.getVariableValue("res31"));
-//	assertEquals("res32", true, executor.getVariableValue("res32"));
-//	assertEquals("res33", false, executor.getVariableValue("res33"));
-//
-//	// first and second case have multiple labels and no break after first group
-//	assertEquals("cond4", 11, executor.getVariableValue("cond4"));
-//	assertEquals("res41", true, executor.getVariableValue("res41"));
-//	assertEquals("res42", true, executor.getVariableValue("res42"));
-//	assertEquals("res43", false, executor.getVariableValue("res43"));
-//
-//	// default case intermixed with other case labels in the second group
-//	assertEquals("cond5", 11, executor.getVariableValue("cond5"));
-//	assertEquals("res51", true, executor.getVariableValue("res51"));
-//	assertEquals("res52", true, executor.getVariableValue("res52"));
-//	assertEquals("res53", true, executor.getVariableValue("res53"));
-//
-//	// default case intermixed, with break
-//	assertEquals("cond6", 16, executor.getVariableValue("cond6"));
-//	assertEquals("res61", false, executor.getVariableValue("res61"));
-//	assertEquals("res62", true, executor.getVariableValue("res62"));
-//	assertEquals("res63", false, executor.getVariableValue("res63"));
-//
-//	// continue test
-//	assertEquals("res7",createList(
-//			/* i=0 */ false, false, false, 
-//			/* i=1 */ true, true, false, 
-//			/* i=2 */ true, true, false, 
-//			/* i=3 */ false, true, false,
-//			/* i=4 */ false, true, false, 
-//			/* i=5 */ false, false, true
-//				), executor.getVariableValue("res7"));
-//
-//	// return test
-//	assertEquals("res8", createList("0123","123","23","3","4","3"), executor.getVariableValue("res8"));
-//	
-//}
-//
-//
-//public void test_non_int_switch(){
-//	System.out.println("\nSwitch using non-int variable test:");
-//	String expStr =
-//		// simple switch using int
-//		"string cond1 = '1';\n" +
-//		"boolean res11 = false;\n" + 
-//		"boolean res12 = false;\n" + 
-//		"boolean res13 = false;\n" +
-//		"switch (cond1) {\n" +
-//		"case '1':\n" +
-//		"	res11 = true;\n" +
-//		"	break;\n" + 	
-//		"case '12':\n" +
-//		"	res12 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res13 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first case is not followed by a break
-//		"string cond2 = '1';\n" +
-//		"boolean res21 = false;\n" + 
-//		"boolean res22 = false;\n" + 
-//		"boolean res23 = false;\n" +
-//		"switch (cond2) {\n" +
-//		"case '1':\n" +
-//		"	res21 = true;\n" +
-//		"case '12':\n" +
-//		"	res22 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res23 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first and second case have multiple labels
-//		"string cond3 = '12';\n" +
-//		"boolean res31 = false;\n" + 
-//		"boolean res32 = false;\n" + 
-//		"boolean res33 = false;\n" +
-//		"switch (cond3) {\n" +
-//		"case '10':\n" +
-//		"case '11':\n" +
-//		"	res31 = true;\n" +
-//		"	break;\n" + 	
-//		"case '12':\n" +
-//		"case '13':\n" +
-//		"	res32 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res33 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// first and second case have multiple labels and no break after first group
-//		"string cond4 = '11';\n" +
-//		"boolean res41 = false;\n" + 
-//		"boolean res42 = false;\n" + 
-//		"boolean res43 = false;\n" +
-//		"switch (cond4) {\n" +
-//		"case '10':\n" +
-//		"case '11':\n" +
-//		"	res41 = true;\n" +
-//		"case '12':\n" +
-//		"case '13':\n" +
-//		"	res42 = true;\n" +
-//		"	break;\n" + 
-//		"default:\n" +
-//		"	res43 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// default case stringermixed with other case labels in the second group
-//		"string cond5 = '11';\n" +
-//		"boolean res51 = false;\n" + 
-//		"boolean res52 = false;\n" + 
-//		"boolean res53 = false;\n" +
-//		"switch (cond5) {\n" +
-//		"case '10':\n" +
-//		"case '11':\n" +
-//		"	res51 = true;\n" +
-//		"case '12':\n" +
-//		"default:\n" +
-//		"case '13':\n" +
-//		"	res52 = true;\n" +
-//		"case '14':\n" +
-//		"	res53 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// default case intermixed, with break
-//		"string cond6 = '16';\n" +
-//		"boolean res61 = false;\n" + 
-//		"boolean res62 = false;\n" + 
-//		"boolean res63 = false;\n" +
-//		"switch (cond6) {\n" +
-//		"case '10':\n" +
-//		"case '11':\n" +
-//		"	res61 = true;\n" +
-//		"case '12':\n" +
-//		"default:\n" +
-//		"case '13':\n" +
-//		"	res62 = true;\n" +
-//		"	break;\n" + 
-//		"case '14':\n" +
-//		"	res63 = true;\n" +
-//		"	break;\n" + 
-//		"}\n" +
-//		// continue test
-//		"int i = 0;\n" +
-//		"boolean[]  res7;\n" + 
-//		"boolean res71 = false;\n" +
-//		"boolean res72 = false;\n" +
-//		"boolean res73 = false;\n" + 
-//		"while (i < 6) {\n" +
-//		"	print_err(res7);\n" +
-//		"	res7[i*3] = res71;\n" +
-//		"	res7[i*3+1] = res72;\n" +
-//		"	res7[i*3+2] = res73;\n" +
-//		"						\n" +
-//		"	res71 = false;\n" +
-//		"	res72 = false;\n" +
-//		"	res73 = false;\n" +
-//		"						\n" +
-//		"	string iValue = i + '';\n" + 
-//		"	switch (iValue) {\n" +
-//		"	case '0':\n" +
-//		"	case '1':\n" +
-//		"		res71 = true;\n" +
-//		"		print_err('res71: ' + res71);\n" +
-//		"	case '2':\n" +
-//		"	default:\n" +
-//		"	case '3':\n" +
-//		"		res72 = true;\n" +
-//		"		print_err('res72: ' + res72);\n" +
-//		"		i++;\n" + 
-//		"		continue;\n" + 
-//		"	case '4':\n" +
-//		"		res73 = true;\n" +
-//		"		print_err('res73: ' + res73);\n" +
-//		"		break;\n" + 
-//		"	}\n" + 
-//		"	i++;\n" + 
-//		"}\n" + 
-//		"print_err(res7);\n" +			
-//		// return test
-//		"function string switchFunction(string cond) {\n" + 
-//		"	string ret = '';\n" + 
-//		"	switch (cond) {\n" +
-//		"	case '0':\n" +
-//		"		ret = ret + 0;\n" +
-//		"	case '1':\n" +
-//		"		ret = ret + 1;\n" +
-//		"	case '2':\n" +
-//		"		ret = ret + 2;\n" + 
-//		"	default:\n" +
-//		"	case '3':\n" +
-//		"		ret = ret + 3;\n" + 
-//		"		return ret;\n" + 
-//		"	case '4':\n" +
-//		"		ret = ret + 4;\n" +
-//		"		return ret;\n" + 
-//		"	}\n" + 
-//		"}\n\n" +
-//		"string[] res8;\n" +
-//		"for (int i=0; i<6; i++) {\n" +
-//		"	res8[i] = switchFunction(i + '');\n" +
-//		"}\n";	
-//	
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//
-//	// simple switch
-//	assertEquals("cond1", "1", executor.getVariableValue("cond1"));
-//	assertEquals("res11", true, executor.getVariableValue("res11"));
-//	assertEquals("res12", false, executor.getVariableValue("res12"));
-//	assertEquals("res13", false, executor.getVariableValue("res13"));
-//	
-//	// first case is not followed by a break
-//	assertEquals("cond2", "1", executor.getVariableValue("cond2"));
-//	assertEquals("res21", true, executor.getVariableValue("res21"));
-//	assertEquals("res22", true, executor.getVariableValue("res22"));
-//	assertEquals("res23", false, executor.getVariableValue("res23"));
-//
-//	// first and second case have multiple labels
-//	assertEquals("cond3", "12", executor.getVariableValue("cond3"));
-//	assertEquals("res31", false, executor.getVariableValue("res31"));
-//	assertEquals("res32", true, executor.getVariableValue("res32"));
-//	assertEquals("res33", false, executor.getVariableValue("res33"));
-//
-//	// first and second case have multiple labels and no break after first group
-//	assertEquals("cond4", "11", executor.getVariableValue("cond4"));
-//	assertEquals("res41", true, executor.getVariableValue("res41"));
-//	assertEquals("res42", true, executor.getVariableValue("res42"));
-//	assertEquals("res43", false, executor.getVariableValue("res43"));
-//
-//	// default case intermixed with other case labels in the second group
-//	assertEquals("cond5", "11", executor.getVariableValue("cond5"));
-//	assertEquals("res51", true, executor.getVariableValue("res51"));
-//	assertEquals("res52", true, executor.getVariableValue("res52"));
-//	assertEquals("res53", true, executor.getVariableValue("res53"));
-//
-//	// default case intermixed, with break
-//	assertEquals("cond6", "16", executor.getVariableValue("cond6"));
-//	assertEquals("res61", false, executor.getVariableValue("res61"));
-//	assertEquals("res62", true, executor.getVariableValue("res62"));
-//	assertEquals("res63", false, executor.getVariableValue("res63"));
-//
-//	// continue test
-//	assertEquals("res7",createList(
-//			/* i=0 */ false, false, false, 
-//			/* i=1 */ true, true, false, 
-//			/* i=2 */ true, true, false, 
-//			/* i=3 */ false, true, false,
-//			/* i=4 */ false, true, false, 
-//			/* i=5 */ false, false, true
-//				), executor.getVariableValue("res7"));
-//
-//	// return test
-//	assertEquals("res8", createList("0123","123","23","3","4","3"), executor.getVariableValue("res8"));
-//	
-//					
-//}
-//
-//
-//public void test_while(){
-//	System.out.println("\nWhile test:");
-//	String expStr = 
-//					"print_err('while1: simple loop');\n" + 
-//					"int[] res1;\n" +
-//					"int ctr1 = -1;\n" +
-//					"while (++ctr1<3) {\n" +
-//					"	res1 = res1 + ctr1;\n " +
-//					"	print_err('Iteration ' + ctr1);\n" +
-//					"}" +
-//					// continue test
-//					"print_err('while2: continue loop');\n" + 
-//					"int[] res2;\n" +
-//					"int ctr2 = -1;\n" +
-//					"while (++ctr2<3) {\n" +
-//					"	if (ctr2 == 1) {\n" +
-//					"		continue;\n" +
-//					"	}\n" + 	
-//					"	res2 = res2 + ctr2;\n " +
-//					"	print_err('Iteration ' + ctr2);\n" +
-//					"}" +
-//					// break test
-//					"print_err('while3: break loop');\n" + 
-//					"int[] res3;\n" +
-//					"int ctr3 = -1;\n" +
-//					"while (++ctr3<3) {\n" +
-//					"	if (ctr3 == 1) {\n" +
-//					"		break;\n" +
-//					"	}\n" + 	
-//					"	res3 = res3 + ctr3;\n " +
-//					"	print_err('Iteration ' + ctr3);\n" +
-//					"}\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	// simple while
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res1"));
-//	// continue
-//	assertEquals(createList(0,2), executor.getVariableValue("res2"));
-//	// break
-//	assertEquals(createList(0), executor.getVariableValue("res3"));
-//	
-//}
-//
-//public void test_do_while(){
-//	System.out.println("\nDo-while test:");
-//	String expStr = "print_err('do-while1: simple loop');\n" + 
-//					"int[] res1;\n" +
-//					"int ctr1 = 0;\n" +
-//					"do {\n" +
-//					"	res1[ctr1]=ctr1;\n " +
-//					"	print_err('Iteration ' + ctr1);\n" +
-//					"} while (++ctr1<3)\n" + 
-//					// continue test
-//					"print_err('do-while2: continue loop');\n" + 
-//					"int[] res2;\n" +
-//					"int ctr2 = 0;\n" +
-//					"do {\n" +
-//					"	if (ctr2 == 1) {\n" +
-//					"		continue;\n" +
-//					"	}\n" + 	
-//					"	res2[ctr2]=ctr2;\n " +
-//					"	print_err('Iteration ' + ctr2);\n" +
-//					"} while (++ctr2<3)\n" +
-//					// break test
-//					"print_err('do-while3: break loop');\n" + 
-//					"int[] res3;\n" +
-//					"int ctr3 = 0;\n" +
-//					"do {\n" +
-//					"	if (ctr3 == 1) {\n" +
-//					"		break;\n" +
-//					"	}\n" + 	
-//					"	res3[ctr3]=ctr3;\n " +
-//					"	print_err('Iteration ' + ctr3);\n" +
-//					"} while (++ctr3<3)\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	// simple loop
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res1"));
-//	// continue
-//	assertEquals(createList(0,null,2), executor.getVariableValue("res2"));
-//	// break
-//	assertEquals(createList(0), executor.getVariableValue("res3"));
-//	
-//}
-//
-//
-//public void test_for(){
-//	System.out.println("\nFor test:");
-//	String expStr = "print_err('for4: simple loop');\n" + 
-//					"int[] res1;\n" +
-//					"for (int ctr1=0; ctr1 < 3; ctr1++) {\n" +
-//					"	res1[ctr1]=ctr1;\n " +
-//					"	print_err('Iteration ' + ctr1);\n" +
-//					"}\n" + 
-//					// continue test
-//					"print_err('for2: continue loop');\n" + 
-//					"int[] res2;\n" +
-//					"for (int ctr2=0; ctr2<3; ctr2++) {\n" +
-//					"	if (ctr2 == 1) {\n" +
-//					"		continue;\n" +
-//					"	}\n" + 	
-//					"	res2[ctr2]=ctr2;\n " +
-//					"	print_err('Iteration ' + ctr2);\n" +
-//					"}\n" +
-//					// break test
-//					"print_err('for3: break loop');\n" + 
-//					"int[] res3;\n" +
-//					"for (int ctr3=0; ctr3<3; ctr3++) {\n" +
-//					"	if (ctr3 == 1) {\n" +
-//					"		break;\n" +
-//					"	}\n" + 	
-//					"	res3[ctr3]=ctr3;\n " +
-//					"	print_err('Iteration ' + ctr3);\n" +
-//					"}\n" +
-//					// empty init
-//					"print_err('for4: empty init');\n" + 
-//					"int[] res4;\n" +
-//					"int ctr4 = 0;\n" + 
-//					"for (; ctr4 < 3; ctr4++) {\n" +
-//					"	res4[ctr4]=ctr4;\n " +
-//					"	print_err('Iteration ' + ctr4);\n" +
-//					"}\n" +
-//					// empty update
-//					"print_err('for5: empty update');\n" + 
-//					"int[] res5;\n" +
-//					"for (int ctr5=0; ctr5 < 3;) {\n" +
-//					"	res5[ctr5]=ctr5;\n " +
-//					"	print_err('Iteration ' + ctr5);\n" +
-//					"	ctr5++;\n" +
-//					"}\n" +
-//					// empty final condition
-//					"print_err('for6: empty final condition');\n" + 
-//					"int[] res6;\n" +
-//					"for (int ctr6=0; ; ctr6++) {\n" +
-//					"	if (ctr6 >= 3) {\n" +
-//					"		break;\n" +
-//					"	}\n" +
-//					"	res6[ctr6]=ctr6;\n " +
-//					"	print_err('Iteration ' + ctr6);\n" +
-//					"}\n"  +
-//					// all conditions empty
-//					"print_err('for7: all conditions empty');\n" + 
-//					"int[] res7;\n" +
-//					"int ctr7=0;\n" + 
-//					"for (;;) {\n" +
-//					"	if (ctr7 >= 3) {\n" +
-//					"		break;\n" +
-//					"	}\n" +
-//					"	res7[ctr7]=ctr7;\n " +
-//					"	print_err('Iteration ' + ctr7);\n" +
-//					"	ctr7++;\n" + 
-//					"}\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	// simple loop
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res1"));
-//	// continue
-//	assertEquals(createList(0,null,2), executor.getVariableValue("res2"));
-//	// break
-//	assertEquals(createList(0), executor.getVariableValue("res3"));
-//	// empty init
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res4"));
-//	// empty update
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res5"));
-//	// empty final condition
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res6"));
-//	// all conditions empty
-//	assertEquals(createList(0,1,2), executor.getVariableValue("res7"));
-//	
-//}
-//
-//public void test_foreach() {
-//	System.out.println("\nForeach test:");
-//	String expStr = 
-//					// iterating over list
-//					"string[] it = [ 'a', 'b', 'c' ];\n" +
-//					"string ret = '';\n" +
-//					"foreach (string s : it) {\n" +
-//					"	ret = ret + s;\n" +
-//					"}\n" +
-//					"print_err(ret);\n"+
-//					// integer fields
-//					"print_err('foreach1: integer fields');\n" + 
-//					"int[] intRes;\n" +
-//					"int i=0;\n" + 
-//					"foreach (int intVal : $firstInput.*) {\n" +
-//					"	intRes[i++]=intVal;\n " +
-//					"	print_err('int: ' + intRes);\n" +
-//					"}\n" +
-//					// long fields
-//					"print_err('foreach2: long fields');\n" + 
-//					"long[] longRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (long longVal : $firstInput.*) {\n" +
-//					"	longRes[i++]=longVal;\n " +
-//					"	print_err('long: ' + longRes);\n" +
-//					"}\n" +
-//					// double fields
-//					"print_err('foreach3: double fields');\n" + 
-//					"double[] doubleRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (double doubleVal : $firstInput.*) {\n" +
-//					"	doubleRes[i++]=doubleVal;\n " +
-//					"	print_err('double: ' + doubleRes);\n" +
-//					"}\n" +
-//					// decimal fields
-//					"print_err('foreach5: decimal fields');\n" + 
-//					"decimal[] decimalRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (decimal decimalVal : $firstInput.*) {\n" +
-//					"	decimalRes[i++]=decimalVal;\n " +
-//					"	print_err('decimal: ' + decimalRes);\n" +
-//					"}\n" +
-//					// boolean fields
-//					"print_err('foreach4: boolean fields');\n" + 
-//					"boolean[] booleanRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (boolean booleanVal : $firstInput.*) {\n" +
-//					"	booleanRes[i++]=booleanVal;\n " +
-//					"	print_err('boolean: ' + booleanRes);\n" +
-//					"}\n" +
-//					// string fields
-//					"print_err('foreach6: string fields');\n" + 
-//					"string[] stringRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (string stringVal : $firstInput.*) {\n" +
-//					"	stringRes[i++]=stringVal;\n " +
-//					"	print_err('string: ' + stringRes);\n" +
-//					"}\n" +
-//					// date fields
-//					"print_err('foreach7: date fields');\n" + 
-//					"date[] dateRes;\n" +
-//					"i=0;\n" + 
-//					"foreach (date dateVal : $firstInput.*) {\n" +
-//					"	dateRes[i++]=dateVal;\n " +
-//					"	print_err('date: ' + dateRes);\n" +
-//					"}\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(createList("a","b","c"), executor.getVariableValue("it"));
-//	assertEquals("abc",executor.getVariableValue("ret"));
-//	assertEquals(createList(VALUE_VALUE), executor.getVariableValue("intRes"));
-//	assertEquals(createList(BORN_MILLISEC_VALUE), executor.getVariableValue("longRes"));
-//	assertEquals(createList(AGE_VALUE), executor.getVariableValue("doubleRes"));
-//	assertEquals(createList(CURRENCY_VALUE), executor.getVariableValue("decimalRes"));
-//	assertEquals(createList(FLAG_VALUE), executor.getVariableValue("booleanRes"));
-//	assertEquals(createList(NAME_VALUE,CITY_VALUE), executor.getVariableValue("stringRes"));
-//	assertEquals(createList(BORN_VALUE), executor.getVariableValue("dateRes"));
-//}
-//
-//public void test_return(){
-//	System.out.println("\nReturn test:");
-//	String expStr = "function int sum(int a, int b) {\n" +
-//					"	return a+b;\n" +
-//					"}\n\n" + 
-//					"int lhs = 1;\n" +
-//					"int rhs = 2;\n" +
-//					"int res = sum(lhs,rhs);\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(Integer.valueOf(1), executor.getVariableValue("lhs"));
-//	assertEquals(Integer.valueOf(2), executor.getVariableValue("rhs"));
-//	assertEquals(Integer.valueOf(3), executor.getVariableValue("res"));
-//}
-//
-//
-//public void test_overloading(){
-//	System.out.println("\nReturn test:");
-//	String expStr = "function int sum(int a, int b) {\n" +
-//					"	return a+b;\n" +
-//					"}\n\n" + 
-//					"function string sum(string a, string b) {\n" +
-//					"	return a+b;\n" +
-//					"}\n\n" +
-//					"int res1 = sum(1,2);\n" +
-//					"print_err(res1);\n" +
-//					"string res2 = sum('Memento ', 'mori');\n" +
-//					"print_err(res2);";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(Integer.valueOf(3), executor.getVariableValue("res1"));
-//	assertEquals("Memento mori", executor.getVariableValue("res2"));
-//}
-//
-//public void test_built_in_functions(){
-//	System.out.println("\nBuilt-in functions test:");
-//	String expStr = 
-//			"int notNullValue = 1; int nullValue = null;\n" +
-//			"boolean isNullRes1 = isnull(notNullValue);\n" +
-//			"boolean isNullRes2 = isnull(nullValue);\n" +
-//			"int nvlRes1 = nvl(notNullValue,2);\n" +
-//			"int nvlRes2 = nvl(nullValue,2);\n" +
-//			"int nvl2Res1 = nvl2(notNullValue,1,2);\n" +
-//			"int nvl2Res2 = nvl2(nullValue,1,2);\n" +
-//			"int iifRes1 = iif(isnull(notNullValue),1,2);\n" +
-//			"int iifRes2 = iif(isnull(nullValue),1,2);\n" +
-//			"print_err('This message belongs to standard error');\n" +
-//			"print_log(debug, 'This message belongs to DEBUG');\n" +
-//			"print_log(info, 'This message belongs to INFO');\n" +
-//			"print_log(warn, 'This message belongs to WARN');\n" +
-//			"print_log(error, 'This message belongs to ERROR');\n" +
-//			"print_log(fatal, 'This message belongs to FATAL');\n" +
-//			"print_log(trace, 'This message belongs to TRACE');\n";
-//			
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(Integer.valueOf(1), executor.getVariableValue("notNullValue"));
-//	assertNull(executor.getVariableValue("nullValue"));
-//	assertEquals(false, executor.getVariableValue("isNullRes1"));
-//	assertEquals(true, executor.getVariableValue("isNullRes2"));
-//	assertEquals(executor.getVariableValue("notNullValue"), executor.getVariableValue("nvlRes1"));
-//	assertEquals(Integer.valueOf(2), executor.getVariableValue("nvlRes2"));
-//	assertEquals(executor.getVariableValue("notNullValue"), executor.getVariableValue("nvl2Res1"));
-//	assertEquals(Integer.valueOf(2), executor.getVariableValue("nvl2Res2"));
-//	assertEquals(Integer.valueOf(2), executor.getVariableValue("iifRes1"));
-//	assertEquals(Integer.valueOf(1), executor.getVariableValue("iifRes2"));
-//}
-//
-//
-//public void test_mapping(){
-//	System.out.println("\nMapping test:");
-//	String expStr =
-//		// different kinds of field access
-//		"$0.0 = $0.0;\n" +
-//		"$0.Age = $0.Age;\n" +
-//		"$firstOutput.City = $firstInput.City;\n" +
-//		"$firstOutput.3 = $firstInput.3;\n" +
-//		// star-mapping
-//		"$secondOutput.* = $secondInput.*;\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	// simple mappings
-//	assertEquals(NAME_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("Name")).getValue()).toString());
-//	assertEquals(AGE_VALUE, ((NumericDataField)outputRecords[0].getField("Age")).getValue());
-//	assertEquals(CITY_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("City")).getValue()).toString());
-//	assertEquals(BORN_VALUE, ((DateDataField)outputRecords[0].getField("Born")).getValue());
-//	
-//	// * mapping
-//	assertTrue(recordEquals(inputRecords[1],outputRecords[1]));
-//}
-//
-//public void test_sequence(){
-//    System.out.println("\nSequence test:");
-//    String expStr = 
-//    				// int values
-//    				"int[] intRes;\n" +
-//    				"for (int i=0; i<3; i++) {\n" +
-//    				"	intRes[i] = sequence(TestSequence,int).next();\n" + 
-//    				"}\n" +
-//    				// long values
-//    				"sequence(TestSequence).reset();\n" +
-//    				"long[] longRes;\n" +
-//    				"for (int i=0; i<3; i++) {\n" +
-//    				"	longRes[i] = sequence(TestSequence,long).next();\n" + 
-//    				"}\n" +
-//    				// string values
-//    				"sequence(TestSequence).reset();\n" +
-//    				"string[] stringRes;\n" +
-//    				"for (int i=0; i<3; i++) {\n" +
-//    				"	stringRes[i] = sequence(TestSequence,string).next();\n" + 
-//    				"}\n" +
-//    				// current
-//    				"int intCurrent = sequence(TestSequence,int).current();\n" + 
-//    				"long longCurrent = sequence(TestSequence,long).current();\n" + 
-//    				"string stringCurrent = sequence(TestSequence,string).current();\n";
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(createList(1,2,3), executor.getVariableValue("intRes"));
-//	assertEquals(createList(Long.valueOf(1),Long.valueOf(2),Long.valueOf(3)),executor.getVariableValue("longRes"));
-//	assertEquals(createList("1","2","3"), executor.getVariableValue("stringRes"));
-//	assertEquals(Integer.valueOf(3),executor.getVariableValue("intCurrent"));
-//	assertEquals(Long.valueOf(3),executor.getVariableValue("longCurrent"));
-//	assertEquals("3",executor.getVariableValue("stringCurrent"));
-//}
-//
-//
-//public void test_lookup(){
-//    System.out.println("\nLookup test:");
-//    String expStr = 
-//    				"string[] alphaResult;\n" +
-//    				"string[] bravoResult;\n" +
-//    				"int[] countResult;\n" +
-//    				"string[] charlieResult;\n" +
-//    				"int idx = 0;\n" +
-//    				"for (int i=0; i<2; i++) {\n" +
-//    				"	alphaResult[i] = lookup(TestLookup).get('Alpha',1).City;\n" + 
-//    				"	bravoResult[i] = lookup(TestLookup).get('Bravo',2).City;\n" +
-//    				"	countResult[i] = lookup(TestLookup).count('Charlie',3);\n" +
-//    				"	for (int count=0; count<countResult[i]; count++) {\n" +
-//    				"		charlieResult[idx++] = lookup(TestLookup).next().City;\n" +
-//    				"	}\n" +
-//    				"	print_err('Freeing lookup table');\n" +
-//    				"	lookup(TestLookup).free();\n" +
-//    				"	print_err('Initializing lookup table');\n" +
-//    				"	lookup(TestLookup).init();\n" +
-//    				"}\n";
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	assertEquals(createList("Andorra la Vella","Andorra la Vella"), executor.getVariableValue("alphaResult"));
-//	assertEquals(createList("Bruxelles","Bruxelles"),executor.getVariableValue("bravoResult"));
-//	assertEquals(createList("Chamonix","Chomutov","Chamonix","Chomutov"), executor.getVariableValue("charlieResult"));
-//	assertEquals(createList(2,2),executor.getVariableValue("countResult"));
-//}
-//
-//
-//@SuppressWarnings("unchecked")
-//public void test_container_lib(){
-//	System.out.println("\nContainerLib test:");
-//	String expStr = "int[] origList = [1,2,3,4,5];\n" +
-//					//copy
-//					"int[] copyList; copy(copyList,origList);\n" + 
-//					// pop
-//					"int popElem = pop(origList);\n" + 
-//					"int[] popList; copy(popList,origList);\n" +
-//					// poll
-//					"int pollElem = poll(origList);\n" + 
-//					"int[] pollList; copy(pollList,origList);\n" + 
-//					// push
-//					"int pushElem = 6;\n" +
-//					"push(origList,pushElem);\n" + 
-//					"int[] pushList; copy(pushList,origList);\n" +
-//					// insert
-//					"int insertElem = 7;\n" + 
-//					"int insertIndex = 1;\n" +
-//					"insert(origList,insertIndex,insertElem);\n" +
-//					"int[] insertList; copy(insertList,origList);\n" +
-//					// remove
-//					"int removeIndex = 2;\n" +
-//					"int removeElem = remove(origList,removeIndex);\n" + 
-//					"int[] removeList; copy(removeList,origList);\n" +
-//					// sort
-//					"int[] sortList; sort(origList); copy(sortList,origList);\n" +
-//					// reverse
-//					"int[] reverseList; reverse(origList); copy(reverseList,origList);\n" +
-//					"int[] removeAllList; remove_all(origList); copy(removeAllList,origList);\n";
-//	
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-//	// copy
-//	assertEquals(createList(1,2,3,4,5), executor.getVariableValue("copyList"));
-//	// pop
-//	assertEquals(Integer.valueOf(5), executor.getVariableValue("popElem"));
-//	assertEquals(createList(1,2,3,4), executor.getVariableValue("popList"));
-//	// poll
-//	assertEquals(Integer.valueOf(1), executor.getVariableValue("pollElem"));
-//	assertEquals(createList(2,3,4), executor.getVariableValue("pollList"));
-//	// push
-//	assertEquals(Integer.valueOf(6), executor.getVariableValue("pushElem"));
-//	assertEquals(createList(2,3,4,6), executor.getVariableValue("pushList"));
-//	// insert
-//	assertEquals(Integer.valueOf(7), executor.getVariableValue("insertElem"));
-//	assertEquals(Integer.valueOf(1), executor.getVariableValue("insertIndex"));
-//	assertEquals(createList(2,7,3,4,6), executor.getVariableValue("insertList"));
-//	// remove
-//	assertEquals(Integer.valueOf(3), executor.getVariableValue("removeElem"));
-//	assertEquals(Integer.valueOf(2), executor.getVariableValue("removeIndex"));
-//	assertEquals(createList(2,7,4,6), executor.getVariableValue("removeList"));
-//	// sort
-//	assertEquals(createList(2,4,6,7), executor.getVariableValue("sortList"));
-//	// reverse
-//	assertEquals(createList(7,6,4,2), executor.getVariableValue("reverseList"));
-//	// remove_all
-//	assertTrue(((List<Integer>)executor.getVariableValue("removeAllList")).isEmpty());
-//}
-//
-//
-//
-//
-//public void test_buildInFunctions(){
-//	System.out.println("\nBuild-in functions test:");
-//	String expStr = 
-//		"string s;s='hello world';\n" +
-//					"int lenght;lenght=5;\n" +
-//					"string subs;subs=substring(s,1,lenght);\n" +
-//					"print_err('original string:'+s );\n" +
-//					"print_err('substring:'+subs );\n" +
-//					"string upper;upper=uppercase(subs);\n" +
-//					"print_err('to upper case:'+upper );\n"+
-//					"string lower;lower=lowercase(subs+'hI   ');\n" +
-//					"print_err('to lower case:'+lower );\n"+
-//					"string t;t=trim('\t  im  '+lower);\n" +
-//					"print_err('after trim:'+t );\n" +
-//					"//print_stack();\n"+
-//					"decimal l;l=length(upper);\n" +
-//					"print_err('length of '+upper+':'+l );\n"+
-//					"string c;c=concat(lower,upper);\n" + //,2,',today is ',today());\n" +
-////					"print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );\n"+
-////					"date datum; date born;born=nvl($Born,today()-365);\n" +
-////					"print_err('born=' + born);\n" +
-////					"datum=dateadd(born,100,millisec);\n" +
-////					"print_err('dataum = ' + datum );\n"+
-////					"long ddiff;date otherdate;otherdate=today();\n" +
-////					"ddiff=datediff(born,otherdate,year);\n" +
-////					"print_err('date diffrence:'+ddiff );\n" +
-////					"print_err('born: '+born+' otherdate: '+otherdate);\n" +
-////					"boolean isn;isn=isnull(ddiff);\n" +
-////					"print_err(isn );\n" +
-//					"decimal s1;s1=nvl(l+1,1);\n" +
-//					"print_err(s1 );\n" +
-//					"string rep;rep=replace(c,'[lL]','t');\n" +
-//					"print_err(rep );\n" +
-////					"decimal(10,5) stn;stn=str2num('2.5125e-1',decimal);\n" +
-////					"print_err(stn );\n" +
-////					"int i = str2num('1234');\n" +
-////					"string nts;nts=num2str(10,4);\n" +
-////					"print_err(nts );\n" +
-//					"date newdate;newdate=2001-12-20 16:30:04;\n" +
-//					"int dtn;dtn=date2num(newdate,month);\n" +
-//					"print_err('month: ' + dtn );\n" +
-//					"int ii;ii=iif(newdate<2000-01-01,20,21);\n" +
-//					"print_err('ii:'+ii);\n" +
-//					"print_stack();\n" +
-////					"date ndate;ndate=2002-12-24;\n" +
-////					"string dts;dts=date2str(ndate,'yy.MM.dd');\n" +
-////					"print_err('date to string:'+dts);\n" +
-////					"print_err(str2date(dts,'yy.MM.dd'));\n" +
-////					"string lef=left(dts,5);\n" +
-////					"string righ=right(dts,5);\n" +
-//					"print_err('s=word, soundex='+soundex('word'));\n" +
-//					"print_err('s=world, soundex='+soundex('world'));\n" +
-//					"int j;for (j=0;j<length(s);j++){print_err(char_at(s,j));};\n" +
-//					"int charCount = count_char('mimimichal','i');\n" +
-//					"print_err(charCount);\n";
-//
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//	
-////	      assertEquals("subs","ello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("subs")).getTLValue().toString());
-////	      assertEquals("upper","ELLO ",executor.getGlobalVariable(parser.getGlobalVariableSlot("upper")).getTLValue().toString());
-////	      assertEquals("lower","ello hi   ",executor.getGlobalVariable(parser.getGlobalVariableSlot("lower")).getTLValue().toString());
-////	      assertEquals("t(=trim)","im  ello hi",executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getTLValue().toString());
-////	      assertEquals("l(=length)",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getTLValue().getNumeric().getInt());
-////	      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("c")).getTLValue().toString());
-//////	      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
-////	      assertEquals("ddiff",-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getTLValue().getNumeric().getLong());
-////	      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getTLValue()==TLBooleanValue.TRUE);
-////	      assertEquals("s1",Double.valueOf(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getTLValue().toString());
-////	      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("i",1234,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getTLValue().getNumeric().getInt());
-////	      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getTLValue().toString());
-////	      assertEquals("dtn",11.0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dtn")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("ii",21,executor.getGlobalVariable(parser.getGlobalVariableSlot("ii")).getTLValue().getNumeric().getInt());
-////	      assertEquals("dts","02.12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("dts")).getTLValue().toString());
-////	      assertEquals("lef","02.12",executor.getGlobalVariable(parser.getGlobalVariableSlot("lef")).getTLValue().toString());
-////	      assertEquals("righ","12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("righ")).getTLValue().toString());
-////	      assertEquals("charCount",3,executor.getGlobalVariable(parser.getGlobalVariableSlot("charCount")).getTLValue().getNumeric().getInt());
-//	      
-//}
-//
-//public void test_functions2(){
-//    System.out.println("\nFunctions test:");
-//    String expStr = 
-//    	"string test='test';\n" +
-//		"boolean isBlank=is_blank(test);\n" +
-//		"string blank = '';\n" + 
-//		"boolean isBlank1=is_blank(blank);\n" +
-//		"string nullValue=null; boolean isBlank2=is_blank(nullValue);\n" +
-//		"boolean isAscii1=is_ascii('test');\n" +
-//		"boolean isAscii2=is_ascii('aÄ™Ĺ™');\n" +
-//		"boolean isNumber=is_number('t1');\n" +
-//		"boolean isNumber1=is_number('1g');\n" +
-//		"boolean isNumber2=is_number('1');\n" +
-//		"print_err(str2int('1'));\n" +
-//		"boolean isNumber3=is_number('-382.334');\n" +
-//		"print_err(str2double('-382.334'));\n" +
-//		"boolean isNumber4=is_number('+332e2');\n" +
-//		"boolean isNumber5=is_number('8982.8992e-2');\n" +
-//		"print_err(str2double('8982.8992e-2'));\n" +
-//		"boolean isNumber6=is_number('-7888873.2E3');\n" +
-//		"print_err(str2decimal('-7888873.2E3'));\n" +
-//		"boolean isInteger=is_integer('h3');\n" +
-//		"boolean isInteger1=is_integer('78gd');\n" +
-//		"boolean isInteger2=is_integer('8982.8992');\n" +
-//		"boolean isInteger3=is_integer('-766542378');\n" +
-//		"print_err(str2int('-766542378'));\n" +
-//		"boolean isLong=is_long('7864232568822234');\n" +
-//		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy','en.US');\n" +
-//		"print_err(str2date('20Jul2000','ddMMMyyyy','en.GB'));\n" +
-//		"boolean isDate6=is_date('20July    2000','ddMMMMMMMMyyyy','en.US');\n" +
-//		"print_err(str2date('20July    2000','ddMMMyyyy','en.GB'));\n" +
-//		"boolean isDate3=is_date('4:42','HH:mm');\n" +
-//		"print_err(str2date('4:42','HH:mm'));\n" +
-//		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');\n" +
-//		"print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
-//		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
-//		"boolean isDate2=is_date('24:00 20.11.2007','kk:mm dd.MM.yyyy');\n" +
-//		"print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
-//		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n" +
-//		"boolean isDate7=is_date('                ','HH:mm dd.MM.yyyy',true);\n"+
-//		"boolean isDate8=is_date('                ','HH:mm dd.MM.yyyy');\n"+
-//		"boolean isDate9=is_date('20-15-2007','dd-MM-yyyy');\n" +
-//		"print_err(str2date('20-15-2007','dd-MM-yyyy'));\n" +
-//		"boolean isDate10=is_date('20-15-2007','dd-MM-yyyy',false);\n" +
-//		"boolean isDate11=is_date('20-15-2007','dd-MM-yyyy',true);\n" + 
-//		"boolean isDate12=is_date('942-12-1996','dd-MM-yyyy','en.US',true);\n" +
-//		"boolean isDate13=is_date('942-12-1996','dd-MM-yyyy','en.US',false);\n" +
-//		"boolean isDate14=is_date('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ',false);\n" +
-//		"boolean isDate15=is_date('12-Prosinec-1996','dd-MMM-yyyy','en.US',false);\n" + 
-//		"boolean isDate16=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');\n" +
-//		"print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
-//		"boolean isDate17=is_date('','HH:mm dd.MM.yyyy',false);\n" +
-//		"boolean isDate18=is_date('','HH:mm dd.MM.yyyy',true);\n";
-//
-//    		
-//
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//    
-//
-//
-//	assertEquals("test", executor.getVariableValue("test"));
-//	assertEquals(Boolean.FALSE,executor.getVariableValue("isBlank"));
-//	assertEquals("", executor.getVariableValue("blank"));
-//	assertNull(executor.getVariableValue("nullValue"));
-//	assertEquals(true, executor.getVariableValue("isBlank2"));
-//	assertEquals(true,executor.getVariableValue("isAscii1"));
-//	assertEquals(false,executor.getVariableValue("isAscii2"));
-//	assertEquals(false,executor.getVariableValue("isNumber"));
-//	assertEquals(false,executor.getVariableValue("isNumber1"));
-//	assertEquals(true,executor.getVariableValue("isNumber2"));
-//	assertEquals(true,executor.getVariableValue("isNumber3"));
-//	assertEquals(false,executor.getVariableValue("isNumber4"));
-//	assertEquals(true,executor.getVariableValue("isNumber5"));
-//	assertEquals(true,executor.getVariableValue("isNumber6"));
-//	assertEquals(false,executor.getVariableValue("isInteger"));
-//	assertEquals(false,executor.getVariableValue("isInteger1"));
-//	assertEquals(false,executor.getVariableValue("isInteger2"));
-//	assertEquals(true,executor.getVariableValue("isInteger3"));
-//	assertEquals(true,executor.getVariableValue("isLong"));
-//	assertEquals(true,executor.getVariableValue("isDate"));
-//	assertEquals(false,executor.getVariableValue("isDate1"));
-//	// "kk" allows hour to be 1-24 (as opposed to HH allowing hour to be 0-23) 
-//	assertEquals(true,executor.getVariableValue("isDate2"));
-//	assertEquals(true,executor.getVariableValue("isDate3"));
-//	assertEquals(false,executor.getVariableValue("isDate4"));
-//	assertEquals(true,executor.getVariableValue("isDate5"));
-//	assertEquals(true,executor.getVariableValue("isDate6"));
-//	assertEquals(false,executor.getVariableValue("isDate7"));
-//	// illegal month: 15
-//	assertEquals(false,executor.getVariableValue("isDate9"));
-//	assertEquals(false,executor.getVariableValue("isDate10"));
-//	assertEquals(true,executor.getVariableValue("isDate11"));
-//	assertEquals(true,executor.getVariableValue("isDate12"));
-//	assertEquals(false,executor.getVariableValue("isDate13"));
-//	assertEquals(true,executor.getVariableValue("isDate14"));
-//	assertEquals(false,executor.getVariableValue("isDate15"));
-//	// 24 is an illegal value for pattern HH (it allows only 0-23)
-//	assertEquals(false,executor.getVariableValue("isDate16"));
-//	// empty string in strict mode: invalid
-//	assertEquals(false,executor.getVariableValue("isDate17"));
-//	// empty string in lenient mode: valid
-//	assertEquals(true,executor.getVariableValue("isDate18"));
-//
-//
-//          
-//}
-//
-//public void test_functions3(){
-//    System.out.println("\nFunctions test:");
-//    String expStr = "string test=remove_diacritic('teščik');\n" +
-//					"print_err(test);\n" + 
-//					"string test1=remove_diacritic('žabička');\n" +
-//					"print_err(test1);\n" + 
-//					"string r1=remove_blank_space(\"" + 
-//					StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") + 
-//					"\");\n" +
-//					"print_err(r1);\n" + 
-//					"string an1 = get_alphanumeric_chars(\"" +
-//						StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-//					"\");\n" +
-//					"print_err(an1);\n" + 
-//						"string an2 = get_alphanumeric_chars(\"" +
-//						StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-//					"\",true,true);\n" +
-//					"print_err(an2);\n" + 
-//						"string an3 = get_alphanumeric_chars(\"" +
-//						StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-//					"\",true,false);\n" +
-//					"print_err(an3);\n" + 
-//						"string an4 = get_alphanumeric_chars(\"" +
-//						StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
-//					"\",false,true);\n" +
-//					"print_err(an4);\n" + 
-//					"string t=translate('hello','leo','pii');\n" +
-//					"print_err(t);\n" + 
-//					"string t1=translate('hello','leo','pi');\n" +
-//					"print_err(t1);\n" + 
-//					"string t2=translate('hello','leo','piims');\n" +
-//					"print_err(t2);\n" + 
-//					"string t3=translate('hello','hleo','');\n" +
-//					"print_err(t3);\n" + 
-//					"string t4=translate('my language needs the letter e', 'egms', 'X');\n" +
-//					"print_err(t4);\n" + 
-//					"string input='hello world';\n" +
-//					"print_err(input);\n" + 
-//					"int index=index_of(input,'l');\n" +
-//					"print_err('index of l: ' + index);\n" + 
-//					"int index1=index_of(input,'l',5);\n" +
-//					"print_err('index of l since 5: ' + index1);\n" +
-//					"int index2=index_of(input,'hello');\n" +
-//					"print_err('index of hello: ' + index2);\n" +
-//					"int index3=index_of(input,'hello',1);\n" +
-//					"print_err('index of hello since 1: ' + index3);\n" +
-//					"int index4=index_of(input,'world',1);\n" +
-//					"print_err('index of world: ' + index4);\n";
-//			        
-//	TransformationGraph graph = createDefaultGraph();
-//	DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-//	DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-//
-//	DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-//
-//	DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-//
-//	print_code(expStr);
-//	TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-//	List<ErrorMessage> messages = compiler.validate(expStr);
-//	printMessages(messages);
-//
-//	if (messages.size() > 0) {
-//		throw new AssertionFailedError("Error in execution. Check standard output for details.");
-//	}
-//
-//	CLVFStart parseTree = compiler.getStart();
-//	parseTree.dump("");
-//
-//	TransformLangExecutor executor = createExecutor(compiler, graph, inputRecords, outputRecords);
-//	executor.keepGlobalScope();
-//	executor.init(parseTree);
-//	executor.execute(parseTree);
-//    
-//	assertEquals("tescik",executor.getVariableValue("test"));
-//	assertEquals("zabicka",executor.getVariableValue("test1"));
-//	assertEquals("abcdef",executor.getVariableValue("r1"));
-//	assertEquals("a1bcde2f",executor.getVariableValue("an1"));
-//	assertEquals("a1bcde2f",executor.getVariableValue("an2"));
-//	assertEquals("abcdef",executor.getVariableValue("an3"));
-//	assertEquals("12",executor.getVariableValue("an4"));
-//	assertEquals("hippi",executor.getVariableValue("t"));
-//	assertEquals("hipp",executor.getVariableValue("t1"));
-//	assertEquals("hippi",executor.getVariableValue("t2"));
-//	assertEquals("",executor.getVariableValue("t3"));
-//	assertEquals("y lanuaX nXXd thX lXttXr X",executor.getVariableValue("t4"));
-//	assertEquals(2,executor.getVariableValue("index"));
-//	assertEquals(9,executor.getVariableValue("index1"));
-//	assertEquals(0,executor.getVariableValue("index2"));
-//	assertEquals(-1,executor.getVariableValue("index3"));
-//	assertEquals(6,executor.getVariableValue("index4"));
-//
-//          
-//}
-//
-//public void test_functions4(){
-//    System.out.println("\nFunctions test:");
-//    DecimalFormat format = (DecimalFormat)NumberFormat.getInstance();
-//    String expStr = 
-//    		"string stringNo='12';\n" +
-//    		"int No;\n" +
-//    		"function print_result(from,to, format){\n" +
-//    		"	if (isnull(format)) {\n" +
-//    		"		if (try_convert(from,to)) print_err('converted:'+from+'-->'+to);\n" +
-//    		"		else print_err('cant convert:'+from+'-->'+to);\n" +
-//    		"	}else{\n" +
-//    		"		if (try_convert(from,to, format)) print_err('converted:'+from+'-->'+to);\n" +
-//    		"		else print_err('cant convert:'+from+'-->'+to+' with pattern '+format);\n" +
-//    		"	}\n" +
-//    		"};\n" +
-//    		"print_result(stringNo,No,null);\n" +
-//    		"stringNo='128a';\n" +
-//    		"print_result(stringNo,No,null);\n" +
-//    		"stringNo='" + format.format(1285.455) + "';\n" +
-//    		"double no1=1.34;\n" +
-//    		"print_result(stringNo,no1,'" + format.toPattern() + "');\n" +
-//    		"decimal(10,3) no2;\n" +
-//    		"print_result(no1,no2,null);\n" +
-//    		"print_result(34542.3,no2,null);\n" +
-//    		"int no3;\n" +
-//    		"print_result(34542.7,no3,null);\n" +
-//    		"print_result(345427,no3,null);\n" +
-//    		"print_result(3454876434468927,no3,null);\n" +
-//    		"date date1 = $Born;\n" +
-//    		"long no4;\n" +
-//    		"print_result(date1,no4,null);\n" +
-//    		"no4 = no4 + 1000*60*60*24;\n" +
-//    		"print_result(no4,date1,null);\n" +
-//    		"date date2;\n" +
-//    		"print_result('20.9.2007',date2,'dd.MM.yyyy');\n" +
-//    		"decimal(6,4) d1=73.8474;\n" +
-//    		"decimal(4,2) d2;\n" +
-//    		"print_result(d1,d2,null);\n" +
-//    		"d2 = 75.32;\n" +
-//    		"print_result(d2,d1,null);\n" +
-//    		"boolean b;\n" +
-//    		"print_result(1,b,null);\n" +
-//    		"print_result(b,d2,null);\n" +
-//    		"boolean b1;\n" +
-//    		"print_result('prawda',b1,null);\n";
-//
-////	      assertEquals(12,(executor.getGlobalVariable(parser.getGlobalVariableSlot("No")).getTLValue().getNumeric().getInt()));
-////	      assertEquals(1285.455,(executor.getGlobalVariable(parser.getGlobalVariableSlot("no1")).getTLValue().getNumeric().getDouble()));
-////	      assertEquals(DecimalFactory.getDecimal(34542.3, 10, 3),(executor.getGlobalVariable(parser.getGlobalVariableSlot("no2")).getTLValue().getNumeric()));
-////	      assertEquals(345427,(executor.getGlobalVariable(parser.getGlobalVariableSlot("no3")).getTLValue().getNumeric().getInt()));
-////	      today.add(Calendar.DATE, 1);
-////	      assertEquals(today.getTime(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("date1")).getTLValue().getDate()));
-////	      assertEquals(today.getTimeInMillis(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("no4")).getTLValue().getNumeric().getLong()));
-////	      assertEquals(new GregorianCalendar(2007,8,20).getTime(),(executor.getGlobalVariable(parser.getGlobalVariableSlot("date2")).getTLValue().getDate()));
-////	      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
-////	      assertEquals(DecimalFactory.getDecimal(75.32, 6, 4),(executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getTLValue().getNumeric()));
-////	      assertEquals(DecimalFactory.getDecimal(1), executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getTLValue().getNumeric());
-//	      
-//}
-//
-//public void test_string_functions(){
-//	System.out.println("\nString functions test:");
-//	String expStr = "string s1=chop(\"hello\\n\");\n" +
-//					"string s6=chop(\"hello\\r\");\n" +
-//					"string s5=chop(\"hello\\n\\n\");\n" +
-//					"string s2=chop(\"hello\\r\\n\");\n" +
-//					"string s7=chop(\"hello\\nworld\\r\\n\");\n" +
-//					"string s3=chop(\"hello world\",'world');\n" +
-//					"string s4=chop(\"hello world\",' world');\n"; 
-////		      assertEquals("s1","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getTLValue().getValue().toString());
-////		      assertEquals("s6","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s6")).getTLValue().getValue().toString());
-////		      assertEquals("s5","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s5")).getTLValue().getValue().toString());
-////		      assertEquals("s2","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s2")).getTLValue().getValue().toString());
-////		      assertEquals("s7","hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("s7")).getTLValue().getValue().toString());
-////		      assertEquals("s3","hello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("s3")).getTLValue().getValue().toString());
-////		      assertEquals("s4)","hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("s4")).getTLValue().getValue().toString());
-//}
-//
-//public void test_math_functions(){
-//	System.out.println("\nMath functions test:");
-//	String expStr = "number original;original=pi();\n" +
-//					"print_err('pi='+original);\n" +
-//					"number ee=e();\n" +
-//					"number result;result=sqrt(original);\n" +
-//					"print_err('sqrt='+result);\n" +
-//					"int i;i=9;\n" +
-//					"number p9;p9=sqrt(i);\n" +
-//					"number ln;ln=log(p9);\n" +
-//					"print_err('sqrt(-1)='+sqrt(-1));\n" +
-//					"decimal d;d=0;\n"+
-//					"print_err('log(0)='+log(d));\n" +
-//					"number l10;l10=log10(p9);\n" +
-//					"number ex;ex =exp(l10);\n" +
-//					"number po;po=pow(p9,1.2);\n" +
-//					"number p;p=pow(-10,-0.3);\n" +
-//					"print_err('power(-10,-0.3)='+p);\n" +
-//					"int r;r=round(-po);\n" +
-//					"print_err('round of '+(-po)+'='+r);\n"+
-//					"int t;t=trunc(-po);\n" +
-//					"print_err('truncation of '+(-po)+'='+t);\n" +
-//					"date date1;date1=2004-01-02 17:13:20;\n" +
-//					"date tdate1; tdate1=trunc(date1);\n" +
-//					"print_err('truncation of '+date1+'='+tdate1);\n" +
-//					"print_err('Random number: '+random());\n";
-//
-//		
-////FIXME: enable		      
-////	      assertEquals("pi",Double.valueOf(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("e",Double.valueOf(Math.E),executor.getGlobalVariable(parser.getGlobalVariableSlot("ee")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("sqrt",Double.valueOf(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("sqrt(9)",Double.valueOf(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("ln",Double.valueOf(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("log10",Double.valueOf(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("exp",Double.valueOf(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("power",Double.valueOf(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("power--",Double.valueOf(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getTLValue().getNumeric().getDouble());
-////	      assertEquals("round",Integer.parseInt("-4"),executor.getGlobalVariable(parser.getGlobalVariableSlot("r")).getTLValue().getNumeric().getInt());
-////	      assertEquals("truncation",Integer.parseInt("-3"),executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getTLValue().getNumeric().getInt());
-////	      assertEquals("date truncation",new GregorianCalendar(2004,00,02).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("tdate1")).getTLValue().getDate());
-////	      
-//}
 	
+	public void test_math_functions() { // TODO: should be distributed into separate tests.
+		doCompile("test_math_functions");
+		check("varPi", Double.valueOf(Math.PI));
+		check("varE", Double.valueOf(Math.E));
+		check("sqrtPi", Double.valueOf(Math.sqrt(Math.PI)));
+		check("sqrt9", Double.valueOf(3));
+		check("ln", Double.valueOf(Math.log(3)));
+		check("log10Var", Double.valueOf(Math.log10(3)));
+		check("ex", Double.valueOf(Math.exp(Math.log10(3))));
+		check("po", Double.valueOf(Math.pow(3, 1.2)));
+		check("p", Double.valueOf(Math.pow(-10, -0.3)));
+		check("r", Long.parseLong("-4"));
+		check("t", Long.parseLong("-3"));
+		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
+	}	
 }
