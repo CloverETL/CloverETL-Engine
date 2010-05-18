@@ -71,8 +71,6 @@ public class ASTBuilder extends NavigatingVisitor {
 	private final TreeMap<String, LookupTable> lookupMap;
 	/** Name/ID -> lookup mapping for sequences */
 	private final TreeMap<String, Sequence> sequenceMap;
-	/** Current transformation graph */
-	private final TransformationGraph graph; // may be null
 	/** Function declarations */
 	private final Map<String, List<CLVFFunctionDeclaration>> declaredFunctions;
 	/** Problem collector */
@@ -83,7 +81,6 @@ public class ASTBuilder extends NavigatingVisitor {
 	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata,
 			DataRecordMetadata[] outputMetadata, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, ProblemReporter problemReporter) {
 		super();
-		this.graph = graph;
 		this.inputMetadata = inputMetadata;
 		this.outputMetadata = outputMetadata;
 		this.inputRecordsMap = new TreeMap<String, Integer>();
@@ -704,17 +701,6 @@ public class ASTBuilder extends NavigatingVisitor {
 		return true;
 	}
 	
-	/* Not used now, as compiler can run in standalone (GUI,PropertyRefResolver) mode, where no graph is available */
-	private boolean checkGraph() {
-		if (this.graph == null) {
-			problemReporter.error(1, 1, 1, 1, "Performing only syntactic validation because graph configuration is invalid.", 
-					"Correct errors in graph configuration to enable code compilation");
-			return false;
-		}
-		
-		return true;
-	}
-	
 	private Integer getInputPosition(String name) {
 		return inputRecordsMap.get(name);
 	}
@@ -750,19 +736,6 @@ public class ASTBuilder extends NavigatingVisitor {
 
 	private DataRecordMetadata resolveMetadata(String recordName) {
 		return graphMetadata.get(recordName);
-	}
-
-	private Integer parseIntegerValue(String valueImage) throws NumberFormatException {
-		if (valueImage.startsWith("0x")) {
-			// hexadecimal literal -> skip 0x
-			return Integer.parseInt(valueImage.substring(2), 16);
-		} else if (valueImage.startsWith("0")) {
-			// octal literal
-			return Integer.parseInt(valueImage, 8);
-		} else {
-			// decimal literal
-			return Integer.parseInt(valueImage);
-		}
 	}
 
 	private TLType createType(CLVFType typeNode) {
