@@ -348,6 +348,11 @@ public class TypeChecker extends NavigatingVisitor {
 			if (ret.isError()) {
 				node.setType(ret);
 				error(node, "Incompatible types '" + lhs.name() + "' and '" + rhs.name() + "' for binary operator");
+			} else if (ret.isBoolean() && node.getOperator() != TransformLangParserConstants.EQUAL
+						&& node.getOperator() != TransformLangParserConstants.NON_EQUAL) {
+				node.setType(TLType.ERROR);
+				error(node, "Operator '" + TLUtils.operatorToString(node.getOperator()) + "' is not defined for types '"
+						+ lhs.name() + "' and '" + rhs.name() + "'");
 			} else {
 				node.setOperationType(ret);
 				node.setType(TLTypePrimitive.BOOLEAN);
