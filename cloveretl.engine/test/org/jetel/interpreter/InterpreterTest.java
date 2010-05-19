@@ -2471,7 +2471,6 @@ public class InterpreterTest extends CloverTestCase {
 						"	$0.Age:=$Age;\n" +
 						"	$out.City:=concat(\"My City \",$City);\n" +
 						"	$Born:=$1.Born;\n" +
-						"	$Born:=$Value;\n" +
 						"	$0.Value:=nvl(0,$in1.Value);\n" +
 						"	}\n" +
 						"test();\n" +
