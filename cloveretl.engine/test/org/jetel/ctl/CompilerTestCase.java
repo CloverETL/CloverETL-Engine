@@ -1129,10 +1129,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("minusMinusDecimal", new BigDecimal("9.1"));
 		check("minusDecimal", new BigDecimal("9.1"));
 		check("unaryDecimal", new BigDecimal("-10.1"));
+		
+		// record values
+		assertEquals(101, ((DataRecord) getVariable("plusPlusRecord")).getField("Value").getValue());
+		assertEquals(101, ((DataRecord) getVariable("recordPlusPlus")).getField("Value").getValue());
+		assertEquals(101, ((DataRecord) getVariable("modifiedPlusPlusRecord")).getField("Value").getValue());
+		assertEquals(101, ((DataRecord) getVariable("modifiedRecordPlusPlus")).getField("Value").getValue());
+		
+		//record as parameter
+		assertEquals(99, ((DataRecord) getVariable("minusMinusRecord")).getField("Value").getValue());
+		assertEquals(99, ((DataRecord) getVariable("recordMinusMinus")).getField("Value").getValue());
+		assertEquals(99, ((DataRecord) getVariable("modifiedMinusMinusRecord")).getField("Value").getValue());
+		assertEquals(99, ((DataRecord) getVariable("modifiedRecordMinusMinus")).getField("Value").getValue());
+		
 		// logical not
 		check("booleanValue", true);
 		check("negation", false);
 		check("doubleNegation", true);
+	}
+	
+	public void test_unary_operators_record() {
+		doCompileExpectErrors("test_unary_operators_record", Arrays.asList(
+				"Illegal argument to ++/-- operator",
+				"Illegal argument to ++/-- operator",
+				"Illegal argument to ++/-- operator",
+				"Illegal argument to ++/-- operator"));
 	}
 	
 	public void test_equal() {
