@@ -10,7 +10,7 @@ cd cloveretl.engine
 	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial \
 	-Dcte.environment.config=2.8_detail \
 	-Dcte.logpath=/data/cte-logs \
-	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER
+	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER \
 	-Dtest.exclude=org/jetel/graph/ResetTest.java
 	
 if  [ "$(hostname)" != "klara" ] ; then
