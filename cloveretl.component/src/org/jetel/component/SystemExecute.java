@@ -49,6 +49,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -272,6 +273,20 @@ public class SystemExecute extends Node{
 		return batch.getCanonicalPath();
 	}
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+		if (getOutPorts().size()==0 && outputFileName!=null){
+			try{
+				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
+				outFile.createNewFile();
+				this.outputFile = new FileWriter(outFile,append);
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
+		}
+    }
+	
 	@Override
 	public Result execute() throws Exception {
 		//Creating and initializing record from input port
@@ -401,9 +416,6 @@ public class SystemExecute extends Node{
 				}
 			}
 		}
-		if (outputFile!=null) {
-			outputFile.close();
-		}
 		//chek results of getting and sending data
 		String resultMsg = null;
 		if (getData!=null){
@@ -465,6 +477,22 @@ public class SystemExecute extends Node{
 			throw new JetelException(resultMsg);
 		}
 	}
+	
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		if (outputFile!=null) {
+    			outputFile.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+    
+
 	
 	@Override
 	public void free() {
@@ -541,17 +569,6 @@ public class SystemExecute extends Node{
 		}
 		//wee need separate error stream only if data are sent to output port
 		processBuilder.redirectErrorStream(getOutputPort(OUTPUT_PORT) == null);
-		
-		//prepare output file
-		if (getOutPorts().size()==0 && outputFileName!=null){
-			try{
-				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
-				outFile.createNewFile();
-				this.outputFile = new FileWriter(outFile,append);
-			}catch(IOException ex){
-				throw new ComponentNotReadyException(ex);
-			}
-		}
 	}
 
 	/* (non-Javadoc)

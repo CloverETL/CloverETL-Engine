@@ -40,6 +40,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
@@ -124,6 +125,7 @@ public class XSLDataTransformer extends Node {
 	private ReadableChannelIterator channelIterator;
 	private TargetFile currentTarget;
 	private XSLTransformer transformer;
+	private InputStream xsltIs; //a stream used in xsltMappingTransition and transformer
 
 	/**
 	 * Constructor for the XSLTransformer object. 
@@ -160,73 +162,13 @@ public class XSLDataTransformer extends Node {
 	}
 
 	@Override
-	public Result execute() throws Exception {
-		// transformation for the mapping attribute
-		if (xsltMappingTransition != null) {
-			return executeMapping();
-		}
+	//MAINTAINS RESOURCES:
+	// * xsltFile (xsltIs - read),
+	// * xmlInputFile (channelIterator - read),
+	// * xmlOutputFile (currentTarget - write)
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
 		
-		// transformation for file attributes
-		return executeFiles();
-	}
-	
-	public Result executeFiles() throws Exception {
-		try {
-			ReadableByteChannel readableByteChannel;
-			XSLTFormatter formatter;
-			WritableByteChannel writableByteChannel;
-			boolean next = false;
-			
-			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.next()) != null) {
-				if (next) currentTarget.setNextOutput(); else next = true;
-				formatter = (XSLTFormatter)currentTarget.getFormatter();
-				writableByteChannel = formatter.getWritableByteChannel();
-				
-				transformer.transform(Channels.newInputStream(readableByteChannel), Channels.newOutputStream(writableByteChannel));
-				readableByteChannel.close();
-			}
-			currentTarget.finish();
-		} catch (JetelException e) {
-			throw e;
-		} catch (Exception e) {
-			throw e;
-		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-
-	public Result executeMapping() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
-		DataRecord outRecord;
-		
-		while (inRecord != null && runIt) {
-			inRecord = inPort.readRecord(inRecord);
-	        if((outRecord = xsltMappingTransition.getRecord(inRecord)) != null) {
-	            writeRecordBroadcast(outRecord);
-	        }
-		    SynchronizeUtils.cloverYield();
-		}
-		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-	
-	@Override
-	public void free() {
-        if(!isInitialized()) return;
-		super.free();
-	}
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
-	 */
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-
 		InputPort inputPort = getInputPort(READ_FROM_PORT);
 		OutputPort outputPort = getOutputPort(WRITE_TO_PORT);
 
@@ -236,8 +178,7 @@ public class XSLDataTransformer extends Node {
 			outRecord.init();
 		}
 
-		checkAttributes();
-		InputStream xsltIs = null;
+		xsltIs = null;
 		if (xsltFile != null) {
 			try {
 				xsltIs = Channels.newInputStream(FileUtils.getReadableChannel(getGraph().getProjectURL(), xsltFile));
@@ -264,6 +205,101 @@ public class XSLDataTransformer extends Node {
 			initTarget();
 			initTransformer(xsltIs);
 		}
+	}
+
+
+
+	
+	@Override
+	public Result execute() throws Exception {
+		if (xsltMappingTransition != null) {
+			// transformation for the mapping attribute
+			return executeMapping();
+		}
+		else {
+			//transformation for file attributes
+			return executeFiles();
+		}
+	}
+	
+	public Result executeFiles() throws Exception {
+		try {
+			ReadableByteChannel readableByteChannel;
+			XSLTFormatter formatter;
+			WritableByteChannel writableByteChannel;
+			boolean next = false;
+			
+			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.next()) != null) {
+				if (next) currentTarget.setNextOutput(); else next = true;
+				formatter = (XSLTFormatter)currentTarget.getFormatter();
+				writableByteChannel = formatter.getWritableByteChannel();
+				
+				transformer.transform(Channels.newInputStream(readableByteChannel), Channels.newOutputStream(writableByteChannel));
+				readableByteChannel.close();
+			}
+		} catch (JetelException e) {
+			throw e;
+		} catch (Exception e) {
+			throw e;
+		}
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	public Result executeMapping() throws Exception {
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
+		DataRecord outRecord;
+		
+		while (inRecord != null && runIt) {
+			inRecord = inPort.readRecord(inRecord);
+	        if((outRecord = xsltMappingTransition.getRecord(inRecord)) != null) {
+	            writeRecordBroadcast(outRecord);
+	        }
+		    SynchronizeUtils.cloverYield();
+		}
+		broadcastEOF();
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			if (xsltMappingTransition != null) {
+				xsltIs.close(); //closing XSLT opened in xsltMappingTransition
+			}
+			else {
+				currentTarget.finish();
+				xsltIs.close(); //closing XSLT opened in transformer
+				//files opened by channelIterator are closed in execute()
+			}
+			
+			
+		}
+		catch (IOException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		}
+	}
+
+	
+	@Override
+	public void free() {
+        if(!isInitialized()) return;
+		super.free();
+	}
+	
+	/**
+	 *  Description of the Method
+	 *
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
+	 */
+	public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
+		super.init();
+
+		checkAttributes();
 	}
 
     private void initChannelIterator() throws ComponentNotReadyException {

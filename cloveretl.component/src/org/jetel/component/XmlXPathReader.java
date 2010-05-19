@@ -41,6 +41,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
@@ -205,7 +206,31 @@ public class XmlXPathReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.mappingURL = mappingURL;
+		parser = new XPathParser();
 	}
+	
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		if (mappingURL != null) {
+    			TransformationGraph graph = getGraph();
+    			URL contextURL = graph != null ? graph.getProjectURL() : null;
+    			try {
+    				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
+   					parser.setXPath(createDocumentFromChannel(ch));
+    			} catch (Exception e) {
+    				throw new ComponentNotReadyException(e);
+    			}
+    		}
+    			
+    		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+    	}
+    	else {
+       		parser.reset();
+       		reader.reset();
+    	}
+    }
 
 	@Override
 	public Result execute() throws Exception {
@@ -242,7 +267,6 @@ public class XmlXPathReader extends Node {
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			reader.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -260,16 +284,6 @@ public class XmlXPathReader extends Node {
 		TransformationGraph graph = getGraph();
 		URL contextURL = graph != null ? graph.getProjectURL() : null;
 		
-		// prepare parser
-		if (mappingURL != null) {
-			try {
-				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
-				parser = new XPathParser(createDocumentFromChannel(ch));
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(e);
-			}
-		}
-		
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, contextURL, fileURL);
         reader.setLogger(logger);
@@ -282,15 +296,24 @@ public class XmlXPathReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
         ports = parser.getPorts().toArray();
 	}
 
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+
+    	try {
+    		reader.close();
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+	
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		parser.reset();
-		reader.reset();
 	}
 
 	/**

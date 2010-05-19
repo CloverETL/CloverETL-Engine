@@ -159,9 +159,19 @@ public class SimpleDataGenerator extends DataGenerator {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		recordGenerator.reset();
-		autoFilling.reset();
 	}
+
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		recordGenerator.reset();
+    		autoFilling.reset();
+    	}
+    }    
 
 	@Override
 	public Result execute() throws Exception {

@@ -51,6 +51,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -550,6 +551,26 @@ public class AproxMergeJoin extends Node {
 		}
 		return data;
 	}
+	
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		transformation.reset();
+    		transformationForSuspicious.reset();
+    		dataBuffer.clear();
+    	}
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
+    }    
 
 	@Override
 	public Result execute() throws Exception {
@@ -654,12 +675,28 @@ public class AproxMergeJoin extends Node {
 
 		if (errorLog != null){
 			errorLog.flush();
-			errorLog.close();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	
+
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		if (errorLog != null){
+    			errorLog.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+
+	
 	private void readRemainingSlaveRecords(InputPort slavePort, OutputPort notMatchSlavePort, DataRecord slaveRecord)
 			throws IOException, InterruptedException {
 		while (!slavePort.isEOF()) {
@@ -670,6 +707,8 @@ public class AproxMergeJoin extends Node {
 			slavePort.readRecord(slaveRecord);
         }
 	}
+	
+
 
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -846,16 +885,6 @@ public class AproxMergeJoin extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		transformation.reset();
-		transformationForSuspicious.reset();
-		dataBuffer.clear();
-        if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 	
 	/**
