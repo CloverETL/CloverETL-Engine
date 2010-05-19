@@ -36,6 +36,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -153,6 +154,35 @@ public class Trash extends Node {
 		debugFilename = filename;
 	}
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (writer!=null) {
+	    	if (firstRun()) {//a phase-dependent part of initialization
+				writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	    	}
+	    	else {
+				if (debugPrint) {
+		            if(debugFilename != null) {
+		       	        try {
+							writer.setChannels( new WritableByteChannelIterator(
+									FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, 
+											debugFilename, debugAppend, compressLevel)
+							));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+		            } else {
+		       	        writer.setChannels(new WritableByteChannelIterator(writableByteChannel));
+		            }
+				}
+				writer.reset();
+	    	}
+    	}
+    }    
+
+
+	
 	@Override
 	public Result execute() throws Exception {
 		if (writer != null) {
@@ -161,6 +191,19 @@ public class Trash extends Node {
 			return executeWithoutWriter();
 		}
 	}
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		if (writer!=null) {
+    			writer.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
 
 	private Result executeWithWriter() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -248,7 +291,6 @@ public class Trash extends Node {
     	        writer.setAppendData(debugAppend);
     	        writer.setDictionary(graph.getDictionary());
     	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
-                writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             	formatter.showCounter("Record", "# ");
             	if (printTrashID) formatter.showTrashID("Trash ID ", getId());
             }
@@ -262,23 +304,6 @@ public class Trash extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (writer != null){
-			if (debugPrint) {
-	            if(debugFilename != null) {
-	       	        try {
-						writer.setChannels( new WritableByteChannelIterator(
-								FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, 
-										debugFilename, debugAppend, compressLevel)
-						));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-	            } else {
-	       	        writer.setChannels(new WritableByteChannelIterator(writableByteChannel));
-	            }
-			}
-			writer.reset();
-		}
 	}
 	
 	/**

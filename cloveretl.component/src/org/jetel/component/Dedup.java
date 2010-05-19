@@ -232,6 +232,28 @@ public class Dedup extends Node {
 		}
 	}
 	
+	    
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		//operation specific reset
+    		switch(keep) {
+    	    case KEEP_FIRST:
+    	        break;
+    	    case KEEP_LAST:
+    	        resetLast();
+    	        break;
+    	    case KEEP_UNIQUE:
+    	        break;
+    	    }
+    	}
+    }    
+
+	
 	@Override
 	public Result execute() throws Exception {
 		records = new DataRecord[2];
@@ -517,17 +539,6 @@ public class Dedup extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-	
-		//operation specific reset
-		switch(keep) {
-        case KEEP_FIRST:
-            break;
-        case KEEP_LAST:
-            resetLast();
-            break;
-        case KEEP_UNIQUE:
-            break;
-        }
 	}
 
 	@Override

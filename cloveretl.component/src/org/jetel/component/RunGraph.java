@@ -47,6 +47,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
@@ -236,6 +237,14 @@ public class RunGraph extends Node{
 		return null;
 	}
 	
+
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+   		initGraphOutputFile();
+    }    
+	
+
 	/**
 	 * run graphs whose filenames are determined by input port or an attribute
 	 *  
@@ -299,6 +308,19 @@ public class RunGraph extends Node{
 		// return FINISHED_OK when some graphs finished with error too
 		return Result.FINISHED_OK;
 	}
+	
+   @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		outputFile.close();
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+
 
 	private void writeOutRecord(DataRecord record) throws IOException, 
 			InterruptedException {
@@ -502,8 +524,6 @@ public class RunGraph extends Node{
 		}
 		
 		pipelineMode = isPipelineMode();
-		
-		initGraphOutputFile();
 		
 		inPort = getInputPort(INPUT_PORT);
 		outPort = getOutputPort(OUTPUT_PORT);
@@ -748,7 +768,6 @@ public class RunGraph extends Node{
 	 */
 	synchronized public void reset() throws ComponentNotReadyException {
 		super.reset();
-		initGraphOutputFile();
 	}
 
 	/**

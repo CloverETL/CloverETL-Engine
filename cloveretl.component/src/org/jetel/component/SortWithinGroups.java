@@ -428,6 +428,20 @@ public class SortWithinGroups extends Node {
         }
     }
 
+    
+    
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    	    dataRecordSorter.reset();
+    	}
+    }    
+
+    
     @Override
     public Result execute() throws Exception {
         if (!isInitialized()) {
@@ -478,13 +492,7 @@ public class SortWithinGroups extends Node {
 
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
-        if (!isInitialized()) {
-            throw new NotInitializedException(this);
-        }
-
         super.reset();
-
-        dataRecordSorter.reset();
     }
 
     @Override

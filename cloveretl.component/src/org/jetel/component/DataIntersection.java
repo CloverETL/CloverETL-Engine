@@ -47,6 +47,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -401,6 +402,28 @@ public class DataIntersection extends Node {
 //		return data;
 //	}
 	
+
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		transformation.reset();
+    		driverReader.reset();
+    		slaveReader.reset();
+    	}
+        if (errorLogURL != null) {
+           	try {
+    			errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+    		} catch (IOException e) {
+    			throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    		}
+        }
+    }    
+
+	
 	@Override
 	public Result execute() throws Exception {
 
@@ -452,26 +475,30 @@ public class DataIntersection extends Node {
 
 		if (errorLog != null){
 			errorLog.flush();
-			errorLog.close();
 		}
 
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
-     }
+    }
+
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		if (errorLog != null){
+    			errorLog.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		transformation.reset();
-		driverReader.reset();
-		slaveReader.reset();
-        if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 
 	@Override
@@ -530,13 +557,6 @@ public class DataIntersection extends Node {
 					this.getClass().getClassLoader(), classPaths);
         }
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);
 		slaveReader = keyDuplicates ? new SlaveReaderDup(slavePort, recordKeys[SLAVE_ON_PORT]) :
 			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT], false);

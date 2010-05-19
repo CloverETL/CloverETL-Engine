@@ -52,6 +52,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -277,13 +278,6 @@ public class Normalizer extends Node {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 
 	/**
@@ -361,6 +355,18 @@ public class Normalizer extends Node {
 	}
 
 	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+        if (errorLogURL != null) {
+           	try {
+           		errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+   			} catch (IOException e) {
+    			throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    		}
+        }
+    }
+ 
+	@Override
 	public Result execute() throws Exception {
 		try {
 			processInput();
@@ -371,7 +377,6 @@ public class Normalizer extends Node {
 
 		    if (errorLog != null){
 				errorLog.flush();
-				errorLog.close();
 			}
 
 		    broadcastEOF();
@@ -380,6 +385,22 @@ public class Normalizer extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+    
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+		    if (errorLog != null){
+				errorLog.flush();
+			}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+	
+	
 	public String getType() {
 		return COMPONENT_TYPE;
 	}

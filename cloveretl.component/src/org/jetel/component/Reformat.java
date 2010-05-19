@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -215,6 +216,31 @@ public class Reformat extends Node {
 		return XML_TRANSFORM_ATTRIBUTE;
 	}
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+            if (errorLogURL != null) {
+            	try {
+    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+    			} catch (IOException e) {
+    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    			}
+            }
+    	}
+    	else {
+    		transformation.reset();
+    	    if (errorLogURL != null) {
+    	    	try {
+    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+    			} catch (IOException e) {
+    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    			}
+    	    }
+    	}
+    }    
+
+	
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -296,13 +322,26 @@ public class Reformat extends Node {
 
 		if (errorLog != null){
 			errorLog.flush();
-			errorLog.close();
 		}
 
 		broadcastEOF();
 
 		return (runIt ? Result.FINISHED_OK : Result.ABORTED);
 	}
+
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    		if (errorLog != null) {
+    			errorLog.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }    
 
 
 	/**
@@ -336,13 +375,6 @@ public class Reformat extends Node {
 					this.getClass().getClassLoader(), classPaths);
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
-         if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 
 	
@@ -529,14 +561,6 @@ public class Reformat extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		transformation.reset();
-        if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 
 	@Override

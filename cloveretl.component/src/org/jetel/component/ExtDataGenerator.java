@@ -103,6 +103,18 @@ public class ExtDataGenerator extends DataGenerator {
 		return XML_GENERATE_ATTRIBUTE;
 	}
 
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		autoFilling.reset();
+    	}
+    }    
+
+	
 	@Override
 	public Result execute() throws Exception {
 		// initialize output ports
@@ -305,7 +317,6 @@ public class ExtDataGenerator extends DataGenerator {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		autoFilling.reset();
 	}
 
 	@Override

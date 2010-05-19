@@ -228,6 +228,19 @@ import org.w3c.dom.Element;
         }
     
         @Override
+        public void preExecute() throws ComponentNotReadyException {
+        	super.preExecute();
+        	if (firstRun()) {//a phase-dependent part of initialization
+        		//all necessary elements have been initialized in init()
+        	}
+        	else {
+        		hashMap.clear();
+        	}
+        }    
+
+
+        
+        @Override
         public Result execute() throws Exception {
         	OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
     		InputPort inPrimaryPort = getInputPort(PRIMARY_ON_PORT);
@@ -280,7 +293,6 @@ import org.w3c.dom.Element;
     	@Override
 		public synchronized void reset() throws ComponentNotReadyException {
 			super.reset();
-			hashMap.clear();
 		}
 
 

@@ -197,6 +197,18 @@ public class ExtSort extends Node {
         this(id, sortKeys);//, new SortOrder(new boolean[] { DEFAULT_ASCENDING_SORT_ORDER }));
     }*/
 
+
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		sorter.reset();
+    	}
+    }
+    
     @Override
     public Result execute() throws Exception {
         
@@ -257,6 +269,7 @@ public class ExtSort extends Node {
 					+ Defaults.Record.MAX_RECORD_SIZE);
 		}
     }
+
     
     @Override
     public void free() {
@@ -273,7 +286,6 @@ public class ExtSort extends Node {
     
     public void reset() throws ComponentNotReadyException {
     	super.reset();
-    	sorter.reset();
     }
     
     /**

@@ -129,7 +129,21 @@ public class Sort extends Node {
 	public Sort(String id, String[] sortKeys) {
 		this(id,sortKeys,DEFAULT_ASCENDING_SORT_ORDER);
 	}
+    
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		newSorter.reset();
+    		recordBuffer.clear();
+    	}
+    }    
 
+
+	
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -341,8 +355,6 @@ public class Sort extends Node {
     
     public void reset() throws ComponentNotReadyException {
     	super.reset();
-    	newSorter.reset();
-    	recordBuffer.clear();
     }
 }
 

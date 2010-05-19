@@ -55,6 +55,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -316,13 +317,6 @@ public class Denormalizer extends Node {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 
 	/**
@@ -439,6 +433,25 @@ public class Denormalizer extends Node {
 		}
 	}
 	
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		denorm.reset();
+    	}
+        if (errorLogURL != null) {
+        	try {
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+			}
+        }
+    }
+
+	
 	@Override
 	public Result execute() throws Exception {
 		try {
@@ -450,7 +463,6 @@ public class Denormalizer extends Node {
 
 		    if (errorLog != null){
 				errorLog.flush();
-				errorLog.close();
 			}
 
 		    setEOF(OUT_PORT);
@@ -459,6 +471,22 @@ public class Denormalizer extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+    
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+		    if (errorLog != null) {
+				errorLog.close();
+			}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+
+	
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -724,14 +752,6 @@ public class Denormalizer extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		denorm.reset();
-        if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 
 }

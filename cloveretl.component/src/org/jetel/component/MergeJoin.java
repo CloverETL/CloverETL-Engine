@@ -53,6 +53,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
@@ -493,12 +494,25 @@ public class MergeJoin extends Node {
 
 	    if (errorLog != null){
 			errorLog.flush();
-			errorLog.close();
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+    	try {
+    	    if (errorLog != null){
+    			errorLog.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
+    }
+	
 	/**
 	 * Checks if there are data on any writer avaible. Sets minIndicator to true for readers which have data
 	 * 
@@ -591,13 +605,6 @@ public class MergeJoin extends Node {
 					this.getClass().getClassLoader(), classPaths);
         }
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 	
 	/**
@@ -630,16 +637,23 @@ public class MergeJoin extends Node {
 		}
 	}
 
-	
-	public void reset() throws ComponentNotReadyException {
-		super.reset();
-		reader[0].reset();
-		for (int i =0; i < slaveCnt; i++)
-			reader[i+1].reset(); 
-		transformation.reset();
-		for (int i = 0; i < inputCnt; i++) {
-			minIndicator[i] = true;
-		}
+
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		reader[0].reset();
+    		for (int i =0; i < slaveCnt; i++)
+    			reader[i+1].reset(); 
+    		transformation.reset();
+    		for (int i = 0; i < inputCnt; i++) {
+    			minIndicator[i] = true;
+    		}
+
+    	}
         if (errorLogURL != null) {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -647,6 +661,10 @@ public class MergeJoin extends Node {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
         }
+    }    
+	
+	public void reset() throws ComponentNotReadyException {
+		super.reset();
 	}
 	
 	public void free() {

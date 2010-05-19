@@ -278,6 +278,24 @@ public class LookupJoin extends Node {
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
+	
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		transformation.reset();
+    	}
+        if (errorLogURL != null) {
+           	try {
+   				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+  			} catch (IOException e) {
+   				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+   			}
+        }
+    }    
 
 	@Override
 	public Result execute() throws Exception {
@@ -486,13 +504,6 @@ public class LookupJoin extends Node {
 					"while left outer join is switched on");
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
-        if (errorLogURL != null) {
-       	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-       }
 	}
 	
 	/**
@@ -507,14 +518,6 @@ public class LookupJoin extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		transformation.reset();
-        if (errorLogURL != null) {
-        	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
-			}
-        }
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)
