@@ -1198,7 +1198,8 @@ public class TypeChecker extends NavigatingVisitor {
 		 * would be prohibited, while reading (original value) from output
 		 * field would be prohibited as well.
 		 */
-		if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER) {
+		if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER
+				&& operand.getId() != TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
 			error(node, "Illegal argument to ++/-- operator");
 			node.setType(TLType.ERROR);
 			return data;
@@ -1592,7 +1593,8 @@ public class TypeChecker extends NavigatingVisitor {
 			 * would be prohibited, while reading (original value) from output
 			 * field would be prohibited as well.
 			 */
-			if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER) {
+			if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER
+					&& operand.getId() != TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
 				error(node, "Illegal argument to ++/-- operator");
 				node.setType(TLType.ERROR);
 				return data;
