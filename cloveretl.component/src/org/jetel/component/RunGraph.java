@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -57,6 +59,7 @@ import org.jetel.plugin.Plugins;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.Concatenate;
@@ -138,6 +141,7 @@ public class RunGraph extends Node{
 	private static final String XML_GRAPH_EXEC_CLASS = "graphExecClass";	
 	private static final String XML_CLOVER_CMD_LINE = "cloverCmdLineArgs";
 	private static final String XML_IGNORE_GRAPH_FAIL = "ignoreGraphFail";
+	private static final String XML_PARAMS_TO_PASS = "paramsToPass";
 
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
 	private final static String DEFAULT_CLOVER_CMD_LINE = "";
@@ -159,6 +163,10 @@ public class RunGraph extends Node{
 	private String javaCmdLine;
 	private String cloverCmdLineArgs;
 	private String cloverRunClass;
+	
+	/** List of names of parameters which are passed from the graph to executed graph. 
+	 * Makes sense only if sameInstance is true. Params names are separated with  */
+	private String paramsToPass;
 	private boolean ignoreGraphFail;
 			
 	private FileWriter outputFile = null;
@@ -194,6 +202,10 @@ public class RunGraph extends Node{
 		this.ignoreGraphFail = ignoreGraphFail;
 	}
 	
+	public void setParamsToPass(String paramsToPass) {
+		this.paramsToPass = paramsToPass;
+	}
+
 	/**
 	 * @param id of component
 	 * @param graphName name of the file containing graph definition
@@ -474,7 +486,9 @@ public class RunGraph extends Node{
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
 		long runId = this.getGraph().getRuntimeContext().getRunId();
 
-		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, this.getGraph().getGraphProperties(), outputFileName);
+		Properties props = extractNeededGraphProperties(this.getGraph().getGraphProperties());
+		
+		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, props, outputFileName);
 		
 		outputRecordData.setDescription(rr.description);
 		outputRecordData.setDuration(rr.duration);
@@ -497,6 +511,24 @@ public class RunGraph extends Node{
 	}
 
 		
+	/**
+	 * Returns Properties with some of specified properties according to "paramsToPass" attribute. 
+	 * @param graphProperties
+	 * @return
+	 */
+	private Properties extractNeededGraphProperties(TypedProperties graphProperties) {
+		Properties p = new Properties();
+		if (paramsToPass == null || paramsToPass.trim().length()==0)
+			return p;
+		String[] paramNames = paramsToPass.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		for (String paramName : paramNames) {
+			paramName = paramName.trim();
+			if (graphProperties.containsKey(paramName))
+				p.put(paramName, graphProperties.get(paramName));
+		}// for
+		return p;
+	}
+
 	@Override
 	public void free() {
         if (!isInitialized()) return;
@@ -703,7 +735,9 @@ public class RunGraph extends Node{
 			if (xattribs.exists(XML_GRAPH_NAME_ATTRIBUTE)) {				
 				runG.setGraphName(xattribs.getString(XML_GRAPH_NAME_ATTRIBUTE));
 			}
-			
+			if (xattribs.exists(XML_PARAMS_TO_PASS)) {				
+				runG.setParamsToPass(xattribs.getString(XML_PARAMS_TO_PASS));
+			}	
 			if (xattribs.exists(XML_ALTERNATIVE_JVM)) {				
 				runG.setJavaCmdLine(xattribs.getString(XML_ALTERNATIVE_JVM));
 			}
@@ -738,6 +772,9 @@ public class RunGraph extends Node{
 		if (javaCmdLine.compareTo(DEFAULT_JAVA_CMD_LINE) != 0) {
 			xmlElement.setAttribute(XML_ALTERNATIVE_JVM, javaCmdLine);
 		}
+		if (this.paramsToPass != null) {				
+			xmlElement.setAttribute(XML_PARAMS_TO_PASS, paramsToPass);
+		}	
 		if (cloverRunClass.compareTo(DEFAULT_GRAPH_EXEC_CLASS) != 0) {
 			xmlElement.setAttribute(XML_GRAPH_EXEC_CLASS, cloverRunClass);
 		}
