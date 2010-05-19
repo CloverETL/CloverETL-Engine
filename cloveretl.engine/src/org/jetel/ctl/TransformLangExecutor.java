@@ -1886,7 +1886,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	public Object visit(CLVFPostfixExpression node, Object data) {
 		// get variable && put value on stack by executing child node
-		CLVFIdentifier child = (CLVFIdentifier)node.jjtGetChild(0);
+		SimpleNode child = (SimpleNode) node.jjtGetChild(0);
 		child.jjtAccept(this, data);
 		
 		final TLType opType = node.getType();
@@ -2366,24 +2366,33 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	
 	private void setVariable(SimpleNode node, Object value) {
-		int blockOffset = -1;
-		int varOffset = -1;
-		
-		switch (node.getId()) {
-		case TransformLangParserTreeConstants.JJTIDENTIFIER:
-			final CLVFIdentifier id = (CLVFIdentifier)node;
-			blockOffset = id.getBlockOffset(); // jump N blocks back, -1 indicates global scope
-			varOffset = id.getVariableOffset(); // jump to M-th slot within block
-			break;
-		case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
-			final CLVFVariableDeclaration var = (CLVFVariableDeclaration)node;
-			blockOffset = 0; // current block
-			varOffset = var.getVariableOffset(); // jump to M-th slot within block
-			break;
-		default:
-			throw new TransformLangExecutorRuntimeException("Unknown variable type: " + node);
+		if (node.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
+			final CLVFIdentifier recId = (CLVFIdentifier) node.jjtGetChild(0);
+			final int fieldId = ((CLVFMemberAccessExpression) node).getFieldId();
+
+			DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
+			record.getField(fieldId).setValue(value);
+		} else {
+			int blockOffset = -1;
+			int varOffset = -1;
+
+			switch (node.getId()) {
+				case TransformLangParserTreeConstants.JJTIDENTIFIER:
+					final CLVFIdentifier id = (CLVFIdentifier) node;
+					blockOffset = id.getBlockOffset(); // jump N blocks back, -1 indicates global scope
+					varOffset = id.getVariableOffset(); // jump to M-th slot within block
+					break;
+				case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
+					final CLVFVariableDeclaration var = (CLVFVariableDeclaration) node;
+					blockOffset = 0; // current block
+					varOffset = var.getVariableOffset(); // jump to M-th slot within block
+					break;
+				default:
+					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + node);
+			}
+
+			stack.setVariable(blockOffset, varOffset, value);
 		}
-		stack.setVariable(blockOffset,varOffset,value);
 	}
 	
 	
