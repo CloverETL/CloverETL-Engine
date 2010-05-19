@@ -101,6 +101,9 @@ public class XPathParser implements Parser {
 
 	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
 	
+	public XPathParser() {
+	}
+	
 	public XPathParser(Document document) {
 		this.xpathDocument = document;
 	}
