@@ -50,6 +50,14 @@ decimal minusDecimal;
 decimal unaryDecimal;
 decimal minusDecimalOrig;
 decimal minusMinusDecimal;
+firstInput plusPlusRecord;
+firstInput minusMinusRecord;
+firstInput recordPlusPlus;
+firstInput recordMinusMinus;
+firstInput modifiedPlusPlusRecord;
+firstInput modifiedMinusMinusRecord;
+firstInput modifiedRecordPlusPlus;
+firstInput modifiedRecordMinusMinus;
 boolean booleanValue;
 boolean negation;
 boolean doubleNegation;
@@ -136,6 +144,25 @@ function integer transform() {
 	minusDecimalOrig = minusDecimal;
 	minusMinusDecimal = --minusDecimal;
 	print_err('--decimal orig: ' + minusDecimalOrig + ', decremented: ' +  minusDecimal + ', opresult: ' + minusMinusDecimal + ', unary: ' + unaryDecimal);
+	
+	plusPlusRecord.Value = 100;
+	++plusPlusRecord.Value;
+	minusMinusRecord.Value = 100;
+	--minusMinusRecord.Value;
+	recordPlusPlus.Value = 100;
+	recordPlusPlus.Value++;
+	recordMinusMinus.Value = 100;
+	recordMinusMinus.Value--;
+	
+	modifiedPlusPlusRecord.Value = 100;
+	plusPlusRecord(modifiedPlusPlusRecord);
+	modifiedMinusMinusRecord.Value = 100;
+	minusMinusRecord(modifiedMinusMinusRecord);
+	modifiedRecordPlusPlus.Value = 100;
+	recordPlusPlus(modifiedRecordPlusPlus);
+	modifiedRecordMinusMinus.Value = 100;
+	recordMinusMinus(modifiedRecordMinusMinus);
+	
 	// logical negation
 	booleanValue = true;
 	negation = !booleanValue;
@@ -143,5 +170,21 @@ function integer transform() {
 	print_err('!boolean orig: ' + booleanValue + ' ,not: ' + negation + ' ,double not: ' + doubleNegation);
 
 	return 0;
+}
+
+function void recordPlusPlus(firstInput rec) {
+	rec.Value++;
+}
+
+function void recordMinusMinus(firstInput rec) {
+	rec.Value--;
+}
+
+function void plusPlusRecord(firstInput rec) {
+	++rec.Value;
+}
+
+function void minusMinusRecord(firstInput rec) {
+	--rec.Value;
 }
 
