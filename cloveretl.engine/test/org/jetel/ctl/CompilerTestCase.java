@@ -1546,6 +1546,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res2", "Memento mori");
 	}
 	
+	public void test_function_parameter_without_type() {
+		doCompileExpectError("test_function_parameter_without_type", "Syntax error on token ')'");
+	}
+	
 	public void test_built_in_functions(){
 		doCompile("test_built_in_functions");
 		
