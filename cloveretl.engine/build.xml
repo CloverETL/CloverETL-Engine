@@ -37,7 +37,7 @@
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.component.doc.default" value="${basedir}/src-doc"/>
-	<property name="dir.examples" value="${basedir}/examples"/>
+	<property name="dir.examples" value="${basedir}/../cloveretl.examples"/>
 		
 	<property name="dir.build" value="${basedir}/build-tmp"/>
 	<property name="dir.bin" value="${dir.build}/classes"/>
