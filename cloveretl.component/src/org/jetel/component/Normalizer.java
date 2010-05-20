@@ -230,38 +230,7 @@ public class Normalizer extends Node {
 				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
-				switch (RecordTransformFactory.guessTransformType(xform)) {
-				case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
-					norm = createNormalizerDynamic(xform);
-					break;
-				case RecordTransformFactory.TRANSFORM_CLOVER_TL:
-					norm = new RecordNormalizeTL(logger, xform, getGraph());
-					break;
-				case RecordTransformFactory.TRANSFORM_CTL:
-					ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata},new DataRecordMetadata[]{outMetadata},"UTF-8");
-	            	List<ErrorMessage> msgs = compiler.compile(xform, CTLRecordNormalize.class, getId());
-	            	if (compiler.errorCount() > 0) {
-	            		for (ErrorMessage msg : msgs) {
-	            			logger.error(msg.toString());
-	            		}
-	            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
-	            	}
-	            	Object ret = compiler.getCompiledCode();
-	            	if (ret instanceof TransformLangExecutor) {
-	            		// setup interpreted runtime
-	            		norm = new CTLRecordNormalizeAdapter((TransformLangExecutor)ret, logger);
-	            	} else if (ret instanceof CTLRecordNormalize){
-	            		norm = (CTLRecordNormalize)ret;
-	            	} else {
-	            		// this should never happen as compiler always generates correct interface
-	            		throw new ComponentNotReadyException("Invalid type of record transformation");
-	            	}
-					break;
-				default:
-					throw new ComponentNotReadyException(
-							"Can't determine transformation code type at component ID :"
-									+ getId());
-				}
+				norm = createTransform(xform);
 			}
         	// set graph instance to transformation (if CTL it can access lookups etc.)
         	norm.setGraph(getGraph());
@@ -270,6 +239,39 @@ public class Normalizer extends Node {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
+	}
+
+	private RecordNormalize createTransform(String sourceCode) throws ComponentNotReadyException {
+		switch (RecordTransformFactory.guessTransformType(sourceCode)) {
+			case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
+				return createNormalizerDynamic(sourceCode);
+			case RecordTransformFactory.TRANSFORM_CLOVER_TL:
+				return new RecordNormalizeTL(logger, sourceCode, getGraph());
+			case RecordTransformFactory.TRANSFORM_CTL:
+				ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
+						new DataRecordMetadata[] { getInputPort(IN_PORT).getMetadata() },
+						new DataRecordMetadata[] { getOutputPort(OUT_PORT).getMetadata() }, "UTF-8");
+				List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordNormalize.class, getId());
+				if (compiler.errorCount() > 0) {
+					for (ErrorMessage msg : msgs) {
+						logger.error(msg.toString());
+					}
+					throw new ComponentNotReadyException("CTL code compilation finished with "
+							+ compiler.errorCount() + " errors");
+				}
+				Object ret = compiler.getCompiledCode();
+				if (ret instanceof TransformLangExecutor) {
+					// setup interpreted runtime
+					return new CTLRecordNormalizeAdapter((TransformLangExecutor) ret, logger);
+				} else if (ret instanceof CTLRecordNormalize) {
+					return (CTLRecordNormalize) ret;
+				}
+	
+				// this should never happen as compiler always generates correct interface
+				throw new ComponentNotReadyException("Invalid type of record transformation");
+			default:
+				throw new ComponentNotReadyException("Can't determine transformation code type at component ID: " + getId());
+		}
 	}
 
 	/**
@@ -428,17 +430,6 @@ public class Normalizer extends Node {
 			}
         }
 		
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
-        
         // transformation source for checkconfig
         String checkTransform = null;
         if (xform != null) {
@@ -450,16 +441,9 @@ public class Normalizer extends Node {
         if (checkTransform != null) {
         	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
 			if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
-        		// only CTL is checked
-        		
-        		InputPort inPort = getInputPort(IN_PORT);
-        		OutputPort outPort = getOutputPort(OUT_PORT);	
-
-        		DataRecordMetadata inMetadata = inPort.getMetadata();
-        		DataRecordMetadata outMetadata = outPort.getMetadata();
-
     			try {
-    				RecordNormalizeTL norm = new RecordNormalizeTL(logger, checkTransform, getGraph());
+    				RecordNormalize norm = createTransform(checkTransform);
+    				norm.setGraph(getGraph());
     				norm.init(transformationParameters, inMetadata, outMetadata);
     			} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
