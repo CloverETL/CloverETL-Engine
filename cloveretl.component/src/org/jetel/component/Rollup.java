@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -161,7 +160,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 4th May 2010
+ * @version 20th May 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -200,11 +199,6 @@ public class Rollup extends Node {
 
     /** the port index used for data record input */
     private static final int INPUT_PORT_NUMBER = 0;
-
-    /** the regular expression pattern that should be present in a Java source code transformation */
-    private static final String REGEX_JAVA_CLASS = "class\\s+\\w+";
-    /** the regular expression pattern that should be present in a CTL code transformation */
-    private static final String REGEX_TL_CODE = "function\\s+((init|update|finish)Group|updateTransform|transform)";
 
     /** the encoding to be used by CTL-to-Java compiler */
     private static final String CTL_COMPILER_ENCODING = "UTF-8";
@@ -508,7 +502,9 @@ public class Rollup extends Node {
      * or if the type of the transformation code could not be determined
      */
     private RecordRollup createTransformFromSourceCode(String sourceCode) throws ComponentNotReadyException {
-        if (sourceCode.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) >= 0) {
+    	int transformType = RecordTransformFactory.guessTransformType(sourceCode);
+
+    	if (transformType == RecordTransformFactory.TRANSFORM_CTL) {
         	ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
         			getInMetadata().toArray(new DataRecordMetadata[getInPorts().size()]),
         			getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]), CTL_COMPILER_ENCODING);
@@ -540,12 +536,11 @@ public class Rollup extends Node {
     		throw new ComponentNotReadyException("Invalid type of rollup transformation!");
         }
 
-        if (sourceCode.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) >= 0
-                || Pattern.compile(REGEX_TL_CODE).matcher(sourceCode).find()) {
+    	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
         	return new RecordRollupTL(sourceCode);
         }
 
-        if (Pattern.compile(REGEX_JAVA_CLASS).matcher(sourceCode).find()) {
+    	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
             try {
             	return (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
             } catch (ClassCastException exception) {

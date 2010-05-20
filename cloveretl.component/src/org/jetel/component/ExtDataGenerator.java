@@ -22,7 +22,6 @@ package org.jetel.component;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,15 +58,6 @@ public class ExtDataGenerator extends DataGenerator {
 
 	// Description of the Field
 	public final static String COMPONENT_TYPE = "EXT_DATA_GENERATOR";
-
-	private static final Pattern PATTERN_CLASS = Pattern
-			.compile("class\\s+\\w+");
-	private static final Pattern PATTERN_TL_CODE = Pattern
-			.compile("function\\s+generate");
-
-	private static final int TRANSFORM_JAVA_SOURCE = 1;
-	private static final int TRANSFORM_CLOVER_TL = 2;
-	private static final int TRANSFORM_CTL = 3;
 
 	// XML attribute names
 	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
@@ -269,14 +259,14 @@ public class ExtDataGenerator extends DataGenerator {
 				}
 				
 				if (generatorClassName == null) {
-					switch (guessTransformType(generatorSource)) {
-					case TRANSFORM_JAVA_SOURCE:
+					switch (RecordTransformFactory.guessTransformType(generatorSource)) {
+					case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
 						generatorClass = createGeneratorDynamic(generatorSource);
 						break;
-					case TRANSFORM_CLOVER_TL:
+					case RecordTransformFactory.TRANSFORM_CLOVER_TL:
 						generatorClass = new RecordGenerateTL(generatorSource,logger);
 						break;
-					case TRANSFORM_CTL:
+					case RecordTransformFactory.TRANSFORM_CTL:
 						ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),null,outMetadata,"UTF-8");
 						List<ErrorMessage> msgs = compiler.compile(generatorSource,CTLRecordGenerate.class, getId());
 						if (compiler.errorCount() > 0) {
@@ -361,39 +351,6 @@ public class ExtDataGenerator extends DataGenerator {
 		this.generateParameters = generateParameters;
 	}
 
-	/**
-	 * Guesses type of transformation code based on code itself - looks for
-	 * certain patterns within the code
-	 * 
-	 * @param transform
-	 * @return guessed transformation type or -1 if can't determine
-	 */
-	public static int guessTransformType(String transform) {
-
-		if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1) {
-			// clover internal transformation language
-			return TRANSFORM_CLOVER_TL;
-		}
-
-		if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
-			// new CTL implementation
-			return TRANSFORM_CTL;
-		}
-
-		if (PATTERN_TL_CODE.matcher(transform).find()) {
-			// clover internal transformation language
-			return TRANSFORM_CLOVER_TL;
-		}
-
-		if (PATTERN_CLASS.matcher(transform).find()) {
-			// full java source code
-			return TRANSFORM_JAVA_SOURCE;
-		}
-
-		return -1;
-	}
-	
-	
 	/**
 	 * Creates generator instance using given Java source.
 	 * @param generatorCode

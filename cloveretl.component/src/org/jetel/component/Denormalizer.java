@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -141,13 +140,6 @@ public class Denormalizer extends Node {
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DENORMALIZER";
-
-	private static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+");
-	private static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+(transform|getOutputRecord)");
-	
-	private static final int TRANSFORM_JAVA_SOURCE = 1;
-	private static final int TRANSFORM_CLOVER_TL = 2;
-	private static final int TRANSFORM_CTL = 3;
 
 	private Properties transformationParameters;
 
@@ -276,15 +268,15 @@ public class Denormalizer extends Node {
 				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
-				switch (guessTransformType(xform)) {
-				case TRANSFORM_JAVA_SOURCE:
+				switch (RecordTransformFactory.guessTransformType(xform)) {
+				case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
 					denorm = createDenormalizerDynamic(xform);
 					break;
-				case TRANSFORM_CLOVER_TL:
+				case RecordTransformFactory.TRANSFORM_CLOVER_TL:
 					denorm = new RecordDenormalizeTL(logger, xform, getGraph());
 					break;
 					
-				case TRANSFORM_CTL:
+				case RecordTransformFactory.TRANSFORM_CTL:
 					ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata}, new DataRecordMetadata[]{outMetadata},"UTF-8");
 	            	List<ErrorMessage> msgs = compiler.compile(xform, CTLRecordDenormalize.class,getId());
 	            	if (compiler.errorCount() > 0) {
@@ -542,8 +534,8 @@ public class Denormalizer extends Node {
         }
         // only the transform and transformURL parameters are checked, transformClass is ignored
         if (checkTransform != null) {
-        	int transformType = guessTransformType(checkTransform);
-        	if (transformType != TRANSFORM_JAVA_SOURCE ) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+        	if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE ) {
         		// only CTL is checked
         		
         		InputPort inPort = getInputPort(IN_PORT);
@@ -698,7 +690,7 @@ public class Denormalizer extends Node {
 			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
 		}
 		
-		Enumeration propertyAtts = transformationParameters.propertyNames();
+		Enumeration<?> propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
 			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
@@ -708,38 +700,6 @@ public class Denormalizer extends Node {
             xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, Boolean.toString(equalNULL));
         }
 	}
-
-    /**
-     * Guesses type of transformation code based on
-     * code itself - looks for certain patterns within the code
-     * 
-     * @param transform
-     * @return  guessed transformation type or -1 if can't determine
-     */
-    public static int guessTransformType(String transform){
-      
-        if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1){
-            // clover internal transformation language
-            return TRANSFORM_CLOVER_TL;
-        }
-        
-        if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
-        	// new CTL implementation
-        	return TRANSFORM_CTL;
-        }
-        
-        if (PATTERN_TL_CODE.matcher(transform).find()){
-            // clover internal transformation language
-            return TRANSFORM_CLOVER_TL;
-        }
-        
-        if (PATTERN_CLASS.matcher(transform).find()){
-            // full java source code
-            return TRANSFORM_JAVA_SOURCE;
-        }
-        
-        return -1;
-    }
 
 	public String getCharset() {
 		return charset;

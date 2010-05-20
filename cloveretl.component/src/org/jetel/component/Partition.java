@@ -29,10 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.PartitionFunctionFactory;
 import org.jetel.component.partition.RangePartition;
-import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -161,7 +159,6 @@ public class Partition extends Node {
 	private String locale = null;
 
 	private RecordKey partitionKey;
-	private HashKey hashKey;
 
 	//	 instantiate proper partitioning function
 	private PartitionFunction partitionFce;
@@ -362,7 +359,7 @@ public class Partition extends Node {
 			
 			xmlElement.setAttribute(XML_RANGES_ATTRIBUTE,buf.toString());
 		}
-		Enumeration propertyAtts = parameters.propertyNames();
+		Enumeration<?> propertyAtts = parameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
 			xmlElement.setAttribute(attName,parameters.getProperty(attName));
@@ -480,9 +477,9 @@ public class Partition extends Node {
         }
         // partition class is checked only if is given specific CTL or TL code
         if (partitionFce == null && partitionClass == null && checkTransform != null) {
-    		if (checkTransform.contains(WrapperTL.TL_TRANSFORM_CODE_ID) 
-    				|| PartitionFunctionFactory.PATTERN_TL_CODE.matcher(checkTransform).find() 
-    				|| checkTransform.contains(TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
+        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+    		if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+    				|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
 	        	try {
 					PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
 					partitionFceFactory.setNode(this);
