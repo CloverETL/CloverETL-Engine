@@ -762,7 +762,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
     		<sysproperty key="file.encoding" value="UTF-8" />
         	<jvmarg value="-Xmx2048m"/>
         	<jvmarg value="-XX:MaxPermSize=256m"/> 
-        	<jvmarg value="-Dderby.system.home=${dir.examples}/extExamples"/> 
+        	<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/> 
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath>
 			    <pathelement path="${dir.classestest}"/>
@@ -771,7 +771,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 				<fileset dir="${dir.lib}">
 					<include name="*.jar"/>
 				</fileset>
-                <pathelement path="${dir.examples}/extExamples/lib/derby/lib/derby.jar"/>
+                <pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
 			    <pathelement path="${dir.tools}/junit-4.4.jar"/>
     			<path refid="cp.cobertura"/>
 			</classpath>
@@ -901,9 +901,9 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
     </target>
 	
     <target name="start-testdb">
-        <property name="derby.home" value="${dir.examples}/extExamples/lib/derby"/>
+        <property name="derby.home" value="${dir.examples}/ExtExamples/lib/derby"/>
     	<echo message="Starting test db Derby with DERBY_HOME=${derby.home}" />
-    	<exec executable="${dir.examples}/extExamples/lib/derby/bin/startNetworkServer">
+    	<exec executable="${dir.examples}/ExtExamples/lib/derby/bin/startNetworkServer">
     		<env key="DERBY_HOME" value="${derby.home}"/>
     	</exec>
     </target>
