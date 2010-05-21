@@ -28,7 +28,7 @@ import org.jetel.graph.dictionary.StringDictionaryType;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 12th May 2010
+ * @version 21st May 2010
  * @created 5th May 2010
 */
 public abstract class CTLAbstractTransform {
@@ -65,9 +65,8 @@ public abstract class CTLAbstractTransform {
 	 * Initializes the global scope of the transform. Has to be overridden by the generated transform class.
 	 */
 	@CTLEntryPoint(name = "globalScopeInit", required = true)
-	protected abstract void globalScopeInit() throws ComponentNotReadyException;
-	
-	
+	public abstract void globalScopeInit() throws ComponentNotReadyException;
+
 	/**
 	 * Inserts value into Dictionary under specified key. if put fails transforms checked exception into runtime one.
 	 * 
