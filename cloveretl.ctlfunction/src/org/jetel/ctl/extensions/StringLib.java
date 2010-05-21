@@ -21,7 +21,6 @@ package org.jetel.ctl.extensions;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,10 +34,8 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.JetelException;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
-import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
@@ -65,7 +62,6 @@ public class StringLib extends TLFunctionLibrary {
 			"right".equals(functionName) ? new RightFunction() :
 			"trim".equals(functionName) ? new TrimFunction() : 
 			"length".equals(functionName) ? new LengthFunction() :
-			"soundex".equals(functionName) ? new SoundexFunction() :
 			"replace".equals(functionName) ? new ReplaceFunction() :
 			"split".equals(functionName) ? new SplitFunction() :
 			"char_at".equals(functionName) ? new CharAtFunction() :
@@ -87,11 +83,8 @@ public class StringLib extends TLFunctionLibrary {
 			"find".equals(functionName) ? new FindFunction() :
 			"chop".equals(functionName) ? new ChopFunction() :
 			"cut".equals(functionName) ? new CutFunction() :
-			"edit_distance".equals(functionName) ? new EditDistanceFunction() :
-			"metaphone".equals(functionName) ? new MetaphoneFunction() :
-			"nysiis".equals(functionName) ? new NYSIISFunction() :
 			"random_string".equals(functionName) ? new RandomStringFunction() : null;
-		
+
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     	}
@@ -262,87 +255,6 @@ public class StringLib extends TLFunctionLibrary {
 					"length - Unknown type: " + actual[0].name());
 		}
 
-	}
-
-	// SOUNDEX
-	@TLFunctionAnnotation("Calculates string index based on its sound")
-	public static final String soundex(String input) {
-		StringBuilder targetStrBuf = new StringBuilder(input.toUpperCase());
-		targetStrBuf.setLength(0);
-
-		CharSequence src = input;
-		final int length = src.length();
-		char srcChars[] = new char[length];
-		for (int i = 0; i < length; i++) {
-			srcChars[i] = Character.toUpperCase(src.charAt(i++));
-		}
-		char firstLetter = srcChars[0];
-
-		// convert letters to numeric code
-		for (int i = 0; i < srcChars.length; i++) {
-			switch (srcChars[i]) {
-			case 'B':
-			case 'F':
-			case 'P':
-			case 'V':
-				srcChars[i] = '1';
-				break;
-			case 'C':
-			case 'G':
-			case 'J':
-			case 'K':
-			case 'Q':
-			case 'S':
-			case 'X':
-			case 'Z':
-				srcChars[i] = '2';
-				break;
-			case 'D':
-			case 'T':
-				srcChars[i] = '3';
-				break;
-			case 'L':
-				srcChars[i] = '4';
-				break;
-			case 'M':
-			case 'N':
-				srcChars[i] = '5';
-				break;
-			case 'R':
-				srcChars[i] = '6';
-				break;
-			default:
-				srcChars[i] = '0';
-				break;
-			}
-		}
-
-		// remove duplicates
-		targetStrBuf.append(firstLetter);
-		char last = srcChars[0];
-		for (int i = 1; i < srcChars.length; i++) {
-			if (srcChars[i] != '0' && srcChars[i] != last) {
-				last = srcChars[i];
-				targetStrBuf.append(last);
-			}
-		}
-
-		// pad with 0's or truncate
-		for (int i = targetStrBuf.length(); i < SoundexFunction.SIZE; i++) {
-			targetStrBuf.append('0');
-		}
-		targetStrBuf.setLength(SoundexFunction.SIZE);
-		return targetStrBuf.toString();
-
-	}
-
-	class SoundexFunction implements TLFunctionPrototype {
-
-		public static final int SIZE = 4;
-
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(soundex(stack.popString()));
-		}
 	}
 
 	// REPLACE
@@ -813,120 +725,6 @@ public class StringLib extends TLFunctionLibrary {
 			final List<Object> indices = stack.popList();
 			final String input = stack.popString();
 			stack.push(cut(input, TLFunctionLibrary.<Integer>convertTo(indices)));
-		}
-	}
-	
-	// EDIT DISTANCE
-	@TLFunctionAnnotation("Calculates edit distance between two strings.")
-	public static final Integer edit_distance(String str1, String str2) {
-		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, null, -1);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strength of comparsion.")
-	public static final Integer edit_distance(String str1, String str2, int strength) {
-		return edit_distance(str1, str2, strength, null, -1);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion.")
-	public static final Integer edit_distance(String str1, String str2, String locale) {
-		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, -1);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion and maximum amount of letters to be changed.")
-	public static final Integer edit_distance(String str1, String str2, String locale, int maxDifference) {
-
-		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, maxDifference);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and locale for comparsion.")
-	public static final Integer edit_distance(String str1, String str2, int strength, String locale) {
-
-		return edit_distance(str1, str2, strength, locale, -1);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and maximum amount of letters to be changed.")
-	public static final Integer edit_distance(String str1, String str2, int strength, int maxDifference)
-			throws JetelException {
-
-		return edit_distance(str1, str2, strength, null, maxDifference);
-	}
-	
-	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion, locale for comparsion and maximum amount of letters to be changed.")
-	public static final Integer edit_distance(String str1, String str2, int strength, String locale, int maxDifference) {
-
-		boolean[] s = new boolean[4];
-		Arrays.fill(s, false);
-		s[4 - strength] = true;
-		StringAproxComparator comparator = null;
-		try {
-			comparator = StringAproxComparator.createComparator(locale, s);
-		} catch (JetelException e) {
-			throw new TransformLangExecutorRuntimeException(e.getMessage());
-		}
-		if (maxDifference > -1) {
-			comparator.setMaxLettersToChange(maxDifference);
-		}
-		return comparator.distance(str1, str2)/comparator.getMaxCostForOneLetter();
-	}
-
-	class EditDistanceFunction implements TLFunctionPrototype {
-
-		public void execute(Stack stack, TLType[] parameters) {
-			Integer maxDifference = -1;
-			String locale = null;
-			Integer strength = StringAproxComparator.IDENTICAL;
-			switch (parameters.length) {
-			case 5:
-				maxDifference = stack.popInt();
-			case 4:
-				if (parameters[3].isString())
-					locale = stack.popString();
-				else
-					maxDifference = stack.popInt();
-			case 3:
-				if (parameters[2].isString())
-					locale = stack.popString();
-				else
-					strength = stack.popInt();
-
-			}
-			final String string2 = stack.popString();
-			final String string1 = stack.popString();
-			stack.push(edit_distance(string1, string2, strength, locale, maxDifference));
-		}
-	}
-	
-	@TLFunctionAnnotation("Finds the metaphone value of a String.")
-	public static final String metaphone(String input) {
-		return StringUtils.metaphone(input);
-	}
-
-	@TLFunctionAnnotation("Finds the metaphone value of a String. Allows changing maximal length of output string.")
-	public static final String metaphone(String input, int maxLength) {
-		return StringUtils.metaphone(input, maxLength);
-	}
-	
-	class MetaphoneFunction implements TLFunctionPrototype {
-
-		public void execute(Stack stack, TLType[] actualParams) {
-			if (actualParams.length > 1) {
-				Integer maxLength = stack.popInt();
-				stack.push(metaphone(stack.popString(), maxLength));
-			} else {
-				stack.push(metaphone(stack.popString()));
-			}
-		}
-	}
-
-	@TLFunctionAnnotation("Finds The New York State Identification and Intelligence System Phonetic Code.")	
-	public static final String nysiis(String input) {
-		return StringUtils.NYSIIS(input);
-	}
-	
-	class NYSIISFunction implements TLFunctionPrototype {
-
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(nysiis(stack.popString()));
 		}
 	}
 	
