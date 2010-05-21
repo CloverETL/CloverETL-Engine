@@ -237,6 +237,7 @@ public class FixLenDataReader extends Node {
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
+    	storeValues();
 		try {
 			reader.close();
 		}
@@ -278,7 +279,6 @@ public class FixLenDataReader extends Node {
     @Override
     public synchronized void free() {
     	super.free();
-    	storeValues();
     	if (reader != null) {
 	    	try {
 				reader.close();

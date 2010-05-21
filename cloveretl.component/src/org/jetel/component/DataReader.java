@@ -22,7 +22,6 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,8 +51,6 @@ import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
-
-import sun.awt.CharsetString;
 
 /**
  *  <h3>Universal Data Reader Component</h3>
@@ -306,6 +303,7 @@ public class DataReader extends Node {
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
+    	storeValues();
 		try {
 			reader.close();
 		}
@@ -581,7 +579,6 @@ public class DataReader extends Node {
 	public synchronized void free() {
 		super.free();
 		try {
-	    	storeValues();
 	    	if (reader != null) {
 	    		reader.close();
 	    	}
