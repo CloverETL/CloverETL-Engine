@@ -489,9 +489,9 @@ public final class TransformationGraph extends GraphElement {
 				connection.preExecute();
 				logger.info(connection + " ... OK");
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
+				throw new ComponentNotReadyException(this, "Pre-Execution of connection " + connection + " failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
+				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of connection " + connection + "failed.", e);
 			}
 		}
 
@@ -499,16 +499,12 @@ public final class TransformationGraph extends GraphElement {
 		for (Sequence sequence : sequences.values()) {
 			logger.info("Pre-execute initialization of sequence:");
 			try {
-				if (sequence.isShared()) {
-					sequence = getAuthorityProxy().getSharedSequence(sequence);
-					sequences.put(sequence.getId(), sequence);
-				}
-				sequence.init();
+				sequence.preExecute();
 				logger.info(sequence + " ... OK");
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
+				throw new ComponentNotReadyException(this, "Pre-Execution of sequence " + sequence + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
+				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of sequence " + sequence + "failed.", e);
 			}
 		}
 
@@ -516,12 +512,12 @@ public final class TransformationGraph extends GraphElement {
 		for (LookupTable lookupTable : lookupTables.values()) {
 			logger.info("Pre-execute initialization of lookup table:");
 			try {
-				lookupTable.init();
+				lookupTable.preExecute();
 				logger.info(lookupTable + " ... OK");
 			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
+				throw new ComponentNotReadyException(this, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			}
 		}
 	}
@@ -572,7 +568,7 @@ public final class TransformationGraph extends GraphElement {
 		for (IConnection connection : connections.values()) {
 			logger.info("Post-execute finalization of connection:");
 			try {
-				connection.preExecute();
+				connection.postExecute(transactionMethod);
 				logger.info(connection + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize connection " + connection + ".", e);
@@ -585,11 +581,7 @@ public final class TransformationGraph extends GraphElement {
 		for (Sequence sequence : sequences.values()) {
 			logger.info("Post-execute finalization of sequence:");
 			try {
-				if (sequence.isShared()) {
-					sequence = getAuthorityProxy().getSharedSequence(sequence);
-					sequences.put(sequence.getId(), sequence);
-				}
-				sequence.init();
+				sequence.postExecute(transactionMethod);
 				logger.info(sequence + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize sequence " + sequence + ".", e);
@@ -602,7 +594,7 @@ public final class TransformationGraph extends GraphElement {
 		for (LookupTable lookupTable : lookupTables.values()) {
 			logger.info("Post-execute finalization of lookup table:");
 			try {
-				lookupTable.init();
+				lookupTable.postExecute(transactionMethod);
 				logger.info(lookupTable + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize lookup table " + lookupTable + ".", e);
