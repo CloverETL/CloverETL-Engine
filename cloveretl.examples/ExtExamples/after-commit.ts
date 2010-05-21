@@ -13,31 +13,31 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMsSql" graphFile="graph/graphDBExecuteMsSql.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+        <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
         <FlatFile outputFile="data-out/mssql.out" supposedFile="supposed-out/mssql.DBExecuteMsSql.out"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteMySql" graphFile="graph/graphDBExecuteMySql.grf">
-         <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+         <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/foundClients.txt" supposedFile="supposed-out/foundClients.DBExecuteMySql.txt"/>	                                                                    
 	     <DeleteFile file="seq/id.seq"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
-        <Property name="LIB_DIR" value="../../../cloveretl.test.scenarios/lib" />
+        <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
+        <Property name="LIB_DIR" value="../cloveretl.test.scenarios/lib" />
 
 	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecutePostgre" graphFile="graph/graphDBExecutePostgre.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+        <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/cities.txt" supposedFile="supposed-out/cities.DBExecutePostgre.txt"/>	                                                                    
 	     <DeleteFile file="seq/seq.txt"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBExecuteSybase" graphFile="graph/graphDBExecuteSybase.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+        <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/sybase.out" supposedFile="supposed-out/sybase.DBExecuteSybase.out"/>	                                                                    
 	</FunctionalTest>
 
@@ -101,7 +101,7 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="LDAPReaderWriter" graphFile="graph/graphLdapReaderWriter.grf">
-          <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+          <Property name="CONN_DIR" value="../cloveretl.test.scenarios/conn" />
 	 	  <FlatFile outputFile="data-out/persons.txt" supposedFile="data-out/ldap_persons.txt"/>	                                                                 
 	</FunctionalTest>
 
