@@ -633,7 +633,19 @@ public class XLSReader extends Node {
     @Override
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
-    	
+    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
+            try {
+                Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+
+                if (dictValue != null && dictValue == Boolean.FALSE) {
+                    return;
+                }
+
+                reader.storeIncrementalReading();
+            } catch (IOException e) {
+                logger.error(e);
+            }
+        }
     	try {
             reader.close();
     	}
@@ -648,21 +660,7 @@ public class XLSReader extends Node {
             return;
         }
 
-        super.free();
-
-        if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
-            try {
-                Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-
-                if (dictValue != null && dictValue == Boolean.FALSE) {
-                    return;
-                }
-
-                reader.storeIncrementalReading();
-            } catch (IOException e) {
-                logger.error(e);
-            }
-        }
+        super.free();        
 
         try {
 			reader.close();
