@@ -61,7 +61,6 @@
 			<value>right</value>
 			<value>trim</value>
 			<value>length</value>
-			<value>soundex</value>
 			<value>replace</value>
 			<value>split</value>
 			<value>char_at</value>
@@ -83,9 +82,6 @@
 			<value>remove_nonascii</value>
 			<value>find</value>
 			<value>cut</value>
-			<value>edit_distance</value>
-			<value>metaphone</value>
-			<value>NYSIIS</value>
 			<value>random_string</value>
 		</parameter>
 	</extension>
