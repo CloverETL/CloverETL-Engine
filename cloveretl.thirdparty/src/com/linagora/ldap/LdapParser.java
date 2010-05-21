@@ -307,6 +307,7 @@ public class LdapParser implements Parser {
 		 */
 		for (int i = 0; i < record.getNumFields(); i++) {
 			DataField df = record.getField(i);
+			if (df.getMetadata().isAutoFilled()) continue;
 			try {
 				transMap[i].setField(df,attrs.get(df.getMetadata().getName()));
 			} catch (BadDataFormatException bdfe) {
@@ -342,10 +343,13 @@ public class LdapParser implements Parser {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			DataFieldMetadata dfm = this.metadata.getField(i);
 
-			if (this.metadata.getField(i).getType() == DataFieldMetadata.STRING_FIELD) {
+			DataFieldMetadata fieldMetadata = this.metadata.getField(i);
+			if (fieldMetadata.isAutoFilled()) continue;
+			
+			if (fieldMetadata.getType() == DataFieldMetadata.STRING_FIELD) {
 				transMap[i] = new Ldap2JetelString(multiSeparator);
-			} else if (this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD
-					|| this.metadata.getField(i).getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+			} else if (fieldMetadata.getType() == DataFieldMetadata.BYTE_FIELD
+					|| fieldMetadata.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
 				transMap[i] = new Ldap2JetelByte();
 			} else {
 				throw new BadDataFormatException("LDAP intialialisation : Field " + dfm.getName()
