@@ -555,6 +555,31 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
     /**
+     * Closes connection stored in cache under key specified by elementId and OperationType.UNKNOWN.
+     * Closed connection is also removed from cache.
+     */
+    public synchronized void closeConnection(String elementId) {
+    	closeConnection(elementId, OperationType.UNKNOWN);
+    }
+    
+    /**
+     * Closes connection stored in cache under key specified by elementId and operationType.
+     * Closed connection is also removed from cache.
+     */
+    public synchronized void closeConnection(String elementId, OperationType operationType) {
+    	DBConnectionInstance connection;
+    	if (isThreadSafeConnections()) {
+        	CacheKey key = new CacheKey(elementId, operationType);
+            connection = connectionsCache.remove(key);
+        } else {
+            connection = connectionInstance;
+        }
+    	if (connection != null) {
+    		closeConnection(connection.getSqlConnection());
+    	}
+    }
+    
+    /**
      * Creates DBConnection based on xml node.
      * 
      * @param graph

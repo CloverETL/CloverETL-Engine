@@ -43,6 +43,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -414,23 +415,30 @@ public class DBExecute extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (outRecord != null) {
-			outRecord.reset();
-		}
-		if (errRecord != null) {
-			errRecord.reset();
-		}		
+				
 	}
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-
+		if (firstRun()) { //a phase-dependent part of initialization
+    		initConnection();
+    	} else {
+    		if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
+    			initConnection();
+    		}
+    		if (outRecord != null) {
+    			outRecord.reset();
+    		}
+    		if (errRecord != null) {
+    			errRecord.reset();
+    		}
+    	}
 		if (getInPorts().size() > 0) {
 			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
 		}
-		initConnectionAndStatements();
+		initStatements();
 		if (errorLogURL != null) {
 			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -440,11 +448,9 @@ public class DBExecute extends Node {
 		}
 	}
 
-
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
-
 		if (errorLog != null){
 			try {
 				errorLog.flush();
@@ -469,14 +475,27 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
+		if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
+			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		}
 	}
 
-
-	private void initConnectionAndStatements() throws ComponentNotReadyException {
+	private void initConnection() throws ComponentNotReadyException {
+		try {
+			if (procedureCall) {
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
+			} else {
+				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
+			}
+		} catch (JetelException e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+	
+	private void initStatements() throws ComponentNotReadyException {
 		try {
 			// prepare statements if are not read from file or port
 			if (procedureCall) {
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
 				int resultSetType = dbConnection.getJdbcDriver().getResultSetType();
 
 				if (dbSQL != null) {
@@ -500,7 +519,6 @@ public class DBExecute extends Node {
 					callableStatement = new SQLCloverCallableStatement[1];
 				}
 			} else {
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
 				sqlStatement = connectionInstance.getSqlConnection().createStatement();
 			}
 			// this does not work for some drivers

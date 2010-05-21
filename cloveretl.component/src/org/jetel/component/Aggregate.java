@@ -140,6 +140,17 @@ public class Aggregate extends Node {
 		this.oldMapping = oldMapping;
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	}
+    	else {
+    		processor.reset();
+    	}
+    }
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#execute()
 	 */
@@ -400,13 +411,9 @@ public class Aggregate extends Node {
 		this.charset = charset;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		processor.reset();
 	}
 	
 	

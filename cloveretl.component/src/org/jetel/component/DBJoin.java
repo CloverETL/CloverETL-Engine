@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
@@ -42,7 +41,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -306,7 +304,6 @@ public class DBJoin extends Node {
 
 		if (errorLog != null){
 			errorLog.flush();
-			errorLog.close();
 		}
 
 		broadcastEOF();
@@ -403,30 +400,24 @@ public class DBJoin extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		
-		//Initializing lookup table
-		IConnection conn = getGraph().getConnection(connectionName);
-        if(conn == null) {
-            throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
-        }
-        if(!(conn instanceof DBConnection)) {
-            throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
-        }
-        conn.init();
-        
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, true);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-		try {
-			lookupTable = new DBLookupTable(
-					"LOOKUP_TABLE_FROM_" + this.getId(),
-					((DBConnection) conn).getConnection(getId(), OperationType.READ),
-					dbMetadata, query, maxCached);
-		} catch (JetelException e1) {
-			throw new ComponentNotReadyException(e1);
+		
+		// Initializing lookup table
+		IConnection conn = getGraph().getConnection(connectionName);
+		if (conn == null) {
+			throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
 		}
-        lookupTable.checkConfig(null);
+		if (!(conn instanceof DBConnection)) {
+			throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
+		}
+		conn.init();
+		
+		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached);
+		lookupTable.checkConfig(null);
 		lookupTable.init();
+		
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
@@ -453,31 +444,46 @@ public class DBJoin extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+
+		if (firstRun()) {// a phase-dependent part of initialization
+			//all necessary elements have been initialized in init()
+		} else {
+			if (transformation != null) {
+				transformation.reset();
+			}
+		}
+		lookupTable.preExecute();
+		
 		inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		lookup = lookupTable.createLookup(recordKey, inRecord);
-        if (errorLogURL != null) {
-        	try {
+		if (errorLogURL != null) {
+			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
-        }
+		}
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (transformation != null) {
-			transformation.reset();
-		}
 	}
 	
     @Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
-		lookup.getLookupTable().reset();
+		lookup.getLookupTable().postExecute(transactionMethod);
 		lookup = null;
+		try {
+    	    if (errorLog != null){
+    			errorLog.close();
+    		}
+    	}
+    	catch (Exception e) {
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    	}
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
