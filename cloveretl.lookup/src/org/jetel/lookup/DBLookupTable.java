@@ -54,6 +54,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -98,6 +99,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     protected String connectionId;
 
 	protected DataRecordMetadata dbMetadata;
+	protected DBConnection connection;
 	protected DBConnectionInstance dbConnection;
 	protected String sqlQuery;//this query can contain $field
 	
@@ -119,18 +121,18 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
 	 */
-	public DBLookupTable(String id, DBConnectionInstance dbConnection,
+	public DBLookupTable(String id, DBConnection connection,
 			DataRecordMetadata dbRecordMetadata, String sqlQuery) {
 		super(id);
-		this.dbConnection = dbConnection;
+		this.connection = connection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
 	}
 
-	public DBLookupTable(String id, DBConnectionInstance dbConnection,
+	public DBLookupTable(String id, DBConnection connection,
 			DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
 		super(id);
-		this.dbConnection = dbConnection;
+		this.connection = connection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
 		this.maxCached = numCached;
@@ -170,39 +172,59 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 		super.init();
 		
-		if (dbConnection == null) {
-			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
-			if (tmp == null) {
-				throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + 
-						" does not exist!!!");
+		if (connection == null) {
+			connection = (DBConnection) getGraph().getConnection(connectionId);
+			if (connection == null) {
+				throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + " does not exist!!!");
 			}
-			tmp.init();
-			try {
-				dbConnection = tmp.getConnection(getId(), OperationType.READ);
-			} catch (JetelException e) {
-				throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
-			}
+			connection.init();
 		}
-		
 		if (metadataId != null) {
 			dbMetadata = getGraph().getDataRecordMetadata(metadataId, true);
 		}
 		
     }
     
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {// a phase-dependent part of initialization
+			try {
+				dbConnection = connection.getConnection(getId(), OperationType.READ);
+			} catch (JetelException e) {
+				throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
+			}
+		} else {
+			if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
+				try {
+					dbConnection = connection.getConnection(getId(), OperationType.READ);
+				} catch (JetelException e) {
+					throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
+				}
+			}
+		}
+	}
+    
     @Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			for (DBLookup activeLookup : activeLookups) {
+				activeLookup.close();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			activeLookups.clear();
+		}
+		if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
+			connection.closeConnection(getId(), OperationType.READ);
+		}
+	}
+	
+	@Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-
-    	try {
-            for (DBLookup activeLookup : activeLookups) {
-                activeLookup.close();
-            }
-        } catch (SQLException e) {
-            throw new ComponentNotReadyException(this, e);
-        } finally {
-            activeLookups.clear();
-        }
     }
     
     public static DBLookupTable fromProperties(TypedProperties properties) 
@@ -284,7 +306,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     public synchronized void free() {
         if (isInitialized()) {
             super.free();
-
+            
             try {
                 for (DBLookup activeLookup : activeLookups) {
                     activeLookup.close();

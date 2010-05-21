@@ -49,6 +49,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -430,13 +431,20 @@ public class HashJoin extends Node {
 		}
 	}
 
-	public void reset() throws ComponentNotReadyException {
-		inRecords[0] = new DataRecord(driverPort.getMetadata());
-		inRecords[0].init();
-		for (DataRecordMap mapItem : hashMap) {
-			mapItem.clear();
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (firstRun()) {// a phase-dependent part of initialization
+			// all necessary elements have been initialized in init()
+		} else {
+			inRecords[0] = new DataRecord(driverPort.getMetadata());
+			inRecords[0].init();
+			for (DataRecordMap mapItem : hashMap) {
+				mapItem.clear();
+			}
+			transformation.reset();
 		}
-		transformation.reset();
 		if (errorLogURL != null) {
 			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
@@ -444,6 +452,10 @@ public class HashJoin extends Node {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
 		}
+	}
+
+	public void reset() throws ComponentNotReadyException {
+		super.reset();
 	}
 
 	public void free() {
@@ -696,12 +708,25 @@ public class HashJoin extends Node {
 
 		if (errorLog != null) {
 			errorLog.flush();
-			errorLog.close();
 		}
 
 		setEOF(WRITE_TO_PORT);
 
 		return (runIt ? Result.FINISHED_OK : Result.ABORTED);
+	}
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+
+		try {
+			if (errorLog != null) {
+				errorLog.close();
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+		}
+
 	}
 
 	/**

@@ -38,11 +38,13 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
@@ -232,10 +234,20 @@ public class DBInputTable extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		parser.reset();
-		autoFilling.reset();
-		//TODO storeValues() ? or should it be in parser.reset() ?
+		
 	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {// a phase-dependent part of initialization
+			//all necessary elements have been initialized in init()
+		} else {
+			parser.reset();
+			autoFilling.reset();
+		}
+	}
+
 
 	@Override
 	public Result execute() throws Exception {
@@ -244,7 +256,7 @@ public class DBInputTable extends Node {
     		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
     		record.init();
     		record.reset();
-    		parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
+			parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
     		autoFilling.setFilename(sqlQuery);
 
     		// till it reaches end of data or it is stopped from outside
@@ -269,18 +281,22 @@ public class DBInputTable extends Node {
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
+	
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		if (parser.getIncrementalFile() != null){
+			storeValues();
+		}
+		if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) { 
+			// otherwise connection is closed in TransformationGraph.free()
+			connection.closeConnection(getId(), OperationType.READ);
+		}
+	}
 
     @Override
     public synchronized void free() {
-    	super.free();
-
-    	try {
-        	if (parser.getIncrementalFile() != null){
-        		storeValues();
-        	}
-    	} catch (Exception e){
-    		logger.error(e.getMessage(), e);
-    	}
+    	super.free();    	
     }
 
 

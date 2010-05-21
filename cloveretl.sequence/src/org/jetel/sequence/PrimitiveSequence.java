@@ -82,11 +82,21 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 		super.init();
     }
 
+    
+    
     @Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+    	} else {
+    		resetValue();
+    	}
+	}
+
+	@Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-    	
-    	resetValue();
     }
     
     /**

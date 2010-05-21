@@ -43,6 +43,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -208,69 +209,62 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		if (dataParser == null && (fileURL != null || data != null)) {
 			dataParser = new DataParser(charset);
 		}
+		if (dataParser != null) {
+			dataParser.init(metadata);
+		}
+	}
 
+	
+	
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		lookupTable.clear();
+	}
+
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+
+		if (firstRun()) {// a phase-dependent part of initialization
+			// all necessary elements have been initialized in init()
+		} else {
+			if (dataParser != null) {
+				dataParser.reset();				
+			}
+		}
 		/*
 		 * populate the lookupTable (Map) with data if provided dataParser is not null, otherwise it is assumed that the
 		 * lookup table will be populated later by calling put() method
 		 */
-
-		if (dataParser != null) {
-			dataParser.init(metadata);
+		DataRecord record = new DataRecord(metadata);
+		record.init();
+		try {
+			if (fileURL != null) {
+				dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+			} else if (data != null) {
+				dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
+			}
+			if (metadata.getSkipSourceRows() > 0) {
+				dataParser.skip(metadata.getSkipSourceRows());
+			}
+			while (dataParser.getNext(record) != null) {
+				lookupTable.put(record.duplicate());
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e.getMessage(), e);
+		} finally {
 			try {
-				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
-				} else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
-				}
-				if (metadata.getSkipSourceRows() > 0) {
-					dataParser.skip(metadata.getSkipSourceRows());
-				}
-				while (dataParser.getNext(record) != null) {
-					lookupTable.put(record.duplicate());
-				}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e.getMessage(), e);
-			} finally {
-				try {
-					dataParser.close();
-				} catch (IOException e) {
-					throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
-				}
+				dataParser.close();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
 			}
 		}
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-
-		DataRecord record = new DataRecord(metadata);
-		record.init();
-		lookupTable.clear();
-
-		// read records from file
-		if (dataParser != null) {
-			dataParser.reset();
-
-			try {
-				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
-				} else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-				}
-				while (dataParser.getNext(record) != null) {
-					lookupTable.put(record.duplicate());
-				}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e.getMessage(), e);
-			} finally {
-				try {
-					dataParser.close();
-				} catch (IOException e) {
-					throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
-				}
-			}
-		}
+		super.reset();		
 	}
 
 	public static SimpleLookupTable fromProperties(TypedProperties properties)
@@ -366,7 +360,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	public synchronized void free() {
 		if (isInitialized()) {
 			super.free();
-
 			if (lookupTable != null) {
 				lookupTable.clear();
 				lookupTable = null;

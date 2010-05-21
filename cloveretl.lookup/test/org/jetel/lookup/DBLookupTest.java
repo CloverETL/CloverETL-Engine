@@ -41,7 +41,7 @@ public class DBLookupTest extends CloverTestCase {
 		parser.init(customerMetadata);
 		parser.setDataSource(aDBConnection);
 
-		lookupTable = new DBLookupTable("MyLookup", aDBConnection, null, "select * from employee where last_name=?", 0);
+		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);
 		lookupTable.init();
 		recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
 		recordKey.init();
@@ -54,6 +54,7 @@ public class DBLookupTest extends CloverTestCase {
 	}
 
 	public void testThreads() throws Exception {
+		lookupTable.preExecute();
 		lookup = lookupTable.createLookup(recordKey, customer);
 		RecordKey key = new RecordKey(recordKey.getKeyFields(), customer.getMetadata());
 		DataRecord inRecord = new DataRecord(customer.getMetadata());

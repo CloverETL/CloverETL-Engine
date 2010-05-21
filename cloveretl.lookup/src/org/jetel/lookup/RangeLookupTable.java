@@ -51,6 +51,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -300,74 +301,59 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	    //read records from file
         if (dataParser != null) {
             dataParser.init(metadata);
-            try {
-				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel(
-							getGraph() != null ? getGraph().getProjectURL() : null, 
-							fileURL));
-				}else if (data != null) {
-					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-				}           
-				
-				if (metadata.getSkipSourceRows() > 0) {
-					dataParser.skip(metadata.getSkipSourceRows());
-				}
-				while (dataParser.getNext(tmpRecord) != null) {
-                    lookupTable.add(tmpRecord.duplicate());
-                }
-            } catch (Exception e) {
-                throw new ComponentNotReadyException(this, e.getMessage(), e);
-            } finally {
-            	try {
-					dataParser.close();
-				} catch (IOException e) {
-	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
-				}
-            }
         }
+	}
 
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (firstRun()) {// a phase-dependent part of initialization
+			// all necessary elements have been initialized in init()
+		} else {
+			if (dataParser != null) {
+				dataParser.reset();				
+			}
+		}
+		
+		// read records from file
+		DataRecord tmpRecord = new DataRecord(metadata);
+		tmpRecord.init();
+		try {
+			if (fileURL != null) {
+				dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+			} else if (data != null) {
+				dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+			}
+			while (dataParser.getNext(tmpRecord) != null) {
+				lookupTable.add(tmpRecord.duplicate());
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e.getMessage(), e);
+		} finally {
+			try {
+				dataParser.close();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+			}
+		}
 	}
 	
 	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		lookupTable.clear();
+	}
+
+	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-
-        lookupTable.clear();
-
-        // read records from file
-        if (dataParser != null) {
-            DataRecord tmpRecord = new DataRecord(metadata);
-            tmpRecord.init();
-            dataParser.reset();
-
-            try {
-                if (fileURL != null) {
-                    dataParser.setDataSource(FileUtils.getReadableChannel(
-                            (getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
-                } else if (data != null) {
-                    dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-                }
-                while (dataParser.getNext(tmpRecord) != null) {
-                    lookupTable.add(tmpRecord.duplicate());
-                }
-            } catch (Exception e) {
-                throw new ComponentNotReadyException(this, e.getMessage(), e);
-            } finally {
-            	try {
-					dataParser.close();
-				} catch (IOException e) {
-	                throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
-				}
-            }
-        }
 	}
 
     @Override
     public synchronized void free() {
         if (isInitialized()) {
             super.free();
-
-        lookupTable.clear();
         }
     }
     
