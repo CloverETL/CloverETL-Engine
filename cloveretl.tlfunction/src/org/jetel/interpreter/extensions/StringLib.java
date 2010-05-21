@@ -58,7 +58,6 @@ public class StringLib extends TLFunctionLibrary {
 		RIGHT("right"),
 		TRIM("trim"),
 		LENGTH("length"),
-		SOUNDEX("soundex"),
 		REPLACE("replace"),
 		SPLIT("split"),
 		CHAR_AT("char_at"),
@@ -80,9 +79,6 @@ public class StringLib extends TLFunctionLibrary {
 		CUT("cut"),
 		REMOVE_NONPRINTABLE("remove_nonprintable"),
 		REMOVE_NONASCII("remove_nonascii"),
-		EDIT_DISTANCE("edit_distance"),
-		METAPHONE("metaphone"),
-		NYSIIS("nysiis"),
 		RANDOM_STRING("random_string");
 
         public final String name;
@@ -124,8 +120,6 @@ public class StringLib extends TLFunctionLibrary {
 			return new TrimFunction();
 		case LENGTH:
 			return new LengthFunction();
-		case SOUNDEX:
-			return new SoundexFunction();
 		case REPLACE:
 			return new ReplaceFunction();
 		case SPLIT:
@@ -168,12 +162,6 @@ public class StringLib extends TLFunctionLibrary {
 			return new RemoveNonPrintableFunction();
 		case REMOVE_NONASCII:
 			return new RemoveNonAsciiFunction();
-		case EDIT_DISTANCE:
-			return new EditDistanceFunction();
-		case METAPHONE:
-			return new MetaphoneFunction();
-		case NYSIIS:
-			return new NYSIISFunction();
 		case RANDOM_STRING:
 			return new RandomStringFunction();
 		default:
@@ -482,110 +470,6 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLContext<?> createContext() {
 			return TLContext.createIntegerContext();
-		}
-	}
-
-	// SOUNDEX
-	class SoundexFunction extends TLFunctionPrototype {
-
-		private static final int SIZE = 4;
-
-		public SoundexFunction() {
-			super("string", "soundex", "Calculates string index based on its sound",
-					new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
-		}
-
-		@Override
-		public TLValue execute(TLValue[] params, TLContext<?> context) {
-			TLValue val = (TLValue) context.getContext();
-			StringBuilder targetStrBuf = (StringBuilder) val.getValue();
-			targetStrBuf.setLength(0);
-
-			if (params[0].type != TLValueType.STRING) {
-				throw new TransformLangExecutorRuntimeException(params, "soundex - wrong type of literal");
-			}
-
-			CharSequence src = ((TLStringValue) params[0]).getCharSequence();
-			int length = src.length();
-			char srcChars[] = new char[length];
-			for (int i = 0; i < length; i++)
-				srcChars[i] = Character.toUpperCase(src.charAt(i++));
-			char firstLetter = srcChars[0];
-
-			// convert letters to numeric code
-			for (int i = 0; i < srcChars.length; i++) {
-				switch (srcChars[i]) {
-				case 'B':
-				case 'F':
-				case 'P':
-				case 'V': {
-					srcChars[i] = '1';
-					break;
-				}
-
-				case 'C':
-				case 'G':
-				case 'J':
-				case 'K':
-				case 'Q':
-				case 'S':
-				case 'X':
-				case 'Z': {
-					srcChars[i] = '2';
-					break;
-				}
-
-				case 'D':
-				case 'T': {
-					srcChars[i] = '3';
-					break;
-				}
-
-				case 'L': {
-					srcChars[i] = '4';
-					break;
-				}
-
-				case 'M':
-				case 'N': {
-					srcChars[i] = '5';
-					break;
-				}
-
-				case 'R': {
-					srcChars[i] = '6';
-					break;
-				}
-
-				default: {
-					srcChars[i] = '0';
-					break;
-				}
-				}
-			}
-
-			// remove duplicates
-			targetStrBuf.append(firstLetter);
-			char last = srcChars[0];
-			for (int i = 1; i < srcChars.length; i++) {
-				if (srcChars[i] != '0' && srcChars[i] != last) {
-					last = srcChars[i];
-					targetStrBuf.append(last);
-				}
-			}
-
-			// pad with 0's or truncate
-			for (int i = targetStrBuf.length(); i < SIZE; i++) {
-				targetStrBuf.append('0');
-			}
-			targetStrBuf.setLength(SIZE);
-			return val;
-
-		}
-
-		@Override
-		public TLContext<?> createContext() {
-			return TLContext.createStringContext();
 		}
 	}
 
@@ -1337,136 +1221,6 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLContext<?> createContext() {
 			return TLContext.createListContext();
-		}
-	}
-
-	class EditDistanceFunction extends TLFunctionPrototype {
-
-		public EditDistanceFunction() {
-			super("string", "edit_distance", "Calculates edit distance between two strings",
-					new TLValueType[] { TLValueType.STRING, TLValueType.STRING, TLValueType.INTEGER,
-					TLValueType.STRING, TLValueType.INTEGER }, TLValueType.INTEGER, 5, 2);
-		}
-
-		@Override
-		public TLValue execute(TLValue[] params, TLContext<?> context) {
-			if (params[0].type != TLValueType.STRING || params[1].type != TLValueType.STRING) {
-				throw new TransformLangExecutorRuntimeException(params, "edit_distance - wrong type of literal(s)");
-
-			}
-			ComparatorStore store = (ComparatorStore) context.getContext();
-			int strength = StringAproxComparator.IDENTICAL;
-			String locale = null;
-			int maxLetters = -1;
-			if (params.length > 2) {
-				if (params[2].type.isNumeric()) {
-					strength = params[2].getNumeric().getInt();
-				} else if (params[2].type == TLValueType.STRING) {
-					locale = params[2].toString();
-				} else {
-					throw new TransformLangExecutorRuntimeException(params, "edit_distance - wrong type of literal(s)");
-				}
-				if (params.length > 3) {
-					if (params[3].type == TLValueType.STRING) {
-						locale = params[3].toString();
-					} else if (params[3].type.isNumeric()) {
-						maxLetters = params[3].getNumeric().getInt();
-					} else {
-						throw new TransformLangExecutorRuntimeException(params,
-								"edit_distance - wrong type of literal(s)");
-					}
-				}
-			}
-			if (strength != store.strength || locale != store.locale) {
-				try {
-					store.init(strength, locale);
-				} catch (JetelException e) {
-					throw new TransformLangExecutorRuntimeException(e.getMessage());
-				}
-			}
-			if (maxLetters > -1 || params.length > 4) {
-				if (maxLetters > -1 || params[4].type.isNumeric()) {
-					store.comparator.setMaxLettersToChange(
-							maxLetters > -1 ? maxLetters : params[4].getNumeric().getInt());
-				} else {
-					throw new TransformLangExecutorRuntimeException(params, "edit_distance - wrong type of literal(s)");
-				}
-			}
-			int compResult = store.comparator.distance(params[0].toString(), params[1].toString());
-			// we need to normalize it
-			store.value.setValue(compResult / store.comparator.getMaxCostForOneLetter());
-
-			return store.value;
-		}
-
-		@Override
-		public TLContext<?> createContext() {
-			TLContext<ComparatorStore> context = new TLContext<ComparatorStore>();
-			context.setContext(new ComparatorStore());
-			return context;
-		}
-
-	}
-
-	class MetaphoneFunction extends TLFunctionPrototype {
-
-		public MetaphoneFunction() {
-			super("string", "metaphone", "Finds the metaphone value of a String",
-					new TLValueType[] { TLValueType.STRING, TLValueType.INTEGER }, TLValueType.STRING, 2, 1);
-		}
-
-		@Override
-		public TLValue execute(TLValue[] params, TLContext<?> context) {
-			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
-			strBuf.setLength(0);
-
-			if (params[0] != TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
-				if (params.length > 1) {
-					if (params[1].getType().isNumeric()) {
-						strBuf.append(StringUtils.metaphone(params[0].toString(), params[1].getNumeric().getInt()));
-					} else {
-						throw new TransformLangExecutorRuntimeException(params, "metaphone - wrong type of literal");
-					}
-				} else {
-					strBuf.append(StringUtils.metaphone(params[0].toString()));
-				}
-			} else {
-				throw new TransformLangExecutorRuntimeException(params, "uppercase - wrong type of literal");
-			}
-
-			return val;
-		}
-
-		@Override
-		public TLContext<?> createContext() {
-			return TLContext.createStringContext();
-		}
-
-	}
-
-	class NYSIISFunction extends TLFunctionPrototype {
-
-		public NYSIISFunction() {
-			super("string", "NYSIIS", "Finds The New York State Identification and Intelligence System Phonetic Code",
-					new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
-		}
-
-		@Override
-		public TLValue execute(TLValue[] params, TLContext<?> context) {
-			TLValue val = (TLValue) context.getContext();
-
-			if (!(params[0].type == TLValueType.STRING)) {
-				throw new TransformLangExecutorRuntimeException(params, "NYSIIS - wrong type of literal");
-			} else {
-				val.setValue(StringUtils.NYSIIS(params[0].toString()));
-			}
-			return val;
-		}
-
-		@Override
-		public TLContext<?> createContext() {
-			return TLContext.createStringContext();
 		}
 	}
 
