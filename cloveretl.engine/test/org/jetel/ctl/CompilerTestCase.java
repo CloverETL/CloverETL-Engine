@@ -525,12 +525,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_new");
 	}*/
 
-	// TODO: test case for issue 4038
-	/*public void test_parameters_missing_type() {
-		
-		doCompileExpectError("test_parameters_missing_type", "???");
-	}*/
-
 	public void test_parser() {
 		System.out.println("\nParser test:");
 
@@ -1546,6 +1540,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res2", "Memento mori");
 	}
 	
+	//Test case for 4038
 	public void test_function_parameter_without_type() {
 		doCompileExpectError("test_function_parameter_without_type", "Syntax error on token ')'");
 	}
@@ -1862,23 +1857,34 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalOutput", createList("16.16"));
 	}
 
-	//TODO implement checks
 	public void test_pow_function() {
 		System.out.println("pow() test:");
 		doCompile("test_pow_function");
-
+		
+		check("intResult", createList(8d, 8d, 8d, 8d));
+		check("longResult", createList(8d, 8d, 8d, 8d));
+		check("doubleResult", createList(8d, 8d, 8d, 8d));
+		check("decimalResult", createList(8d, 8d, 8d, 8d));
 	}
 
-	//TODO implement checks
 	public void test_round_function() {
 		System.out.println("round() test:");
 		doCompile("test_round_function");
+		
+		check("intResult", createList(2l, 3l));
+		check("longResult", createList(2l, 3l));
+		check("doubleResult", createList(2l, 4l));
+		check("decimalResult", createList(2l, 4l));
 	}
 
-	//TODO implement checks
 	public void test_length_function() {
 		System.out.println("length() test:");
 		doCompile("test_length_function");
+
+		check("stringLength", 8);
+		check("listLength", 8);
+		check("mapLength", 3);
+		check("recordLength", 9);
 	}
 	
 	public void test_math_functions() { // TODO: should be distributed into separate tests.
