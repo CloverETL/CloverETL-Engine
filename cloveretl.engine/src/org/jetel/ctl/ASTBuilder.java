@@ -504,22 +504,19 @@ public class ASTBuilder extends NavigatingVisitor {
 					node.setDefaultCaseIndex(i);
 				} else {
 					caseIndices.add(i);
+					CLVFLiteral caseLiteral = (CLVFLiteral) child.jjtGetChild(0);
+					Object value = caseLiteral.getValue();
+					SimpleNode otherNode;
+					if ((otherNode = map.get(value)) != null) {
+						duplicates.add(child);
+						duplicates.add(otherNode);
+					} else {
+						map.put(value, child);
+					}
+					for (SimpleNode duplicateNode : duplicates) {
+						error(duplicateNode, "Duplicate case");
+					}
 				}
-				CLVFLiteral caseLiteral = (CLVFLiteral) child.jjtGetChild(0);
-				Object value = caseLiteral.getValue();
-				
-				SimpleNode otherNode;
-				if ((otherNode = map.get(value)) != null) {
-					duplicates.add(child);
-					duplicates.add(otherNode);
-				} else {
-					map.put(value, child);
-				}
-				for (SimpleNode duplicateNode : duplicates) {
-					error(duplicateNode, "Duplicate case");
-				}
-				
-
 			}
 		}
 		
