@@ -47,6 +47,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
 	public static final boolean DEFAULT_SYNCHRONIZED_RUN = false;
 	public static final boolean DEFAULT_TRANSACTION_MODE = false;
+	public static final boolean DEFAULT_BATCH_MODE = true;
 	
 	private long runId;
 	private String logLocation;
@@ -64,6 +65,7 @@ public class GraphRuntimeContext {
 	private String[] classPaths;
 	private boolean synchronizedRun;
 	private boolean transactionMode;
+	private boolean batchMode;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -75,6 +77,7 @@ public class GraphRuntimeContext {
 		debugMode = DEFAULT_DEBUG_MODE;
 		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
 		transactionMode = DEFAULT_TRANSACTION_MODE;
+		batchMode = DEFAULT_BATCH_MODE;
 	}
 	
 	/* (non-Javadoc)
@@ -95,6 +98,7 @@ public class GraphRuntimeContext {
 		ret.debugDirectory = getDebugDirectory();
 		ret.synchronizedRun = isSynchronizedRun();
 		ret.transactionMode = isTransactionMode();
+		ret.batchMode = isBatchMode();
 		
 		return ret;
 	}
@@ -348,6 +352,14 @@ public class GraphRuntimeContext {
 		this.transactionMode = transactionMode;
 	}
 
+	public boolean isBatchMode() {
+		return batchMode;
+	}
+
+	public void setBatchMode(boolean batchMode) {
+		this.batchMode = batchMode;
+	}
+
 //	/**
 //	 * @return trackingFlushInterval
 //	 */
@@ -362,5 +374,7 @@ public class GraphRuntimeContext {
 //	public void setTrackingFlushInterval(int trackingFlushInterval) {
 //		this.trackingFlushInterval = trackingFlushInterval;
 //	}
+	
+	
 	
 }
