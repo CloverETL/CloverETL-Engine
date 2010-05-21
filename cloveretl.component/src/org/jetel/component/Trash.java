@@ -161,6 +161,7 @@ public class Trash extends Node {
 	    	if (firstRun()) {//a phase-dependent part of initialization
 				writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             	formatter.showCounter("Record", "# ");
+            	if (printTrashID) formatter.showTrashID("Trash ID ", getId());
 	    	}
 	    	else {
 				if (debugPrint) {
@@ -292,7 +293,6 @@ public class Trash extends Node {
     	        writer.setAppendData(debugAppend);
     	        writer.setDictionary(graph.getDictionary());
     	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
-            	if (printTrashID) formatter.showTrashID("Trash ID ", getId());
             }
 		}
 	}
