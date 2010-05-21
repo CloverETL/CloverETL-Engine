@@ -225,6 +225,7 @@ public class XmlXPathReader extends Node {
     		}
     			
     		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+            ports = parser.getPorts().toArray();
     	}
     	else {
        		parser.reset();
@@ -296,7 +297,6 @@ public class XmlXPathReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
-        ports = parser.getPorts().toArray();
 	}
 
     @Override
