@@ -575,9 +575,13 @@ public class DataRecordMap {
 		}
 
 		public void setDataRecord(DataRecord keyRecord) {
-			this.keyFields = new DataField[keyFieldsIndexes.length];
-			for (int i = 0; i < keyFieldsIndexes.length; i++) {
-				keyFields[i] = keyRecord.getField(keyFieldsIndexes[i]);
+			if (keyRecord == null) {
+				this.keyFields = null;
+			} else {
+				this.keyFields = new DataField[keyFieldsIndexes.length];
+				for (int i = 0; i < keyFieldsIndexes.length; i++) {
+					keyFields[i] = keyRecord.getField(keyFieldsIndexes[i]);
+				}
 			}
 		}
 
