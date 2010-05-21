@@ -53,18 +53,52 @@ public class StringLib extends TLFunctionLibrary {
 		}
 		return generator;
 	}
-
+	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = "concat".equals(functionName) ? new ConcatFunction() : "uppercase".equals(functionName) ? new UpperCaseFunction() : "lowercase".equals(functionName) ? new LowerCaseFunction() : "substring".equals(functionName) ? new SubstringFunction() : "left".equals(functionName) ? new LeftFunction() : "right".equals(functionName) ? new RightFunction() : "trim".equals(functionName) ? new TrimFunction() : "length".equals(functionName) ? new LengthFunction() : "soundex".equals(functionName) ? new SoundexFunction() : "replace".equals(functionName) ? new ReplaceFunction() : "split".equals(functionName) ? new SplitFunction() : "char_at".equals(functionName) ? new CharAtFunction() : "is_blank".equals(functionName) ? new IsBlankFunction() : "is_ascii".equals(functionName) ? new IsAsciiFunction() : "is_number".equals(functionName) ? new IsNumberFunction() : "is_integer".equals(functionName) ? new IsIntegerFunction() : "is_long".equals(functionName) ? new IsLongFunction() : "is_date".equals(functionName) ? new IsDateFunction() : "remove_diacritic".equals(functionName) ? new RemoveDiacriticFunction() : "remove_blank_space".equals(functionName) ? new RemoveBlankSpaceFunction() : "remove_nonprintable".equals(functionName) ? new RemoveNonPrintableFunction() : "remove_nonascii".equals(functionName) ? new RemoveNonAsciiFunction() : "get_alphanumeric_chars".equals(functionName) ? new GetAlphanumericCharsFunction() : "translate".equals(functionName) ? new TranslateFunction() : "join".equals(functionName) ? new JoinFunction() : "index_of".equals(functionName) ? new IndexOfFunction() : "count_char".equals(functionName) ? new CountCharFunction() : "find".equals(functionName) ? new FindFunction() : "chop".equals(functionName) ? new ChopFunction() : "cut".equals(functionName) ? new CutFunction() : "edit_distance".equals(functionName) ? new EditDistanceFunction() : "metaphone".equals(functionName) ? new MetaphoneFunction() : "nysiis".equals(functionName) ? new NYSIISFunction() : "random_string".equals(functionName) ? new RandomStringFunction() : null;
-
+		TLFunctionPrototype ret = 
+			"concat".equals(functionName) ? new ConcatFunction() :
+			"uppercase".equals(functionName) ? new UpperCaseFunction() :
+			"lowercase".equals(functionName) ? new LowerCaseFunction() :
+			"substring".equals(functionName) ? new SubstringFunction() :
+			"left".equals(functionName) ? new LeftFunction() :
+			"right".equals(functionName) ? new RightFunction() :
+			"trim".equals(functionName) ? new TrimFunction() : 
+			"length".equals(functionName) ? new LengthFunction() :
+			"soundex".equals(functionName) ? new SoundexFunction() :
+			"replace".equals(functionName) ? new ReplaceFunction() :
+			"split".equals(functionName) ? new SplitFunction() :
+			"char_at".equals(functionName) ? new CharAtFunction() :
+			"is_blank".equals(functionName) ? new IsBlankFunction() :
+			"is_ascii".equals(functionName) ? new IsAsciiFunction() :
+			"is_number".equals(functionName) ? new IsNumberFunction() :
+			"is_integer".equals(functionName) ? new IsIntegerFunction() :
+			"is_long".equals(functionName) ? new IsLongFunction() :
+			"is_date".equals(functionName) ? new IsDateFunction() :
+			"remove_diacritic".equals(functionName) ? new RemoveDiacriticFunction() :
+			"remove_blank_space".equals(functionName) ? new RemoveBlankSpaceFunction() :
+			"remove_nonprintable".equals(functionName) ? new RemoveNonPrintableFunction() :
+			"remove_nonascii".equals(functionName) ? new RemoveNonAsciiFunction() :
+			"get_alphanumeric_chars".equals(functionName) ? new GetAlphanumericCharsFunction() :
+			"translate".equals(functionName) ? new TranslateFunction() :
+			"join".equals(functionName) ? new JoinFunction() :
+			"index_of".equals(functionName) ? new IndexOfFunction() :
+			"count_char".equals(functionName) ? new CountCharFunction() :
+			"find".equals(functionName) ? new FindFunction() :
+			"chop".equals(functionName) ? new ChopFunction() :
+			"cut".equals(functionName) ? new CutFunction() :
+			"edit_distance".equals(functionName) ? new EditDistanceFunction() :
+			"metaphone".equals(functionName) ? new MetaphoneFunction() :
+			"nysiis".equals(functionName) ? new NYSIISFunction() :
+			"random_string".equals(functionName) ? new RandomStringFunction() : null;
+		
 		if (ret == null) {
-			throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-		}
+    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
+    	}
 
 		return ret;
 	}
-
+	
 	// CONCAT
 	@TLFunctionAnnotation("Concatenates two or more strings.")
 	public static final String concat(String... operands) {
@@ -81,7 +115,7 @@ public class StringLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLType[] actualParams) {
 			String[] args = new String[actualParams.length];
-			for (int i = args.length - 1; i >= 0; i--) {
+			for (int i=args.length-1; i>=0; i--) {
 				args[i] = stack.popString();
 			}
 			stack.push(concat(args));
@@ -118,7 +152,7 @@ public class StringLib extends TLFunctionLibrary {
 	// SUBSTRING
 	@TLFunctionAnnotation("Returns a substring of a given string")
 	public static final String substring(String input, int from, int length) {
-		return input.substring(from, from + length);
+		return input.substring(from, from+length);
 	}
 
 	class SubstringFunction implements TLFunctionPrototype {
@@ -168,7 +202,6 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.trim(buf).toString();
 
 	}
-
 	class TrimFunction implements TLFunctionPrototype {
 
 		public void execute(Stack stack, TLType[] actualParams) {
@@ -188,7 +221,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Returns number of mappings in the input map")
-	public static final <K, V> Integer length(Map<K, V> input) {
+	public static final <K,V> Integer length(Map<K, V> input) {
 		return input.size();
 	}
 
@@ -225,7 +258,8 @@ public class StringLib extends TLFunctionLibrary {
 			}
 
 			// FIXME: handle bytearray
-			throw new TransformLangExecutorRuntimeException("length - Unknown type: " + actual[0].name());
+			throw new TransformLangExecutorRuntimeException(
+					"length - Unknown type: " + actual[0].name());
 		}
 
 	}
@@ -370,7 +404,8 @@ public class StringLib extends TLFunctionLibrary {
 	// IS BLANK
 	@TLFunctionAnnotation("Checks if the string contains only whitespace characters")
 	public static final boolean is_blank(String input) {
-		return input == null || input.length() == 0 || StringUtils.isBlank(input);
+		return input == null || input.length() == 0
+				|| StringUtils.isBlank(input);
 	}
 
 	class IsBlankFunction implements TLFunctionPrototype {
@@ -441,12 +476,14 @@ public class StringLib extends TLFunctionLibrary {
 	// IS DATE
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
 	public static final boolean is_date(String input, String pattern) {
-		return is_date(input, pattern, Locale.getDefault().getDisplayName(), false);
+		return is_date(input, pattern, Locale.getDefault().getDisplayName(),
+				false);
 	}
-
+	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern. Allows changing parser strictness")
 	public static final boolean is_date(String input, String pattern, boolean lenient) {
-		return is_date(input, pattern, Locale.getDefault().getDisplayName(), lenient);
+		return is_date(input, pattern, Locale.getDefault().getDisplayName(),
+				lenient);
 	}
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
@@ -455,7 +492,8 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale. Allows changing parser strictness.")
-	public static final boolean is_date(String input, String pattern, String locale, boolean lenient) {
+	public static final boolean is_date(String input, String pattern, String locale,
+			boolean lenient) {
 		final SimpleDateFormat formatter = new SimpleDateFormat(pattern, MiscUtils.createLocale(locale));
 		formatter.setLenient(lenient);
 		final ParsePosition p = new ParsePosition(0);
@@ -465,7 +503,7 @@ public class StringLib extends TLFunctionLibrary {
 		if ("".equals(input)) {
 			return lenient;
 		}
-
+		
 		return p.getIndex() == input.length();
 	}
 
@@ -562,8 +600,10 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Extracts letters, numbers or both from input string")
-	public static final String get_alphanumeric_chars(String input, boolean takeAlpha, boolean takeNumeric) {
-		return StringUtils.getOnlyAlphaNumericChars(input, takeAlpha, takeNumeric);
+	public static final String get_alphanumeric_chars(String input,
+			boolean takeAlpha, boolean takeNumeric) {
+		return StringUtils.getOnlyAlphaNumericChars(input, takeAlpha,
+				takeNumeric);
 	}
 
 	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
@@ -575,7 +615,8 @@ public class StringLib extends TLFunctionLibrary {
 				final boolean takeNumeric = stack.popBoolean();
 				final boolean takeAlpha = stack.popBoolean();
 				final String input = stack.popString();
-				stack.push(get_alphanumeric_chars(input, takeAlpha, takeNumeric));
+				stack.push(get_alphanumeric_chars(input, takeAlpha,
+								takeNumeric));
 			}
 		}
 
@@ -583,8 +624,10 @@ public class StringLib extends TLFunctionLibrary {
 
 	// TRANSLATE
 	@TLFunctionAnnotation("Replaces occurences of characters")
-	public static final String translate(String input, String match, String replacement) {
-		return String.valueOf(StringUtils.translateSequentialSearch(input, match, replacement));
+	public static final String translate(String input, String match,
+			String replacement) {
+		return String.valueOf(StringUtils.translateSequentialSearch(input,
+				match, replacement));
 	}
 
 	class TranslateFunction implements TLFunctionPrototype {
@@ -603,9 +646,9 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
 	public static final <E> String join(String delimiter, List<E> values) {
 		StringBuffer buf = new StringBuffer();
-		for (int i = 0; i < values.size(); i++) {
+		for (int i=0; i<values.size(); i++) {
 			buf.append(values.get(i) == null ? "null" : values.get(i).toString());
-			if (i < values.size() - 1) {
+			if (i < values.size()-1) {
 				buf.append(delimiter);
 			}
 		}
@@ -614,17 +657,18 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Concatenates all mappings into a string using delimiter.")
-	public static final <K, V> String join(String delimiter, Map<K, V> values) {
+	public static final <K,V> String join(String delimiter, Map<K,V> values) {
 		StringBuffer buf = new StringBuffer();
 		Set<K> keys = values.keySet();
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
 			K key = it.next();
 			V value = values.get(key);
-			buf.append(key.toString()).append("=").append(value == null ? "null" : value.toString());
+			buf.append(key.toString()).append("=").append(
+					value == null ? "null" : value.toString());
 			if (it.hasNext()) {
 				buf.append(delimiter);
 			}
-
+			
 		}
 
 		return buf.toString();
@@ -728,7 +772,6 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll("");
 
 	}
-
 	class ChopFunction implements TLFunctionPrototype {
 
 		public void execute(Stack stack, TLType[] actualParams) {
@@ -744,11 +787,13 @@ public class StringLib extends TLFunctionLibrary {
 
 	}
 
-	// CUT
+	//CUT
 	@TLFunctionAnnotation("Cuts substring from specified string based on list consisting of pairs position,length")
 	public static final List<String> cut(String input, List<Integer> indexes) {
 		if (indexes.size() % 2 != 0) {
-			throw new TransformLangExecutorRuntimeException("Incorrect number of indices: " + indexes.size() + ". Must be an even number");
+			throw new TransformLangExecutorRuntimeException(
+					"Incorrect number of indices: " + indexes.size()
+							+ ". Must be an even number");
 		}
 		final Iterator<Integer> it = indexes.iterator();
 		final List<String> ret = new ArrayList<String>();
@@ -767,45 +812,45 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLType[] actualParams) {
 			final List<Object> indices = stack.popList();
 			final String input = stack.popString();
-			stack.push(cut(input, TLFunctionLibrary.<Integer> convertTo(indices)));
+			stack.push(cut(input, TLFunctionLibrary.<Integer>convertTo(indices)));
 		}
 	}
-
+	
 	// EDIT DISTANCE
 	@TLFunctionAnnotation("Calculates edit distance between two strings.")
 	public static final Integer edit_distance(String str1, String str2) {
 		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, null, -1);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strength of comparsion.")
 	public static final Integer edit_distance(String str1, String str2, int strength) {
 		return edit_distance(str1, str2, strength, null, -1);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion.")
 	public static final Integer edit_distance(String str1, String str2, String locale) {
 		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, -1);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing locale for comparsion and maximum amount of letters to be changed.")
 	public static final Integer edit_distance(String str1, String str2, String locale, int maxDifference) {
 
 		return edit_distance(str1, str2, StringAproxComparator.IDENTICAL, locale, maxDifference);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and locale for comparsion.")
 	public static final Integer edit_distance(String str1, String str2, int strength, String locale) {
 
 		return edit_distance(str1, str2, strength, locale, -1);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion and maximum amount of letters to be changed.")
 	public static final Integer edit_distance(String str1, String str2, int strength, int maxDifference)
 			throws JetelException {
 
 		return edit_distance(str1, str2, strength, null, maxDifference);
 	}
-
+	
 	@TLFunctionAnnotation("Calculates edit distance between two strings. Allows changing strenght of comparsion, locale for comparsion and maximum amount of letters to be changed.")
 	public static final Integer edit_distance(String str1, String str2, int strength, String locale, int maxDifference) {
 
@@ -821,7 +866,7 @@ public class StringLib extends TLFunctionLibrary {
 		if (maxDifference > -1) {
 			comparator.setMaxLettersToChange(maxDifference);
 		}
-		return comparator.distance(str1, str2) / comparator.getMaxCostForOneLetter();
+		return comparator.distance(str1, str2)/comparator.getMaxCostForOneLetter();
 	}
 
 	class EditDistanceFunction implements TLFunctionPrototype {
@@ -850,7 +895,7 @@ public class StringLib extends TLFunctionLibrary {
 			stack.push(edit_distance(string1, string2, strength, locale, maxDifference));
 		}
 	}
-
+	
 	@TLFunctionAnnotation("Finds the metaphone value of a String.")
 	public static final String metaphone(String input) {
 		return StringUtils.metaphone(input);
@@ -860,7 +905,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String metaphone(String input, int maxLength) {
 		return StringUtils.metaphone(input, maxLength);
 	}
-
+	
 	class MetaphoneFunction implements TLFunctionPrototype {
 
 		public void execute(Stack stack, TLType[] actualParams) {
@@ -873,30 +918,30 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	@TLFunctionAnnotation("Finds The New York State Identification and Intelligence System Phonetic Code.")
+	@TLFunctionAnnotation("Finds The New York State Identification and Intelligence System Phonetic Code.")	
 	public static final String nysiis(String input) {
 		return StringUtils.NYSIIS(input);
 	}
-
+	
 	class NYSIISFunction implements TLFunctionPrototype {
 
 		public void execute(Stack stack, TLType[] actualParams) {
 			stack.push(nysiis(stack.popString()));
 		}
 	}
-
+	
 	@TLFunctionAnnotation("Generates a random string.")
 	public static String random_string(int minLength, int maxLength) {
 		return getGenerator(Thread.currentThread()).nextString(minLength, maxLength);
 	}
-
+	
 	@TLFunctionAnnotation("Generates a random string. Allows changing seed.")
 	public static String random_string(int minLength, int maxLength, long randomSeed) {
 		DataGenerator generator = getGenerator(Thread.currentThread());
 		generator.setSeed(randomSeed);
 		return generator.nextString(minLength, maxLength);
 	}
-
+	
 	class RandomStringFunction implements TLFunctionPrototype {
 
 		public void execute(Stack stack, TLType[] actualParams) {
