@@ -64,16 +64,16 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @param value
 	 */
 	public CompressedByteDataField(DataFieldMetadata _metadata, byte[] value) {
-		super(_metadata, ZipUtils.compress(value));
+		super(_metadata, value);
 		dataLen = value == null ? 0 : value.length;
 	}
 	
 	public DataField duplicate(){
-		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, new byte[]{});
-		compressedByteDataField.value = value; //potencial issue !
+		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, value);
+		compressedByteDataField.value = (value != null) ? Arrays.copyOf(value, value.length) : null;
 		compressedByteDataField.dataLen = dataLen;
-		if (value == null) compressedByteDataField.setNull(true);
-	    return compressedByteDataField; 
+
+		return compressedByteDataField;
 	}
 
 	/**
