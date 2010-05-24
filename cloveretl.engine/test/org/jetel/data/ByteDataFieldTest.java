@@ -156,6 +156,8 @@ public class ByteDataFieldTest extends CloverTestCase {
 	public void test_duplicate() {
 		byteField.setValue(byteArray);
 		assertEquals(byteField, byteField.duplicate());
+		byteField.setValue((byte) 24);
+		assertEquals(byteField, byteField.duplicate());
 	}
 
 	/**
@@ -169,6 +171,17 @@ public class ByteDataFieldTest extends CloverTestCase {
 		ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.Data.DATA_RECORDS_BUFFER_SIZE);
 
 		byteField.setValue(byteArray);
+		byteField.serialize(buffer);
+		buffer.flip();
+
+		deserializedByteField.deserialize(buffer);
+
+		assertEquals(byteField, deserializedByteField);
+
+		deserializedByteField.reset();
+		buffer.clear();
+
+		byteField.setValue((byte) 24);
 		byteField.serialize(buffer);
 		buffer.flip();
 
