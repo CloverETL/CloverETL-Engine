@@ -5,6 +5,7 @@ package org.jetel.ctl.ASTnode;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionDescriptor;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 
@@ -13,7 +14,7 @@ public class CLVFFunctionCall extends SimpleNode {
 	private String name;
 	private CLVFFunctionDeclaration localFunc;
 	private TLFunctionDescriptor externFunc;
-	private TLType[] actualParams;
+	private TLFunctionCallContext functionCallContext;
 	private TLFunctionPrototype executable;
 	
 	public CLVFFunctionCall(int id) {
@@ -29,7 +30,7 @@ public class CLVFFunctionCall extends SimpleNode {
 		this.name = node.name;
 		this.localFunc = node.localFunc;
 		this.externFunc = node.externFunc;
-		this.actualParams = node.actualParams;
+		this.functionCallContext = node.functionCallContext;
 		this.executable = node.executable;
 	}
 
@@ -77,12 +78,12 @@ public class CLVFFunctionCall extends SimpleNode {
 		return new CLVFFunctionCall(this);
 	}
 
-	public void setActualParameters(TLType[] argTypes) {
-		this.actualParams = argTypes;
+	public void setFunctionCallContext(TLFunctionCallContext callContext) {
+		this.functionCallContext = callContext;
 	}
 	
-	public TLType[] getActualParameters() {
-		return actualParams;
+	public TLFunctionCallContext getFunctionCallContext() {
+		return functionCallContext;
 	}
 
 	public void setExecutable(TLFunctionPrototype executable) {

@@ -2,6 +2,7 @@ package org.jetel.ctl;
 
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTVARIABLEDECLARATION;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLType.TLTypeSymbol;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionDescriptor;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -85,11 +87,14 @@ public class TypeChecker extends NavigatingVisitor {
 	private CLVFFunctionDeclaration activeFunction = null;
 	private Map<String, List<TLFunctionDescriptor>> externalFunctions;
 	private final HashMap<String,TLType> typeVarMapping = new HashMap<String, TLType>();
+	private ArrayList<TLFunctionCallContext> functionCalls = new ArrayList<TLFunctionCallContext>();
+	private int functionCallIndex = 0;
 	
 	public TypeChecker(ProblemReporter problemReporter, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, Map<String, List<TLFunctionDescriptor>> externalFunctions) {
 		this.problemReporter = problemReporter;
 		this.declaredFunctions = declaredFunctions;
 		this.externalFunctions = externalFunctions;
+		this.functionCallIndex = 0;
 	}
 	
 	public void check(CLVFStart ast) {
@@ -586,11 +591,30 @@ public class TypeChecker extends NavigatingVisitor {
 
 		// infer actual parameter types
 		CLVFArguments args = (CLVFArguments) node.jjtGetChild(0);
-		TLType[] actual = new TLType[args.jjtGetNumChildren()];
+		TLFunctionCallContext context = new TLFunctionCallContext();
+		
+		int paramCount = args.jjtGetNumChildren();
+		
+		TLType[] actual = new TLType[paramCount];
+		boolean[] isLiteral = new boolean[paramCount];
+		Object[] paramValues = new Object[paramCount];
+		
 		for (int i = 0; i < actual.length; i++) {
-			actual[i] = ((SimpleNode) args.jjtGetChild(i)).getType();
+			SimpleNode iNode = (SimpleNode) args.jjtGetChild(i);
+			actual[i] = iNode.getType();
+			isLiteral[i] = (iNode instanceof CLVFLiteral);
+			if (isLiteral[i]) {
+				
+				paramValues[i] = ((CLVFLiteral)iNode).getValue();
+			}
 		}
-		node.setActualParameters(actual);
+		context.setParams(actual);
+		context.setLiterals(isLiteral);
+		context.setParamValues(paramValues);
+		node.setFunctionCallContext(context);
+		getFunctionCalls().add(context);
+		context.setIndex(functionCallIndex);
+		functionCallIndex++;
 		
 		// scan local function declarations for (best) match
 		final List<CLVFFunctionDeclaration> local = declaredFunctions.get(node.getName());
@@ -1968,6 +1992,13 @@ public class TypeChecker extends NavigatingVisitor {
 
 	private void warn(SimpleNode node, String error) {
 		problemReporter.warn(node.getBegin(), node.getEnd(), error, null);
+	}
+
+	/**
+	 * @return the functionCalls
+	 */
+	public ArrayList<TLFunctionCallContext> getFunctionCalls() {
+		return functionCalls;
 	}
 
 }

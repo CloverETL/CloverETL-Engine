@@ -1901,5 +1901,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("r", Long.parseLong("-4"));
 		check("t", Long.parseLong("-3"));
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
-	}	
+	}
+	
+	public void test_regexp_cache3() {
+
+		doCompile("test_recache3");
+	}
+
 }
