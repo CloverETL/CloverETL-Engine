@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,20 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     
     public void init() {
     	Class<? extends TLFunctionLibrary> clazz = getClass();
+    	HashSet<String> initMethods = new HashSet<String>();
+    	
+    	TLFunctionInitAnnotation ia = null;
+    	for (Method m : clazz.getMethods()) {
+    		if ( (ia = m.getAnnotation(TLFunctionInitAnnotation.class)) != null) {
+        		Type[] parameters = m.getGenericParameterTypes();
+        		if (parameters.length != 1 || !TLFunctionCallContext.class.equals(parameters[0])) {
+        			throw new IllegalArgumentException("Init function definition must have exactly one parameter of type TLFunctionCallContext - method " + m.getName());			
+        	    }
+
+    			initMethods.add(m.getName());	
+    		}
+    	}
+    	
     	TLFunctionAnnotation a = null;
     	for (Method m : clazz.getMethods()) {
     		if ( (a = m.getAnnotation(TLFunctionAnnotation.class)) == null) {
@@ -125,7 +140,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		TLType[] formal = new TLType[javaFormal.length-1]; // we're skipping first java formal parameter (with TLFunctionCallContext)
 	    		System.arraycopy(converted, 1, formal, 0, formal.length);
 	    		
-	    		registerFunction(new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs()));
+	    		registerFunction(new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
+	    				initMethods.contains(m.getName() + "_init")));
     		} catch (IllegalArgumentException e) {
     			logger.warn("Function '" + getClass().getName() + "." + m.getName() + "' ignored - " + e.getMessage());
     		}

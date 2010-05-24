@@ -35,9 +35,10 @@ public class TLFunctionDescriptor {
     protected final TLType returnType;
 	private boolean isGeneric;
 	private boolean isVarArg;
+	private boolean hasInit; 
     
     protected TLFunctionDescriptor(TLFunctionLibrary library,String name,String description,TLType[] formalParameters,
-            TLType returnType, boolean isGeneric, boolean isVarArg) {
+            TLType returnType, boolean isGeneric, boolean isVarArg, boolean hasInit) {
         this.name=name;
         this.library=library;
         this.description=description;
@@ -45,6 +46,7 @@ public class TLFunctionDescriptor {
         this.returnType=returnType;
         this.isGeneric = isGeneric;
         this.isVarArg = isVarArg;
+        this.setHasInit(hasInit);
     }
     
     public String getName() {
@@ -129,6 +131,20 @@ public class TLFunctionDescriptor {
     
 	public String getDescription() {
 		return description;
+	}
+
+	/**
+	 * @param hasInit the hasInit to set
+	 */
+	public void setHasInit(boolean hasInit) {
+		this.hasInit = hasInit;
+	}
+
+	/**
+	 * @return the hasInit
+	 */
+	public boolean hasInit() {
+		return hasInit;
 	}
 
 }
