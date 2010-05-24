@@ -34,6 +34,9 @@ public class TLFunctionCallContext {
 	private boolean[] isLiteral;
 	private Object[] paramValues;
 	private int index;
+	private boolean hasInit;
+	private String libClassName;
+	private String initMethodName;
 	
 	/**
 	 * The tl parameters.
@@ -85,8 +88,8 @@ public class TLFunctionCallContext {
 	 * @param i
 	 * @param b
 	 */
-	public void setLiteral(int i, boolean b) {
-		isLiteral[i] = b;
+	public void setLiteral(int i) {
+		isLiteral[i] = true;
 	}
 	/**
 	 * @param i
@@ -101,6 +104,10 @@ public class TLFunctionCallContext {
 	public void setParamValues(Object[] paramValues) {
 		this.paramValues = paramValues;
 	}
+	
+	public void setParamValue(int i, Object paramValue) {
+		this.paramValues[i] = paramValue;
+	}
 	/**
 	 * @param index the index to set
 	 */
@@ -113,6 +120,45 @@ public class TLFunctionCallContext {
 	public int getIndex() {
 		return index;
 	}
-
+	/**
+	 * @return
+	 */
+	public int literalsCount() {
+		return isLiteral.length;
+	}
+	/**
+	 * @param hasInit
+	 */
+	public void setHasInit(boolean hasInit) {
+		this.hasInit = hasInit;
+	}
+	
+	public boolean hasInit() {
+		return hasInit;
+	}
+	/**
+	 * @param libName the libName to set
+	 */
+	public void setLibClassName(String libName) {
+		this.libClassName = libName;
+	}
+	/**
+	 * @return the libName
+	 */
+	public String getLibClassName() {
+		return libClassName;
+	}
+	/**
+	 * @param initMethodName the initMethodName to set
+	 */
+	public void setInitMethodName(String initMethodName) {
+		this.initMethodName = initMethodName;
+	}
+	/**
+	 * @return the initMethodName
+	 */
+	public String getInitMethodName() {
+		return initMethodName;
+	}
 
 }

@@ -666,6 +666,12 @@ public class TypeChecker extends NavigatingVisitor {
 		// if extCandidate != null we found even better match in external functions
 		if (extCandidate != null) {
 			node.setCallTarget(extCandidate);
+			boolean hasInit = extCandidate.hasInit();
+			if (hasInit) {
+				context.setHasInit(true);
+				context.setInitMethodName(extCandidate.getName() + "_init");
+				context.setLibClassName(node.getExternalFunction().getLibrary().getLibraryClassName());
+			}
 			castIfNeeded(args,extCandidate.getFormalParameters());
 			if (!extCandidate.isGeneric()) {
 				node.setType(extCandidate.getReturnType());
