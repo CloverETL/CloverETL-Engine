@@ -41,35 +41,23 @@ public class CompressedByteDataField extends ByteDataField {
 	/** lenght of data represented by the field. */ 
 	private int dataLen;
 
-	
-	/**
-	 * @param _metadata
-	 */
 	public CompressedByteDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
 		dataLen = 0;
 	}
 
-	/**
-	 * @param _metadata
-	 * @param plain
-	 */
 	public CompressedByteDataField(DataFieldMetadata _metadata, boolean plain) {
 		super(_metadata, plain);
 		dataLen = 0;
 	}
 
-	/**
-	 * @param _metadata
-	 * @param value
-	 */
 	public CompressedByteDataField(DataFieldMetadata _metadata, byte[] value) {
 		super(_metadata, value);
-		dataLen = value == null ? 0 : value.length;
+		// dataLen is set when the setValue(byte[]) is called in the constructor of the super class
 	}
 	
 	public DataField duplicate(){
-		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, value);
+		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata);
 		compressedByteDataField.value = (value != null) ? Arrays.copyOf(value, value.length) : null;
 		compressedByteDataField.dataLen = dataLen;
 
