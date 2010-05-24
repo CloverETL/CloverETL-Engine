@@ -775,8 +775,11 @@ public class TransformationGraphXMLReaderWriter {
 		    	if(dicEntryElements.item(j).getNodeName().equals(DICTIONARY_ENTRY_ELEMENT)) {
 			        ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element) dicEntryElements.item(j), graph);
 			        try {
+			        	// get basic parameters
 			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
 			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
+			        	
+			        	// get properties
 			        	final Properties entryProperties = attributes.attributes2Properties(null);
 			        	entryProperties.remove(DICTIONARY_ENTRY_ID);
 			        	entryProperties.remove(DICTIONARY_ENTRY_TYPE);
@@ -785,11 +788,16 @@ public class TransformationGraphXMLReaderWriter {
 			        	entryProperties.remove(DICTIONARY_ENTRY_OUTPUT);
 			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
 			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
-			        	for(Object key : entryProperties.keySet()){
-			        		if(key.toString().matches("^ss[.].*")){
+			        	String prefix = "ss.";
+			        	for(Object key : entryProperties.keySet().toArray()){
+			        		if(key.toString().startsWith(prefix)){
+			        			Object value = entryProperties.get(key);
 			        			entryProperties.remove(key);
+			        			entryProperties.put(key.toString().substring(prefix.length()), value);
 			        		}
 			        	}
+
+			        	// create entry 
 			        	if (!entryProperties.isEmpty()) {
 				        	try {
 								dictionary.setValueFromProperties(name, type, entryProperties);
