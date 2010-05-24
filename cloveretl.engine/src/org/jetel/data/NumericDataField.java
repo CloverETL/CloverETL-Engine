@@ -1,23 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -42,7 +42,6 @@ import org.jetel.util.MiscUtils;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringUtils;
 
-
 /**
  *  A class that represents decimal number field (double precision)
  *
@@ -51,7 +50,7 @@ import org.jetel.util.string.StringUtils;
  *@since      March 27, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class NumericDataField extends DataField implements Numeric, Comparable {
+public class NumericDataField extends DataField implements Numeric, Comparable<Object> {
 
 	private static final long serialVersionUID = -3824088924871267023L;
 	
@@ -59,7 +58,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	private NumberFormat numberFormat;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
-	// Attributes
+
 	/**
 	 *  An attribute that represents ...
 	 *
@@ -134,19 +133,12 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	    this.numberFormat=numberFormat;
 	 }
 	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
 	    NumericDataField newField=new NumericDataField(metadata,value,numberFormat);
 	    newField.setNull(isNull());
 	    return newField;
 	}
 	
-	/**
-	 * @see org.jetel.data.Numeric#duplicateNumeric()
-	 */
 	public Numeric duplicateNumeric() {
 	    return new CloverDouble(value);
 	}
@@ -194,9 +186,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-     */
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof NumericDataField){
@@ -307,9 +296,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         setNull(true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
         if (metadata.isNullable()){
             setNull(true);
@@ -320,11 +306,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         }
     }
     
-
-	// Associations
-
-	// Operations
-
 	/**
 	 *  Gets the Metadata attribute of the NumericDataField object
 	 *
@@ -335,7 +316,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		return super.getMetadata();
 	}
 
-
 	/**
 	 *  Gets the Field Type
 	 *
@@ -345,7 +325,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	public char getType() {
 		return DataFieldMetadata.NUMERIC_FIELD;
 	}
-
 
 	/**
 	 *  Gets the decimal value represented by this object (as Decimal object)
@@ -435,11 +414,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -581,10 +555,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	public int compareTo(double compVal) {
 		return Double.compare(value,compVal);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
-	 */
+
 	public int compareTo(Numeric value){
 	    if (isNull) {
 	        return -1;
@@ -595,10 +566,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	    }
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	public int hashCode(){
 		long v=Double.doubleToLongBits(value);
 		return (int)(v^(v>>32));
@@ -711,14 +678,11 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
      * @see org.jetel.data.Numeric#getBigDecimal()
      */
     public BigDecimal getBigDecimal() {
-        if(isNull) 
-            return null;
-        else 
-            return new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+		if (isNull) {
+			return null;
+		}
+
+		return BigDecimal.valueOf(value);
     }
 
 }
-/*
- *  end class NumericDataField
- */
-

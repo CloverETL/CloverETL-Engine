@@ -1,25 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-// FILE: c:/projects/jetel/org/jetel/data/DateDataField.java
-
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -44,7 +42,7 @@ import org.jetel.util.string.Compare;
  * @created Nov 20, 2007
  * @since Nov 20, 2007
  */
-public class BooleanDataField extends DataField implements Comparable{
+public class BooleanDataField extends DataField implements Comparable<Object> {
 
 	private static final long serialVersionUID = 7318127447273839212L;
 	
@@ -82,9 +80,6 @@ public class BooleanDataField extends DataField implements Comparable{
     	falseStringFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
 	    BooleanDataField newField=new BooleanDataField(metadata,value);
 	    newField.setNull(isNull());
@@ -124,9 +119,6 @@ public class BooleanDataField extends DataField implements Comparable{
 		}
 	}
 	
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-     */
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof BooleanDataField){
@@ -175,9 +167,6 @@ public class BooleanDataField extends DataField implements Comparable{
 		}
 	}
     
-     /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
@@ -245,10 +234,6 @@ public class BooleanDataField extends DataField implements Comparable{
         }
     }
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -301,13 +286,6 @@ public class BooleanDataField extends DataField implements Comparable{
 		setNull(false);
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  obj  
-	 * @return      
-	 */
 	public boolean equals(Object obj) {
 	    if (obj==null) return false;
 	    
@@ -364,7 +342,3 @@ public class BooleanDataField extends DataField implements Comparable{
 	}
 
 }
-/*
- *  end class BooleanDataField
- */
-

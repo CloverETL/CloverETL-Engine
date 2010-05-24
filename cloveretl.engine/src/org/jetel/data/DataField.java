@@ -1,25 +1,23 @@
 /*
- *  jETeL/Clover - Java based ETL application framework.
- *  Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
-// FILE: c:/projects/jetel/org/jetel/data/DataField.java
-
 package org.jetel.data;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -39,7 +37,8 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  * @see         OtherClasses
  */
-public abstract class DataField implements Serializable, Comparable {
+@SuppressWarnings("serial")
+public abstract class DataField implements Serializable, Comparable<Object> {
 
 	/**
      * Reference to metadata object describing this field
@@ -55,8 +54,6 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	protected boolean isNull;
 
-
-	// Attributes
 
 	/**
 	 *  Constructor
@@ -126,9 +123,6 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
 	public void setToDefaultValue() {
-//        if(!metadata.isDefaultValue()) {
-//            throw new NullDataFormatException(metadata.getName() + " has not dafault value defined!");
-//        }
 		try {
             Object val;
             if((val = metadata.getDefaultValue()) != null) {
@@ -240,8 +234,6 @@ public abstract class DataField implements Serializable, Comparable {
 		return isNull;
 	}
 
-
-	// Operations
 	/**
 	 *  Converts field's value into String representation
 	 *
@@ -342,7 +334,3 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	public abstract int getSizeSerialized();
 }
-/*
- *  end class DataField
- */
-

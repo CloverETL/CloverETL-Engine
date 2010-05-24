@@ -1,23 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -44,9 +44,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *@see        org.jetel.metadata.DataFieldMetadata
  */
 @SuppressWarnings("EI")
-public class ByteDataField extends DataField implements Comparable{
-
-	// Attributes
+public class ByteDataField extends DataField implements Comparable<Object> {
 
 	private static final long serialVersionUID = 3823545028385612760L;
 
@@ -57,11 +55,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	protected byte[] value;
 
-    //private static final int ARRAY_LENGTH_INDICATOR_SIZE = Integer.SIZE / 8;
-	
 	protected final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
-	
-
 
 	/**
 	 *  Constructor for the NumericDataField object
@@ -104,9 +98,6 @@ public class ByteDataField extends DataField implements Comparable{
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
 	    return new ByteDataField(metadata, value);
 	}
@@ -166,10 +157,6 @@ public class ByteDataField extends DataField implements Comparable{
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-	 */
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
@@ -218,9 +205,6 @@ public class ByteDataField extends DataField implements Comparable{
 		setNull(false);
 	}
 
-     /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
          if (metadata.isNullable()){
              setNull(true);
@@ -230,10 +214,6 @@ public class ByteDataField extends DataField implements Comparable{
              value = null;
          }
      }    
-
-	// Associations
-
-	// Operations
 
 	/**
 	 *  Gets the Field Type
@@ -326,67 +306,40 @@ public class ByteDataField extends DataField implements Comparable{
         }
     }
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
-        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
-            setNull(true);
-            return;
-        }
-        try {
-            this.value = seq.toString().getBytes(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e.toString() + " when calling fromString() on field \""+
-                    this.metadata.getName()+"\" (" + DataFieldMetadata.type2Str(getType()) + ") ", e);
-        }
-        setNull(false);
+		fromString(seq, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
     /**
      * Parses byte array value from string (converts characters in string into byte
-     *  array using specified charset encoder)
-     * 
-	 * @param  seq
+     * array using specified charset encoder)
+     *
+	 * @param seq
      * @param charset charset to be used for encoding String into bytes
 	 * @since            11.12.2006
      */
-    public void fromString(CharSequence seq,String charset){
-        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
-            setNull(true);
-            return;
-        }
-        try{
-            this.value = seq.toString().getBytes(charset);
-        }catch(UnsupportedEncodingException ex){
-            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
-                    this.metadata.getName()+"\"",ex);
-        }
-        setNull(false);
+	public void fromString(CharSequence seq, String charset) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+			setNull(true);
+			return;
+		}
+
+		try {
+			this.value = seq.toString().getBytes(charset);
+		} catch (UnsupportedEncodingException ex) {
+			throw new RuntimeException(ex.toString() + " when calling fromString() on field \""
+					+ this.metadata.getName() + "\" (" + DataFieldMetadata.type2Str(getType()) + ") ", ex);
+		}
+
+		setNull(false);
     }
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer  Description of Parameter
-	 *@param  decoder     Description of Parameter
-	 *@since              October 31, 2002
-	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
 		prepareBuf();
 		dataBuffer.get(value);
 		setNull(false);
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer  Description of Parameter
-	 *@param  encoder     Description of Parameter
-	 *@since              October 31, 2002
-	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
         if(!isNull) {
     		try {
@@ -453,14 +406,6 @@ public class ByteDataField extends DataField implements Comparable{
 		}
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  obj  Description of Parameter
-	 *@return      Description of the Returned Value
-	 *@since       October 29, 2002
-	 */
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
@@ -513,10 +458,7 @@ public class ByteDataField extends DataField implements Comparable{
 			return -1;
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+
 	public int hashCode(){
 		 return Arrays.hashCode(this.value);
 	}
@@ -538,7 +480,3 @@ public class ByteDataField extends DataField implements Comparable{
 	}
 
 }
-/*
- *  end class NumericDataField
- */
-
