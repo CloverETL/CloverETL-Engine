@@ -153,6 +153,11 @@ public class ByteDataFieldTest extends CloverTestCase {
 	public void test_toByteBuffer() {
 	}
 
+	public void test_duplicate() {
+		byteField.setValue(byteArray);
+		assertEquals(byteField, byteField.duplicate());
+	}
+
 	/**
 	 *  Test for @link org.jetel.data.ByteDataField.deserialize(ByteBuffer buffer)
 	 *           @link org.jetel.data.ByteDataField.serialize(ByteBuffer buffer)
