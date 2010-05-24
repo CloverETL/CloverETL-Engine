@@ -22,10 +22,12 @@
 package org.jetel.ctl.extensions;
 
 import org.jetel.ctl.Stack;
-import org.jetel.ctl.data.TLType;
+
 
 public interface TLFunctionPrototype {
 
-    public void execute(Stack stack, TLType[] actualParams);   
+	public void init(TLFunctionCallContext context);
+	
+    public void execute(Stack stack, TLFunctionCallContext context);   
 
 }

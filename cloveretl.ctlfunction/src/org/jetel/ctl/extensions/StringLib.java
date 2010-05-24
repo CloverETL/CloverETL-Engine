@@ -32,8 +32,8 @@ import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.JetelException;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
@@ -94,7 +94,7 @@ public class StringLib extends TLFunctionLibrary {
 	
 	// CONCAT
 	@TLFunctionAnnotation("Concatenates two or more strings.")
-	public static final String concat(String... operands) {
+	public static final String concat(TLFunctionCallContext context, String... operands) {
 		final StringBuilder buf = new StringBuilder();
 
 		for (int i = 0; i < operands.length; i++) {
@@ -106,115 +106,144 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ConcatFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			String[] args = new String[actualParams.length];
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			String[] args = new String[context.getParams().length];
 			for (int i=args.length-1; i>=0; i--) {
 				args[i] = stack.popString();
 			}
-			stack.push(concat(args));
+			stack.push(concat(context, args));
 		}
+
 	}
 
 	// UPPERCASE
 	@TLFunctionAnnotation("Returns input string in uppercase")
-	public static final String uppercase(String input) {
+	public static final String uppercase(TLFunctionCallContext context, String input) {
 		return input.toUpperCase();
 	}
 
 	class UpperCaseFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(uppercase(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(uppercase(context, stack.popString()));
 		}
 	}
 
 	// LOWERCASE
 	@TLFunctionAnnotation("Returns input string in lowercase")
-	public static final String lowercase(String input) {
+	public static final String lowercase(TLFunctionCallContext context, String input) {
 		return input.toLowerCase();
 	}
 
 	class LowerCaseFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(lowercase(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(lowercase(context, stack.popString()));
 		}
 
 	}
 
 	// SUBSTRING
 	@TLFunctionAnnotation("Returns a substring of a given string")
-	public static final String substring(String input, int from, int length) {
+	public static final String substring(TLFunctionCallContext context, String input, int from, int length) {
 		return input.substring(from, from+length);
 	}
 
 	class SubstringFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final int length = stack.popInt();
 			final int from = stack.popInt();
 			final String input = stack.popString();
-			stack.push(substring(input, from, length));
+			stack.push(substring(context, input, from, length));
 		}
 	}
 
 	// LEFT
 	@TLFunctionAnnotation("Returns prefix of the specified length")
-	public static final String left(String input, int length) {
+	public static final String left(TLFunctionCallContext context, String input, int length) {
 		return input.length() < length ? "" : input.substring(0, length);
 	}
 
 	class LeftFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final int length = stack.popInt();
 			final String input = stack.popString();
-			stack.push(left(input, length));
+			stack.push(left(context, input, length));
 		}
 	}
 
 	// RIGHT
 	@TLFunctionAnnotation("Returns suffix of the specified length")
-	public static final String right(String input, int length) {
+	public static final String right(TLFunctionCallContext context, String input, int length) {
 		return input.substring(input.length() - length, input.length());
 	}
 
 	class RightFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final int length = stack.popInt();
 			final String input = stack.popString();
-			stack.push(right(input, length));
+			stack.push(right(context, input, length));
 		}
 	}
 
 	// TRIM
 	@TLFunctionAnnotation("Removes leading and trailing whitespaces from a string.")
-	public static final String trim(String input) {
+	public static final String trim(TLFunctionCallContext context, String input) {
 		StringBuilder buf = new StringBuilder(input);
 		return StringUtils.trim(buf).toString();
 
 	}
 	class TrimFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(trim(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(trim(context, stack.popString()));
 		}
 	}
 
 	// LENGTH
 	@TLFunctionAnnotation("Returns number of characters in the input string")
-	public static final Integer length(String input) {
+	public static final Integer length(TLFunctionCallContext context, String input) {
 		return input.length();
 	}
 
 	@TLFunctionAnnotation("Returns number of elements in the input list")
-	public static final <E> Integer length(List<E> input) {
+	public static final <E> Integer length(TLFunctionCallContext context, List<E> input) {
 		return input.size();
 	}
 
 	@TLFunctionAnnotation("Returns number of mappings in the input map")
-	public static final <K,V> Integer length(Map<K, V> input) {
+	public static final <K,V> Integer length(TLFunctionCallContext context, Map<K, V> input) {
 		return input.size();
 	}
 
@@ -223,43 +252,47 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Returns number of fields in the input record")
-	public static final Integer length(DataRecord input) {
+	public static final Integer length(TLFunctionCallContext context, DataRecord input) {
 		return input.getNumFields();
 	}
 
 	class LengthFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actual) {
-			if (actual[0].isString()) {
-				stack.push(length(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isString()) {
+				stack.push(length(context, stack.popString()));
 				return;
 			}
 
-			if (actual[0].isList()) {
-				stack.push(length(stack.popList()));
+			if (context.getParams()[0].isList()) {
+				stack.push(length(context, stack.popList()));
 				return;
 			}
 
-			if (actual[0].isMap()) {
-				stack.push(length(stack.popMap()));
+			if (context.getParams()[0].isMap()) {
+				stack.push(length(context, stack.popMap()));
 				return;
 			}
 
-			if (actual[0].isRecord()) {
-				stack.push(length(stack.popRecord()));
+			if (context.getParams()[0].isRecord()) {
+				stack.push(length(context, stack.popRecord()));
 				return;
 			}
 
 			// FIXME: handle bytearray
 			throw new TransformLangExecutorRuntimeException(
-					"length - Unknown type: " + actual[0].name());
+					"length - Unknown type: " + context.getParams()[0].name());
 		}
 
 	}
 
 	// REPLACE
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
-	public static final String replace(String input, String regex, String replacement) {
+	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(input);
 		return m.replaceAll(replacement);
@@ -267,18 +300,22 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ReplaceFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String replacement = stack.popString();
 			final String regex = stack.popString();
 			final String input = stack.popString();
-			stack.push(replace(input, regex, replacement));
+			stack.push(replace(context, input, regex, replacement));
 		}
 
 	}
 
 	// SPLIT
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
-	public static final List<String> split(String input, String regex) {
+	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
 		final Pattern p = Pattern.compile(regex);
 		final String[] strArray = p.split(input);
 		final List<String> list = new ArrayList<String>();
@@ -290,121 +327,149 @@ public class StringLib extends TLFunctionLibrary {
 
 	class SplitFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String regex = stack.popString();
 			final String input = stack.popString();
-			stack.push(split(input, regex));
+			stack.push(split(context, input, regex));
 		}
 
 	}
 
 	// CHAR AT
 	@TLFunctionAnnotation("Returns character at the specified position of input string")
-	public static final String char_at(String input, int position) {
+	public static final String char_at(TLFunctionCallContext context, String input, int position) {
 		return String.valueOf(input.charAt(position));
 	}
 
 	class CharAtFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			int pos = stack.popInt();
 			String input = stack.popString();
-			stack.push(char_at(input, pos));
+			stack.push(char_at(context, input, pos));
 		}
 	}
 
 	// IS BLANK
 	@TLFunctionAnnotation("Checks if the string contains only whitespace characters")
-	public static final boolean is_blank(String input) {
+	public static final boolean is_blank(TLFunctionCallContext context, String input) {
 		return input == null || input.length() == 0
 				|| StringUtils.isBlank(input);
 	}
 
 	class IsBlankFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(is_blank(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(is_blank(context, stack.popString()));
 		}
 
 	}
 
 	// IS ASCII
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
-	public static final boolean is_ascii(String input) {
+	public static final boolean is_ascii(TLFunctionCallContext context, String input) {
 		return StringUtils.isAscii(input);
 
 	}
 
 	class IsAsciiFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(is_ascii(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(is_ascii(context, stack.popString()));
 		}
 
 	}
 
 	// IS NUMBER
 	@TLFunctionAnnotation("Checks if the string can be parsed into a double number")
-	public static final boolean is_number(String input) {
+	public static final boolean is_number(TLFunctionCallContext context, String input) {
 		return StringUtils.isNumber(input);
 	}
 
 	class IsNumberFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(is_number(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(is_number(context, stack.popString()));
 		}
 	}
 
 	// IS INTEGER
 	@TLFunctionAnnotation("Checks if the string can be parsed into an integer number")
-	public static final boolean is_integer(String input) {
+	public static final boolean is_integer(TLFunctionCallContext context, String input) {
 		int result = StringUtils.isInteger(input);
 		return result == 0 || result == 1;
 	}
 
 	class IsIntegerFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(is_integer(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(is_integer(context, stack.popString()));
 		}
 	}
 
 	// IS LONG
 	@TLFunctionAnnotation("Checks if the string can be parsed into a long number")
-	public static final boolean is_long(String input) {
+	public static final boolean is_long(TLFunctionCallContext context, String input) {
 		int result = StringUtils.isInteger(input);
 		return result > 0 || result < 3;
 	}
 
 	class IsLongFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(is_long(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(is_long(context, stack.popString()));
 		}
 
 	}
 
 	// IS DATE
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
-	public static final boolean is_date(String input, String pattern) {
-		return is_date(input, pattern, Locale.getDefault().getDisplayName(),
+	public static final boolean is_date(TLFunctionCallContext context, String input, String pattern) {
+		return is_date(context, input, pattern, Locale.getDefault().getDisplayName(),
 				false);
 	}
 	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern. Allows changing parser strictness")
-	public static final boolean is_date(String input, String pattern, boolean lenient) {
-		return is_date(input, pattern, Locale.getDefault().getDisplayName(),
+	public static final boolean is_date(TLFunctionCallContext context, String input, String pattern, boolean lenient) {
+		return is_date(context, input, pattern, Locale.getDefault().getDisplayName(),
 				lenient);
 	}
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
-	public static final boolean is_date(String input, String pattern, String locale) {
-		return is_date(input, pattern, locale, false);
+	public static final boolean is_date(TLFunctionCallContext context, String input, String pattern, String locale) {
+		return is_date(context, input, pattern, locale, false);
 	}
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale. Allows changing parser strictness.")
-	public static final boolean is_date(String input, String pattern, String locale,
+	public static final boolean is_date(TLFunctionCallContext context, String input, String pattern, String locale,
 			boolean lenient) {
 		final SimpleDateFormat formatter = new SimpleDateFormat(pattern, MiscUtils.createLocale(locale));
 		formatter.setLenient(lenient);
@@ -421,21 +486,25 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsDateFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] parameters) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 
 			boolean lenient = false;
 			String locale = Locale.getDefault().getDisplayName();
 
-			if (parameters.length > 2) {
+			if (context.getParams().length > 2) {
 
-				if (parameters.length > 3) {
+				if (context.getParams().length > 3) {
 					// if 4 params, it's (string,string,string,bool)
 					lenient = stack.popBoolean();
 					locale = stack.popString();
 				} else {
 					// if 3 params it's (string,string,string) or
 					// (string,string,bool) if locale is skipped
-					if (parameters[2].isString()) {
+					if (context.getParams()[2].isString()) {
 						locale = stack.popString();
 					} else {
 						lenient = stack.popBoolean();
@@ -446,73 +515,89 @@ public class StringLib extends TLFunctionLibrary {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(is_date(input, pattern, locale, lenient));
+			stack.push(is_date(context, input, pattern, locale, lenient));
 		}
 
 	}
 
 	// REMOVE DIACRITIC
 	@TLFunctionAnnotation("Strips diacritic from characters.")
-	public static final String remove_diacritic(String input) {
+	public static final String remove_diacritic(TLFunctionCallContext context, String input) {
 		return StringUtils.removeDiacritic(input);
 	}
 
 	class RemoveDiacriticFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(remove_diacritic(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(remove_diacritic(context, stack.popString()));
 		}
 	}
 
 	// REMOVE BLANK SPACE
 	@TLFunctionAnnotation("Removes whitespace characters")
-	public static final String remove_blank_space(String input) {
+	public static final String remove_blank_space(TLFunctionCallContext context, String input) {
 		return StringUtils.removeBlankSpace(input);
 	}
 
 	class RemoveBlankSpaceFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(remove_blank_space(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(remove_blank_space(context, stack.popString()));
 		}
 	}
 
 	// REMOVE NONPRINTABLE CHARS
 	@TLFunctionAnnotation("Removes nonprintable characters")
-	public static final String remove_nonprintable(String input) {
+	public static final String remove_nonprintable(TLFunctionCallContext context, String input) {
 		return StringUtils.removeNonPrintable(input);
 	}
 
 	class RemoveNonPrintableFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(remove_nonprintable(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(remove_nonprintable(context, stack.popString()));
 		}
 
 	}
 
 	// REMOVE NONASCII CHARS
 	@TLFunctionAnnotation("Removes nonascii characters")
-	public static final String remove_nonascii(String input) {
+	public static final String remove_nonascii(TLFunctionCallContext context, String input) {
 		return StringUtils.removeNonAscii(input);
 	}
 
 	class RemoveNonAsciiFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(remove_nonascii(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(remove_nonascii(context, stack.popString()));
 		}
 
 	}
 
 	// GET ALPHANUMERIC CHARS
 	@TLFunctionAnnotation("Extracts only alphanumeric characters from input string")
-	public static final String get_alphanumeric_chars(String input) {
-		return get_alphanumeric_chars(input, true, true);
+	public static final String get_alphanumeric_chars(TLFunctionCallContext context, String input) {
+		return get_alphanumeric_chars(context, input, true, true);
 	}
 
 	@TLFunctionAnnotation("Extracts letters, numbers or both from input string")
-	public static final String get_alphanumeric_chars(String input,
+	public static final String get_alphanumeric_chars(TLFunctionCallContext context, String input,
 			boolean takeAlpha, boolean takeNumeric) {
 		return StringUtils.getOnlyAlphaNumericChars(input, takeAlpha,
 				takeNumeric);
@@ -520,14 +605,18 @@ public class StringLib extends TLFunctionLibrary {
 
 	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			if (actualParams.length == 1) {
-				stack.push(get_alphanumeric_chars(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams().length == 1) {
+				stack.push(get_alphanumeric_chars(context, stack.popString()));
 			} else {
 				final boolean takeNumeric = stack.popBoolean();
 				final boolean takeAlpha = stack.popBoolean();
 				final String input = stack.popString();
-				stack.push(get_alphanumeric_chars(input, takeAlpha,
+				stack.push(get_alphanumeric_chars(context, input, takeAlpha,
 								takeNumeric));
 			}
 		}
@@ -536,7 +625,7 @@ public class StringLib extends TLFunctionLibrary {
 
 	// TRANSLATE
 	@TLFunctionAnnotation("Replaces occurences of characters")
-	public static final String translate(String input, String match,
+	public static final String translate(TLFunctionCallContext context, String input, String match,
 			String replacement) {
 		return String.valueOf(StringUtils.translateSequentialSearch(input,
 				match, replacement));
@@ -544,19 +633,23 @@ public class StringLib extends TLFunctionLibrary {
 
 	class TranslateFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String replacement = stack.popString();
 			final String match = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(translate(input, match, replacement));
+			stack.push(translate(context, input, match, replacement));
 		}
 
 	}
 
 	// JOIN
 	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
-	public static final <E> String join(String delimiter, List<E> values) {
+	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
 		StringBuffer buf = new StringBuffer();
 		for (int i=0; i<values.size(); i++) {
 			buf.append(values.get(i) == null ? "null" : values.get(i).toString());
@@ -569,7 +662,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Concatenates all mappings into a string using delimiter.")
-	public static final <K,V> String join(String delimiter, Map<K,V> values) {
+	public static final <K,V> String join(TLFunctionCallContext context, String delimiter, Map<K,V> values) {
 		StringBuffer buf = new StringBuffer();
 		Set<K> keys = values.keySet();
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
@@ -588,15 +681,19 @@ public class StringLib extends TLFunctionLibrary {
 
 	class JoinFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			if (actualParams[1].isList()) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[1].isList()) {
 				final List<Object> values = stack.popList();
 				final String delim = stack.popString();
-				stack.push(join(delim, values));
+				stack.push(join(context, delim, values));
 			} else {
 				final Map<Object, Object> values = stack.popMap();
 				final String delim = stack.popString();
-				stack.push(join(delim, values));
+				stack.push(join(context, delim, values));
 			}
 		}
 
@@ -604,51 +701,75 @@ public class StringLib extends TLFunctionLibrary {
 
 	// INDEX OF
 	@TLFunctionAnnotation("Returns the first occurence of a specified string")
-	public static final Integer index_of(String input, String pattern) {
-		return index_of(input, pattern, 0);
+	public static final Integer index_of(TLFunctionCallContext context, String input, String pattern) {
+		return index_of(context, input, pattern, 0);
 	}
 
 	@TLFunctionAnnotation("Returns the first occurence of a specified string")
-	public static final Integer index_of(String input, String pattern, int from) {
+	public static final Integer index_of(TLFunctionCallContext context, String input, String pattern, int from) {
 		return StringUtils.indexOf(input, pattern, from);
 	}
 
 	class IndexOfFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			int from = 0;
 
-			if (actualParams.length > 2) {
+			if (context.getParams().length > 2) {
 				from = stack.popInt();
 			}
 
 			final String pattern = stack.popString();
 			final String input = stack.popString();
-			stack.push(index_of(input, pattern, from));
+			stack.push(index_of(context, input, pattern, from));
 		}
 
 	}
 
 	// COUNT_CHAR
 	@TLFunctionAnnotation("Calculates the number of occurences of the specified character")
-	public static final Integer count_char(String input, String character) {
+	public static final Integer count_char(TLFunctionCallContext context, String input, String character) {
 		return StringUtils.count(input, character.charAt(0));
 	}
 
 	class CountCharFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			String character = stack.popString();
 			String input = stack.popString();
-			stack.push(count_char(input, character));
+			stack.push(count_char(context, input, character));
 		}
 	}
 
+	@TLFunctionInitAnnotation
+	public static final void find_init(TLFunctionCallContext context) {
+		if (context.isLiteral(1)) {
+			context.setCache(new Object[1]);
+			Pattern cached_p = Pattern.compile((String)context.getParamValue(1));
+			context.getCache()[0] = cached_p;
+		}		
+	}
+	
 	// FIND
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
-	public static final List<String> find(String input, String pattern) {
-		final Pattern p = Pattern.compile(pattern);
-		final Matcher m = p.matcher(input);
+	public static final List<String> find(TLFunctionCallContext context, String input, String pattern) {
+		
+		Matcher m; 
+		if (context.isLiteral(1)) {
+			m = ((Pattern)context.getCache()[0]).matcher(input); 
+		} else {
+			final Pattern p = Pattern.compile(pattern);
+			m = p.matcher(input);
+		}
+		
 		final List<String> ret = new ArrayList<String>();
 
 		while (m.find()) {
@@ -664,21 +785,60 @@ public class StringLib extends TLFunctionLibrary {
 
 	class FindFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+			find_init(context);
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
-			stack.push(find(input, pattern));
+			stack.push(find(context, input, pattern));
+			return;
+		}
+	}
+	
+	static final Pattern fix_p = Pattern.compile("t?o");
+	
+	// FIND
+	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
+	public static final List<String> fixfind(String input) {
+		
+		final Matcher m = fix_p.matcher(input);
+		final List<String> ret = new ArrayList<String>();
+
+		while (m.find()) {
+			ret.add(m.group());
+			int i = 0;
+			while (i < m.groupCount()) {
+				ret.add(m.group(++i));
+			}
+		}
+
+		return ret;
+	}
+
+	class FixFindFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String input = stack.popString();
+			stack.push(fixfind(input));
 		}
 	}
 
 	// CHOP
 	@TLFunctionAnnotation("Removes new line characters from input string")
-	public static final String chop(String input) {
-		return chop(input, "[\r\n]+$");
+	public static final String chop(TLFunctionCallContext context, String input) {
+		return chop(context, input, "[\r\n]+$");
 	}
 
 	@TLFunctionAnnotation("Removes pattern  from input string")
-	public static final String chop(String input, String pattern) {
+	public static final String chop(TLFunctionCallContext context, String input, String pattern) {
 		final Pattern p = Pattern.compile(pattern);
 		final Matcher m = p.matcher(input);
 		return m.replaceAll("");
@@ -686,13 +846,17 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	class ChopFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			if (actualParams.length == 1) {
-				stack.push(chop(stack.popString()));
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams().length == 1) {
+				stack.push(chop(context, stack.popString()));
 			} else {
 				final String pattern = stack.popString();
 				final String input = stack.popString();
-				stack.push(chop(input, pattern));
+				stack.push(chop(context, input, pattern));
 
 			}
 		}
@@ -701,7 +865,7 @@ public class StringLib extends TLFunctionLibrary {
 
 	//CUT
 	@TLFunctionAnnotation("Cuts substring from specified string based on list consisting of pairs position,length")
-	public static final List<String> cut(String input, List<Integer> indexes) {
+	public static final List<String> cut(TLFunctionCallContext context, String input, List<Integer> indexes) {
 		if (indexes.size() % 2 != 0) {
 			throw new TransformLangExecutorRuntimeException(
 					"Incorrect number of indices: " + indexes.size()
@@ -721,20 +885,24 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CutFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final List<Object> indices = stack.popList();
 			final String input = stack.popString();
-			stack.push(cut(input, TLFunctionLibrary.<Integer>convertTo(indices)));
+			stack.push(cut(context, input, TLFunctionLibrary.<Integer>convertTo(indices)));
 		}
 	}
 	
 	@TLFunctionAnnotation("Generates a random string.")
-	public static String random_string(int minLength, int maxLength) {
+	public static String random_string(TLFunctionCallContext context, int minLength, int maxLength) {
 		return getGenerator(Thread.currentThread()).nextString(minLength, maxLength);
 	}
 	
 	@TLFunctionAnnotation("Generates a random string. Allows changing seed.")
-	public static String random_string(int minLength, int maxLength, long randomSeed) {
+	public static String random_string(TLFunctionCallContext context, int minLength, int maxLength, long randomSeed) {
 		DataGenerator generator = getGenerator(Thread.currentThread());
 		generator.setSeed(randomSeed);
 		return generator.nextString(minLength, maxLength);
@@ -742,18 +910,22 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class RandomStringFunction implements TLFunctionPrototype {
 
-		public void execute(Stack stack, TLType[] actualParams) {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer maxLength;
 			Integer minLength;
-			if (actualParams.length > 2) {
+			if (context.getParams().length > 2) {
 				Long seed = stack.popLong();
 				maxLength = stack.popInt();
 				minLength = stack.popInt();
-				stack.push(random_string(minLength, maxLength, seed));
+				stack.push(random_string(context, minLength, maxLength, seed));
 			} else {
 				maxLength = stack.popInt();
 				minLength = stack.popInt();
-				stack.push(random_string(minLength, maxLength));
+				stack.push(random_string(context, minLength, maxLength));
 			}
 		}
 	}

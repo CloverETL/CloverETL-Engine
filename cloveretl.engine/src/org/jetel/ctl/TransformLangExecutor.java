@@ -98,6 +98,7 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.TLType.TLDateField;
 import org.jetel.ctl.data.TLType.TLLogLevel;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
+import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DecimalDataField;
@@ -261,7 +262,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			
 			try {
 				if (node.isExternal()) {
-					node.setExecutable(node.getExternalFunction().getExecutable());
+					TLFunctionPrototype executable = node.getExternalFunction().getExecutable();
+					node.setExecutable(executable);
+					executable.init(node.getFunctionCallContext());
 				}
 			} catch (IllegalArgumentException e) {
 				throw new TransformLangExecutorRuntimeException("Interpreter intialization failed",e);
@@ -2137,7 +2140,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFFunctionCall node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
-			node.getExtecutable().execute(stack, node.getActualParameters());
+			node.getExtecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);
 		}

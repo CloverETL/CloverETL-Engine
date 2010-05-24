@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.WrapperTL;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionPluginRepository;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -35,6 +35,7 @@ public class TLCompiler implements ITLCompiler {
 	protected int tabSize = 6;
 	protected Log logger;
 	protected String componentId;
+	private List<TLFunctionCallContext> functionContexts;
 
 	
 	/**
@@ -132,6 +133,8 @@ public class TLCompiler implements ITLCompiler {
 			return getDiagnosticMessages();
 		}
 		
+		functionContexts = typeChecker.getFunctionCalls();
+		
 		return getDiagnosticMessages();
 	}
 	
@@ -184,6 +187,8 @@ public class TLCompiler implements ITLCompiler {
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
 		}
+		
+		functionContexts = typeChecker.getFunctionCalls();
 		
 		FlowControl flowControl = new FlowControl(problemReporter);
 		flowControl.check(parseTree);
@@ -344,6 +349,10 @@ public class TLCompiler implements ITLCompiler {
 	
 	protected void setComponentId(String componentId) {
 		this.componentId = componentId;
+	}
+	
+	protected List<TLFunctionCallContext> getFunctionContexts() {
+		return functionContexts; 
 	}
 	
 	

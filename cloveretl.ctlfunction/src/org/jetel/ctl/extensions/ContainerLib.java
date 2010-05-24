@@ -29,10 +29,8 @@ import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLTypeList;
-import org.jetel.ctl.extensions.TLFunctionAnnotation;
-import org.jetel.ctl.extensions.TLFunctionLibrary;
-import org.jetel.ctl.extensions.TLFunctionPrototype;
 
 public class ContainerLib extends TLFunctionLibrary {
 
@@ -61,25 +59,28 @@ public class ContainerLib extends TLFunctionLibrary {
     }
     
     
-    
     // REMOVE_ALL
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <E> List<E> remove_all(List<E> list) {
+    public static final <E> List<E> remove_all(TLFunctionCallContext context, List<E> list) {
     	list.clear();
     	return list;
     }
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <K,V> Map<K,V> remove_all(Map<K,V> map) {
+    public static final <K,V> Map<K,V> remove_all(TLFunctionCallContext context, Map<K,V> map) {
     	map.clear();
     	return map;
     }
     
     class RemoveAllFunction implements TLFunctionPrototype {
-    	public void execute(Stack stack, TLType[] actualParams) {
-    		if (actualParams[0].isList()) {
-    			remove_all(stack.popList());
+    	
+		public void init(TLFunctionCallContext context) {
+		}
+
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		if (context.getParams()[0].isList()) {
+    			remove_all(context, stack.popList());
     		} else {
-    			remove_all(stack.popMap());
+    			remove_all(context, stack.popMap());
     		}
     	}
     }
@@ -87,105 +88,129 @@ public class ContainerLib extends TLFunctionLibrary {
     
     // POP
     @TLFunctionAnnotation("Removes last element from a list and returns it.")
-    public static final <E> E pop(List<E> list) {
+    public static final <E> E pop(TLFunctionCallContext context, List<E> list) {
     	return list.size() > 0 ? list.remove(list.size()-1) : null;
     }
 	class PopFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(pop(stack.popList()));
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(pop(context, stack.popList()));
 		}
 	}
 
 	// POLL
 	@TLFunctionAnnotation("Removes first element from a list and returns it.")
-	public static final <E> E poll(List<E> list) {
+	public static final <E> E poll(TLFunctionCallContext context, List<E> list) {
 		return list.size() > 0 ? list.remove(0) : null;
 	}
 	class PollFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			stack.push(poll(stack.popList()));
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(poll(context, stack.popList()));
 		}
 		
 	}
 	
 	// PUSH
 	@TLFunctionAnnotation("Appends element at the end of the list.")
-	public static final <E> List<E> push(List<E> list, E item) {
+	public static final <E> List<E> push(TLFunctionCallContext context, List<E> list, E item) {
 		list.add(item);
 		return list;
 	}
 	class PushFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final Object item  = stack.pop();
 			final List<Object> list = stack.popList();
-			stack.push(push(list,item));
+			stack.push(push(context, list, item));
 		}
 	}
 	
 
 	// INSERT
 	@TLFunctionAnnotation("Inserts element at the specified index.")
-	public static final <E> List<E> insert(List<E> list, int position, E item) {
+	public static final <E> List<E> insert(TLFunctionCallContext context, List<E> list, int position, E item) {
 		list.add(position,item);
 		return list;
 	}
 	class InsertFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final Object item = stack.pop();
 			final Integer pos = stack.popInt();
 			final List<Object> list = stack.popList();
-			stack.push(insert(list,pos,item));
+			stack.push(insert(context, list, pos, item));
 		}
 	}
 	
 	// REMOVE
 	@TLFunctionAnnotation("Removes element at the specified index and returns it.")
-	public static final <E> E remove(List<E> list, int position) {
+	public static final <E> E remove(TLFunctionCallContext context, List<E> list, int position) {
 		return list.remove(position);
 	}
 	class RemoveFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			final Integer pos = stack.popInt();
 			final List<Object> list = stack.popList();
-			stack.push(remove(list,pos));
+			stack.push(remove(context, list, pos));
 		}
 		
 	}
 
 	// all CTL types are comparable so this will work in runtime
 	@TLFunctionAnnotation("Sorts elements contained in list - ascending order.")
-	public static final <E extends Comparable<E>> List<E> sort(List<E> list) { 
+	public static final <E extends Comparable<E>> List<E> sort(TLFunctionCallContext context, List<E> list) { 
 		Collections.sort(list);
 		return list;
 	}
 	class SortFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
+
 
 		@SuppressWarnings("unchecked")
-		public void execute(Stack stack, TLType[] actualParams) {
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			List<Object> orig = (List<Object>)stack.peek();
-			TLType elem = ((TLTypeList)actualParams[0]).getElementType();
+			TLType elem = ((TLTypeList)context.getParams()[0]).getElementType();
 			
 			List<?> s = null;
 			
 			if (elem.isString()) {
-				s = sort(TLFunctionLibrary.<String>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<String>convertTo(orig));
 			} else if (elem.isInteger()) {
-				s = sort(TLFunctionLibrary.<Integer>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<Integer>convertTo(orig));
 			} else if (elem.isLong()) {
-				s = sort(TLFunctionLibrary.<Long>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<Long>convertTo(orig));
 			} else if (elem.isDouble()) {
-				s = sort(TLFunctionLibrary.<Double>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<Double>convertTo(orig));
 			} else if (elem.isDecimal()) {
-				s = sort(TLFunctionLibrary.<BigDecimal>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<BigDecimal>convertTo(orig));
 			} else if (elem.isBoolean()) {
-				s = sort(TLFunctionLibrary.<Boolean>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<Boolean>convertTo(orig));
 			} else if (elem.isDate()) {
-				s = sort(TLFunctionLibrary.<Date>convertTo(orig));
+				s = sort(context, TLFunctionLibrary.<Date>convertTo(orig));
 			} else {
 				throw new IllegalArgumentException("Unknown type for sort: '" + elem.name() + "'");
 			}
@@ -199,7 +224,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	// all CTL types are comparable so this will work in runtime
 	@TLFunctionAnnotation("Inverts order of elements withing a list.")
-	public static final <E extends Comparable<E>> List<E> reverse(List<E> list) { 
+	public static final <E extends Comparable<E>> List<E> reverse(TLFunctionCallContext context, List<E> list) { 
 		Collections.reverse(list);
 		return list;
 	}
@@ -207,27 +232,30 @@ public class ContainerLib extends TLFunctionLibrary {
 	// REVERSE
 	class ReverseFunction implements TLFunctionPrototype{
 		
+		public void init(TLFunctionCallContext context) {
+		}
+
 		@SuppressWarnings("unchecked")
-		public void execute(Stack stack, TLType[] actualParams) {
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			List<Object> orig = (List<Object>)stack.peek();
-			TLType elem = ((TLTypeList)actualParams[0]).getElementType();
+			TLType elem = ((TLTypeList)context.getParams()[0]).getElementType();
 			
 			List<?> s = null;
 			
 			if (elem.isString()) {
-				s = reverse(TLFunctionLibrary.<String>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<String>convertTo(orig));
 			} else if (elem.isInteger()) {
-				s = reverse(TLFunctionLibrary.<Integer>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<Integer>convertTo(orig));
 			} else if (elem.isLong()) {
-				s = reverse(TLFunctionLibrary.<Long>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<Long>convertTo(orig));
 			} else if (elem.isDouble()) {
-				s = reverse(TLFunctionLibrary.<Double>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<Double>convertTo(orig));
 			} else if (elem.isDecimal()) {
-				s = reverse(TLFunctionLibrary.<BigDecimal>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<BigDecimal>convertTo(orig));
 			} else if (elem.isBoolean()) {
-				s = reverse(TLFunctionLibrary.<Boolean>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<Boolean>convertTo(orig));
 			} else if (elem.isDate()) {
-				s = reverse(TLFunctionLibrary.<Date>convertTo(orig));
+				s = reverse(context, TLFunctionLibrary.<Date>convertTo(orig));
 			} else {
 				throw new IllegalArgumentException("Unknown type for reverse: '" + elem.name() + "'");
 			}
@@ -241,31 +269,33 @@ public class ContainerLib extends TLFunctionLibrary {
 	
 	// COPY
 	@TLFunctionAnnotation("Adds all elements from second argument into the first argument. Returns the first argument")
-	public static final <E> List<E> copy(List<E> to, List<E> from) {
+	public static final <E> List<E> copy(TLFunctionCallContext context, List<E> to, List<E> from) {
 		to.addAll(from);
 		return to;
 	}
 	
 	@TLFunctionAnnotation("Adds all elements from second argument into the first argument, replacing existing key mappings. Returns the first argument")
-	public static final <K,V> Map<K,V> copy(Map<K,V> to, Map<K,V> from) {
+	public static final <K,V> Map<K,V> copy(TLFunctionCallContext context, Map<K,V> to, Map<K,V> from) {
 		to.putAll(from);
 		return to;
 	}
 	class CopyFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
 
-		public void execute(Stack stack, TLType[] actualParams) {
-			if (actualParams[0].isList()) {
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isList()) {
 				List<Object> from = stack.popList();
 				List<Object> to = stack.popList();
-				stack.push(copy(to,from));
+				stack.push(copy(context, to,from));
 			}
 			
-			if (actualParams[0].isMap()) {
+			if (context.getParams()[0].isMap()) {
 				Map<Object,Object> from = stack.popMap();
 				Map<Object,Object> to = stack.popMap();
-				stack.push(copy(to,from));
+				stack.push(copy(context, to,from));
 			}
 		}
 	}
-	
 }
