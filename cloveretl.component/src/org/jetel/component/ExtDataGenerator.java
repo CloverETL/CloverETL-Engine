@@ -60,9 +60,9 @@ public class ExtDataGenerator extends DataGenerator {
 	public final static String COMPONENT_TYPE = "EXT_DATA_GENERATOR";
 
 	// XML attribute names
-	private static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
-	private static final String XML_GENERATE_ATTRIBUTE = "generate";
-	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
+	static final String XML_GENERATECLASS_ATTRIBUTE = "generateClass";
+	static final String XML_GENERATE_ATTRIBUTE = "generate";
+	static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
 
 	// Input parameters
 	private String generatorSource;

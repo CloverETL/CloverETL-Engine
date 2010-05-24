@@ -168,6 +168,9 @@ public abstract class DataGenerator extends Node {
 				if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 					((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 				}
+				((ExtDataGenerator)dataGenerator).setTransformationParameters(xattribs.attributes2Properties(
+						new String[]{XML_ID_ATTRIBUTE, ExtDataGenerator.XML_GENERATE_ATTRIBUTE, ExtDataGenerator.XML_GENERATECLASS_ATTRIBUTE, 
+								ExtDataGenerator.XML_GENERATEURL_ATTRIBUTE}));
 			} else {
 				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
