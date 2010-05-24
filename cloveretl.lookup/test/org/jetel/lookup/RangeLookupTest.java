@@ -21,6 +21,7 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -53,6 +54,8 @@ public class RangeLookupTest extends CloverTestCase {
 		lookupNotOverlap = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start", "start1" }, new String[] { "end", "end1" }, null }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
 		lookup.init();
 		lookupNotOverlap.init();
+		lookup.preExecute();
+		lookupNotOverlap.preExecute();
 		record = new DataRecord(lookupMetadata);
 		record.init();
 		record.getField("name").setValue("10-20,100-200");
@@ -207,6 +210,8 @@ public class RangeLookupTest extends CloverTestCase {
 				}
 			}
 		}
+		lookup.postExecute(TransactionMethod.COMMIT);
+		lookupNotOverlap.postExecute(TransactionMethod.COMMIT);
 	}
 
 	public void test_getDataRecord2() throws IOException, ComponentNotReadyException {
@@ -220,6 +225,8 @@ public class RangeLookupTest extends CloverTestCase {
 		lookupNotOverlap = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start1", "start" }, new String[] { "end", "end1" }, null }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
 		lookup.init();
 		lookupNotOverlap.init();
+		lookup.preExecute();
+		lookupNotOverlap.preExecute();
 		record = new DataRecord(lookupMetadata);
 		record.init();
 		record.getField("name").setValue("10-20,100-200");
@@ -381,6 +388,8 @@ public class RangeLookupTest extends CloverTestCase {
 				}
 			} while (tmp != null || tmp1 != null);
 		}
+		lookup.postExecute(TransactionMethod.COMMIT);
+		lookupNotOverlap.postExecute(TransactionMethod.COMMIT);
 	}
 
 	public void test_largeData() throws IOException, ComponentNotReadyException, JetelException {
@@ -414,7 +423,8 @@ public class RangeLookupTest extends CloverTestCase {
 
 		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8" }, new String[] { "e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8" }, parser }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
 		lookup.init();
-
+		lookup.preExecute();
+		
 		DataRecord tmp = new DataRecord(lookupMetadata);
 		DataRecord tmp1 = new DataRecord(lookupMetadata);
 		tmp.init();
@@ -479,6 +489,7 @@ public class RangeLookupTest extends CloverTestCase {
 				assertTrue(((Date) record.getField("value8").getValue()).compareTo((Date) tmp.getField("e8").getValue()) <= 0);
 			}
 		}
+		lookup.postExecute(TransactionMethod.COMMIT);
 	}
 
 	public void test_IncludeExclude() throws ComponentNotReadyException {
@@ -490,6 +501,7 @@ public class RangeLookupTest extends CloverTestCase {
 		lookupMetadata.addField(new DataFieldMetadata("end1", DataFieldMetadata.INTEGER_FIELD, ";"));
 		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start", "start1" }, new String[] { "end", "end1" }, null, new boolean[] { true, true }, new boolean[] { true, true } }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class, boolean[].class, boolean[].class });
 		lookup.init();
+		lookup.preExecute();
 		record = new DataRecord(lookupMetadata);
 		record.init();
 		record.getField("name").setValue("10-20,100-200");
@@ -559,6 +571,7 @@ public class RangeLookupTest extends CloverTestCase {
 
 		lookupResult = lookup.createLookup(key, record);
 		lookupResult.seek();
+		lookup.postExecute(TransactionMethod.COMMIT);
 		assertEquals(2, lookupResult.getNumFound());
 	}
 
@@ -570,6 +583,7 @@ public class RangeLookupTest extends CloverTestCase {
 		RuleBasedCollator collator = (RuleBasedCollator) RuleBasedCollator.getInstance();
 		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start" }, new String[] { "end" }, null, collator }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class, RuleBasedCollator.class });
 		lookup.init();
+		lookup.preExecute();
 		record = new DataRecord(lookupMetadata);
 		record.init();
 		record.getField("name").setValue("p1");
@@ -633,6 +647,7 @@ public class RangeLookupTest extends CloverTestCase {
 			}
 		}
 
+		lookup.postExecute(TransactionMethod.COMMIT);
 	}
 
 	public void test_nulls() throws ComponentNotReadyException {
@@ -642,6 +657,7 @@ public class RangeLookupTest extends CloverTestCase {
 		lookupMetadata.addField(new DataFieldMetadata("end", DataFieldMetadata.INTEGER_FIELD, ";"));
 		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "start" }, new String[] { "end" }, null }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
 		lookup.init();
+		lookup.preExecute();
 		record = new DataRecord(lookupMetadata);
 		record.init();
 		record.getField("name").setValue("start is null");
@@ -719,6 +735,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println(lookupResult.next());
 		System.out.println(lookupResult.next());
 		assertEquals(3, lookupResult.getNumFound());
+		lookup.postExecute(TransactionMethod.COMMIT);
 	}
 
 	private boolean checkOrder(DataRecord previous, DataRecord following) {
