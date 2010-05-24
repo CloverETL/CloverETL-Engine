@@ -58,8 +58,7 @@ public class CompressedByteDataField extends ByteDataField {
 	
 	public DataField duplicate(){
 		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata);
-		compressedByteDataField.value = (value != null) ? Arrays.copyOf(value, value.length) : null;
-		compressedByteDataField.dataLen = dataLen;
+		compressedByteDataField.setValue(this);
 
 		return compressedByteDataField;
 	}
@@ -70,15 +69,16 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof CompressedByteDataField){
-	        if (!fromField.isNull){
-	            int length = ((CompressedByteDataField) fromField).value.length;
+	    	CompressedByteDataField compressedByteDataField = (CompressedByteDataField) fromField;
+	        if (!compressedByteDataField.isNull){
+	            int length = compressedByteDataField.value.length;
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
 	            }
-	            System.arraycopy(((CompressedByteDataField) fromField).value, 0, this.value, 0, length);
+	            System.arraycopy(compressedByteDataField.value, 0, this.value, 0, length);
 	        }
-	        setNull(fromField.isNull);
-	        dataLen = ((CompressedByteDataField) fromField).dataLen;
+	        setNull(compressedByteDataField.isNull);
+	        dataLen = compressedByteDataField.dataLen;
 	    } else {
 	        super.copyFrom(fromField);
         }
@@ -104,15 +104,16 @@ public class CompressedByteDataField extends ByteDataField {
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof CompressedByteDataField){
-            if (!fromField.isNull){
-                int length = ((CompressedByteDataField) fromField).value.length;
+	    	CompressedByteDataField compressedByteDataField = (CompressedByteDataField) fromField;
+            if (!compressedByteDataField.isNull){
+                int length = compressedByteDataField.value.length;
                 if (this.value == null || this.value.length != length){
                     this.value = new byte[length];
                 }
-                System.arraycopy(((CompressedByteDataField) fromField).value, 0, this.value, 0, length);
+                System.arraycopy(compressedByteDataField.value, 0, this.value, 0, length);
             }
-            setNull(fromField.isNull);
-            dataLen = ((CompressedByteDataField) fromField).dataLen;
+            setNull(compressedByteDataField.isNull);
+            dataLen = compressedByteDataField.dataLen;
         } else {
             super.setValue(fromField);
         }
