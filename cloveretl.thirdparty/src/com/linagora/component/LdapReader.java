@@ -269,27 +269,28 @@ public class LdapReader extends Node {
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		LdapReader aLdapReader = null;
-		int i_scope;
+		int i_scope = SearchControls.OBJECT_SCOPE;
 		
 		String scope = xattribs.getString(XML_SCOPE_ATTRIBUTE, null);
-		if(scope.equalsIgnoreCase("OBJECT")) {
-			i_scope = SearchControls.OBJECT_SCOPE;
+		String sMsg = null;
+		if (scope == null) {
+			sMsg = "Missing scope specification";
+		} else if(scope.equalsIgnoreCase("OBJECT")) {
+			// i_scope = SearchControls.OBJECT_SCOPE;	// default value
 		} else if(scope.equalsIgnoreCase("ONELEVEL")) {
 			i_scope = SearchControls.ONELEVEL_SCOPE;
 		} else if(scope.equalsIgnoreCase("SUBTREE")) {
 			i_scope = SearchControls.SUBTREE_SCOPE;
 		} else {
+			sMsg = "Invalid scope specification \"" + scope + "\"";
+		}
+		if (sMsg != null) {
 			StringBuffer msg = new StringBuffer();
-			if (scope == null) {
-				msg.append("Missing scope specification");
-			} else {
-				msg.append("Invalid scope specification \"").append(scope).append("\"");
-			}
+			
+			msg.append(sMsg);
 			msg.append(" in component ").append(xattribs.getString(Node.XML_ID_ATTRIBUTE, "unknown ID"));
 			msg.append("; defaulting to scope \"OBJECT\"");
 			logger.warn(msg.toString());
-
-			i_scope = SearchControls.OBJECT_SCOPE;			
 		}
 
 		try {
