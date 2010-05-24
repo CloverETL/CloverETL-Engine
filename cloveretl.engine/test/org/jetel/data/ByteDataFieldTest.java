@@ -19,6 +19,8 @@
 
 package org.jetel.data;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
 
@@ -27,27 +29,29 @@ import org.jetel.test.CloverTestCase;
  *
  */
 public class ByteDataFieldTest extends CloverTestCase {
-	byte[] byteArray = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x40 };
-	Byte[] byteObjectArray = new Byte[byteArray.length + 1];
 
-	ByteDataField byteField;
+	protected static final String TEST_STRING = "THIS is test !@#$%^&*()ěščřžýíé";
 
-	static final String TEST_STRING = "THIS is test !@#$%^&*()ěščřžýíé";
+	protected DataFieldMetadata metadata = null;
+	protected final byte[] byteArray = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x40 };
+	protected final Byte[] byteObjectArray = new Byte[byteArray.length + 1];
+
+	protected ByteDataField byteField;
 
 	protected void setUp() {
 		initEngine();
 
-		int i = 0;
-		for (byte b : byteArray) {
-			byteObjectArray[i++] = Byte.valueOf(b);
+		for (int i = 0; i < byteArray.length; i++) {
+			byteObjectArray[i] = Byte.valueOf(byteArray[i]);
 		}
-		byteObjectArray[byteArray.length] = 0x41;
 
-		byteField = new ByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
+		byteObjectArray[byteArray.length] = Byte.valueOf((byte) 0x41);
+
+		byteField = instantiateDataField();
 	}
 
-	protected void tearDown() {
-
+	protected ByteDataField instantiateDataField() {
+		return new ByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
 	}
 
 	/**
@@ -156,6 +160,16 @@ public class ByteDataFieldTest extends CloverTestCase {
 	 */
 
 	public void test_serialize() {
+		ByteDataField deserializedByteField = (ByteDataField) byteField.duplicate();
+		ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.Data.DATA_RECORDS_BUFFER_SIZE);
+
+		byteField.setValue(byteArray);
+		byteField.serialize(buffer);
+		buffer.flip();
+
+		deserializedByteField.deserialize(buffer);
+
+		assertEquals(byteField, deserializedByteField);
 	}
 
 	/**
