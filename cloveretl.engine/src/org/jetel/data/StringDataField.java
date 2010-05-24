@@ -1,25 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-// FILE: c:/projects/jetel/org/jetel/data/StringDataField.java
-
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -34,7 +32,6 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents String type data field.<br>
@@ -56,20 +53,14 @@ public class StringDataField extends DataField implements CharSequence{
 	private StringBuilder value;
 	private StringFormat stringFormat = null;
 	
-	// Attributes
 	/**
 	 *  An attribute that represents ...
 	 *
 	 * @since
 	 */
 	private final static int INITIAL_STRING_BUFFER_CAPACITY = 32;
-	private final static int STRING_LENGTH_INDICATOR_SIZE = 2; // sizeof(short)
 
 	private static final int SIZE_OF_CHAR = 2;
-
-	// Associations
-
-	// Operations
 
 	/**
 	 *  Constructor for the StringDataField object
@@ -101,37 +92,18 @@ public class StringDataField extends DataField implements CharSequence{
         	stringFormat = StringFormat.create(regExp);
         } 
     }
-    
 
-	/**
-	 *  Constructor for the StringDataField object
-	 *
-	 * @param  _metadata  Description of Parameter
-	 * @param  _value     Description of Parameter
-	 * @since             April 23, 2002
-	 */
 	public StringDataField(DataFieldMetadata _metadata, String _value) {
 		this(_metadata,false);
 		setValue(_value);
 	}
 
-
-	/**
-	 * Private constructor used internally when clonning
-	 * 
-	 * @param _metadata
-	 * @param _value
-	 */
 	private StringDataField(DataFieldMetadata _metadata, CharSequence _value){
 	    super(_metadata);
 	    this.value=new StringBuilder(_value.length());
 	    this.value.append(_value);
 	}
-	
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
 	    StringDataField newField=new StringDataField(metadata,value);
 	    newField.setNull(this.isNull());
@@ -172,9 +144,6 @@ public class StringDataField extends DataField implements CharSequence{
         }
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-	 */
 	@Override
 	public void setValue(DataField fieldFrom) {
         if (fieldFrom instanceof StringDataField) {
@@ -216,7 +185,8 @@ public class StringDataField extends DataField implements CharSequence{
             value.append(seq);
         }
     }
-	/**
+
+    /**
 	 *  Sets the Null value indicator
 	 *
 	 * @param  isNull  The new Null value
@@ -229,7 +199,6 @@ public class StringDataField extends DataField implements CharSequence{
 		}
 	}
 
-
 	/**
 	 *  Gets the Null value indicator
 	 *
@@ -241,9 +210,6 @@ public class StringDataField extends DataField implements CharSequence{
 	}
 
     
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
         if (metadata.isNullable()){
             setNull(true);
@@ -264,9 +230,6 @@ public class StringDataField extends DataField implements CharSequence{
 	    return (isNull ? null : value);
 	}
 
-    /**
-     * @see org.jetel.data.DataField#getValueDuplicate()
-     */
     public Object getValueDuplicate() {
         return (isNull ? null : new StringBuilder(value));
     }
@@ -291,28 +254,10 @@ public class StringDataField extends DataField implements CharSequence{
 		return DataFieldMetadata.STRING_FIELD;
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  dataBuffer                    Description of Parameter
-	 * @param  decoder                       Description of Parameter
-	 * @exception  CharacterCodingException  Description of Exception
-	 * @since                                October 31, 2002
-	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		fromString(decoder.decode(dataBuffer));
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  dataBuffer                    Description of Parameter
-	 * @param  encoder                       Description of Parameter
-	 * @exception  CharacterCodingException  Description of Exception
-	 * @since                                October 31, 2002
-	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
@@ -332,12 +277,6 @@ public class StringDataField extends DataField implements CharSequence{
         }
     }
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     April 23, 2002
-	 */
 	public String toString() {
 		if (isNull) {
 			return metadata.getNullValue();
@@ -346,10 +285,6 @@ public class StringDataField extends DataField implements CharSequence{
 		return value.toString();
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 			setValue((CharSequence) null);
@@ -364,12 +299,6 @@ public class StringDataField extends DataField implements CharSequence{
 		setValue(seq);
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  buffer  Description of Parameter
-	 * @since          April 23, 2002
-	 */
 	public void serialize(ByteBuffer buffer) {
 	    final int length = value.length();
 	    
@@ -385,13 +314,6 @@ public class StringDataField extends DataField implements CharSequence{
     	}
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  buffer  Description of Parameter
-	 * @since          April 23, 2002
-	 */
 	public void deserialize(ByteBuffer buffer) {
 		// encoded length is incremented by one, decrement it back to normal
 		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
@@ -409,13 +331,6 @@ public class StringDataField extends DataField implements CharSequence{
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  obj  Description of Parameter
-	 * @return      Description of the Returned Value
-	 * @since       April 23, 2002
-	 */
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null ) return false;
 	    if (this==obj) return true;
@@ -440,7 +355,6 @@ public class StringDataField extends DataField implements CharSequence{
 		}
 		return true;
 	}
-
 
 	/**
 	 *  Compares this object with the specified object for order.
@@ -499,9 +413,6 @@ public class StringDataField extends DataField implements CharSequence{
     }
 
     
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	public int hashCode(){
 		int hash=5381;
 		for (int i=0;i<value.length();i++){
@@ -525,36 +436,15 @@ public class StringDataField extends DataField implements CharSequence{
 		return length*SIZE_OF_CHAR+ByteBufferUtils.lengthEncoded(length);
 	}
 	
-	/**
-	 * Method which implements charAt method of CharSequence interface
-	 * 
-	 * @param position
-	 * @return
-	 */
 	public char charAt(int position){
 		return value.charAt(position);
 	}
 	
-	/**Method which implements length method of CharSequence interfaceMethod which ...
-	 * 
-	 * @return
-	 */
 	public int length(){
 		return value.length();
 	}
 	
-	/**
-	 * Method which implements subSequence method of CharSequence interface
-	 * 
-	 * @param start
-	 * @param end
-	 * @return
-	 */
 	public CharSequence subSequence(int start, int end){
 		return value.subSequence(start,end);
 	}
 }
-/*
- *  end class StringDataField
- */
-

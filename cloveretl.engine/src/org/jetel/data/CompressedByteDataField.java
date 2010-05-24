@@ -1,22 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2006 Javlin Consulting <info@javlinconsulting>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
 
 import java.io.UnsupportedEncodingException;
@@ -69,9 +68,6 @@ public class CompressedByteDataField extends ByteDataField {
 		dataLen = value == null ? 0 : value.length;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#copy()
-	 */
 	public DataField duplicate(){
 		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, new byte[]{});
 		compressedByteDataField.value = value; //potencial issue !
@@ -100,18 +96,11 @@ public class CompressedByteDataField extends ByteDataField {
         }
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#setValue(byte[])
-	 */
 	public void setValue(byte[] value) {
 		dataLen = value == null ? 0 : value.length;
 		super.setValue(ZipUtils.compress(value));
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#setValue(byte)
-	 */
 	public void setValue(byte value) {
 		dataLen = metadata.getSize();
 		if (dataLen <= 0) {
@@ -124,9 +113,6 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.ByteDataField#setValue(org.jetel.data.DataField)
-     */
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof CompressedByteDataField){
@@ -143,25 +129,15 @@ public class CompressedByteDataField extends ByteDataField {
             super.setValue(fromField);
         }
     }
-    
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#getType()
-	 */
+
 	public char getType() {
 		return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 	}
 
-
-    /* (non-Javadoc)
-     * @see org.jetel.data.ByteDataField#getValueDuplicate()
-     */
     public Object getValueDuplicate() {
     	return getValue();
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#getByte(int)
-	 */
 	public byte getByte(int position) {
         if(isNull) {
             return 0;
@@ -169,57 +145,32 @@ public class CompressedByteDataField extends ByteDataField {
 		return getByteArray()[position];
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#getByteArray()
-	 */
 	public byte[] getByteArray() {
 		return ZipUtils.decompress(super.value, dataLen);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#fromString(java.lang.String)
-	 */
 	public void fromString(CharSequence seq) {
-        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
-            setNull(true);
-            return;
-        }
-        byte[] bytes;
-		try {
-			bytes = seq.toString().getBytes(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		} catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e.toString() + " when calling fromString() on field \""+
-                    this.metadata.getName()+"\"", e);
-		}
-        setValue(bytes);
-        dataLen = bytes.length;
-        setNull(false);
+		fromString(seq, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.ByteDataField#fromString(java.lang.String, java.lang.String)
-     */
-    public void fromString(CharSequence seq, String charset){
-        if(seq == null || Compare.equals(seq, metadata.getNullValue())) {
-            setNull(true);
-            return;
-        }
-        try{
-            byte[] bytes = seq.toString().getBytes(charset);
-            setValue(bytes);
-            dataLen = bytes.length;
-        }catch(UnsupportedEncodingException ex){
-            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
-                    this.metadata.getName()+"\"",ex);
-        }
-        setNull(false);
-    }
+	public void fromString(CharSequence seq, String charset) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+			setNull(true);
+			return;
+		}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#fromByteBuffer(java.nio.ByteBuffer, java.nio.charset.CharsetDecoder)
-	 */
+		try {
+			byte[] bytes = seq.toString().getBytes(charset);
+			setValue(bytes);
+			dataLen = bytes.length;
+		} catch (UnsupportedEncodingException ex) {
+			throw new RuntimeException(ex.toString() + " when calling fromString() on field \""
+					+ this.metadata.getName() + "\"", ex);
+		}
+
+		setNull(false);
+	}
+
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
 		dataLen = metadata.getSize();
 		if (dataLen <= 0) {
@@ -231,9 +182,6 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#toByteBuffer(java.nio.ByteBuffer, java.nio.charset.CharsetEncoder)
-	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
         if(!isNull) {
         	try {
@@ -244,9 +192,6 @@ public class CompressedByteDataField extends ByteDataField {
         }
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.ByteDataField#toByteBuffer(java.nio.ByteBuffer)
-     */
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
         	try {
@@ -257,9 +202,6 @@ public class CompressedByteDataField extends ByteDataField {
         }
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#serialize(java.nio.ByteBuffer)
-	 */
 	public void serialize(ByteBuffer buffer) {
         try {
             if(isNull) {
@@ -276,9 +218,6 @@ public class CompressedByteDataField extends ByteDataField {
     	}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#deserialize(java.nio.ByteBuffer)
-	 */
 	public void deserialize(ByteBuffer buffer) {
 		dataLen = ByteBufferUtils.decodeLength(buffer);
 
@@ -300,9 +239,6 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#equals(java.lang.Object)
-	 */
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
@@ -316,9 +252,6 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#compareTo(java.lang.Object)
-	 */
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
 		
@@ -353,9 +286,6 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#getSizeSerialized()
-	 */
 	public int getSizeSerialized() {
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);

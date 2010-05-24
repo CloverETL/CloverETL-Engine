@@ -1,23 +1,23 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ */
 package org.jetel.data;
+
 import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -45,7 +45,7 @@ import org.jetel.util.string.StringUtils;
  *@since      November 30, 2005
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class DecimalDataField extends DataField implements Numeric, Comparable {
+public class DecimalDataField extends DataField implements Numeric, Comparable<Object> {
 
 	private static final long serialVersionUID = -9212721402316376203L;
 	
@@ -141,9 +141,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	    return newField;
 	}
 	
-    /**
-     * @see org.jetel.data.Numeric#duplicateNumeric()
-     */
     public Numeric duplicateNumeric() {
         return value.duplicateNumeric();
     }
@@ -191,9 +188,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
-	 */
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof DecimalDataField){
@@ -260,9 +254,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		setNull(false);
 	}
 
-    /**
-     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
-     */
     public void setValue(Numeric _value) {
         if (_value == null || _value.isNull()) {
             setNull(true);
@@ -271,10 +262,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
         value.setValue(_value);
         setNull(false);
     }
-    
-    /**
-     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
-     */
+
     public void setValue(Number value) {
         if (value == null) {
             setNull(true);
@@ -297,16 +285,10 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-    /**
-     * @see org.jetel.data.primitive.Numeric#setNull()
-     */
     public void setNull() {
         setNull(true);
     }
     
-    /* (non-Javadoc)
-     * @see org.jetel.data.DataField#reset()
-     */
     public void reset(){
         if (metadata.isNullable()){
             setNull(true);
@@ -316,10 +298,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.setValue(0);
         }
     }
-
-	// Associations
-
-	// Operations
 
 	/**
 	 *  Gets the Field Type
@@ -408,10 +386,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		return value.toString(numericFormat);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
-	 */
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -427,27 +401,10 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer                    Description of ParametervalueStr
-	 *@param  decoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
-	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		value.fromString(decoder.decode(dataBuffer), numericFormat);
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer                    Description of Parameter
-	 *@param  encoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
-	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		if (isNull) {
 			return;
@@ -524,9 +481,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		return value.compareTo(obj);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
-	 */
 	public int compareTo(Numeric _value){
 	    if (isNull) {
 	        return -1;
@@ -536,11 +490,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	        return value.compareTo(_value);
 	    }
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+
 	public int hashCode(){
         return value.hashCode();
 	}
@@ -556,10 +506,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		return value.getSizeSerialized();
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#add(org.jetel.data.Number)
-	 */
 	public void add(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -568,10 +514,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.add(a);
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Number)
-	 */
 	public void sub(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -580,10 +522,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.sub(a);
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Number)
-	 */
 	public void mul(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -592,10 +530,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.mul(a);
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#div(org.jetel.data.Number)
-	 */
 	public void div(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -604,19 +538,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.div(a);
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#abs()
-	 */
 	public void abs() {
         if(isNull) return;
 		value.abs();
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Number)
-	 */
 	public void mod(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -625,25 +551,15 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             value.mod(a);
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#neg()
-	 */
 	public void neg() {
         if(isNull) return;
 		value.neg();
 	}
 
-	/**
-	 * @see org.jetel.data.Numeric#getDecimal()
-	 */
 	public Decimal getDecimal() {
 		return value;
 	}
 
-	/**
-	 * @see org.jetel.data.Numeric#getDecimal()
-	 */
 	public Decimal getDecimal(int precision, int scale) {
         if(precision == this.precision && scale == this.scale) {
             return value;
@@ -651,15 +567,12 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
         return DecimalFactory.getDecimal(value, precision, scale);
 	}
 
-    /**
-     * @see org.jetel.data.Numeric#getBigDecimal()
-     */
-    public BigDecimal getBigDecimal() {
-        if(isNull) 
-            return null;
-        else 
-            return value.getBigDecimal();
-    }
+	public BigDecimal getBigDecimal() {
+		if (isNull) {
+			return null;
+		}
 
+		return value.getBigDecimal();
+	}
 
 }

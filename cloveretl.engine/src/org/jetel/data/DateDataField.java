@@ -1,6 +1,6 @@
 /*
- * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
+ * jETeL/Clover - Java based ETL application framework.
+ * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -9,12 +9,12 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
  */
 package org.jetel.data;
 
@@ -53,7 +53,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @revision $Revision$
  */
 @SuppressWarnings("EI")
-public class DateDataField extends DataField implements Comparable {
+public class DateDataField extends DataField implements Comparable<Object> {
 
 	private static final long serialVersionUID = 1529319195864286249L;
 	
@@ -298,28 +298,10 @@ public class DateDataField extends DataField implements Comparable {
 		return dateFormatter.format(value);
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  dataBuffer                    Description of Parameter
-	 * @param  decoder                       Description of Parameter
-	 * @exception  CharacterCodingException  Description of Exception
-	 * @since                                October 31, 2002
-	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		fromString(decoder.decode(dataBuffer));
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  dataBuffer                    Description of Parameter
-	 * @param  encoder                       Description of Parameter
-	 * @exception  CharacterCodingException  Description of Exception
-	 * @since                                October 31, 2002
-	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
