@@ -93,68 +93,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		return ret;
 			
 	}
-	
-	/* HELPER CACHE METHODS */
-	
-	private static void createCachedFormat(TLFunctionCallContext context, int position) {
-		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
-			context.setCache(new Object[1]);
-			final SimpleDateFormat format = new SimpleDateFormat();
-			format.applyPattern((String)context.getParamValue(position));
-			context.getCache()[0] = format;
-		} else {
-			context.setCache(new Object[2]);
-		}
-	}
-
-	
-	private static SimpleDateFormat getCachedFormat(TLFunctionCallContext context, String pattern, int position) {
-
-		if (context.isLiteral(position) || (context.getCache()[0] != null && pattern.equals(context.getCache()[position]))) {
-			return ((SimpleDateFormat)context.getCache()[0]); 
-		} else {
-			final SimpleDateFormat format = new SimpleDateFormat();
-			format.applyPattern(pattern);
-			context.getCache()[0] = format;
-			context.getCache()[1] = pattern;
-			return format;
-		}
-	}
-	
-	private static void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
-		if (context.getLiteralsSize() > Math.max(pos1, pos2) && context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			context.setCache(new Object[1]);
-			final SimpleDateFormat format = new SimpleDateFormat((String)context.getParamValue(pos1),MiscUtils.createLocale((String)context.getParamValue(pos2)));
-			context.getCache()[0] = format;
-		} else {
-			context.setCache(new Object[3]);
-		}
-	}
-
-	
-	private static SimpleDateFormat getCachedLocaleFormat(TLFunctionCallContext context, String pattern, String locale, int pos1, int pos2) {
-
-		if ((context.getLiteralsSize() > Math.max(pos1, pos2) && context.isLiteral(pos1) && context.isLiteral(pos2)) 
-				|| (context.getCache()[0] != null 
-						&& pattern.equals(context.getCache()[1]) 
-						&& locale.equals(context.getCache()[2])
-					)
-				) 
-		{
-			return ((SimpleDateFormat)context.getCache()[0]); 
-		} else {
-			final SimpleDateFormat format = new SimpleDateFormat(pattern,MiscUtils.createLocale(locale));
-			context.getCache()[0] = format;
-			context.getCache()[1] = pattern;
-			context.getCache()[2] = locale;
-			return format;
-		}
-	}
-
-	
-	/* END OF HELPER CACHE METHODS */
-
-	
+		
 	// NUM2STR
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Integer num, int radix) {
@@ -232,12 +171,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void date2str_init(TLFunctionCallContext context) {
-		createCachedFormat(context, 1);
+		context.setCache(new TLDateFormatCache(context, 1));
 	}
 	
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern) {
-		final SimpleDateFormat format = getCachedFormat(context, pattern, 1);
+		final SimpleDateFormat format = ((TLDateFormatCache)context.getCache()).getCachedFormat(context, pattern, 1);
 		return format.format(date);
 	}
 	
@@ -269,14 +208,15 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
 	public static final void str2date_init(TLFunctionCallContext context) {
-		createCachedLocaleFormat(context, 1, 2);
+		context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
 	}
 	
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, boolean lenient) {
 		
-		SimpleDateFormat format = getCachedLocaleFormat(context, pattern, locale, 1, 2);
+		SimpleDateFormat format = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, pattern, locale, 1, 2);
 		format.setLenient(lenient);
 		ParsePosition p = new ParsePosition(0);
 		return format.parse(input, p);
@@ -296,6 +236,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Date2NumFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
+			date2num_init(context);
 		}
 
 
@@ -308,12 +249,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void date2num_init(TLFunctionCallContext context) {
-		context.setCache(new Object[] {Calendar.getInstance()});
+		context.setCache(new TLCalendarCache());
 	}
 	
 	@TLFunctionAnnotation("Returns numeric value of a date component (e.g. month)")
 	public static final Integer date2num(TLFunctionCallContext context, Date input, DateFieldEnum field) {
-		Calendar c = (Calendar)context.getCache()[0];
+		Calendar c = ((TLCalendarCache)context.getCache()).getCalendar();
 		c.setTime(input);
 		switch (field) {
 		case YEAR:

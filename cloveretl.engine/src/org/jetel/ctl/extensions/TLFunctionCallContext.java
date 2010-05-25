@@ -30,14 +30,20 @@ import org.jetel.ctl.data.TLType;
 public class TLFunctionCallContext {
 	
 	private TLType[] params;
-	private Object[] cache;
 	private boolean[] isLiteral;
 	private Object[] paramValues;
 	private int index;
 	private boolean hasInit;
 	private String libClassName;
 	private String initMethodName;
+	private TLCache cache;
 	
+	/**
+	 * @return the cache
+	 */
+	public TLCache getCache() {
+		return cache;
+	}
 	/**
 	 * The tl parameters.
 	 * CAUTION! This method can be used in interpreter only, don't use it inside method marked @TLFunctionAnnotation,
@@ -53,18 +59,6 @@ public class TLFunctionCallContext {
 	 */
 	public void setParams(TLType[] params) {
 		this.params = params;
-	}
-	/**
-	 * @return the cache
-	 */
-	public Object[] getCache() {
-		return cache;
-	}
-	/**
-	 * @param cache the cache to set
-	 */
-	public void setCache(Object[] cache) {
-		this.cache = cache;
 	}
 	
 	public boolean isLiteral(int i) {
@@ -163,6 +157,12 @@ public class TLFunctionCallContext {
 	 */
 	public String getInitMethodName() {
 		return initMethodName;
+	}
+	/**
+	 * @param cache the cache to set
+	 */
+	public void setCache(TLCache cache) {
+		this.cache = cache;
 	}
 
 }
