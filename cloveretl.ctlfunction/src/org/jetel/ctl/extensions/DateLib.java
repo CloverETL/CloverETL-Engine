@@ -41,19 +41,6 @@ import org.jetel.util.MiscUtils;
 
 public class DateLib extends TLFunctionLibrary {
 
-    private static final String LIBRARY_NAME = "Date";
-    
-    private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
-    
-    private static synchronized DataGenerator getGenerator(Thread key) {
-    	DataGenerator generator = dataGenerators.get(key);
-    	if (generator == null) {
-    		generator = new DataGenerator();
-    		dataGenerators.put(key, generator);
-    	}
-    	return generator;
-    }
-    
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
     	final TLFunctionPrototype ret = 
@@ -72,9 +59,7 @@ public class DateLib extends TLFunctionLibrary {
     	}
     
 		return ret;
-			
     }
-    
 
     @TLFunctionAnnotation("Returns current date and time.")
     public static final Date today(TLFunctionCallContext context) {
@@ -430,7 +415,10 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation
     public static final void random_date_init(TLFunctionCallContext context) {
-    	//context.setCache(new TLMultiCache(new TLCache[] { new TLDateFormatLocaleCache(context, 2, 3) } ));
+    	context.setCache(new TLMultiCache(new TLCache[] { 
+    			new TLDateFormatLocaleCache(context, 2, 3),
+    			new TLDataGeneratorCache()
+    			} ));
     }
 
     @TLFunctionAnnotation("Generates a random date from interval specified by two dates.")
@@ -443,7 +431,7 @@ public class DateLib extends TLFunctionLibrary {
     	if (from > to) {
     		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
     	}
-    	return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
+    	return new Date(((TLDataGeneratorCache)((TLMultiCache)context.getCache()).getCaches()[1]).getDataGenerator().nextLong(from, to));
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by two dates. Allows changing seed.")
@@ -456,14 +444,14 @@ public class DateLib extends TLFunctionLibrary {
     	if (from > to) {
     		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
     	}
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)((TLMultiCache)context.getCache()).getCaches()[1]).getDataGenerator();
     	generator.setSeed(randomSeed);
-    	return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
+    	return new Date(generator.nextLong(from, to));
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
     public static final Date random_date(TLFunctionCallContext context, String from, String to, String format) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format);
+    	SimpleDateFormat sdf = ((TLDateFormatLocaleCache)((TLMultiCache)context.getCache()).getCaches()[0]).getCachedLocaleFormat(context, format, null, 1, 2);
     	return random_date(context, from, to, sdf);
     }
     
