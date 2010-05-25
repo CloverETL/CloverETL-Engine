@@ -77,7 +77,7 @@ public class TLFunctionCallContext {
 	
 	public void initVoidLterals(int count) {
 		isLiteral = new boolean[count];
-		paramValues = new String[count];
+		paramValues = new Object[count];
 		for (int i = 0; i < count; i++) {
 			isLiteral[i] = false;
 			paramValues[i] = null;
