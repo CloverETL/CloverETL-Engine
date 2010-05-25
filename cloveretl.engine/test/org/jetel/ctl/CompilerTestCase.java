@@ -103,6 +103,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(varName, expectedResult, getVariable(varName));
 	}
 	
+	protected void checkEquals(String varName1, String varName2) {
+		assertEquals("Comparing " + varName1 + " and " + varName2 + " : ", getVariable(varName1), getVariable(varName2));
+	}
+	
 	protected void checkNull(String varName) {
 		assertNull(getVariable(varName));
 	}
@@ -826,6 +830,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("nullValue");
 		check("minValue", new GregorianCalendar(1970, GregorianCalendar.JANUARY, 1, 1, 0, 0).getTime());
 		checkNull("varWithNullInitializer");
+	}
+	
+	public void test_datelib_cache() {
+		doCompile("test_datelib_cache");
+		
+		check("b11", true);
+		check("b12", true);
+		check("b21", true);
+		check("b22", true);
+		check("b31", true);
+		check("b32", true);
+		check("b41", true);
+		check("b42", true);		
+		
+		checkEquals("date3", "date3d");
+		checkEquals("date4", "date4d");
+		checkEquals("date7", "date7d");
+		checkEquals("date8", "date8d");
 	}
 	
 	public void test_boolean() {
