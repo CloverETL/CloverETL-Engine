@@ -90,6 +90,34 @@ public class StringLib extends TLFunctionLibrary {
 
 		return ret;
 	}
+
+	/* HELPER CACHE METHODS */
+	
+	private static void createCachedPattern(TLFunctionCallContext context) {
+		if (context.isLiteral(1)) {
+			context.setCache(new Object[1]);
+			context.getCache()[0] = Pattern.compile((String)context.getParamValue(1));
+		} else {
+			context.setCache(new Object[2]);
+		}
+	}
+
+	
+	private static Pattern getCachedPattern(TLFunctionCallContext context, String pattern) {
+
+		if (context.isLiteral(1) || (context.getCache()[0] != null && pattern.equals(context.getCache()[1]))) {
+			return ((Pattern)context.getCache()[0]); 
+		} else {
+			final Pattern p = Pattern.compile(pattern);
+			context.getCache()[0] = p;
+			context.getCache()[1] = pattern;
+			return p;
+		}
+	}
+	
+	/* END OF HELPER CACHE METHODS */
+	
+
 	
 	// CONCAT
 	@TLFunctionAnnotation("Concatenates two or more strings.")
@@ -292,21 +320,13 @@ public class StringLib extends TLFunctionLibrary {
 	// REPLACE
 	@TLFunctionInitAnnotation
 	public static final void replace_init(TLFunctionCallContext context) {
-		if (context.isLiteral(1)) {
-			context.setCache(new Object[1]);
-			context.getCache()[0] = Pattern.compile((String)context.getParamValue(1));
-		}
+		createCachedPattern(context);
 	}
 	
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
 	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
 		Matcher m; 
-		if (context.isLiteral(1)) {
-			m = ((Pattern)context.getCache()[0]).matcher(input); 
-		} else {
-			final Pattern p = Pattern.compile(regex);
-			m = p.matcher(input);
-		}
+		m = getCachedPattern(context, regex).matcher(input);
 		return m.replaceAll(replacement);
 	}
 
@@ -765,23 +785,13 @@ public class StringLib extends TLFunctionLibrary {
 	// FIND
 	@TLFunctionInitAnnotation
 	public static final void find_init(TLFunctionCallContext context) {
-		if (context.isLiteral(1)) {
-			context.setCache(new Object[1]);
-			Pattern cached_p = Pattern.compile((String)context.getParamValue(1));
-			context.getCache()[0] = cached_p;
-		}		
+		createCachedPattern(context);
 	}
 	
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
 	public static final List<String> find(TLFunctionCallContext context, String input, String pattern) {
 		
-		Matcher m; 
-		if (context.isLiteral(1)) {
-			m = ((Pattern)context.getCache()[0]).matcher(input); 
-		} else {
-			final Pattern p = Pattern.compile(pattern);
-			m = p.matcher(input);
-		}
+		Matcher m = getCachedPattern(context, pattern).matcher(input);
 		
 		final List<String> ret = new ArrayList<String>();
 
