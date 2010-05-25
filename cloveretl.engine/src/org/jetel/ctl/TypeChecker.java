@@ -591,7 +591,6 @@ public class TypeChecker extends NavigatingVisitor {
 
 		// infer actual parameter types
 		CLVFArguments args = (CLVFArguments) node.jjtGetChild(0);
-		TLFunctionCallContext context = new TLFunctionCallContext();
 		
 		int paramCount = args.jjtGetNumChildren();
 		
@@ -608,13 +607,6 @@ public class TypeChecker extends NavigatingVisitor {
 				paramValues[i] = ((CLVFLiteral)iNode).getValue();
 			}
 		}
-		context.setParams(actual);
-		context.setLiterals(isLiteral);
-		context.setParamValues(paramValues);
-		node.setFunctionCallContext(context);
-		getFunctionCalls().add(context);
-		context.setIndex(functionCallIndex);
-		functionCallIndex++;
 		
 		// scan local function declarations for (best) match
 		final List<CLVFFunctionDeclaration> local = declaredFunctions.get(node.getName());
@@ -641,8 +633,8 @@ public class TypeChecker extends NavigatingVisitor {
 			node.setType(localCandidate.getType());
 			return data;
 		}
-		
-		
+
+				
 		/*
 		 * None or not-the-best match with local functions yet - scan external
 		 */
@@ -666,6 +658,17 @@ public class TypeChecker extends NavigatingVisitor {
 		// if extCandidate != null we found even better match in external functions
 		if (extCandidate != null) {
 			node.setCallTarget(extCandidate);
+
+			// All library function calls need a context
+			TLFunctionCallContext context = new TLFunctionCallContext();		
+			context.setParams(actual);
+			context.setLiterals(isLiteral);
+			context.setParamValues(paramValues);
+			node.setFunctionCallContext(context);
+			getFunctionCalls().add(context);
+			context.setIndex(functionCallIndex);
+			functionCallIndex++;
+
 			boolean hasInit = extCandidate.hasInit();
 			if (hasInit) {
 				context.setHasInit(true);
