@@ -13,6 +13,7 @@ date otherdate;
 boolean isn;
 decimal s1;
 string rep;
+string rep1;
 decimal stdecimal;
 double stdouble;
 long stlong;
@@ -48,9 +49,8 @@ function integer transform() {
 	l=length(upper);
 	print_err('length of '+upper+':'+l );
 	
-	//c=concat(lower,upper,s); //,2,',today is ',today());
-	//c=concat(lower,upper,s); //,2,',today is ',today());
-	//print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );
+	c=concat(lower,upper, "2,today is ", date2str(today(), "yyyy MMM dd"));
+	print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );
 	
 	//born=nvl($Born,today()-365);
 	//print_err('born=' + born);
@@ -69,8 +69,10 @@ function integer transform() {
 	s1=nvl(l+1,1);
 	print_err(s1 );
 	
-	//rep=replace(c,'[lL]','t');
-	//print_err(rep );
+	rep1=replace("The dog says meow. All DOGs say meow.", "[dD][oO][gG]", "cat");
+	
+	rep=replace(c,'[lL]','t');
+	print_err(rep1);
 	
 	stdecimal=str2decimal('2.5125e-1');
 	stdouble=str2double('2.5125e-1');
