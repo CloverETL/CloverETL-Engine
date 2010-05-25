@@ -93,10 +93,10 @@ public class StringLib extends TLFunctionLibrary {
 
 	/* HELPER CACHE METHODS */
 	
-	private static void createCachedPattern(TLFunctionCallContext context) {
-		if (context.isLiteral(1)) {
+	private static void createCachedPattern(TLFunctionCallContext context, int position) {
+		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
 			context.setCache(new Object[1]);
-			context.getCache()[0] = Pattern.compile((String)context.getParamValue(1));
+			context.getCache()[0] = Pattern.compile((String)context.getParamValue(position));
 		} else {
 			context.setCache(new Object[2]);
 		}
@@ -320,7 +320,7 @@ public class StringLib extends TLFunctionLibrary {
 	// REPLACE
 	@TLFunctionInitAnnotation
 	public static final void replace_init(TLFunctionCallContext context) {
-		createCachedPattern(context);
+		createCachedPattern(context, 1);
 	}
 	
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
@@ -347,9 +347,14 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	// SPLIT
+	@TLFunctionInitAnnotation
+	public static final void split_init(TLFunctionCallContext context) {
+		createCachedPattern(context, 1);
+	}
+
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
-		final Pattern p = Pattern.compile(regex);
+		final Pattern p = getCachedPattern(context, regex);
 		final String[] strArray = p.split(input);
 		final List<String> list = new ArrayList<String>();
 		for (String item : strArray) {
@@ -362,6 +367,7 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			split_init(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -785,7 +791,7 @@ public class StringLib extends TLFunctionLibrary {
 	// FIND
 	@TLFunctionInitAnnotation
 	public static final void find_init(TLFunctionCallContext context) {
-		createCachedPattern(context);
+		createCachedPattern(context, 1);
 	}
 	
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
@@ -821,48 +827,24 @@ public class StringLib extends TLFunctionLibrary {
 			return;
 		}
 	}
-	
-	static final Pattern fix_p = Pattern.compile("t?o");
-	
-	// FIND
-	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
-	public static final List<String> fixfind(String input) {
-		
-		final Matcher m = fix_p.matcher(input);
-		final List<String> ret = new ArrayList<String>();
-
-		while (m.find()) {
-			ret.add(m.group());
-			int i = 0;
-			while (i < m.groupCount()) {
-				ret.add(m.group(++i));
-			}
-		}
-
-		return ret;
-	}
-
-	class FixFindFunction implements TLFunctionPrototype {
-
-		@Override
-		public void init(TLFunctionCallContext context) {
-		}
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			final String input = stack.popString();
-			stack.push(fixfind(input));
-		}
-	}
 
 	// CHOP
+	@TLFunctionInitAnnotation()
+	public static final void chop_init(TLFunctionCallContext context) {
+		createCachedPattern(context, 1);
+	}
+	
+	private static final Pattern chopPattern = Pattern.compile("[\r\n]+");
+	
 	@TLFunctionAnnotation("Removes new line characters from input string")
 	public static final String chop(TLFunctionCallContext context, String input) {
-		return chop(context, input, "[\r\n]+$");
+		final Matcher m = chopPattern.matcher(input);
+		return m.replaceAll("");
 	}
 
-	@TLFunctionAnnotation("Removes pattern  from input string")
+	@TLFunctionAnnotation("Removes pattern from input string")
 	public static final String chop(TLFunctionCallContext context, String input, String pattern) {
-		final Pattern p = Pattern.compile(pattern);
+		final Pattern p = getCachedPattern(context, pattern);
 		final Matcher m = p.matcher(input);
 		return m.replaceAll("");
 
@@ -871,6 +853,7 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			chop_init(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
