@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.JetelException;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
@@ -291,10 +290,23 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	// REPLACE
+	@TLFunctionInitAnnotation
+	public static final void replace_init(TLFunctionCallContext context) {
+		if (context.isLiteral(1)) {
+			context.setCache(new Object[1]);
+			context.getCache()[0] = Pattern.compile((String)context.getParamValue(1));
+		}
+	}
+	
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
 	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(input);
+		Matcher m; 
+		if (context.isLiteral(1)) {
+			m = ((Pattern)context.getCache()[0]).matcher(input); 
+		} else {
+			final Pattern p = Pattern.compile(regex);
+			m = p.matcher(input);
+		}
 		return m.replaceAll(replacement);
 	}
 
@@ -302,6 +314,7 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			replace_init(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -749,6 +762,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
+	// FIND
 	@TLFunctionInitAnnotation
 	public static final void find_init(TLFunctionCallContext context) {
 		if (context.isLiteral(1)) {
@@ -758,7 +772,6 @@ public class StringLib extends TLFunctionLibrary {
 		}		
 	}
 	
-	// FIND
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
 	public static final List<String> find(TLFunctionCallContext context, String input, String pattern) {
 		
