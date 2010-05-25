@@ -41,8 +41,13 @@ public class TLDateFormatLocaleCache extends TLCache {
 	
 	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
 		
-		if (context.getLiteralsSize() > Math.max(pos1, pos2) && context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			final SimpleDateFormat format = new SimpleDateFormat((String)context.getParamValue(pos1),MiscUtils.createLocale((String)context.getParamValue(pos2)));
+		if (context.getLiteralsSize() <= Math.max(pos1, pos2))
+			return;
+		
+		String paramPattern = (String)context.getParamValue(pos1);
+		String paramLocale = (String)context.getParamValue(pos2);
+		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
+			final SimpleDateFormat format = new SimpleDateFormat(paramPattern, MiscUtils.createLocale(paramLocale));
 			cachedFormat = format;
 		}
 	}

@@ -37,6 +37,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.util.DataGenerator;
+import org.jetel.util.MiscUtils;
 
 public class DateLib extends TLFunctionLibrary {
 
@@ -390,21 +391,21 @@ public class DateLib extends TLFunctionLibrary {
 				String to = stack.popString();
 				String from = stack.popString();
 				if (randomSeed == null) {
-					random_date(context, from, to, format, locale);
+					stack.push(random_date(context, from, to, format, locale));
 				} else {
-					random_date(context, from, to, format, locale, randomSeed);
+					stack.push(random_date(context, from, to, format, locale, randomSeed));
 				}
 				
 			} else if (context.getParams().length > 2){
 				if (context.getParams()[2].isLong()) {
 					randomSeed = stack.popLong();
 					if (context.getParams()[1].isDate()) {
-						Date from = stack.popDate();
 						Date to = stack.popDate();
+						Date from = stack.popDate();
 						stack.push(random_date(context, from, to, randomSeed));
 					} else {
-						Long from = stack.popLong();
 						Long to = stack.popLong();
+						Long from = stack.popLong();
 						stack.push(random_date(context, from, to, randomSeed));
 					}
 				} else {
@@ -419,8 +420,8 @@ public class DateLib extends TLFunctionLibrary {
 					Date from = stack.popDate();
 					stack.push(random_date(context, from, to));
 				} else {
-					Long from = stack.popLong();
 					Long to = stack.popLong();
+					Long from = stack.popLong();
 					stack.push(random_date(context, from, to));
 				}
 			}
@@ -429,7 +430,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation
     public static final void random_date_init(TLFunctionCallContext context) {
-    	
+    	//context.setCache(new TLMultiCache(new TLCache[] { new TLDateFormatLocaleCache(context, 2, 3) } ));
     }
 
     @TLFunctionAnnotation("Generates a random date from interval specified by two dates.")
@@ -439,7 +440,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
     public static final Date random_date(TLFunctionCallContext context, Long from, Long to) {
-    	if (to > from) {
+    	if (from > to) {
     		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
     	}
     	return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
@@ -452,7 +453,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
     public static final Date random_date(TLFunctionCallContext context, Long from, Long to, Long randomSeed) {
-    	if (to > from) {
+    	if (from > to) {
     		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
     	}
     	DataGenerator generator = getGenerator(Thread.currentThread());
@@ -468,7 +469,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
     public static final Date random_date(TLFunctionCallContext context, String from, String to, String format, String locale) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format, parseLocale(locale));
+    	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
     	return random_date(context, from, to, sdf);
     }
     
@@ -480,13 +481,8 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format and locale. Allows changing seed.")
     public static final Date random_date(TLFunctionCallContext context, String from, String to, String format, String locale, Long randomSeed) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format, parseLocale(locale));
+    	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
     	return random_date(context, from, to, randomSeed, sdf);
-    }
-    
-    private static final Locale parseLocale(String locale) {
-    	String[] aLocale = locale.split("\\.");// '.' standard delimiter
-		return aLocale.length < 2 ? new Locale(aLocale[0]) : new Locale(aLocale[0], aLocale[1]);
     }
     
     private static final Date random_date(TLFunctionCallContext context, String from, String to, SimpleDateFormat formatter) {
