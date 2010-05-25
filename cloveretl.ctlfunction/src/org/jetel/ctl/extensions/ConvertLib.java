@@ -293,9 +293,27 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// DATE2NUM
+	class Date2NumFunction implements TLFunctionPrototype {
+		
+		public void init(TLFunctionCallContext context) {
+		}
+
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final DateFieldEnum field = (DateFieldEnum)stack.pop();
+			final Date input = stack.popDate();
+			stack.push(date2num(context, input,field));
+		}
+	}
+
+	@TLFunctionInitAnnotation
+	public static final void date2num_init(TLFunctionCallContext context) {
+		context.setCache(new Object[] {Calendar.getInstance()});
+	}
+	
 	@TLFunctionAnnotation("Returns numeric value of a date component (i.e. month)")
 	public static final Integer date2num(TLFunctionCallContext context, Date input, DateFieldEnum field) {
-		Calendar c = Calendar.getInstance();
+		Calendar c = (Calendar)context.getCache()[0];
 		c.setTime(input);
 		switch (field) {
 		case YEAR:
@@ -318,19 +336,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			throw new TransformLangExecutorRuntimeException("Unknown date field: " + field.name());
 		}
 	}
-	class Date2NumFunction implements TLFunctionPrototype {
-		
-		public void init(TLFunctionCallContext context) {
-		}
-
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			final DateFieldEnum field = (DateFieldEnum)stack.pop();
-			final Date input = stack.popDate();
-			stack.push(date2num(context, input,field));
-		}
-	}
-
+	
 	@TLFunctionAnnotation("Parses string to integer using specific numeral system.")
 	public static final Integer str2int(TLFunctionCallContext context, String input, Integer radix) {
 		return Integer.valueOf(input,radix);
@@ -343,6 +349,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Str2IntFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
+			date2num_init(context);
 		}
 
 
