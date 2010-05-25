@@ -75,6 +75,10 @@ public class TLFunctionCallContext {
 		isLiteral = literals;
 	}
 	
+	public int getLiteralsSize() {
+		return isLiteral.length;
+	}
+	
 	public void initVoidLterals(int count) {
 		isLiteral = new boolean[count];
 		paramValues = new Object[count];

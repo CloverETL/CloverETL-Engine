@@ -1672,6 +1672,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("find1", Arrays.asList("to", "to", "to", "tro", "to"));
 		check("find2", Arrays.asList("to", "to", "to", "tro", "to"));
 		check("find3", Arrays.asList("to", "to", "to", "tro", "to"));
+		
+		check("split1", Arrays.asList("one", "two", "three", "four", "five"));
+		check("split2", Arrays.asList("one", "two", "three", "four", "five"));
+		check("split3", Arrays.asList("one", "two", "three", "four", "five"));
+		
+		check("chop01", "ting soming choping function");
+		check("chop02", "ting soming choping function");
+		check("chop03", "ting soming choping function");
+		
+		check("chop11", "testing end of lines cutting");
+		check("chop12", "testing end of lines cutting");
+		
 	}
 
 	public void test_is_format() {
