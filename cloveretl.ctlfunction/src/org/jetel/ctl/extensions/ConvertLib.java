@@ -311,7 +311,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		context.setCache(new Object[] {Calendar.getInstance()});
 	}
 	
-	@TLFunctionAnnotation("Returns numeric value of a date component (i.e. month)")
+	@TLFunctionAnnotation("Returns numeric value of a date component (e.g. month)")
 	public static final Integer date2num(TLFunctionCallContext context, Date input, DateFieldEnum field) {
 		Calendar c = (Calendar)context.getCache()[0];
 		c.setTime(input);
