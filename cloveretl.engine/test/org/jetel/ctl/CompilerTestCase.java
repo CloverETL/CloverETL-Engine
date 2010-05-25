@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1641,20 +1642,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		//check("datum", BORN_VALUE);
 		//check("ddiff", -1);
 		check("isn", false);
-		check("s1", Double.valueOf(6));
-		//check("rep", ("etto hi   EttO 2,today is " + new Date()).replaceAll("[lL]", "t"));
-		check("stdecimal", 0.25125);
-		check("stdouble", 0.25125);
-		check("stlong", 805421451215l);
-		check("stint", -152456);
+		check("s1", BigDecimal.valueOf(6));
+		
+		final SimpleDateFormat format = new SimpleDateFormat();
+		format.applyPattern("yyyy MMM dd");
+		
+		check("rep", ("etto hi   EttO 2,today is " + format.format(new Date())).replaceAll("[lL]", "t"));
+		check("rep1", "The cat says meow. All cats say meow.");
+		check("stdecimal", BigDecimal.valueOf(0.25125));
+		check("stdouble", Double.valueOf(0.25125));
+		check("stlong", Long.valueOf(805421451215l));
+		check("stint", Integer.valueOf(-152456));
 		check("i", 1234);
 		check("nts", "22");
-		check("dtn", 11.0);
+		check("dtn", 11);
 		check("ii", 21);
 		check("dts", "02.12.24");
 		check("lef", "02.12");
 		check("righ", "12.24");
 		check("charCount", 3);
+	}
+	
+	public void test_stringlib_cache() {
+		doCompile("test_stringlib_cache");
+		check("rep1", "The cat says meow. All cats say meow.");
+		check("rep2", "The cat says meow. All cats say meow.");
+		check("rep3", "The cat says meow. All cats say meow.");
+		
+		check("find1", Arrays.asList("to", "to", "to", "tro", "to"));
+		check("find2", Arrays.asList("to", "to", "to", "tro", "to"));
+		check("find3", Arrays.asList("to", "to", "to", "tro", "to"));
 	}
 
 	public void test_is_format() {
@@ -1901,11 +1918,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("r", Long.parseLong("-4"));
 		check("t", Long.parseLong("-3"));
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
-	}
-	
-	public void test_regexp_cache3() {
-
-		doCompile("test_recache3");
 	}
 
 }
