@@ -12,7 +12,7 @@
     </FunctionalTest>
 	
 	<FunctionalTest ident="Revenues" graphFile="graph/graphRevenues.grf">
-        <Property name="CONN_DIR" value="../../../cloveretl.test.scenarios/conn" />
+         <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
       	<DBTableToXMLFile outputTable="halfyear_aggr_revenues" supposedTable="pololeti_agr_vynosy" outputTableConnection="postgre_foodmart" 
       		supposedXMLFile="supposed-out/revenues.xml"/>
       	<DBTableToXMLFile outputTable="Clients_without_revenues" supposedTable="Pololeti_zakaznici_bez_vynosu" outputTableConnection="postgre_foodmart" 
