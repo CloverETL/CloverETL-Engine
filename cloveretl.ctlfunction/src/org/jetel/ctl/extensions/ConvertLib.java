@@ -35,7 +35,6 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
-import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.ByteArray;
 import org.jetel.util.MiscUtils;
@@ -94,6 +93,67 @@ public class ConvertLib extends TLFunctionLibrary {
 		return ret;
 			
 	}
+	
+	/* HELPER CACHE METHODS */
+	
+	private static void createCachedFormat(TLFunctionCallContext context, int position) {
+		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
+			context.setCache(new Object[1]);
+			final SimpleDateFormat format = new SimpleDateFormat();
+			format.applyPattern((String)context.getParamValue(position));
+			context.getCache()[0] = format;
+		} else {
+			context.setCache(new Object[2]);
+		}
+	}
+
+	
+	private static SimpleDateFormat getCachedFormat(TLFunctionCallContext context, String pattern, int position) {
+
+		if (context.isLiteral(position) || (context.getCache()[0] != null && pattern.equals(context.getCache()[position]))) {
+			return ((SimpleDateFormat)context.getCache()[0]); 
+		} else {
+			final SimpleDateFormat format = new SimpleDateFormat();
+			format.applyPattern(pattern);
+			context.getCache()[0] = format;
+			context.getCache()[1] = pattern;
+			return format;
+		}
+	}
+	
+	private static void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
+		if (context.getLiteralsSize() > Math.max(pos1, pos2) && context.isLiteral(pos1) && context.isLiteral(pos2)) {
+			context.setCache(new Object[1]);
+			final SimpleDateFormat format = new SimpleDateFormat((String)context.getParamValue(pos1),MiscUtils.createLocale((String)context.getParamValue(pos2)));
+			context.getCache()[0] = format;
+		} else {
+			context.setCache(new Object[3]);
+		}
+	}
+
+	
+	private static SimpleDateFormat getCachedLocaleFormat(TLFunctionCallContext context, String pattern, String locale, int pos1, int pos2) {
+
+		if ((context.getLiteralsSize() > Math.max(pos1, pos2) && context.isLiteral(pos1) && context.isLiteral(pos2)) 
+				|| (context.getCache()[0] != null 
+						&& pattern.equals(context.getCache()[1]) 
+						&& locale.equals(context.getCache()[2])
+					)
+				) 
+		{
+			return ((SimpleDateFormat)context.getCache()[0]); 
+		} else {
+			final SimpleDateFormat format = new SimpleDateFormat(pattern,MiscUtils.createLocale(locale));
+			context.getCache()[0] = format;
+			context.getCache()[1] = pattern;
+			context.getCache()[2] = locale;
+			return format;
+		}
+	}
+
+	
+	/* END OF HELPER CACHE METHODS */
+
 	
 	// NUM2STR
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -159,6 +219,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Date2StrFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
+			date2str_init(context);
 		}
 
 	
@@ -169,34 +230,23 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
-	public static final String date2str(TLFunctionCallContext context, Date date, String pattern) {
-		final SimpleDateFormat format = new SimpleDateFormat();
-		format.applyPattern(pattern);
-		return format.format(date);
-	}
-	// STR2DATE
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, boolean lenient) {
-		SimpleDateFormat format = new SimpleDateFormat(pattern,MiscUtils.createLocale(locale));
-		format.setLenient(lenient);
-		ParsePosition p = new ParsePosition(0);
-		return format.parse(input, p);
+	@TLFunctionInitAnnotation
+	public static final void date2str_init(TLFunctionCallContext context) {
+		createCachedFormat(context, 1);
 	}
 	
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return str2date(context, input,pattern,locale,false);
+	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
+	public static final String date2str(TLFunctionCallContext context, Date date, String pattern) {
+		final SimpleDateFormat format = getCachedFormat(context, pattern, 1);
+		return format.format(date);
 	}
-
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input,pattern,"en.US",false);
-	}
-
+	
+	
+	// STR2DATE
 	class Str2DateFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
+			str2date_init(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -217,6 +267,29 @@ public class ConvertLib extends TLFunctionLibrary {
 		
 			stack.push(str2date(context, input,pattern,locale,lenient));
 		}
+	}
+
+	public static final void str2date_init(TLFunctionCallContext context) {
+		createCachedLocaleFormat(context, 1, 2);
+	}
+	
+	@TLFunctionAnnotation("Converts string to date based on a pattern")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, boolean lenient) {
+		
+		SimpleDateFormat format = getCachedLocaleFormat(context, pattern, locale, 1, 2);
+		format.setLenient(lenient);
+		ParsePosition p = new ParsePosition(0);
+		return format.parse(input, p);
+	}
+	
+	@TLFunctionAnnotation("Converts string to date based on a pattern")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
+		return str2date(context, input,pattern,locale,false);
+	}
+
+	@TLFunctionAnnotation("Converts string to date based on a pattern")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
+		return str2date(context, input,pattern,"en.US",false);
 	}
 
 	// DATE2NUM
