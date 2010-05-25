@@ -203,7 +203,7 @@ public class RecordTransformFactory {
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
-        	transform = refResolver.resolveRef(transform);
+        	transform = refResolver.resolveRef(transform, RefResFlag.SPEC_CHARACTERS_OFF);
         }
         if (transformClass == null) {
             
