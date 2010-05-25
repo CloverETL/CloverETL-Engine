@@ -34,7 +34,7 @@ import org.jetel.util.property.PropertyRefResolver;
 
 public class FileCloseTest extends TestCase {
 
-	private final static String EXAMPLE_PATH = "../cloveretl.examples/examples/SimpleExamples/";
+	private final static String EXAMPLE_PATH = "../cloveretl.examples/SimpleExamples/";
 
 	static Log logger = LogFactory.getLog(FileCloseTest.class);
 
