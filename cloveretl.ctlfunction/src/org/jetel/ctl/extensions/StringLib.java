@@ -133,7 +133,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ConcatFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
@@ -155,7 +154,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class UpperCaseFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -172,7 +170,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class LowerCaseFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -190,7 +187,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class SubstringFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -210,7 +206,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class LeftFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -229,7 +224,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RightFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -249,7 +243,6 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	class TrimFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -285,7 +278,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class LengthFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -332,7 +324,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ReplaceFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 			replace_init(context);
 		}
@@ -365,7 +356,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class SplitFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 			split_init(context);
 		}
@@ -386,7 +376,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CharAtFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -406,7 +395,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsBlankFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -425,7 +413,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsAsciiFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -443,7 +430,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsNumberFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -461,7 +447,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsIntegerFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -479,7 +464,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsLongFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -525,7 +509,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsDateFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -567,7 +550,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveDiacriticFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -584,7 +566,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveBlankSpaceFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -601,7 +582,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveNonPrintableFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -619,7 +599,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveNonAsciiFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -644,7 +623,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -672,7 +650,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class TranslateFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -720,7 +697,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class JoinFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -751,7 +727,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IndexOfFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -777,7 +752,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CountCharFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -814,12 +788,10 @@ public class StringLib extends TLFunctionLibrary {
 
 	class FindFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 			find_init(context);
 		}
 
-		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
@@ -851,7 +823,6 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	class ChopFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 			chop_init(context);
 		}
@@ -891,7 +862,6 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CutFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
@@ -916,7 +886,6 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class RandomStringFunction implements TLFunctionPrototype {
 
-		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
