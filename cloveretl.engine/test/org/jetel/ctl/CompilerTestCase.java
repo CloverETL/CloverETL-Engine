@@ -1685,6 +1685,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("chop12", "testing end of lines cutting");
 		
 	}
+	
+	public void test_convertlib_cache() {
+		doCompile("test_convertlib_cache");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2000, 6, 20, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		Date checkDate = cal.getTime();
+		
+		check("sdate1", "2010 May 25");
+		check("sdate2", "2010 May 25");
+		
+		check("date01", checkDate);
+		check("date02", checkDate);
+		check("date03", checkDate);
+		check("date04", checkDate);
+		check("date11", checkDate);
+		check("date12", checkDate);
+		check("date13", checkDate);
+		check("date21", checkDate);
+	}
 
 	public void test_is_format() {
 		doCompile("test_is_format");
@@ -1792,7 +1813,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("s6", "hello");
 		check("s5", "hello");
 		check("s2", "hello");
-		check("s7", "hello\nworld");
+		check("s7", "helloworld");
 		check("s3", "hello ");
 		check("s4", "hello");
 	}
