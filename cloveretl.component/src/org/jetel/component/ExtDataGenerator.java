@@ -274,7 +274,7 @@ public class ExtDataGenerator extends DataGenerator {
 							for (ErrorMessage msg : msgs) {
 								logger.error(msg.toString());
 								if (msg.getErrorLevel() == ErrorLevel.ERROR) {
-									sb.append("\n  Line ").append(msg.getBeginLine()).append(": ").append(msg.toString());
+									sb.append("\n  Line ").append(msg.getLocation().getBeginLine()).append(": ").append(msg.toString());
 								}
 							}
 							throw new ComponentNotReadyException(

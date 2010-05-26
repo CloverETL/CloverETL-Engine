@@ -18,6 +18,7 @@ import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFForeachStatement;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFLiteral;
 import org.jetel.ctl.ASTnode.CLVFLookupNode;
 import org.jetel.ctl.ASTnode.CLVFParameters;
@@ -164,6 +165,26 @@ public class ASTBuilder extends NavigatingVisitor {
 	 */
 	public void resolveAST(CLVFStartExpression tree) {
 		visit(tree,null);
+	}
+
+	@Override
+	public Object visit(CLVFImportSource node, Object data) {
+		// store current "import context" so we can restore it after parsing this import
+		String importFileUrl = problemReporter.getImportFileUrl();
+		ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+        // set new "import context", propagate error location if already defined
+		problemReporter.setImportFileUrl(node.getSourceToImport());
+		problemReporter.setErrorLocation((errorLocation != null)
+				? errorLocation : new ErrorLocation(node.getBegin(), node.getEnd()));
+
+		Object result = super.visit(node, data);
+
+		// restore current "import context"
+		problemReporter.setImportFileUrl(importFileUrl);
+		problemReporter.setErrorLocation(errorLocation);
+
+		return result;
 	}
 
 	/**

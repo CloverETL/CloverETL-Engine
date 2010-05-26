@@ -799,9 +799,23 @@ public class TypeChecker extends NavigatingVisitor {
 	
 	@Override
 	public Object visit(CLVFImportSource node, Object data) {
+		// store current "import context" so we can restore it after parsing this import
+		String importFileUrl = problemReporter.getImportFileUrl();
+		ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+        // set new "import context", propagate error location if already defined
+		problemReporter.setImportFileUrl(node.getSourceToImport());
+		problemReporter.setErrorLocation((errorLocation != null)
+				? errorLocation : new ErrorLocation(node.getBegin(), node.getEnd()));
+
 		super.visit(node, data);
 		node.setType(TLType.VOID);
 		checkChildren(node);
+
+		// restore current "import context"
+		problemReporter.setImportFileUrl(importFileUrl);
+		problemReporter.setErrorLocation(errorLocation);
+
 		return data;
 	}
 	
