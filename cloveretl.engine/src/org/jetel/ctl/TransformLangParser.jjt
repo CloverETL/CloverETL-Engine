@@ -779,15 +779,26 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 			// we need to resolve the filename to project path (if it is relative)
 			final URL projectURL = graph != null ? graph.getProjectURL() : null;
 			
-			jjtThis.setSourceToImport(filenameURL);			CLVFStart parseTree = null;			try {				stream=Channels.newInputStream(FileUtils.getReadableChannel(projectURL, filenameURL)); 				addParsedImport(filenameURL); // the above will handle invalid URL etc.				problemReporter.setImport(filenameURL); // problem reporter is singleton so the new parser will get the same
+			jjtThis.setSourceToImport(filenameURL);			CLVFStart parseTree = null;
+    		// store current "import context" so we can restore it after parsing this import
+    		String importFileUrl = problemReporter.getImportFileUrl();
+    		ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+			try {				stream=Channels.newInputStream(FileUtils.getReadableChannel(projectURL, filenameURL)); 				addParsedImport(filenameURL); // the above will handle invalid URL etc.
+                // set new "import context", propagate error location if already defined
+        		problemReporter.setImportFileUrl(filenameURL);
+        		problemReporter.setErrorLocation((errorLocation != null)
+        				? errorLocation : new ErrorLocation(jjtThis.getBegin(), jjtThis.getEnd()));
+
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);				
 				parser.addParsedImports(getParsedImports());
 			 	parseTree = parser.Start();				jjtThis.jjtAddChild(parseTree,0);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
 				this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;			} catch(IOException e){				error(jjtThis,"Unable to open import \""+filenameURL+"\": " + e.getMessage());
 			} finally {
-				// we continue parsing the current file regardless of errors
-				problemReporter.setImport(null);
+        		// restore current "import context"
+        		problemReporter.setImportFileUrl(importFileUrl);
+        		problemReporter.setErrorLocation(errorLocation);
 			}
 		} 
 

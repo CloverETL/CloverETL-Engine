@@ -8,6 +8,7 @@ import org.jetel.ctl.ASTnode.CLVFForStatement;
 import org.jetel.ctl.ASTnode.CLVFForeachStatement;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFIfStatement;
+import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -57,6 +58,9 @@ public class FlowControl {
 			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 				SimpleNode child = (SimpleNode) node.jjtGetChild(i);
 				switch (child.getId()) {
+				case TransformLangParserTreeConstants.JJTIMPORTSOURCE:
+					isOK &= (Boolean) child.jjtAccept(this, data);
+					break;
 				case TransformLangParserTreeConstants.JJTRETURNSTATEMENT:
 					error(child, "Misplaced return statement");
 					break;
@@ -72,6 +76,26 @@ public class FlowControl {
 
 			// return value is not really used but for consistency reasons we keep it as boolean
 			return isOK;
+		}
+
+		@Override
+		public Object visit(CLVFImportSource node, Object data) {
+			// store current "import context" so we can restore it after parsing this import
+			String importFileUrl = problemReporter.getImportFileUrl();
+			ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+	        // set new "import context", propagate error location if already defined
+			problemReporter.setImportFileUrl(node.getSourceToImport());
+			problemReporter.setErrorLocation((errorLocation != null)
+					? errorLocation : new ErrorLocation(node.getBegin(), node.getEnd()));
+
+			Object result = node.jjtGetChild(0).jjtAccept(this, data);
+
+			// restore current "import context"
+			problemReporter.setImportFileUrl(importFileUrl);
+			problemReporter.setErrorLocation(errorLocation);
+
+			return result;
 		}
 
 		@Override
@@ -253,6 +277,26 @@ public class FlowControl {
 			this.breakAllowed = false;
 			this.continueAllowed = false;
 			node.jjtAccept(this, null);
+		}
+
+		@Override
+		public Object visit(CLVFImportSource node, Object data) {
+			// store current "import context" so we can restore it after parsing this import
+			String importFileUrl = problemReporter.getImportFileUrl();
+			ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+	        // set new "import context", propagate error location if already defined
+			problemReporter.setImportFileUrl(node.getSourceToImport());
+			problemReporter.setErrorLocation((errorLocation != null)
+					? errorLocation : new ErrorLocation(node.getBegin(), node.getEnd()));
+
+			Object result = super.visit(node, data);
+
+			// restore current "import context"
+			problemReporter.setImportFileUrl(importFileUrl);
+			problemReporter.setErrorLocation(errorLocation);
+
+			return result;
 		}
 
 		@Override
