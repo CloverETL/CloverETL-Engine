@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="CustomTLFunctions" basedir=".." default="install">
+<project name="CustomTLFunctions" basedir="." default="install">
 	
 	<property name="dir.bin" value="${basedir}/trans/bin"/>
 	<property name="dir.src" value="${basedir}/trans/src"/>
@@ -17,7 +17,7 @@
 	<target name="compile" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
-		
+		<echo>CloverETL Engine path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}">
 			<classpath>
