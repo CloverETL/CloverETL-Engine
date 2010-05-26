@@ -315,7 +315,17 @@ public class XMLExtract extends Node {
         // the active mapping
         private Mapping m_activeMapping = null;
         
+        private Set<String> cloverAttributes;
+        
         /**
+		 * @param cloverAttributes
+		 */
+		public SAXHandler(Set<String> cloverAttributes) {
+			super();
+			this.cloverAttributes = cloverAttributes;
+		}
+
+		/**
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
         public void startElement(String prefix, String namespace, String localName, Attributes attributes) throws SAXException {
@@ -335,16 +345,16 @@ public class XMLExtract extends Node {
                 m_activeMapping.setLevel(m_level);
                 
                 if (mapping.getOutRecord() == null) {
-                	// Former comment was reading:
-                    	// If it's null that means that there's no edge mapped to
-                    	// the output port
-                    	// remove this mapping so we don't repeat this logic (and
-                    	// logging)
-                	// Improved behaviour: (jlehotsky)
-                	    // If it's null that means either that there's no edge mapped
-                	    // to the output port, or output port is not specified.
-                	    // This is OK, we simply ignore the fact and continue.
-                	    // Thus the original code is commented out
+//                	 Former comment was reading:
+//                    	 If it's null that means that there's no edge mapped to
+//                    	 the output port
+//                    	 remove this mapping so we don't repeat this logic (and
+//                    	 logging)
+//                	 Improved behaviour: (jlehotsky)
+//                	     If it's null that means either that there's no edge mapped
+//                	     to the output port, or output port is not specified.
+//                	     This is OK, we simply ignore the fact and continue.
+//                	     Thus the original code is commented out
                     /*LOG.warn("XML Extract: " + getId() + " Element ("
                             + localName
                             + ") does not have an edge mapped to that port.");
@@ -501,11 +511,11 @@ public class XMLExtract extends Node {
                     // to null
                     if (m_hasCharacters) {
 	                    try {
-	                    	if (field.getValue() != null) {
-	                    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
-	                    	} else {
-	                    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
-	                    	}
+                    	if (field.getValue() != null && cloverAttributes.contains(localName)) {
+                    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
+                    	} else {
+                    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
+                    	}
 	                    } catch (BadDataFormatException ex) {
 	                        // This is a bit hacky here SOOO let me explain...
 	                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
@@ -1338,6 +1348,7 @@ public class XMLExtract extends Node {
 		factory.setValidating(validate);
 		initXmlFeatures(factory);
         SAXParser parser;
+        Set<String> xmlAttributes = getXMLMappingValues();
         
         try {
         	// create new sax parser
@@ -1357,7 +1368,7 @@ public class XMLExtract extends Node {
             }
     		do {
     			// parse the input source
-                parser.parse(m_inputSource, new SAXHandler());
+                parser.parse(m_inputSource, new SAXHandler(xmlAttributes));
                 
                 // get a next source
     		} while (nextSource());
@@ -1376,6 +1387,28 @@ public class XMLExtract extends Node {
         return true;
     }
     
+	private Set<String> getXMLMappingValues() {
+		try {
+			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			DefaultHandler handler = new MyHandler();
+			InputStream is = null;
+			if (this.mappingURL != null) {
+				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				is = new FileInputStream(new File(filePath));
+			} else if (this.mapping != null) {
+				is = new ByteArrayInputStream(mapping.getBytes(charset));
+			}
+			if (is != null) {
+				saxParser.parse(is, handler);
+				return ((MyHandler) handler).getCloverAttributes();
+			}
+		} catch (Exception e) {
+			return new HashSet<String>();
+		}
+		return new HashSet<String>();
+	}
+
+
 	/**
 	 * Xml features initialization.
 	 * @throws JetelException 
@@ -1522,7 +1555,7 @@ public class XMLExtract extends Node {
 	        }
 			if (is != null) {
 				saxParser.parse(is, handler);
-				Set<String> attributesNames = ((MyHandler) handler).getAttributesNames();
+				Set<String> attributesNames = ((MyHandler) handler).getAttributeNames();
 				for (String attributeName : attributesNames) {
 					if (!isXMLAttribute(attributeName)) {
 						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
@@ -1539,17 +1572,26 @@ public class XMLExtract extends Node {
     
     private static class MyHandler extends DefaultHandler { 
 		//Handler used at checkConfig to parse XML mapping and retrieve attributes names
-		private Set<String> attributesNames = new HashSet<String>();
+		private Set<String> attributeNames = new HashSet<String>();
+		private Set<String> cloverAttributes = new HashSet<String>();
 		
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
 			int length = atts.getLength(); 
-			for (int i=0; i<length; i++) { 
-				attributesNames.add(atts.getQName(i)); 
+			for (int i=0; i<length; i++) {
+				String xmlField = atts.getQName(i);
+				attributeNames.add(xmlField);
+				if (xmlField.equals("cloverFields")) {
+					cloverAttributes.add(atts.getValue(i));
+				}
 			}
 		}
 		
-		public Set<String> getAttributesNames() {
-			return attributesNames;
+		public Set<String> getAttributeNames() {
+			return attributeNames;
+		}
+		
+		public Set<String> getCloverAttributes() {
+			return cloverAttributes;
 		}
 	}
 	
