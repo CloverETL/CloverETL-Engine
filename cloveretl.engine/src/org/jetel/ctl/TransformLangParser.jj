@@ -69,6 +69,7 @@ import org.jetel.ctl.ErrorMessage.ErrorLevel;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.Scope;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
@@ -80,12 +81,12 @@ import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.nio.channels.Channels;
 import java.net.URL;
 
 
@@ -99,6 +100,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 	   private HashSet<String> parsedImports;
 	   private ProblemReporter problemReporter;
 	   private TransformationGraph graph;
+       private PropertyRefResolver propertyRefResolver;
+       private String encoding;
 
 	/**
 	 * Creates the main parser
@@ -106,19 +109,23 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 	public TransformLangParser(TransformationGraph graph, ProblemReporter problemReporter, java.io.InputStream stream, String encoding) {
 		this(stream,encoding);
 		this.graph = graph;
+        this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
 		this.parserHelper = new ParserHelper();
 		this.hasEvalNode = false;
 		this.parsedImports = new HashSet<String>();
 		this.problemReporter = problemReporter;
+        this.encoding = encoding;
 	}
        
       /**
        * Used by main parser to create import parsers
        */
       public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){			  this(stream);
-			  this.graph = parent.graph;			  this.parserHelper=parent.parserHelper;
+			  this.graph = parent.graph;              this.propertyRefResolver = parent.propertyRefResolver;
+			  this.parserHelper=parent.parserHelper;
 			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
-              this.parsedImports = parent.parsedImports;      }
+              this.parsedImports = parent.parsedImports;              this.encoding = parent.encoding;
+      }
       
 	public void reset(java.io.InputStream stream) {
   		parserHelper.reset();
@@ -861,7 +868,14 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
     		String importFileUrl = problemReporter.getImportFileUrl();
     		ErrorLocation errorLocation = problemReporter.getErrorLocation();
 
-			try {				stream=Channels.newInputStream(FileUtils.getReadableChannel(projectURL, filenameURL)); 				addParsedImport(filenameURL); // the above will handle invalid URL etc.
+			try {				String importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
+
+				if (propertyRefResolver != null) {
+					importSourceCode = propertyRefResolver.resolveRef(importSourceCode);
+				}
+
+				stream = new ByteArrayInputStream(importSourceCode.getBytes("UTF-8"));
+				addParsedImport(filenameURL); // the above will handle invalid URL etc.
                 // set new "import context", propagate error location if already defined
         		problemReporter.setImportFileUrl(filenameURL);
         		problemReporter.setErrorLocation((errorLocation != null)
