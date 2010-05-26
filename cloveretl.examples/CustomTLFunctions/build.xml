@@ -17,7 +17,7 @@
 	<target name="compile" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
-		<echo>CloverETL Engine path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
+		<echo>CloverETL Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}">
 			<classpath>
