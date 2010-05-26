@@ -20,7 +20,7 @@ public class MyCTLFunctionsLib extends TLFunctionLibrary {
 	private static final String LIBRARY_NAME = "MyCTLFunctions";
  
 	enum Function {
-        MY_FUNCTION("my_function_name"),
+        MY_FUNCTION("my_function"),
         DOUBLE_METAPHONE("double_metaphone");
  
         public String name;
@@ -45,7 +45,7 @@ public class MyCTLFunctionsLib extends TLFunctionLibrary {
  
     public TLFunctionPrototype getFunction(String functionName) {
         switch(Function.fromString(functionName)) {
-        case MY_FUNCTION: return new MyFunction1();
+        case MY_FUNCTION: return new MyFunction();
         case DOUBLE_METAPHONE: return new DoubleMetaphoneFunction();
         default: return null;
        }
@@ -64,10 +64,10 @@ public class MyCTLFunctionsLib extends TLFunctionLibrary {
     	return ret;
 	}
  
-    class MyFunction1 extends TLFunctionPrototype {
+    class MyFunction extends TLFunctionPrototype {
  
-        public MyFunction1() {
-            super(LIBRARY_NAME, "my_function1_name", "Description of my function 1",
+        public MyFunction() {
+            super(LIBRARY_NAME, "my_function", "Description of my function",
             		new TLValueType[] { TLValueType.DATE, TLValueType.STRING }, //MyFunction1 has 2 input parameters: 1st is date type,2nd is string type
                     TLValueType.STRING);//MyFunction1 returns string
         }
@@ -89,7 +89,7 @@ public class MyCTLFunctionsLib extends TLFunctionLibrary {
                 throw new TransformLangExecutorRuntimeException(params,
                 		Function.MY_FUNCTION.name() + " - wrong type of literal");
  
-            String result = "MyFunction1 result";
+            String result = "MyFunction result";
             //TODO fullfil the result
             strBuf.append(result);
             //val contains StringBuffer we have just fulfilled 
