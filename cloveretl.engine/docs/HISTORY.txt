@@ -2,6 +2,10 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-0
+---------
++ new RunGraph component attribute "paramsToPass"
+
 REL 2-9-2
 ---------
 + Example projects using DB migrated to Derby - easy setup for newbies
