@@ -886,6 +886,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("third", stringList.get(2));
 		assertEquals("fourth", stringList.get(3));
 		assertEquals("fifth", stringList.get(4));
+		assertEquals("extra", stringList.get(5));
 		assertEquals(stringList, (List<String>) getVariable("stringListCopy"));
 	}
 	
