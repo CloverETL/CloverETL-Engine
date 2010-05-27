@@ -125,12 +125,6 @@ public class TypeChecker extends NavigatingVisitor {
 				return data;
 			}
 			
-			final TLType elemType = ((TLTypeList)lhs.getType()).getElementType();
-			if (elemType.canAssign(rhs.getType())) {
-				// list + element concatenation
-				node.setType(lhs.getType());
-				return data;
-			}
 			
 			// invalid concatenation
 			node.setType(TLType.ERROR);
