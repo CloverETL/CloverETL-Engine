@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLTypeList;
 
 public class ContainerLib extends TLFunctionLibrary {
@@ -41,14 +40,16 @@ public class ContainerLib extends TLFunctionLibrary {
     public TLFunctionPrototype getExecutable(String functionName) 
     throws IllegalArgumentException {
     	TLFunctionPrototype ret = 
-    		"remove_all".equals(functionName) ? new RemoveAllFunction() :
+    		"clear".equals(functionName) ? new ClearFunction() :
     		"pop".equals(functionName) ? new PopFunction() :
     		"poll".equals(functionName) ? new PollFunction() :
     		"push".equals(functionName) ? new PushFunction() :
+    		"append".equals(functionName) ? new AppendFunction() :
     		"insert".equals(functionName) ? new InsertFunction() :
     		"remove".equals(functionName) ? new RemoveFunction() :
     		"sort".equals(functionName) ? new SortFunction() : 
     		"reverse".equals(functionName) ? new ReverseFunction() : 
+    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : 
     		"copy".equals(functionName) ? new CopyFunction() : null;
 
     	if (ret == null) {
@@ -61,26 +62,26 @@ public class ContainerLib extends TLFunctionLibrary {
     
     // REMOVE_ALL
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <E> List<E> remove_all(TLFunctionCallContext context, List<E> list) {
+    public static final <E> List<E> clear(TLFunctionCallContext context, List<E> list) {
     	list.clear();
     	return list;
     }
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <K,V> Map<K,V> remove_all(TLFunctionCallContext context, Map<K,V> map) {
+    public static final <K,V> Map<K,V> clear(TLFunctionCallContext context, Map<K,V> map) {
     	map.clear();
     	return map;
     }
     
-    class RemoveAllFunction implements TLFunctionPrototype {
+    class ClearFunction implements TLFunctionPrototype {
     	
 		public void init(TLFunctionCallContext context) {
 		}
 
     	public void execute(Stack stack, TLFunctionCallContext context) {
     		if (context.getParams()[0].isList()) {
-    			remove_all(context, stack.popList());
+    			stack.push(clear(context, stack.popList()));
     		} else {
-    			remove_all(context, stack.popMap());
+    			stack.push(clear(context, stack.popMap()));
     		}
     	}
     }
@@ -119,12 +120,32 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	}
 	
+	// APPEND
+	@TLFunctionAnnotation("Appends element at the end of the list.")
+	public static final <E> List<E> append(TLFunctionCallContext context, List<E> list, E item) {
+		list.add(item);
+		return list;
+	}
+	
+	class AppendFunction implements TLFunctionPrototype {
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final Object item = stack.pop();
+			final List<Object> list = stack.popList();
+			stack.push(append(context, list, item));
+		}
+	}
+
 	// PUSH
 	@TLFunctionAnnotation("Appends element at the end of the list.")
 	public static final <E> List<E> push(TLFunctionCallContext context, List<E> list, E item) {
 		list.add(item);
 		return list;
 	}
+	
 	class PushFunction implements TLFunctionPrototype{
 		
 		public void init(TLFunctionCallContext context) {
@@ -265,6 +286,33 @@ public class ContainerLib extends TLFunctionLibrary {
 			
 		}
 		
+	}
+	
+	// ISEMPTY
+	@TLFunctionAnnotation("Checks if list is empty.")
+	public static final <E> Boolean isEmpty(TLFunctionCallContext context, List<E> list) {
+		return list.isEmpty();
+	}
+	
+	@TLFunctionAnnotation("Checks if map is empty.")
+	public static final <K, V> Boolean isEmpty(TLFunctionCallContext context, Map<K, V> map) {
+		return map.isEmpty();
+	}
+	
+	class IsEmptyFunction implements TLFunctionPrototype{
+		
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				stack.push(isEmpty(context, stack.popMap()));
+			} else {
+				stack.push(isEmpty(context, stack.popList()));
+			}
+			final List<Object> list = stack.popList();
+			
+		}
 	}
 	
 	// COPY
