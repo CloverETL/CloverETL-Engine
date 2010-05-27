@@ -364,7 +364,7 @@ public class DateLib extends TLFunctionLibrary {
 					randomSeed = stack.popLong();
 				}
 				if (context.getParams().length > 3) {
-					if (context.getParams()[3].isLong()) {
+					if (context.getParams()[3].isLong() || context.getParams()[3].isInteger()) {
 						randomSeed = stack.popLong();
 					} else {
 						locale = stack.popString();
@@ -380,7 +380,7 @@ public class DateLib extends TLFunctionLibrary {
 				}
 				
 			} else if (context.getParams().length > 2){
-				if (context.getParams()[2].isLong()) {
+				if (context.getParams()[2].isLong() || context.getParams()[2].isInteger()) {
 					randomSeed = stack.popLong();
 					if (context.getParams()[1].isDate()) {
 						Date to = stack.popDate();
