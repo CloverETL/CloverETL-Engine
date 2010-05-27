@@ -124,7 +124,16 @@
 	</target>
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<target name="improve-java-sources" depends="copy-java-sources,improve-nojdbc4"/>
+	<target name="improve-java-sources" depends="copy-java-sources,improve-nojdbc4">
+		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+			<then>
+				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<fileheading heading="${java.src.header.file}">
+					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
+				</fileheading>
+			</then>
+		</if>
+	</target>
 	
 	<target name="copy-java-sources" depends="init">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
@@ -349,19 +358,11 @@
 		</copy>
 	</target>
 
-	<target name="dist.src" depends="plugin.xml" description="Creates source distribution">
+	<target name="dist.src" depends="plugin.xml,improve-java-sources" description="Creates source distribution">
 
 		<copy todir="${dist.src}/${plugin.name}/src">
-			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
+			<fileset dir="${dir.src.improved}" excludes="${java.src.exclude}"/>
 		</copy>
-		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
-			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
-				<fileheading heading="${java.src.header.file}">
-					<fileset dir="${dist.src}/${plugin.name}/src" includes="**/*.java"/>
-				</fileheading>
-			</then>
-		</if>
 
 		<copy todir="${dist.src}/${plugin.name}/lib">
 			<fileset refid="plugin-lib-files"/>
