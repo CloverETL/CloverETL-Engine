@@ -33,15 +33,14 @@ import org.jetel.graph.runtime.WatchDog;
 public class ResetTest extends TestCase{
 
 	private final static String[] EXAMPLE_PATH = {
-		"examples/simpleExamples/", 
-		"examples/advancedExamples/",
-		"examples/CTLFunctionsTutorial/",
-		"examples/DataProfiling/",
-		"examples/extExamples/",
+		"../cloveretl.examples/SimpleExamples/", 
+		"../cloveretl.examples/AdvancedExamples/",
+		"../cloveretl.examples/CTLFunctionsTutorial/",
+		"../cloveretl.examples/DataProfiling/",
+		"../cloveretl.examples/ExtExamples/",
 		"../cloveretl.test.scenarios/",
 		"../cloveretl.examples.commercial/",
-		"examples/CompanyTransactionsTutorial/",
-		"examples/DataProfiling/"
+		"../cloveretl.examples/CompanyTransactionsTutorial/"
 		};
 	
 	static Log logger = LogFactory.getLog(ResetTest.class);
