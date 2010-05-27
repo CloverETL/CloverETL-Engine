@@ -17,8 +17,6 @@ import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.JExcelXLSDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.XLSParser;
-import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.TransactionMethod;
@@ -571,8 +569,8 @@ public class RangeLookupTest extends CloverTestCase {
 
 		lookupResult = lookup.createLookup(key, record);
 		lookupResult.seek();
-		lookup.postExecute(TransactionMethod.COMMIT);
 		assertEquals(2, lookupResult.getNumFound());
+		lookup.postExecute(TransactionMethod.COMMIT);
 	}
 
 	public void test_Strings() throws ComponentNotReadyException {
