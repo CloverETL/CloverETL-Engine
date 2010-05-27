@@ -57,18 +57,18 @@ public class MathLib extends TLFunctionLibrary {
 			"e".equals(functionName) ? new EFunction() :
 			"random".equals(functionName) ? new RandomFunction() :
 			"abs".equals(functionName) ? new AbsFunction() :
-			"bit_or".equals(functionName) ? new BitOrFunction() :
-			"bit_and".equals(functionName) ? new BitAndFunction() :
-			"bit_xor".equals(functionName) ? new BitXorFunction() :
-			"bit_lshift".equals(functionName) ? new BitLShiftFunction() :
-			"bit_rshift".equals(functionName) ? new BitRShiftFunction() :
-			"bit_negate".equals(functionName) ? new BitNegateFunction() :
-			"bit_set".equals(functionName) ? new BitSetFunction() :
-			"bit_is_set".equals(functionName) ? new BitIsSetFunction() :
-			"random_gaussian".equals(functionName) ? new RandomGaussianFunction() :
-		    "random_boolean".equals(functionName) ? new RandomBooleanFunction() : 
-		    "random_int".equals(functionName) ? new RandomIntFunction() :
-		    "random_long".equals(functionName) ? new RandomLongFunction() :
+			"bitOr".equals(functionName) ? new BitOrFunction() :
+			"bitAnd".equals(functionName) ? new BitAndFunction() :
+			"bitXor".equals(functionName) ? new BitXorFunction() :
+			"bitLShift".equals(functionName) ? new BitLShiftFunction() :
+			"bitRSshift".equals(functionName) ? new BitRShiftFunction() :
+			"bitNegate".equals(functionName) ? new BitNegateFunction() :
+			"bitSet".equals(functionName) ? new BitSetFunction() :
+			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
+			"randomGaussian".equals(functionName) ? new RandomGaussianFunction() :
+		    "randomBoolean".equals(functionName) ? new RandomBooleanFunction() : 
+		    "randomInteger".equals(functionName) ? new RandomIntegerFunction() :
+		    "randomLong".equals(functionName) ? new RandomLongFunction() :
 			null;
 			
 		if (ret == null) {
@@ -353,12 +353,12 @@ public class MathLib extends TLFunctionLibrary {
     }
 
     @TLFunctionAnnotation("Computes bitwise OR of two operands.")
-    public static final Long bit_or(TLFunctionCallContext context, Long i, Long j) {
+    public static final Long bitOr(TLFunctionCallContext context, Long i, Long j) {
     	return i | j;
     }
 
     @TLFunctionAnnotation("Computes bitwise OR of two operands.")
-    public static final Integer bit_or(TLFunctionCallContext context, Integer i, Integer j) {
+    public static final Integer bitOr(TLFunctionCallContext context, Integer i, Integer j) {
     	return i | j;
     }
     
@@ -369,12 +369,12 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bit_or(context, stack.popInt(), stack.popInt()));
+				stack.push(bitOr(context, stack.popInt(), stack.popInt()));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bit_or(context, stack.popLong(), stack.popLong()));
+				stack.push(bitOr(context, stack.popLong(), stack.popLong()));
 				return;
 			} 
 			
@@ -383,42 +383,40 @@ public class MathLib extends TLFunctionLibrary {
     }
 
     @TLFunctionAnnotation("Computes bitwise AND of two operands.")
-    public static final Long bit_and(TLFunctionCallContext context, Long i, Long j) {
+    public static final Long bitAnd(TLFunctionCallContext context, Long i, Long j) {
     	return i & j;
     }
 
-    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
-    public static final Integer bit_and(TLFunctionCallContext context, Integer i, Integer j) {
-    	return i & j;
-    }
-    
-    class BitAndFunction implements TLFunctionPrototype {
+	@TLFunctionAnnotation("Computes bitwise AND of two operands.")
+	public static final Integer bitAnd(TLFunctionCallContext context, Integer i, Integer j) {
+		return i & j;
+	}
+
+	class BitAndFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bit_and(context, stack.popInt(), stack.popInt()));
+				stack.push(bitAnd(context, stack.popInt(), stack.popInt()));
 				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bit_and(context, stack.popLong(), stack.popLong()));
-				return;
-			} 
-			
-		} 
+			}
 
-    }
+			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
+				stack.push(bitAnd(context, stack.popLong(), stack.popLong()));
+				return;
+			}
+		}
+	}
 
     @TLFunctionAnnotation("Computes bitwise AND of two operands.")
-    public static final Long bit_xor(TLFunctionCallContext context, Long i, Long j) {
+    public static final Long bitXor(TLFunctionCallContext context, Long i, Long j) {
     	return i ^ j;
     }
 
     @TLFunctionAnnotation("Computes bitwise AND of two operands.")
-    public static final Integer bit_xor(TLFunctionCallContext context, Integer i, Integer j) {
+    public static final Integer bitXor(TLFunctionCallContext context, Integer i, Integer j) {
     	return i ^ j;
     }
     
@@ -429,24 +427,24 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bit_xor(context, stack.popInt(), stack.popInt()));
+				stack.push(bitXor(context, stack.popInt(), stack.popInt()));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bit_xor(context, stack.popLong(), stack.popLong()));
+				stack.push(bitXor(context, stack.popLong(), stack.popLong()));
 				return;
 			} 
 		} 
     }
     
     @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
-    public static final Long bit_lshift(TLFunctionCallContext context, Long j, Long i) {
+    public static final Long bitLShift(TLFunctionCallContext context, Long j, Long i) {
     	return i << j;
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
-    public static final Integer bit_lshift(TLFunctionCallContext context, Integer j, Integer i) {
+    public static final Integer bitLShift(TLFunctionCallContext context, Integer j, Integer i) {
     	return i << j;
     }
     
@@ -457,24 +455,24 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bit_lshift(context, stack.popInt(), stack.popInt()));
+				stack.push(bitLShift(context, stack.popInt(), stack.popInt()));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bit_lshift(context, stack.popLong(), stack.popLong()));
+				stack.push(bitLShift(context, stack.popLong(), stack.popLong()));
 				return;
 			} 
 		} 
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
-    public static final Long bit_rshift(TLFunctionCallContext context, Long j, Long i) {
+    public static final Long bitRShift(TLFunctionCallContext context, Long j, Long i) {
     	return i >> j;
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
-    public static final Integer bit_rshift(TLFunctionCallContext context, Integer j, Integer i) {
+    public static final Integer bitRShift(TLFunctionCallContext context, Integer j, Integer i) {
     	return i >> j;
     }
     
@@ -485,12 +483,12 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bit_rshift(context, stack.popInt(), stack.popInt()));
+				stack.push(bitRShift(context, stack.popInt(), stack.popInt()));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bit_rshift(context, stack.popLong(), stack.popLong()));
+				stack.push(bitRShift(context, stack.popLong(), stack.popLong()));
 				return;
 			} 
 		} 
@@ -498,12 +496,12 @@ public class MathLib extends TLFunctionLibrary {
     
         
     @TLFunctionAnnotation("Inverts all bits in argument")
-    public static final Long bit_negate(TLFunctionCallContext context, Long i) {
+    public static final Long bitNegate(TLFunctionCallContext context, Long i) {
     	return ~i;
     }
     
     @TLFunctionAnnotation("Inverts all bits in argument")
-    public static final Integer bit_negate(TLFunctionCallContext context, Integer i) {
+    public static final Integer bitNegate(TLFunctionCallContext context, Integer i) {
     	return ~i;
     }
     
@@ -514,10 +512,10 @@ public class MathLib extends TLFunctionLibrary {
 
     	public void execute(Stack stack, TLFunctionCallContext context) {
     		if (context.getParams()[0].isInteger()) {
-    			stack.push(bit_negate(context, stack.popInt()));
+    			stack.push(bitNegate(context, stack.popInt()));
     			return;
     		} else if (context.getParams()[0].isLong()) {
-    			stack.push(bit_negate(context, stack.popLong()));
+    			stack.push(bitNegate(context, stack.popLong()));
     			return;
     		}
     	}
@@ -525,12 +523,12 @@ public class MathLib extends TLFunctionLibrary {
     }
 
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
-	public static final Boolean bit_is_set(TLFunctionCallContext context, Integer input, Integer bitPosition) {
+	public static final Boolean bitIsSet(TLFunctionCallContext context, Integer input, Integer bitPosition) {
     	return ((input & ( 1 << bitPosition)) != 0);
 	}
     
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
-	public static final Boolean bit_is_set(TLFunctionCallContext context, Long input, Integer bitPosition) {
+	public static final Boolean bitIsSet(TLFunctionCallContext context, Long input, Integer bitPosition) {
     	return ((input & ( 1l << bitPosition)) != 0);
 	}
 
@@ -543,18 +541,16 @@ public class MathLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
 				int bitPosition = stack.popInt();
-				stack.push(bit_is_set(context, stack.popInt(), bitPosition));
+				stack.push(bitIsSet(context, stack.popInt(), bitPosition));
 			} else if (context.getParams()[0].isLong()) {
 				int bitPosition = stack.popInt();
-				stack.push(bit_is_set(context, stack.popLong(), bitPosition));
+				stack.push(bitIsSet(context, stack.popLong(), bitPosition));
 			}
-			
 		}
-
     }
     
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
-	public static final Long bit_set(TLFunctionCallContext context, Long input, Integer bitPosition, boolean value) {
+	public static final Long bitSet(TLFunctionCallContext context, Long input, Integer bitPosition, boolean value) {
     	Long result;
     	if (value)
     		result = input | (1l << bitPosition); 
@@ -565,7 +561,7 @@ public class MathLib extends TLFunctionLibrary {
     }    	
     
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
-	public static final Integer bit_set(TLFunctionCallContext context, Integer input, Integer bitPosition, boolean value) {
+	public static final Integer bitSet(TLFunctionCallContext context, Integer input, Integer bitPosition, boolean value) {
     	Integer result;
     	if (value)
     		result = input | (1 << bitPosition); 
@@ -586,9 +582,9 @@ public class MathLib extends TLFunctionLibrary {
     		boolean value = stack.popBoolean();
     		int bitPosition = stack.popInt();
 			if (context.getParams()[0].isInteger()) {
-				stack.push(bit_set(context, stack.popInt(), bitPosition, value));
+				stack.push(bitSet(context, stack.popInt(), bitPosition, value));
 			} else if (context.getParams()[0].isLong()) {
-				stack.push(bit_set(context, stack.popLong(), bitPosition, value));
+				stack.push(bitSet(context, stack.popLong(), bitPosition, value));
 			}
 			
 		}
@@ -599,12 +595,12 @@ public class MathLib extends TLFunctionLibrary {
 //    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
     
     @TLFunctionAnnotation("Random Gaussian number.")
-    public static final Double random_gaussian(TLFunctionCallContext context) {
+    public static final Double randomGaussian(TLFunctionCallContext context) {
     	return getGenerator(Thread.currentThread()).nextGaussian();
     }
     
     @TLFunctionAnnotation("Random Gaussian number. Allows changing seed.")
-    public static final Double random_gaussian(TLFunctionCallContext context, Long seed) {
+    public static final Double randomGaussian(TLFunctionCallContext context, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextGaussian();
@@ -618,20 +614,20 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length == 1) {
-				stack.push(random_gaussian(context, stack.popLong()));
+				stack.push(randomGaussian(context, stack.popLong()));
 			} else {
-				stack.push(random_gaussian(context));
+				stack.push(randomGaussian(context));
 			}
 		}
     }
     
     @TLFunctionAnnotation("Random boolean.")
-    public static final Boolean random_boolean(TLFunctionCallContext context) {
+    public static final Boolean randomBoolean(TLFunctionCallContext context) {
     	return getGenerator(Thread.currentThread()).nextBoolean();
     }
     
     @TLFunctionAnnotation("Random boolean. Allows changing seed.")
-    public static final Boolean random_boolean(TLFunctionCallContext context, Long seed) {
+    public static final Boolean randomBoolean(TLFunctionCallContext context, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextBoolean();
@@ -644,39 +640,39 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length == 1) {
-				stack.push(random_boolean(context, stack.popLong()));
+				stack.push(randomBoolean(context, stack.popLong()));
 			} else {
-				stack.push(random_boolean(context));
+				stack.push(randomBoolean(context));
 			}
 		}
     }
     
     @TLFunctionAnnotation("Random integer.")
-    public static final Integer random_int(TLFunctionCallContext context) {
+    public static final Integer randomInteger(TLFunctionCallContext context) {
     	return getGenerator(Thread.currentThread()).nextInt();
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing seed.")
-    public static final Integer random_int(TLFunctionCallContext context, Long seed) {
+    public static final Integer randomInteger(TLFunctionCallContext context, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextInt();
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing start and end value.")
-    public static final Integer random_int(TLFunctionCallContext context, Integer min, Integer max) {
+    public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max) {
     	return getGenerator(Thread.currentThread()).nextInt(min, max);
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing start, end value and seed.")
-    public static final Integer random_int(TLFunctionCallContext context, Integer min, Integer max, Long seed) {
+    public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextInt(min, max);
     }
     
-    // RANDOM_INT
-    class RandomIntFunction implements TLFunctionPrototype {
+    // RANDOMINTEGER
+    class RandomIntegerFunction implements TLFunctionPrototype {
     	
 		public void init(TLFunctionCallContext context) {
 		}
@@ -690,49 +686,49 @@ public class MathLib extends TLFunctionLibrary {
 					seed = stack.popLong();
 					max = stack.popInt();
 					min = stack.popInt();
-					stack.push(random_int(context, min, max, seed));
+					stack.push(randomInteger(context, min, max, seed));
 					break;
 				case 2:
 					max = stack.popInt();
 					min = stack.popInt();
-					stack.push(random_int(context, min, max));
+					stack.push(randomInteger(context, min, max));
 					break;
 				case 1:
 					seed = stack.popLong();
-					stack.push(random_int(context, seed));
+					stack.push(randomInteger(context, seed));
 					break;
 				case 0:
-					stack.push(random_int(context));
+					stack.push(randomInteger(context));
 					break;
 			}
 		}
     }
 
     @TLFunctionAnnotation("Random long.")
-    public static final Long random_long(TLFunctionCallContext context) {
+    public static final Long randomLong(TLFunctionCallContext context) {
     	return getGenerator(Thread.currentThread()).nextLong();
     }
     
     @TLFunctionAnnotation("Random long. Allows changing seed.")
-    public static final Long random_long(TLFunctionCallContext context, Long seed) {
+    public static final Long randomLong(TLFunctionCallContext context, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextLong();
     }
     
     @TLFunctionAnnotation("Random long. Allows changing start and end value.")
-    public static final Long random_long(TLFunctionCallContext context, Long min, Long max) {
+    public static final Long randomLong(TLFunctionCallContext context, Long min, Long max) {
     	return getGenerator(Thread.currentThread()).nextLong(min, max);
     }
     
     @TLFunctionAnnotation("Random long. Allows changing start, end value and seed.")
-    public static final Long random_long(TLFunctionCallContext context, Long min, Long max, Long seed) {
+    public static final Long randomLong(TLFunctionCallContext context, Long min, Long max, Long seed) {
     	DataGenerator generator = getGenerator(Thread.currentThread());
     	generator.setSeed(seed);
     	return generator.nextLong(min, max);
     }
     
-    // RANDOM_LONG
+    // RANDOMLONG
     class RandomLongFunction implements TLFunctionPrototype {
         
 		public void init(TLFunctionCallContext context) {
@@ -747,19 +743,19 @@ public class MathLib extends TLFunctionLibrary {
 					seed = stack.popLong();
 					max = stack.popLong();
 					min = stack.popLong();
-					stack.push(random_long(context, min, max, seed));
+					stack.push(randomLong(context, min, max, seed));
 					break;
 				case 2:
 					max = stack.popLong();
 					min = stack.popLong();
-					stack.push(random_long(context, min, max));
+					stack.push(randomLong(context, min, max));
 					break;
 				case 1:
 					seed = stack.popLong();
-					stack.push(random_long(context, seed));
+					stack.push(randomLong(context, seed));
 					break;
 				case 0:
-					stack.push(random_long(context));
+					stack.push(randomLong(context));
 					break;
 			}
 		}
