@@ -56,7 +56,7 @@ public class ASTBuilder extends NavigatingVisitor {
 
 	/** Void metadata used by Rollup transforms when no group accumulator is used. */
 	private static final DataRecordMetadata VOID_METADATA =
-			new DataRecordMetadata(Defaults.TLCompiler.VOID_METADATA_NAME);
+			new DataRecordMetadata(Defaults.CTL.VOID_METADATA_NAME);
 
 	/** Metadata for component's input ports */
 	private final DataRecordMetadata[] inputMetadata; // may be null

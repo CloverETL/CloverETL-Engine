@@ -29,7 +29,7 @@ import org.jetel.ctl.ErrorMessage.ErrorLevel;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 26th May 2010
+ * @version 27th May 2010
  * @created 20th November 2008
  */
 public class ProblemReporter {
@@ -70,30 +70,32 @@ public class ProblemReporter {
 	}
 
 	public void warn(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
-		createMessage(ErrorLevel.WARN, beginLine, beginColumn, endLine, endColumn, error, hint);
+		createMessage(ErrorLevel.WARN, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
 	}
 
 	public void warn(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
-		createMessage(ErrorLevel.WARN, begin.getLine(), begin.getColumn(), end.getLine(), end.getColumn(), error, hint);
+		createMessage(ErrorLevel.WARN, new ErrorLocation(begin, end), error, hint);
 	}
 
+	public void error(String error, String hint) {
+		createMessage(ErrorLevel.ERROR, null, error, hint);
+	}
+	
 	public void error(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
-		createMessage(ErrorLevel.ERROR, beginLine, beginColumn, endLine, endColumn, error, hint);
+		createMessage(ErrorLevel.ERROR, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
 	}
 
 	public void error(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
-		createMessage(ErrorLevel.ERROR, begin.getLine(), begin.getColumn(), end.getLine(), end.getColumn(), error, hint);
+		createMessage(ErrorLevel.ERROR, new ErrorLocation(begin, end), error, hint);
 	}
 
-	private void createMessage(ErrorLevel level, int beginLine, int beginColumn, int endLine, int endColumn,
-			String error, String hint) {
+	private void createMessage(ErrorLevel level, ErrorLocation localErrorLocation, String error, String hint) {
 		if (level == ErrorLevel.ERROR) {
 			errorCount++;
 		} else {
 			warningCount++;
 		}
-		diagnosticMessages.add(new ErrorMessage(importFileUrl, level, errorLocation,
-				new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint));
+		diagnosticMessages.add(new ErrorMessage(importFileUrl, level, errorLocation, localErrorLocation, error, hint));
 	}
 
 	public List<ErrorMessage> getDiagnosticMessages() {

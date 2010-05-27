@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * 
- * @version 26th May 2010
+ * @version 27th May 2010
  * @created 6th October 2008
  * 
  * @see ProblemReporter
@@ -55,7 +55,7 @@ public class ErrorMessage implements Serializable {
 	 *
 	 * @param importFileUrl the URL of imported file this error message applies to, <code>null</code> for the main file
 	 * @param level the error level
-	 * @param globalLocation the location of the error within the main file, <code>null<code> for the main file
+	 * @param globalLocation the location of the error within the main file, <code>null</code> for the main file
 	 * @param localLocation the location of the error within the current file
 	 * @param errorMessage the error message itself
 	 * @param hint the hint that suggest how to fix the error
@@ -123,11 +123,14 @@ public class ErrorMessage implements Serializable {
 			stringBuilder.append("'");
 		}
 
-		stringBuilder.append(": ").append(localLocation);
-		stringBuilder.append(": ").append(errorMessage).append(".");
+		if (localLocation != null) {
+			stringBuilder.append(": ").append(localLocation);
+		}
+
+		stringBuilder.append(": ").append(errorMessage).append("!");
 
 		if (hint != null) {
-			stringBuilder.append("[").append(hint).append(".]");
+			stringBuilder.append(" [").append(hint).append(".]");
 		}
 
 		return stringBuilder.toString();
