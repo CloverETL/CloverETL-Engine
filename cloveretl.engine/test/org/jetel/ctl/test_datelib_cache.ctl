@@ -26,33 +26,37 @@ boolean b42;
 function integer transform() {
 
 	for (integer i = 0; i < 3; i++) {
-		date1 = random_date(2010-02-02, 2010-05-05);
+	
+		date1 = randomDate("2009.01.01","2009.12.31","yyyy.MM.dd", -1);
+		
+	
+		date1 = randomDate(2010-02-02, 2010-05-05);
 		b11 = date1 >= 2010-02-02;
 		b12 = date1 <= 2010-05-05;
 		 
-		date2 = random_date(10000000l, 20000000l);
+		date2 = randomDate(10000000l, 20000000l);
 		b21 = date2 >= long2date(10000000l);
 		b22 = date2 <= long2date(20000000l);
 		
-		date3 = random_date(2010-02-02, 2010-05-05, 2000l);
-		date3d = random_date(2010-02-02, 2010-05-05, 2000l);
+		date3 = randomDate(2010-02-02, 2010-05-05, 2000l);
+		date3d = randomDate(2010-02-02, 2010-05-05, 2000l);
 		
-		date4 = random_date(10000000l, 20000000l, 2000l);
-		date4d = random_date(10000000l, 20000000l, 2000l);
+		date4 = randomDate(10000000l, 20000000l, 2000l);
+		date4d = randomDate(10000000l, 20000000l, 2000l);
 		
-		date5 = random_date("20100110", "20100120", "yyyymmdd");
+		date5 = randomDate("20100110", "20100120", "yyyymmdd");
 		b31 = date5 >= 2010-01-10;
 		b32 = date5 <= 2010-01-20;
 		
-		date6 = random_date("20100110", "20100120", "yyyymmdd", "en.GB");
+		date6 = randomDate("20100110", "20100120", "yyyymmdd", "en.GB");
 		b41 = date5 >= 2010-01-10;
 		b42 = date5 <= 2010-01-20;		
 		
-		date7 = random_date("20100110", "20100120", "yyyymmdd", 2000l);
-		date7d = random_date("20100110", "20100120", "yyyymmdd", 2000l);
+		date7 = randomDate("20100110", "20100120", "yyyymmdd", 2000l);
+		date7d = randomDate("20100110", "20100120", "yyyymmdd", 2000l);
 				
-		date8 = random_date("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
-		date8d = random_date("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
+		date8 = randomDate("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
+		date8d = randomDate("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
 	}
 	
 	return OK;
