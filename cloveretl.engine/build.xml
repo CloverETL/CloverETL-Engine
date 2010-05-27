@@ -147,6 +147,7 @@
 			<property name="version.full" value="${version.full}"/>
 			<property name="plugin.obfuscate" value="${plugin.obfuscate}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
@@ -260,6 +261,7 @@ defined.version.suffix=release
 			<property name="dist.src" value="${dir.distprepare.src}/cloverETL"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
@@ -344,7 +346,7 @@ defined.version.suffix=release
 		<mkdir dir="${dir.bin}"/>
 		
 		<!-- Compile sources -->
-		<javac debug="true" destdir="${dir.bin}" target="1.5" source="1.5" encoding="UTF-8">
+		<javac debug="true" destdir="${dir.bin}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
 			<classpath>
 				<pathelement path="${tools}"/>
 				<!--pathelement path="${commons-logging}"/>
@@ -560,7 +562,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<bottom>
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>
 			</bottom>
-			<link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+			<link href="http://java.sun.com/j2se/${java.src.version}.0/docs/api/"/>
 		</javadoc>
 	</target>
 	
@@ -689,7 +691,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 
 	<target name="compile-tests" depends="compile">
 		<mkdir dir="${dir.classestest}"/>
-		<javac debug="true" destdir="${dir.classestest}" target="1.5" source="1.5" encoding="UTF-8">
+		<javac debug="true" destdir="${dir.classestest}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
 			<classpath>
 				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
@@ -729,6 +731,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
@@ -799,6 +802,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="version.full" value="${version.full}"/>
 			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>			
 		</ant>
@@ -819,6 +823,7 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 			<property name="version.full" value="${version.full}"/>
 			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
