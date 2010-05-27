@@ -62,14 +62,12 @@ public class ContainerLib extends TLFunctionLibrary {
     
     // REMOVE_ALL
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <E> List<E> clear(TLFunctionCallContext context, List<E> list) {
+    public static final <E> void clear(TLFunctionCallContext context, List<E> list) {
     	list.clear();
-    	return list;
     }
     @TLFunctionAnnotation("Removes all elements from a list")
-    public static final <K,V> Map<K,V> clear(TLFunctionCallContext context, Map<K,V> map) {
+    public static final <K,V> void clear(TLFunctionCallContext context, Map<K,V> map) {
     	map.clear();
-    	return map;
     }
     
     class ClearFunction implements TLFunctionPrototype {
@@ -79,9 +77,9 @@ public class ContainerLib extends TLFunctionLibrary {
 
     	public void execute(Stack stack, TLFunctionCallContext context) {
     		if (context.getParams()[0].isList()) {
-    			stack.push(clear(context, stack.popList()));
+    			clear(context, stack.popList());
     		} else {
-    			stack.push(clear(context, stack.popMap()));
+    			clear(context, stack.popMap());
     		}
     	}
     }
