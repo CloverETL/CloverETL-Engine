@@ -162,8 +162,8 @@
 		<javac 
 				debug="true" 
 				destdir="${dir.classes}"
-				source="1.5"
-				target="1.5"  
+				source="${java.src.version}"
+				target="${java.src.version}"  
 				encoding="UTF-8"
 				classpath="${cp.compile}">
 			<classpath>
@@ -403,8 +403,8 @@
 			<javac 
 					debug="true" 
 					destdir="${dir.classestest}" 
-					target="1.5" 
-					source="1.5" 
+					target="${java.src.version}" 
+					source="${java.src.version}" 
 					encoding="UTF-8"
 					classpath="${cp.compile}">
 				<classpath>
