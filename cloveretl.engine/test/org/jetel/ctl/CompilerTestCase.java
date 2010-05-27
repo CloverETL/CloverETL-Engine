@@ -292,7 +292,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
-			expStr = "//#CTL:COMPILE\n" + expStr;
+			expStr = "//#CTL2:COMPILE\n" + expStr;
 		}
 
 		print_code(expStr);
@@ -317,7 +317,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
-			expStr = "//#CTL:COMPILE\n" + expStr;
+			expStr = "//#CTL2:COMPILE\n" + expStr;
 		}
 
 		print_code(expStr);
@@ -533,7 +533,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_parser() {
 		System.out.println("\nParser test:");
 
-		String expStr = "/*#TL:COMPILED\n*/\n" + "// this is other comment\n" + "for (integer i=0; i<5; i++) \n" + "  if (i%2 == 0) {\n" + "		continue;\n" + "  }\n";
+		String expStr = "/*#CTL:COMPILED\n*/\n" + "// this is other comment\n" + "for (integer i=0; i<5; i++) \n" + "  if (i%2 == 0) {\n" + "		continue;\n" + "  }\n";
 		TransformationGraph graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };

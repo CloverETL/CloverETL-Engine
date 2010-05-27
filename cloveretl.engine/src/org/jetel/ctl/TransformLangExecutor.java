@@ -128,7 +128,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	/**
 	 * Magic header to recognize CTL code
 	 */
-	public static final String CTL_TRANSFORM_CODE_ID = "//#CTL";
+	public static final String CTL_TRANSFORM_CODE_ID = "//#CTL2";
 	
 	/**
 	 *  Limits the precision of result to #DECIMAL_MAX_PRECISION digits
@@ -1709,7 +1709,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFRaiseErrorNode node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
 		String message = stack.popString();
-		throw new TransformLangExecutorRuntimeException(node, null, "!!! Exception raised by user: " + ((message != null) ? message.toString() : "no message"));
+		throw new TransformLangExecutorRuntimeException(node, null, "Exception raised by user: " + ((message != null) ? message.toString() : "no message"));
 
 	}
 

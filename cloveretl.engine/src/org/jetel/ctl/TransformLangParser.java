@@ -281,10 +281,10 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 while (regular.specialToken != null) {
                         switch (regular.specialToken.kind) {
                                 case TL_COMPILE:
-                                        // this is #TL:COMPILE -> running in compiled mode
+                                        // this is #CTL2:COMPILE -> running in compiled mode
                                         return true;
                                 case TL_SHEBANG:
-                                        // this is #TL -> running in non-compiled mode
+                                        // this is #CTL2 -> running in non-compiled mode
                                         return false;
                                 default:
                                         // check previous special token (if any)
@@ -293,7 +293,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         }
                 }
 
-                // we checked all special tokens and did not find #TL:COMPILED -> return false
+                // we checked all special tokens and did not find #CTL:COMPILED -> return false
                 return false;
         }
 

@@ -173,7 +173,7 @@ public class PartitionFunctionFactory {
 	 */
 	public PartitionFunction createPartitionDynamic(String partitionSource) throws ComponentNotReadyException {
 		//check if source code is in CloverETL format
-		if (partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID) ||
+		if (partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID) || partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID2) ||
 				PATTERN_TL_CODE.matcher(partitionSource).find()) {
 			PartitionTL function =  new PartitionTL(partitionSource, metadata, additionalParameters, logger);
 			function.setGraph(node.getGraph());
