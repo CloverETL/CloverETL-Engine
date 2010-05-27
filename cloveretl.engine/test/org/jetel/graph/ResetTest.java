@@ -202,7 +202,7 @@ public class ResetTest extends TestCase{
 				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext.getAdditionalProperties());
 				graph.setDebugMode(false);
 			} catch (Exception e) {
-//				fail("Error in graph loading: " + e);
+				log("Error in graph loading: " + e.getMessage());
 				errors.put(file.getName(), e);
 				return;
 			}
@@ -210,7 +210,7 @@ public class ResetTest extends TestCase{
 			try {
 				EngineInitializer.initGraph(graph, runtimeContext);
 			} catch (ComponentNotReadyException e) {
-//				fail("Error in graph initialization: " + e);
+				log("Error in graph initialization: " + e.getMessage());
 				errors.put(file.getName(), e);
 				return;
 			}
@@ -222,7 +222,7 @@ public class ResetTest extends TestCase{
 			        WatchDog watchDog = new WatchDog(graph, runtimeContext);
 					futureResult = threadManager.executeWatchDog(watchDog);
 				} catch (Exception e) {
-//					fail("Error in graph execution: " + e);
+					log("Error in graph execution: " + e.getMessage());
 					errors.put(file.getName(), e);
 					return;
 				}
@@ -231,7 +231,7 @@ public class ResetTest extends TestCase{
 				try {
 					result = futureResult.get();
 				} catch (Exception e) {
-//					fail("Error during graph processing: " + e);
+					log("Error during graph processing: " + e.getMessage());
 					errors.put(file.getName(), e);
 					return;
 				}
@@ -257,7 +257,7 @@ public class ResetTest extends TestCase{
 					try {
 						graph.reset();
 					} catch (ComponentNotReadyException e) {
-//						fail("Graph reseting failed: " + e);
+						log("Graph reseting failed: " + e.getMessage());
 						errors.put(file.getName(), e);
 						return;
 					}
@@ -298,7 +298,7 @@ public class ResetTest extends TestCase{
 		EngineInitializer.initEngine(args[0], null, null);
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", args.length > 2 ? args[2] : "examples/simpleExamples");
+		runtimeContext.addAdditionalProperty("PROJECT_DIR", args.length > 2 ? args[2] : "../cloveretl.examples/SimpleExamples");
 		runtimeContext.setUseJMX(false);
 
 		TransformationGraph graph = null;
