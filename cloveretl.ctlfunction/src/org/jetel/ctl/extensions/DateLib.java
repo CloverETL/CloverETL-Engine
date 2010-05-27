@@ -28,9 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jetel.ctl.Stack;
@@ -44,15 +42,15 @@ public class DateLib extends TLFunctionLibrary {
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
     	final TLFunctionPrototype ret = 
-    		"datediff".equals(functionName) ? new DateDiffFunction() : 
-    		"dateadd".equals(functionName) ? new DateAddFunction() :
+    		"dateDiff".equals(functionName) ? new DateDiffFunction() : 
+    		"dateAdd".equals(functionName) ? new DateAddFunction() :
     		"today".equals(functionName) ? new TodayFunction() :
-    		"zero_date".equals(functionName) ? new ZeroDateFunction() :
-    		"extract_date".equals(functionName) ? new ExtractDateFunction() :
-    		"extract_time".equals(functionName) ? new ExtractTimeFunction() :
+    		"zeroDate".equals(functionName) ? new ZeroDateFunction() :
+    		"extractDate".equals(functionName) ? new ExtractDateFunction() :
+    		"extractTime".equals(functionName) ? new ExtractTimeFunction() :
     		"trunc".equals(functionName) ? new TruncFunction() :
-    	    "trunc_date".equals(functionName)? new TruncDateFunction() :
-    	    "random_date".equals(functionName) ? new RandomDateFunction() : null;
+    	    "truncDate".equals(functionName)? new TruncDateFunction() :
+    	    "randomDate".equals(functionName) ? new RandomDateFunction() : null;
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -82,7 +80,7 @@ public class DateLib extends TLFunctionLibrary {
 	class DateAddFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			dateadd_init(context);
+			dateAddInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -90,17 +88,17 @@ public class DateLib extends TLFunctionLibrary {
 			final Integer shift = stack.popInt();
 			final Date lhs = stack.popDate();
 			
-			stack.push(dateadd(context, lhs,shift,unit));
+			stack.push(dateAdd(context, lhs,shift,unit));
 		}
 	}
 	
 	@TLFunctionInitAnnotation
-    public static final void dateadd_init(TLFunctionCallContext context) {
+    public static final void dateAddInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
     
     @TLFunctionAnnotation("Adds to a component of a date (e.g. month)")
-    public static final Date dateadd(TLFunctionCallContext context, Date lhs, Integer shift, DateFieldEnum unit) {
+    public static final Date dateAdd(TLFunctionCallContext context, Date lhs, Integer shift, DateFieldEnum unit) {
     	Calendar c = ((TLCalendarCache)context.getCache()).getCalendar();
     	c.setTime(lhs);
     	c.add(unit.asCalendarField(),shift);
@@ -114,7 +112,7 @@ public class DateLib extends TLFunctionLibrary {
     class DateDiffFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			datediff_init(context);
+			dateDiffInit(context);
 		}
 
     	public void execute(Stack stack, TLFunctionCallContext context) {
@@ -122,18 +120,18 @@ public class DateLib extends TLFunctionLibrary {
     		final Date rhs = stack.popDate();
     		final Date lhs = stack.popDate();
     		
-    		stack.push(datediff(context, lhs, rhs, unit));
+    		stack.push(dateDiff(context, lhs, rhs, unit));
     	}
 
 	}
     
     @TLFunctionInitAnnotation
-    public static final void datediff_init(TLFunctionCallContext context) {
+    public static final void dateDiffInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
     
     @TLFunctionAnnotation("Returns the difference between dates")
-    public static final Integer datediff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
+    public static final Integer dateDiff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
 		long diffSec = lhs.getTime() - rhs.getTime() / 1000;
         int diff = 0;
         
@@ -180,7 +178,7 @@ public class DateLib extends TLFunctionLibrary {
 
     }
 	
-    public static final Date zero_date() {
+    public static final Date zeroDate() {
     	return new Date(0L);
     }
     
@@ -190,32 +188,32 @@ public class DateLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(zero_date());
+			stack.push(zeroDate());
 		}
     }
     
 
     
-    // extract_date
+    // extractDate
     // TODO: add test case
     class ExtractDateFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			extract_date_init(context);
+			extractDateInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(extract_date(context, stack.popDate()));
+			stack.push(extractDate(context, stack.popDate()));
 		}
 	}
 
     @TLFunctionInitAnnotation
-    public static final void extract_date_init(TLFunctionCallContext context) {
+    public static final void extractDateInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
     
     @TLFunctionAnnotation("Extracts only date portion from date-time value, setting all time fields to zero.")
-	public static final Date extract_date(TLFunctionCallContext context, Date d) {
+	public static final Date extractDate(TLFunctionCallContext context, Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
@@ -228,26 +226,26 @@ public class DateLib extends TLFunctionLibrary {
     	return cal.getTime();
     }
     
-    // extract_time
+    // extractTime
     // TODO: add test case
     class ExtractTimeFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			extract_time_init(context);
+			extractTimeInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(extract_time(context, stack.popDate()));
+			stack.push(extractTime(context, stack.popDate()));
 		}
 	}
 
     @TLFunctionInitAnnotation
-	public void extract_time_init(TLFunctionCallContext context) {
+	public void extractTimeInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
 	}
 
     @TLFunctionAnnotation("Extracts only time portion from date-time value, clearing all date fields.")
-	public static final Date extract_time(TLFunctionCallContext context, Date d) {
+	public static final Date extractTime(TLFunctionCallContext context, Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
@@ -265,7 +263,7 @@ public class DateLib extends TLFunctionLibrary {
     class TruncFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			trunc_init(context);
+			truncInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -284,7 +282,7 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     @TLFunctionInitAnnotation
-    public static final void trunc_init(TLFunctionCallContext context) {
+    public static final void truncInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
     
@@ -326,21 +324,21 @@ public class DateLib extends TLFunctionLibrary {
     class TruncDateFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			trunc_date_init(context);			
+			truncDateInit(context);			
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(trunc_date(context, stack.popDate()));
+			stack.push(truncDate(context, stack.popDate()));
 		}
     }
     
     @TLFunctionInitAnnotation
-    public static final void trunc_date_init(TLFunctionCallContext context) {
+    public static final void truncDateInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
 
     @TLFunctionAnnotation("Returns the date with the same hour, minute, second and millisecond, but year, month and day are set to zero values.")
-    public static final Date trunc_date(TLFunctionCallContext context, Date date) {
+    public static final Date truncDate(TLFunctionCallContext context, Date date) {
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(date);
     	cal.set(Calendar.YEAR,0);
@@ -354,7 +352,7 @@ public class DateLib extends TLFunctionLibrary {
     class RandomDateFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
-			random_date_init(context);
+			randomDateInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -376,9 +374,9 @@ public class DateLib extends TLFunctionLibrary {
 				String to = stack.popString();
 				String from = stack.popString();
 				if (randomSeed == null) {
-					stack.push(random_date(context, from, to, format, locale));
+					stack.push(randomDate(context, from, to, format, locale));
 				} else {
-					stack.push(random_date(context, from, to, format, locale, randomSeed));
+					stack.push(randomDate(context, from, to, format, locale, randomSeed));
 				}
 				
 			} else if (context.getParams().length > 2){
@@ -387,34 +385,34 @@ public class DateLib extends TLFunctionLibrary {
 					if (context.getParams()[1].isDate()) {
 						Date to = stack.popDate();
 						Date from = stack.popDate();
-						stack.push(random_date(context, from, to, randomSeed));
+						stack.push(randomDate(context, from, to, randomSeed));
 					} else {
 						Long to = stack.popLong();
 						Long from = stack.popLong();
-						stack.push(random_date(context, from, to, randomSeed));
+						stack.push(randomDate(context, from, to, randomSeed));
 					}
 				} else {
 					format = stack.popString();
 					String to = stack.popString();
 					String from = stack.popString();
-					stack.push(random_date(context, from, to, format));
+					stack.push(randomDate(context, from, to, format));
 				}
 			} else {
 				if (context.getParams()[1].isDate()) {
 					Date to = stack.popDate();
 					Date from = stack.popDate();
-					stack.push(random_date(context, from, to));
+					stack.push(randomDate(context, from, to));
 				} else {
 					Long to = stack.popLong();
 					Long from = stack.popLong();
-					stack.push(random_date(context, from, to));
+					stack.push(randomDate(context, from, to));
 				}
 			}
 		}
     }
     
     @TLFunctionInitAnnotation
-    public static final void random_date_init(TLFunctionCallContext context) {
+    public static final void randomDateInit(TLFunctionCallContext context) {
     	context.setCache(new TLMultiCache(new TLCache[] { 
     			new TLDateFormatLocaleCache(context, 2, 3),
     			new TLDataGeneratorCache()
@@ -422,27 +420,27 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     @TLFunctionAnnotation("Generates a random date from interval specified by two dates.")
-    public static final Date random_date(TLFunctionCallContext context, Date from, Date to) {
-    	return random_date(context, from.getTime(), to.getTime());
+    public static final Date randomDate(TLFunctionCallContext context, Date from, Date to) {
+    	return randomDate(context, from.getTime(), to.getTime());
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
-    public static final Date random_date(TLFunctionCallContext context, Long from, Long to) {
+    public static final Date randomDate(TLFunctionCallContext context, Long from, Long to) {
     	if (from > to) {
-    		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
+    		throw new TransformLangExecutorRuntimeException("randomDate - fromDate is greater than toDate");
     	}
     	return new Date(((TLDataGeneratorCache)((TLMultiCache)context.getCache()).getCaches()[1]).getDataGenerator().nextLong(from, to));
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by two dates. Allows changing seed.")
-    public static final Date random_date(TLFunctionCallContext context, Date from, Date to, Long randomSeed) {
-    	return random_date(context, from.getTime(), to.getTime(), randomSeed);
+    public static final Date randomDate(TLFunctionCallContext context, Date from, Date to, Long randomSeed) {
+    	return randomDate(context, from.getTime(), to.getTime(), randomSeed);
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by Long representation of dates. Allows changing seed.")
-    public static final Date random_date(TLFunctionCallContext context, Long from, Long to, Long randomSeed) {
+    public static final Date randomDate(TLFunctionCallContext context, Long from, Long to, Long randomSeed) {
     	if (from > to) {
-    		throw new TransformLangExecutorRuntimeException("random_date - fromDate is greater than toDate");
+    		throw new TransformLangExecutorRuntimeException("randomDate - fromDate is greater than toDate");
     	}
     	DataGenerator generator = ((TLDataGeneratorCache)((TLMultiCache)context.getCache()).getCaches()[1]).getDataGenerator();
     	generator.setSeed(randomSeed);
@@ -450,46 +448,46 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
-    public static final Date random_date(TLFunctionCallContext context, String from, String to, String format) {
+    public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format) {
     	SimpleDateFormat sdf = ((TLDateFormatLocaleCache)((TLMultiCache)context.getCache()).getCaches()[0]).getCachedLocaleFormat(context, format, null, 1, 2);
-    	return random_date(context, from, to, sdf);
+    	return randomDate(context, from, to, sdf);
     }
     
     @TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
-    public static final Date random_date(TLFunctionCallContext context, String from, String to, String format, String locale) {
+    public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale) {
     	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
-    	return random_date(context, from, to, sdf);
+    	return randomDate(context, from, to, sdf);
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format. Allows changing seed.")
-    public static final Date random_date(TLFunctionCallContext context, String from, String to, String format, Long randomSeed) {
+    public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, Long randomSeed) {
     	SimpleDateFormat sdf = new SimpleDateFormat(format);
-    	return random_date(context, from, to, randomSeed, sdf);
+    	return randomDate(context, from, to, randomSeed, sdf);
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format and locale. Allows changing seed.")
-    public static final Date random_date(TLFunctionCallContext context, String from, String to, String format, String locale, Long randomSeed) {
+    public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale, Long randomSeed) {
     	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
-    	return random_date(context, from, to, randomSeed, sdf);
+    	return randomDate(context, from, to, randomSeed, sdf);
     }
     
-    private static final Date random_date(TLFunctionCallContext context, String from, String to, SimpleDateFormat formatter) {
+    private static final Date randomDate(TLFunctionCallContext context, String from, String to, SimpleDateFormat formatter) {
     	try {
 			long fromTime = formatter.parse(from).getTime();
 			long toTime = formatter.parse(to).getTime();
-			return random_date(context, fromTime, toTime);
+			return randomDate(context, fromTime, toTime);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("random_date - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
 		}
     }
     
-    private static final Date random_date(TLFunctionCallContext context, String from, String to, Long randomSeed, SimpleDateFormat formatter) {
+    private static final Date randomDate(TLFunctionCallContext context, String from, String to, Long randomSeed, SimpleDateFormat formatter) {
     	try {
 			long fromTime = formatter.parse(from).getTime();
 			long toTime = formatter.parse(to).getTime();
-			return random_date(context, fromTime, toTime, randomSeed);
+			return randomDate(context, fromTime, toTime, randomSeed);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("random_date - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
 		}
     }
     

@@ -37,7 +37,6 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.ByteArray;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -56,20 +55,20 @@ public class ConvertLib extends TLFunctionLibrary {
 			"date2str".equals(functionName) ? new Date2StrFunction() :
 			"str2date".equals(functionName) ? new Str2DateFunction() :
 			"date2num".equals(functionName) ? new Date2NumFunction() : 
-			"str2int".equals(functionName) ? new Str2IntFunction() :
+			"str2integer".equals(functionName) ? new Str2IntegerFunction() :
 			"str2long".equals(functionName) ? new Str2LongFunction() :
 			"str2double".equals(functionName) ? new Str2DoubleFunction() :
 			"str2decimal".equals(functionName) ? new Str2DecimalFunction() :
-			"long2int".equals(functionName) ? new Long2IntFunction() :
-			"double2int".equals(functionName) ? new Double2IntFunction() :
-			"decimal2int".equals(functionName) ? new Decimal2IntFunction() :
+			"long2integer".equals(functionName) ? new Long2IntegerFunction() :
+			"double2integer".equals(functionName) ? new Double2IntegerFunction() :
+			"decimal2integer".equals(functionName) ? new Decimal2IntegerFunction() :
 			"double2long".equals(functionName) ? new Double2LongFunction() :
 			"decimal2long".equals(functionName) ? new Decimal2LongFunction() :
 			"decimal2double".equals(functionName) ? new Decimal2DoubleFunction() : 
 			"num2bool".equals(functionName) ? new Num2BoolFunction() :
 			"bool2num".equals(functionName) ? new Bool2NumFunction() : 
 			"str2bool".equals(functionName) ? new Str2BoolFunction() :
-			"to_string".equals(functionName) ? new ToStringFunction() :
+			"toString".equals(functionName) ? new ToStringFunction() :
 			"long2date".equals(functionName) ? new Long2DateFunction() :
 			"date2long".equals(functionName) ? new Date2LongFunction() : 
 			"base64byte".equals(functionName) ? new Base64ByteFunction() : 
@@ -78,12 +77,12 @@ public class ConvertLib extends TLFunctionLibrary {
 		    "str2bits".equals(functionName) ? new Str2BitsFunction() : 
 		    "hex2byte".equals(functionName) ? new Hex2ByteFunction() : 
 		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
-		    "long2pacdecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
-		    "packdecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
+		    "long2packDecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
+		    "packDecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
 		    "md5".equals(functionName) ? new MD5Function() : 
 		    "sha".equals(functionName) ? new SHAFunction() : 
-		    "get_field_name".equals(functionName) ? new GetFieldNameFunction() : 
-		    "get_field_type".equals(functionName) ? new GetFieldTypeFunction() : 
+		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
+		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
 			null;
 		
 		if (ret == null) {
@@ -158,7 +157,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Date2StrFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
-			date2str_init(context);
+			date2strInit(context);
 		}
 
 	
@@ -170,7 +169,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionInitAnnotation
-	public static final void date2str_init(TLFunctionCallContext context) {
+	public static final void date2strInit(TLFunctionCallContext context) {
 		context.setCache(new TLDateFormatCache(context, 1));
 	}
 	
@@ -185,7 +184,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Str2DateFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
-			str2date_init(context);
+			str2dateInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -209,7 +208,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionInitAnnotation
-	public static final void str2date_init(TLFunctionCallContext context) {
+	public static final void str2dateInit(TLFunctionCallContext context) {
 		context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
 	}
 	
@@ -236,7 +235,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Date2NumFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
-			date2num_init(context);
+			date2numInit(context);
 		}
 
 
@@ -248,7 +247,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionInitAnnotation
-	public static final void date2num_init(TLFunctionCallContext context) {
+	public static final void date2numInit(TLFunctionCallContext context) {
 		context.setCache(new TLCalendarCache());
 	}
 	
@@ -279,18 +278,18 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Parses string to integer using specific numeral system.")
-	public static final Integer str2int(TLFunctionCallContext context, String input, Integer radix) {
+	public static final Integer str2integer(TLFunctionCallContext context, String input, Integer radix) {
 		return Integer.valueOf(input,radix);
 	}
 	
 	@TLFunctionAnnotation("Parses string to integer using specific numeral system.")
-	public static final Integer str2int(TLFunctionCallContext context, String input) {
+	public static final Integer str2integer(TLFunctionCallContext context, String input) {
 		return Integer.valueOf(input,10);
 	}
-	class Str2IntFunction implements TLFunctionPrototype {
+	class Str2IntegerFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
-			date2num_init(context);
+			date2numInit(context);
 		}
 
 
@@ -300,7 +299,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				radix = stack.popInt();
 			}
 			final String input = stack.popString();
-			stack.push(str2int(context, input,radix));
+			stack.push(str2integer(context, input,radix));
 		}
 	}
 
@@ -362,47 +361,47 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
-	public static final Integer long2int(TLFunctionCallContext context, Long l) {
+	public static final Integer long2integer(TLFunctionCallContext context, Long l) {
 		return l.intValue();
 	}
 	
-	class Long2IntFunction implements TLFunctionPrototype {
+	class Long2IntegerFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(long2int(context, stack.popLong()));
+			stack.push(long2integer(context, stack.popLong()));
 		}
 	}
 	
 	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
-	public static final Integer double2int(TLFunctionCallContext context, Double l) {
+	public static final Integer double2integer(TLFunctionCallContext context, Double l) {
 		return l.intValue();
 	}
-	class Double2IntFunction implements TLFunctionPrototype {
+	class Double2IntegerFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(double2int(context, stack.popDouble()));
+			stack.push(double2integer(context, stack.popDouble()));
 		}
 	}
 	
 	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
-	public static final Integer decimal2int(TLFunctionCallContext context, BigDecimal l) {
+	public static final Integer decimal2integer(TLFunctionCallContext context, BigDecimal l) {
 		return l.intValue();
 	}
-	class Decimal2IntFunction implements TLFunctionPrototype {
+	class Decimal2IntegerFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
 		}
 		
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(decimal2int(context, stack.popDecimal()));
+			stack.push(decimal2integer(context, stack.popDecimal()));
 		}
 	}
 	
@@ -533,49 +532,49 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	
 	// this method should is not annotated as it should not be directly visible in CTL
-	private static final String to_string_internal(Object o) {
+	private static final String toStringInternal(Object o) {
 		return o != null ? o.toString() : "null";
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String to_string(TLFunctionCallContext context, int i) {
-		return to_string_internal(i);
+	public static final String toString(TLFunctionCallContext context, int i) {
+		return toStringInternal(i);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String to_string(TLFunctionCallContext context, long l) {
-		return to_string_internal(l);
+	public static final String toString(TLFunctionCallContext context, long l) {
+		return toStringInternal(l);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String to_string(TLFunctionCallContext context, double d) {
-		return to_string_internal(d);
+	public static final String toString(TLFunctionCallContext context, double d) {
+		return toStringInternal(d);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String to_string(TLFunctionCallContext context, BigDecimal d) {
-		return to_string_internal(d);
+	public static final String toString(TLFunctionCallContext context, BigDecimal d) {
+		return toStringInternal(d);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final <E> String to_string(TLFunctionCallContext context, List<E> list) {
-		return to_string_internal(list);
+	public static final <E> String toString(TLFunctionCallContext context, List<E> list) {
+		return toStringInternal(list);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final <K,V> String to_string(TLFunctionCallContext context, Map<K,V> map) {
-		return to_string_internal(map);
+	public static final <K,V> String toString(TLFunctionCallContext context, Map<K,V> map) {
+		return toStringInternal(map);
 	}
 	
 	// TODO: add test case
-	// to_string
+	// toString
 	class ToStringFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(to_string_internal(stack.pop()));
+			stack.push(toStringInternal(stack.pop()));
 		}
 
 	}
@@ -728,7 +727,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts long into packed decimal representation (bytes).")
-	public static final byte[] long2packdecimal(TLFunctionCallContext context, Long src) {
+	public static final byte[] long2packDecimal(TLFunctionCallContext context, Long src) {
 		byte[] tmp = new byte[16];
 		int length = PackedDecimal.format(src, tmp);
 		byte[] result = new byte[length];
@@ -743,12 +742,12 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(long2packdecimal(context, stack.popLong()));
+			stack.push(long2packDecimal(context, stack.popLong()));
 		}
 	}
 	
 	@TLFunctionAnnotation("Converts packed decimal(bytes) into long value.")
-	public static final Long packdecimal2long(TLFunctionCallContext context, byte[] array) {
+	public static final Long packDecimal2long(TLFunctionCallContext context, byte[] array) {
 		return PackedDecimal.parse(array);
 	}
 	
@@ -759,7 +758,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(packdecimal2long(context, stack.popByteArray()));
+			stack.push(packDecimal2long(context, stack.popByteArray()));
 		}
 	}
 
@@ -814,11 +813,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
-	public static final String get_field_name(TLFunctionCallContext context, DataRecord record, Integer position) {
+	public static final String getFieldName(TLFunctionCallContext context, DataRecord record, Integer position) {
 		return record.getField(position).getMetadata().getName();
 	}
 	
-	//GET_FIELD_NAME
+	//GETFIELDNAME
 	class GetFieldNameFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
@@ -827,16 +826,16 @@ public class ConvertLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer position = stack.popInt();
 			DataRecord record = stack.popRecord();
-			stack.push(get_field_name(context, record, position));
+			stack.push(getFieldName(context, record, position));
 		}
 	}
 	
 	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
-	public static final String get_field_type(TLFunctionCallContext context, DataRecord record, Integer position) {
+	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, Integer position) {
 		return record.getField(position).getMetadata().getTypeAsString();
 	}
 
-	//GET_FIELD_TYPE
+	//GETFIELDTYPE
 	class GetFieldTypeFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
@@ -845,7 +844,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer position = stack.popInt();
 			DataRecord record = stack.popRecord();
-			stack.push(get_field_type(context, record, position));
+			stack.push(getFieldType(context, record, position));
 		}
 	}
 }
