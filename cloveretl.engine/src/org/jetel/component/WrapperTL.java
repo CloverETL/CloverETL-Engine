@@ -54,6 +54,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class WrapperTL {
 
     public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is Clover's TransformLanguage
+    public static final String TL_TRANSFORM_CODE_ID2="//#CTL1";  // magic header determining that the source code is Clover's TransformLanguage
     
     private String srcCode;
     private Log logger;
