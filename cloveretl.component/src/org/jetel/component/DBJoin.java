@@ -415,6 +415,7 @@ public class DBJoin extends Node {
 		conn.init();
 		
 		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached);
+		lookupTable.setGraph(getGraph());
 		lookupTable.checkConfig(null);
 		lookupTable.init();
 		

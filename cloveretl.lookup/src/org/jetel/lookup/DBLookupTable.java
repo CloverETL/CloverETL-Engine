@@ -342,7 +342,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
 
-		if (dbConnection == null) {
+		if (connection == null) {
 			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
 			if (tmp == null) {
 				status.add(new ConfigurationProblem("Connection " + StringUtils.quote(connectionId) + 
