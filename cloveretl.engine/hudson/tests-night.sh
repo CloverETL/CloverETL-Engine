@@ -64,6 +64,7 @@ cd cloveretl.test.environment
 	-Dlogpath=/data/cte-logs \
 	-Dhudson.link=job/${JOB_NAME}/${BUILD_NUMBER} \
 	-Dhudson.engine.link=job/${ENGINE_JOB_NAME}/${ENGINE_BUILD_NUMBER} \
+	-Ddir.examples=../cloveretl.examples \
 	$OTHER_OPTIONS
 	
 if  [ "$(hostname)" != "klara" ] ; then
