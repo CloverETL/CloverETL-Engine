@@ -452,16 +452,40 @@ public class LookupJoin extends Node {
 			}
         }
 
-//        try {
-////            init();
-////            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+		LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
+
+		if (lookupTable == null) {
+			status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
+					this, Priority.NORMAL));
+		} else if (!runtimeMetadata(lookupTable)) {
+	        // transformation source for checkconfig
+	        String checkTransform = null;
+	        if (transformSource != null) {
+	        	checkTransform = transformSource;
+	        } else if (transformURL != null) {
+	        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+	        }
+	        // only the transform and transformURL parameters are checked, transformClass is ignored
+	        if (checkTransform != null) {
+	        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+	        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+	        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+    				try {
+    					DataRecordMetadata inMetadata[] = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
+    					DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
+        				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+	    				transformation = RecordTransformFactory.createTransform(
+	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
+	    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
+					} catch (ComponentNotReadyException e) {
+						// find which component attribute was used
+						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+						// report CTL error as a warning
+						status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+					}
+	        	}
+	        }
+        }
         
         return status;
 	}
