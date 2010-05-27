@@ -233,31 +233,34 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 				dataParser.reset();				
 			}
 		}
-		/*
-		 * populate the lookupTable (Map) with data if provided dataParser is not null, otherwise it is assumed that the
-		 * lookup table will be populated later by calling put() method
-		 */
-		DataRecord record = new DataRecord(metadata);
-		record.init();
-		try {
-			if (fileURL != null) {
-				dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
-			} else if (data != null) {
-				dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
-			}
-			if (metadata.getSkipSourceRows() > 0) {
-				dataParser.skip(metadata.getSkipSourceRows());
-			}
-			while (dataParser.getNext(record) != null) {
-				lookupTable.put(record.duplicate());
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e.getMessage(), e);
-		} finally {
+		
+		if (dataParser != null) {
+			/*
+			 * populate the lookupTable (Map) with data if provided dataParser is not null, otherwise it is assumed that
+			 * the lookup table will be populated later by calling put() method
+			 */
+			DataRecord record = new DataRecord(metadata);
+			record.init();
 			try {
-				dataParser.close();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				if (fileURL != null) {
+					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+				} else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
+				}
+				if (metadata.getSkipSourceRows() > 0) {
+					dataParser.skip(metadata.getSkipSourceRows());
+				}
+				while (dataParser.getNext(record) != null) {
+					lookupTable.put(record.duplicate());
+				}
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, e.getMessage(), e);
+			} finally {
+				try {
+					dataParser.close();
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
 			}
 		}
 	}

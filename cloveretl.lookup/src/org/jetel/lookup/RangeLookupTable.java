@@ -317,24 +317,26 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		// read records from file
-		DataRecord tmpRecord = new DataRecord(metadata);
-		tmpRecord.init();
-		try {
-			if (fileURL != null) {
-				dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
-			} else if (data != null) {
-				dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
-			}
-			while (dataParser.getNext(tmpRecord) != null) {
-				lookupTable.add(tmpRecord.duplicate());
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e.getMessage(), e);
-		} finally {
+		if (dataParser != null) {
+			DataRecord tmpRecord = new DataRecord(metadata);
+			tmpRecord.init();
 			try {
-				dataParser.close();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				if (fileURL != null) {
+					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+				} else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+				}
+				while (dataParser.getNext(tmpRecord) != null) {
+					lookupTable.add(tmpRecord.duplicate());
+				}
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, e.getMessage(), e);
+			} finally {
+				try {
+					dataParser.close();
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(this, "Data parser cannot be closed.", e);
+				}
 			}
 		}
 	}
