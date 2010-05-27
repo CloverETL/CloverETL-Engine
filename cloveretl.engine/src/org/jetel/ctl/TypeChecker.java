@@ -666,7 +666,7 @@ public class TypeChecker extends NavigatingVisitor {
 			boolean hasInit = extCandidate.hasInit();
 			if (hasInit) {
 				context.setHasInit(true);
-				context.setInitMethodName(extCandidate.getName() + "_init");
+				context.setInitMethodName(extCandidate.getName() + "Init");
 				context.setLibClassName(node.getExternalFunction().getLibrary().getLibraryClassName());
 			}
 			castIfNeeded(args,extCandidate.getFormalParameters());
