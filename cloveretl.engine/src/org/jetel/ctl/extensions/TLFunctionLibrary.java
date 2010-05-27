@@ -141,7 +141,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		System.arraycopy(converted, 1, formal, 0, formal.length);
 	    		
 	    		registerFunction(new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
-	    				initMethods.contains(m.getName() + "_init")));
+	    				initMethods.contains(m.getName() + "Init")));
     		} catch (IllegalArgumentException e) {
     			logger.warn("Function '" + getClass().getName() + "." + m.getName() + "' ignored - " + e.getMessage());
     		}
