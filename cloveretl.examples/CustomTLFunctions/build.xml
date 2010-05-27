@@ -14,7 +14,12 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<target name="compile" description="Compile sources">
+	<target name="check-engine">
+	  <available file="${dir.engine}/lib/cloveretl.engine.jar" property="engineExist"/>
+	  <fail unless="engineExist" message="cloveretl.engine.jar not found. Please check the path in build.properties file!!!"/>
+	</target>
+
+	<target name="compile" description="Compile sources" depends="check-engine">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
 		<echo>CloverETL Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
