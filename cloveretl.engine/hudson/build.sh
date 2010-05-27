@@ -15,7 +15,8 @@ cd cloveretl.engine
 	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial\
 	-Dcte.environment.config=${CLOVER_VERSION_X_X}_java-1.5-Sun \
 	-Dcte.logpath=/data/cte-logs \
-	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER
+	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER \
+	-Ddir.examples=../cloveretl.examples
 	
 if  [ "$(hostname)" != "klara" ] ; then
 	rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs
