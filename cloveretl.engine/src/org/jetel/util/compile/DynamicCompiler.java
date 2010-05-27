@@ -42,7 +42,7 @@ import javax.tools.JavaFileObject.Kind;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 14th May 2010
+ * @version 27th May 2010
  * @created 14th May 2010
  *
  * @see JavaCompiler
@@ -55,7 +55,7 @@ public final class DynamicCompiler {
 	/**
 	 * Constructs a <code>DynamicCompiler</code> instance for a given class loader to be used during compilation.
 	 *
-	 * @param classLoader the class loader to be used
+	 * @param classLoader the class loader to be used, may be <code>null</code>
 	 */
 	public DynamicCompiler(ClassLoader classLoader) {
 		this.classLoader = classLoader;
@@ -85,8 +85,9 @@ public final class DynamicCompiler {
 		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader);
 		StringWriter compilerOutput = new StringWriter();
 
-		CompilationTask task = compiler.getTask(compilerOutput, fileManager, null, null, null,
-				Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
+		CompilationTask task = compiler.getTask(compilerOutput, fileManager, null,
+				Arrays.asList("-cp", ClassLoaderUtils.getClasspath(classLoader)),
+				null, Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
 
 		if (!task.call()) {
 			throw new CompilationException("Compilation failed! See compiler output for more details.",
