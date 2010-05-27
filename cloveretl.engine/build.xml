@@ -169,7 +169,7 @@
 				
 	<target name="dist-nosrc" depends="dist.bin, dist.javadoc, dist.examples" description="Creates all distribution files without sources"/>
 	
-	<target name="dist.src" depends="init" description="Creates source distribution">
+	<target name="dist.src" depends="init,improve-java-sources" description="Creates source distribution">
 	
 		<mkdir dir="${dir.distprepare.src}/cloverETL"/>
 		
@@ -180,16 +180,8 @@
 		<property name="src.distribution.dir.engine" value="${dir.distprepare.src}/cloverETL/cloveretl.engine"/>
 
 		<copy todir="${src.distribution.dir.engine}/src">
-			<fileset dir="${dir.src}" />
+			<fileset dir="${dir.src.improved}" />
 		</copy>
-		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
-			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
-				<fileheading heading="${java.src.header.file}">
-					<fileset dir="${src.distribution.dir.engine}/src" includes="**/*.java"/>
-				</fileheading>
-			</then>
-		</if>
 
 		<copy todir="${src.distribution.dir.engine}/docs">
 			<fileset dir="${dir.docs}" />
@@ -497,6 +489,14 @@ defined.version.suffix=release
 			<replacefilter token="LIBRARY_BUILD_DATETIME = &quot;&quot;" value="LIBRARY_BUILD_DATETIME = &quot;${build.time}&quot;"/>
 			<replacefilter token="LIBRARY_BUILD_YEAR = &quot;&quot;" value="LIBRARY_BUILD_YEAR = &quot;${build.year}&quot;"/>
 		</replace>
+		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+			<then>
+				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<fileheading heading="${java.src.header.file}">
+					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
+				</fileheading>
+			</then>
+		</if>
 	</target>
 	
 	<target name="generate-java-sources" depends="generate-ctl-parser,generate-jaxb-dictionary" description="Generate some java sources"/>
