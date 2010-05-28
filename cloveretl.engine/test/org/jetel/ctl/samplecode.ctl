@@ -25,7 +25,7 @@ function integer transform(){
 	}
 	
 	if ( !isnull($0.Name) && $0.Name ~= '\b\d{9}\b' ){
-		phone_number = str2int($0.Name);
+		phone_number = str2integer($0.Name);
 	}
 	
 	return 0;

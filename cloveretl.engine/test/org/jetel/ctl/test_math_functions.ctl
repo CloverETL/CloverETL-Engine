@@ -16,28 +16,28 @@ date truncDate;
 
 function integer transform() {
 	varPi=pi();
-	print_err('pi='+varPi);
+	printErr('pi='+varPi);
 	varE=e();
 	sqrtPi=sqrt(varPi);
-	print_err('sqrt='+sqrtPi);
+	printErr('sqrt='+sqrtPi);
 	i=9;
 	sqrt9=sqrt(i);
 	ln=log(sqrt9);
-	print_err('sqrt(-1)='+sqrt(-1));
+	printErr('sqrt(-1)='+sqrt(-1));
 	d=0;
-	print_err('log(0)='+log(d));
+	printErr('log(0)='+log(d));
 	log10Var=log10(sqrt9);
 	ex = exp(log10Var);
 	po=pow(sqrt9,1.2);
 	p=pow(-10,-0.3);
-	print_err('power(-10,-0.3)='+p);
+	printErr('power(-10,-0.3)='+p);
 	r=round(-po);
-	print_err('round of '+(-po)+'='+r);
+	printErr('round of '+(-po)+'='+r);
 	t=trunc(-po);
-	print_err('truncation of '+(-po)+'='+t);
+	printErr('truncation of '+(-po)+'='+t);
 	date1=2004-01-02 17:13:20;
 	truncDate=trunc(date1);
-	print_err('truncation of '+date1+'='+truncDate);
-	print_err('Random number: '+random());
+	printErr('truncation of '+date1+'='+truncDate);
+	printErr('Random number: '+random());
 	return 0;
 }

@@ -1,5 +1,6 @@
 function integer transform() {
-	print_err("Test Failed!");
+	printErr("Test Failed!");
+	return 0;
 }
 
 function void b(a) {

@@ -9,14 +9,14 @@ long resultLong4;
 
 function integer transform() {
 
-	resultInt1 = bit_or(0,1);
-	resultInt2 = bit_or(1,1);
-	resultInt3 = bit_or(2,1);
-	resultInt4 = bit_or(3,1);
-	resultLong1 = bit_or(0l,1l);
-	resultLong2 = bit_or(1l,1l);
-	resultLong3 = bit_or(2l,1l);
-	resultLong4 = bit_or(3l,1l);
+	resultInt1 = bitOr(0,1);
+	resultInt2 = bitOr(1,1);
+	resultInt3 = bitOr(2,1);
+	resultInt4 = bitOr(3,1);
+	resultLong1 = bitOr(0l,1l);
+	resultLong2 = bitOr(1l,1l);
+	resultLong3 = bitOr(2l,1l);
+	resultLong4 = bitOr(3l,1l);
 	
 	return 0;
 }

@@ -8,23 +8,23 @@ date varWithNullInitializer = null;
 
 function integer transform() {
 	d3 = 2006-08-01;
-	print_err(d3);
+	printErr(d3);
  
 	d2 = 2006-08-02 15:15:03;
-	print_err(d2);
+	printErr(d2);
 	 
 	d1 = 2006-1-1 1:2:3;
-	print_err(d1);
+	printErr(d1);
 	 
 	field = $0.Born;
-	print_err(field);
+	printErr(field);
  
 	nullValue = null;
-	print_err(nullValue);
+	printErr(nullValue);
 	 
 	minValue = 1970-01-01 01:00:00;
-	print_err(minValue);
-	print_err(varWithNullInitializer);
+	printErr(minValue);
+	printErr(varWithNullInitializer);
 
 	return 0;
 }

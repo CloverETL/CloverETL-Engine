@@ -8,20 +8,20 @@ long varWithNullInitializer = null;
 
 function integer transform() {
 	i=0;
-	print_err(i);
+	printErr(i);
 	
 	j=-1;
-	print_err(j);
+	printErr(j);
  
 	field=$0.BornMillisec;
-	print_err(field);
+	printErr(field);
 	 
-	print_err(def); 
+	printErr(def); 
 	
 	nullValue = null;
-	print_err(nullValue);
+	printErr(nullValue);
 	
-	print_err(varWithInitializer);
-	print_err(varWithNullInitializer);
+	printErr(varWithInitializer);
+	printErr(varWithNullInitializer);
 	return 0;
 }

@@ -42,7 +42,7 @@ integer j;
 boolean res11;
 
 function integer transform() {
-	print_err('case1: simple if');
+	printErr('case1: simple if');
 	cond1 = true;
 	res1 = false;
 	if (cond1)
@@ -51,9 +51,9 @@ function integer transform() {
 	cond2 = true;
 	res21 = false;
 	res22 = false;
-	print_err('case2: if with block ');
+	printErr('case2: if with block ');
 	if (cond2) {
-		print_err('cond2: inside block');
+		printErr('cond2: inside block');
 		res21 = true;
 		res22 = true;
 	}
@@ -61,13 +61,13 @@ function integer transform() {
 	cond3 = false;
 	res31 = false;
 	res32 = false;
-	print_err('case3: simple-if and simple-else');
+	printErr('case3: simple-if and simple-else');
 	if (cond3) 
 		res31 = true;
 	else 
 		res32 = true;
 	// else with multiple statements (block)
-	print_err('case4: simple-if, block-else');
+	printErr('case4: simple-if, block-else');
 	cond4 = false;
 	res41 = false;
 	res42 = false;
@@ -75,12 +75,12 @@ function integer transform() {
 	if (cond4) 
 		res41 = true;
 	else {
-	print_err('cond4: within else body');
+	printErr('cond4: within else body');
 		res42 = true;
 		res43 = true;
 	}
 	// if with block, else with block
-	print_err('case5: block-if, block-else');
+	printErr('case5: block-if, block-else');
 	cond5 = false;
 	res51 = false;
 	res52 = false;
@@ -90,12 +90,12 @@ function integer transform() {
 		res51 = true;
 		res52 = true;
 	} else {
-		print_err('cond5: within else body');
+		printErr('cond5: within else body');
 		res53 = true;
 		res54 = true;
 	}
 	// else-if with single statement
-	print_err('case6: simple if, simple else-if');
+	printErr('case6: simple if, simple else-if');
 	cond61 = false;
 	cond62 = true;
 	res61 = false;
@@ -105,7 +105,7 @@ function integer transform() {
 	 else if (cond62)
 		res62 = true;
 	// else-if with multiple statements
-	print_err('case7: simple if, block else-if');
+	printErr('case7: simple if, block else-if');
 	cond71 = false;
 	cond72 = true;
 	res71 = false;
@@ -114,12 +114,12 @@ function integer transform() {
 	if (cond71) 
 		res71 = true;
 	 else if (cond72) {
-		print_err('cond72: within else-if body');
+		printErr('cond72: within else-if body');
 		res72 = true;
 		res73 = true;
 	}
 	// if-elseif-else test
-	print_err('case8: if-else/if-else ');
+	printErr('case8: if-else/if-else ');
 	cond81 = false;
 	cond82 = false;
 	res81 = false;
@@ -132,7 +132,7 @@ function integer transform() {
 	} else {
 		res83 = true;
 	}
-	print_err('case9: if with inactive else');
+	printErr('case9: if with inactive else');
 	// if with single statement + inactive else
 	cond9 = true;
 	res91 = false;
@@ -143,7 +143,7 @@ function integer transform() {
 		res92 = true;
 	// if with multiple statements + inactive else
 	// if with block, else with block
-	print_err('case10: if-block with inactive else-block');
+	printErr('case10: if-block with inactive else-block');
 	cond10 = true;
 	res101 = false;
 	res102 = false;
@@ -157,12 +157,12 @@ function integer transform() {
 		res104 = true;
 	}
 	// if with simple condition
-	print_err('case 11: if with expression condition');
+	printErr('case 11: if with expression condition');
 	i=0;
 	j=1;
 	res11 = false;
 	if (i < j) {
-		print_err('i<j');
+		printErr('i<j');
 		res11 = true;
 	}
 	return 0;

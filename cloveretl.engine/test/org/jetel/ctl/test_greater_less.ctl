@@ -20,62 +20,62 @@ boolean eq9;
 
 function integer transform() {
 	i=10;
-	print_err("i="+i);
+	printErr("i="+i);
 	
 	j=9;
-	print_err("j="+j);
+	printErr("j="+j);
 	
 	eq1=(i>j);
-	print_err("eq1="+eq1);
+	printErr("eq1="+eq1);
 	
 	l=10;
-	print_err("l="+l);
+	printErr("l="+l);
 	
 	eq2=(l>=j);
-	print_err("eq2="+eq2);
+	printErr("eq2="+eq2);
 	
 	d=10;
-	print_err("d="+d);
+	printErr("d="+d);
 	
 	eq3=d=>i;
-	print_err("eq3="+eq3);
+	printErr("eq3="+eq3);
 	
 	n=10;
-	print_err("n="+n);
+	printErr("n="+n);
 	
 	eq4=n.gt.l;
-	print_err("eq4="+eq4);
+	printErr("eq4="+eq4);
 	
 	eq5=n.ge.d;
-	print_err("eq5="+eq5);
+	printErr("eq5="+eq5);
 	
 	s='hello';
-	print_err("s="+s);
+	printErr("s="+s);
 	
 	s1="hello";
-	print_err("s1="+s1);
+	printErr("s1="+s1);
 	
 	eq6=s<s1;
-	print_err("eq6="+eq6);
+	printErr("eq6="+eq6);
 	
 	mydate=2006-01-01;
-	print_err("mydate="+mydate);
+	printErr("mydate="+mydate);
 	
 	anothermydate=2008-03-05;
-	print_err("anothermydate="+anothermydate);
+	printErr("anothermydate="+anothermydate);
 	
 	mydateandtime=2006-01-01 15:30:00;
-	print_err("mydateandtime="+mydateandtime);
+	printErr("mydateandtime="+mydateandtime);
 	
 	eq7 = mydate < mydateandtime; 
-	print_err("eq7="+eq7);
+	printErr("eq7="+eq7);
 	
 	eq8=mydate .lt. anothermydate;
-	print_err("eq8="+eq8);
+	printErr("eq8="+eq8);
 	
-	anothermydate=2006-1-1 0:0:0;print_err("anothermydate="+anothermydate);
+	anothermydate=2006-1-1 0:0:0;printErr("anothermydate="+anothermydate);
 	eq9=mydate<=anothermydate;
-	print_err("eq9="+eq9);
+	printErr("eq9="+eq9);
 	
 	return 0;
 }

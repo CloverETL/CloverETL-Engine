@@ -34,83 +34,83 @@ function integer transform() {
 	s='hello world';
 	lenght=5;
 	subs=substring(s,1,lenght);
-	print_err('original string:'+s );
-	print_err('substring:'+subs );
+	printErr('original string:'+s );
+	printErr('substring:'+subs );
 	
-	upper=uppercase(subs);
-	print_err('to upper case:'+upper );
+	upper=upperCase(subs);
+	printErr('to upper case:'+upper );
 	
-	lower=lowercase(subs+'hI   ');
-	print_err('to lower case:'+lower );
+	lower=lowerCase(subs+'hI   ');
+	printErr('to lower case:'+lower );
 	
 	t=trim('	  im  '+lower);
-	print_err('after trim:'+t );
+	printErr('after trim:'+t );
 	
 	l=length(upper);
-	print_err('length of '+upper+':'+l );
+	printErr('length of '+upper+':'+l );
 	
 	c=concat(lower,upper, "2,today is ", date2str(today(), "yyyy MMM dd"));
-	print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );
+	printErr('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );
 	
 	//born=nvl($Born,today()-365);
-	//print_err('born=' + born);
+	//printErr('born=' + born);
 	
 	//datum=dateadd(born,100,millisec);
-	//print_err('dataum = ' + datum );
+	//printErr('dataum = ' + datum );
 	
 	//otherdate=today();
 	//ddiff=datediff(born,otherdate,year);
-	//print_err('date diffrence:'+ddiff );
-	//print_err('born: '+born+' otherdate: '+otherdate);
+	//printErr('date diffrence:'+ddiff );
+	//printErr('born: '+born+' otherdate: '+otherdate);
 	
 	isn=isnull(ddiff);
-	print_err(isn );
+	printErr(isn );
 	
 	s1=nvl(l+1,1);
-	print_err(s1 );
+	printErr(s1 );
 	
 	rep1=replace("The dog says meow. All DOGs say meow.", "[dD][oO][gG]", "cat");
 	
 	rep=replace(c,'[lL]','t');
-	print_err(rep1);
+	printErr(rep1);
 	
 	stdecimal=str2decimal('2.5125e-1');
 	stdouble=str2double('2.5125e-1');
 	stlong=str2long('805421451215');
-	stint=str2int('-152456');
-	print_err(stdecimal);
-	print_err(stdouble);
-	print_err(stlong);
-	print_err(stint);
+	stint=str2integer('-152456');
+	printErr(stdecimal);
+	printErr(stdouble);
+	printErr(stlong);
+	printErr(stint);
 	
-	i = str2int('1234');
+	i = str2integer('1234');
 	
 	nts=num2str(10,4);
-	print_err(nts );
+	printErr(nts );
 	
 	newdate=2001-12-20 16:30:04;
 	dtn=date2num(newdate,month);
-	print_err('month: ' + dtn );
+	printErr('month: ' + dtn );
 	
 	ii=iif(newdate<2000-01-01,20,21);
-	print_err('ii:'+ii);
-	print_stack();
+	printErr('ii:'+ii);
+	printStack();
 	
 	ndate=2002-12-24;
 	dts=date2str(ndate,'yy.MM.dd');
-	print_err('date to string:'+dts);
-	print_err(str2date(dts,'yy.MM.dd'));
+	printErr('date to string:'+dts);
+	printErr(str2date(dts,'yy.MM.dd'));
 	
 	lef=left(dts,5);
 	righ=right(dts,5);
-	print_err('s=word, soundex='+soundex('word'));
-	print_err('s=world, soundex='+soundex('world'));
+	printErr('s=word, soundex='+soundex('word'));
+	printErr('s=world, soundex='+soundex('world'));
 	
 	for (j=0;j<length(s);j++) {
-		print_err(char_at(s,j));
+		printErr(charAt(s,j));
 	};
 	
-	charCount = count_char('mimimichal','i');
-	print_err(charCount);
+	charCount = countChar('mimimichal','i');
+	printErr(charCount);
 	return 0;
 }

@@ -6,16 +6,16 @@ boolean varWithNullInitializer = null;
 
 function integer transform() {
 	b1=true;
-	print_err(b1);
+	printErr(b1);
 	 
 	b2=false;
-	print_err(b2);
+	printErr(b2);
  
-	print_err(b3);
+	printErr(b3);
 	
 	nullValue = null;
-	print_err(nullValue);
-	print_err(varWithNullInitializer);
+	printErr(nullValue);
+	printErr(varWithNullInitializer);
 	
 	return 0;
 }

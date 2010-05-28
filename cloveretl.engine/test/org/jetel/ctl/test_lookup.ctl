@@ -13,9 +13,9 @@ function integer transform() {
 		for (integer count=0; count<countResult[i]; count++) {
 			charlieResult[idx++] = lookup(TestLookup).next().City;
 		}
-		print_err('Freeing lookup table');
+		printErr('Freeing lookup table');
 		lookup(TestLookup).free();
-		print_err('Initializing lookup table');
+		printErr('Initializing lookup table');
 		lookup(TestLookup).init();
 	}
 	return 0;

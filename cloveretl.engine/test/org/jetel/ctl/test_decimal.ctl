@@ -10,22 +10,22 @@ decimal varWithInitializerNoDist = 123.35;
 
 function integer transform() {
 	i=0;
-	print_err(i);
+	printErr(i);
 	 
 	j=-1.0;
-	print_err(j);
+	printErr(j);
 	
 	field=$0.Currency;
-	print_err(field);
+	printErr(field);
 	 
-	print_err(def);
+	printErr(def);
 	 
 	nullValue = null;
-	print_err(nullValue);
+	printErr(nullValue);
 	
-	print_err(varWithInitializer);
-	print_err(varWithNullInitializer);
-	print_err(varWithInitializer);
+	printErr(varWithInitializer);
+	printErr(varWithNullInitializer);
+	printErr(varWithInitializer);
 	
 	return 0;
 }

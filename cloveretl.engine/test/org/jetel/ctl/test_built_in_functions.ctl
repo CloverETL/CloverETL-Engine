@@ -20,12 +20,12 @@ function integer transform() {
 	nvl2Res2 = nvl2(nullValue,1,2);
 	iifRes1 = iif(isnull(notNullValue),1,2);
 	iifRes2 = iif(isnull(nullValue),1,2);
-	print_err('This message belongs to standard error');
-	print_log(debug, 'This message belongs to DEBUG');
-	print_log(info, 'This message belongs to INFO');
-	print_log(warn, 'This message belongs to WARN');
-	print_log(error, 'This message belongs to ERROR');
-	print_log(fatal, 'This message belongs to FATAL');
-	print_log(trace, 'This message belongs to TRACE');
+	printErr('This message belongs to standard error');
+	printLog(debug, 'This message belongs to DEBUG');
+	printLog(info, 'This message belongs to INFO');
+	printLog(warn, 'This message belongs to WARN');
+	printLog(error, 'This message belongs to ERROR');
+	printLog(fatal, 'This message belongs to FATAL');
+	printLog(trace, 'This message belongs to TRACE');
 	return 0;
 }

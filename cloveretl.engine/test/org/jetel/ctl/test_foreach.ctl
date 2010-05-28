@@ -17,59 +17,59 @@ function integer transform() {
 	foreach (string s : it) {
 		ret = ret + s;
 	}
-	print_err(ret);
+	printErr(ret);
 	// integer fields
-	print_err('foreach1: integer fields'); 
+	printErr('foreach1: integer fields'); 
 	i=0; 
 	foreach (integer intVal : $firstInput.*) {
 		intRes[i++]=intVal;
-		print_err('integer: ' + intRes);
+		printErr('integer: ' + intRes);
 	}
 	// long fields
-	print_err('foreach2: long fields'); 
+	printErr('foreach2: long fields'); 
 	i=0; 
 	foreach (long longVal : $firstInput.*) {
 		longRes[i++]=longVal;
-		print_err('long: ' + longRes);
+		printErr('long: ' + longRes);
 	}
 	// double fields
-	print_err('foreach3: double fields'); 
+	printErr('foreach3: double fields'); 
 	i=0; 
 	foreach (double doubleVal : $firstInput.*) {
 		doubleRes[i++]=doubleVal;
-		print_err('double: ' + doubleRes);
+		printErr('double: ' + doubleRes);
 	}
 	// decimal fields
-	print_err('foreach5: decimal fields'); 
+	printErr('foreach5: decimal fields'); 
 	i=0; 
 	foreach (decimal decimalVal : $firstInput.*) {
 		decimalRes[i++]=decimalVal;
-		print_err('decimal: ' + decimalRes);
+		printErr('decimal: ' + decimalRes);
 	}
 	// boolean fields
-	print_err('foreach4: boolean fields'); 
+	printErr('foreach4: boolean fields'); 
 	i=0; 
 	foreach (boolean booleanVal : $firstInput.*) {
 		booleanRes[i++]=booleanVal;
-		print_err('boolean: ' + booleanRes);
+		printErr('boolean: ' + booleanRes);
 	}
 	// string fields
-	print_err('foreach6: string fields'); 
+	printErr('foreach6: string fields'); 
 	i=0; 
 	foreach (string stringVal : $firstInput.*) {
 		stringRes[i++]=stringVal;
-		print_err('string: ' + stringRes);
+		printErr('string: ' + stringRes);
 	}
 	// date fields
-	print_err('foreach7: date fields'); 
+	printErr('foreach7: date fields'); 
 	i=0; 
 	foreach (date dateVal : $firstInput.*) {
 		dateRes[i++]=dateVal;
-		print_err('date: ' + dateRes);
+		printErr('date: ' + dateRes);
 	}
 	tmpVar.Value = 123;
 	foreach (integer i: tmpVar.*) {
-		print_err('integer : ' + i);
+		printErr('integer : ' + i);
 	}
 	return 0;
 }

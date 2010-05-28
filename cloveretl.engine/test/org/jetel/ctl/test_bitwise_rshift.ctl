@@ -9,14 +9,14 @@ long resultLong4;
 
 function integer transform() {
 
-	resultInt1 = bit_rshift(5,1);
-	resultInt2 = bit_rshift(5,3);
-	resultInt3 = bit_rshift(8,1);
-	resultInt4 = bit_rshift(8,2);
-	resultLong1 = bit_rshift(5l,1l);
-	resultLong2 = bit_rshift(5l,3l);
-	resultLong3 = bit_rshift(8l,1l);
-	resultLong4 = bit_rshift(8l,2l);
+	resultInt1 = bitRShift(5,1);
+	resultInt2 = bitRShift(5,3);
+	resultInt3 = bitRShift(8,1);
+	resultInt4 = bitRShift(8,2);
+	resultLong1 = bitRShift(5l,1l);
+	resultLong2 = bitRShift(5l,3l);
+	resultLong3 = bitRShift(8l,1l);
+	resultLong4 = bitRShift(8l,2l);
 		
 	return 0;
 }

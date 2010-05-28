@@ -27,69 +27,69 @@ function integer transform() {
 	i=10;
 	j=100;
 	iminusj=i-j;
-	print_err("minus integer:"+iminusj);
+	printErr("minus integer:"+iminusj);
 	
 	l=(0x7fffffffl/10l);
-	print_err(l);
+	printErr(l);
 	
 	m=0x7fffffffl;
-	print_err(m);
+	printErr(m);
 
 	lminusm=l-m;
-	print_err("minus long:" + lminusm);
+	printErr("minus long:" + lminusm);
 	
 	mminusi=m-i;
-	print_err("long minus integer:" + mminusi);
+	printErr("long minus integer:" + mminusi);
 	
 	iminusm=i-m;
-	print_err("integer minus long:"+iminusm);
+	printErr("integer minus long:"+iminusm);
 	
 	n=0.1;
-	print_err(n);
+	printErr(n);
 	
 	m1=0.001;
-	print_err(m1);
+	printErr(m1);
 	
 	nminusm1=n-m1;
-	print_err("minus number:"+nminusm1);
+	printErr("minus number:"+nminusm1);
 	
 	nminusj=n-j;
-	print_err("number minus integer:"+nminusj);
+	printErr("number minus integer:"+nminusj);
 
 	jminusn=j-n;
-	print_err("integer minus number:"+jminusn);
+	printErr("integer minus number:"+jminusn);
 	
 	m1minusm=m1-m;
-	print_err("number minus long:"+m1minusm);
+	printErr("number minus long:"+m1minusm);
 	
 	mminusm1=m-m1;
-	print_err("long minus number:"+mminusm1);
+	printErr("long minus number:"+mminusm1);
 	
 	d=0.1D;
-	print_err(d);
+	printErr(d);
 	
 	d1=0.0001D;
-	print_err(d1);
+	printErr(d1);
 	
 	dminusd1=d-d1;
-	print_err("minus decimal:"+dminusd1);
+	printErr("minus decimal:"+dminusd1);
 	
 	dminusj=d-j;
-	print_err("decimal minus integer:"+dminusj);
+	printErr("decimal minus integer:"+dminusj);
 	
 	jminusd=j-d;
-	print_err("integer minus decimal:"+jminusd);
+	printErr("integer minus decimal:"+jminusd);
 	
 	dminusm=d-m;
-	print_err("decimal minus long:"+dminusm);
+	printErr("decimal minus long:"+dminusm);
 	
 	mminusd=m-d;
-	print_err("long minus decimal:"+mminusd);
+	printErr("long minus decimal:"+mminusd);
 	
 	dminusn=d-n;
-	print_err("decimal minus number:"+dminusn);
+	printErr("decimal minus number:"+dminusn);
 	
 	nminusd=n-d;
-	print_err("number minus decimal:"+nminusd);
+	printErr("number minus decimal:"+nminusd);
 	return 0;
 }
