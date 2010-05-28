@@ -120,4 +120,11 @@
 	 	  <FlatFile outputFile="data-out/joined_data.out" supposedFile="supposed-out/joined_data.LookupJoin.out"/>	                                                                    
 	</FunctionalTest>
 
+	<FunctionalTest ident="InfobrightDataWriterRemote" graphFile="graph/graphInfobrightDataWriterRemote.grf">
+        <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
+      	<SQLStatement connection="infobright">drop table test</SQLStatement>
+	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
+     	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
+	</FunctionalTest>
+	
 </TestScenario>
