@@ -56,7 +56,7 @@ public class MathLib extends TLFunctionLibrary {
 			"bitAnd".equals(functionName) ? new BitAndFunction() :
 			"bitXor".equals(functionName) ? new BitXorFunction() :
 			"bitLShift".equals(functionName) ? new BitLShiftFunction() :
-			"bitRSshift".equals(functionName) ? new BitRShiftFunction() :
+			"bitRShift".equals(functionName) ? new BitRShiftFunction() :
 			"bitNegate".equals(functionName) ? new BitNegateFunction() :
 			"bitSet".equals(functionName) ? new BitSetFunction() :
 			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
