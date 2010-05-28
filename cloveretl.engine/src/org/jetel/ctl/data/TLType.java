@@ -186,7 +186,7 @@ public abstract class TLType {
 		
 		@Override
 		public String name() {
-			return "list<" + (elementType ==null ? "?" : elementType.toString() ) + ">";
+			return (elementType ==null ? "?" : elementType.toString() ) + "[]";
 		}
 		
 		
@@ -339,10 +339,20 @@ public abstract class TLType {
 		
 	 	@Override
 	 	public String name() {
-	 		return "map<" + 
-			 		keyType == null ? "?" : keyType.name() 
-			 		+ "," + valueType == null ? "?" : valueType.name() 
-			 		+ ">";
+	 		/*System.out.println("zzzzzzzzzzzzzzzzzz");
+	 		System.out.println("map["); 
+	 		System.out.println(keyType == null ? "?" : keyType.name()); 
+			 System.out.println(",");
+			 System.out.println(valueType == null ? "?" : valueType.name());
+			 System.out.println("]");
+			 System.out.println("map[" + 
+			 		(keyType == null ? "?" : keyType.name()) 
+			 		+ "," + (valueType == null ? "?" : valueType.name()) 
+			 		+ "]");*/
+	 		return "map[" + 
+			 		(keyType == null ? "?" : keyType.name()) 
+			 		+ "," + (valueType == null ? "?" : valueType.name()) 
+			 		+ "]";
 	 	}
 	 	
 	 	
