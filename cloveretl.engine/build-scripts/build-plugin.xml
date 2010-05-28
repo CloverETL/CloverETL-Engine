@@ -521,4 +521,24 @@
 		</copy>
 	</target>
 	
+	
+	<target name="check-sources">
+		<if><matches pattern=".*\.commercial" string="${plugin.dir.name}"/>
+			<then>
+				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.commercial.license.txt"/>
+			</then>
+			<else>
+				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.gpl.license.txt"/>
+			</else>
+		</if>
+		<echo message="plugin.java.src.header.file=${plugin.java.src.header.file}"/>
+		
+		<fileheading heading="${plugin.java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
+			<fileset dir="${dir.src}">
+				<include name="**/*.java"/>
+			</fileset>
+		</fileheading>
+		<fail message="File ${java.src.header.invalid} has invalid header - must be ${plugin.java.src.header.file}" if="java.src.header.invalid"/>
+	</target>
+	
 </project>

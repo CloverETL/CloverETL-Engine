@@ -1,7 +1,7 @@
 /*
- * jETeL/Clover.ETL - Java based ETL application framework.
- * Copyright (C) 2002-2009  David Pavlis <david.pavlis@javlin.eu>
- *
+ * jETeL/CloverETL - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ *  
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -9,12 +9,12 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.component;
 
@@ -330,13 +330,13 @@ import org.w3c.dom.Element;
  * are read for each row, and a new-line character is not used to indicate the end of the row.</td></tr>
  * <tr><td>striptblanks</td><td>Truncates any trailing blank spaces when loading data into a 
  * variable-length field. This option cannot be specified together with <i>striptnulls.</i></td></tr>
- * <tr><td>striptnulls</td><td>Truncates any trailing NULLs (0×00 characters) when loading data 
+ * <tr><td>striptnulls</td><td>Truncates any trailing NULLs (0??00 characters) when loading data 
  * into a variable-length field. This option cannot be specified together with <i>striptblanks</i>.</td></tr>
  * <tr><td>zoneddecimal</td><td>Loads zoned decimal data, since the binarynumerics modifier 
  * does not include the DECIMAL field type. This option is supported only with fixed length 
  * records specified by the <i>reclen</i> option. The <i>noeofchar</i> option is assumed. 
  * Half-byte sign values can be one of the following:<br>+ = 0xC 0xA 0xE 0xF<br>- = 0xD 0xB<br>
- * Supported values for digits are 0×0 to 0×9. Supported values for zones are 0×3 and 0xF. </td></tr>
+ * Supported values for digits are 0??0 to 0??9. Supported values for zones are 0??3 and 0xF. </td></tr>
  * <tr><td>chardel</td><td>single character string delimiter. The default value is a double 
  * quotation mark ("). The specified character is used in place of double quotation marks to 
  * enclose a character string.</td></tr>

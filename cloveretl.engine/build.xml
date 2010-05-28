@@ -677,10 +677,10 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
 		<mkdir dir="${dir.build}"/>
 	</target>
 	
-	<target name="reports" depends="reporttests,findbugs-html,coverage-html">
+	<target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
 	</target>
 	
-	<target name="reports-hudson" depends="runtests-with-testdb,javadoc">
+	<target name="reports-hudson" depends="check-sources,runtests-with-testdb,javadoc">
 	</target>
 
 	<target name="reports-hudson-detail" depends="runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins">		
@@ -986,7 +986,29 @@ import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
    		<cobertura-report datafile="${cobertura.ser}" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
 	</target>
 		
-
+	<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
+	
+	<target name="check-sources-engine">
+		<fileheading heading="${java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
+			<fileset dir="${dir.src}">
+				<include name="**/*.java"/>
+				<exclude name="org/jetel/interpreter/TransformLangParser*"/>
+				<exclude name="org/jetel/ctl/TransformLangParser*"/>
+				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
+			</fileset>
+		</fileheading>
+		<fail message="File ${java.src.header.invalid} has invalid header - must be ${java.src.header.file}" if="java.src.header.invalid"/>
+	</target>
+	
+	<target name="check-sources-plugins">
+		<foreach list="${plugin.list}" inheritall="true" target="check-sources-plugin" param="plugin.dir"/>
+	</target>
+	<target name="check-sources-plugin">
+		<echo message="Check file heading plugin - ${plugin.dir}"/>
+		<ant dir="../${plugin.dir}" target="check-sources" inheritAll="false" inheritrefs="false">
+		</ant>
+	</target>
+	
 	<macrodef name="customproperty">
 		<attribute name="name"/>
 		<attribute name="value"/>

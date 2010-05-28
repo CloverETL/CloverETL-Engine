@@ -1,22 +1,21 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-05  Javlin Consulting <info@javlinconsulting.cz>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ * jETeL/CloverETL - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ *  
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.jetel.util.string;
 
 import java.util.HashMap;
@@ -60,8 +59,8 @@ public class StringAproxComparatorLocaleRules {
 //	bg, BG, Bulgarian (Bulgaria)
 //	ca, , Catalan
 //	ca, ES, Catalan (Spain)
-//	cs, , čeština
-//	cs, CZ, čeština (Česká republika)
+//	cs, , ??e??tina
+//	cs, CZ, ??e??tina (??esk?? republika)
 //	da, , Danish
 //	da, DK, Danish (Denmark)
 //	de, , German
@@ -192,196 +191,196 @@ public class StringAproxComparatorLocaleRules {
 	private static Map<String, String[]> rules=new HashMap<String, String[]>();
 
 	private static final String[] CZ_RULES={
-		"a=á=A=Á",
-		"c=č=C=Č",
-		"d=ď=D=Ď",
-		"e=é=ě=E=É=Ě",
-		"i=í=I=Í",
-		"n=ň=N=Ň",
-		"o=ó=O=Ó",
-		"r=ř=R=Ř",
-		"s=š=S=Š",
-		"t=ť=T=Ť",
-		"u=ů=ú=U=Ů=Ú",
-		"y=ý=Y=Ý",
-		"z=ž=Z=Ž"
+		"a=??=A=??",
+		"c=??=C=??",
+		"d=??=D=??",
+		"e=??=??=E=??=??",
+		"i=??=I=??",
+		"n=??=N=??",
+		"o=??=O=??",
+		"r=??=R=??",
+		"s=??=S=??",
+		"t=??=T=??",
+		"u=??=??=U=??=??",
+		"y=??=Y=??",
+		"z=??=Z=??"
 		};
 	
 	private static final String[] PL_RULES={
-		"a=ą=A=Ą",
-		"c=ć=C=Ć",
-		"e=ę=E=Ę",
-		"l=ł=L=Ł",
-		"n=ń=N=Ń",
-		"o=ó=O=Ó",
-		"s=ś=S=Ś",
-		"z=ż=ź=Z=Ż=Ź"
+		"a=??=A=??",
+		"c=??=C=??",
+		"e=??=E=??",
+		"l=??=L=??",
+		"n=??=N=??",
+		"o=??=O=??",
+		"s=??=S=??",
+		"z=??=??=Z=??=??"
 	};
 
 	private static final String[] ES_RULES={
-		"a=á=A=Á",
-		"e=é=E=É",
-		"i=í=I=Í",
-		"o=ó=O=Ó",
-		"u=ú=ü=U=Ú=Ü",
-		"n=ñ=N=Ñ"
+		"a=??=A=??",
+		"e=??=E=??",
+		"i=??=I=??",
+		"o=??=O=??",
+		"u=??=??=U=??=??",
+		"n=??=N=??"
 	};
 
 	private static final String[] FR_RULES={
-		"a=à=â=A=À=Â",
-		"e=è=é=ê=ë=E=È=É=Ê=Ë",
-		"i=ï=I=Ï",
-		"o=ô=O=Ô",
-		"u=ù=û=ü=U=Ù=Û=Ü",
-		"c=ç=C=Ç"
+		"a=??=??=A=??=??",
+		"e=??=??=??=??=E=??=??=??=??",
+		"i=??=I=??",
+		"o=??=O=??",
+		"u=??=??=??=U=??=??=??",
+		"c=??=C=??"
 	};
 	
 	private static final String[] SK_RULES={
-		"a=á=ä=A=Á=Ä",
-		"c=č=C=Č",
-		"d=ď=D=Ď",
-		"e=é=E=É",
-		"i=í=I=Í",
-		"l=ĺ=ľ=L=Ĺ=Ľ",
-		"n=ň=N=Ň",
-		"o=ó=ô=O=Ó=Ô",
-		"r=ŕ=R=Ŕ",
-		"s=š=S=Š",
-		"t=ť=T=Ť",
-		"u=ú=U=Ú",
-		"y=ý=Y=Ý",
-		"z=ž=Z=Ž"
+		"a=??=??=A=??=??",
+		"c=??=C=??",
+		"d=??=D=??",
+		"e=??=E=??",
+		"i=??=I=??",
+		"l=??=??=L=??=??",
+		"n=??=N=??",
+		"o=??=??=O=??=??",
+		"r=??=R=??",
+		"s=??=S=??",
+		"t=??=T=??",
+		"u=??=U=??",
+		"y=??=Y=??",
+		"z=??=Z=??"
 	};
 
 	private static final String[] HU_RULES={
-		"a=á=A=Á",
-		"e=é=E=É",
-		"i=í=I=Í",
-		"o=ó=ö=ő=O=Ó=Ö=Ő",
-		"u=ú=ü=ű=U=Ú=Ü=Ű"
+		"a=??=A=??",
+		"e=??=E=??",
+		"i=??=I=??",
+		"o=??=??=??=O=??=??=??",
+		"u=??=??=??=U=??=??=??"
 	};
 
 	private static final String[] IS_RULES={//Icelandic
-		"a=á=æ=A=Á=Æ",
-		"e=é=E=É",
-		"i=í=I=Í",
-		"o=ó=ö=O=Ó=Ö",
-		"u=ú=U=Ú",
-		"y=ý=Y=Ý",
-		"d=ð=D=Ð"
+		"a=??=??=A=??=??",
+		"e=??=E=??",
+		"i=??=I=??",
+		"o=??=??=O=??=??",
+		"u=??=U=??",
+		"y=??=Y=??",
+		"d=??=D=??"
 	};	
 
 	private static final String[] DA_NO_RULES={//Danish and Norwegian
-		"a=æ=å=A=Æ=Å",
-		"o=ø=O=Ø"
+		"a=??=??=A=??=??",
+		"o=??=O=??"
 	};
 
 	private static final String[] SV_RULES={//Swedish
-		"a=ä=å=A=Ä=Å",
-		"o=ö=O=Ö"
+		"a=??=??=A=??=??",
+		"o=??=O=??"
 	};
 
 	private static final String[] FI_RULES={//Finnish
-		"a=ä=A=Ä",
-		"o=ö=O=Ö"
+		"a=??=A=??",
+		"o=??=O=??"
 	};
 	
 	private static final String[] ET_RULES={//Estonian
-		"a=ä=A=Ä",
-		"o=ö=õ=O=Ö=Õ",
-		"u=ü=U=Ü",
-		"s=š=S=Š",
-		"z=ž=Z=Ž"
+		"a=??=A=??",
+		"o=??=??=O=??=??",
+		"u=??=U=??",
+		"s=??=S=??",
+		"z=??=Z=??"
 	};
 	
 	private static final String[] LV_RULES={//Latvian
-		"a=ā=A=Ā",
-		"e=ē=E=Ē",
-		"i=ī=I=Ī",
-		"u=ū=U=Ū",
-		"c=č=C=Č",
-		"g=ģ=G=Ģ",
-		"k=ķ=K=Ķ",
-		"l=ļ=L=Ļ",
-		"n=ņ=N=Ņ",
-		"s=š=S=Š",
-		"z=ž=Z=Ž"
+		"a=??=A=??",
+		"e=??=E=??",
+		"i=??=I=??",
+		"u=??=U=??",
+		"c=??=C=??",
+		"g=??=G=??",
+		"k=??=K=??",
+		"l=??=L=??",
+		"n=??=N=??",
+		"s=??=S=??",
+		"z=??=Z=??"
 	};
 	
 	private static final String[] LT_RULES={//Lithuanian
-		"a=ą=A=Ą",
-		"e=ę=ė=E=Ę=Ė",
-		"i=į=I=Į",
-		"u=ų=ū=U=Ų=Ū",
-		"c=č=C=Č",
-		"s=š=S=Š",
-		"z=ž=Z=Ž"
+		"a=??=A=??",
+		"e=??=??=E=??=??",
+		"i=??=I=??",
+		"u=??=??=U=??=??",
+		"c=??=C=??",
+		"s=??=S=??",
+		"z=??=Z=??"
 	};
 
 	private static final String[] DE_RULES={//German
-		"a=ä=A=Ä",
-		"o=ö=O=Ö",
-		"u=ü=U=Ü"
+		"a=??=A=??",
+		"o=??=O=??",
+		"u=??=U=??"
 	};
 
 	private static final String[] IT_RULES={//Italian
-		"a=à=A=À",
-		"e=é=è=E=É=È",
-		"i=ì=I=Ì",
-		"o=ò=O=Ò",
-		"u=ù=U=Ù"
+		"a=??=A=??",
+		"e=??=??=E=??=??",
+		"i=??=I=??",
+		"o=??=O=??",
+		"u=??=U=??"
 	};
 	
 	private static final String[] SL_RULES={//Slovenian
-		"c=č=C=Č",
-		"s=š=S=Š",
-		"z=ž=Z=Ž"
+		"c=??=C=??",
+		"s=??=S=??",
+		"z=??=Z=??"
 	};
 	
 	private static final String[] HR_RULES={//Croatian
-		"c=ć=č=C=Ć=Č",
-		"d=đ=D=Đ",
-		"s=š=S=Š",
-		"z=ž=Z=Ž"
+		"c=??=??=C=??=??",
+		"d=??=D=??",
+		"s=??=S=??",
+		"z=??=Z=??"
 	};
 	
 	private static final String[] RO_RULES={//Romanian
-		"a=ă=â=A=Ă=Â",
-		"i=î=I=Î",
-		"s=ş=S=Ş",
-		"t=ţ=T=Ţ"
+		"a=??=??=A=??=??",
+		"i=??=I=??",
+		"s=??=S=??",
+		"t=??=T=??"
 	};
 
 	private static final String[] PT_RULES={//Portuguese
-		"a=ã=á=à=â=A=Ã=Á=À=Â",
-		"e=é=ê=E=É=Ê",
-		"i=í=I=Í",
-		"o=õ=ó=ô=O=Õ=Ó=Ô",
-		"u=ú=U=Ú",
-		"c=ç=C=Ç"
+		"a=??=??=??=??=A=??=??=??=??",
+		"e=??=??=E=??=??",
+		"i=??=I=??",
+		"o=??=??=??=O=??=??=??",
+		"u=??=U=??",
+		"c=??=C=??"
 	};
 	
 	private static final String[] CA_RULES={//Catalan
-		"a=à=A=À",
-		"e=è=é=E=È=É",
-		"i=í=ï=I=Í=Ï",
-		"o=ò=ó=O=Ò=Ó",
-		"u=ú=ü=U=Ú=Ü",
-		"c=ç=C=Ç"
+		"a=??=A=??",
+		"e=??=??=E=??=??",
+		"i=??=??=I=??=??",
+		"o=??=??=O=??=??",
+		"u=??=??=U=??=??",
+		"c=??=C=??"
 	};
 
 	private static final String[] SQ_RULES={//Albanian
-		"e=ë=E=Ë",
-		"c=ç=C=Ç"
+		"e=??=E=??",
+		"c=??=C=??"
 	};
 	
 	private static final String[] TR_RULES={//Turkish
-		"ı=i=İ=I",
-		"o=ö=O=Ö",
-		"u=ü=U=Ü",
-		"c=ç=C=Ç",
-		"g=ğ=G=Ğ",
-		"s=ş=S=Ş"
+		"??=i=??=I",
+		"o=??=O=??",
+		"u=??=U=??",
+		"c=??=C=??",
+		"g=??=G=??",
+		"s=??=S=??"
 	};
 
 	
