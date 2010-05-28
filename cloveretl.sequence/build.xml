@@ -37,5 +37,9 @@
 	<target name="collect-javadoc-src">
 		<ant target="collect-javadoc-src" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>
+
+	<target name="check-sources">
+		<ant target="check-sources" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
 	
 </project>

@@ -1,7 +1,7 @@
 /*
- * jETeL/Clover - Java based ETL application framework.
- * Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
- *
+ * jETeL/CloverETL - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ *  
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -9,12 +9,12 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU   
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.data;
 
@@ -384,7 +384,7 @@ public class StringDataField extends DataField implements CharSequence{
 
     /**
      * Compares this object with the specified object for order -
-     * respecting i18n particularities - e.g. "e" versus "é".<br>
+     * respecting i18n particularities - e.g. "e" versus "??".<br>
      * Using this method requires lots of resources and is therefore
      * much slower than simple compareTo(Object obj) method.
      *

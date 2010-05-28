@@ -1,0 +1,6 @@
+/*
+ * CloverETL Engine - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com).  Use is subject to license terms.
+ *
+ * www.cloveretl.com
+ */
