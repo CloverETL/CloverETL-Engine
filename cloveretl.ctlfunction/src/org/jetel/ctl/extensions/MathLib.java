@@ -283,13 +283,21 @@ public class MathLib extends TLFunctionLibrary {
 
     @TLFunctionAnnotation("Random number (>=0, <1)")
     public static final Double random(TLFunctionCallContext context) {
-    	return Math.random();
+    	return ((TLDataGeneratorCache)context.getCache()).dataGenerator.nextDouble();
+    }
+    
+    @TLFunctionAnnotation("Random number (>=0, <1). Allows changing seed")
+    public static final Double random(TLFunctionCallContext context, Long seed) {
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).dataGenerator;
+    	generator.setSeed(seed);
+    	return generator.nextDouble();
     }
     
     // RANDOM
     class RandomFunction implements TLFunctionPrototype {
     	
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 
     	public void execute(Stack stack, TLFunctionCallContext context) {
@@ -405,12 +413,12 @@ public class MathLib extends TLFunctionLibrary {
 		}
 	}
 
-    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    @TLFunctionAnnotation("Computes bitwise XOR of two operands.")
     public static final Long bitXor(TLFunctionCallContext context, Long i, Long j) {
     	return i ^ j;
     }
 
-    @TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    @TLFunctionAnnotation("Computes bitwise XOR of two operands.")
     public static final Integer bitXor(TLFunctionCallContext context, Integer i, Integer j) {
     	return i ^ j;
     }
@@ -544,7 +552,7 @@ public class MathLib extends TLFunctionLibrary {
 		}
     }
     
-    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
 	public static final Long bitSet(TLFunctionCallContext context, Long input, Integer bitPosition, boolean value) {
     	Long result;
     	if (value)
@@ -555,7 +563,7 @@ public class MathLib extends TLFunctionLibrary {
     	return result;
     }    	
     
-    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
 	public static final Integer bitSet(TLFunctionCallContext context, Integer input, Integer bitPosition, boolean value) {
     	Integer result;
     	if (value)
@@ -585,9 +593,6 @@ public class MathLib extends TLFunctionLibrary {
 		}
     	
     }
-
-    
-//    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
     
     @TLFunctionAnnotation("Random Gaussian number.")
     public static final Double randomGaussian(TLFunctionCallContext context) {

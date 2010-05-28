@@ -57,12 +57,12 @@ public class ContainerLib extends TLFunctionLibrary {
     }
     
     
-    // REMOVE_ALL
+    // CLEAR
     @TLFunctionAnnotation("Removes all elements from a list")
     public static final <E> void clear(TLFunctionCallContext context, List<E> list) {
     	list.clear();
     }
-    @TLFunctionAnnotation("Removes all elements from a list")
+    @TLFunctionAnnotation("Removes all elements from a map")
     public static final <K,V> void clear(TLFunctionCallContext context, Map<K,V> map) {
     	map.clear();
     }

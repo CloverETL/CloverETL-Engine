@@ -778,9 +778,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	// MATCH
-
-	// FIND
+	// MATCHES
 	@TLFunctionInitAnnotation
 	public static final void matchesInit(TLFunctionCallContext context) {
 		context.setCache(new TLRegexpCache(context, 1));
