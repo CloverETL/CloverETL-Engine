@@ -351,38 +351,6 @@ public class InfobrightDataWriter extends Node {
 			}
 			//create loader and Brighthouse record
 			log = new CommonsLogger(logger);
-			try {
-				loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e);
-			}
-		}
-		try {
-			bRecord = createBrighthouseRecord(getInputPort(READ_FROM_PORT).getMetadata(), dbConnection.getJdbcSpecific(), log);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-
-		try {
-			if (logFile != null) {
-				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
-			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
-				dataParser = new DataParser(charset);
-				dataParser.setQuotedStrings(true);
-				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
-				PipedInputStream parserInput = new PipedInputStream();
-				PipedOutputStream loaderOutput = new PipedOutputStream(	parserInput);
-				dataParser.setDataSource(parserInput);
-				loader.setDebugOutputStream(loaderOutput);
-			}
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		if (pipeNamePrefix != null) {//has no effect - infobright-core bug
-			loader.setPipeNamePrefix(pipeNamePrefix);
-		}
-		if (timeout > -1) {
-			loader.setTimeout(timeout);
 		}
 		converter = new CloverValueConverter();
 	}
@@ -469,12 +437,36 @@ public class InfobrightDataWriter extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		try {
-			//create brighthouse record if it hasn't been created yet
-			if (bRecord == null) {
-				bRecord = createBrighthouseRecord(getInputPort(READ_FROM_PORT).getMetadata(), dbConnection.getJdbcSpecific(), log);
-			}
+			bRecord = createBrighthouseRecord(getInputPort(READ_FROM_PORT).getMetadata(), dbConnection.getJdbcSpecific(), log);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
+		}
+
+		try {
+			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		try {
+			if (logFile != null) {
+				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
+			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
+				dataParser = new DataParser(charset);
+				dataParser.setQuotedStrings(true);
+				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+				PipedInputStream parserInput = new PipedInputStream();
+				PipedOutputStream loaderOutput = new PipedOutputStream(	parserInput);
+				dataParser.setDataSource(parserInput);
+				loader.setDebugOutputStream(loaderOutput);
+			}
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		if (pipeNamePrefix != null) {//has no effect - infobright-core bug
+			loader.setPipeNamePrefix(pipeNamePrefix);
+		}
+		if (timeout > -1) {
+			loader.setTimeout(timeout);
 		}
 		super.preExecute();
 	}
