@@ -450,19 +450,19 @@ TOKEN:
 |
  < IN: "in" >
 |
- < PRINT_ERR: "print_err" >
+ < PRINT_ERR: "printErr" >
 |
- < PRINT_LOG: "print_log" >
+ < PRINT_LOG: "printLog" >
 |
- < PRINT_STACK: "print_stack" >
+ < PRINT_STACK: "printStack" >
 |
- < RAISE_ERROR: "raise_error" >
+ < RAISE_ERROR: "raiseError" >
 |
- < READ_DICT: "read_dict" >
+ < READ_DICT: "readDict" >
 |
- < WRITE_DICT: "write_dict" >
+ < WRITE_DICT: "writeDict" >
 |
- < DELETE_DICT: "delete_dict" >
+ < DELETE_DICT: "deleteDict" >
  
 }
 

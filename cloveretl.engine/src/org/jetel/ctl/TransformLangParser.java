@@ -5438,10 +5438,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     jj_nt = token;
     token = oldToken;
     jj_kind = kind;
-	tokenError(kind); // <- Inserted
     throw generateParseException();
   }
-
 
   static private final class LookaheadSuccess extends java.lang.Error { }
   final private LookaheadSuccess jj_ls = new LookaheadSuccess();
