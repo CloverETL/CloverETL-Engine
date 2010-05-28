@@ -21,68 +21,68 @@ boolean eq10;
 
 function integer transform() {
 	i=10;
-	print_err('i='+i);
+	printErr('i='+i);
 	
 	j=9;
-	print_err('j='+j);
+	printErr('j='+j);
 	
 	eq0=(i.eq.(j+1));
-	print_err('eq0: i==j+1 '+eq0);
+	printErr('eq0: i==j+1 '+eq0);
 	
 	eq1=(i==j+1);
-	print_err('eq1: i==j+1 '+eq1);
+	printErr('eq1: i==j+1 '+eq1);
 	
 	l=10;
-	print_err('l='+l);
+	printErr('l='+l);
 	
 	eq2=(l==j);
-	print_err('eq2: l==j '+eq2);
+	printErr('eq2: l==j '+eq2);
 	
 	eq2=(l.eq.i);
-	print_err('eq2: l==i ' + eq2);
+	printErr('eq2: l==i ' + eq2);
 	
 	d=10;
-	print_err('d='+d);
+	printErr('d='+d);
 	
 	eq3=d==i;
-	print_err('eq3: d==i '+eq3);
+	printErr('eq3: d==i '+eq3);
 	
 	n=10;
-	print_err('n='+n);
+	printErr('n='+n);
 	
 	eq4=n.eq.l;
-	print_err('eq4 n==l '+eq4);
+	printErr('eq4 n==l '+eq4);
 	
 	eq5=n==d;
-	print_err('eq5: n==d '+eq5);
+	printErr('eq5: n==d '+eq5);
 	
 	s='hello';
-	print_err('s='+s);
+	printErr('s='+s);
 	
 	s1='hello ';
-	print_err('s1='+s1);
+	printErr('s1='+s1);
 	
 	eq6=s.eq.s1;
-	print_err('eq6 s==s1 '+eq6);
+	printErr('eq6 s==s1 '+eq6);
 	
 	eq7=s==trim(s1);
-	print_err('eq7 s==trim(s1)'+eq7);
+	printErr('eq7 s==trim(s1)'+eq7);
 	
 	mydate=2006-01-01;
-	print_err('mydate='+mydate);
-	print_err('anothermydate='+anothermydate);
+	printErr('mydate='+mydate);
+	printErr('anothermydate='+anothermydate);
 	
 	eq8=mydate.eq.anothermydate;
-	print_err('eq8: mydate == anothermydate '+eq8);
+	printErr('eq8: mydate == anothermydate '+eq8);
 	
 	anothermydate=2006-1-1 0:0:0;
-	print_err('anothermydate='+anothermydate);
+	printErr('anothermydate='+anothermydate);
 	
 	eq9=mydate==anothermydate;
-	print_err('eq9: mydate == anothermydate ='+eq9);
+	printErr('eq9: mydate == anothermydate ='+eq9);
 	
 	eq10=eq9.eq.eq8;
-	print_err('eq10: eq9 == eq8 '+eq10);
+	printErr('eq10: eq9 == eq8 '+eq10);
 	
 	return 0;
 }

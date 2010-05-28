@@ -12,22 +12,22 @@ function integer transform() {
 	// rounding of int argument
 	intResult[0] = round(intArgs[0]);
 	intResult[1] = round(intArgs[1]);
-	print_err(intResult);
+	printErr(intResult);
 	
 	// rounding of long argument
 	longResult[0] = round(longArgs[0]);
 	longResult[1] = round(longArgs[1]);
-	print_err(longResult);
+	printErr(longResult);
 	
 	// rounding of double argument
 	doubleResult[0] = round(doubleArgs[0]);
 	doubleResult[1] = round(doubleArgs[1]);
-	print_err(doubleResult);
+	printErr(doubleResult);
 	
 	// rounding of decimal argument
 	decimalResult[0] = round(decimalArgs[0]);
 	decimalResult[1] = round(decimalArgs[1]);
-	print_err(decimalResult);
+	printErr(decimalResult);
 	
 	return 0;
 }

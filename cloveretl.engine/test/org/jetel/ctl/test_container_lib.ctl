@@ -45,7 +45,7 @@ function integer transform() {
 	// reverse
 	reverse(origList);
 	copy(reverseList,origList);
-	remove_all(origList);
+	clear(origList);
 	copy(removeAllList,origList);
 	return 0;
 }

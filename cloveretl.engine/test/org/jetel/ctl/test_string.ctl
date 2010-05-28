@@ -16,43 +16,43 @@ string varWithNullInitializer = null;
 
 function integer transform() {
 	i="0";
-	print_err(i);
+	printErr(i);
 	 
 	helloEscaped='hello\nworld';
-	print_err(helloEscaped); 
+	printErr(helloEscaped); 
 	
 	helloExpanded="hello\nworld";
-	print_err(helloExpanded);
+	printErr(helloExpanded);
 	 
 	fieldName=$Name;
-	print_err(fieldName);
+	printErr(fieldName);
  
 	fieldCity=$City;
-	print_err(fieldCity);
+	printErr(fieldCity);
  
 	escapeChars='a\u0101\u0102A';
-	print_err(escapeChars);
+	printErr(escapeChars);
  
 	doubleEscapeChars='a\\u0101\\u0102A';
-	print_err(doubleEscapeChars); 
+	printErr(doubleEscapeChars); 
 	specialChars='špeciálne značky s mäkčeňom môžu byť';
-	print_err(specialChars);
+	printErr(specialChars);
 	 
 	dQescapeChars="a\u0101\u0102A";
-	print_err(dQescapeChars);
+	printErr(dQescapeChars);
 	 
 	dQdoubleEscapeChars="a\u0101\u0102A";
-	print_err(dQdoubleEscapeChars);
+	printErr(dQdoubleEscapeChars);
 	 
 	dQspecialChars="špeciálne značky s mäkčeňom môžu byť";
-	print_err(dQspecialChars);
+	printErr(dQspecialChars);
 	 
-	print_err(empty+specialChars);
-	print_err(def); 
+	printErr(empty+specialChars);
+	printErr(def); 
 	
 	nullValue = null;
-	print_err(nullValue);
+	printErr(nullValue);
 	
-	print_err(varWithNullInitializer);
+	printErr(varWithNullInitializer);
 	return 0;
 }

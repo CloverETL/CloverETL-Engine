@@ -28,72 +28,72 @@ function integer transform() {
 	i=10;
 	j=100;
 	itimesj=i*j;
-	print_err("times integer:"+itimesj);
+	printErr("times integer:"+itimesj);
 	
 	l=(0x7fffffffl/10l);
-	print_err(l);
+	printErr(l);
 	
 	m=0x7fffffffl;
-	print_err(m);
+	printErr(m);
 	
 	ltimesm=l*m;
-	print_err("times long:"+ltimesm);
+	printErr("times long:"+ltimesm);
 	
 	mtimesl=m*l;
-	print_err("times long:"+mtimesl);
+	printErr("times long:"+mtimesl);
 	
 	mtimesi=m*i;
-	print_err("long times integer:"+mtimesi);
+	printErr("long times integer:"+mtimesi);
 	
 	itimesm=i*m;
-	print_err("integer times long:"+itimesm);
+	printErr("integer times long:"+itimesm);
 	
 	n=0.1;
-	print_err(n);
+	printErr(n);
 	
 	m1=0.001;
-	print_err(m1);
+	printErr(m1);
 	
 	ntimesm1=n*m1;
-	print_err("times number:"+ntimesm1);
+	printErr("times number:"+ntimesm1);
 	
 	ntimesj=n*j;
-	print_err("number times integer:"+ntimesj);
+	printErr("number times integer:"+ntimesj);
 	
 	jtimesn=j*n;
-	print_err("integer times number:"+jtimesn);
+	printErr("integer times number:"+jtimesn);
 	
 	m1timesm=m1*m;
-	print_err("number times long:"+m1timesm);
+	printErr("number times long:"+m1timesm);
 	
 	mtimesm1=m*m1;
-	print_err("long times number:"+mtimesm1);
+	printErr("long times number:"+mtimesm1);
 	
 	d=0.1D;
-	print_err(d);
+	printErr(d);
 	
 	d1=0.0001D;
-	print_err(d1);
+	printErr(d1);
 	
 	dtimesd1=d*d1;
-	print_err("times decimal:"+dtimesd1);
+	printErr("times decimal:"+dtimesd1);
 	
 	dtimesj=d*j;
-	print_err("decimal times integer:"+dtimesj);
+	printErr("decimal times integer:"+dtimesj);
 	
 	jtimesd=j*d;
-	print_err("integer times decimal:"+jtimesd);
+	printErr("integer times decimal:"+jtimesd);
 	
 	dtimesm=d*m;
-	print_err("decimal times long:"+dtimesm);
+	printErr("decimal times long:"+dtimesm);
 	
 	mtimesd=m*d;
-	print_err("long times decimal:"+mtimesd);
+	printErr("long times decimal:"+mtimesd);
 	
 	dtimesn=d*n;
-	print_err("decimal times number:"+dtimesn);
+	printErr("decimal times number:"+dtimesn);
 	
 	ntimesd=n*d;
-	print_err("number times decimal:"+ntimesd);
+	printErr("number times decimal:"+ntimesd);
 	return 0;
 }

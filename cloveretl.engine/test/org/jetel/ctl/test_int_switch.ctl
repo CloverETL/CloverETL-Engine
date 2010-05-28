@@ -137,7 +137,7 @@ function integer transform() {
 	res72 = false;
 	res73 = false; 
 	while (i < 6) {
-		print_err(res7);
+		printErr(res7);
 		res7[i*3] = res71;
 		res7[i*3+1] = res72;
 		res7[i*3+2] = res73;
@@ -150,22 +150,22 @@ function integer transform() {
 		case 0:
 		case 1:
 			res71 = true;
-			print_err('res71: ' + res71);
+			printErr('res71: ' + res71);
 		case 2:
 		default:
 		case 3:
 			res72 = true;
-			print_err('res72: ' + res72);
+			printErr('res72: ' + res72);
 			i++; 
 			continue; 
 		case 4:
 			res73 = true;
-			print_err('res73: ' + res73);
+			printErr('res73: ' + res73);
 			break; 
 		} 
 		i++; 
 	} 
-	print_err(res7);
+	printErr(res7);
 	// return test
 	
 	for (integer i=0; i<6; i++) {

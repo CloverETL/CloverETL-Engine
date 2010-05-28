@@ -1,7 +1,7 @@
 void voidVar;
 
 function integer transform() {
-	print_err("FAIL - voidVar: " + voidVar);
+	printErr("FAIL - voidVar: " + voidVar);
 	return 0;
 }
 

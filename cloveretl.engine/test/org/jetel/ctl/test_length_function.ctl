@@ -6,11 +6,11 @@ integer recordLength;
 function integer transform() {
 	// string length
 	stringLength = length("12345678");
-	print_err("string:" + stringLength);
+	printErr("string:" + stringLength);
 	
 	// list length
 	listLength = length([1,2,3,4,5,6,7,8]);
-	print_err("list: " + listLength);
+	printErr("list: " + listLength);
 	
 	// map length
 	map[string,integer] m;
@@ -18,12 +18,12 @@ function integer transform() {
 	m["second"] = 2;
 	m["third"] = 3;
 	mapLength = length(m);
-	print_err("map: " + mapLength);
+	printErr("map: " + mapLength);
 	
 	// record length
 	firstInput myRecord;
 	recordLength = length(myRecord);
-	print_err("record: " + recordLength);
+	printErr("record: " + recordLength);
 	
 	return 0;
 }

@@ -586,7 +586,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// "	return s;" +
 		// "}\n\n" +
 		// "function int transform() {\n" +
-		// "	print_err(computeSomething(10));\n" +
+		// "	printErr(computeSomething(10));\n" +
 		// "   return 0;\n" +
 		// "}";
 		URL importLoc = getClass().getResource("samplecode.ctl");
@@ -658,9 +658,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"integer maxInt;\n"+			
 			"function integer transform() {\n" +
 				"minInt=" + Integer.MIN_VALUE + ";\n" +
-				"print_err(minInt, true);\n" + 
+				"printErr(minInt, true);\n" + 
 				"maxInt=" + Integer.MAX_VALUE + ";\n" +
-				"print_err(maxInt, true);\n" + 
+				"printErr(maxInt, true);\n" + 
 				"return 0;\n" +
 			"}\n";
 		doCompile(testExpression, "test_int_edge");
@@ -685,9 +685,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"long maxLong;\n"+			
 			"function integer transform() {\n" +
 				"minLong=" + (Long.MIN_VALUE) + "L;\n" +
-				"print_err(minLong);\n" +
+				"printErr(minLong);\n" +
 				"maxLong=" + (Long.MAX_VALUE) + "L;\n" +
-				"print_err(maxLong);\n" +
+				"printErr(maxLong);\n" +
 				"return 0;\n" +
 			"}\n";
 
@@ -721,24 +721,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			
 			"function integer transform() {\n" +
 				"minLong=" + String.valueOf(Long.MIN_VALUE) + "d;\n" +
-				"print_err(minLong);\n" + 
+				"printErr(minLong);\n" + 
 				"maxLong=" + String.valueOf(Long.MAX_VALUE) + "d;\n" +
-				"print_err(maxLong);\n" + 
+				"printErr(maxLong);\n" + 
 				"minLongNoDist=" + String.valueOf(Long.MIN_VALUE) + "L;\n" +
-				"print_err(minLongNoDist);\n" + 
+				"printErr(minLongNoDist);\n" + 
 				"maxLongNoDist=" + String.valueOf(Long.MAX_VALUE) + "L;\n" +
-				"print_err(maxLongNoDist);\n" +
+				"printErr(maxLongNoDist);\n" +
 				// distincter will cause the double-string be parsed into exact representation within BigDecimal
 				"minDouble=" + String.valueOf(Double.MIN_VALUE) + "D;\n" +
-				"print_err(minDouble);\n" + 
+				"printErr(minDouble);\n" + 
 				"maxDouble=" + String.valueOf(Double.MAX_VALUE) + "D;\n" +
-				"print_err(maxDouble);\n" +
+				"printErr(maxDouble);\n" +
 				// no distincter will cause the double-string to be parsed into inexact representation within double
 				// then to be assigned into BigDecimal (which will extract only MAX_PRECISION digits)
 				"minDoubleNoDist=" + String.valueOf(Double.MIN_VALUE) + ";\n" +
-				"print_err(minDoubleNoDist);\n" + 
+				"printErr(minDoubleNoDist);\n" + 
 				"maxDoubleNoDist=" + String.valueOf(Double.MAX_VALUE) + ";\n" +
-				"print_err(maxDoubleNoDist);\n" +
+				"printErr(maxDoubleNoDist);\n" +
 				"return 0;\n" +
 			"}\n";
 		
@@ -774,9 +774,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"number maxDouble;\n"+		
 			"function integer transform() {\n" +
 				"minDouble=" + Double.MIN_VALUE + ";\n" +
-				"print_err(minDouble);\n" +
+				"printErr(minDouble);\n" +
 				"maxDouble=" + Double.MAX_VALUE + ";\n" +
-				"print_err(maxDouble);\n" +
+				"printErr(maxDouble);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(testExpression, "test_number_edge");
@@ -813,7 +813,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"string longString;\n" +
 			"function integer transform() {\n" +
 				"longString=\"" + tmp + "\";\n" +
-				"print_err(longString);\n" +
+				"printErr(longString);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(testExpression, "test_string_long");
@@ -1780,8 +1780,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String expStr = 
 			"string r1;\n" +
 			"function integer transform() {\n" +
-				"r1=remove_blank_space(\"" + StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") +	"\");\n" +
-				"print_err(r1);\n" +
+				"r1=removeBlankSpace(\"" + StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") +	"\");\n" +
+				"printErr(r1);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_remove_blank_space");
@@ -1795,14 +1795,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"string an3;\n" +
 			"string an4;\n" +
 			"function integer transform() {\n" +
-				"an1=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
-				"print_err(an1);\n" +
-				"an2=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,true);\n" +
-				"print_err(an2);\n" +
-				"an3=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,false);\n" +
-				"print_err(an3);\n" +
-				"an4=get_alphanumeric_chars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,true);\n" +
-				"print_err(an4);\n" +
+				"an1=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
+				"printErr(an1);\n" +
+				"an2=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,true);\n" +
+				"printErr(an2);\n" +
+				"an3=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,false);\n" +
+				"printErr(an3);\n" +
+				"an4=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,true);\n" +
+				"printErr(an4);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_get_alphanumeric_chars");

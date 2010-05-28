@@ -27,70 +27,70 @@ function integer transform() {
 	i=10;
 	j=100;
 	imoduloj=i%j;
-	print_err("modulo integer:"+imoduloj);
+	printErr("modulo integer:"+imoduloj);
 
 	l=0x7fffffffl/10l;
-	print_err(l);
+	printErr(l);
 
 	m=0x7fffffffl;
-	print_err(m);
+	printErr(m);
 
 	lmodulom=l%m;
-	print_err("modulo long:"+lmodulom);
+	printErr("modulo long:"+lmodulom);
 
 	mmoduloi=m%i;
-	print_err("long modulo integer:"+mmoduloi);
+	printErr("long modulo integer:"+mmoduloi);
 
 	imodulom=i%m;
-	print_err("integer modulo long:"+imodulom);
+	printErr("integer modulo long:"+imodulom);
 
 	n=0.1;
-	print_err(n);
+	printErr(n);
 
 	m1=0.001;
-	print_err(m1);
+	printErr(m1);
 
 	nmodulom1=n%m1;
-	print_err("modulo number:"+nmodulom1);
+	printErr("modulo number:"+nmodulom1);
 
 	nmoduloj=n%j;
-	print_err("number modulo integer:"+nmoduloj);
+	printErr("number modulo integer:"+nmoduloj);
 
 	jmodulon=j%n;
-	print_err("integer modulo number:"+jmodulon);
+	printErr("integer modulo number:"+jmodulon);
 
 	m1modulom=m1%m;
-	print_err("number modulo long:"+m1modulom);
+	printErr("number modulo long:"+m1modulom);
 
 	mmodulom1=m%m1;
-	print_err("long modulo number:"+mmodulom1);
+	printErr("long modulo number:"+mmodulom1);
 
 	d=0.1D;
-	print_err(d);
+	printErr(d);
 
 	d1=0.0001D;
-	print_err(d1);
+	printErr(d1);
 
 	dmodulod1=d%d1;
-	print_err("modulo decimal:"+dmodulod1);
+	printErr("modulo decimal:"+dmodulod1);
 
 	dmoduloj=d%j;
-	print_err("decimal modulo integer:"+dmoduloj);
+	printErr("decimal modulo integer:"+dmoduloj);
 
 	jmodulod=j%d;
-	print_err("integer modulo decimal:"+jmodulod);
+	printErr("integer modulo decimal:"+jmodulod);
 
 	dmodulom=d%m;
-	print_err("decimal modulo long:"+dmodulom);
+	printErr("decimal modulo long:"+dmodulom);
 
 	mmodulod=m%d;
-	print_err("long modulo decimal:"+mmodulod);
+	printErr("long modulo decimal:"+mmodulod);
 
 	dmodulon=d%n;
-	print_err("decimal modulo number:"+dmodulon);
+	printErr("decimal modulo number:"+dmodulon);
 
 	nmodulod=n%d;
-	print_err("number modulo decimal:"+nmodulod);
+	printErr("number modulo decimal:"+nmodulod);
 
 	return 0;
 }

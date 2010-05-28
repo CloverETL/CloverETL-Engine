@@ -9,27 +9,27 @@ boolean eq5;
 
 function integer transform() {
 	s='Hej';
-	print_err(s);
+	printErr(s);
 	
 	eq0=(s~="[a-z]{3}");
-	print_err('eq0=' + eq0);
+	printErr('eq0=' + eq0);
 	
 	eq1=(s~="[A-Za-z]{3}");
-	print_err('eq1=' + eq1);
+	printErr('eq1=' + eq1);
 	
 	haystack='Needle in a haystack, Needle in a haystack';
-	print_err(haystack);
+	printErr(haystack);
 	
 	eq2 = haystack ?= 'needle';
-	print_err('eq2=' + eq2);
+	printErr('eq2=' + eq2);
 	
 	eq3 = haystack ?= 'Needle';
-	print_err('eq3=' + eq3);
+	printErr('eq3=' + eq3);
 	
 	eq4 = haystack ~= 'Needle';
-	print_err('eq4=' + eq4);
+	printErr('eq4=' + eq4);
 	
 	eq5 = haystack ~= 'Needle.*';
-	print_err('eq5=' + eq5);
+	printErr('eq5=' + eq5);
 	return 0;
 }

@@ -13,43 +13,43 @@ integer index3;
 integer index4;
 
 function integer transform() {
-	test=remove_diacritic('teścik');
-	print_err(test); 
+	test=removeDiacritic('teścik');
+	printErr(test); 
 	
-	test1=remove_diacritic('žabička');
-	print_err(test1);
+	test1=removeDiacritic('žabička');
+	printErr(test1);
 	
 	t=translate('hello','leo','pii');
-	print_err(t); 
+	printErr(t); 
 	
 	t1=translate('hello','leo','pi');
-	print_err(t1); 
+	printErr(t1); 
 	
 	t2=translate('hello','leo','piims');
-	print_err(t2); 
+	printErr(t2); 
 	
 	t3=translate('hello','hleo','');
-	print_err(t3); 
+	printErr(t3); 
 	
 	t4=translate('my language needs the letter e', 'egms', 'X');
-	print_err(t4); 
+	printErr(t4); 
 	
 	input='hello world';
-	print_err(input); 
+	printErr(input); 
 	
-	index=index_of(input,'l');
-	print_err('index of l: ' + index); 
+	index=indexOf(input,'l');
+	printErr('index of l: ' + index); 
 	
-	index1=index_of(input,'l',5);
-	print_err('index of l since 5: ' + index1);
+	index1=indexOf(input,'l',5);
+	printErr('index of l since 5: ' + index1);
 	
-	index2=index_of(input,'hello');
-	print_err('index of hello: ' + index2);
+	index2=indexOf(input,'hello');
+	printErr('index of hello: ' + index2);
 	
-	index3=index_of(input,'hello',1);
-	print_err('index of hello since 1: ' + index3);
+	index3=indexOf(input,'hello',1);
+	printErr('index of hello since 1: ' + index3);
 	
-	index4=index_of(input,'world',1);
-	print_err('index of world: ' + index4);
+	index4=indexOf(input,'world',1);
+	printErr('index of world: ' + index4);
 	return 0;
 }

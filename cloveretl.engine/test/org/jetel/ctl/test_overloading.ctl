@@ -3,9 +3,9 @@ string res2;
 
 function integer transform() {
 	res1 = sum(1,2);
-	print_err(res1);
+	printErr(res1);
 	res2 = sum('Memento ', 'mori');
-	print_err(res2);
+	printErr(res2);
 	return 0;
 }
 

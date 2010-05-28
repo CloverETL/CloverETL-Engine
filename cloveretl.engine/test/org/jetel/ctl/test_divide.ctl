@@ -27,70 +27,70 @@ function integer transform() {
 	i=10;
 	j=100;
 	idividej=i/j;
-	print_err("divide integer:"+idividej);
+	printErr("divide integer:"+idividej);
 	
 	l=(0x7fffffffl/10l);
-	print_err(l);
+	printErr(l);
 	
 	m=0x7fffffffl;
-	print_err(m);
+	printErr(m);
 	
 	ldividem=l/m;
-	print_err("divide long:"+ldividem);
+	printErr("divide long:"+ldividem);
 	
 	mdividei=m/i;
-	print_err("long divide integer:"+mdividei);
+	printErr("long divide integer:"+mdividei);
 	
 	idividem=i/m;
-	print_err("integer divide long:"+idividem);
+	printErr("integer divide long:"+idividem);
 	
 	n=0.1;
-	print_err(n);
+	printErr(n);
 	
 	m1=0.001;
-	print_err(m1);
+	printErr(m1);
 	
 	ndividem1=n/m1;
-	print_err("divide number:"+ndividem1);
+	printErr("divide number:"+ndividem1);
 	
 	ndividej=n/j;
-	print_err("number divide integer:"+ndividej);
+	printErr("number divide integer:"+ndividej);
 	
 	jdividen=j/n;
-	print_err("integer divide number:"+jdividen);
+	printErr("integer divide number:"+jdividen);
 	
 	m1dividem=m1/m;
-	print_err("number divide long:"+m1dividem);
+	printErr("number divide long:"+m1dividem);
 	
 	mdividem1=m/m1;
-	print_err("long divide number:"+mdividem1);
+	printErr("long divide number:"+mdividem1);
 	
 	d=0.1D;
-	print_err(d);
+	printErr(d);
 	
 	d1=0.0001D;
-	print_err(d1);
+	printErr(d1);
 	
 	ddivided1=d/d1;
-	print_err("divide decimal:"+ddivided1);
+	printErr("divide decimal:"+ddivided1);
 	
 	ddividej=d/j;
-	print_err("decimal divide integer:"+ddividej);
+	printErr("decimal divide integer:"+ddividej);
 	
 	jdivided=j/d;
-	print_err("integer divide decimal:"+jdivided);
+	printErr("integer divide decimal:"+jdivided);
 	
 	ddividem=d/m;
-	print_err("decimal divide long:"+ddividem);
+	printErr("decimal divide long:"+ddividem);
 	
 	mdivided=m/d;
-	print_err("long divide decimal:"+mdivided);
+	printErr("long divide decimal:"+mdivided);
 	
 	ddividen=d/n;
-	print_err("decimal divide number:"+ddividen);
+	printErr("decimal divide number:"+ddividen);
 	
 	ndivided=n/d;
-	print_err("number divide decimal:"+ndivided);
+	printErr("number divide decimal:"+ndivided);
 	
 	return 0;
 }

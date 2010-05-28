@@ -7,18 +7,18 @@ number varWithNullInitializer = null;
 
 function integer transform() {
 	i=0;
-	print_err(i); 
+	printErr(i); 
 
 	j=-1.0;
-	print_err(j);
+	printErr(j);
 	 
 	field = $0.Age;
-	print_err(field); 
-	print_err(def);
+	printErr(field); 
+	printErr(def);
 	
 	nullValue = null;
-	print_err(nullValue);
-	print_err(varWithNullInitializer);
+	printErr(nullValue);
+	printErr(varWithNullInitializer);
 	
 	return 0;
 }
