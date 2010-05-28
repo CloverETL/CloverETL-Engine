@@ -267,7 +267,7 @@ public class RunGraph extends Node{
 	public Result execute() throws Exception {
 		DataRecord outRec = initOutRecord();
 		if (pipelineMode) {
-			if (runSingleGraph(FileUtils.getFile(getGraph().getProjectURL(),graphName), outRec, cloverCmdLineArgs)) {
+			if (runSingleGraph(graphName, outRec, cloverCmdLineArgs)) {
 				writeOutRecord(outRec);
 			} else {								
 				writeErrRecord(outRec);
