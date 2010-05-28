@@ -1032,7 +1032,7 @@ public]]></replacevalue>
 	<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
 	
 	<target name="check-sources-engine">
-		<fileheading heading="${java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
+		<fileheading heading="${java.src.header.file.opensource}" dryrun="true" propertyifrewritten="java.src.header.invalid">
 			<fileset dir="${dir.src}">
 				<include name="**/*.java"/>
 				<exclude name="org/jetel/interpreter/TransformLangParser*"/>
@@ -1040,7 +1040,7 @@ public]]></replacevalue>
 				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
 			</fileset>
 		</fileheading>
-		<fail message="File ${java.src.header.invalid} has invalid header - must be ${java.src.header.file}" if="java.src.header.invalid"/>
+		<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
 	</target>
 	
 	<target name="check-sources-plugins">
