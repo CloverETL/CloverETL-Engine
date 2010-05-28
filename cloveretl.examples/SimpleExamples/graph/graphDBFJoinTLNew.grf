@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Mon May 17 10:33:10 CEST 2010" modifiedBy="avackova" name="ComplexTransformation" revision="1.41">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Fri May 28 13:45:09 CEST 2010" modifiedBy="avackova" name="ComplexTransformation" revision="1.47">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata3"/>
@@ -32,9 +32,9 @@ function double price_per_unit(double unit_price,double quantity,double discount
 
 function integer ship_time(date ordered,date shipped){
 	if (shipped.lt.ordered) {
-		raise_error("Ship time can't be lower than order date");
+		raiseError("Ship time can't be lower than order date");
 	}
-	else return datediff(shipped,ordered,day);
+	else return dateDiff(shipped,ordered,day);
 }
 
 function integer transform(){
@@ -52,7 +52,7 @@ function integer transform(){
 	$ORDERS_Info.QUANTITY=$Bigodata_dbf.QUANTITY;
 	$ORDERS_Info.DISCOUNT=$Bigodata_dbf.DISCOUNT;
 	$ORDERS_Info.SHIPTIME=shiptime;
-	return 2147483647;
+	return ALL;
 }
 ]]></attr>
 </Node>
@@ -65,12 +65,12 @@ function integer transform(){
 	copyFields();
 	//only for debugging
 	if (isnull($Customer.CompanyName)) {
-		print_err("$Customer.CompanyName is null");
+		printErr("$Customer.CompanyName is null");
 	}else {
-		print_err("$Customer.CompanyName="+$Customer.CompanyName);
+		printErr("$Customer.CompanyName="+$Customer.CompanyName);
 	}
 	$ORDERS_Info.CUSTOMER = nvl($Customer.CompanyName,"N/A");
-	return 0;
+	return ALL;
  }
 
 ]]></attr>
