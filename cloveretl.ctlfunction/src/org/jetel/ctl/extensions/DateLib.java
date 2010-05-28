@@ -173,6 +173,7 @@ public class DateLib extends TLFunctionLibrary {
 
     }
 	
+    @TLFunctionAnnotation("Returns 1.1.1970 date.")
     public static final Date zeroDate() {
     	return new Date(0L);
     }
