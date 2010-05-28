@@ -9,7 +9,9 @@
 
 
 /* *********** !!!!!!!!!!!!!!! Compilation note !!!!!!!!!!!!!! *****************
-	Whenever parser is recompiled by javacc, you need to:
+	After modifying this file you must execute ant target generate-java-sources (eclise launch configuration "cloveretl.engine generate-java-sources")
+	 
+	Whenever parser is manually recompiled by javacc, you need to:
 	
 	1. Delete the file org.jetel.ctl.Node.java
 	   Delete the file org.jetel.ctl.SimpleNode.java

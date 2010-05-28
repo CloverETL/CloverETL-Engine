@@ -499,9 +499,9 @@ defined.version.suffix=release
 		</if>
 	</target>
 	
-	<target name="generate-java-sources" depends="generate-ctl-parser,generate-jaxb-dictionary" description="Generate some java sources"/>
+	<target name="generate-java-sources" depends="generate-interpreter-parser,generate-ctl-parser,generate-jaxb-dictionary" description="Generate some java sources"/>
 
-	<target name="generate-ctl-parser" description="Generate ctl parser sources by javaCC">
+	<target name="generate-interpreter-parser" description="Generate interpreter parser sources by javaCC">
 		
 		<jjtree javacchome="${dir.tools}" 
 			target="${dir.src}/org/jetel/interpreter/TransformLangParser.jjt" 
@@ -512,15 +512,58 @@ defined.version.suffix=release
 		
 		<delete file="${dir.src}/org/jetel/interpreter/Node.java"/>
 		
-		<replace file="${dir.src}/org/jetel/interpreter/TransformLangParserVisitor.java" encoding="UTF-8">
-			  <replacetoken><![CDATA[package org.jetel.interpreter;]]></replacetoken>
+		<replace file="${dir.src}/org/jetel/interpreter/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
+			  <replacetoken><![CDATA[package org.jetel.interpreter;
+
+public]]></replacetoken>
 			  <replacevalue><![CDATA[package org.jetel.interpreter;
 
-import org.jetel.interpreter.ASTnode.*;]]></replacevalue>
+import org.jetel.interpreter.ASTnode.*;
+
+public]]></replacevalue>
 		</replace>
 		
 		<javacc javacchome="${dir.tools}" 
 			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
+	
+	</target>
+	
+	<target name="generate-ctl-parser" description="Generate interpreter parser sources by javaCC">
+		
+		<jjtree javacchome="${dir.tools}" 
+			target="${dir.src}/org/jetel/ctl/TransformLangParser.jjt" 
+			outputdirectory="${dir.src}/org/jetel/ctl/"/>
+
+		<javacc javacchome="${dir.tools}" 
+			target="${dir.src}/org/jetel/ctl/TransformLangParser.jj"/>
+		
+		<delete file="${dir.src}/org/jetel/ctl/Node.java"/>
+		<delete file="${dir.src}/org/jetel/ctl/SimpleNode.java"/>
+		
+		<replace file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
+			  <replacetoken><![CDATA[package org.jetel.ctl;
+
+public]]></replacetoken>
+			  <replacevalue><![CDATA[package org.jetel.ctl;
+
+import org.jetel.ctl.ASTnode.*;
+
+public]]></replacevalue>
+		</replace>
+		<replace file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
+			  <replacetoken><![CDATA[interface TransformLangParserVisitor
+{]]></replacetoken>
+			  <replacevalue><![CDATA[interface TransformLangParserVisitor extends SyntheticNodeVisitor
+{]]></replacevalue>
+		</replace>
+		
+		<replace file="${dir.src}/org/jetel/ctl/TransformLangParser.java" encoding="UTF-8" summary="true">
+			  <replacetoken><![CDATA[jj_kind = kind;
+    throw generateParseException();]]></replacetoken>
+			  <replacevalue><![CDATA[jj_kind = kind;
+	tokenError(kind); // <- Inserted
+    throw generateParseException();]]></replacevalue>
+		</replace>
 	
 	</target>
 	
