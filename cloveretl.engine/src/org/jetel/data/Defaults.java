@@ -27,7 +27,6 @@ import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.util.compile.DynamicJavaCode;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -194,13 +193,6 @@ public final class Defaults {
 		INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
 		PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
 
-		String compiler = getStringProperties("DEFAULT_JAVA_COMPILER", DynamicJavaCode.CompilerType.internal.name());
-		try {
-			DEFAULT_JAVA_COMPILER = DynamicJavaCode.CompilerType.valueOf(compiler);
-		} catch (Exception e) {
-			DEFAULT_JAVA_COMPILER = DynamicJavaCode.CompilerType.internal;
-		}
-
 		Record.init();
 		DataFieldMetadata.init();
 		DataParser.init();
@@ -255,11 +247,6 @@ public final class Defaults {
 	 * property.
 	 */
 	public static String DEFAULT_PLUGINS_DIRECTORY;// = "./plugins"
-
-	/**
-	 * Which java compiler implementation will be used for all inline java code.
-	 */
-	public static DynamicJavaCode.CompilerType DEFAULT_JAVA_COMPILER;
 
 	/**
 	 * string used for recognizing of clover field

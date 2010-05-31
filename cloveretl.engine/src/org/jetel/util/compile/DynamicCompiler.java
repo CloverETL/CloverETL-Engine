@@ -86,8 +86,8 @@ public final class DynamicCompiler {
 		StringWriter compilerOutput = new StringWriter();
 
 		CompilationTask task = compiler.getTask(compilerOutput, fileManager, null,
-				Arrays.asList("-cp", ClassLoaderUtils.getClasspath(classLoader)),
-				null, Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
+				Arrays.asList("-cp", ClassLoaderUtils.getClasspath(classLoader)), null,
+				Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
 
 		if (!task.call()) {
 			throw new CompilationException("Compilation failed! See compiler output for more details.",
@@ -106,7 +106,7 @@ public final class DynamicCompiler {
 	 *
 	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 *
-	 * @version 14th May 2010
+	 * @version 28th May 2010
 	 * @created 14th May 2010
 	 */
 	private static final class JavaSourceFileObject extends SimpleJavaFileObject {
@@ -115,7 +115,7 @@ public final class DynamicCompiler {
 		private final String sourceCode;
 
 		public JavaSourceFileObject(String name, String sourceCode) {
-			super(URI.create(name + Kind.SOURCE.extension), Kind.SOURCE);
+			super(URI.create(name.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
 
 			this.sourceCode = sourceCode;
 		}
@@ -132,7 +132,7 @@ public final class DynamicCompiler {
 	 *
 	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 *
-	 * @version 14th May 2010
+	 * @version 28th May 2010
 	 * @created 14th May 2010
 	 */
 	private static final class JavaClassFileObject extends SimpleJavaFileObject {
@@ -141,7 +141,7 @@ public final class DynamicCompiler {
 		private final ByteArrayOutputStream classData = new ByteArrayOutputStream();
 
 		public JavaClassFileObject(String name) {
-			super(URI.create(name + Kind.CLASS.extension), Kind.CLASS);
+			super(URI.create(name.replace('.', '/') + Kind.CLASS.extension), Kind.CLASS);
 		}
 
 		@Override
