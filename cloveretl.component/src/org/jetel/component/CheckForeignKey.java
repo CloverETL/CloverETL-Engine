@@ -121,6 +121,7 @@ import org.w3c.dom.Element;
         public static final String XML_FOREIGNKEY_ATTRIBUTE = "foreignKey";
         private static final String XML_PRIMARYKEY_ATTRIBUTE = "primaryKey";
         private static final String XML_DEFAULTFOREIGNKEY_ATTRIBUTE = "defaultForeignKey";
+        private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
     
     	/**  Description of the Field */
         public final static String COMPONENT_TYPE = "CHECK_FOREIGN_KEY";
@@ -147,6 +148,7 @@ import org.w3c.dom.Element;
     	private Map<HashKey, DataRecord> hashMap;
     	private int hashTableInitialCapacity;
 		private String keyDefinition;
+		private boolean equalNull;
     	    
     	static Log logger = LogFactory.getLog(CheckForeignKey.class);
     
@@ -199,6 +201,9 @@ import org.w3c.dom.Element;
                     .getMetadata())).init();
             (foreignKey = new RecordKey(foreignKeys,
                     getInputPort(FOREIGN_ON_PORT).getMetadata())).init();
+            
+    		foreignKey.setEqualNULLs(equalNull);
+    		primaryKey.setEqualNULLs(equalNull);
     
             // allocate HashMap
             try {
@@ -358,12 +363,16 @@ import org.w3c.dom.Element;
     			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
                     checkKey.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
     			}
+    			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)) {
+                    checkKey.setEqualNull(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+    			}
     			return checkKey;
     		} catch (Exception ex) {
     	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
     		}
     	}
-    	/**
+        
+		/**
     	 *  Description of the Method
     	 *
     	 * @return    Description of the Return Value
@@ -409,5 +418,13 @@ import org.w3c.dom.Element;
     		this.primaryKeys = key;
     	}
        
+    	/**
+    	 * If primary key is null and foreign is null as well and equalNull is true then record keys are equals.
+    	 * 
+		 * @param integer
+		 */
+		private void setEqualNull(boolean equalNull) {
+			this.equalNull = equalNull;
+		}
 }
 
