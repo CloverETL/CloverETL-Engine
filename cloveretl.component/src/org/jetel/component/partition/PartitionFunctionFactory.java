@@ -24,7 +24,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
-import org.jetel.component.WrapperTL;
+import org.jetel.component.RecordTransformFactory;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
@@ -36,7 +36,7 @@ import org.jetel.graph.Node;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -171,13 +171,14 @@ public class PartitionFunctionFactory {
 	 * @throws ComponentNotReadyException
 	 */
 	public PartitionFunction createPartitionDynamic(String partitionSource) throws ComponentNotReadyException {
+		int transformType = RecordTransformFactory.guessTransformType(partitionSource);
+
 		//check if source code is in CloverETL format
-		if (partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID) || partitionSource.contains(WrapperTL.TL_TRANSFORM_CODE_ID2) ||
-				PATTERN_TL_CODE.matcher(partitionSource).find()) {
+		if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
 			PartitionTL function =  new PartitionTL(partitionSource, metadata, additionalParameters, logger);
 			function.setGraph(node.getGraph());
 			return function;
-		} else if (partitionSource.contains(TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
+		} else if (transformType == RecordTransformFactory.TRANSFORM_CTL) {
 			// compile the CTL code
 			ITLCompiler compiler = TLCompilerFactory.createCompiler(
 					node.getGraph(),
@@ -207,24 +208,18 @@ public class PartitionFunctionFactory {
         	// pass graph instance to transformation (if CTL it can use lookups etc.)
 			function.setGraph(node.getGraph());
 			return function;
-		} else { //get partition function form java code
-			DynamicJavaCode dynCode = new DynamicJavaCode(partitionSource, this.getClass().getClassLoader());
-	        logger.info(" (compiling dynamic source) ");
-	        // use DynamicJavaCode to instantiate transformation class
-	        Object transObject = null;
-	        try {
-	            transObject = dynCode.instantiate();
-	        } catch (RuntimeException ex) {
-	            logger.debug(dynCode.getCompilerOutput());
-	            logger.debug(dynCode.getSourceCode());
-	            throw new ComponentNotReadyException("Parttion code is not compilable.\n" + "Reason: " + ex.getMessage());
-	        }
+		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
+			//get partition function form java code
+	        Object transObject = DynamicJavaClass.instantiate(partitionSource, this.getClass().getClassLoader());
+
 	        if (transObject instanceof PartitionFunction) {
-	            return (PartitionFunction)transObject;
-	        } else {
-	            throw new ComponentNotReadyException("Provided partition class doesn't implement required interface.");
+				return (PartitionFunction) transObject;
 	        }
+
+	        throw new ComponentNotReadyException("Provided partition class doesn't implement required interface.");
 		}
+
+		throw new ComponentNotReadyException("Cannot determine the type of the transformation code!");
     }
 
 	/**
