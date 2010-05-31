@@ -51,7 +51,7 @@ import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -309,7 +309,6 @@ public class RecordTransformFactory {
             DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
             boolean addTransformCodeStub)
             throws ComponentNotReadyException {
-        DynamicJavaCode dynamicTransformCode;
         // creating dynamicTransformCode from internal transformation format
         CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
         if (!addTransformCodeStub) 
@@ -321,8 +320,7 @@ public class RecordTransformFactory {
         if (addTransformCodeStub)
         	codeParser.addTransformCodeStub("Transform" + className);
 
-        dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode(), classLoader);
-        return loadClassDynamic(logger,dynamicTransformCode);
+        return loadClassDynamic(codeParser.getSourceCode(), classLoader);
     }
     
     /**
@@ -331,27 +329,15 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(Log logger,DynamicJavaCode dynamicTransformCode)
+    public static RecordTransform loadClassDynamic(String sourceCode, ClassLoader classLoader)
             throws ComponentNotReadyException {
-        logger.info(" (compiling dynamic source) ");
-        // use DynamicJavaCode to instantiate transformation class
-        Object transObject = null;
-        try {
-            transObject = dynamicTransformCode.instantiate();
-        } catch (RuntimeException ex) {
-            logger.debug(dynamicTransformCode.getCompilerOutput());
-            logger.debug(dynamicTransformCode.getSourceCode());
-            throw new ComponentNotReadyException(
-                    "Transformation code is not compilable.\n" + "reason: "
-                            + ex.getMessage());
-        }
+        Object transObject = DynamicJavaClass.instantiate(sourceCode, classLoader);
+
         if (transObject instanceof RecordTransform) {
-            return (RecordTransform) transObject;
-        } else {
-            throw new ComponentNotReadyException(
-                    "Provided transformation class doesn't implement RecordTransform.");
+			return (RecordTransform) transObject;
         }
 
+        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
     }
     
     /**

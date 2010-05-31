@@ -38,7 +38,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -356,22 +356,13 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordGenerate createGeneratorDynamic(String generatorCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(generatorCode, this.getClass().getClassLoader());
-        logger.info(" (compiling dynamic source) ");
-        // use DynamicJavaCode to instantiate transformation class
-        Object transObject = null;
-        try {
-            transObject = dynCode.instantiate();
-        } catch (RuntimeException ex) {
-            logger.debug(dynCode.getCompilerOutput());
-            logger.debug(dynCode.getSourceCode());
-            throw new ComponentNotReadyException("Transformation code is not compilable.\n" + "Reason: " + ex.getMessage());
-        }
+        Object transObject = DynamicJavaClass.instantiate(generatorCode, this.getClass().getClassLoader());
+
         if (transObject instanceof RecordGenerate) {
-            return (RecordGenerate)transObject;
-        } else {
-            throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordGenerate.");
+			return (RecordGenerate) transObject;
         }
+
+        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordGenerate.");
     }
 
 	/**

@@ -36,7 +36,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -135,13 +135,7 @@ public class JavaExecute extends Node {
         }
         
         if (runnableClass == null) {
-        	try {
-        		DynamicJavaCode dynaRunnableCode = new DynamicJavaCode(runnable, classLoader);
-        		codeToRun = JavaExecute.loadClassDynamic(
-                    logger, dynaRunnableCode);
-        	} catch (RuntimeException e) {
-        		throw new ComponentNotReadyException(e);
-        	}
+    		codeToRun = loadClassDynamic(runnable, classLoader);
         }
         
         codeToRun.setGraph(node.getGraph()); 
@@ -214,28 +208,15 @@ public class JavaExecute extends Node {
      * @return	Instance of a class
      * @throws ComponentNotReadyException
      */
-    private static JavaRunnable loadClassDynamic(Log logger,DynamicJavaCode dynamicRunnableCode)
-            throws ComponentNotReadyException {
-        logger.info(" (compiling dynamic source) ");
-        // use DynamicJavaCode to instantiate transformation class
-        Object runnObject = null;
-        try {
-            runnObject = dynamicRunnableCode.instantiate();
-        } catch (RuntimeException ex) {
-            logger.debug(dynamicRunnableCode.getCompilerOutput());
-            logger.debug(dynamicRunnableCode.getSourceCode());
-            throw new ComponentNotReadyException(
-                    "Code to run is not compilable.\n" + "reason: "
-                            + ex.getMessage());
+    private static JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader)
+    		throws ComponentNotReadyException {
+        Object transObject = DynamicJavaClass.instantiate(runnable, classLoader);
+
+        if (transObject instanceof JavaRunnable) {
+			return (JavaRunnable) transObject;
         }
 
-        if (runnObject instanceof JavaRunnable) {
-            return (JavaRunnable) runnObject;
-        } else {
-            throw new ComponentNotReadyException(
-                    "Provided transformation class doesn't implement JavaRunnable.");
-        }
-
+        throw new ComponentNotReadyException("Provided transformation class doesn't implement JavaRunnable.");
     }
 	
     /**

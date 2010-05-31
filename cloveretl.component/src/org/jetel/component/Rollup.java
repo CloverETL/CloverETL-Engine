@@ -57,7 +57,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -160,7 +160,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 20th May 2010
+ * @version 28th May 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -542,13 +542,11 @@ public class Rollup extends Node {
 
     	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
             try {
-            	return (RecordRollup) new DynamicJavaCode(sourceCode, getClass().getClassLoader()).instantiate();
+            	return (RecordRollup) DynamicJavaClass.instantiate(sourceCode, getClass().getClassLoader());
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);
-            } catch (RuntimeException exception) {
-                throw new ComponentNotReadyException("Cannot compile the transformation code!", exception);
-            }
+			}
         }
 
         throw new ComponentNotReadyException("Cannot determine the type of the transformation code!");

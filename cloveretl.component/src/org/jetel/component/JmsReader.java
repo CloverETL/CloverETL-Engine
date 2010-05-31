@@ -44,7 +44,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -254,23 +254,14 @@ public class JmsReader extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private static JmsMsg2DataRecord createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(psorCode, JmsReader.class.getClassLoader());
-        logger.info(" (compiling dynamic source) ");
-        // use DynamicJavaCode to instantiate transformation class
-        Object transObject = null;
-        try {
-            transObject = dynCode.instantiate();
-        } catch (RuntimeException ex) {
-            logger.debug(dynCode.getCompilerOutput());
-            logger.debug(dynCode.getSourceCode());
-            throw new ComponentNotReadyException("Msg processor code is not compilable.\n" + "Reason: " + ex.getMessage());
-        }
+	private JmsMsg2DataRecord createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
+        Object transObject = DynamicJavaClass.instantiate(psorCode, this.getClass().getClassLoader());
+
         if (transObject instanceof JmsMsg2DataRecord) {
-            return (JmsMsg2DataRecord)transObject;
-        } else {
-            throw new ComponentNotReadyException("Provided msg processor class doesn't implement required interface.");
+			return (JmsMsg2DataRecord) transObject;
         }
+
+        throw new ComponentNotReadyException("Provided msg processor class doesn't implement required interface.");
     }
 
 	/**

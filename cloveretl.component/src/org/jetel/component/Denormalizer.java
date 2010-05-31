@@ -56,7 +56,7 @@ import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaCode;
+import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -229,22 +229,13 @@ public class Denormalizer extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(denormCode, this.getClass().getClassLoader());
-        logger.info(" (compiling dynamic source) ");
-        // use DynamicJavaCode to instantiate transformation class
-        Object transObject = null;
-        try {
-            transObject = dynCode.instantiate();
-        } catch (RuntimeException ex) {
-            logger.debug(dynCode.getCompilerOutput());
-            logger.debug(dynCode.getSourceCode());
-            throw new ComponentNotReadyException("Transformation code is not compilable.\n" + "Reason: " + ex.getMessage());
-        }
+        Object transObject = DynamicJavaClass.instantiate(denormCode, this.getClass().getClassLoader());
+
         if (transObject instanceof RecordDenormalize) {
-            return (RecordDenormalize)transObject;
-        } else {
-            throw new ComponentNotReadyException("Provided transformation class doesn't implement Recorddenormalize.");
+			return (RecordDenormalize) transObject;
         }
+
+        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordDenormalize.");
     }
 		
 	public void init() throws ComponentNotReadyException {
