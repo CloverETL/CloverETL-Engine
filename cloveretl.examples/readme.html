@@ -11,25 +11,21 @@
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <H1 LANG="en-GB"><FONT COLOR="#008000">Running CloverETL examples</FONT></H1>
-<P LANG="en-GB" STYLE="margin-bottom: 0cm"><I>by Agata Vackova, Last
+<P LANG="en-GB" STYLE="margin-bottom: 0cm"><I>by Pavel Najvar, Last
 modified 
 <SCRIPT LANGUAGE="javascript">
 document.writeln(document.lastModified)
 </SCRIPT>
 </I></P>
 <HR>
-<H2 LANG="en-GB">Preliminaries</H2>
-<P LANG="en-GB">Complete <A HREF="http://wiki.clovergui.net/">documentation
-to CloverETL</A>. 
-</P>
 <P LANG="en-GB">Detailed <A HREF="http://wiki.clovergui.net/www/doku.php?id=examples">examples
 description</A>. 
 </P>
-<P LANG="en-GB">CloverDesigner contains all examples. To import them see 
-<A HREF="http://www.cloveretl.com/documentation/UserGuide/index.jsp?topic=/com.cloveretl.gui.docs/docs/examples-project.html">
-CloverETL Examples Project</A>.
+<H2 LANG="en-GB">Using examples in CloverETL Designer</H2>
+<P LANG="en-GB">CloverETL Designer contains all examples built-in. You can import them into your workspace using File->New->Other, CloverETL->CloverETL Examples project.
+For more information visit <A HREF="http://www.cloveretl.com/documentation/UserGuide/index.jsp?topic=/com.cloveretl.gui.docs/docs/examples-project.html">CloverETL Examples Project</A>.
 </P>
-<H2 LANG="en-GB">Installing and running examples</H2>
+<H2 LANG="en-GB">Installing and running examples in CloverETL Engine</H2>
 <ul><li><A HREF="http://sourceforge.net/projects/cloveretl/files/">Download</A>
 a binary package of <B>CloverETL engine</B> and <B>Clover Examples</B>
 or build one from sources.
@@ -38,11 +34,10 @@ or build one from sources.
 <li>Go to project directory you want to run graph from (e.g <i>cloverETL/examples/simpleExamples</i>)
 <li>Use <i>clover (clover.bat)</i> script to run a graph, eg.:<br>
 <i>../../bin/clover graph/graphPartition.grf</i></ul>
-<H2 LANG="en-GB">Importent notes</H2>
-<ul><li>CloverETL requires Java (JVM) version 1.5 or higher! 
-<li>You must configure the database <a href="http://wiki.clovergui.net/doku.php?id=graph_elements:connections">connection</a> to run database related examples 
-(all <i>extExamples</i>, <i>graphRevenues.grf</i> from <i>advancedExamples</i>)
-<li><i>javaExamples</i> project contains examples, that illustrate how to use <b>CloverETL</b> from java</ul>
+<H2 LANG="en-GB">Important notes</H2>
+<ul><li>CloverETL requires Java (JVM) version 1.6 or higher! 
+<li>Database examples in <i>ExtExamples</i> use Derby database - please follow enclosed ExtExamples/README.txt
+<li><i>JavaExamples</i> project contains examples, that illustrate how to use <b>CloverETL</b> from java</ul>
 </P>
 </BODY>
 </HTML>
