@@ -1,10 +1,13 @@
-CloverETL engine version 0.0.0.devel
+CloverETL Engine version 0.0.0.devel
+www.cloveretl.com
 ---------------------------------
 
 Requirements/dependencies
 -------------------------
-Clover requires Java version 1.5. All other third party
-libraries required can be found in "lib/" directory.
+
+CloverETL requires Java version 1.6
+
+All other required third party libraries can be found in "lib/" directory.
 
 These are:
 commons-logging (Apache)- http://jakarta.apache.org/commons/logging/
@@ -18,4 +21,7 @@ Saxon8 (MPL) 			- http://sourceforge.net/projects/saxon/
 JSch (BSD-style)		- http://www.jcraft.com/jsch/
 Janino (New BSD)		- http://www.janino.net/
 
-In case of problems, contact OpenSys at info@opensys.eu
+
+Support
+-------
+In case you encounter issues running CloverETL Engine, please contact us at support@cloveretl.com
