@@ -834,7 +834,12 @@ public class HashJoin extends Node {
 				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
 			}
 
-			join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_JOINKEY_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), joinType);
+			join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), 
+					xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
+					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+					joinType);
 
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
