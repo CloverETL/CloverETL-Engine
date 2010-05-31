@@ -3,6 +3,7 @@
 <TestScenario ident="ext-examples" description="Engine extended examples" useJMX="true">
 
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
+	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="derby" type="DERBY" user="app" password="derby" 
 		URL="jdbc:derby://localhost:1527/${PROJECT_DIR}/data-in/derby.db;" 
 		driver="org.apache.derby.jdbc.ClientDriver" />
@@ -25,7 +26,7 @@
 
 	<FunctionalTest ident="DBExecuteOracle" graphFile="graph/graphDBExecuteOracle.grf">
         <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
-        <Property name="LIB_DIR" value="../cloveretl.test.scenarios/lib" />
+        <Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
 
 	 	  <FlatFile outputFile="data-out/countries.txt" supposedFile="supposed-out/countries.DBExecuteOracle.txt"/>	                                                                    
 	</FunctionalTest>
