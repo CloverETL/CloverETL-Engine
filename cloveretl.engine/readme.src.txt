@@ -1,4 +1,5 @@
-CloverETL engine version 0.0.0.devel
+CloverETL Engine version 0.0.0.devel
+www.cloveretl.com
 ---------------------------------
 
 Use Apache ANT to build binary - run with
@@ -7,8 +8,8 @@ Use Apache ANT to build binary - run with
 Before compilation, update "cloveretl.engine/build.properties" file
 to reflect your set-up.
 
-Requires Java version 1.5. All other third party
-libraries required can be found in "cloveretl.engine/lib/" directory.
+CloverETL requires Java version 1.6
+All other required third party libraries can be found in "cloveretl.engine/lib/" directory.
 
 These are:
 commons-logging (Apache)- http://jakarta.apache.org/commons/logging/
@@ -22,4 +23,6 @@ Saxon8 (MPL) 			- http://sourceforge.net/projects/saxon/
 JSch (BSD-style)		- http://www.jcraft.com/jsch/
 Janino (New BSD)		- http://www.janino.net/
 
-In case of problems, contact OpenSys at info@opensys.eu
+Support
+-------
+In case you encounter issues running CloverETL Engine, please contact us at support@cloveretl.com
