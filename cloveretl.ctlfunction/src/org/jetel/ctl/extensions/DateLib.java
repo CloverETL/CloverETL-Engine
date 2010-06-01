@@ -127,7 +127,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Returns the difference between dates")
     public static final Integer dateDiff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
-		long diffSec = lhs.getTime() - rhs.getTime() / 1000;
+		long diffSec = (lhs.getTime() - rhs.getTime()) / 1000L;
         int diff = 0;
         
         Calendar cal = null;
@@ -174,7 +174,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 	
     @TLFunctionAnnotation("Returns 1.1.1970 date.")
-    public static final Date zeroDate() {
+    public static final Date zeroDate(TLFunctionCallContext context) {
     	return new Date(0L);
     }
     
@@ -184,7 +184,7 @@ public class DateLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(zeroDate());
+			stack.push(zeroDate(context));
 		}
     }
     
