@@ -18,7 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.text.SimpleDateFormat;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 
 /**
  * @author jakub (jakub.lehotsky@javlin.eu)
@@ -28,8 +29,7 @@ import java.text.SimpleDateFormat;
  */
 public class TLDateFormatCache extends TLCache {
 
-	private SimpleDateFormat cachedFormat;
-	private String previousFormatString;
+	private DateFormatter cachedFormatter;
 
 	public TLDateFormatCache(TLFunctionCallContext context, int position) {
 		createCachedFormat(context, position);
@@ -37,22 +37,16 @@ public class TLDateFormatCache extends TLCache {
 	
 	public void createCachedFormat(TLFunctionCallContext context, int position) {
 		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
-			final SimpleDateFormat format = new SimpleDateFormat();
-			format.applyPattern((String)context.getParamValue(position));
-			cachedFormat = format;
+			cachedFormatter = DateFormatterFactory.createFormatter((String) context.getParamValue(position));
 		}
 	}
-	
-	public SimpleDateFormat getCachedFormat(TLFunctionCallContext context, String pattern, int position) {
 
-		if (context.isLiteral(position) || (cachedFormat != null && pattern.equals(previousFormatString))) {
-			return cachedFormat; 
-		} else {
-			cachedFormat = new SimpleDateFormat();
-			cachedFormat.applyPattern(pattern);
-			previousFormatString = pattern;
-			return cachedFormat;
+	public DateFormatter getCachedFormatter(TLFunctionCallContext context, String pattern, int position) {
+		if (!context.isLiteral(position) && (cachedFormatter == null || !pattern.equals(cachedFormatter.getPattern()))) {
+			cachedFormatter = DateFormatterFactory.createFormatter(pattern);
 		}
+
+		return cachedFormatter;
 	}
 
 }

@@ -21,8 +21,6 @@ package org.jetel.ctl.extensions;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -39,10 +37,9 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.date.DateFormatter;
 
 public class ConvertLib extends TLFunctionLibrary {
-
-	private static final String LIBRARY_NAME = "Convert";
 
 	public static final int DEFAULT_RADIX = 10;
 
@@ -245,8 +242,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern) {
-		final SimpleDateFormat format = ((TLDateFormatCache)context.getCache()).getCachedFormat(context, pattern, 1);
-		return format.format(date);
+		final DateFormatter formatter = ((TLDateFormatCache)context.getCache()).getCachedFormatter(context, pattern, 1);
+		return formatter.format(date);
 	}
 	
 	
@@ -285,10 +282,10 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, boolean lenient) {
 		
-		SimpleDateFormat format = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, pattern, locale, 1, 2);
-		format.setLenient(lenient);
-		ParsePosition p = new ParsePosition(0);
-		return format.parse(input, p);
+		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
+		formatter.setLenient(lenient);
+
+		return formatter.parseDate(input);
 	}
 	
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
