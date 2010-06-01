@@ -18,8 +18,6 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +33,8 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
@@ -472,17 +472,15 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale. Allows changing parser strictness.")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale,
 			boolean lenient) {
-		final SimpleDateFormat formatter = new SimpleDateFormat(pattern, MiscUtils.createLocale(locale));
-		formatter.setLenient(lenient);
-		final ParsePosition p = new ParsePosition(0);
-
-		formatter.parse(input, p);
 		// in lenient mode, empty string is not a valid date
 		if ("".equals(input)) {
 			return lenient;
 		}
-		
-		return p.getIndex() == input.length();
+
+		DateFormatter formatter = DateFormatterFactory.createFormatter(pattern, MiscUtils.createLocale(locale));
+		formatter.setLenient(lenient);
+
+		return formatter.tryParse(input);
 	}
 
 	class IsDateFunction implements TLFunctionPrototype {
