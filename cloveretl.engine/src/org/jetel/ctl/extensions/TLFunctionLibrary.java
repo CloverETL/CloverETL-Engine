@@ -124,7 +124,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		toConvert[0] = javaRetType;
 	    		System.arraycopy(javaFormal, 0, toConvert, 1, javaFormal.length);
 	    		
-	    		if (!TLFunctionCallContext.class.equals(toConvert[1])) {
+	    		if (toConvert.length <= 1 || !TLFunctionCallContext.class.equals(toConvert[1])) {
 	    			throw new IllegalArgumentException("Java function definition must have TLFunctionCallContext as a first formal parameter.");
 	    		}
 	    		
