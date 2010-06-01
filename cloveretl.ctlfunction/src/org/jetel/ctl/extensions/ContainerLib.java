@@ -30,9 +30,6 @@ import org.jetel.ctl.data.TLType.TLTypeList;
 
 public class ContainerLib extends TLFunctionLibrary {
 
-    private static final String LIBRARY_NAME = "Container";
-
-    
     @Override
     public TLFunctionPrototype getExecutable(String functionName) 
     throws IllegalArgumentException {
@@ -305,8 +302,7 @@ public class ContainerLib extends TLFunctionLibrary {
 			} else {
 				stack.push(isEmpty(context, stack.popList()));
 			}
-			final List<Object> list = stack.popList();
-			
+			stack.popList();
 		}
 	}
 	
