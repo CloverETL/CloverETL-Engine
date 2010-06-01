@@ -92,6 +92,12 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			if (valueImage.startsWith("0x")) {
 				// hexadecimal literal -> skip 0x
 				valueObj = Integer.parseInt(valueImage.substring(2),16);
+			} else if (valueImage.startsWith("-0x")) { 
+				// negative hexadecimal literal -> skip -0x
+				valueObj = -Integer.parseInt(valueImage.substring(3),16);
+			} else if (valueImage.startsWith("-0")) {
+				// negative octal literal
+				valueObj = -Integer.parseInt(valueImage.substring(2),8);
 			} else if (valueImage.startsWith("0")) {
 				// octal literal
 				valueObj = Integer.parseInt(valueImage,8);
@@ -106,9 +112,14 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			if (valueImage.startsWith("0x")) {
 				// hexadecimal literal -> remove 0x prefix
 				valueObj = Long.parseLong(valueImage.substring(2),16);
-			} else if (valueImage.startsWith("0")) {
+			} else if (valueImage.startsWith("-0x")) {
+				valueObj = -Long.parseLong(valueImage.substring(3),16);
+		    } else if (valueImage.startsWith("0")) {
 				// octal literal -> 0 is the distincter, but Java handles that correctly
 				valueObj = Long.parseLong(valueImage,8);
+		    } else if (valueImage.startsWith("-0")) {
+				// negative octal literal
+				valueObj = -Long.parseLong(valueImage.substring(2),8);
 			} else {
 				valueObj = Long.parseLong(valueImage);
 			}
