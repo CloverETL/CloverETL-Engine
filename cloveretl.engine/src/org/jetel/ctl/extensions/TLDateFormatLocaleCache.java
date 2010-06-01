@@ -18,10 +18,10 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.text.SimpleDateFormat;
-
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 
 /**
  * @author jakub (info@cloveretl.com)
@@ -31,8 +31,7 @@ import org.jetel.util.MiscUtils;
  */
 public class TLDateFormatLocaleCache extends TLCache {
 
-	private SimpleDateFormat cachedFormat;
-	private String previousFormatString;
+	private DateFormatter cachedFormatter;
 	private String previousLocaleString;
 	
 	public TLDateFormatLocaleCache(TLFunctionCallContext context, int pos1, int pos2) {
@@ -52,8 +51,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
 			String paramPattern = (String)context.getParamValue(pos1);
 			if (context.isLiteral(pos1)) {
-				final SimpleDateFormat format = new SimpleDateFormat(paramPattern);
-				cachedFormat = format;
+				cachedFormatter = DateFormatterFactory.createFormatter(paramPattern);
 			}
 			return;
 		}
@@ -61,48 +59,46 @@ public class TLDateFormatLocaleCache extends TLCache {
 		String paramPattern = (String)context.getParamValue(pos1);
 		String paramLocale = (String)context.getParamValue(pos2);
 		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			final SimpleDateFormat format = new SimpleDateFormat(paramPattern, MiscUtils.createLocale(paramLocale));
-			cachedFormat = format;
+			cachedFormatter = DateFormatterFactory.createFormatter(paramPattern, MiscUtils.createLocale(paramLocale));
 		}
 	}
 
 	
-	public SimpleDateFormat getCachedLocaleFormat(TLFunctionCallContext context, String format, String locale, int pos1, int pos2) {
+	public DateFormatter getCachedLocaleFormatter(TLFunctionCallContext context, String format, String locale,
+			int pos1, int pos2) {
 		
 		if (context.getLiteralsSize() > Math.max(pos1, pos2)) {
 			// if we use the variant with both format and locale specified
 			if ((context.isLiteral(pos1) && context.isLiteral(pos2))
 				// either both format and locale were literals (thus cached at init)
-				|| (cachedFormat != null 
-						&& format.equals(previousFormatString) 
+				|| (cachedFormatter != null 
+						&& format.equals(cachedFormatter.getPattern()) 
 						&& locale.equals(previousLocaleString)
 					)
 				// or format is already cached and previous inputs match the current ones
 				)
 			{
-				return cachedFormat;
+				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same 
-				cachedFormat = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
-				previousFormatString = format;
+				cachedFormatter = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
 				previousLocaleString = locale;
-				return cachedFormat;
+
+				return cachedFormatter;
 			}
 		}
 		if (context.getLiteralsSize() > pos1 && context.getLiteralsSize() <= pos2) {
 			// just format is specified, but not locale
 			if (context.isLiteral(pos1) 
-					|| (cachedFormat != null 
-							&& format.equals(previousFormatString)
-						)
+					|| (cachedFormatter != null && format.equals(cachedFormatter.getPattern()))
 				) 
 			{
-				return cachedFormat;
+				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used) 
-				cachedFormat = new SimpleDateFormat(format);
-				previousFormatString = format;
-				return cachedFormat;				
+				cachedFormatter = DateFormatterFactory.createFormatter(format);
+
+				return cachedFormatter;				
 			}
 		}
 		

@@ -19,8 +19,6 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +29,8 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.date.DateFormatter;
+import org.jetel.util.date.DateFormatterFactory;
 
 public class DateLib extends TLFunctionLibrary {
 
@@ -445,44 +445,44 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
     public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format) {
-    	SimpleDateFormat sdf = ((TLDateFormatLocaleCache)((TLMultiCache)context.getCache()).getCaches()[0]).getCachedLocaleFormat(context, format, null, 1, 2);
-    	return randomDate(context, from, to, sdf);
+    	DateFormatter df = ((TLDateFormatLocaleCache)((TLMultiCache)context.getCache()).getCaches()[0]).getCachedLocaleFormatter(context, format, null, 1, 2);
+    	return randomDate(context, from, to, df);
     }
     
     @TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
     public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
-    	return randomDate(context, from, to, sdf);
+    	DateFormatter df = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
+    	return randomDate(context, from, to, df);
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format. Allows changing seed.")
     public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, Long randomSeed) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format);
-    	return randomDate(context, from, to, randomSeed, sdf);
+    	DateFormatter df = DateFormatterFactory.createFormatter(format);
+    	return randomDate(context, from, to, randomSeed, df);
     }
     
     @TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format and locale. Allows changing seed.")
     public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale, Long randomSeed) {
-    	SimpleDateFormat sdf = new SimpleDateFormat(format, MiscUtils.createLocale(locale));
-    	return randomDate(context, from, to, randomSeed, sdf);
+    	DateFormatter df = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
+    	return randomDate(context, from, to, randomSeed, df);
     }
     
-    private static final Date randomDate(TLFunctionCallContext context, String from, String to, SimpleDateFormat formatter) {
+    private static final Date randomDate(TLFunctionCallContext context, String from, String to, DateFormatter formatter) {
     	try {
-			long fromTime = formatter.parse(from).getTime();
-			long toTime = formatter.parse(to).getTime();
+			long fromTime = formatter.parseMillis(from);
+			long toTime = formatter.parseMillis(to);
 			return randomDate(context, fromTime, toTime);
-		} catch (ParseException e) {
+		} catch (IllegalArgumentException e) {
 			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
 		}
     }
     
-    private static final Date randomDate(TLFunctionCallContext context, String from, String to, Long randomSeed, SimpleDateFormat formatter) {
+    private static final Date randomDate(TLFunctionCallContext context, String from, String to, Long randomSeed, DateFormatter formatter) {
     	try {
-			long fromTime = formatter.parse(from).getTime();
-			long toTime = formatter.parse(to).getTime();
+			long fromTime = formatter.parseMillis(from);
+			long toTime = formatter.parseMillis(to);
 			return randomDate(context, fromTime, toTime, randomSeed);
-		} catch (ParseException e) {
+		} catch (IllegalArgumentException e) {
 			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
 		}
     }
