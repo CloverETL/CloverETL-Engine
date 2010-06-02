@@ -474,7 +474,7 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
+		if (getGraph().getRuntimeContext().isBatchMode()) {
 			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
 		}
 	}

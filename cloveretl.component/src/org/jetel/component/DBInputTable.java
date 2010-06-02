@@ -287,7 +287,7 @@ public class DBInputTable extends Node {
 		if (parser.getIncrementalFile() != null){
 			storeValues();
 		}
-		if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) { 
+		if (getGraph().getRuntimeContext().isBatchMode()) { 
 			// otherwise connection is closed in TransformationGraph.free()
 			connection.closeConnection(getId(), OperationType.READ);
 		}

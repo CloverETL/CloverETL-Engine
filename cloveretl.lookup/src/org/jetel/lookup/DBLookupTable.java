@@ -217,7 +217,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		} finally {
 			activeLookups.clear();
 		}
-		if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
+		if (getGraph().getRuntimeContext().isBatchMode()) {
 			connection.closeConnection(getId(), OperationType.READ);
 		}
 	}
