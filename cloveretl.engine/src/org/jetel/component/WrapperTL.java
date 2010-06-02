@@ -151,7 +151,7 @@ public class WrapperTL {
         CLVFStart parseTree=null;
         //creating parser
 		parser = new TransformLangParser(sourceMetadata, targetMetadata,srcCode); 
-		parser.setProjectURL(getGraph().getProjectURL());
+		parser.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		//initializing parser
         try {
             parseTree = parser.Start();

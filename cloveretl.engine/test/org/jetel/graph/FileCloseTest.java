@@ -81,14 +81,14 @@ public class FileCloseTest extends TestCase {
 		Future<Result> futureResult = null;
 
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext.getAdditionalProperties());
+			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
 			graph.setDebugMode(false);
 		} catch (Exception e) {
 			fail("Error in graph loading: " + e);
 		}
 
 		try {
-			EngineInitializer.initGraph(graph, runtimeContext);
+			EngineInitializer.initGraph(graph);
 		} catch (ComponentNotReadyException e) {
 			fail("Error in graph initialization: " + e);
 		}

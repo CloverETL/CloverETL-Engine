@@ -139,6 +139,15 @@ public class EngineInitializer {
 	 * @param graph
 	 * @throws ComponentNotReadyException
 	 */
+	public static void initGraph(TransformationGraph graph) throws ComponentNotReadyException {
+		initGraph(graph, graph.getRuntimeContext());
+	}
+	
+	/**
+	 * Prepares graph for first run. Checks configuration and initializes.
+	 * @param graph
+	 * @throws ComponentNotReadyException
+	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		graph.setPassword(runtimeContext.getPassword());
 		if (!runtimeContext.isSkipCheckConfig()) {
@@ -160,7 +169,7 @@ public class EngineInitializer {
 			logger.info("Graph configuration checking is skipped.");
 		}
 		logger.info("Graph initialization (" + graph.getName() + ")");
-        graph.init(runtimeContext);
+        graph.init();
 	}
 
 }

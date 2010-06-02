@@ -199,7 +199,7 @@ public class ResetTest extends TestCase{
 		Future<Result> futureResult = null;
 		log("Analizing graph " + file.getName());
 		try {
-				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext.getAdditionalProperties());
+				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext);
 				graph.setDebugMode(false);
 			} catch (Exception e) {
 				log("Error in graph loading: " + e.getMessage());
@@ -208,7 +208,7 @@ public class ResetTest extends TestCase{
 			}
 
 			try {
-				EngineInitializer.initGraph(graph, runtimeContext);
+				EngineInitializer.initGraph(graph);
 			} catch (ComponentNotReadyException e) {
 				log("Error in graph initialization: " + e.getMessage());
 				errors.put(file.getName(), e);
@@ -303,15 +303,14 @@ public class ResetTest extends TestCase{
 
 		TransformationGraph graph = null;
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream((args.length > 2 ? args[2] + "/" : "") + args[1]), 
-					runtimeContext.getAdditionalProperties());
+			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream((args.length > 2 ? args[2] + "/" : "") + args[1]), runtimeContext);
 		} catch (Exception e) {
 			logger.error("Error in graph loading !", e);
 			System.exit(-1);
 		}
 
 		try {
-			EngineInitializer.initGraph(graph, runtimeContext);
+			EngineInitializer.initGraph(graph);
 		} catch (ComponentNotReadyException e) {
 			logger.error("Error in graph initialization !", e);
 			System.exit(-1);

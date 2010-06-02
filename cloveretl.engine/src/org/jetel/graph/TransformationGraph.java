@@ -21,7 +21,6 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.channels.Channels;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.crypto.Enigma;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
@@ -73,7 +71,7 @@ public final class TransformationGraph extends GraphElement {
 
 	public static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
 	
-	public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
+//	public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
 
     private static final int MAX_ALLOWED_OBJ_IDX = 1000000;
 
@@ -113,7 +111,7 @@ public final class TransformationGraph extends GraphElement {
 
 	private TypedProperties graphProperties;
 
-	private URL projectURL = null;
+//	private URL projectURL = null;
 
 	private IAuthorityProxy authorityProxy;
 	
@@ -148,29 +146,29 @@ public final class TransformationGraph extends GraphElement {
 		initialRuntimeContext = new GraphRuntimeContext();
 	}
 
-	private boolean firstCallProjectURL = true; //have to be reset
-    public URL getProjectURL() {
-        if(firstCallProjectURL) {
-            firstCallProjectURL = false;
-            String projectURLStr = null;
-
-            if(getGraphProperties().containsKey(PROJECT_DIR_PROPERTY)) {
-                projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
-            } else {
-            	//maybe any other default project directory
-            }
-            
-            if(projectURLStr != null) {
-                try {
-                    projectURL = FileUtils.getFileURL(FileURLParser.appendSlash(projectURLStr));
-                } catch (MalformedURLException e) {
-                    getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
-                }
-            }
-        }
-
-        return projectURL;
-    }
+//	private boolean firstCallProjectURL = true; //have to be reset
+//    public URL getProjectURL() {
+//        if(firstCallProjectURL) {
+//            firstCallProjectURL = false;
+//            String projectURLStr = null;
+//
+//            if(getGraphProperties().containsKey(PROJECT_DIR_PROPERTY)) {
+//                projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
+//            } else {
+//            	//maybe any other default project directory
+//            }
+//            
+//            if(projectURLStr != null) {
+//                try {
+//                    projectURL = FileUtils.getFileURL(FileURLParser.appendSlash(projectURLStr));
+//                } catch (MalformedURLException e) {
+//                    getLogger().warn("Home project dir is not in valid URL format - " + projectURLStr);
+//                }
+//            }
+//        }
+//
+//        return projectURL;
+//    }
 
     public void setPassword(String password) {
     	this.password = password;
@@ -369,16 +367,6 @@ public final class TransformationGraph extends GraphElement {
         return phases.get(Integer.valueOf(phaseNum));
     }
     
-	/**
-	 * @param initialRuntimeContext
-	 * @throws ComponentNotReadyException
-	 */
-	public void init(GraphRuntimeContext initialRuntimeContext) throws ComponentNotReadyException {
-		setInitialRuntimeContext(initialRuntimeContext);
-		
-		init();
-	}
-	
 	/**
 	 *  initializes graph (must be called prior attemting to run graph)
 	 *
@@ -806,7 +794,7 @@ public final class TransformationGraph extends GraphElement {
 		}
 		InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -834,7 +822,7 @@ public final class TransformationGraph extends GraphElement {
         }
         InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getProjectURL(), fileURL));
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
             graphProperties.loadSafe(inStream);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);

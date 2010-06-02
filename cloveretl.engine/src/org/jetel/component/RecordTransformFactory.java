@@ -196,7 +196,7 @@ public class RecordTransformFactory {
             //get transformation from link to the compiled class
             transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger, transformClass, null, classPaths);
         }else if (transform == null && transformURL != null){
-        	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
+        	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
         	transform = refResolver.resolveRef(transform, RefResFlag.SPEC_CHARACTERS_OFF);
         }

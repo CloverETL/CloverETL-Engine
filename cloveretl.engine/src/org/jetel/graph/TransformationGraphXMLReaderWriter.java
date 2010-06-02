@@ -50,6 +50,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -198,8 +199,8 @@ public class TransformationGraphXMLReaderWriter {
 	
     private TransformationGraph graph;
     
-    private Properties additionalProperties;
- 
+    private GraphRuntimeContext runtimeContext;
+    
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
@@ -208,9 +209,9 @@ public class TransformationGraphXMLReaderWriter {
      * @throws XMLConfigurationException deserialization from XML fails for any reason.
      * @throws GraphConfigurationException misconfigured graph
      */
-	public static TransformationGraph loadGraph(InputStream graphStream, Properties properties)
+	public static TransformationGraph loadGraph(InputStream graphStream, GraphRuntimeContext runtimeContext)
 	throws XMLConfigurationException, GraphConfigurationException {
-        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(properties);
+        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(runtimeContext);
         return graphReader.read(graphStream);
     }
 
@@ -219,8 +220,8 @@ public class TransformationGraphXMLReaderWriter {
 	 *
 	 * @since    May 24, 2002
 	 */
-	public TransformationGraphXMLReaderWriter(Properties properties) {
-		this.additionalProperties = (properties != null) ? properties : new Properties();
+	public TransformationGraphXMLReaderWriter(GraphRuntimeContext runtimeContext) {
+		this.runtimeContext = runtimeContext;
 	}
 
 	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
@@ -307,7 +308,8 @@ public class TransformationGraphXMLReaderWriter {
 		String id = ((Element)graphElement.item(0)).getAttribute("id");
         //get graph id
 		graph = new TransformationGraph(id);
-		graph.loadGraphProperties(additionalProperties);
+		graph.setInitialRuntimeContext(runtimeContext);
+		graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
 		// get graph name
 		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 		try{
@@ -706,7 +708,7 @@ public class TransformationGraphXMLReaderWriter {
             	TypedProperties lookupProperties = new TypedProperties(null,graph);
             	try {
                 	lookupProperties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, attributes.getString(IGraphElement.XML_ID_ATTRIBUTE));
-					lookupProperties.load(FileUtils.getInputStream(graph.getProjectURL(), fileURL));
+					lookupProperties.load(FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), fileURL));
 					String metadata = lookupProperties.getStringProperty("metadata");
 					if (metadata != null && ! metadata.trim().equals("")) {
 						DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getStringProperty("metadata"));

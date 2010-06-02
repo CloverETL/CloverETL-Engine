@@ -10,7 +10,9 @@
 
 
 /* *********** !!!!!!!!!!!!!!! Compilation note !!!!!!!!!!!!!! *****************
-	Whenever parser is recompiled by javacc, you need to:
+	After modifying this file you must execute ant target generate-java-sources (eclise launch configuration "cloveretl.engine generate-java-sources")
+	 
+	Whenever parser is manually recompiled by javacc, you need to:
 	
 	1. Delete the file org.jetel.ctl.Node.java
 	   Delete the file org.jetel.ctl.SimpleNode.java
@@ -861,7 +863,7 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 			InputStream stream;
 			
 			// we need to resolve the filename to project path (if it is relative)
-			final URL projectURL = graph != null ? graph.getProjectURL() : null;
+			final URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 			
 			jjtn000.setSourceToImport(filenameURL);			CLVFStart parseTree = null;
     		// store current "import context" so we can restore it after parsing this import
