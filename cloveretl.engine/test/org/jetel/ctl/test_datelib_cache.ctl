@@ -27,7 +27,8 @@ function integer transform() {
 
 	for (integer i = 0; i < 3; i++) {
 	
-		date1 = randomDate("2009.01.01","2009.12.31","yyyy.MM.dd", -1);
+		setRandomSeed(-1);
+		date1 = randomDate("2009.01.01","2009.12.31","yyyy.MM.dd");
 		
 	
 		date1 = randomDate(2010-02-02, 2010-05-05);
@@ -38,11 +39,15 @@ function integer transform() {
 		b21 = date2 >= long2date(10000000l);
 		b22 = date2 <= long2date(20000000l);
 		
-		date3 = randomDate(2010-02-02, 2010-05-05, 2000l);
-		date3d = randomDate(2010-02-02, 2010-05-05, 2000l);
+		setRandomSeed(20001);
+		date3 = randomDate(2010-02-02, 2010-05-05);
+		setRandomSeed(20001);
+		date3d = randomDate(2010-02-02, 2010-05-05);
 		
-		date4 = randomDate(10000000l, 20000000l, 2000l);
-		date4d = randomDate(10000000l, 20000000l, 2000l);
+		setRandomSeed(20001);
+		date4 = randomDate(10000000l, 20000000l);
+		setRandomSeed(20001);
+		date4d = randomDate(10000000l, 20000000l);
 		
 		date5 = randomDate("20100110", "20100120", "yyyymmdd");
 		b31 = date5 >= 2010-01-10;
@@ -52,11 +57,15 @@ function integer transform() {
 		b41 = date5 >= 2010-01-10;
 		b42 = date5 <= 2010-01-20;		
 		
-		date7 = randomDate("20100110", "20100120", "yyyymmdd", 2000l);
-		date7d = randomDate("20100110", "20100120", "yyyymmdd", 2000l);
-				
-		date8 = randomDate("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
-		date8d = randomDate("20100110", "20100120", "yyyymmdd", "en.GB", 2000l);
+		setRandomSeed(20001);
+		date7 = randomDate("20100110", "20100120", "yyyymmdd");
+		setRandomSeed(20001);
+		date7d = randomDate("20100110", "20100120", "yyyymmdd");
+		
+		setRandomSeed(20001);
+		date8 = randomDate("20100110", "20100120", "yyyymmdd", "en.GB");
+		setRandomSeed(20001);
+		date8d = randomDate("20100110", "20100120", "yyyymmdd", "en.GB");
 	}
 	
 	return OK;
