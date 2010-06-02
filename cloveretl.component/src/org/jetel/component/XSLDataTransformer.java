@@ -180,7 +180,7 @@ public class XSLDataTransformer extends Node {
 		xsltIs = null;
 		if (xsltFile != null) {
 			try {
-				xsltIs = Channels.newInputStream(FileUtils.getReadableChannel(getGraph().getProjectURL(), xsltFile));
+				xsltIs = Channels.newInputStream(FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), xsltFile));
 			} catch (RuntimeException e) {
 				if (xslt == null || xslt.equals("")) throw e;
 			} catch (IOException e) {
@@ -303,7 +303,7 @@ public class XSLDataTransformer extends Node {
 
     private void initChannelIterator() throws ComponentNotReadyException {
     	TransformationGraph graph = getGraph();
-    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), graph != null ? graph.getProjectURL() : null, xmlInputFile);
+    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), graph != null ? graph.getRuntimeContext().getContextURL() : null, xmlInputFile);
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(graph != null ? graph.getDictionary() : null);
     	channelIterator.init();
@@ -318,7 +318,7 @@ public class XSLDataTransformer extends Node {
     	// prepare type of targets: lookpup/keyValue
 		try {
 			InputPort inputPort = getInputPort(READ_FROM_PORT);
-	    	currentTarget = new TargetFile(xmlOutputFile, getGraph() != null ? getGraph().getProjectURL() : null, 
+	    	currentTarget = new TargetFile(xmlOutputFile, getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
 	    			new XSLTFormatter(), inputPort == null ? null : inputPort.getMetadata());
 			currentTarget.setAppendData(false);
 			currentTarget.setUseChannel(true);

@@ -154,7 +154,7 @@ public class JmsWriter extends Node {
 		inPort = getInputPort(0);
 		if (psor == null) {
 			if (psorClass == null && psorCode == null) {
-				psorCode = FileUtils.getStringFromURL(getGraph().getProjectURL(), psorURL, charset);
+				psorCode = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), psorURL, charset);
 			}
 			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass, classPaths);

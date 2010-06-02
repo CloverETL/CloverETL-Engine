@@ -832,7 +832,7 @@ public class DB2DataWriter extends Node {
 		}
 		try {
 			if (batchURL != null) {
-				batchFile = new File(FileUtils.getFile(getGraph().getProjectURL(), batchURL));
+				batchFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), batchURL));
 			}
 			if (batchFile == null) {
 				batchFile = File.createTempFile("tmp", ".bat", new File("."));
@@ -996,7 +996,7 @@ public class DB2DataWriter extends Node {
 		File newDataFile = null;
 
 		try {
-			newDataFile = new File(FileUtils.getFile(getGraph().getProjectURL(), dataURL));
+			newDataFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), dataURL));
 		} catch (MalformedURLException exception) {
 			throw new ComponentNotReadyException(this, "The fileURL attribute is invalid!", exception);
 		}
@@ -1499,7 +1499,7 @@ public class DB2DataWriter extends Node {
 	 */
 	private String prepareBatch() throws IOException, ComponentNotReadyException{
 		if (batchURL != null) {
-			batchFile = new File(FileUtils.getFile(getGraph().getProjectURL(), batchURL));
+			batchFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), batchURL));
 			if (batchFile.length() > 0) {
 				logger.info("Node " + this.getId() + " info: Batch file exist. " +
 						"New batch file will not be created.");

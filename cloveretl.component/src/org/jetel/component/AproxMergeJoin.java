@@ -564,7 +564,7 @@ public class AproxMergeJoin extends Node {
     	}
         if (errorLogURL != null) {
         	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
@@ -753,7 +753,7 @@ public class AproxMergeJoin extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {
         	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
@@ -1158,7 +1158,7 @@ public class AproxMergeJoin extends Node {
 			}
     		
             if (errorLog != null){
- 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+ 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
            	}
 //            init();
 //            free();
@@ -1187,7 +1187,7 @@ public class AproxMergeJoin extends Node {
         if (transform != null) {
         	checkTransform = transform;
         } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
         }
         // only the transform and transformURL parameters are checked, transformClass is ignored
         if (checkTransform != null) {

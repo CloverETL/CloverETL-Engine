@@ -267,7 +267,7 @@ public class DBFDataReader extends Node {
 		TransformationGraph graph = getGraph();
 
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumSourceRecords(numSourceRecords);

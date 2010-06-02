@@ -428,7 +428,7 @@ public class Rollup extends Node {
         if (transform != null) {
         	checkTransform = transform;
         } else if (transformUrl != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformUrl, transformUrlCharset);
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformUrl, transformUrlCharset);
         }
         // only the transform and transformURL parameters are checked, transformClass is ignored
         if (checkTransform != null) {
@@ -473,7 +473,7 @@ public class Rollup extends Node {
             recordRollup = createTransformFromSourceCode(transform);
         } else if (transformUrl != null) {
             recordRollup = createTransformFromSourceCode(FileUtils.getStringFromURL(
-                    getGraph().getProjectURL(), transformUrl, transformUrlCharset));
+                    getGraph().getRuntimeContext().getContextURL(), transformUrl, transformUrlCharset));
         } else if (transformClassName != null) {
             recordRollup = createTransformFromClassName(transformClassName);
         }

@@ -186,7 +186,7 @@ public class JmsReader extends Node {
 		}
 		if (psor == null) {
 			if (psorClass == null && psorCode == null) {
-				psorCode = FileUtils.getStringFromURL(getGraph().getProjectURL(), psorURL, charset);
+				psorCode = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), psorURL, charset);
 			}
 			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			psor = psorClass == null ? createProcessorDynamic(psorCode)

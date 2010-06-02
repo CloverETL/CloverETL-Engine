@@ -472,7 +472,7 @@ public class Partition extends Node {
         if (partitionSource != null) {
         	checkTransform = partitionSource;
         } else if (partitionURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), partitionURL, charset);
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), partitionURL, charset);
         }
         // partition class is checked only if is given specific CTL or TL code
         if (partitionFce == null && partitionClass == null && checkTransform != null) {

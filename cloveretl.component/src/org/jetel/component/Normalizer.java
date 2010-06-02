@@ -217,7 +217,7 @@ public class Normalizer extends Node {
 			if (xformClass != null) {
 				norm = createNormalizer(xformClass);
 			}else if (xform == null) {
-				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
+				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
 				norm = createTransform(xform);
@@ -343,7 +343,7 @@ public class Normalizer extends Node {
     	super.preExecute();
         if (errorLogURL != null) {
            	try {
-           		errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+           		errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
    			} catch (IOException e) {
     			throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
     		}
@@ -414,7 +414,7 @@ public class Normalizer extends Node {
         
         if (errorLog != null){
         	try {
-				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 			} catch (ComponentNotReadyException e) {
 				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
 			}
@@ -425,7 +425,7 @@ public class Normalizer extends Node {
         if (xform != null) {
         	checkTransform = xform;
         } else if (xformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
         }
         // only the transform and transformURL parameters are checked, transformClass is ignored
         if (checkTransform != null) {
@@ -546,7 +546,7 @@ public class Normalizer extends Node {
 		norm.reset();
         if (errorLogURL != null) {
         	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}

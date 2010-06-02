@@ -471,7 +471,7 @@ public class XLSWriter extends Node {
         }
 
         try {
-            FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);
+            FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
@@ -529,7 +529,7 @@ public class XLSWriter extends Node {
         }
 
         if (fileURL != null) {
-            writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+            writer = new MultiFileWriter(formatterProvider, getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL);
         } else {
             if (writableByteChannel == null) {
                 writableByteChannel = new SystemOutByteChannel();

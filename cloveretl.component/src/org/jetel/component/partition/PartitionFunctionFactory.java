@@ -90,7 +90,7 @@ public class PartitionFunctionFactory {
 			partitionFunction = createPartitionFce(partitionClass);
 		} else {
 			if (partitionURL != null && StringUtils.isEmpty(partitionSource)) {
-				partitionSource = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), partitionURL, charset);
+				partitionSource = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), partitionURL, charset);
 			}
 			if (!StringUtils.isEmpty(partitionSource)) {
 				partitionFunction = createPartitionDynamic(partitionSource);
