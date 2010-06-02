@@ -18,7 +18,7 @@ function integer transform() {
 	stringListCopy.push('fifth');
 	
 	changeList(stringList);
-	print_err(stringList);
-	print_err(stringListCopy);
+	printErr(stringList);
+	printErr(stringListCopy);
 	return 0;
 }
