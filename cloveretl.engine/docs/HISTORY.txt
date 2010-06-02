@@ -5,6 +5,8 @@
 REL 3-0
 ---------
 + new RunGraph component attribute "paramsToPass"
++ dedicated graph property name "PROJECT_DIR" (absolute path to project home directory) was substituted by attribute at GraphRuntimeContext.contextURL
+	- new command line attribute -contexturl <path> should be used instead of -P:PROJECT_DIR="<path>"
 
 REL 2-9-2
 ---------
