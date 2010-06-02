@@ -385,7 +385,7 @@ public class DBConnection extends GraphElement implements IConnection {
         if(!StringUtils.isEmpty(configFileName)) {
             try {
             	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
-                InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+                InputStream stream = FileUtils.getInputStream(projectURL, configFileName);
 
                 Properties tempProperties = new Properties();
                 tempProperties.load(stream);

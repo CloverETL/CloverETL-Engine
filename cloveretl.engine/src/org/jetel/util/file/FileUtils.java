@@ -99,6 +99,11 @@ public class FileUtils {
 	
 	private static final Log log = LogFactory.getLog(FileUtils.class);
 	
+	/**
+	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
+	 */
+	private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
+	
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
     }
@@ -213,18 +218,13 @@ public class FileUtils {
 	 * @return
 	 */
 	public static String getStringFromURL(URL contextURL, String fileURL, String charset){
-        URL url;
+        InputStream source;
         String chSet = charset != null ? charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER;
-		try {
-			url = FileUtils.getFileURL(contextURL, fileURL);
-		}catch(MalformedURLException ex){
-			throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
-		}
-
 		StringBuffer sb = new StringBuffer(2048);
         char[] charBuf=new char[256];
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), chSet));
+			source = FileUtils.getInputStream(contextURL, fileURL);
+			BufferedReader in = new BufferedReader(new InputStreamReader(source, chSet));
 			try {
 				int readNum;
 
@@ -285,6 +285,17 @@ public class FileUtils {
 	 * @throws IOException
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
+        InputStream innerStream = null;
+
+        //first we try the custom path resolvers
+    	for (CustomPathResolver customPathResolver : customPathResolvers) {
+    		innerStream = customPathResolver.getInputStream(contextURL, input);
+    		if (innerStream != null) {
+    			log.debug("Input stream '" + input + "[" + contextURL + "] was opened by custom path resolver.");
+    			return innerStream; //we found the desired input stream using external resolver method
+    		}
+    	}
+    	
 		// std input (console)
 		if (input.equals(STD_CONSOLE)) {
 			return System.in;
@@ -293,7 +304,6 @@ public class FileUtils {
         // get inner source
 		Matcher matcher = FileURLParser.getURLMatcher(input);
 		String innerSource;
-        InputStream innerStream = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
@@ -642,9 +652,18 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel)	
-		throws IOException {
-		
+	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel)	throws IOException {
+        OutputStream os = null;
+	
+        //first we try the custom path resolvers
+    	for (CustomPathResolver customPathResolver : customPathResolvers) {
+    		os = customPathResolver.getOutputStream(contextURL, input, appendData, compressLevel);
+    		if (os != null) {
+    			log.debug("Output stream '" + input + "[" + contextURL + "] was opened by custom path resolver.");
+    			return os; //we found the desired output stream using external resolver method
+    		}
+    	}
+
 		// std input (console)
 		if (input.equals(STD_CONSOLE)) {
 			return Channels.newOutputStream(new SystemOutByteChannel());
@@ -653,7 +672,6 @@ public class FileUtils {
 		// get inner source
 		Matcher matcher = getInnerInput(input);
 		String innerSource;
-        OutputStream os = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
@@ -1055,6 +1073,14 @@ public class FileUtils {
         }
         
         return url == null ? FileUtils.getFileURL(contextURL, input) : url;
+	}
+	
+	/**
+	 * Adds new custom path resolver. Useful for third-party implementation of path resolving.
+	 * @param customPathResolver
+	 */
+	public static void addCustomPathResolver(CustomPathResolver customPathResolver) {
+		customPathResolvers.add(customPathResolver);
 	}
 	
 }

@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Iterator;
 import java.util.List;
 
@@ -297,6 +298,7 @@ public class CloverDataReader extends Node {
         }
         checkMetadata(status, getOutMetadata());
         
+        ReadableByteChannel tempChannel = null;
         // check files
     	try {
     		String fName; 
@@ -308,11 +310,18 @@ public class CloverDataReader extends Node {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;
 				}
-				FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), url.toString());
+				tempChannel = FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), url.toString());
     		}
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem(e.getMessage(), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-		}
+        } finally {
+            try {
+                if (tempChannel != null && tempChannel.isOpen()) {
+                    tempChannel.close();
+                }
+            } catch (IOException e) {
+            }
+        }
         
         return status;
     }
