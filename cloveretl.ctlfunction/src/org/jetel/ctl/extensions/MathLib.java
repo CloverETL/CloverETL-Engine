@@ -21,8 +21,6 @@ package org.jetel.ctl.extensions;
 import java.math.BigDecimal;
 
 import org.jetel.ctl.Stack;
-import org.jetel.util.DataGenerator;
-
 
 public class MathLib extends TLFunctionLibrary {
 	
@@ -37,7 +35,6 @@ public class MathLib extends TLFunctionLibrary {
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
 			"e".equals(functionName) ? new EFunction() :
-			"random".equals(functionName) ? new RandomFunction() :
 			"abs".equals(functionName) ? new AbsFunction() :
 			"bitOr".equals(functionName) ? new BitOrFunction() :
 			"bitAnd".equals(functionName) ? new BitAndFunction() :
@@ -47,10 +44,6 @@ public class MathLib extends TLFunctionLibrary {
 			"bitNegate".equals(functionName) ? new BitNegateFunction() :
 			"bitSet".equals(functionName) ? new BitSetFunction() :
 			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
-			"randomGaussian".equals(functionName) ? new RandomGaussianFunction() :
-		    "randomBoolean".equals(functionName) ? new RandomBooleanFunction() : 
-		    "randomInteger".equals(functionName) ? new RandomIntegerFunction() :
-		    "randomLong".equals(functionName) ? new RandomLongFunction() :
 			null;
 			
 		if (ret == null) {
@@ -266,30 +259,6 @@ public class MathLib extends TLFunctionLibrary {
 			stack.push(e(context));
 		} 
 
-    }     
-
-    @TLFunctionAnnotation("Random number (>=0, <1)")
-    public static final Double random(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextDouble();
-    }
-    
-    @TLFunctionAnnotation("Random number (>=0, <1). Allows changing seed")
-    public static final Double random(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextDouble();
-    }
-    
-    // RANDOM
-    class RandomFunction implements TLFunctionPrototype {
-    	
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-
-    	public void execute(Stack stack, TLFunctionCallContext context) {
-    		stack.push(random(context));
-    	}
     }
     
     // ABS
@@ -579,176 +548,5 @@ public class MathLib extends TLFunctionLibrary {
 			
 		}
     	
-    }
-    
-    @TLFunctionAnnotation("Random Gaussian number.")
-    public static final Double randomGaussian(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextGaussian();
-    }
-    
-    @TLFunctionAnnotation("Random Gaussian number. Allows changing seed.")
-    public static final Double randomGaussian(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextGaussian();
-    }
-    
-    // RANDOM Gaussian
-    class RandomGaussianFunction implements TLFunctionPrototype {
-
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length == 1) {
-				stack.push(randomGaussian(context, stack.popLong()));
-			} else {
-				stack.push(randomGaussian(context));
-			}
-		}
-    }
-    
-    @TLFunctionAnnotation("Random boolean.")
-    public static final Boolean randomBoolean(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextBoolean();
-    }
-    
-    @TLFunctionAnnotation("Random boolean. Allows changing seed.")
-    public static final Boolean randomBoolean(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextBoolean();
-    }
-    // RANDOM Boolean
-    class RandomBooleanFunction implements TLFunctionPrototype {
-        
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length == 1) {
-				stack.push(randomBoolean(context, stack.popLong()));
-			} else {
-				stack.push(randomBoolean(context));
-			}
-		}
-    }
-    
-    @TLFunctionAnnotation("Random integer.")
-    public static final Integer randomInteger(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextInt();
-    }
-    
-    @TLFunctionAnnotation("Random integer. Allows changing seed.")
-    public static final Integer randomInteger(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextInt();
-    }
-    
-    @TLFunctionAnnotation("Random integer. Allows changing start and end value.")
-    public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextInt(min, max);
-    }
-    
-    @TLFunctionAnnotation("Random integer. Allows changing start, end value and seed.")
-    public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextInt(min, max);
-    }
-    
-    // RANDOMINTEGER
-    class RandomIntegerFunction implements TLFunctionPrototype {
-    	
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			Long seed;
-			Integer max;
-			Integer min;
-			switch (context.getParams().length) {
-				case 3:
-					seed = stack.popLong();
-					max = stack.popInt();
-					min = stack.popInt();
-					stack.push(randomInteger(context, min, max, seed));
-					break;
-				case 2:
-					max = stack.popInt();
-					min = stack.popInt();
-					stack.push(randomInteger(context, min, max));
-					break;
-				case 1:
-					seed = stack.popLong();
-					stack.push(randomInteger(context, seed));
-					break;
-				case 0:
-					stack.push(randomInteger(context));
-					break;
-			}
-		}
-    }
-
-    @TLFunctionAnnotation("Random long.")
-    public static final Long randomLong(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextLong();
-    }
-    
-    @TLFunctionAnnotation("Random long. Allows changing seed.")
-    public static final Long randomLong(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextLong();
-    }
-    
-    @TLFunctionAnnotation("Random long. Allows changing start and end value.")
-    public static final Long randomLong(TLFunctionCallContext context, Long min, Long max) {
-    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextLong(min, max);
-    }
-    
-    @TLFunctionAnnotation("Random long. Allows changing start, end value and seed.")
-    public static final Long randomLong(TLFunctionCallContext context, Long min, Long max, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-    	generator.setSeed(seed);
-    	return generator.nextLong(min, max);
-    }
-    
-    // RANDOMLONG
-    class RandomLongFunction implements TLFunctionPrototype {
-        
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			Long seed;
-			Long max;
-			Long min;
-			switch (context.getParams().length) {
-				case 3:
-					seed = stack.popLong();
-					max = stack.popLong();
-					min = stack.popLong();
-					stack.push(randomLong(context, min, max, seed));
-					break;
-				case 2:
-					max = stack.popLong();
-					min = stack.popLong();
-					stack.push(randomLong(context, min, max));
-					break;
-				case 1:
-					seed = stack.popLong();
-					stack.push(randomLong(context, seed));
-					break;
-				case 0:
-					stack.push(randomLong(context));
-					break;
-			}
-		}
     }
 }

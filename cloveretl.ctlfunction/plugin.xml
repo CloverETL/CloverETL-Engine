@@ -32,4 +32,9 @@
 		<parameter id="className" value="org.jetel.ctl.extensions.ContainerLib"/>
 	</extension>
 	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="random"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.RandomLib"/>
+	</extension>
+	
 </plugin>

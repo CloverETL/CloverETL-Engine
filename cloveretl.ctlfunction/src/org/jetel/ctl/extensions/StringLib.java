@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
-import org.jetel.util.DataGenerator;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.date.DateFormatter;
 import org.jetel.util.date.DateFormatterFactory;
@@ -70,8 +69,7 @@ public class StringLib extends TLFunctionLibrary {
 			"find".equals(functionName) ? new FindFunction() :
 			"matches".equals(functionName) ? new MatchesFunction() :
 			"chop".equals(functionName) ? new ChopFunction() :
-			"cut".equals(functionName) ? new CutFunction() :
-			"randomString".equals(functionName) ? new RandomStringFunction() : null;
+			"cut".equals(functionName) ? new CutFunction() : null;
 
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -79,11 +77,6 @@ public class StringLib extends TLFunctionLibrary {
 
 		return ret;
 	}
-
-	/* HELPER CACHE METHODS */
-	/* END OF HELPER CACHE METHODS */
-	
-
 	
 	// CONCAT
 	@TLFunctionAnnotation("Concatenates two or more strings.")
@@ -863,37 +856,5 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	@TLFunctionAnnotation("Generates a random string.")
-	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength) {
-		return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextString(minLength, maxLength);
-	}
 	
-	@TLFunctionAnnotation("Generates a random string. Allows changing seed.")
-	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength, long randomSeed) {
-		DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
-		generator.setSeed(randomSeed);
-		return generator.nextString(minLength, maxLength);
-	}
-	
-	class RandomStringFunction implements TLFunctionPrototype {
-
-		public void init(TLFunctionCallContext context) {
-			context.setCache(new TLDataGeneratorCache());
-		}
-		
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer maxLength;
-			Integer minLength;
-			if (context.getParams().length > 2) {
-				Long seed = stack.popLong();
-				maxLength = stack.popInt();
-				minLength = stack.popInt();
-				stack.push(randomString(context, minLength, maxLength, seed));
-			} else {
-				maxLength = stack.popInt();
-				minLength = stack.popInt();
-				stack.push(randomString(context, minLength, maxLength));
-			}
-		}
-	}
 }
