@@ -104,7 +104,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
         
         TransformationGraph graph = null;
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
         } catch (XMLConfigurationException e) {
         	rr.description = "Error in reading graph from XML !" + e.getMessage();
         	rr.result = Result.ERROR;
@@ -119,7 +119,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
         Result result = Result.N_A;
         try {
     		try {
-    			EngineInitializer.initGraph(graph, runtimeContext);
+    			EngineInitializer.initGraph(graph);
     			futureResult = runGraph.executeGraph(graph, runtimeContext);
 
     		} catch (ComponentNotReadyException e) {

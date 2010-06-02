@@ -51,7 +51,7 @@ public class MetadataFactory {
 		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter(graph);
 		try{
 		recordMetadata=metadataXMLRW.read(
-				Channels.newInputStream(FileUtils.getReadableChannel(graph.getProjectURL(), fileURL)));
+				Channels.newInputStream(FileUtils.getReadableChannel(graph.getRuntimeContext().getContextURL(), fileURL)));
 			if (recordMetadata==null){
 				throw new RuntimeException("Can't parse metadata definition file: "+fileURL);
 			}

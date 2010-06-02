@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -51,7 +52,6 @@ import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.JetelVersion;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 
 /*
@@ -102,6 +102,7 @@ import org.jetel.util.file.FileUtils;
  *  <tr><td nowrap>-config <i>filename</i></td><td>load default engine properties from specified file</td></tr>
  *  <tr><td nowrap>-nodebug</td><td>turns off all runtime debugging e.g edge debugging</td></tr>
  *  <tr><td nowrap>-debugdirectory <i>foldername</i></td><td>directory dedicated to store temporary debug data; default is java's temporary folder</td></tr>
+ *  <tr><td nowrap>-contexturl <i>foldername</i></td><td>all relative paths in graph xml are relative to this folder</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -129,6 +130,7 @@ public class runGraph {
     public final static String CONFIG_SWITCH = "-config";
     public final static String NO_DEBUG_SWITCH = "-nodebug";
     public final static String DEBUG_DIRECTORY_SWITCH = "-debugdirectory";
+    public final static String CONTEXT_URL_SWITCH = "-contexturl";
     //private command line options
     public final static String WAIT_FOR_JMX_CLIENT_SWITCH = "-waitForJMXClient";
     public final static String MBEAN_NAME = "-mbean";
@@ -158,6 +160,7 @@ public class runGraph {
         boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
         boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
+        URL contextURL = null;
         String classPathsString = null;
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
@@ -256,6 +259,14 @@ public class runGraph {
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
                 i++;
                 debugDirectory = args[i]; 
+            } else if (args[i].startsWith(CONTEXT_URL_SWITCH)) {
+                i++;
+                try {
+					contextURL = new URL(FileUtils.appendSlash(args[i]));
+				} catch (MalformedURLException e) {
+                    System.err.println("Invalid contextURL command line parameter: " + args[i]);
+                    System.exit(-1);
+				} 
             } else if (args[i].startsWith(DICTIONARY_VALUE_DEFINITION_SWITCH)) {
             	String value = args[i].replaceFirst(DICTIONARY_VALUE_DEFINITION_SWITCH, "");
             	try {
@@ -298,6 +309,8 @@ public class runGraph {
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
+        runtimeContext.setContextURL(contextURL);
+        
     	String[] paths = null;
     	if (classPathsString != null)
             paths = classPathsString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
@@ -312,16 +325,7 @@ public class runGraph {
         	logger.info("Graph definition file: " + graphFileName);
 
         	try {
-            	URL projectDirURL = null;
-            	String projectDir = runtimeContext.getAdditionalProperties().getProperty(
-            			TransformationGraph.PROJECT_DIR_PROPERTY);
-
-            	if (projectDir != null) {
-                	logger.info(TransformationGraph.PROJECT_DIR_PROPERTY + " property: " + projectDir);
-            		projectDirURL = FileUtils.getFileURL(FileURLParser.appendSlash(projectDir));
-            	}
-
-            	in = Channels.newInputStream(FileUtils.getReadableChannel(projectDirURL, graphFileName));
+            	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
             } catch (IOException e) {
                 logger.error("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
@@ -330,9 +334,9 @@ public class runGraph {
 
         TransformationGraph graph = null;
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext.getAdditionalProperties());
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
 			initializeDictionary(dictionaryValues, graph);
-	        runGraph(graph, runtimeContext);
+	        runGraph(graph);
         } catch (XMLConfigurationException e) {
             logger.error("Error in reading graph from XML !", e);
             if (runtimeContext.isVerboseMode()) {
@@ -364,22 +368,22 @@ public class runGraph {
 		}
 	}
 	
-	private static void runGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+	private static void runGraph(TransformationGraph graph) {
         Future<Result> futureResult = null;
 		try {
 			if (!graph.isInitialized()) {
-				EngineInitializer.initGraph(graph, runtimeContext);
+				EngineInitializer.initGraph(graph);
 			}
-			futureResult = executeGraph(graph, runtimeContext);			
+			futureResult = executeGraph(graph, graph.getRuntimeContext());			
 		} catch (ComponentNotReadyException e) {
             logger.error("Error during graph initialization !", e);
-            if (runtimeContext.isVerboseMode()) {
+            if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
         } catch (RuntimeException e) {
             logger.error("Error during graph initialization !", e);
-            if (runtimeContext.isVerboseMode()) {
+            if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
@@ -390,13 +394,13 @@ public class runGraph {
 			result = futureResult.get();
 		} catch (InterruptedException e) {
             logger.error("Graph was unexpectedly interrupted !", e);
-            if (runtimeContext.isVerboseMode()) {
+            if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
 		} catch (ExecutionException e) {
             logger.error("Error during graph processing !", e);
-            if (runtimeContext.isVerboseMode()) {
+            if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
@@ -427,7 +431,7 @@ public class runGraph {
 
 	public static Future<Result> executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		if (!graph.isInitialized()) {
-			EngineInitializer.initGraph(graph, runtimeContext);
+			EngineInitializer.initGraph(graph);
 		}
 
         IThreadManager threadManager = new SimpleThreadManager();

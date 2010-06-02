@@ -786,7 +786,7 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 			InputStream stream;
 			
 			// we need to resolve the filename to project path (if it is relative)
-			final URL projectURL = graph != null ? graph.getProjectURL() : null;
+			final URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 			
 			jjtThis.setSourceToImport(filenameURL);			CLVFStart parseTree = null;
     		// store current "import context" so we can restore it after parsing this import

@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.runtime;
 
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -62,6 +63,8 @@ public class GraphRuntimeContext {
 	private boolean synchronizedRun;
 	private boolean transactionMode;
 	private boolean batchMode;
+	private URL contextURL;
+	
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -356,6 +359,15 @@ public class GraphRuntimeContext {
 		this.batchMode = batchMode;
 	}
 
+    public URL getContextURL() {
+        return contextURL;
+    }
+
+    public void setContextURL(URL contextURL) {
+    	this.contextURL = contextURL;
+    }
+    
+    
 //	/**
 //	 * @return trackingFlushInterval
 //	 */
