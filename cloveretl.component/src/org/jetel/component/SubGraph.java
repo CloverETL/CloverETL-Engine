@@ -147,14 +147,16 @@ public class SubGraph extends Node {
 
 		try {
 			final TransformationGraph parentGraph = getGraph();
-			in = Channels.newInputStream(FileUtils.getReadableChannel(parentGraph != null ? parentGraph.getProjectURL() : null, graphName));
+			in = Channels.newInputStream(FileUtils.getReadableChannel(parentGraph != null ? parentGraph.getRuntimeContext().getContextURL() : null, graphName));
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(this, "Embedded graph file '" + graphName + "' cannot be found.", e);
 		}
 
 		// create transformation graph instance
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.addAdditionalProperties(additionalProperties);
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(in, additionalProperties);
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, "Embedded graph cannot be instantiated.", e);
 		}
@@ -166,9 +168,8 @@ public class SubGraph extends Node {
 		// prepare dictionary of embedded graph
 		final Dictionary dictionary = graph.getDictionary();
 
-		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		EngineInitializer.initGraph(graph, runtimeContext);
-		Future<Result> futureResult = runGraph.executeGraph(graph, runtimeContext);
+		EngineInitializer.initGraph(graph);
+		Future<Result> futureResult = runGraph.executeGraph(graph, graph.getRuntimeContext());
 
 		final ProducerConsumerExecutor executor = new ProducerConsumerExecutor();
 

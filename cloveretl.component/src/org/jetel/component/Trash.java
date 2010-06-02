@@ -167,7 +167,7 @@ public class Trash extends Node {
 		            if(debugFilename != null) {
 		       	        try {
 							writer.setChannels( new WritableByteChannelIterator(
-									FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, 
+									FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
 											debugFilename, debugAppend, compressLevel)
 							));
 						} catch (IOException e) {
@@ -267,7 +267,7 @@ public class Trash extends Node {
 		TransformationGraph graph = getGraph();
 		
     	// creates necessary directories
-        if (mkDir) FileUtils.makeDirs(graph != null ? graph.getProjectURL() : null, 
+        if (mkDir) FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, 
         		new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
 
 		if (debugPrint) {
@@ -275,7 +275,7 @@ public class Trash extends Node {
         		formatter = new TextTableFormatter(charSet);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(graph != null ? graph.getProjectURL() : null, debugFilename, 
+							FileUtils.getWritableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, debugFilename, 
 									debugAppend, compressLevel )
 					));
 				} catch (IOException e) {
@@ -382,7 +382,7 @@ public class Trash extends Node {
 
             if (debugPrint && debugFilename != null) {
                 try {
-                	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, mkDir);
+                	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, mkDir);
                 } catch (ComponentNotReadyException e) {
 	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
 	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);

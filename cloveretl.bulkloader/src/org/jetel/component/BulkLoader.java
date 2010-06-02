@@ -498,7 +498,7 @@ public abstract class BulkLoader extends Node {
 			return false;
 		}
 		try {
-			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getProjectURL(), fileURL)) && 
+			if (!FileUtils.isServerURL(FileUtils.getInnerAddress(getGraph().getRuntimeContext().getContextURL(), fileURL)) && 
 					!(getFile(fileURL).exists())) {
 				return false;
 			}
@@ -711,8 +711,8 @@ public abstract class BulkLoader extends Node {
 	
 	private File getTempDir() {
 		if (tempDir == null) {
-			if (getGraph().getProjectURL() != null) {
-				tempDir = new File(getGraph().getProjectURL().getPath());
+			if (getGraph().getRuntimeContext().getContextURL() != null) {
+				tempDir = new File(getGraph().getRuntimeContext().getContextURL().getPath());
 			} else {
 				tempDir = new File(".");
 			}
@@ -765,7 +765,7 @@ public abstract class BulkLoader extends Node {
     	}
     	
 		try {
-			return new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL));
+			return new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL));
 		} catch (MalformedURLException mue) {
 			throw new ComponentNotReadyException(this, "Malformed file URL: " + fileURL, mue);
 		}

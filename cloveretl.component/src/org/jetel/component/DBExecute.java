@@ -356,7 +356,7 @@ public class DBExecute extends Node {
             	}
 				dbSQL = tmp.toArray(new String[tmp.size()]); 
 			}else{//read statements from file or input port
-				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getProjectURL(),
+				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getRuntimeContext().getContextURL(),
 						fileUrl);
 				channelIterator.setCharset(charset);
 				channelIterator.setDictionary(getGraph().getDictionary());
@@ -440,7 +440,7 @@ public class DBExecute extends Node {
 		initStatements();
 		if (errorLogURL != null) {
 			try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
@@ -993,7 +993,7 @@ public class DBExecute extends Node {
             }
             
             if (errorLog != null){
- 				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+ 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
             }
 		    
         } catch (ComponentNotReadyException e) {

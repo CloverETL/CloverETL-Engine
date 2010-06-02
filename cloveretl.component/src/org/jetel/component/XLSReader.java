@@ -477,7 +477,7 @@ public class XLSReader extends Node {
                 parser.setSheetNumber(sheetNumber);
             }
 
-            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL);
             try {
 				reader.close();
 			} catch (IOException e) {
@@ -556,7 +556,7 @@ public class XLSReader extends Node {
         parser.useIncrementalReading(incrementalFile != null && incrementalKey != null);
 
         TransformationGraph graph = getGraph();
-        reader = new MultiFileReader(parser, graph != null ? graph.getProjectURL() : null, fileURL);
+        reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);

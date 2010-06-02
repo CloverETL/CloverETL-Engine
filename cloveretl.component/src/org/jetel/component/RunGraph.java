@@ -426,8 +426,8 @@ public class RunGraph extends Node{
 			commandList.add(cloverCommandArg);
 		}
 		
-		if (!cloverCommandLineArgs.contains("PROJECT_DIR") && getGraph().getProjectURL() != null) {
-			commandList.add("-P:PROJECT_DIR=" + getGraph().getProjectURL());
+		if (!cloverCommandLineArgs.contains("PROJECT_DIR") && getGraph().getRuntimeContext().getContextURL() != null) {
+			commandList.add("-P:PROJECT_DIR=" + getGraph().getRuntimeContext().getContextURL());
 		}
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
@@ -813,7 +813,7 @@ public class RunGraph extends Node{
 	private void initGraphOutputFile() throws ComponentNotReadyException {
 		if (outputFileName != null){
 			try {
-				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
+				File outFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), outputFileName));
 				outFile.createNewFile();
 				outputFile = new FileWriter(outFile, append);
 			} catch (IOException ex) {

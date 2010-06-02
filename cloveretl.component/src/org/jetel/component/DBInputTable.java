@@ -37,7 +37,6 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -218,7 +217,7 @@ public class DBInputTable extends Node {
 		parser.setParentNode(this);
 		if (incrementalFile != null) {
 			try {
-				parser.setIncrementalFile(FileUtils.getFile(getGraph().getProjectURL(), incrementalFile));
+				parser.setIncrementalFile(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile));
 			} catch (MalformedURLException e) {
 				throw new ComponentNotReadyException(this,
 						XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
@@ -363,7 +362,7 @@ public class DBInputTable extends Node {
                 String query = null;
                 if (xattribs.exists(XML_URL_ATTRIBUTE))
                 {
-                   query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getProjectURL(), 
+                   query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
                 		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
                 }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
                     query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
@@ -458,7 +457,7 @@ public class DBInputTable extends Node {
             parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
     		if (incrementalFile != null) {
 				try {
-					parser.setIncrementalFile(FileUtils.getFile(getGraph().getProjectURL(), incrementalFile));
+					parser.setIncrementalFile(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile));
 					parser.checkIncremental();
 				} catch (MalformedURLException e1) {
 					// -pnajvar

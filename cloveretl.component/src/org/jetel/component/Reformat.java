@@ -221,7 +221,7 @@ public class Reformat extends Node {
     	if (firstRun()) {//a phase-dependent part of initialization
             if (errorLogURL != null) {
             	try {
-    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
     			} catch (IOException e) {
     				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
     			}
@@ -231,7 +231,7 @@ public class Reformat extends Node {
     		transformation.reset();
     	    if (errorLogURL != null) {
     	    	try {
-    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+    				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
     			} catch (IOException e) {
     				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
     			}
@@ -499,7 +499,7 @@ public class Reformat extends Node {
             
             if (errorLog != null){
             	try {
-					FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+					FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 				} catch (ComponentNotReadyException e) {
 					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
 				}
@@ -510,7 +510,7 @@ public class Reformat extends Node {
             if (transform != null) {
             	checkTransform = transform;
             } else if (transformURL != null) {
-            	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), transformURL, charset);
+            	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
             }
             // only the transform and transformURL parameters are checked, transformClass is ignored
             if (checkTransform != null) {

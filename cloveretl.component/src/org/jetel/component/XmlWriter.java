@@ -605,7 +605,7 @@ public class XmlWriter extends Node {
     		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
     		try {
     			if (this.mappingURL != null) {
-    				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getProjectURL() : null, mappingURL);
+    				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
     				Document doc = createDocumentFromChannel(ch);
     	            Element mappingRoot = doc.getDocumentElement();
     				PortDefinition portDef = createInputPortDefinitionStructure(graph, allPortDefinitionMap, mappingRoot);
@@ -635,7 +635,7 @@ public class XmlWriter extends Node {
         }
 		
         XmlFormatter formatter = new XmlFormatter(); 
-        writer = new MultiFileWriter(formatter, graph != null ? graph.getProjectURL() : null, this.fileUrl);
+        writer = new MultiFileWriter(formatter, graph != null ? graph.getRuntimeContext().getContextURL() : null, this.fileUrl);
         writer.setLogger(logger);
         writer.setRecordsPerFile(this.recordsPerFile);
         writer.setAppendData(false);
@@ -1222,7 +1222,7 @@ public class XmlWriter extends Node {
 			DefaultHandler handler = new MyHandler();
 			InputStream is = null;
 			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				String filePath = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), mappingURL);
 				is = new FileInputStream(new File(filePath));
 			} else if (this.mappingString != null) {
 				is = new ByteArrayInputStream(mappingString.getBytes(charset));

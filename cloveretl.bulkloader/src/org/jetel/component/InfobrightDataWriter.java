@@ -215,7 +215,7 @@ public class InfobrightDataWriter extends Node {
 
 		//check debug file
 		try {
-			if (logFile != null && !FileUtils.canWrite(getGraph().getProjectURL(), logFile)) {
+			if (logFile != null && !FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), logFile)) {
 				status.add(new ConfigurationProblem("Can't write to " + logFile, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
 			}
 		} catch (ComponentNotReadyException e) {
@@ -448,7 +448,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		try {
 			if (logFile != null) {
-				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
+				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), logFile, append, -1));
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				dataParser = new DataParser(charset);
 				dataParser.setQuotedStrings(true);

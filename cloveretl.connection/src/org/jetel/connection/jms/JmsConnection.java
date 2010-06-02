@@ -202,7 +202,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		
 		// prepare context URL
 		if (contextURL == null) {
-			contextURL = getGraph() == null ? null : getGraph().getProjectURL();
+			contextURL = getGraph() == null ? null : getGraph().getRuntimeContext().getContextURL();
 		}
 		
 		try {
@@ -410,7 +410,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		JmsConnection con;
 		try {
 			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
-				Properties config = readConfig(graph.getProjectURL(), 
+				Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
 						xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),

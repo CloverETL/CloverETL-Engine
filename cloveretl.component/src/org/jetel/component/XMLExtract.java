@@ -1411,7 +1411,7 @@ public class XMLExtract extends Node {
 			DefaultHandler handler = new MyHandler();
 			InputStream is = null;
 			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				String filePath = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), mappingURL);
 				is = new FileInputStream(new File(filePath));
 			} else if (this.mapping != null) {
 				is = new ByteArrayInputStream(mapping.getBytes(charset));
@@ -1455,7 +1455,7 @@ public class XMLExtract extends Node {
 		super.init();
 
     	TransformationGraph graph = getGraph();
-    	URL projectURL = graph != null ? graph.getProjectURL() : null;
+    	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 
 		// prepare mapping
 		if (mappingURL != null) {
@@ -1566,7 +1566,7 @@ public class XMLExtract extends Node {
 			DefaultHandler handler = new MyHandler();
 			InputStream is = null;
 			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(getGraph().getProjectURL(), mappingURL);
+				String filePath = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), mappingURL);
 				is = new FileInputStream(new File(filePath));
 			} else if (this.mapping != null) {
 				is = new ByteArrayInputStream(mapping.getBytes(charset));

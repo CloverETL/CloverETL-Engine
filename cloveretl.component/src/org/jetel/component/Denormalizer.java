@@ -254,7 +254,7 @@ public class Denormalizer extends Node {
 			if (xformClass != null) {
 				denorm = createDenormalizer(xformClass);
 			}else if (xform == null && xformURL != null){
-				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
+				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
 				switch (RecordTransformFactory.guessTransformType(xform)) {
@@ -425,7 +425,7 @@ public class Denormalizer extends Node {
     	}
         if (errorLogURL != null) {
         	try {
-				errorLog = new FileWriter(FileUtils.getFile(getGraph().getProjectURL(), errorLogURL));
+				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
 			}
@@ -497,7 +497,7 @@ public class Denormalizer extends Node {
         
         if (errorLog != null){
         	try {
-				FileUtils.canWrite(getGraph().getProjectURL(), errorLogURL);
+				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 			} catch (ComponentNotReadyException e) {
 				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
 			}
@@ -519,7 +519,7 @@ public class Denormalizer extends Node {
         if (xform != null) {
         	checkTransform = xform;
         } else if (xformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
         }
         // only the transform and transformURL parameters are checked, transformClass is ignored
         if (checkTransform != null) {

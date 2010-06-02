@@ -160,7 +160,7 @@ public class CloverDataWriter extends Node {
 			DataRecordMetadataXMLReaderWriter.write(metadata, out);
 			((ZipOutputStream)out).closeEntry();
 		}else{
-			OutputStream metaFile = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+			OutputStream metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
 					fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);	
 			metaFile.close();
@@ -179,11 +179,11 @@ public class CloverDataWriter extends Node {
     	}
 
     	try{//create output stream and rewrite existing data
-        	fileName = new File(FileUtils.getFile(getGraph().getProjectURL(), fileURL)).getName();
+        	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
         	if (fileName.toLowerCase().endsWith(".zip")) {
         		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
         	}
-			out = FileUtils.getOutputStream(getGraph().getProjectURL(), 
+			out = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
 					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
 					append, compressLevel);
 		} catch(IOException e) {
@@ -240,7 +240,7 @@ public class CloverDataWriter extends Node {
         }
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, mkDir);
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -258,11 +258,11 @@ public class CloverDataWriter extends Node {
 		super.init();
 		
     	// creates necessary directories
-        if (mkDir) FileUtils.makeDirs(getGraph().getProjectURL(), new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
+        if (mkDir) FileUtils.makeDirs(getGraph().getRuntimeContext().getContextURL(), new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
 
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
-		formatter.setProjectURL(getGraph().getProjectURL());
+		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		formatter.init(metadata);
 	}
 		

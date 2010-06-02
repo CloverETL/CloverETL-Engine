@@ -249,11 +249,11 @@ public class ExtDataGenerator extends DataGenerator {
 					// load class base on its class name
 					if (runtimeContext == null) return;
 					generatorClass = (RecordGenerate) RecordTransformFactory.loadClass(this.getClass().getClassLoader(), logger, generatorClassName, 
-							getGraph().getProjectURL(),
+							getGraph().getRuntimeContext().getContextURL(),
 							runtimeContext.getClassPaths());
 				} else if (generatorSource == null) {
 					// read source code from URL
-					generatorSource = FileUtils.getStringFromURL(getGraph().getProjectURL(), generatorURL, charset);
+					generatorSource = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), generatorURL, charset);
 				}
 				
 				if (generatorClassName == null) {

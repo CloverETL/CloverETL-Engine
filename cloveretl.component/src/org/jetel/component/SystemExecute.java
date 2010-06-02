@@ -277,7 +277,7 @@ public class SystemExecute extends Node{
     	super.preExecute();
 		if (getOutPorts().size()==0 && outputFileName!=null){
 			try{
-				File outFile = new File(FileUtils.getFile(getGraph().getProjectURL(), outputFileName));
+				File outFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), outputFileName));
 				outFile.createNewFile();
 				this.outputFile = new FileWriter(outFile,append);
 			}catch(IOException ex){
@@ -542,7 +542,7 @@ public class SystemExecute extends Node{
 		logger.info(msg.toString());
 		processBuilder = new ProcessBuilder(cmdArray);
 		processBuilder.directory(workingDirectory != null ? 
-				workingDirectory : (getGraph().getProjectURL() != null ? new File(getGraph().getProjectURL().getFile()) : new File(".")));
+				workingDirectory : (getGraph().getRuntimeContext().getContextURL() != null ? new File(getGraph().getRuntimeContext().getContextURL().getFile()) : new File(".")));
 		logger.info("Working directory set to: " + processBuilder.directory().getAbsolutePath());
 		if (!environment.isEmpty()){
 			Map<String, String> origEnvironment = processBuilder.environment();

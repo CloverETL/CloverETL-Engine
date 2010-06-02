@@ -131,7 +131,7 @@ public class JavaExecute extends Node {
             //get runnable from link to the compiled class
             codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPaths);
         } else if (runnable == null && runnableURL != null) {
-        	runnable = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), runnableURL, charset);
+        	runnable = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), runnableURL, charset);
         }
         
         if (runnableClass == null) {

@@ -303,12 +303,12 @@ public class CloverDataReader extends Node {
     		initFileIterator();
     		while (filenameItor.hasNext()) {
 				fName = filenameItor.next();
-				URL url = FileUtils.getFileURL(getGraph().getProjectURL(), FileURLParser.getMostInnerAddress(fName));
+				URL url = FileUtils.getFileURL(getGraph().getRuntimeContext().getContextURL(), FileURLParser.getMostInnerAddress(fName));
 				if (FileUtils.isServerURL(url)) {
 					//FileUtils.checkServer(url); //this is very long operation
 					continue;
 				}
-				FileUtils.getReadableChannel(getGraph().getProjectURL(), url.toString());
+				FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), url.toString());
     		}
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem(e.getMessage(), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
@@ -348,7 +348,7 @@ public class CloverDataReader extends Node {
 
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init(metadata);
-		parser.setProjectURL(getGraph().getProjectURL());
+		parser.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		
     	if (metadata != null) {
     		autoFilling.addAutoFillingFields(metadata);
@@ -371,7 +371,7 @@ public class CloverDataReader extends Node {
 	
 	private void initFileIterator() throws ComponentNotReadyException {
 		WcardPattern pat = new WcardPattern();
-		pat.setParent(getGraph().getProjectURL());
+		pat.setParent(getGraph().getRuntimeContext().getContextURL());
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         List<String> files;
         try {

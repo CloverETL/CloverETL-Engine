@@ -384,7 +384,7 @@ public class DBConnection extends GraphElement implements IConnection {
         
         if(!StringUtils.isEmpty(configFileName)) {
             try {
-            	URL projectURL = getGraph() != null ? getGraph().getProjectURL() : null;
+            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
                 InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
 
                 Properties tempProperties = new Properties();
@@ -840,7 +840,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	
 	    	for(int i = 0; i < libraryPaths.length; i++) {
 	            try {
-	                driverLibraryURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, libraryPaths[i]);
+	                driverLibraryURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, libraryPaths[i]);
 	            } catch (MalformedURLException ex1) {
 	                throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'. Malformed URL: " + ex1.getMessage(), ex1);
 	            }

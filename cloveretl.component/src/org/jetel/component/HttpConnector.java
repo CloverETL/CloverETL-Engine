@@ -234,7 +234,7 @@ public class HttpConnector extends Node {
 			if (getStoreResponseToTempFile()) {
 				try {
 					// resolve temporary directory if a relative path is used
-					final File tmpDir = new File(FileUtils.getFile(getGraph().getProjectURL(), temporaryDirectory));
+					final File tmpDir = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), temporaryDirectory));
 					responseWriter = new ResponseByFileNameWriter(outField,temporaryFilePrefix,tmpDir);
 				} catch (MalformedURLException e) {
 					throw new ComponentNotReadyException("Unable to resolve directory to store temporary response files",e);
@@ -345,7 +345,7 @@ public class HttpConnector extends Node {
 			if (!StringUtils.isEmpty(requestContent)) {
 				sendInput(requestContent);
 			} else if (!StringUtils.isEmpty(inputFileUrl)) {
-				ReadableByteChannel inputFile = FileUtils.getReadableChannel(getGraph() != null ? getGraph().getProjectURL() : null, inputFileUrl);
+				ReadableByteChannel inputFile = FileUtils.getReadableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, inputFileUrl);
 				WritableByteChannel outputConnection = Channels.newChannel(httpConnection.getOutputStream());
 				
 				copy(inputFile, outputConnection);
@@ -358,7 +358,7 @@ public class HttpConnector extends Node {
 			
 			WritableByteChannel outputFile = null;
 			if (!StringUtils.isEmpty(outputFileUrl)) {
-				outputFile = FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, outputFileUrl, appendOutput);
+				outputFile = FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, outputFileUrl, appendOutput);
 			} else {
 				outputFile = Channels.newChannel(System.out);
 			}
@@ -535,7 +535,7 @@ public class HttpConnector extends Node {
 			if (!StringUtils.isEmpty(getTemporaryDirectory())) {
 				
 				try {
-				File tmpDir = new File(FileUtils.getFile(getGraph().getProjectURL(), getTemporaryDirectory()));;
+				File tmpDir = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), getTemporaryDirectory()));;
 				if (!tmpDir.exists()) {
 					status.add(new ConfigurationProblem(
 						"Directory to store response temporary files does not exist: " + tmpDir.getAbsolutePath() ,
