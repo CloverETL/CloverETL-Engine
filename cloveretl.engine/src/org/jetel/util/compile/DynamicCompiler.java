@@ -44,15 +44,17 @@ import javax.tools.JavaFileObject.Kind;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 31st May 2010
+ * @version 2nd June 2010
  * @created 14th May 2010
  *
  * @see JavaCompiler
  */
 public final class DynamicCompiler {
 
-	/** The class loader to be used during compilation. */
+	/** The class loader to be used during compilation and class loading. */
 	private final ClassLoader classLoader;
+	/** Additional class path URLs to be used during compilation and class loading. */
+	private final URL[] classPathUrls;
 
 	/**
 	 * Constructs a <code>DynamicCompiler</code> instance for a given class loader to be used during compilation.
@@ -61,8 +63,9 @@ public final class DynamicCompiler {
 	 * @param classLoader the class loader to be used, may be <code>null</code>
 	 * @param classPathUrls the array of additional class path URLs, may be <code>null</code>
 	 */
-	public DynamicCompiler(ClassLoader classLoader, URL[] classPathUrls) {
-		this.classLoader = (classPathUrls != null) ? new URLClassLoader(classPathUrls, classLoader) : classLoader;
+	public DynamicCompiler(ClassLoader classLoader, URL... classPathUrls) {
+		this.classLoader = classLoader;
+		this.classPathUrls = classPathUrls; // <- potential encapsulation problem, defensive copying would solve that
 	}
 
 	/**
@@ -86,11 +89,11 @@ public final class DynamicCompiler {
 		}
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader);
+		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, classPathUrls);
 		StringWriter compilerOutput = new StringWriter();
 
 		CompilationTask task = compiler.getTask(compilerOutput, fileManager, null,
-				Arrays.asList("-cp", ClassLoaderUtils.getClasspath(classLoader)), null,
+				Arrays.asList("-cp", fileManager.getClassPath()), null,
 				Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
 
 		if (!task.call()) {
@@ -164,7 +167,7 @@ public final class DynamicCompiler {
 	 *
 	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 *
-	 * @version 14th May 2010
+	 * @version 2nd June 2010
 	 * @created 14th May 2010
 	 */
 	private static final class JavaClassFileManager extends ForwardingJavaFileManager<JavaFileManager> {
@@ -172,10 +175,14 @@ public final class DynamicCompiler {
 		/** The class loader used to load classes directly from Java byte code. */
 		private final ByteCodeClassLoader classLoader;
 
-		public JavaClassFileManager(JavaCompiler compiler, ClassLoader classLoader) {
+		public JavaClassFileManager(JavaCompiler compiler, ClassLoader classLoader, URL[] classPathUrls) {
 			super(compiler.getStandardFileManager(null, null, null));
 
-			this.classLoader = new ByteCodeClassLoader(classLoader);
+			this.classLoader = new ByteCodeClassLoader(classLoader, classPathUrls);
+		}
+
+		public String getClassPath() {
+			return ClassLoaderUtils.getClasspath(classLoader.getParent(), classLoader.getURLs());
 		}
 
 		@Override
@@ -198,16 +205,16 @@ public final class DynamicCompiler {
 	 *
 	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
 	 *
-	 * @version 14th May 2010
+	 * @version 2nd June 2010
 	 * @created 14th May 2010
 	 */
-	private static final class ByteCodeClassLoader extends ClassLoader {
+	private static final class ByteCodeClassLoader extends URLClassLoader {
 
 		/** The map of compiled Java classes that can be loaded by this class loader. */
 		private final Map<String, JavaClassFileObject> javaClasses = new HashMap<String, JavaClassFileObject>();
 
-		public ByteCodeClassLoader(ClassLoader parent) {
-			super(parent);
+		public ByteCodeClassLoader(ClassLoader parent, URL[] classPathUrls) {
+			super((classPathUrls != null) ? classPathUrls : new URL[0], parent);
 		}
 
 		public void registerClass(String name, JavaClassFileObject byteCode) {
