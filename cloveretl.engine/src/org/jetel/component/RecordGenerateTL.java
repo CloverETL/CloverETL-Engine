@@ -75,8 +75,12 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 
 		semiResult = wrapper.executePreparedFunction(new DataRecord[]{}, outputRecords, null);
 
+		//backward compatibility
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
 			return ALL;
+		}
+		if (semiResult == TLBooleanValue.FALSE) {
+			return SKIP;
 		}
 
 		if (semiResult.getType().isNumeric()) {
@@ -85,7 +89,7 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 
 		errorMessage = "Unexpected return result: " + semiResult.toString() + " (" + semiResult.getType().getName() + ")";
 
-		return SKIP;
+		return ERROR;
 	}
 }
 
