@@ -36,12 +36,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
-import org.jetel.data.RecordKey;
+import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.data.reader.InputReader.InputOrdering;
+import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -59,6 +60,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
+import org.jetel.util.joinKey.OrderedKey;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -224,7 +226,7 @@ public class MergeJoin extends Node {
 	static Log logger = LogFactory.getLog(MergeJoin.class);
 //	private boolean oldJoinKey = false;
 
-	private String[][] joiners;
+	private OrderedKey[][] joiners;
 	private Join join;
 
 	private boolean slaveDuplicates;
@@ -233,8 +235,8 @@ public class MergeJoin extends Node {
 	private int inputCnt;
 	private int slaveCnt;
 	
-	private RecordKey driverKey;
-	private RecordKey[] slaveKeys;
+	private RecordOrderedKey driverKey;
+	private RecordOrderedKey[] slaveKeys;
 
 	InputReader[] reader;
 	boolean anyInputEmpty;
@@ -244,6 +246,8 @@ public class MergeJoin extends Node {
 
 	OutputPort outPort;
 	private String joinKeys;
+	
+	@Deprecated
 	private boolean ascendingInputs = true;
 
 	private String errorActionsString;
@@ -262,20 +266,6 @@ public class MergeJoin extends Node {
 	 * @param slaveDuplicates enables/disables duplicate slaves
 	 * @param ascendingInputs switch for inputs ordering (true=ascending, false=descending) all inputs must be ordered in the same way
 	 */
-	public MergeJoin(String id, String[][] joiners, String transform,
-			String transformClass, String transformURL, Join join, boolean slaveDuplicates,
-			boolean slaveOverriden, boolean ascendingInputs) {
-		super(id);
-		
-		this.joiners = joiners;
-		this.transformSource = transform;
-		this.transformClassName = transformClass;
-		this.transformURL = transformURL;
-		this.join = join;
-		this.slaveDuplicates = slaveDuplicates;
-		this.ascendingInputs = ascendingInputs;
-	}
-	
 	public MergeJoin(String id, String joinKey, String transform,
 			String transformClass, String transformURL, Join join, boolean slaveDuplicates, boolean ascendingInputs) {
 		super(id);
@@ -294,13 +284,6 @@ public class MergeJoin extends Node {
 		this.transformation = transform;
 	}
 	
-	public MergeJoin(String id, String[][] joiners, RecordTransform transform,
-			Join join, boolean slaveDuplicates, boolean slaveOverriden, boolean ascendingInputs) {
-		this(id, joiners, null, null, null, join, slaveDuplicates, slaveOverriden, ascendingInputs);
-		this.transformation = transform;
-	}
-
-
 	/**
 	 * Replace minimal record runs with the following ones. Change min indicator array
 	 * to reflect new set of runs.
@@ -321,10 +304,8 @@ public class MergeJoin extends Node {
 				// check inputs ordering 
 				if (reader[i].getOrdering() == InputOrdering.UNSORTED) 		
 					throw new IllegalStateException("input "+i+" is unsorted");
-				if (ascendingInputs && reader[i].getOrdering()==InputOrdering.DESCENDING)
-					throw new IllegalStateException("all inputs must be ascending, but input "+i+" is "+reader[i].getOrdering()+"; set attribute ascendingInputs=\"false\" or change ordering of input "+i);
-				if (!ascendingInputs && reader[i].getOrdering()==InputOrdering.ASCENDING)
-					throw new IllegalStateException("all inputs must be descending, but input "+i+" is "+reader[i].getOrdering()+"; set attribute ascendingInputs=\"true\" or change ordering of input "+i);
+				if (reader[i].getOrdering() == InputOrdering.DESCENDING)
+					throw new IllegalStateException("input " + i + " has wrong ordering; change ordering on field or ordering of input "+i);
 			}
 
 			// change the flag to true if the current reader reached the EOF
@@ -336,7 +317,7 @@ public class MergeJoin extends Node {
 			int comparison = 0;
 			if (minIdx != i){ // compare data from different input ports
 				// comparison depends on ordering direction of inputs
-				if (ascendingInputs)
+				if (joiners[i][0].getOrdering() == OrderEnum.ASC)
 					comparison = reader[minIdx].compare(reader[i]);
 				else 
 					comparison = reader[i].compare(reader[minIdx]);
@@ -542,7 +523,7 @@ public class MergeJoin extends Node {
 		slaveCnt = inputCnt - 1;
 		if (joiners == null || joiners[0] == null) {
 			List<DataRecordMetadata> inMetadata = getInMetadata();
-			String[][] tmp = JoinKeyUtils.parseMergeJoinKey(joinKeys, inMetadata);
+			OrderedKey[][] tmp = JoinKeyUtils.parseMergeJoinOrderedKey(joinKeys, inMetadata);
 			if (joiners == null) {
 				joiners = tmp;
 			}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
@@ -550,7 +531,7 @@ public class MergeJoin extends Node {
 			}
 			if (joiners.length < inputCnt) {
 				logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
-    			String[][] replJoiners = new String[inputCnt][];
+				OrderedKey[][] replJoiners = new OrderedKey[inputCnt][];
     			for (int i = 0; i < joiners.length; i++) {
     				replJoiners[i] = joiners[i];
     			}
@@ -563,7 +544,7 @@ public class MergeJoin extends Node {
 		}
 		driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
 		driverKey.init();
-		slaveKeys = new RecordKey[slaveCnt];
+		slaveKeys = new RecordOrderedKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
@@ -612,15 +593,24 @@ public class MergeJoin extends Node {
 	 * 
 	 * @param metaData
 	 * @return
+	 * @throws ComponentNotReadyException 
 	 */
-	private RecordKey buildRecordKey(String joiners[], DataRecordMetadata metaData) {
+	private RecordOrderedKey buildRecordKey(OrderedKey joiners[], DataRecordMetadata metaData) throws ComponentNotReadyException {
 		boolean[] ordering = new boolean[joiners.length];
 		Arrays.fill(ordering, ascendingInputs);
 
 		String metadataLocale = metaData.getLocaleStr();
 		int[] fields = new int[joiners.length];
+		boolean[] aOrdering = new boolean[joiners.length];
 		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(joiners[i]);
+			fields[i] = metaData.getFieldPosition(joiners[i].getKeyName());
+			if (joiners[i].getOrdering() == OrderEnum.ASC) {
+				aOrdering[i] = true;
+			} else if (joiners[i].getOrdering() == null) {	// old fashion - field name without ordering
+				joiners[i].setOrdering(ascendingInputs ? OrderEnum.ASC : OrderEnum.DESC);
+			} else if (joiners[i].getOrdering() != OrderEnum.DESC) {
+				throw new ComponentNotReadyException("Wrong order definition in join key: " + joiners[i].getOrdering());
+			}
 			if (metadataLocale == null)	metadataLocale = metaData.getField(fields[i]).getLocaleStr();
 		}
 		
@@ -629,11 +619,11 @@ public class MergeJoin extends Node {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(metadataLocale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			RecordKey recordKey = new RecordKey(fields, metaData);
+			RecordOrderedKey recordKey = new RecordOrderedKey(fields, aOrdering, metaData);
 			recordKey.setCollator(col);
 			return recordKey;
 		} else {
-			return new RecordKey(fields, metaData);
+			return new RecordOrderedKey(fields, aOrdering, metaData);
 		}
 	}
 
@@ -712,7 +702,7 @@ public class MergeJoin extends Node {
 		if (charset != null){
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
-		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(joiners));		
+		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, JoinKeyUtils.toString(joiners));		
 		
 		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
 				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
@@ -733,24 +723,6 @@ public class MergeJoin extends Node {
 				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
 			}
 		}		
-	}
-
-	private String createJoinSpec(String[][] joiners2) {
-		StringBuffer joinStr = new StringBuffer();		
-		
-		for (int i : driverKey.getKeyFields()) {
-			joinStr.append(driverKey.getMetadata().getField(i).getName());
-		}
-		joinStr.append('#');
-		for (int i = 0; i < slaveKeys.length; i++ ) {
-			for (int j : slaveKeys[i].getKeyFields()) {
-				joinStr.append(driverKey.getMetadata().getField(j).getName());
-			}
-			joinStr.append('#');
-		}
-		
-		return joinStr.toString();		
-		
 	}
 
 	/**
@@ -825,144 +797,145 @@ public class MergeJoin extends Node {
 		}
 	}
 
-		public void setErrorLog(String errorLog) {
-			this.errorLogURL = errorLog;
-		}
+	public void setErrorLog(String errorLog) {
+		this.errorLogURL = errorLog;
+	}
 
-		public void setErrorActions(String string) {
-			this.errorActionsString = string;		
-		}
+	public void setErrorActions(String string) {
+		this.errorActionsString = string;		
+	}
 
-		public void setSlaveOverrideKey(String[] slaveOverrideKey) {
+	public void setSlaveOverrideKey(String[] slaveOverrideKey) {
 		if (joiners == null) {
-			joiners = new String[2][];
+			joiners = new OrderedKey[2][];
 		}else{
 			if (joiners[0] != null && joiners[0].length != slaveOverrideKey.length) {
 				throw new IllegalArgumentException("Number of fields in master key doesn't match to number of fields in slave key.");
 			}
 		}
-		joiners[1] = slaveOverrideKey;
+		OrderedKey[] slaveKeys = new OrderedKey[slaveOverrideKey.length];
+		for (int i=0; i<slaveKeys.length; i++) {
+			slaveKeys[i] = new OrderedKey(slaveOverrideKey[i], ascendingInputs ? OrderEnum.ASC : OrderEnum.DESC);
+		}
+		joiners[1] = slaveKeys;
 	}
 	
-		/**  Description of the Method */
-	        @Override
-	    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-	            super.checkConfig(status);
-	            
-	            if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
-	            		|| !checkOutputPorts(status, 1, 1)) {
-	            	return status;
-	            }
-	            
-	            if (charset != null && !Charset.isSupported(charset)) {
-	            	status.add(new ConfigurationProblem(
-	                		"Charset "+charset+" not supported!", 
-	                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-	            }
-	            
-	            try {
-	        		inputCnt = inPorts.size();
-	        		slaveCnt = inputCnt - 1;
-	            	
-	        		if (joiners == null || joiners[0] == null) {
-	        			List<DataRecordMetadata> inMetadata = getInMetadata();
-	        			String[][] tmp = JoinKeyUtils.parseMergeJoinKey(joinKeys, inMetadata);
-	        			if (joiners == null) {
-	        				joiners = tmp;
-	        			}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
-	        				joiners[0] = tmp[0];
-	        			}
-	        			if (joiners.length < inputCnt) {
-	        				logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
-	            			String[][] replJoiners = new String[inputCnt][];
-	            			for (int i = 0; i < joiners.length; i++) {
-	            				replJoiners[i] = joiners[i];
-	            			}
-	            			// use driver key list for all missing slave key specifications
-	            			for (int i = joiners.length; i < inputCnt; i++) {
-	            				replJoiners[i] = joiners[0];
-	            			}
-	            			joiners = replJoiners;
-	        			}
-	        		}
-	        		driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-	        		slaveKeys = new RecordKey[slaveCnt];
-	        		for (int idx = 0; idx < slaveCnt; idx++) {
-	        			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-	    				RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+	/**  Description of the Method */
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+		
+		if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
+				|| !checkOutputPorts(status, 1, 1)) {
+			return status;
+		}
+		
+		if (charset != null && !Charset.isSupported(charset)) {
+			status.add(new ConfigurationProblem(
+					"Charset "+charset+" not supported!", 
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		
+		try {
+			inputCnt = inPorts.size();
+			slaveCnt = inputCnt - 1;
+			
+			if (joiners == null || joiners[0] == null) {
+				List<DataRecordMetadata> inMetadata = getInMetadata();
+				OrderedKey[][] tmp = JoinKeyUtils.parseMergeJoinOrderedKey(joinKeys, inMetadata);
+				if (joiners == null) {
+					joiners = tmp;
+				}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
+					joiners[0] = tmp[0];
+				}
+				if (joiners.length < inputCnt) {
+					logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+					OrderedKey[][] replJoiners = new OrderedKey[inputCnt][];
+					for (int i = 0; i < joiners.length; i++) {
+						replJoiners[i] = joiners[i];
+					}
+					// use driver key list for all missing slave key specifications
+					for (int i = joiners.length; i < inputCnt; i++) {
+						replJoiners[i] = joiners[0];
+					}
+					joiners = replJoiners;
+				}
+			}
+			driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+			slaveKeys = new RecordOrderedKey[slaveCnt];
+			for (int idx = 0; idx < slaveCnt; idx++) {
+				slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+				RecordOrderedKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
 						XML_JOINKEY_ATTRIBUTE, status, this);
-	         		}
-	        		reader = new InputReader[inputCnt];
-	        		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
-	        		if (slaveDuplicates) {
-	        			for (int i = 0; i < slaveCnt; i++) {
-	        				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
-	        			}
-	        		} else {
-	        			for (int i = 0; i < slaveCnt; i++) {
-	        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
-	        			}			
-	        		}
-	        		minReader = reader[0];
-	        		minIndicator = new boolean[inputCnt];
-	        		for (int i = 0; i < inputCnt; i++) {
-	        			minIndicator[i] = true;
-	        		}
+			}
+			reader = new InputReader[inputCnt];
+			reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
+			if (slaveDuplicates) {
+				for (int i = 0; i < slaveCnt; i++) {
+					reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+				}
+			} else {
+				for (int i = 0; i < slaveCnt; i++) {
+					reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i], true);
+				}			
+			}
+			minReader = reader[0];
+			minIndicator = new boolean[inputCnt];
+			for (int i = 0; i < inputCnt; i++) {
+				minIndicator[i] = true;
+			}
+			
+			if (errorActionsString != null) {
+				ErrorAction.checkActions(errorActionsString);
+			}
+			
+			if (errorLog != null){
+ 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
+			}        	
 	            	
-	        		if (errorActionsString != null) {
-	    				ErrorAction.checkActions(errorActionsString);
-	    			}
-	        		
-	                if (errorLog != null){
-	     				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
-	               	}        	
-	            	
-	//                init();
-	//                free();
-	            } catch (ComponentNotReadyException e) {
-	                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-	                if(!StringUtils.isEmpty(e.getAttributeName())) {
-	                    problem.setAttributeName(e.getAttributeName());
-	                }
-	                status.add(problem);
-	            }
-	            
-	            // transformation source for checkconfig
-	            String checkTransform = null;
-	            if (transformSource != null) {
-	            	checkTransform = transformSource;
-	            } else if (transformURL != null) {
-	            	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-	            }
-	            // only the transform and transformURL parameters are checked, transformClass is ignored
-	            if (checkTransform != null) {
-	            	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-	            	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-	            			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-	            		// only CTL is checked
-	            		
-	            		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
-	            				getOutputPort(WRITE_TO_PORT).getMetadata()};
-	            		DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
-	            		for (int idx = 0; idx < inputCnt; idx++) {
-	            			inMetadata[idx] = getInputPort(idx).getMetadata();
-	            		}
-
-	        			try {
-	        				RecordTransformFactory.createTransform(checkTransform, null, null, 
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			if(!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		}
+		
+		// transformation source for checkconfig
+		String checkTransform = null;
+		if (transformSource != null) {
+			checkTransform = transformSource;
+		} else if (transformURL != null) {
+        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
+		}
+		// only the transform and transformURL parameters are checked, transformClass is ignored
+		if (checkTransform != null) {
+			int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+			if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+					|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+				// only CTL is checked
+				
+				DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+						getOutputPort(WRITE_TO_PORT).getMetadata()};
+				DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
+				for (int idx = 0; idx < inputCnt; idx++) {
+					inMetadata[idx] = getInputPort(idx).getMetadata();
+				}
+				
+				try {
+					RecordTransformFactory.createTransform(checkTransform, null, null, 
 	        						charset, this, inMetadata, outMetadata, transformationParameters, 
 	        						null, null);
-						} catch (ComponentNotReadyException e) {
-							// find which component attribute was used
-							String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-							// report CTL error as a warning
-							status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-						}
-	            	}
-	            }
-
-	            return status;
+				} catch (ComponentNotReadyException e) {
+					// find which component attribute was used
+					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+					// report CTL error as a warning
+					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+				}
+			}
 		}
+		return status;
+	}
 	
 	public String getType(){
 		return COMPONENT_TYPE;

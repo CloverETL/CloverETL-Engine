@@ -417,4 +417,19 @@ public class JoinKeyUtils {
 		return getMappingItemsFromMappingString(mappingStr, Defaults.ASSIGN_SIGN + "|=");
 	}
 
+	public static String toString(OrderedKey[][] joiners) {
+		//TODO
+		StringBuffer joinStr = new StringBuffer();		
+		for (int i = 0; i < joiners.length; i++) {
+			for (int j=0; j < joiners[i].length; j++) {
+				joinStr.append(joiners[i][j].getKeyName() + "(" + (joiners[i][j].getOrdering() == OrderEnum.ASC ? "a" : "d") + ")");
+			}
+			joinStr.append('#');
+		}
+		
+		return joinStr.toString();		
+		
+	}
+
+
 }
