@@ -160,7 +160,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 28th May 2010
+ * @version 1st June 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -542,7 +542,8 @@ public class Rollup extends Node {
 
     	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
             try {
-            	return (RecordRollup) DynamicJavaClass.instantiate(sourceCode, getClass().getClassLoader());
+            	return (RecordRollup) DynamicJavaClass.instantiate(sourceCode, getClass().getClassLoader(),
+            			getGraph().getRuntimeContext().getClassPathsUrls());
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);

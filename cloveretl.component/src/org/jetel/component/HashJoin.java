@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -417,8 +418,10 @@ public class HashJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL, charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
+			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL,
+					charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader(),
+					classPaths);
 		}
 		errorActions = ErrorAction.createMap(errorActionsString);
 		if (errorLogURL != null) {

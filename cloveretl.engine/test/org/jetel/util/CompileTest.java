@@ -60,7 +60,7 @@ public class CompileTest extends CloverTestCase {
 
 	public void testDynamicCompiler() {
 		long start = System.currentTimeMillis();
-		DynamicCompiler compiler = new DynamicCompiler(getClass().getClassLoader());
+		DynamicCompiler compiler = new DynamicCompiler(getClass().getClassLoader(), null);
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			try {
 				compiler.compile(src1, "org.jetel.userclasses.test1");
@@ -78,7 +78,7 @@ public class CompileTest extends CloverTestCase {
 		long start = System.currentTimeMillis();
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			try {
-				DynamicJavaClass.instantiate(src2, getClass().getClassLoader());
+				DynamicJavaClass.instantiate(src2, getClass().getClassLoader(), null);
 			} catch (ComponentNotReadyException exception) {
 				exception.printStackTrace();
 				fail("Compilation failed!");

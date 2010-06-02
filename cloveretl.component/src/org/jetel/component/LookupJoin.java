@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -329,7 +330,7 @@ public class LookupJoin extends Node {
     				DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
     				
     				// create the transformation
-    				String[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPaths();
+    				URL[] classPaths = getGraph().getWatchDog().getGraphRuntimeContext().getClassPathsUrls();
     				transformation = RecordTransformFactory.createTransform(
     						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
     						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
@@ -471,7 +472,7 @@ public class LookupJoin extends Node {
     				try {
     					DataRecordMetadata inMetadata[] = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
     					DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-        				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+    					URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
 	    				transformation = RecordTransformFactory.createTransform(
 	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
 	    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
@@ -512,7 +513,7 @@ public class LookupJoin extends Node {
 			if (transformation != null) {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			} else if (!runtimeMetadata(lookupTable)) {
-				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+				URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
 						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);

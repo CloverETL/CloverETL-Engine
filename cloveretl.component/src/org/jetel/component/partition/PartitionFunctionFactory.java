@@ -210,7 +210,8 @@ public class PartitionFunctionFactory {
 			return function;
 		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
 			//get partition function form java code
-	        Object transObject = DynamicJavaClass.instantiate(partitionSource, this.getClass().getClassLoader());
+	        Object transObject = DynamicJavaClass.instantiate(partitionSource, this.getClass().getClassLoader(),
+	        		node.getGraph().getRuntimeContext().getClassPathsUrls());
 
 	        if (transObject instanceof PartitionFunction) {
 				return (PartitionFunction) transObject;
