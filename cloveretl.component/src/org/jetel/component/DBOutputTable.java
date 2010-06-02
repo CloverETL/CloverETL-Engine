@@ -604,7 +604,7 @@ public class DBOutputTable extends Node {
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
-		if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) { 
+		if (getGraph().getRuntimeContext().isBatchMode()) { 
 			// otherwise connection is closed in TransformationGraph.free()
 			dbConnection.closeConnection(getId(), OperationType.WRITE);
 		}
