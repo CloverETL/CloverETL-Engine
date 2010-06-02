@@ -19,25 +19,12 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.util.DataGenerator;
 
 
 public class MathLib extends TLFunctionLibrary {
-    
-	private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
-	
-	private static synchronized DataGenerator getGenerator(Thread key) {
-    	DataGenerator generator = dataGenerators.get(key);
-    	if (generator == null) {
-    		generator = new DataGenerator();
-    		dataGenerators.put(key, generator);
-    	}
-    	return generator;
-    }
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
@@ -283,12 +270,12 @@ public class MathLib extends TLFunctionLibrary {
 
     @TLFunctionAnnotation("Random number (>=0, <1)")
     public static final Double random(TLFunctionCallContext context) {
-    	return ((TLDataGeneratorCache)context.getCache()).dataGenerator.nextDouble();
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextDouble();
     }
     
     @TLFunctionAnnotation("Random number (>=0, <1). Allows changing seed")
     public static final Double random(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).dataGenerator;
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextDouble();
     }
@@ -596,12 +583,12 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Random Gaussian number.")
     public static final Double randomGaussian(TLFunctionCallContext context) {
-    	return getGenerator(Thread.currentThread()).nextGaussian();
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextGaussian();
     }
     
     @TLFunctionAnnotation("Random Gaussian number. Allows changing seed.")
     public static final Double randomGaussian(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextGaussian();
     }
@@ -610,6 +597,7 @@ public class MathLib extends TLFunctionLibrary {
     class RandomGaussianFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -623,12 +611,12 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Random boolean.")
     public static final Boolean randomBoolean(TLFunctionCallContext context) {
-    	return getGenerator(Thread.currentThread()).nextBoolean();
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextBoolean();
     }
     
     @TLFunctionAnnotation("Random boolean. Allows changing seed.")
     public static final Boolean randomBoolean(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextBoolean();
     }
@@ -636,6 +624,7 @@ public class MathLib extends TLFunctionLibrary {
     class RandomBooleanFunction implements TLFunctionPrototype {
         
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -649,24 +638,24 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Random integer.")
     public static final Integer randomInteger(TLFunctionCallContext context) {
-    	return getGenerator(Thread.currentThread()).nextInt();
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextInt();
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing seed.")
     public static final Integer randomInteger(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextInt();
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing start and end value.")
     public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max) {
-    	return getGenerator(Thread.currentThread()).nextInt(min, max);
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextInt(min, max);
     }
     
     @TLFunctionAnnotation("Random integer. Allows changing start, end value and seed.")
     public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextInt(min, max);
     }
@@ -675,6 +664,7 @@ public class MathLib extends TLFunctionLibrary {
     class RandomIntegerFunction implements TLFunctionPrototype {
     	
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -706,24 +696,24 @@ public class MathLib extends TLFunctionLibrary {
 
     @TLFunctionAnnotation("Random long.")
     public static final Long randomLong(TLFunctionCallContext context) {
-    	return getGenerator(Thread.currentThread()).nextLong();
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextLong();
     }
     
     @TLFunctionAnnotation("Random long. Allows changing seed.")
     public static final Long randomLong(TLFunctionCallContext context, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextLong();
     }
     
     @TLFunctionAnnotation("Random long. Allows changing start and end value.")
     public static final Long randomLong(TLFunctionCallContext context, Long min, Long max) {
-    	return getGenerator(Thread.currentThread()).nextLong(min, max);
+    	return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextLong(min, max);
     }
     
     @TLFunctionAnnotation("Random long. Allows changing start, end value and seed.")
     public static final Long randomLong(TLFunctionCallContext context, Long min, Long max, Long seed) {
-    	DataGenerator generator = getGenerator(Thread.currentThread());
+    	DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
     	generator.setSeed(seed);
     	return generator.nextLong(min, max);
     }
@@ -732,6 +722,7 @@ public class MathLib extends TLFunctionLibrary {
     class RandomLongFunction implements TLFunctionPrototype {
         
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {

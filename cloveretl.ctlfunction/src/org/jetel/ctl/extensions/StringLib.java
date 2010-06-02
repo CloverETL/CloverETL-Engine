@@ -19,7 +19,6 @@
 package org.jetel.ctl.extensions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -39,17 +38,6 @@ import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
 
-	private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
-
-	private static synchronized DataGenerator getGenerator(Thread key) {
-		DataGenerator generator = dataGenerators.get(key);
-		if (generator == null) {
-			generator = new DataGenerator();
-			dataGenerators.put(key, generator);
-		}
-		return generator;
-	}
-	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
@@ -877,12 +865,12 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Generates a random string.")
 	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength) {
-		return getGenerator(Thread.currentThread()).nextString(minLength, maxLength);
+		return ((TLDataGeneratorCache)context.getCache()).getDataGenerator().nextString(minLength, maxLength);
 	}
 	
 	@TLFunctionAnnotation("Generates a random string. Allows changing seed.")
 	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength, long randomSeed) {
-		DataGenerator generator = getGenerator(Thread.currentThread());
+		DataGenerator generator = ((TLDataGeneratorCache)context.getCache()).getDataGenerator();
 		generator.setSeed(randomSeed);
 		return generator.nextString(minLength, maxLength);
 	}
@@ -890,6 +878,7 @@ public class StringLib extends TLFunctionLibrary {
 	class RandomStringFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			context.setCache(new TLDataGeneratorCache());
 		}
 		
 		public void execute(Stack stack, TLFunctionCallContext context) {
