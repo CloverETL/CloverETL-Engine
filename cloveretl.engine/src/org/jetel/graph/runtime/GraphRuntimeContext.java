@@ -321,6 +321,11 @@ public class GraphRuntimeContext {
 		this.classPaths = classPaths;
 	}
 
+	public URL[] getClassPathsUrls() {
+		// TODO: Finish implementation
+		return null;
+	}
+
 	/**
 	 * 'Synchronized' mode currently means that the watchdog 
 	 * between phases waits for an JMX event, which allows next graph processing.
