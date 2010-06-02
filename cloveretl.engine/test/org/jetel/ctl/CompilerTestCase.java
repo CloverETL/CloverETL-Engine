@@ -635,15 +635,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 //-------------------------- Data Types Tests ---------------------
 
-	public void test_void() {
-		doCompileExpectErrors("test_void", Arrays.asList("Syntax error on token 'void'",
+	public void test_type_void() {
+		doCompileExpectErrors("test_type_void", Arrays.asList("Syntax error on token 'void'",
 				"Variable 'voidVar' is not declared",
 				"Variable 'voidVar' is not declared",
 				"Syntax error on token 'void'"));
 	}
 	
-	public void test_int() {
-		doCompile("test_int");
+	public void test_type_integer() {
+		doCompile("test_type_integer");
 		check("i", 0);
 		check("j", -1);
 		check("field", VALUE_VALUE);
@@ -652,7 +652,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 	}
 	
-	public void test_int_edge() {
+	public void test_type_integer_edge() {
 		String testExpression = 
 			"integer minInt;\n"+
 			"integer maxInt;\n"+			
@@ -668,8 +668,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("maxInt", Integer.MAX_VALUE);
 	}
 	
-	public void test_long() {
-		doCompile("test_long");
+	public void test_type_long() {
+		doCompile("test_type_long");
 		check("i", Long.valueOf(0));
 		check("j", Long.valueOf(-1));
 		check("field", BORN_MILLISEC_VALUE);
@@ -679,7 +679,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 	}
 	
-	public void test_long_edge() {
+	public void test_type_long_edge() {
 		String expStr = 
 			"long minLong;\n"+
 			"long maxLong;\n"+			
@@ -696,8 +696,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("maxLong", Long.MAX_VALUE);
 	}
 	
-	public void test_decimal() {
-		doCompile("test_decimal");
+	public void test_type_decimal() {
+		doCompile("test_type_decimal");
 		check("i", new BigDecimal(0, MAX_PRECISION));
 		check("j", new BigDecimal(-1, MAX_PRECISION));
 		check("field", CURRENCY_VALUE);
@@ -708,7 +708,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("varWithInitializerNoDist", new BigDecimal(123.35, MAX_PRECISION));
 	}
 	
-	public void test_decimal_edge() {
+	public void test_type_decimal_edge() {
 		String testExpression = 
 			"decimal minLong;\n"+
 			"decimal maxLong;\n"+
@@ -757,8 +757,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("maxDoubleNoDist", new BigDecimal(Double.MAX_VALUE, MAX_PRECISION));
 	}
 	
-	public void test_number() {
-		doCompile("test_number");
+	public void test_type_number() {
+		doCompile("test_type_number");
 		
 		check("i", Double.valueOf(0));
 		check("j", Double.valueOf(-1));
@@ -768,7 +768,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 	}
 	
-	public void test_number_edge() {
+	public void test_type_number_edge() {
 		String testExpression = 
 			"number minDouble;\n" +
 			"number maxDouble;\n"+		
@@ -784,8 +784,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("maxDouble", Double.valueOf(Double.MAX_VALUE));
 	}
 
-	public void test_string() {
-		doCompile("test_string");
+	public void test_type_string() {
+		doCompile("test_type_string");
 		check("i","0");
 		check("helloEscaped", "hello\\nworld");
 		check("helloExpanded", "hello\nworld");
@@ -803,7 +803,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 }
 	
-	public void test_string_long() {
+	public void test_type_string_long() {
 		int length = 1000;
 		StringBuilder tmp = new StringBuilder(length);
 		for (int i = 0; i < length; i++) {
@@ -821,8 +821,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("longString", String.valueOf(tmp));
 	}
 	
-	public void test_date() {
-		doCompile("test_date");
+	public void test_type_date() {
+		doCompile("test_type_date");
 		check("d3", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 1).getTime());
 		check("d2", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 2, 15, 15, 3).getTime());
 		check("d1", new GregorianCalendar(2006, GregorianCalendar.JANUARY, 1, 1, 2, 3).getTime());
@@ -832,26 +832,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 	}
 	
-	public void test_datelib_cache() {
-		doCompile("test_datelib_cache");
-		
-		check("b11", true);
-		check("b12", true);
-		check("b21", true);
-		check("b22", true);
-		check("b31", true);
-		check("b32", true);
-		check("b41", true);
-		check("b42", true);		
-		
-		checkEquals("date3", "date3d");
-		checkEquals("date4", "date4d");
-		checkEquals("date7", "date7d");
-		checkEquals("date8", "date8d");
-	}
-	
-	public void test_boolean() {
-		doCompile("test_boolean");
+	public void test_type_boolean() {
+		doCompile("test_type_boolean");
 		check("b1", true);
 		check("b2", false);
 		check("b3", false);
@@ -859,8 +841,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 	}
 	
-	public void test_boolean_compare() {
-		doCompileExpectErrors("test_boolean_compare", Arrays.asList(
+	public void test_type_boolean_compare() {
+		doCompileExpectErrors("test_type_boolean_compare", Arrays.asList(
 				"Operator '>' is not defined for types 'boolean' and 'boolean'", 
 				"Operator '>=' is not defined for types 'boolean' and 'boolean'",
 				"Operator '<' is not defined for types 'boolean' and 'boolean'",
@@ -872,8 +854,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void test_list() {
-		doCompile("test_list");
+	public void test_type_list() {
+		doCompile("test_type_list");
 		List<Integer> intList = (List<Integer>) getVariable("intList");
 		assertEquals(Integer.valueOf(1), intList.get(0));
 		assertEquals(Integer.valueOf(2), intList.get(1));
@@ -891,8 +873,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void test_map() {
-		doCompile("test_map");
+	public void test_type_map() {
+		doCompile("test_type_map");
 		Map<String, Integer> testMap = (Map<String, Integer>) getVariable("testMap");
 		assertEquals(Integer.valueOf(1), testMap.get("zero"));
 		assertEquals(Integer.valueOf(2), testMap.get("one"));
@@ -918,8 +900,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(dayInWeek, getVariable("dayInWeekCopy"));
 	}
 	
-	public void test_record() {
-		doCompile("test_record");
+	public void test_type_record() {
+		doCompile("test_type_record");
 
 		// expected result
 		DataRecord expected = createDefaultRecord(createDefaultMetadata("expected"));
@@ -1995,20 +1977,86 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("recordLength", 9);
 	}
 	
-	public void test_math_functions() { // TODO: should be distributed into separate tests.
-		doCompile("test_math_functions");
-		check("varPi", Double.valueOf(Math.PI));
-		check("varE", Double.valueOf(Math.E));
-		check("sqrtPi", Double.valueOf(Math.sqrt(Math.PI)));
-		check("sqrt9", Double.valueOf(3));
-		check("ln", Double.valueOf(Math.log(3)));
-		check("log10Var", Double.valueOf(Math.log10(3)));
-		check("ex", Double.valueOf(Math.exp(Math.log10(3))));
-		check("po", Double.valueOf(Math.pow(3, 1.2)));
-		check("p", Double.valueOf(Math.pow(-10, -0.3)));
-		check("r", Long.parseLong("-4"));
-		check("t", Long.parseLong("-3"));
-		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
+	public void test_mathlib_abs() {
+		doCompile("test_mathlib_abs");
+		check("absIntegerPlus", new Integer(10));
+		check("absIntegerMinus", new Integer(1));
+		check("absLongPlus", new Long(10));
+		check("absLongMinus", new Long(1));
+		check("absDoublePlus", new Double(10.0));
+		check("absDoubleMinus", new Double(1.0));
+		check("absDecimalPlus", new BigDecimal(5.0));
+		check("absDecimalMinus", new BigDecimal(5.0));
+	}
+	
+	public void test_mathlib_e() {
+		doCompile("test_mathlib_e");
+		check("varE", Math.E);
+	}
+	
+	public void test_mathlib_exp() {
+		doCompile("test_mathlib_exp");
+		check("ex", Math.exp(1.123));
+	}
+	
+	public void test_mathlib_log() {
+		doCompile("test_mathlib_log");
+		check("ln", Math.log(3));
+	}
+	
+	public void test_mathlib_log10() {
+		doCompile("test_mathlib_log10");
+		check("varLog10", Math.log10(3));
+	}
+	
+	public void test_mathlib_pi() {
+		doCompile("test_mathlib_pi");
+		check("varPi", Math.PI);
+	}
+	
+	public void test_mathlib_pow() {
+		doCompile("test_mathlib_pow");
+		check("power1", Math.pow(3,1.2));
+		check("power2", Double.NaN);
+	}
+	
+	public void test_mathlib_round() {
+		doCompile("test_mathlib_round");
+		check("round1", Long.parseLong("-4"));
+	}
+	
+	public void test_mathlib_sqrt() {
+		doCompile("test_mathlib_sqrt");
+		check("sqrtPi", Math.sqrt(Math.PI));
+		check("sqrt9", Math.sqrt(9));
 	}
 
+//-------------------------DateLib tests----------------------
+	
+	public void test_datelib_cache() {
+		doCompile("test_datelib_cache");
+		
+		check("b11", true);
+		check("b12", true);
+		check("b21", true);
+		check("b22", true);
+		check("b31", true);
+		check("b32", true);
+		check("b41", true);
+		check("b42", true);		
+		
+		checkEquals("date3", "date3d");
+		checkEquals("date4", "date4d");
+		checkEquals("date7", "date7d");
+		checkEquals("date8", "date8d");
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void test_datelib_trunc() {
+		doCompile("test_datelib_trunc");
+		check("truncLong", Long.parseLong("-3"));
+		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
+		assertTrue(((List<Integer>) getVariable("truncList")).isEmpty());
+		assertTrue(((Map<Integer, Integer>) getVariable("truncMap")).isEmpty());
+	}
 }
