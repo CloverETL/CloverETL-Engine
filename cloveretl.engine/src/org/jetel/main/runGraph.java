@@ -262,7 +262,7 @@ public class runGraph {
             } else if (args[i].startsWith(CONTEXT_URL_SWITCH)) {
                 i++;
                 try {
-					contextURL = new URL(FileUtils.appendSlash(args[i]));
+					contextURL = FileUtils.getFileURL(FileUtils.appendSlash(args[i]));
 				} catch (MalformedURLException e) {
                     System.err.println("Invalid contextURL command line parameter: " + args[i]);
                     System.exit(-1);
