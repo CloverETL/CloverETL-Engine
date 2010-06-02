@@ -204,7 +204,7 @@ public class TransformationGraphXMLReaderWriter {
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
-     * @param properties additional properties
+	 * @param runtimeContext is used as source of additional properties and context URL and is also preset as an intial runtime context for the new graph
      * @return transformation graph
      * @throws XMLConfigurationException deserialization from XML fails for any reason.
      * @throws GraphConfigurationException misconfigured graph
