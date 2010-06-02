@@ -81,15 +81,15 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Metadata for component's output ports */
 	private final DataRecordMetadata[] outputMetadata; // may be null
 	/** Name -> position mapping for input ports */
-	private final TreeMap<String, Integer> inputRecordsMap;
+	private final Map<String, Integer> inputRecordsMap;
 	/** Name -> position mapping for output ports */
-	private final TreeMap<String, Integer> outputRecordsMap;
+	private final Map<String, Integer> outputRecordsMap;
 	/** Name/ID -> metadata mapping for record-type variables */
-	private final TreeMap<String, DataRecordMetadata> graphMetadata;
+	private final Map<String, DataRecordMetadata> graphMetadata;
 	/** Name/ID -> lookup mapping for lookup nodes */
-	private final TreeMap<String, LookupTable> lookupMap;
+	private final Map<String, LookupTable> lookupMap;
 	/** Name/ID -> lookup mapping for sequences */
-	private final TreeMap<String, Sequence> sequenceMap;
+	private final Map<String, Sequence> sequenceMap;
 	/** Function declarations */
 	private final Map<String, List<CLVFFunctionDeclaration>> declaredFunctions;
 	/** Problem collector */
