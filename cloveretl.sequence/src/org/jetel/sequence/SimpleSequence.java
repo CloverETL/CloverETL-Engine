@@ -135,7 +135,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 
         if(!StringUtils.isEmpty(configFileName)) {
             try {
-            	URL projectURL = getGraph() != null ? getGraph().getProjectURL() : null;
+            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
                 InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
 
                 Properties tempProperties = new Properties();
@@ -229,7 +229,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file = new File(getGraph() != null ? 
-            		FileUtils.getFile(getGraph().getProjectURL(), filename) :
+            		FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), filename) :
             		filename);
             if (!file.exists()) {
             	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
@@ -363,7 +363,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         super.checkConfig(status);
         
         try {
-			if (!FileUtils.canWrite(getGraph().getProjectURL(), filename)) {
+			if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
 	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
 			}
 		} catch (ComponentNotReadyException e) {
