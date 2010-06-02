@@ -243,7 +243,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			record.init();
 			try {
 				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null, fileURL));
 				} else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes(charset)));
 				}
@@ -405,7 +405,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 
 		if (fileURL != null) {
 			try {
-				FileUtils.getReadableChannel(getGraph().getProjectURL(), fileURL);
+				FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), fileURL);
 			} catch (IOException e) {
 				status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
 			}

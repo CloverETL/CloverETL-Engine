@@ -322,7 +322,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			tmpRecord.init();
 			try {
 				if (fileURL != null) {
-					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getProjectURL() : null, fileURL));
+					dataParser.setDataSource(FileUtils.getReadableChannel((getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null, fileURL));
 				} else if (data != null) {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
 				}
