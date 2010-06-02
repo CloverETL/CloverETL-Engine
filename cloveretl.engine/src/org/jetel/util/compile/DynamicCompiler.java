@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +44,7 @@ import javax.tools.JavaFileObject.Kind;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 27th May 2010
+ * @version 31st May 2010
  * @created 14th May 2010
  *
  * @see JavaCompiler
@@ -54,11 +56,13 @@ public final class DynamicCompiler {
 
 	/**
 	 * Constructs a <code>DynamicCompiler</code> instance for a given class loader to be used during compilation.
+	 * Additional class path URLs may be provided if any external Java classes are required.
 	 *
 	 * @param classLoader the class loader to be used, may be <code>null</code>
+	 * @param classPathUrls the array of additional class path URLs, may be <code>null</code>
 	 */
-	public DynamicCompiler(ClassLoader classLoader) {
-		this.classLoader = classLoader;
+	public DynamicCompiler(ClassLoader classLoader, URL[] classPathUrls) {
+		this.classLoader = (classPathUrls != null) ? new URLClassLoader(classPathUrls, classLoader) : classLoader;
 	}
 
 	/**

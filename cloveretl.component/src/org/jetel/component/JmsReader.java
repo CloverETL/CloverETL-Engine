@@ -255,7 +255,8 @@ public class JmsReader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private JmsMsg2DataRecord createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(psorCode, this.getClass().getClassLoader());
+        Object transObject = DynamicJavaClass.instantiate(psorCode, this.getClass().getClassLoader(),
+    			getGraph().getRuntimeContext().getClassPathsUrls());
 
         if (transObject instanceof JmsMsg2DataRecord) {
 			return (JmsMsg2DataRecord) transObject;

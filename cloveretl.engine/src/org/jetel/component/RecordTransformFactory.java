@@ -50,7 +50,7 @@ import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
-import org.jetel.util.compile.ClassLoaderUtils;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -172,10 +172,10 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform createTransform(String transform, String transformClass, 
-    		String transformURL, String charset, Node node, 
-    		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
-    		Properties transformationParameters, ClassLoader classLoader, String[] classPaths) throws ComponentNotReadyException {
+    public static RecordTransform createTransform(String transform, String transformClass, String transformURL,
+    		String charset, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata,
+    		Properties transformationParameters, ClassLoader classLoader, URL[] classPathUrls)
+    		throws ComponentNotReadyException {
     	
     	// create transformation
         RecordTransform transformation = null;
@@ -194,7 +194,8 @@ public class RecordTransformFactory {
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
-            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger, transformClass, null, classPaths);
+            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger,
+            		transformClass, null, classPathUrls);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
@@ -207,7 +208,7 @@ public class RecordTransformFactory {
                 // try compile transform parameter as java code
 				// try preprocessing if applicable
                 transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
-                        logger, null, transform, inMetadata, outMetadata, classLoader, false);
+                        logger, null, transform, inMetadata, outMetadata, classLoader, classPathUrls, false);
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
@@ -234,9 +235,9 @@ public class RecordTransformFactory {
             	}
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
-                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
-                        logger, "Transform" + node.getId(), transform,
-                        inMetadata, outMetadata, classLoader, true);
+                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(logger,
+                		"Transform" + node.getId(), transform, inMetadata, outMetadata, classLoader,
+                		classPathUrls, true);
                 break;
             default:
                 // logger.error("Can't determine transformation code type at
@@ -264,7 +265,7 @@ public class RecordTransformFactory {
      * @throws ComponentNotReadyException
      */
     public static Object loadClass(ClassLoader parentClassLoader, Log logger,
-            String transformClassName, URL contextURL, String[] libraryPaths)
+            String transformClassName, URL contextURL, URL[] classPathUrls)
             throws ComponentNotReadyException {
         Object instance = null;
         // try to load in transformation class & instantiate
@@ -276,13 +277,13 @@ public class RecordTransformFactory {
             throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
         }catch (ClassNotFoundException ex) {
             // let's try to load in any additional .jar library (if specified)
-            if (libraryPaths == null) {
+            if (classPathUrls == null) {
                 throw new ComponentNotReadyException(
                         "Can't find specified transformation class: "
                                 + transformClassName);
             }
             try {
-                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader( parentClassLoader, contextURL, libraryPaths);
+                URLClassLoader classLoader = new GreedyURLClassLoader(classPathUrls, parentClassLoader);
                 instance = Class.forName(transformClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
                 throw new ComponentNotReadyException("Can not find class: " + ex1);
@@ -304,11 +305,9 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(Log logger,
-            String className, String transformCode,
+    public static RecordTransform loadClassDynamic(Log logger, String className, String transformCode,
             DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
-            boolean addTransformCodeStub)
-            throws ComponentNotReadyException {
+            URL[] classPathUrls, boolean addTransformCodeStub) throws ComponentNotReadyException {
         // creating dynamicTransformCode from internal transformation format
         CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
         if (!addTransformCodeStub) 
@@ -320,7 +319,7 @@ public class RecordTransformFactory {
         if (addTransformCodeStub)
         	codeParser.addTransformCodeStub("Transform" + className);
 
-        return loadClassDynamic(codeParser.getSourceCode(), classLoader);
+        return loadClassDynamic(codeParser.getSourceCode(), classLoader, classPathUrls);
     }
     
     /**
@@ -329,9 +328,9 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(String sourceCode, ClassLoader classLoader)
+    public static RecordTransform loadClassDynamic(String sourceCode, ClassLoader classLoader, URL[] classPathUrls)
             throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(sourceCode, classLoader);
+        Object transObject = DynamicJavaClass.instantiate(sourceCode, classLoader, classPathUrls);
 
         if (transObject instanceof RecordTransform) {
 			return (RecordTransform) transObject;

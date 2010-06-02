@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.Collator;
@@ -735,7 +736,7 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
 					this.getClass().getClassLoader(), classPaths);
@@ -745,10 +746,11 @@ public class AproxMergeJoin extends Node {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
-			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
-					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(), classPaths);
+					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(),
+					classPaths);
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {

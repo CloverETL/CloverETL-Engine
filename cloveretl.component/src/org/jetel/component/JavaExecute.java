@@ -208,9 +208,9 @@ public class JavaExecute extends Node {
      * @return	Instance of a class
      * @throws ComponentNotReadyException
      */
-    private static JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader)
-    		throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(runnable, classLoader);
+    private JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader) throws ComponentNotReadyException {
+        Object transObject = DynamicJavaClass.instantiate(runnable, classLoader,
+    			getGraph().getRuntimeContext().getClassPathsUrls());
 
         if (transObject instanceof JavaRunnable) {
 			return (JavaRunnable) transObject;
