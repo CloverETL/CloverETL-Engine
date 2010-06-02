@@ -78,12 +78,8 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 
 		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
 
-		//backward compatibility
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
 			return ALL;
-		}
-		if (semiResult == TLBooleanValue.FALSE) {
-			return SKIP;
 		}
 
 		if (semiResult.getType().isNumeric()) {
@@ -92,7 +88,7 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 
 		errorMessage = "Unexpected return result: " + semiResult.toString() + " (" + semiResult.getType().getName() + ")";
 
-		return ERROR;
+		return SKIP;
 	}
 }
 
