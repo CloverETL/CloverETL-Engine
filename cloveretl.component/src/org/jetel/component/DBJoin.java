@@ -20,7 +20,9 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -342,6 +344,8 @@ public class DBJoin extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
+        dbMetadata = getGraph().getDataRecordMetadata(metadataName);
+
         try {
         	
     		IConnection conn = getGraph().getConnection(connectionName);
@@ -351,40 +355,27 @@ public class DBJoin extends Node {
             if(!(conn instanceof DBConnection)) {
                 throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
             }
-//            conn.init();
-            
-            dbMetadata = getGraph().getDataRecordMetadata(metadataName);
-    		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
-    		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-//            try {
-//				lookupTable = new DBLookupTable(
-//						"LOOKUP_TABLE_FROM_" + this.getId(),
-//						((DBConnection) conn).getConnection(getId(), OperationType.READ),
-//						dbMetadata, query, maxCached);
-//			} catch (JetelException e1) {
-//				throw new ComponentNotReadyException(e1);
-//			}
-//            lookupTable.checkConfig(status);
-//    		lookupTable.init();
-    		try {
-    			recordKey = new RecordKey(joinKey, inMetadata[0]);
+
+            if (dbMetadata == null) {
+	            conn.init();
+	            dbMetadata = extractDbMetadata(conn, query);
+	            conn.free();
+            }
+
+            try {
+    			recordKey = new RecordKey(joinKey, getInputPort(READ_FROM_PORT).getMetadata());
     			recordKey.init();
-//    			lookupTable.setLookupKey(recordKey);
     		} catch (Exception e) {
     			throw new ComponentNotReadyException(this, e);
     		}
-			if (errorActionsString != null) {
+
+    		if (errorActionsString != null) {
 				ErrorAction.checkActions(errorActionsString);
 			}
     		
             if (errorLog != null){
  				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
            	}
-        	
-//    		lookupTable.free();
-        	
-//            init();
-//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -392,8 +383,11 @@ public class DBJoin extends Node {
             }
             status.add(problem);
         }
-        
-        // transformation source for checkconfig
+
+        DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { getInputPort(READ_FROM_PORT).getMetadata(), dbMetadata };
+        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
+
+		// transformation source for checkconfig
         String checkTransform = null;
         if (transformSource != null) {
         	checkTransform = transformSource;
@@ -406,10 +400,7 @@ public class DBJoin extends Node {
         	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
         			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
     			try {
-					DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(),
-							getGraph().getDataRecordMetadata(metadataName, true) };
-					DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-					String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+					URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
     				transformation = RecordTransformFactory.createTransform(
     						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
     						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
@@ -429,8 +420,6 @@ public class DBJoin extends Node {
         if(isInitialized()) return;
 		super.init();
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, true);
-		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
-		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
 		
 		// Initializing lookup table
 		IConnection conn = getGraph().getConnection(connectionName);
@@ -442,11 +431,18 @@ public class DBJoin extends Node {
 		}
 		conn.init();
 		
+		if (dbMetadata == null) {
+			dbMetadata = extractDbMetadata(conn, query);
+		}
+
 		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached);
 		lookupTable.setGraph(getGraph());
 		lookupTable.checkConfig(null);
 		lookupTable.init();
 		
+		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
+		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
+
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
@@ -454,7 +450,7 @@ public class DBJoin extends Node {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}
 			if (transformSource != null || transformClassName != null) {
-				String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+				URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
 						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
@@ -470,6 +466,18 @@ public class DBJoin extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 	
+	private DataRecordMetadata extractDbMetadata(IConnection connection, String sqlQuery)
+			throws ComponentNotReadyException {
+		Properties parameters = new Properties();
+		parameters.setProperty(DBConnection.SQL_QUERY_PROPERTY, sqlQuery);
+
+		try {
+			return connection.createMetadata(parameters);
+		} catch (SQLException exception) {
+			throw new ComponentNotReadyException("", exception);
+		}
+	}
+
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
