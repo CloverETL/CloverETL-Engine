@@ -172,4 +172,8 @@ public class EngineInitializer {
         graph.init();
 	}
 
+	public static boolean isInitialized() {
+		return alreadyInitialized;
+	}
+	
 }

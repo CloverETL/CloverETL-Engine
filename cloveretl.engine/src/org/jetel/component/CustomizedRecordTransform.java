@@ -1266,17 +1266,18 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (!Rule.checkTypes(targetMetadata[outRecNo].getField(outFieldNo),
 				sourceMetadata[inRecNo].getField(inFieldNo), fieldPolicy)) {
 			if (fieldPolicy == PolicyType.STRICT) {
-				if (logger != null) {
-					logger.warn("Found fields with the same names but other types: ");
-					logger.warn(targetMetadata[outRecNo].getName() + DOT + 
-							targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - " + 
-							targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) + 
-							getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
-					logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
-							sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - " + 
-							sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) + 
-							getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
-				}
+// this warning was removed due Casenet project - in future should be still present and better manageable
+//				if (logger != null) {
+//					logger.warn("Found fields with the same names but other types: ");
+//					logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+//							targetMetadata[outRecNo].getField(outFieldNo).getName() + " type - " + 
+//							targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) + 
+//							getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+//					logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+//							sourceMetadata[inRecNo].getField(inFieldNo).getName() + " type - " + 
+//							sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) + 
+//							getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+//				}
 			}
 			if (fieldPolicy == PolicyType.CONTROLLED) {
 				if (logger !=null ) {

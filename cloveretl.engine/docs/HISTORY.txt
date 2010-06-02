@@ -70,6 +70,18 @@ REL 2-8-0
 + Trash now can print out its ID for debugging purposes
 + unified null and empty field values in sorting, Dedup, etc. 
 
+REL 2-7-3
+---------
+Features:
++ backport - skipCheckConfig runtime configuration parameter was added
++ all URLs in graphs can be now resolved by third-party algorithms - helpful for graphs processing inside war file or other non-standard file systems (see CustomPathResolver)
+
+Fixed:
++ CloverDataReader unintended locks the input file in configuration checking (checkConfig)
++ backport for DBExecute - database stored procedure is now correctly triggered
++ XMLExtract configuration checking (checkConfig) does call parent implementation - undesired warning message removed
++ undesired warning message removed in case incompatible field types in CTL auto-mapping $0.* := $0.*
+
 REL 2-7-2
 ---------
 Features:
