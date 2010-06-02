@@ -1618,39 +1618,74 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 //------------------------- ContainerLib Tests---------------------
 	
-	
-	// TODO: distribute functions into separate tests
-	@SuppressWarnings("unchecked")
-	public void test_container_lib() {
-		doCompile("test_container_lib");
+	public void test_containerlib_append() {
+		doCompile("test_containerlib_append");
+		
+		check("appendElem", Integer.valueOf(10));
+		check("appendList", createList(1, 2, 3, 4, 5, 10));
+	}
 
-		// copy
-		check("copyList", createList(1, 2, 3, 4, 5));
-		// pop
-		check("popElem", Integer.valueOf(5));
-		check("popList", createList(1, 2, 3, 4));
-		// poll
-		check("pollElem", Integer.valueOf(1));
-		check("pollList", createList(2, 3, 4));
-		// push
-		check("pushElem", Integer.valueOf(6));
-		check("pushList", createList(2, 3, 4, 6));
-		// insert
-		check("insertElem", Integer.valueOf(7));
-		check("insertIndex", Integer.valueOf(1));
-		check("insertList", createList(2, 7, 3, 4, 6));
-		// remove
-		check("removeElem", Integer.valueOf(3));
-		check("removeIndex", Integer.valueOf(2));
-		check("removeList", createList(2, 7, 4, 6));
-		// sort
-		check("sortList", createList(2, 4, 6, 7));
-		// reverse
-		check("reverseList", createList(7, 6, 4, 2));
-		// remove_all
-		assertTrue(((List<Integer>) getVariable("removeAllList")).isEmpty());
+	@SuppressWarnings("unchecked")
+	public void test_containerlib_clear() {
+		doCompile("test_containerlib_clear");
+
+		assertTrue(((List<Integer>) getVariable("clearList")).isEmpty());
 	}
 	
+	public void test_containerlib_copy() {
+		doCompile("test_containerlib_copy");
+
+		check("copyList", createList(1, 2, 3, 4, 5));
+	}
+
+	public void test_containerlib_insert() {
+		doCompile("test_containerlib_insert");
+
+		check("insertElem", Integer.valueOf(7));
+		check("insertIndex", Integer.valueOf(3));
+		check("insertList", createList(1, 2, 3, 7, 4, 5));
+	}
+
+	public void test_containerlib_poll() {
+		doCompile("test_containerlib_poll");
+
+		check("pollElem", Integer.valueOf(1));
+		check("pollList", createList(2, 3, 4, 5));
+	}
+
+	public void test_containerlib_pop() {
+		doCompile("test_containerlib_pop");
+
+		check("popElem", Integer.valueOf(5));
+		check("popList", createList(1, 2, 3, 4));
+	}
+
+	public void test_containerlib_push() {
+		doCompile("test_containerlib_push");
+
+		check("pushElem", Integer.valueOf(6));
+		check("pushList", createList(1, 2, 3, 4, 5, 6));
+	}
+
+	public void test_containerlib_remove() {
+		doCompile("test_containerlib_remove");
+
+		check("removeElem", Integer.valueOf(3));
+		check("removeIndex", Integer.valueOf(2));
+		check("removeList", createList(1, 2, 4, 5));
+	}
+
+	public void test_containerlib_reverse() {
+		doCompile("test_containerlib_reverse");
+
+		check("reverseList", createList(5, 4, 3, 2, 1));
+	}
+
+	public void test_containerlib_sort() {
+		doCompile("test_containerlib_sort");
+
+		check("sortList", createList(1, 1, 2, 3, 5));
+	}
 //---------------------- StringLib Tests ------------------------
 
 	public void test_stringlib() {
