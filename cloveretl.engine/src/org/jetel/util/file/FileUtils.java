@@ -153,6 +153,30 @@ public class FileUtils {
         return new URL(contextURL, "file:" + fileURL);
     }
 
+    /**
+     * Converts a list of file URLs to URL objects by calling {@link #getFile(URL, String)}.
+     *
+     * @param contextUrl URL context for converting relative paths to absolute ones
+     * @param fileUrls array of string file URLs
+     *
+     * @return an array of file URL objects
+     *
+     * @throws MalformedURLException if any of the given file URLs is malformed
+     */
+	public static URL[] getFileUrls(URL contextUrl, String[] fileUrls) throws MalformedURLException {
+		if (fileUrls == null) {
+			return null;
+		}
+
+		URL[] resultFileUrls = new URL[fileUrls.length];
+
+		for (int i = 0; i < fileUrls.length; i++) {
+			resultFileUrls[i] = getFileURL(contextUrl, fileUrls[i]);
+		}
+
+		return resultFileUrls;
+	}
+
 	/**
 	 *  Calculates checksum of specified file.<br>Is suitable for short files (not very much buffered).
 	 *

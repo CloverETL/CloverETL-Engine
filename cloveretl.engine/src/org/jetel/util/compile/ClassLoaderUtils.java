@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
@@ -31,8 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 
 /**
@@ -46,49 +43,59 @@ public class ClassLoaderUtils {
     
     static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
     
-    @SuppressWarnings(value="DE")
-    public static String getClasspath(ClassLoader loader) {
+    public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
+		URL[] urls = null;
+
+		try {
+			// this method is used by org.jboss.mx.loading.RepositoryClassLoader
+			Method getAllURLs = loader.getClass().getMethod("getAllURLs");
+			urls = (URL[]) getAllURLs.invoke(loader);
+		} catch (Throwable ex) {
+			// ignore
+		}
+
+		if (urls == null || urls.length == 0) {
+			try {
+				// this way non-URLClassLoader or extended ClassLoaders can also return urls
+				Method getAllURLs = loader.getClass().getMethod("getURLs");
+				urls = (URL[]) getAllURLs.invoke(loader);
+			} catch (Throwable ex) {
+				// ignore
+			}
+		}
+
+        if (urls == null || urls.length == 0) {
+        	urls = classPathUrls;
+        } else if (classPathUrls != null && classPathUrls.length != 0) {
+        	URL[] cpUrls = new URL[urls.length + classPathUrls.length];
+    		System.arraycopy(urls, 0, cpUrls, 0, urls.length);
+    		System.arraycopy(classPathUrls, 0, cpUrls, urls.length, classPathUrls.length);
+
+    		urls = cpUrls;
+        }
+
         String classpath = "";
-        URL[] urls = null;
-        
-        try {
-            // this method is used by org.jboss.mx.loading.RepositoryClassLoader
-            Class[] sig = {};
-            Method getAllURLs = loader.getClass().getMethod("getAllURLs", sig);
-            Object[] args = {};
-            urls = (URL[]) getAllURLs.invoke(loader, args);
-        } catch(Throwable ex){
-            // ignore
-        }
-        try{
-            if (urls == null || urls.length == 0) {
-                // this way non-URLClassLoader or extended ClassLoaders can also return urls
-                Class[] sig = {};
-                Object[] args = {};
-                Method getAllURLs = loader.getClass().getMethod("getURLs", sig);
-                urls = (URL[]) getAllURLs.invoke(loader, args);
-            }
-        } catch(Throwable ex){
-            // ignore
-        }
-        
+
         if (urls != null) {
-            StringBuffer classPathBuff = new StringBuffer();
-            for (int i = 0; i < urls.length; i++) {
+        	StringBuilder classPathBuilder = new StringBuilder();
+
+        	for (int i = 0; i < urls.length; i++) {
                 String fileName = getCheckedFileName(urls[i]);
+
                 if (fileName.length() > 0) {
-                    if (classPathBuff.length() > 0) {
-                        classPathBuff.append(File.pathSeparatorChar);
-                    }
-                    classPathBuff.append(fileName);
+                	classPathBuilder.append(File.pathSeparator);
+                    classPathBuilder.append(fileName);
                 }
             }
-            classpath = classPathBuff.toString();
-        }
-        
-        return classpath;
+
+        	if (classPathBuilder.length() > 0) {
+        		classpath = classPathBuilder.substring(File.pathSeparator.length());
+        	}
+		}
+
+		return classpath;
     }
-    
+
     private static String getCheckedFileName(URL url) {
         String fileName;
         
@@ -136,19 +143,11 @@ public class ClassLoaderUtils {
      * @throws ComponentNotReadyException
      */
 	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, String[] libraryPaths)	throws ComponentNotReadyException {
-		URL[] myURLs = new URL[libraryPaths.length];
-		// try to create URL directly, if failed probably the protocol is
-		// missing, so use File.toURL
-		for (int i = 0; i < libraryPaths.length; i++) {
-		    try {
-		        // valid url
-		        myURLs[i] = FileUtils.getFileURL(contextURL, libraryPaths[i]);
-		    } catch (MalformedURLException e) {
-		        throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
-		    }
-		}
-		GreedyURLClassLoader classLoader = new GreedyURLClassLoader(myURLs, parentCl);
-		return classLoader;
+	    try {
+			return new GreedyURLClassLoader(FileUtils.getFileUrls(contextURL, libraryPaths), parentCl);
+	    } catch (MalformedURLException e) {
+	        throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
+	    }
 	}
-    
+
 }

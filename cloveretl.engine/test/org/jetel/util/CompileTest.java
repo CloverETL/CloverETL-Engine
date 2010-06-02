@@ -19,8 +19,11 @@
  */
 package org.jetel.util;
 
+import java.net.URL;
+
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.CompilationException;
 import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
@@ -37,6 +40,9 @@ public class CompileTest extends CloverTestCase {
 	private String src2;
 
 	protected void setUp() {
+		URL[] urls = null;
+		ClassLoaderUtils.getClasspath(null, urls);
+
 		StringBuffer tmp = new StringBuffer();
 		tmp.append("package org.jetel.userclasses;\n");
 		tmp.append("public class test1 {\n");
@@ -60,7 +66,7 @@ public class CompileTest extends CloverTestCase {
 
 	public void testDynamicCompiler() {
 		long start = System.currentTimeMillis();
-		DynamicCompiler compiler = new DynamicCompiler(getClass().getClassLoader(), null);
+		DynamicCompiler compiler = new DynamicCompiler(getClass().getClassLoader());
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			try {
 				compiler.compile(src1, "org.jetel.userclasses.test1");
@@ -78,7 +84,7 @@ public class CompileTest extends CloverTestCase {
 		long start = System.currentTimeMillis();
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			try {
-				DynamicJavaClass.instantiate(src2, getClass().getClassLoader(), null);
+				DynamicJavaClass.instantiate(src2, getClass().getClassLoader());
 			} catch (ComponentNotReadyException exception) {
 				exception.printStackTrace();
 				fail("Compilation failed!");

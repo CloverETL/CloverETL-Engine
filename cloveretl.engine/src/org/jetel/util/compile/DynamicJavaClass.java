@@ -31,7 +31,7 @@ import org.jetel.exception.ComponentNotReadyException;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 1st June 2010
+ * @version 2nd June 2010
  * @since 31st May 2010
  */
 public final class DynamicJavaClass {
@@ -55,7 +55,7 @@ public final class DynamicJavaClass {
 	 *
 	 * @throws ComponentNotReadyException if instantiation of the class failed for some reason
 	 */
-	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL[] classPathUrls)
+	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL... classPathUrls)
 			throws ComponentNotReadyException {
 		DynamicCompiler compiler = new DynamicCompiler(classLoader, classPathUrls);
 		String className = extractClassName(sourceCode);
