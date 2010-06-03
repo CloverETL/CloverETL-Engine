@@ -234,7 +234,9 @@ public class StructureWriter extends Node {
 		super.preExecute();
 		
 		if (firstRun()) {
-	        writer.init(getInputPort(BODY_PORT).getMetadata());
+			//this initialization was moved to execute method, since has to be called
+			//after the header and footer is prepared
+	        //writer.init(getInputPort(BODY_PORT).getMetadata());
 		}
 		else {
 			writer.reset();
@@ -281,6 +283,11 @@ public class StructureWriter extends Node {
 		InputPort bodyPort = getInputPort(BODY_PORT);
 		DataRecord record = new DataRecord(bodyPort.getMetadata());
 		record.init();
+
+		//this initialization has to be here not in pre-execute method,
+		//since the header and the footer were prepared in execute() method
+		writer.init(bodyPort.getMetadata());
+		
 		while (record != null && runIt) {
 			record = bodyPort.readRecord(record);
 			if (record != null) {
