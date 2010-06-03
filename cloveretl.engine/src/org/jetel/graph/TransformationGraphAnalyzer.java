@@ -18,7 +18,9 @@
  */
 package org.jetel.graph;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -450,6 +452,76 @@ public class TransformationGraphAnalyzer {
         }
     }
 
+    
+    /**
+     * @param node
+     * @param reflectedNodes reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of nodes
+     * @return list of all precedent nodes for given node
+     */
+    private static List<Node> findPrecedentNodes(Node node, Collection<Node> reflectedNodes) {
+    	List<Node> result = new ArrayList<Node>();
+    	
+    	for (InputPort inputPort : node.getInPorts()) {
+    		final Node writer = inputPort.getWriter();
+    		if (reflectedNodes.contains(writer)) {
+        		result.add(writer);
+    		}
+    	}
+    	
+    	return result;
+    }
+
+    /**
+     * @param node
+     * @param reflectedNodes reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of nodes
+     * @return list of all successive nodes for given node
+     */
+    private static List<Node> findSuccessiveNodes(Node node, Collection<Node> reflectedNodes) {
+    	List<Node> result = new ArrayList<Node>();
+    	
+    	for (OutputPort outputPort : node.getOutPorts()) {
+    		final Node reader = outputPort.getReader();
+    		if (reflectedNodes.contains(reader)) {
+        		result.add(reader);
+    		}
+    	}
+    	
+    	return result;
+    }
+
+    /**
+     * Components topological sorting based on depth-first search. This algorithm is used mainly for user friendly nodes visualization.
+     * @param givenNodes
+     * @return
+     * @note algorithm is described for example at http://en.wikipedia.org/wiki/Topological_sorting
+     */
+    public static List<Node> nodesTopologicalSorting(List<Node> givenNodes) {
+    	List<Node> result = new ArrayList<Node>();
+    	List<Node> roots = new ArrayList<Node>();
+    	
+    	//find root nodes - nodes without precedent nodes in the given list of nodes
+    	for (Node givenNode : givenNodes) {
+    		if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
+    			roots.add(givenNode);
+    		}
+    	}
+    	
+    	//topological sorting
+    	Stack<Node> nodesToProcess = new Stack<Node>();
+    	nodesToProcess.addAll(roots);
+    	List<Node> visited = new ArrayList<Node>();
+    	while (!nodesToProcess.isEmpty()) {
+    		Node nodeToProcess = nodesToProcess.pop();
+    		if (!visited.contains(nodeToProcess)) {
+    			visited.add(nodeToProcess);
+    			nodesToProcess.addAll(findSuccessiveNodes(nodeToProcess, givenNodes));
+    			result.add(nodeToProcess);
+    		}
+    	}
+    	
+    	return result;
+    }
+    
 }
 /*
  *  end class TransformationGraphAnalyzer

@@ -18,9 +18,12 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import java.util.ArrayList;
+
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransformationGraphAnalyzer;
 
 /**
  * This class represents tracking information about an phase.
@@ -62,7 +65,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 		this.result = Result.N_A;
 		
 		int i = 0;
-		for (Node node : phase.getNodes().values()) {
+		for (Node node : TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(phase.getNodes().values()))) {
 			nodesDetails[i++] = new NodeTrackingDetail(this, node); 
 		}
 	}
