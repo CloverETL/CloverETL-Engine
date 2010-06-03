@@ -99,17 +99,18 @@ public interface ITLCompiler {
 	 */
 	public List<ErrorMessage> compileExpression(String expression, Class<?> targetInterface, String componentId, String syntheticFunctionName, Class<?> syntheticReturnType);
 
-	/**
-	 * Returns Java source code in case the compiler supports CTL-to-Java compilation. This method may only be called
-	 * after a successful call to the {@link #compile(String, Class, String)} method.
-	 *
-	 * @return the Java source code as a string
-	 *
-	 * @throws UnsupportedOperationException if the compiler does not support CTL-to-Java compilation
-	 * @throws IllegalStateException if the source code has not yet been generated
-	 * (i.e. the {@link #compile(String, Class, String)} method has not yet been called)
-	 */
-	public String getSourceCode();
-
 	public Object getCompiledCode();
+
+	/**
+	 * Converts a given CTL source code to Java source code in case the compiler supports CTL-to-Java conversion.
+	 *
+	 * @param ctlCode the CTL source code to be converted
+	 * @param targetInterface a Java interface into which the code should be compiled
+	 *
+	 * @return the Java source code as a string, or <code>null</code> if an error occurred
+	 *
+	 * @throws UnsupportedOperationException if the compiler does not support CTL-to-Java conversion
+	 */
+	public String convertToJava(String ctlCode, Class<?> targetInterface);
+
 }
