@@ -347,35 +347,37 @@ public class RecordTransformFactory {
      * @return  guessed transformation type or -1 if can't determine
      */
     public static int guessTransformType(String transform){
+    	
+    	String commentsStripped = stripComments(transform);
       
-        if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1 || transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID2) != -1){
+        if (commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1 || commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID2) != -1){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
         
-        if (transform.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
+        if (commentsStripped.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
         	// new CTL implementation
         	return TRANSFORM_CTL;
         }
         
-        if (PATTERN_CTL_CODE.matcher(transform).find() 
-        		|| PATTERN_CTL_PARTITION_CODE.matcher(transform).find()){
+        if (PATTERN_CTL_CODE.matcher(commentsStripped).find() 
+        		|| PATTERN_CTL_PARTITION_CODE.matcher(commentsStripped).find()){
             // clover internal transformation language
             return TRANSFORM_CTL;
         }
         
-        if (PATTERN_TL_CODE.matcher(transform).find() 
-        		|| PATTERN_PARTITION_CODE.matcher(transform).find()){
+        if (PATTERN_TL_CODE.matcher(commentsStripped).find() 
+        		|| PATTERN_PARTITION_CODE.matcher(commentsStripped).find()){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
         
-        if (PATTERN_CLASS.matcher(transform).find()){
+        if (PATTERN_CLASS.matcher(commentsStripped).find()){
             // full java source code
             return TRANSFORM_JAVA_SOURCE;
         }
-        if (PATTERN_PREPROCESS_1.matcher(transform).find() || 
-                PATTERN_PREPROCESS_2.matcher(transform).find() ){
+        if (PATTERN_PREPROCESS_1.matcher(commentsStripped).find() || 
+                PATTERN_PREPROCESS_2.matcher(commentsStripped).find() ){
             // semi-java code which has to be preprocessed
             return TRANSFORM_JAVA_PREPROCESS;
         }
@@ -383,7 +385,15 @@ public class RecordTransformFactory {
         return -1;
     }
 
-    // Following old TL parser functions are now deprecated 
+    /**
+	 * @param transform
+	 * @return
+	 */
+	private static String stripComments(String transform) {
+		return transform.replaceAll("(?://.*)","").replaceAll("/\\*(?:.|[\\n\\r])*?\\*/","");
+	}
+
+	// Following old TL parser functions are now deprecated 
     @Deprecated
 	private static boolean isTLSimpleTransformFunctionNode(CLVFStart record, String functionName, int functionParams) {
 		int numTopChildren = record.jjtGetNumChildren();

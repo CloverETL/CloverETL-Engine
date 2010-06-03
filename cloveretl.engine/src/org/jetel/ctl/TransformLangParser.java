@@ -233,23 +233,29 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 	 * if compiled or non-compiled mode is active.
 	 */
         private boolean isCompiledMode(Token regular) {
+                boolean lastCompiled = false;
                 while (regular.specialToken != null) {
                         switch (regular.specialToken.kind) {
                                 case TL_COMPILE:
                                         // this is #CTL2:COMPILE -> running in compiled mode
-                                        return true;
+                                        // NEW COMMENT
+                                        lastCompiled = true;
+                                        regular = regular.specialToken;
+                                        break;
                                 case TL_SHEBANG:
                                         // this is #CTL2 -> running in non-compiled mode
-                                        return false;
+                                        lastCompiled = false;
+                                        regular = regular.specialToken;
+                                        break;
                                 default:
                                         // check previous special token (if any)
-                                        regular = regular.specialToken;
+                                                regular = regular.specialToken;
                                         break;
                         }
                 }
 
                 // we checked all special tokens and did not find #CTL2:COMPILED -> return false
-                return false;
+                return lastCompiled;
         }
 
 
@@ -4163,54 +4169,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(7, xla); }
   }
 
-  private boolean jj_3R_61() {
-    if (jj_scan_token(ISNULL)) return true;
-    if (jj_3R_56()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_37() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_55() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_61()) {
-    jj_scanpos = xsp;
-    if (jj_3R_62()) {
-    jj_scanpos = xsp;
-    if (jj_3R_63()) {
-    jj_scanpos = xsp;
-    if (jj_3R_64()) {
-    jj_scanpos = xsp;
-    if (jj_3R_65()) {
-    jj_scanpos = xsp;
-    if (jj_3R_66()) {
-    jj_scanpos = xsp;
-    if (jj_3R_67()) {
-    jj_scanpos = xsp;
-    if (jj_3R_68()) {
-    jj_scanpos = xsp;
-    if (jj_3R_69()) {
-    jj_scanpos = xsp;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) return true;
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    }
-    return false;
-  }
-
   private boolean jj_3R_36() {
     if (jj_scan_token(LIST_VAR)) return true;
     return false;
@@ -5252,6 +5210,54 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_62() {
     if (jj_scan_token(NVL)) return true;
     if (jj_3R_56()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_61() {
+    if (jj_scan_token(ISNULL)) return true;
+    if (jj_3R_56()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_55() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_61()) {
+    jj_scanpos = xsp;
+    if (jj_3R_62()) {
+    jj_scanpos = xsp;
+    if (jj_3R_63()) {
+    jj_scanpos = xsp;
+    if (jj_3R_64()) {
+    jj_scanpos = xsp;
+    if (jj_3R_65()) {
+    jj_scanpos = xsp;
+    if (jj_3R_66()) {
+    jj_scanpos = xsp;
+    if (jj_3R_67()) {
+    jj_scanpos = xsp;
+    if (jj_3R_68()) {
+    jj_scanpos = xsp;
+    if (jj_3R_69()) {
+    jj_scanpos = xsp;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
+    }
     return false;
   }
 
