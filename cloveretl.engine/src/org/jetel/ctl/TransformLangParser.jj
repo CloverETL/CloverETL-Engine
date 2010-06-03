@@ -294,23 +294,29 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 	 * if compiled or non-compiled mode is active.
 	 */
 	private boolean isCompiledMode(Token regular) {
-		while (regular.specialToken != null) {
-			switch (regular.specialToken.kind) {
-				case TL_COMPILE:
-					// this is #CTL2:COMPILE -> running in compiled mode
-					return true;
-				case TL_SHEBANG: 
-					// this is #CTL2 -> running in non-compiled mode
-					return false;
-				default:
-					// check previous special token (if any)
-					regular = regular.specialToken;
-					break;
-			}
-		}
-		
-		// we checked all special tokens and did not find #CTL2:COMPILED -> return false
-		return false;
+       		boolean lastCompiled = false;
+                while (regular.specialToken != null) {
+                        switch (regular.specialToken.kind) {
+                                case TL_COMPILE:
+                                        // this is #CTL2:COMPILE -> running in compiled mode
+                                        // NEW COMMENT
+                                        lastCompiled = true;
+                                        regular = regular.specialToken;
+                                        break;
+                                case TL_SHEBANG:
+                                        // this is #CTL2 -> running in non-compiled mode
+                                        lastCompiled = false;
+                                        regular = regular.specialToken;
+                                        break;
+                                default:
+                                        // check previous special token (if any)
+                                		regular = regular.specialToken;
+                                        break;
+                        }
+                }
+
+                // we checked all special tokens and did not find #CTL2:COMPILED -> return false
+                return lastCompiled;
 	}
     
     
