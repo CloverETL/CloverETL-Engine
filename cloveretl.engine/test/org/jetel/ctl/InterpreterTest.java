@@ -97,4 +97,10 @@ public class InterpreterTest extends CompilerTestCase {
 			}
 		}
 	}
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		//FIXME: fix for memory leak - find that memory leak :-)
+		executor = null;
+	}
 }
