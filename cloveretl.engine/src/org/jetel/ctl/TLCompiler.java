@@ -281,7 +281,7 @@ public class TLCompiler implements ITLCompiler {
 				" }";
 	}
 
-	public String getSourceCode() {
+	public String convertToJava(String ctlCode, Class<?> targetInterface) {
 		throw new UnsupportedOperationException();
 	}
 
