@@ -52,7 +52,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -509,7 +508,7 @@ public class DBConnection extends GraphElement implements IConnection {
     @Override
     public synchronized void free() {
         if (!isInitialized()) {
-            throw new NotInitializedException(this);
+            return;
         }
 
 		super.free();
@@ -745,7 +744,15 @@ public class DBConnection extends GraphElement implements IConnection {
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
-        
+
+        int index = sqlQuery.toUpperCase().indexOf("WHERE");
+
+		if (index >= 0) {
+			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
+		} else {
+			sqlQuery = sqlQuery.concat(" WHERE 0=1");
+		}
+
         Connection connection;
 		try {
 			connection = connect(OperationType.UNKNOWN);
