@@ -28,6 +28,7 @@ public class CLVFSwitchStatement extends SimpleNode {
 	private int defaultCaseIndex = -1;
 	private Scope scope;
 	private Integer[] caseIndices;
+	private boolean isTerminal = false;
 
 	public CLVFSwitchStatement(int id) {
 		super(id);
@@ -81,6 +82,14 @@ public class CLVFSwitchStatement extends SimpleNode {
 	
 	public Integer[] getCaseIndices() {
 		return caseIndices;
+	}
+
+	public void setTerminal(boolean isTerminal) {
+		this.isTerminal = isTerminal;
+	}
+
+	public boolean isTerminal() {
+		return isTerminal;
 	}
 
 }
