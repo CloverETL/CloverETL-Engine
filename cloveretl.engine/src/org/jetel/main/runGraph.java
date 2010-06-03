@@ -165,16 +165,6 @@ public class runGraph {
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
-        logger.info("***  CloverETL framework/transformation graph"
-                        + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
-        logger.info("Running with " + showData.getInfo());
-
-		logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
-				"OS " + System.getProperty("os.name") +
-				", architecture " + System.getProperty("os.arch") + 
-				", Java version " + System.getProperty("java.version") +
-				", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
-
         Logger.getLogger(runGraph.class); // make log4j to init itself
         String log4jPropertiesFile = null;
         Level logLevel = null;
@@ -465,5 +455,16 @@ public class runGraph {
         
 	}
 
+	public static void printRuntimeHeader() {
+        logger.info("***  CloverETL framework/transformation graph"
+                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
+        logger.info("Running with " + showData.getInfo());
+
+        logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
+        		"OS " + System.getProperty("os.name") +
+        		", architecture " + System.getProperty("os.arch") + 
+        		", Java version " + System.getProperty("java.version") +
+        		", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
+	}
 }
 
