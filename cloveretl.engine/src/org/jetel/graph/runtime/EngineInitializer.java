@@ -30,6 +30,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.main.runGraph;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
 
@@ -66,7 +67,10 @@ public class EngineInitializer {
 	    	
 	    	//init logging
 	    	initLogging(logHost);
-	    	
+
+	        // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
+	        runGraph.printRuntimeHeader();
+
 	        //init framework constants
 	        Defaults.init(defaultPropertiesFile);
 	
