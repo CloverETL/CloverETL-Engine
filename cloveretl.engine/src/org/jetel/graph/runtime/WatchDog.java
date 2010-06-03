@@ -280,7 +280,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private void sendFinalJmxNotification() {
 		sendFinalJmxNotification0();
 		
-       	if(runtimeContext.isWaitForJMXClient()) {
+		//is there anyone who is really interested in to be informed about the graph is really finished? - at least our clover designer runs graphs with this option
+       	if (runtimeContext.isWaitForJMXClient()) {
        		//wait for a JMX client (GUI) to download all tracking information
        		long startWaitingTime = System.currentTimeMillis();
        		synchronized (cloverJMX) {
@@ -295,9 +296,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           	}
        		}
        	}
-
 		
-		//if the graph was aborted, now the aborting thread is waiting for final notification
+		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him word about the graph finished right now
 		synchronized (ABORT_MONITOR) {
 			abortFinished = true;
 			ABORT_MONITOR.notifyAll();
@@ -566,31 +566,23 @@ public class WatchDog implements Callable<Result>, CloverPost {
             	threadManager.releaseNodeThreads(phase.getNodes().size());
             	/////////////////
             	//is this code really necessary? why?
-            	for (Node node : phase.getNodes().values()){
-            		Thread t = node.getNodeThread();
-            		long runId = this.getGraphRuntimeContext().getRunId();
-            		if (t == null)
-            			throw new NullPointerException("Thread is null");
-            		if (node == null)
-            			throw new NullPointerException("Node is null");
-            		t.setName("exNode_"+runId+"_"+node.getId());
-            		// explicit interruption of threads of failed graph; (some nodes may be still running)
-            		if (node.getResultCode() == Result.RUNNING)
-//            			node.setResultCode(Result.ABORTED);
-            			node.abort();
-                	if (phaseStatus == Result.ERROR || phaseStatus == Result.ABORTED){  
-                		try {
-                    		if (t.isAlive())
-                    			t.interrupt();
-                		} catch (Exception e) {
-                			logger.warn(e.getMessage(), e);
-                		} // catch
-                	}
+            	for (Node node : phase.getNodes().values()) {
+            		synchronized (node) { //this is the guard of Node.nodeThread variable
+	            		Thread t = node.getNodeThread();
+	            		long runId = this.getGraphRuntimeContext().getRunId();
+	            		if (t == null) {
+	            			continue;
+	            		}
+	            		t.setName("exNode_"+runId+"_"+node.getId());
+	            		// explicit interruption of threads of failed graph; (some nodes may be still running)
+	            		if (node.getResultCode() == Result.RUNNING) {
+	            			node.abort();
+	            		}
+            		}
             	}// for
             	/////////////////
                 threadManager.notifyAll();
             }
-        	
         	
         	//specify transaction mode for postExecute()
         	TransactionMethod transactionMethod = TransactionMethod.DEFAULT;
