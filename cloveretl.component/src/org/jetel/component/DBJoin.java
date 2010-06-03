@@ -474,7 +474,7 @@ public class DBJoin extends Node {
 		try {
 			return connection.createMetadata(parameters);
 		} catch (SQLException exception) {
-			throw new ComponentNotReadyException("", exception);
+			throw new ComponentNotReadyException("Extraction of DB metadata failed!", exception);
 		}
 	}
 
