@@ -74,12 +74,10 @@ function integer transform() {
 	printErr(str2date('20.11.2007','dd.MM.yyyy'));
 	isDate1=isDate('20.11.2007','dd-MM-yyyy');
 	isDate2=isDate('24:00 20.11.2007','kk:mm dd.MM.yyyy');
-	printErr(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));
 	isDate4=isDate('test 20.11.2007','hhmm dd.MM.yyyy');
 	isDate7=isDate('                ','HH:mm dd.MM.yyyy',true);
 	isDate8=isDate('                ','HH:mm dd.MM.yyyy');
 	isDate9=isDate('20-15-2007','dd-MM-yyyy');
-	printErr(str2date('20-15-2007','dd-MM-yyyy'));
 	isDate10=isDate('20-15-2007','dd-MM-yyyy',false);
 	isDate11=isDate('20-15-2007','dd-MM-yyyy',true); 
 	isDate12=isDate('942-12-1996','dd-MM-yyyy','en.US',true);
@@ -87,7 +85,6 @@ function integer transform() {
 	isDate14=isDate('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ',false);
 	isDate15=isDate('12-Prosinec-1996','dd-MMM-yyyy','en.US',false); 
 	isDate16=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
-	printErr(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));
 	isDate17=isDate('','HH:mm dd.MM.yyyy',false);
 	isDate18=isDate('','HH:mm dd.MM.yyyy',true);
 	return 0;
