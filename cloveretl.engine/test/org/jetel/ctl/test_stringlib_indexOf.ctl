@@ -1,10 +1,3 @@
-string test;
-string test1;
-string t;
-string t1;
-string t2;
-string t3;
-string t4;
 string input;
 integer index;
 integer index1;
@@ -13,27 +6,6 @@ integer index3;
 integer index4;
 
 function integer transform() {
-	test=removeDiacritic('teścik');
-	printErr(test); 
-	
-	test1=removeDiacritic('žabička');
-	printErr(test1);
-	
-	t=translate('hello','leo','pii');
-	printErr(t); 
-	
-	t1=translate('hello','leo','pi');
-	printErr(t1); 
-	
-	t2=translate('hello','leo','piims');
-	printErr(t2); 
-	
-	t3=translate('hello','hleo','');
-	printErr(t3); 
-	
-	t4=translate('my language needs the letter e', 'egms', 'X');
-	printErr(t4); 
-	
 	input='hello world';
 	printErr(input); 
 	

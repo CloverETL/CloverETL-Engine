@@ -1,9 +1,16 @@
+string input;
+decimal lenght1;
+
 integer stringLength;
 integer listLength;
 integer mapLength;
 integer recordLength;
 
 function integer transform() {
+	input=' The QUICk !!$  broWn fox juMPS over the lazy DOG ';
+	lenght1=length(input);
+	printErr('length of '+input+':'+lenght1 );
+	
 	// string length
 	stringLength = length("12345678");
 	printErr("string:" + stringLength);

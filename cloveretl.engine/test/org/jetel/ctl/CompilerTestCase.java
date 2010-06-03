@@ -949,8 +949,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("i", 2);
 	}
 
-	public void test_plus() {
-		doCompile("test_plus");
+	public void test_operator_plus() {
+		doCompile("test_operator_plus");
 
 		check("iplusj", 10 + 100);
 		check("lplusm", Long.valueOf(Integer.MAX_VALUE) + Long.valueOf(Integer.MAX_VALUE / 10));
@@ -980,8 +980,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("d1pluss", new BigDecimal("0.0001", MAX_PRECISION) + "hello");
 	}
 
-	public void test_minus() {
-		doCompile("test_minus");
+	public void test_operator_minus() {
+		doCompile("test_operator_minus");
 
 		check("iminusj", 10 - 100);
 		check("lminusm", Long.valueOf(Integer.MAX_VALUE / 10) - Long.valueOf(Integer.MAX_VALUE));
@@ -1001,8 +1001,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nminusd", new BigDecimal(0.1D, MAX_PRECISION).subtract(new BigDecimal("0.1", MAX_PRECISION), MAX_PRECISION));
 	}
 
-	public void test_multiply() {
-		doCompile("test_multiply");
+	public void test_operator_multiply() {
+		doCompile("test_operator_multiply");
 
 		check("itimesj", 10 * 100);
 		check("ltimesm", Long.valueOf(Integer.MAX_VALUE) * (Long.valueOf(Integer.MAX_VALUE / 10)));
@@ -1023,8 +1023,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ntimesd", getVariable("dtimesn"));
 	}
 
-	public void test_divide() {
-		doCompile("test_divide");
+	public void test_operator_divide() {
+		doCompile("test_operator_divide");
 
 		check("idividej", 10 / 100);
 		check("ldividem", Long.valueOf(Integer.MAX_VALUE / 10) / Long.valueOf(Integer.MAX_VALUE));
@@ -1044,8 +1044,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ndivided", new BigDecimal(0.1D, MAX_PRECISION).divide(new BigDecimal("0.1", MAX_PRECISION), MAX_PRECISION));
 	}
 	
-	public void test_modulus() {
-		doCompile("test_modulus");
+	public void test_operator_modulus() {
+		doCompile("test_operator_modulus");
 		check("imoduloj", 10 % 100);
 		check("lmodulom", Long.valueOf(Integer.MAX_VALUE / 10) % Long.valueOf(Integer.MAX_VALUE));
 		check("mmoduloi", Long.valueOf(Integer.MAX_VALUE % 10));
@@ -1064,8 +1064,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nmodulod", new BigDecimal(0.1D, MAX_PRECISION).remainder(new BigDecimal("0.1", MAX_PRECISION), MAX_PRECISION));
 	}
 	
-	public void test_unary_operators() {
-		doCompile("test_unary_operators");
+	public void test_operators_unary() {
+		doCompile("test_operators_unary");
 
 		// postfix operators
 		// int
@@ -1148,16 +1148,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("doubleNegation", true);
 	}
 	
-	public void test_unary_operators_record() {
-		doCompileExpectErrors("test_unary_operators_record", Arrays.asList(
+	public void test_operators_unary_record() {
+		doCompileExpectErrors("test_operators_unary_record", Arrays.asList(
 				"Illegal argument to ++/-- operator",
 				"Illegal argument to ++/-- operator",
 				"Illegal argument to ++/-- operator",
 				"Illegal argument to ++/-- operator"));
 	}
 	
-	public void test_equal() {
-		doCompile("test_equal");
+	public void test_operator_equal() {
+		doCompile("test_operator_equal");
 
 		check("eq0", true);
 		check("eq1", true);
@@ -1172,8 +1172,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq10", false);
 	}
 	
-	public void test_non_equal(){
-		doCompile("test_non_equal");
+	public void test_operator_non_equal(){
+		doCompile("test_operator_non_equal");
 		check("inei", false);
 		check("inej", true);
 		check("jnei", true);
@@ -1192,8 +1192,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("dned", false);
 	}
 	
-	public void test_in_operator() {
-		doCompile("test_in_operator");
+	public void test_operator_in() {
+		doCompile("test_operator_in");
 
 		check("a", Integer.valueOf(1));
 		check("haystack", Collections.EMPTY_LIST);
@@ -1207,8 +1207,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("b4", true);
 	}
 	
-	public void test_greater_less() {
-		doCompile("test_greater_less");
+	public void test_operator_greater_less() {
+		doCompile("test_operator_greater_less");
 
 		check("eq1", true);
 		check("eq2", true);
@@ -1221,8 +1221,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq9", true);
 	}
 	
-	public void test_ternary_operator(){
-		doCompile("test_ternary_operator");
+	public void test_operator_ternary(){
+		doCompile("test_operator_ternary");
 
 		// simple use
 		check("trueValue", true);
@@ -1247,8 +1247,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res15", Integer.valueOf(4));
 	}
 	
-	public void test_logical_operators(){
-		doCompile("test_logical_operators");
+	public void test_operators_logical(){
+		doCompile("test_operators_logical");
 		//TODO: please double check this.
 		check("res1", false);
 		check("res2", false);
@@ -1589,7 +1589,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stringCurrent", "3");
 	}
 	
-	//TODO: default lookup table doesn't work/is not populated?
+	//TODO: If this test fails please double check whether the test is correct?
 	public void test_lookup(){
         doCompile("test_lookup");
 		check("alphaResult", createList("Andorra la Vella","Andorra la Vella"));
@@ -1668,40 +1668,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		check("sortList", createList(1, 1, 2, 3, 5));
 	}
-//---------------------- StringLib Tests ------------------------
-
-	public void test_stringlib() {
-		doCompile("test_stringlib");
-		check("subs", "ello ");
-		check("upper", "ELLO ");
-		check("lower", "ello hi   ");
-		check("t", "im  ello hi");
-		check("l", new BigDecimal(5));
-		//check("c", "ello hi   ELLO 2,today is " + new Date());
-		//TODO: enable
-		//check("datum", BORN_VALUE);
-		//check("ddiff", -1);
-		check("isn", false);
-		check("s1", BigDecimal.valueOf(6));
-		
-		final SimpleDateFormat format = new SimpleDateFormat();
-		format.applyPattern("yyyy MMM dd");
-		
-		check("rep", ("etto hi   EttO 2,today is " + format.format(new Date())).replaceAll("[lL]", "t"));
-		check("rep1", "The cat says meow. All cats say meow.");
-		check("stdecimal", BigDecimal.valueOf(0.25125));
-		check("stdouble", Double.valueOf(0.25125));
-		check("stlong", Long.valueOf(805421451215l));
-		check("stint", Integer.valueOf(-152456));
-		check("i", 1234);
-		check("nts", "22");
-		check("dtn", 11);
-		check("ii", 21);
-		check("dts", "02.12.24");
-		check("lef", "02.12");
-		check("righ", "12.24");
-		check("charCount", 3);
-	}
+//---------------------- StringLib Tests ------------------------	
 	
 	public void test_stringlib_cache() {
 		doCompile("test_stringlib_cache");
@@ -1726,29 +1693,135 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 	}
 	
-	public void test_convertlib_cache() {
-		doCompile("test_convertlib_cache");
-		Calendar cal = Calendar.getInstance();
-		cal.set(2000, 6, 20, 0, 0, 0);
-		cal.set(Calendar.MILLISECOND, 0);
+	public void test_stringlib_charAt() {
+		doCompile("test_stringlib_charAt");
+		String input = "The QUICk !!$  broWn fox 	juMPS over the lazy DOG	";
+		String[] expected = new String[input.length()];
+		for (int i = 0; i < expected.length; i++) {
+			expected[i] = String.valueOf(input.charAt(i));
+		}
+		check("chars", Arrays.asList(expected));
+	}
+	
+	public void test_stringlib_concat() {
+		doCompile("test_stringlib_concat");
 		
-		Date checkDate = cal.getTime();
+		final SimpleDateFormat format = new SimpleDateFormat();
+		format.applyPattern("yyyy MMM dd");
+				
+		check("concat", "");
+		check("concat1", "ello hi   ELLO 2,today is " + format.format(new Date()));
+	}
+	
+	public void test_stringlib_countChar() {
+		doCompile("test_stringlib_countChar");
+		check("charCount", 3);
+	}
+	
+	public void test_stringlib_editDistance() {
+		doCompile("test_stringlib_editDistance");
+		check("dist", 1);
+		check("dist1", 1);
+		check("dist2", 0);
+		check("dist5", 1);
+		check("dist3", 1);
+		check("dist4", 0);
+		check("dist6", 4);
+		check("dist7", 5);
+		check("dist8", 0);
+		check("dist9", 0);
+	}
+	
+	public void test_stringlib_find() {
+		doCompile("test_stringlib_find");
+		check("findList", Arrays.asList("The quick br", "wn f", "x jumps ", "ver the lazy d", "g"));
+	}
+	
+	public void test_stringlib_join() {
+		doCompile("test_stringlib_join");
+		check("joinedString", "Bagr,3,3.5641,-87L,CTL2");
+		check("joinedString1", "5♫54♫65♫67♫231");
+		check("joinedString2", "80=5455.987\"-5=5455.987\"3=0.1");
+		check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
+	}
+	
+	public void test_stringlib_left() {
+		doCompile("test_stringlib_left");
+		check("lef", "The q");
+	}
+	
+	public void test_stringlib_length() {
+		doCompile("test_stringlib_length");
+		check("lenght1", new BigDecimal(50));
 		
-		check("sdate1", "2010 May 25");
-		check("sdate2", "2010 May 25");
+		check("stringLength", 8);
+		check("listLength", 8);
+		check("mapLength", 3);
+		check("recordLength", 9);
+	}
+	
+	public void test_stringlib_lowerCase() {
+		doCompile("test_stringlib_lowerCase");
+		check("lower", "the quick !!$  brown fox jumps over the lazy dog bagr  ");
+	}
+	
+	public void test_stringlib_metaphone() {
+		doCompile("test_stringlib_metaphone");
+		check("metaphone1", "XRS");
+		check("metaphone2", "KWNTLN");
+		check("metaphone3", "KWNT");
+	}
+	
+	public void test_stringlib_nysiis() {
+		doCompile("test_stringlib_nysiis");
+		check("nysiis1", "CAP");
+		check("nysiis2", "CAP");
+	}
+	
+	public void test_stringlib_replace() {
+		doCompile("test_stringlib_replace");
 		
-		check("date01", checkDate);
-		check("date02", checkDate);
-		check("date03", checkDate);
-		check("date04", checkDate);
-		check("date11", checkDate);
-		check("date12", checkDate);
-		check("date13", checkDate);
-		check("date21", checkDate);
+		final SimpleDateFormat format = new SimpleDateFormat();
+		format.applyPattern("yyyy MMM dd");
+		
+		check("rep", format.format(new Date()).replaceAll("[lL]", "t"));
+		check("rep1", "The cat says meow. All cats say meow.");
+		
+	}
+	
+	public void test_stringlib_right() {
+		doCompile("test_stringlib_right");
+		check("righ", "y dog");
+	}
+	
+	public void test_stringlib_soundex() {
+		doCompile("test_stringlib_soundex");
+		check("soundex1", "W630");
+		check("soundex2", "W643");
+	}
+	
+	public void test_stringlib_split() {
+		doCompile("test_stringlib_split");
+		check("split1", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+	}
+	
+	public void test_stringlib_substring() {
+		doCompile("test_stringlib_substring");
+		check("subs", "UICk ");
+	}
+	
+	public void test_stringlib_trim() {
+		doCompile("test_stringlib_trim");
+		check("trim1", "im  The QUICk !!$  broWn fox juMPS over the lazy DOG");
+	}
+	
+	public void test_stringlib_upperCase() {
+		doCompile("test_stringlib_upperCase");
+		check("upper", "THE QUICK !!$  BROWN FOX JUMPS OVER THE LAZY DOG BAGR	");
 	}
 
-	public void test_is_format() {
-		doCompile("test_is_format");
+	public void test_stringlib_isFormat() {
+		doCompile("test_stringlib_isFormat");
 		check("test", "test");
 		check("isBlank", Boolean.FALSE);
 		check("blank", "");
@@ -1793,7 +1866,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate18", true);
 	}
 	
-	public void test_remove_blank_space() {
+	public void test_stringlib_removeBlankSpace() {
 		String expStr = 
 			"string r1;\n" +
 			"function integer transform() {\n" +
@@ -1801,11 +1874,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"printErr(r1);\n" +
 				"return 0;\n" +
 			"}\n";
-		doCompile(expStr, "test_remove_blank_space");
+		doCompile(expStr, "test_removeBlankSpace");
 		check("r1", "abcdef");
 	}
 	
-	public void test_get_alphanumeric_chars() {
+	public void test_stringlib_removeNonPrintable() {
+		doCompile("test_stringlib_removeNonPrintable");
+		check("nonPrintableRemoved", "AHOJ");
+	}
+	
+	public void test_stringlib_getAlphanumericChars() {
 		String expStr = 
 			"string an1;\n" +
 			"string an2;\n" +
@@ -1822,7 +1900,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"printErr(an4);\n" +
 				"return 0;\n" +
 			"}\n";
-		doCompile(expStr, "test_get_alphanumeric_chars");
+		doCompile(expStr, "test_getAlphanumericChars");
 
 		check("an1", "a1bcde2f");
 		check("an2", "a1bcde2f");
@@ -1830,25 +1908,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("an4", "12");
 	}
 	
-    public void test_stringlib2(){
-        doCompile("test_stringlib2");
-        
-    	check("test","tescik");
-    	check("test1","zabicka");
-		check("t","hippi");
-		check("t1","hipp");
-		check("t2","hippi");
-		check("t3","");
-		check("t4","y lanuaX nXXd thX lXttXr X");
-		check("index",2);
+	public void test_stringlib_indexOf(){
+        doCompile("test_stringlib_indexOf");
+        check("index",2);
 		check("index1",9);
 		check("index2",0);
 		check("index3",-1);
-		check("index4",6);              
-    }
-
-	public void test_chop() {
-		doCompile("test_chop");
+		check("index4",6);
+	}
+	
+	public void test_stringlib_removeDiacritic(){
+        doCompile("test_stringlib_removeDiacritic");
+        check("test","tescik");
+    	check("test1","zabicka");
+	}
+	
+	public void test_stringlib_translate(){
+        doCompile("test_stringlib_translate");
+        check("trans","hippi");
+		check("trans1","hipp");
+		check("trans2","hippi");
+		check("trans3","");
+		check("trans4","y lanuaX nXXd thX lXttXr X");
+	}
+    
+	public void test_stringlib_chop() {
+		doCompile("test_stringlib_chop");
 		check("s1", "hello");
 		check("s6", "hello");
 		check("s5", "hello");
@@ -1935,47 +2020,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultBool2", false);
 		check("resultBool3", true);
 		check("resultBool4", false);
-	}
-
-	public void test_num2str_function() {
-		System.out.println("num2str() test:");
-		doCompile("test_num2str_function");
-
-		check("intOutput", createList("16", "10000", "20", "10"));
-		check("longOutput", createList("16", "10000", "20", "10"));
-		check("doubleOutput", createList("16.16", "0x1.028f5c28f5c29p4"));
-		check("decimalOutput", createList("16.16"));
-	}
-
-	public void test_pow_function() {
-		System.out.println("pow() test:");
-		doCompile("test_pow_function");
-		
-		check("intResult", createList(8d, 8d, 8d, 8d));
-		check("longResult", createList(8d, 8d, 8d, 8d));
-		check("doubleResult", createList(8d, 8d, 8d, 8d));
-		check("decimalResult", createList(8d, 8d, 8d, 8d));
-	}
-
-	public void test_round_function() {
-		System.out.println("round() test:");
-		doCompile("test_round_function");
-		
-		check("intResult", createList(2l, 3l));
-		check("longResult", createList(2l, 3l));
-		check("doubleResult", createList(2l, 4l));
-		check("decimalResult", createList(2l, 4l));
-	}
-
-	public void test_length_function() {
-		System.out.println("length() test:");
-		doCompile("test_length_function");
-
-		check("stringLength", 8);
-		check("listLength", 8);
-		check("mapLength", 3);
-		check("recordLength", 9);
-	}
+	}	
 	
 	public void test_mathlib_abs() {
 		doCompile("test_mathlib_abs");
@@ -2018,11 +2063,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_mathlib_pow");
 		check("power1", Math.pow(3,1.2));
 		check("power2", Double.NaN);
+		
+		check("intResult", createList(8d, 8d, 8d, 8d));
+		check("longResult", createList(8d, 8d, 8d, 8d));
+		check("doubleResult", createList(8d, 8d, 8d, 8d));
+		check("decimalResult", createList(8d, 8d, 8d, 8d));
 	}
 	
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
 		check("round1", Long.parseLong("-4"));
+		
+		check("intResult", createList(2l, 3l));
+		check("longResult", createList(2l, 3l));
+		check("doubleResult", createList(2l, 4l));
+		check("decimalResult", createList(2l, 4l));
 	}
 	
 	public void test_mathlib_sqrt() {
@@ -2059,4 +2114,100 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(((List<Integer>) getVariable("truncList")).isEmpty());
 		assertTrue(((Map<Integer, Integer>) getVariable("truncMap")).isEmpty());
 	}
+	
+	public void test_datelib_truncDate() {
+		doCompile("test_datelib_truncDate");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(BORN_VALUE);
+		cal.set(Calendar.YEAR,0);
+        cal.set(Calendar.MONTH,0);
+        cal.set(Calendar.DAY_OF_MONTH,1);
+        check("truncBornDate", cal.getTime());
+	}
+	
+	public void test_datelib_today() {
+		doCompile("test_datelib_today");
+		check("todayDate", new Date());
+	}
+	
+	public void test_datelib_zeroDate() {
+		doCompile("test_datelib_zeroDate");
+		check("zeroDate", new Date(0));
+	}
+	
+	public void test_datelib_dateDiff() {
+		doCompile("test_datelib_dateDiff");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(BORN_VALUE);
+		int diff = cal.get(Calendar.YEAR);
+		cal.setTime(new Date());
+		diff -= cal.get(Calendar.YEAR);
+		check("ddiff", diff);
+	}
+	
+	public void test_datelib_dateAdd() {
+		doCompile("test_datelib_dateAdd");
+		check("datum", new Date(BORN_MILLISEC_VALUE + 100));
+	}
+	
+	public void test_datelib_extractTime() {
+		doCompile("test_datelib_extractTime");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(BORN_VALUE);
+		int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
+    	cal.clear();
+    	cal.set(Calendar.HOUR_OF_DAY, portion[0]);
+    	cal.set(Calendar.MINUTE, portion[1]);
+    	cal.set(Calendar.SECOND, portion[2]);
+    	cal.set(Calendar.MILLISECOND, portion[3]);
+    	check("bornExtractTime", cal.getTime());
+	}
+	
+	public void test_datelib_extractDate() {
+		doCompile("test_datelib_extractDate");
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(BORN_VALUE);
+		int[] portion = new int[]{cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)};
+    	cal.clear();
+    	cal.set(Calendar.DAY_OF_MONTH, portion[0]);
+    	cal.set(Calendar.MONTH, portion[1]);
+    	cal.set(Calendar.YEAR, portion[2]);
+    	check("bornExtractDate", cal.getTime());
+	}
+//-----------------Convert Lib tests-----------------------
+	public void test_convertlib_cache() {
+		doCompile("test_convertlib_cache");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2000, 6, 20, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		Date checkDate = cal.getTime();
+		
+		final SimpleDateFormat format = new SimpleDateFormat();
+		format.applyPattern("yyyy MMM dd");
+		
+		check("sdate1", format.format(new Date()));
+		check("sdate2", format.format(new Date()));
+		
+		check("date01", checkDate);
+		check("date02", checkDate);
+		check("date03", checkDate);
+		check("date04", checkDate);
+		check("date11", checkDate);
+		check("date12", checkDate);
+		check("date13", checkDate);
+		check("date21", checkDate);
+	}
+	
+	public void test_convertlib_num2str() {
+		System.out.println("num2str() test:");
+		doCompile("test_convertlib_num2str");
+
+		check("intOutput", createList("16", "10000", "20", "10"));
+		check("longOutput", createList("16", "10000", "20", "10"));
+		check("doubleOutput", createList("16.16", "0x1.028f5c28f5c29p4"));
+		check("decimalOutput", createList("16.16"));
+	}
+	
 }
