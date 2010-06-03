@@ -81,55 +81,61 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Metadata for component's output ports */
 	private final DataRecordMetadata[] outputMetadata; // may be null
 	/** Name -> position mapping for input ports */
-	private final Map<String, Integer> inputRecordsMap;
+	private final Map<String, Integer> inputRecordsMap = new TreeMap<String, Integer>();
 	/** Name -> position mapping for output ports */
-	private final Map<String, Integer> outputRecordsMap;
+	private final Map<String, Integer> outputRecordsMap = new TreeMap<String, Integer>();
 	/** Name/ID -> metadata mapping for record-type variables */
-	private final Map<String, DataRecordMetadata> graphMetadata;
+	private final Map<String, DataRecordMetadata> graphMetadata = new TreeMap<String, DataRecordMetadata>();
 	/** Name/ID -> lookup mapping for lookup nodes */
-	private final Map<String, LookupTable> lookupMap;
+	private final Map<String, LookupTable> lookupMap = new TreeMap<String, LookupTable>();
 	/** Name/ID -> lookup mapping for sequences */
-	private final Map<String, Sequence> sequenceMap;
+	private final Map<String, Sequence> sequenceMap = new TreeMap<String, Sequence>();
 	/** Function declarations */
 	private final Map<String, List<CLVFFunctionDeclaration>> declaredFunctions;
+
+	/** Set of ambiguous input metadata names. */
+	private final Set<String> ambiguousInputMetadata = new HashSet<String>();
+	/** Set of ambiguous output metadata names. */
+	private final Set<String> ambiguousOutputMetadata = new HashSet<String>();
+	/** Set of ambiguous graph metadata names. */
+	private final Set<String> ambiguousGraphMetadata = new HashSet<String>();
+	/** Set of ambiguous lookup table names. */
+	private final Set<String> ambiguousLookupTables = new HashSet<String>();
+	/** Set of ambiguous input sequence names. */
+	private final Set<String> ambiguousSequences = new HashSet<String>();
+
 	/** Problem collector */
 	private ProblemReporter problemReporter;
-
 	
-	
-	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata,
-			DataRecordMetadata[] outputMetadata, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, ProblemReporter problemReporter) {
-		super();
+	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata,
+			Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, ProblemReporter problemReporter) {
 		this.inputMetadata = inputMetadata;
 		this.outputMetadata = outputMetadata;
-		this.inputRecordsMap = new TreeMap<String, Integer>();
-		this.outputRecordsMap = new TreeMap<String, Integer>();
-		this.graphMetadata = new TreeMap<String, DataRecordMetadata>();
-		this.lookupMap = new TreeMap<String, LookupTable>();
-		this.sequenceMap = new TreeMap<String, Sequence>();
 		this.declaredFunctions = declaredFunctions;
 		this.problemReporter = problemReporter;
 
 		if (graph != null) {
 			// populate name -> position mappings
-			int i = 0;
-			Integer prevPos = 0;
-			// input metadata names can clash - warn user that we will not be able to resolve them correctly
+
+			// input metadata names can clash
 			if (inputMetadata != null) {
-				for (DataRecordMetadata m : inputMetadata) {
-					if ((prevPos = inputRecordsMap.put(m.getName(), i++)) != null) {
-						warn("Input record name '" + m.getName() + "' is ambiguous", "Use positional access or rename input metadata on port '" + prevPos + "' or '" + (i - 1) + "'");
+				for (int i = 0; i < inputMetadata.length; i++) {
+					DataRecordMetadata m = inputMetadata[i];
+
+					if (inputRecordsMap.put(m.getName(), i++) != null) {
+						ambiguousInputMetadata.add(m.getName());
 					}
 				}
 			}
 	
 			// the same for output just different error message
-			i = 0;
 			if (outputMetadata != null) {
-				for (DataRecordMetadata m : outputMetadata) {
+				for (int i = 0; i < outputMetadata.length; i++) {
+					DataRecordMetadata m = outputMetadata[i];
+
 					if (m != null) {
-						if ((prevPos = outputRecordsMap.put(m.getName(), i++)) != null) {
-							warn("Output record name '" + m.getName() + "' is ambiguous", "Use positional access or rename output metadata on port '" + prevPos + "' or '" + (i - 1) + "'");
+						if (outputRecordsMap.put(m.getName(), i++) != null) {
+							ambiguousOutputMetadata.add(m.getName());
 						}
 					}
 				}
@@ -138,10 +144,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			// all graph metadata for resolving record-type variable declarations
 			Iterator<String> mi = graph.getDataRecordMetadata();
 			while (mi.hasNext()) {
-				String id = mi.next();
-				DataRecordMetadata m = graph.getDataRecordMetadata(id);
+				DataRecordMetadata m = graph.getDataRecordMetadata(mi.next());
+
 				if (graphMetadata.put(m.getName(), m) != null) {
-					warn("Metadata name '" + m.getName() + "' is ambiguous", "Rename the metadata to a unique name");
+					ambiguousGraphMetadata.add(m.getName());
 				}
 			}
 	
@@ -149,8 +155,9 @@ public class ASTBuilder extends NavigatingVisitor {
 			Iterator<String> li = graph.getLookupTables();
 			while (li.hasNext()) {
 				LookupTable t = graph.getLookupTable(li.next());
+
 				if (lookupMap.put(t.getName(), t) != null) {
-					warn("Lookup table name '" + t.getName() + "' is ambiguous", "Rename the lookup table to a unique name");
+					ambiguousLookupTables.add(t.getName());
 				}
 			}
 	
@@ -158,8 +165,9 @@ public class ASTBuilder extends NavigatingVisitor {
 			Iterator<String> si = graph.getSequences();
 			while (si.hasNext()) {
 				Sequence s = graph.getSequence(si.next());
+
 				if (sequenceMap.put(s.getName(), s) != null) {
-					warn("Sequence name '" + s.getName() + "' is ambiguous", "Rename the sequence to a unique name");
+					ambiguousSequences.add(s.getName());
 				}
 			}
 
@@ -265,6 +273,14 @@ public class ASTBuilder extends NavigatingVisitor {
 			// calculate positional reference
 			recordPos = isLHS ? getOutputPosition(node.getRecordName()) : getInputPosition(node.getRecordName());
 			if (recordPos != null) {
+				Set<String> ambiguousMetadata = isLHS ? ambiguousOutputMetadata : ambiguousInputMetadata;
+
+				if (ambiguousMetadata.contains(node.getRecordName())) {
+					// metadata names can clash - warn user that we will not be able to resolve them correctly
+					warn(node, (isLHS ? "Output" : "Input") + " record name '" + node.getRecordName() + "' is ambiguous",
+							"Use positional access or rename metadata to a unique name");
+				}
+
 				node.setRecordId(recordPos);
 			} else {
 				error(node, "Unable to resolve " + (isLHS ? "output" : "input") + " metadata '" + node.getRecordName() + "'");
@@ -404,6 +420,11 @@ public class ASTBuilder extends NavigatingVisitor {
 			node.setType(TLType.ERROR);
 			return node;
 		} else {
+			if (ambiguousLookupTables.contains(table.getName())) {
+				warn("Lookup table name '" + table.getName() + "' is ambiguous",
+						"Rename the lookup table to a unique name");
+			}
+
 			node.setLookupTable(table);
 			// type will be set in composite reference node as it will build up the lookup node completely
 		}
@@ -520,6 +541,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			error(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
 			node.setType(TLType.ERROR);
 		} else {
+			if (ambiguousSequences.contains(seq.getName())) {
+				warn("Sequence name '" + seq.getName() + "' is ambiguous", "Rename the sequence to a unique name");
+			}
+
 			node.setSequence(seq);
 		}
 
@@ -558,9 +583,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				}
 			}
 		}
-		
-		/* XXX: implement checking for case-value uniqueness here - bt issue 2515 */
-		
+
 		node.setCaseIndices((Integer[]) caseIndices.toArray(new Integer[caseIndices.size()]));
 		return node;
 	}
@@ -803,6 +826,8 @@ public class ASTBuilder extends NavigatingVisitor {
 					error(typeNode, "Unknown variable type or metadata name '" + typeNode.getMetadataName() + "'");
 					return TLType.ERROR;
 				}
+			} else if (ambiguousGraphMetadata.contains(meta.getName())) {
+				warn("Metadata name '" + meta.getName() + "' is ambiguous", "Rename the metadata to a unique name");
 			} else if (voidMetadataAllowed(typeNode)) {
 				warn(typeNode, "Reference to '" + VOID_METADATA.getName() + "' is ambiguous",
 						"Rename metadata '" + VOID_METADATA.getName() + "'");
