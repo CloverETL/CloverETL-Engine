@@ -1718,6 +1718,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("charCount", 3);
 	}
 	
+	public void test_stringlib_cut() {
+		doCompile("test_stringlib_cut");
+		check("cutInput", Arrays.asList("a", "1edf", "h3ijk"));
+	}
+	
 	public void test_stringlib_editDistance() {
 		doCompile("test_stringlib_editDistance");
 		check("dist", 1);
@@ -1753,6 +1758,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_length() {
 		doCompile("test_stringlib_length");
 		check("lenght1", new BigDecimal(50));
+		check("lenghtByte", 18);
 		
 		check("stringLength", 8);
 		check("listLength", 8);
@@ -1763,6 +1769,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_lowerCase() {
 		doCompile("test_stringlib_lowerCase");
 		check("lower", "the quick !!$  brown fox jumps over the lazy dog bagr  ");
+	}
+	
+	public void test_stringlib_matches() {
+		doCompile("test_stringlib_matches");
+		check("matches1", true);
+		check("matches2", true);
+		check("matches3", false);
+		check("matches4", true);
+		check("matches5", false);
 	}
 	
 	public void test_stringlib_metaphone() {
