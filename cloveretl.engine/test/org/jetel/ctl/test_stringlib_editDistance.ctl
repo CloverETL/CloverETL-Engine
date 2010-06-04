@@ -13,12 +13,12 @@ function integer transform() {
 	dist = editDistance('agata','ahata');
 	dist1 = editDistance('agata','agatą'); 
 	dist2 = editDistance('agata','agatą',2); 
-	dist5 = editDistance('agata','agatą',2,'CZ.cz'); 
+	dist5 = editDistance('agata','agatą',2,'cs.CZ'); 
 	dist3 = editDistance('agata','agatą',3);
 	dist4 = editDistance('agata','Agata',3);
 	dist6 = editDistance('hello','vitej',3);
 	dist7 = editDistance('hello','vitej',3,10); 
-	dist8 = editDistance('aAeEiIoOuUÚnN','áÁéÉíÍóÓúüÜñÑ',2,'ES.es');
-	dist9 = editDistance('aAAaaeeeeEEEEcC','àâAÀÂéêëEÈÉÊËçÇ',2,'FR.fr');
+	dist8 = editDistance('aAeEiIoOuUÚnN','áÁéÉíÍóÓúüÜñÑ',2,'es.ES');
+	dist9 = editDistance('aAAaaeeeeEEEEcC','àâAÀÂéêëEÈÉÊËçÇ',2,'fr.FR');
 	return 0;
 }
