@@ -1,5 +1,6 @@
 string input;
 decimal lenght1;
+integer lenghtByte;
 
 integer stringLength;
 integer listLength;
@@ -10,6 +11,8 @@ function integer transform() {
 	input=' The QUICk !!$  broWn fox juMPS over the lazy DOG ';
 	lenght1=length(input);
 	printErr('length of '+input+':'+lenght1 );
+	
+	lenghtByte = length($firstInput.ByteArray);
 	
 	// string length
 	stringLength = length("12345678");
