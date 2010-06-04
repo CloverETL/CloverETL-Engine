@@ -642,7 +642,7 @@ public class MysqlDataWriter extends BulkLoader {
 				properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM) ||
 				properties.containsKey(LOAD_FIELDS_ESCAPED_BY_PARAM)) {
 			cmdBuilder.add("FIELDS" + LINE_SEPARATOR);
-			cmdBuilder.add("TERMINATED BY " + StringUtils.quote(columnDelimiter) + LINE_SEPARATOR);
+			cmdBuilder.add("TERMINATED BY '" + columnDelimiter + "'" + LINE_SEPARATOR);
 
 			cmdBuilder.addBooleanParam(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM,
 							LOAD_FIELDS_OPTIONALLY_ENCLOSED_KEYWORD);
@@ -869,7 +869,7 @@ public class MysqlDataWriter extends BulkLoader {
 				mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
-				mysqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
+				mysqlDataWriter.setColumnDelimiter(xattribs.getStringEx(XML_COLUMN_DELIMITER_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
 				mysqlDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
