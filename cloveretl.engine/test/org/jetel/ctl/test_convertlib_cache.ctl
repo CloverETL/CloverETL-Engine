@@ -20,19 +20,19 @@ function integer transform() {
 		sdate2 = date2str(td, "yyyy MMM dd");
 	}
 	
-	string ds1 = '16Jul2000';
+	string ds1 = '20Jul2000';
 	string ds2 = 'ddMMMyyyy';
 	string ds3 = 'en.GB';
 	
 	for (integer i = 0; i < 3; i++) {
 		date01 = str2date(ds1, ds2, ds3);
-		date02 = str2date('17Jul2000',ds2,ds3);
-		date03 = str2date('18Jul2000','ddMMMyyyy',ds3);
-		date04 = str2date('19Jul2000','ddMMMyyyy','en.GB');
+		date02 = str2date('20Jul2000',ds2,ds3);
+		date03 = str2date('20Jul2000','ddMMMyyyy',ds3);
+		date04 = str2date('20Jul2000','ddMMMyyyy','en.GB');
 
 		date11 = str2date(ds1, ds2);
 		date12 = str2date('20Jul2000',ds2);
-		date13 = str2date('22Jul2000','ddMMMyyyy');
+		date13 = str2date('20Jul2000','ddMMMyyyy');
 		
 		date21 = str2date(ds1, ds2, ds3, true);
 	}
