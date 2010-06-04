@@ -30,9 +30,9 @@ import org.jetel.util.string.StringUtils;
  */
 public class NodeAllocation {
 
-	private static final String SANDBOX_PREFIX = "sandbox:";
+	public static final String SANDBOX_PREFIX = "sandbox:";
 	
-	private static final String NODE_PREFIX = "node:";
+	public static final String NODE_PREFIX = "node:";
 	
 	private static final NodeAllocation INFERED_FROM_NEIGHBOURS;
 	
