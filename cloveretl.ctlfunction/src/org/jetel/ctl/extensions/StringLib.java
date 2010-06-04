@@ -226,7 +226,8 @@ public class StringLib extends TLFunctionLibrary {
 		return input.size();
 	}
 
-	public static Integer length(byte[] input) {
+	@TLFunctionAnnotation("Returns number of bytes in the input byte array")
+	public static Integer length(TLFunctionCallContext context, byte[] input) {
 		return input.length;
 	}
 
@@ -260,8 +261,12 @@ public class StringLib extends TLFunctionLibrary {
 				stack.push(length(context, stack.popRecord()));
 				return;
 			}
+			
+			if (context.getParams()[0].isByteArray()) {
+				stack.push(length(context, stack.popByteArray()));
+				return;
+			}
 
-			// FIXME: handle bytearray
 			throw new TransformLangExecutorRuntimeException(
 					"length - Unknown type: " + context.getParams()[0].name());
 		}
