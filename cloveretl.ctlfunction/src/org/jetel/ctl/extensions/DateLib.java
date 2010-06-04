@@ -186,7 +186,6 @@ public class DateLib extends TLFunctionLibrary {
 
     
     // extractDate
-    // TODO: add test case
     class ExtractDateFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
@@ -218,7 +217,6 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     // extractTime
-    // TODO: add test case
     class ExtractTimeFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
