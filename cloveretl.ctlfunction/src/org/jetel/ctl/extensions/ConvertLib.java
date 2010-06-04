@@ -256,7 +256,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			boolean lenient = false;
-			String locale = "en.US";
+			String locale = null;
 			
 			if (context.getParams().length > 2) {
 				
@@ -295,7 +295,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input,pattern,"en.US",false);
+		return str2date(context, input,pattern,null,false);
 	}
 
 	// DATE2NUM
