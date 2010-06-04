@@ -17,6 +17,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import junit.framework.AssertionFailedError;
@@ -2192,6 +2193,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {
+		// set default locale to en.US so the date is formatted uniformly on all systems
+		Locale.setDefault(Locale.US);
+
 		doCompile("test_convertlib_cache");
 		Calendar cal = Calendar.getInstance();
 		cal.set(2000, 6, 20, 0, 0, 0);
