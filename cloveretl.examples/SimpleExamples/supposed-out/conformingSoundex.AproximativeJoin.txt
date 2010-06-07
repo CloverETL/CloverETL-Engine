@@ -1,5 +1,5 @@
-1  Brunner        Kim            Brunner        Kim            1.0     
-2  Blumberg       Brenda         Blumberg       Brenda         1.0     
+1  Blumberg       Brenda         Blumberg       Brenda         1.0     
+2  Brunner        Kim            Brunner        Kim            1.0     
 3  Creek          Jewel          Creek          Jewel          1.0     
 4  Gutierrez      Maya           Gutierrez      Maya           1.0     
 5  Kanagaki       Rebecca        Kanagaki       Rebecca        1.0     
