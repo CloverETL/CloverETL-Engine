@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -73,7 +74,11 @@ public class FileCloseTest extends TestCase {
 		EngineInitializer.initEngine("plugins", null, null);
 
 		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH);
+		try {
+			runtimeContext.setContextURL(FileUtils.getFileURL(EXAMPLE_PATH));
+		} catch (MalformedURLException e1) {
+			fail("Invalid project path: " + e1);
+		}
 		runtimeContext.addAdditionalProperty("PROJECT", ".");
 		runtimeContext.setUseJMX(false);
 
