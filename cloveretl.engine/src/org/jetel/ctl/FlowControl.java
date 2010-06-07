@@ -254,6 +254,7 @@ public class FlowControl {
 			 * 1. We processed all statements and they all return => switch returns
 			 * 2. We processed all statements but there was a case-label that does not return => switch does NOT returns
 			 */
+			node.setTerminal(switchReturns);
 			return switchReturns;
 		}
 
