@@ -122,7 +122,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				for (int i = 0; i < inputMetadata.length; i++) {
 					DataRecordMetadata m = inputMetadata[i];
 
-					if (inputRecordsMap.put(m.getName(), i++) != null) {
+					if (inputRecordsMap.put(m.getName(), i) != null) {
 						ambiguousInputMetadata.add(m.getName());
 					}
 				}
@@ -134,7 +134,7 @@ public class ASTBuilder extends NavigatingVisitor {
 					DataRecordMetadata m = outputMetadata[i];
 
 					if (m != null) {
-						if (outputRecordsMap.put(m.getName(), i++) != null) {
+						if (outputRecordsMap.put(m.getName(), i) != null) {
 							ambiguousOutputMetadata.add(m.getName());
 						}
 					}
