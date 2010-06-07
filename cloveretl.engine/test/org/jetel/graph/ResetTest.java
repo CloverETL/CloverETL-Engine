@@ -299,7 +299,8 @@ public class ResetTest extends TestCase{
 		EngineInitializer.initEngine(args[0], null, null);
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.addAdditionalProperty("PROJECT_DIR", args.length > 2 ? args[2] : "../cloveretl.examples/SimpleExamples");
+		runtimeContext.setContextURL(FileUtils.getFileURL(
+				args.length > 2 ? args[2] : "../cloveretl.examples/SimpleExamples"));
 		runtimeContext.setUseJMX(false);
 
 		TransformationGraph graph = null;
