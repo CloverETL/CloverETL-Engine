@@ -23,6 +23,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.util.file.FileUtils;
 
 
 /*
@@ -83,7 +84,7 @@ public class ResetTest extends TestCase{
 		errors.clear();
 	}
 	
-	public void testAllExamples(){
+	public void testAllExamples() throws MalformedURLException{
 		for (int i = 0; i < EXAMPLE_PATH.length; i++) {
 			File[] graphFile = (new File(EXAMPLE_PATH[i] + GRAPHS_DIR)).listFiles(new FileFilter() {
 				public boolean accept(File pathname) {
@@ -152,7 +153,7 @@ public class ResetTest extends TestCase{
 			log("Testing graphs in " + EXAMPLE_PATH[i]);
 			
 			Arrays.sort(graphFile);
-			runtimeContext.addAdditionalProperty("PROJECT_DIR", EXAMPLE_PATH[i]);
+			runtimeContext.setContextURL(FileUtils.getFileURL(EXAMPLE_PATH[i]));
 			// absolute path in PROJECT parameter is required for graphs using Derby database
 			runtimeContext.addAdditionalProperty("PROJECT", new File(EXAMPLE_PATH[i]).getAbsolutePath());
 			for (int j = 0; j < graphFile.length; j++) {
