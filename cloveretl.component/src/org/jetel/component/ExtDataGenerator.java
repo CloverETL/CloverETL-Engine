@@ -74,6 +74,18 @@ public class ExtDataGenerator extends DataGenerator {
 	private RecordGenerate generatorClass;
 
 	/**
+	 * Constructor.
+	 * @param id
+	 * @param generate
+	 * @param recordsNumber
+	 */
+	public ExtDataGenerator(String id, RecordGenerate generate, int recordsNumber) {
+		super(id);
+		this.generatorClass = generate;
+		this.recordsNumber = recordsNumber;
+	}
+	
+	/**
 	 * @param id
 	 * @param pattern
 	 * @param recordsNumber
