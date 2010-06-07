@@ -44,6 +44,7 @@
 
 	<FunctionalTest ident="DBJoin" graphFile="graph/graphDBJoin.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/joined.txt" supposedFile="supposed-out/joined.DBJoin.txt"/>	                                                                    
+	 	  <FlatFile outputFile="data-out/rejected.txt" supposedFile="supposed-out/rejected.DBJoin.txt"/>	                                                                    
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad" graphFile="graph/graphDBLoad.grf" absoluteProjectPath="true">
