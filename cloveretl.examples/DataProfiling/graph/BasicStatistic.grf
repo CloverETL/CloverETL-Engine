@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Thu Mar 18 11:42:33 CET 2010" modifiedBy="avackova" name="DataProfiling" revision="1.322">
+<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Mon Jun 07 16:12:02 CEST 2010" modifiedBy="avackova" name="DataProfiling" revision="1.324">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -51,8 +51,8 @@
 </Record>
 </Metadata>
 <Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/summary.html"/>
-<Property fileURL="parameters.prm" id="GraphParameter11"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Property fileURL="parameters.prm" id="GraphParameter1"/>
+<Property fileURL="workspace.prm" id="GraphParameter7"/>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="287" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Basic statistic - description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="34" y="-25">
 <attr name="text"><![CDATA[This graph finds basic statistic for input data file:
 - minimum value for numeric fields or minimum length of data for string and byte fields
@@ -89,6 +89,7 @@ This component collects basic information about string data also: finds first no
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="218" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Storing statistic in file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="194" x="704" y="354">
 <attr name="text"><![CDATA[Data statistic can be stored in an output file of any type or be printed out to console. This example is configured to create a simple html page, that contains table with cretaed basic statistic. Changing WRITER_TYPE to XLS_WRITER results in creating xls file with data statistic in "Statistic" sheet. To print out statistic on the console set WRITER_TYPE to TRASH.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="78" guiY="282" id="DATA_READER0" type="${READER_TYPE}">
@@ -279,10 +280,10 @@ function transform(counter, groupAccumulator) {
 </BODY>
 </HTML>]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="true" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="NORMALIZER0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
 </Phase>
 </Graph>
