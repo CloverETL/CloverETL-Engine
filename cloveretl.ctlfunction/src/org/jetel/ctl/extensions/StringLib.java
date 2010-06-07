@@ -19,6 +19,7 @@
 package org.jetel.ctl.extensions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -438,68 +439,40 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	// IS DATE
+	@TLFunctionInitAnnotation
+    public static final void isDateInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
+    }	
+	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern) {
-		return isDate(context, input, pattern, Locale.getDefault().getDisplayName(),
-				false);
-	}
-	
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern. Allows changing parser strictness")
-	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, boolean lenient) {
-		return isDate(context, input, pattern, Locale.getDefault().getDisplayName(),
-				lenient);
+		return isDate(context, input, pattern, null);
 	}
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return isDate(context, input, pattern, locale, false);
-	}
-
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale. Allows changing parser strictness.")
-	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale,
-			boolean lenient) {
-		// in lenient mode, empty string is not a valid date
-		if ("".equals(input)) {
-			return lenient;
-		}
-
-		DateFormatter formatter = DateFormatterFactory.createFormatter(pattern, MiscUtils.createLocale(locale));
-		formatter.setLenient(lenient);
-
+		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
 		return formatter.tryParse(input);
 	}
 
 	class IsDateFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			isDateInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 
-			boolean lenient = false;
-			String locale = Locale.getDefault().getDisplayName();
+			String locale = null;
 
 			if (context.getParams().length > 2) {
-
-				if (context.getParams().length > 3) {
-					// if 4 params, it's (string,string,string,bool)
-					lenient = stack.popBoolean();
-					locale = stack.popString();
-				} else {
-					// if 3 params it's (string,string,string) or
-					// (string,string,bool) if locale is skipped
-					if (context.getParams()[2].isString()) {
-						locale = stack.popString();
-					} else {
-						lenient = stack.popBoolean();
-					}
-				}
+				locale = stack.popString();
 			}
 
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(isDate(context, input, pattern, locale, lenient));
+			stack.push(isDate(context, input, pattern, locale));
 		}
 
 	}
