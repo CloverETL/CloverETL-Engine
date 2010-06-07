@@ -426,9 +426,6 @@ public class RunGraph extends Node{
 			commandList.add(cloverCommandArg);
 		}
 		
-		if (!cloverCommandLineArgs.contains("PROJECT_DIR") && getGraph().getRuntimeContext().getContextURL() != null) {
-			commandList.add("-P:PROJECT_DIR=" + getGraph().getRuntimeContext().getContextURL());
-		}
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
 		commandList.add(runGraph.NO_DEBUG_SWITCH);
