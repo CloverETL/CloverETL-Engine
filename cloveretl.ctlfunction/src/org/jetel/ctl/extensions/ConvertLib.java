@@ -326,7 +326,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		case YEAR:
 			return c.get(Calendar.YEAR);
 		case MONTH:
-			return c.get(Calendar.MONTH);
+			return c.get(Calendar.MONTH) + 1; //months should be numerated from 1, not 0.
 		case WEEK:
 			return c.get(Calendar.WEEK_OF_YEAR);
 		case DAY:
@@ -355,7 +355,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public static final Integer str2integer(TLFunctionCallContext context, String input, String format, String locale) {
 		DecimalFormat formatter = ((TLDecimalFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 		try {
-			return (Integer)formatter.parse(input);
+			return formatter.parse(input).intValue();
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" " + 
 					"with format \"" + format +  "\"");
@@ -521,7 +521,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		context.setCache(cache);
 	}
 	
-	@TLFunctionAnnotation("Parses string in given format and locale to double.")
+	@TLFunctionAnnotation("Parses string in given format and locale to decimal.")
 	public static final BigDecimal str2decimal(TLFunctionCallContext context, String input, String format, String locale) {
 		DecimalFormat formatter = ((TLDecimalFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 		formatter.setParseBigDecimal(true);
@@ -533,12 +533,12 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	@TLFunctionAnnotation("Parses string in given format to double.")
+	@TLFunctionAnnotation("Parses string in given format to decimal.")
 	public static final BigDecimal str2decimal(TLFunctionCallContext context, String input, String format) {
 		return str2decimal(context, input, format, null);
 	}
 	
-	@TLFunctionAnnotation("Parses string to double using specific numeral system.")
+	@TLFunctionAnnotation("Parses string to decimal.")
 	public static final BigDecimal str2decimal(TLFunctionCallContext context, String input) {
 		return new BigDecimal(input,TransformLangExecutor.MAX_PRECISION);
 	}
@@ -566,7 +566,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
 	public static final Integer long2integer(TLFunctionCallContext context, Long l) {
 		return l.intValue();
@@ -582,7 +581,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
 	public static final Integer double2integer(TLFunctionCallContext context, Double l) {
 		return l.intValue();
@@ -597,7 +595,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
 	public static final Integer decimal2integer(TLFunctionCallContext context, BigDecimal l) {
 		return l.intValue();
@@ -612,7 +609,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from double to long value.")
 	public static final Long double2long(TLFunctionCallContext context, Double d) {
 		return d.longValue();
@@ -738,7 +734,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	
-	// this method should is not annotated as it should not be directly visible in CTL
+	// this method is not annotated as it should not be directly visible in CTL
 	private static final String toStringInternal(Object o) {
 		return o != null ? o.toString() : "null";
 	}
