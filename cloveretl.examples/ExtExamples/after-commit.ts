@@ -5,7 +5,7 @@
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="derby" type="DERBY" user="app" password="derby" 
-		URL="jdbc:derby://localhost:1527/${PROJECT_DIR}/data-in/derby.db;" 
+		URL="jdbc:derby://localhost:1527/${PROJECT}/data-in/derby.db;" 
 		driver="org.apache.derby.jdbc.ClientDriver" />
 
     <FunctionalTest ident="DBExecuteDerby" graphFile="graph/graphDBExecuteDerby.grf" absoluteProjectPath="true">
