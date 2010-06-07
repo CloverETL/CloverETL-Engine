@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Mon Mar 08 13:25:20 GMT+01:00 2010" modifiedBy="avackova" name="graphHTTPRequest" revision="1.293">
+<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Mon Jun 07 15:50:14 CEST 2010" modifiedBy="cloveruser" name="graphHTTPRequest" revision="1.295">
 <Global>
 <Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="city" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -35,9 +35,10 @@
 <Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="81" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="HttpConnector with dynamic request" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="310" x="169" y="249">
 <attr name="text"><![CDATA[As above, but request body is read from external file.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="153" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="HttpConnector with dynamic request" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="803" y="312">
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="216" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="HttpConnector with dynamic request" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="803" y="312">
 <attr name="text"><![CDATA[Request body can be also sent through input port. Server answer can be sent  directly to the output port  (phase 2), or it can be saved to file and output field gets only information where the answer is saved (phase 3). In the first case it can be needed to increase some default properties (e.g. Record.MAX_RECORD_SIZE and DEFAULT_INTERNAL_IO_BUFFER_SIZE).]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="HTTP connector" guiWidth="0" guiX="25" guiY="127" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR0" outFileUrl="${DATAOUT_DIR}/RDFTriples.xml" requestMethod="POST" type="HTTP_CONNECTOR">
@@ -92,9 +93,9 @@
 </Context>
 ]]></attr>
 </Node>
-<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
-<Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge10" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
+<Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge10" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:1"/>
 </Phase>
 <Phase number="2">
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/urls.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="29" guiY="390" id="DATA_READER0" type="DATA_READER"/>
@@ -106,12 +107,12 @@
 <Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="185" guiY="390" id="STRUCTURE_WRITER0" mask="&lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&#10;     &lt;soap:Body&gt;&#10;          &lt;m:GetRDFTriples xmlns:m=&quot;http://www.schemaweb.info/webservices/methods/&quot;&gt;&#10;               &lt;t:namespace xmlns:t=&quot;http://www.schemaweb.info/2003/types/&quot;&gt;$field&lt;/t:namespace&gt;&#10;          &lt;/m:GetRDFTriples&gt;&#10;     &lt;/soap:Body&gt;&#10;&lt;/soap:Envelope&gt;" recordsPerFile="1" type="STRUCTURE_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="659" guiY="464" id="TRASH0" type="TRASH"/>
 <Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="496" guiY="390" id="XML_EXTRACT0" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:discrete" type="XML_EXTRACT"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="false" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XML_EXTRACT0:0"/>
-<Edge debugMode="true" fromNode="STRUCTURE_WRITER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="HTTP_CONNECTOR3:0"/>
-<Edge fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER3:0"/>
-<Edge fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="false" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT0:0"/>
+<Edge debugMode="true" fromNode="STRUCTURE_WRITER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR3:0"/>
+<Edge fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
+<Edge fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="3">
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/urls.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="22" guiY="643" id="DATA_READER1" type="DATA_READER"/>
@@ -123,11 +124,11 @@
 <Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="178" guiY="643" id="STRUCTURE_WRITER1" mask="&lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&#10;     &lt;soap:Body&gt;&#10;          &lt;m:GetRDFTriples xmlns:m=&quot;http://www.schemaweb.info/webservices/methods/&quot;&gt;&#10;               &lt;t:namespace xmlns:t=&quot;http://www.schemaweb.info/2003/types/&quot;&gt;$field&lt;/t:namespace&gt;&#10;          &lt;/m:GetRDFTriples&gt;&#10;     &lt;/soap:Body&gt;&#10;&lt;/soap:Envelope&gt;" recordsPerFile="1" type="STRUCTURE_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="659" guiY="718" id="TRASH1" type="TRASH"/>
 <Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="489" guiY="643" id="XML_EXTRACT1" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:source" type="XML_EXTRACT"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" toNode="STRUCTURE_WRITER1:0"/>
-<Edge fromNode="HTTP_CONNECTOR2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XML_EXTRACT1:0"/>
-<Edge debugMode="true" fromNode="STRUCTURE_WRITER1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="HTTP_CONNECTOR2:0"/>
-<Edge fromNode="XML_EXTRACT1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
-<Edge fromNode="XML_EXTRACT1:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER4:0"/>
-<Edge fromNode="XML_EXTRACT1:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="TRASH1:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER1:0"/>
+<Edge fromNode="HTTP_CONNECTOR2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT1:0"/>
+<Edge debugMode="true" fromNode="STRUCTURE_WRITER1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR2:0"/>
+<Edge fromNode="XML_EXTRACT1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="XML_EXTRACT1:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
+<Edge fromNode="XML_EXTRACT1:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="TRASH1:0"/>
 </Phase>
 </Graph>
