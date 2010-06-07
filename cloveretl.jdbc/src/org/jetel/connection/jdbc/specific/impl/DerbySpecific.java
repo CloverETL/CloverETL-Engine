@@ -20,6 +20,7 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.jetel.connection.jdbc.DBConnection;
@@ -61,6 +62,21 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
 		return true;
 	}
+	
+	public boolean isSchemaRequired() {
+		return true;
+	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getTables(java.sql.Connection, java.lang.String)
+	 */
+	@Override
+	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" });
+	}
+	
+
+
+	
 	
 }
