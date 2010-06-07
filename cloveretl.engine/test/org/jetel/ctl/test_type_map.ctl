@@ -18,8 +18,8 @@ function integer transform() {
 	tuesday[2009-03-03] = 'Tuesday';
 	dayInWeekCopy = dayInWeek + tuesday;
 
-	// concat affects the original list as well
 	wednesday[2009-03-04] = 'Wednesday';
 	dayInWeekCopy = dayInWeekCopy + wednesday;
+
 	return 0;
 }
