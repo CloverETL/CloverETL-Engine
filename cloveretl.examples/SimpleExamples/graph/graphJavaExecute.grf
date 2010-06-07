@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Dec 04 12:35:56 CET 2007" description="This graph illustrates the usage of JavaExecute component." guiVersion="1.9" id="1196771086318" licenseType="Evaluation license." modified="Tue Mar 04 13:57:57 CET 2008" name="graphJavaExecute" revision="1.69">
+<Graph author="cloveruser" created="Tue Dec 04 12:35:56 CET 2007" description="This graph illustrates the usage of JavaExecute component." guiVersion="0.0.0.devel" id="1196771086318" licenseType="Evaluation Devel" modified="Mon Jun 07 16:10:40 CEST 2010" modifiedBy="cloveruser" name="graphJavaExecute" revision="1.73">
 <Global>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="205" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of JavaExecute" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="533" x="39" y="140">
+<attr name="text"><![CDATA[
+This graph illustrates the usage of JavaExecute. The Runnable URL attribute specifies the file, including the path, with the transformation that should be executed. 
+The transformation inherits from BasicJavaRunnable class which implements the JavaRunnable interface. 
+Specified property is get from the graph and its value is printed into the output along with defined info message.
+File with transformation definition is located in the trans directory. It is compiled and the graph is executed. 
+JavaExecute has neither input nor output port.]]></attr>
+</Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Java execute" guiWidth="0" guiX="37" guiY="28" id="JAVA_EXECUTE0" properties="testingProperty=Testing output string!!!&#10;" runnableURL="${TRANS_DIR}/testJavaRunnable.java" type="JAVA_EXECUTE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Java execute" guiWidth="0" guiX="37" guiY="28" id="JAVA_EXECUTE0" properties="testingProperty=Testing output string\!\!\!&#10;" runnableURL="${TRANS_DIR}/testJavaRunnable.java" type="JAVA_EXECUTE"/>
 </Phase>
 </Graph>

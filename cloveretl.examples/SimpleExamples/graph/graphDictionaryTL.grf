@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jan 06 09:03:58 GMT+01:00 2010" guiVersion="0.0.0.devel" id="1262779108438" licenseType="Evaluation Devel" modified="Wed Jan 13 12:47:38 GMT+01:00 2010" modifiedBy="avackova" name="graphDictionaryJava" revision="1.63">
+<Graph author="avackova" created="Wed Jan 06 09:03:58 GMT+01:00 2010" guiVersion="0.0.0.devel" id="1262779108438" licenseType="Evaluation Devel" modified="Mon Jun 07 15:49:42 CEST 2010" modifiedBy="cloveruser" name="graphDictionaryJava" revision="1.66">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="data" recordDelimiter="\n" type="delimited">
@@ -8,12 +8,13 @@
 </Metadata>
 <Property id="GraphParameter0" name="MAX_VALUE" value="10000"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Dictionary usage from transform language" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="276" x="13" y="21">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="190" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Dictionary usage from transform language" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="276" x="14" y="-10">
 <attr name="text"><![CDATA[This example uses dict_put_str and dict_get_str functions for working with dictionary data. DataGenerator puts generated minimum and maximum values to the dictionary in finished() method, that means after all records are processed (generated). The same is done with median value in Rollup component. We do it in transform() method (not in finished()) as this method is called only for whole group of the records (in this case - group key attribute is not set - for whole data set).]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="117" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading dictionary data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="230" x="203" y="294">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="149" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading dictionary data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="230" x="203" y="294">
 <attr name="text"><![CDATA[Partiton component can read dictionary values after DataGenerator and Rollup have finished their work, so it works in graph phase 1. We can't read dictionary values in init() function, as it is called during graph initialization. This is the reason for creating initInternal() function.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="13" guiY="192" id="DATA_GENERATOR0" recordsNumber="150" type="DATA_GENERATOR">
@@ -103,8 +104,8 @@ function transform(counter, groupAccumulator) {
 
 ]]></attr>
 </Node>
-<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
-<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="PARTITION0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/smaller_half.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="884" guiY="130" id="DATA_WRITER0" type="DATA_WRITER"/>
@@ -147,17 +148,17 @@ function getOutputPort() {
 <Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="596" guiY="218" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="TrashMax" guiWidth="0" guiX="884" guiY="297" id="TRASH_MAX" printTrashID="true" type="TRASH"/>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="TrashMin" guiWidth="0" guiX="885" guiY="54" id="TRASH_MIN" printTrashID="true" type="TRASH"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
-<Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER0:0"/>
-<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="SIMPLE_GATHER1:0"/>
-<Edge fromNode="PARTITION0:3" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="SIMPLE_COPY1:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH_MIN:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge8" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER0:1"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge16" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH_MAX:0"/>
-<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:0"/>
+<Edge fromNode="PARTITION0:3" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH_MIN:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge8" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge16" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:1"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH_MAX:0"/>
+<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>
