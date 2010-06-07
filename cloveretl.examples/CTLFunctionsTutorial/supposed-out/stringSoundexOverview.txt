@@ -1,6 +1,6 @@
-word;soundex($0.Arg);W600
-world;soundex($0.Arg);W630
-wear;soundex($0.Arg);W000
-book;soundex($0.Arg);B000
+word;soundex($0.Arg);W630
+world;soundex($0.Arg);W643
+wear;soundex($0.Arg);W600
+book;soundex($0.Arg);B200
 back;soundex($0.Arg);B200
-break;soundex($0.Arg);B200
+break;soundex($0.Arg);B620
