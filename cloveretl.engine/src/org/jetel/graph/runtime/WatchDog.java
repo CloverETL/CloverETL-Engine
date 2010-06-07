@@ -259,8 +259,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
             }
             
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
-
-            MDC.remove("runId");
        	} catch (RuntimeException e) {
        		causeException = e;
        		causeGraphElement = null;
@@ -272,6 +270,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			ContextProvider.unregister();
 
 			CURRENT_PHASE_LOCK.unlock();
+			
+            MDC.remove("runId");
 		}
 
 		return watchDogStatus;
