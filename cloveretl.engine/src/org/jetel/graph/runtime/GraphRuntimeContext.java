@@ -241,6 +241,15 @@ public class GraphRuntimeContext {
 		additionalProperties.putAll(properties);
 	}
 	
+	/**
+	 * Additional properties will be replaced by new set of properties.
+	 * @param properties
+	 */
+	public void setAdditionalProperties(Properties properties) {
+		additionalProperties.clear();
+		additionalProperties.putAll(properties);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getAdditionalProperties()
 	 */
