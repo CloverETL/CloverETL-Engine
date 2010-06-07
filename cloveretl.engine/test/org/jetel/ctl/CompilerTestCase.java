@@ -2362,7 +2362,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_convertlib_packdecimal2long() {
-		doCompile("test_convertlib_packdecimal2long");
+		doCompile("test_convertlib_packDecimal2long");
 		check("unpackedLong", PackedDecimal.parse(BYTEARRAY_VALUE));
 	}
 
