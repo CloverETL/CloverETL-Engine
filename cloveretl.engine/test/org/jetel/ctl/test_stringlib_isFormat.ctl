@@ -33,10 +33,7 @@ boolean isDate11;
 boolean isDate12;
 boolean isDate13;
 boolean isDate14;
-boolean isDate15; 
-boolean isDate16;
-boolean isDate17;
-boolean isDate18;
+boolean isDate15;
 
 function integer transform() {
 	test='test';
@@ -75,17 +72,14 @@ function integer transform() {
 	isDate1=isDate('20.11.2007','dd-MM-yyyy');
 	isDate2=isDate('24:00 20.11.2007','kk:mm dd.MM.yyyy');
 	isDate4=isDate('test 20.11.2007','hhmm dd.MM.yyyy');
-	isDate7=isDate('                ','HH:mm dd.MM.yyyy',true);
+	isDate7=isDate('                ','HH:mm dd.MM.yyyy');
 	isDate8=isDate('                ','HH:mm dd.MM.yyyy');
 	isDate9=isDate('20-15-2007','dd-MM-yyyy');
-	isDate10=isDate('20-15-2007','dd-MM-yyyy',false);
-	isDate11=isDate('20-15-2007','dd-MM-yyyy',true); 
-	isDate12=isDate('942-12-1996','dd-MM-yyyy','en.US',true);
-	isDate13=isDate('942-12-1996','dd-MM-yyyy','en.US',false);
-	isDate14=isDate('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ',false);
-	isDate15=isDate('12-Prosinec-1996','dd-MMM-yyyy','en.US',false); 
-	isDate16=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
-	isDate17=isDate('','HH:mm dd.MM.yyyy',false);
-	isDate18=isDate('','HH:mm dd.MM.yyyy',true);
+	isDate10=isDate('20-15-2007','dd-MM-yyyy'); 
+	isDate11=isDate('942-12-1996','dd-MM-yyyy','en.US');
+	isDate12=isDate('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ');
+	isDate13=isDate('12-Prosinec-1996','dd-MMM-yyyy','en.US'); 
+	isDate14=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
+	isDate15=isDate('','HH:mm dd.MM.yyyy');
 	return 0;
 }
