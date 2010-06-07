@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -74,7 +73,7 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
 	 * 
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
 	 */
-	public RunResult executeGraph(long runId, String graphFileName, Properties props, String logFile) {
+	public RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext givenRuntimeContext, String logFile) {
         RunResult rr = new RunResult();
 
 		InputStream in = null;		
@@ -94,8 +93,9 @@ public class PrimitiveAuthorityProxy implements IAuthorityProxy {
         if (logFile != null) {
         	prepareLogger(runtimeContext);
         }
-        if (props != null)
-        	runtimeContext.addAdditionalProperties(props);
+        runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
+        runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
+        
         Future<Result> futureResult = null;                
 
         // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging

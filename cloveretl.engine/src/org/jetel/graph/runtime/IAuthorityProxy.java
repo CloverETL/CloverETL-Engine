@@ -21,7 +21,6 @@ package org.jetel.graph.runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
@@ -52,11 +51,12 @@ public interface IAuthorityProxy {
 	 * 
 	 * @param runId - ID of parent run, which calls this method.  
 	 * @param graphFileName - path to graph to execute
-	 * @param properties - null or instance of properties which can be applied as place-holders in graph XML 
+	 * @param runtimeContext - this is a part of request to run a graph (graph will be run with as similar runtime context as is possible), 
+	 * at least additionalProperties are taken into account, also contextURL should be correctly predefined
 	 * @param logFile - path to file where log output of graph will be saved;
 	 * @return
 	 */
-	public RunResult executeGraph(long runId, String graphFileName, Properties properties, String logFile);
+	public RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
 
 	/**
 	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.

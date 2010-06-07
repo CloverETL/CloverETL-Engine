@@ -50,6 +50,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -426,6 +427,10 @@ public class RunGraph extends Node{
 			commandList.add(cloverCommandArg);
 		}
 		
+		if (!cloverCommandLineArgs.contains("contexturl") && getGraph().getRuntimeContext().getContextURL() != null) {
+			commandList.add(runGraph.CONTEXT_URL_SWITCH);
+			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
+		}
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
 		commandList.add(runGraph.NO_DEBUG_SWITCH);
@@ -482,9 +487,11 @@ public class RunGraph extends Node{
 	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
 		long runId = this.getGraph().getRuntimeContext().getRunId();
 
-		Properties props = extractNeededGraphProperties(this.getGraph().getGraphProperties());
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphProperties()));
+		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		
-		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, props, outputFileName);
+		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, runtimeContext, outputFileName);
 		
 		outputRecordData.setDescription(rr.description);
 		outputRecordData.setDuration(rr.duration);
