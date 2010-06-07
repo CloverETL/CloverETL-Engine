@@ -42,12 +42,12 @@
         <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
         <Property name="connection_file" value="mysql-localhost.cfg" />
 	      	<SQLStatement connection="mysql">DELETE FROM test</SQLStatement>
-	      <DBTableToTable
+<!--	      <DBTableToTable
 	      	 outputTable="test" 
 	      	 outputTableConnection="mysql"
 	      	 supposedTable="test_supposed"
 	      	 supposedTableConnection="mysql"
-	      />
+	      />-->
 	 	  <FlatFile outputFile="data-out/out.dat" supposedFile="supposed-out/out.MysqlDataWriter.dat"/>	                                                                    
 	 	  <FlatFile outputFile="data-out/mysql.out" supposedFile="supposed-out/mysql.MysqlDataWriter.out"/>	                                                                    
 	</FunctionalTest>
@@ -65,14 +65,9 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="InfobrightDataWriter" graphFile="graph/graphInfobrightDataWriter.grf">
-	      <SQLStatement connection="infobright">drop table test</SQLStatement>
-	      <DBTableToTable
-	      	 outputTable="test" 
-	      	 outputTableConnection="infobright"
-	      	 supposedTable="test_supposed"
-	      	 supposedTableConnection="infobright"
-	      />
-	 	  <FlatFile outputFile="data-tmp/infobright_out.txt" supposedFile="supposed-out/infobright_out.txt"/>	                                                                    
-	</FunctionalTest>
+	      	<SQLStatement connection="infobright">drop table test</SQLStatement>
+	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
+     	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
+	 	</FunctionalTest>
 	
 </TestScenario>
