@@ -75,7 +75,7 @@ public class FileCloseTest extends TestCase {
 
 		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		try {
-			runtimeContext.setContextURL(FileUtils.getFileURL(EXAMPLE_PATH));
+			runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash(EXAMPLE_PATH)));
 		} catch (MalformedURLException e1) {
 			fail("Invalid project path: " + e1);
 		}
