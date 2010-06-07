@@ -42,6 +42,10 @@ import org.jetel.test.CloverTestCase;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
+import org.jetel.util.crypto.Base64;
+import org.jetel.util.crypto.Digest;
+import org.jetel.util.crypto.Digest.DigestType;
+
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -533,24 +537,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_parser() {
 		System.out.println("\nParser test:");
-
-		String expStr = "/*#CTL2:COMPILED\n*/\n" + "// this is other comment\n" + "for (integer i=0; i<5; i++) \n" + "  if (i%2 == 0) {\n" + "		continue;\n" + "  }\n";
-		TransformationGraph graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-
-		print_code(expStr);
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
-		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, "parser_test");
-		printMessages(messages);
-
-		if (messages.size() > 0) {
-			throw new AssertionFailedError("Error in execution. Check standard output for details.");
-		}
-
-		CLVFStart parseTree = compiler.getStart();
-		parseTree.dump("");
-
+		doCompile("test_parser");		
 	}
 
 	public void test_import() {
@@ -1870,17 +1857,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// illegal month: 15
 		check("isDate9", false);
 		check("isDate10", false);
-		check("isDate11", true);
+		check("isDate11", false);
 		check("isDate12", true);
 		check("isDate13", false);
-		check("isDate14", true);
-		check("isDate15", false);
 		// 24 is an illegal value for pattern HH (it allows only 0-23)
-		check("isDate16", false);
-		// empty string in strict mode: invalid
-		check("isDate17", false);
-		// empty string in lenient mode: valid
-		check("isDate18", true);
+		check("isDate14", false);
+		// empty string: invalid
+		check("isDate15", false);
 	}
 	
 	public void test_stringlib_removeBlankSpace() {
@@ -2220,6 +2203,144 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("date21", checkDate);
 	}
 	
+	public void test_convertlib_base64byte() {
+		doCompile("test_convertlib_base64byte");
+		assertTrue(Arrays.equals((byte[])getVariable("base64input"), Base64.decode("The quick brown fox jumps over the lazy dog")));
+	}
+	//TODO
+	/*public void test_convertlib_bits2str() {
+		doCompile("test_convertlib_bits2str");
+		check("",);
+	}*/
+	
+	public void test_convertlib_bool2num() {
+		doCompile("test_convertlib_bool2num");
+		check("resultTrue", 1);
+		check("resultFalse", 0);
+	}
+	
+	public void test_convertlib_byte2base64() {
+		doCompile("test_convertlib_byte2base64");
+		check("inputBase64", Base64.encodeBytes("Abeceda zedla deda".getBytes()));
+	}
+	
+	public void test_convertlib_byte2hex() {
+		doCompile("test_convertlib_byte2hex");
+		check("hexResult", "41626563656461207a65646c612064656461");
+	}
+	
+	public void test_convertlib_date2long() {
+		doCompile("test_convertlib_date2long");
+		check("bornDate", BORN_MILLISEC_VALUE);
+		check("zeroDate", 0l);
+	}
+	
+	public void test_convertlib_date2num() {
+		doCompile("test_convertlib_date2num");
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(BORN_VALUE);
+		check("yearDate", 1987);
+		check("monthDate", 5);
+		check("secondDate", 0);
+		check("yearBorn", cal.get(Calendar.YEAR));
+		check("monthBorn", cal.get(Calendar.MONTH) + 1); //Calendar enumerates months from 0, not 1;
+		check("secondBorn", cal.get(Calendar.SECOND));
+	}
+	
+	public void test_convertlib_date2str() {
+		doCompile("test_convertlib_date2str");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd");
+		check("inputDate", "1987:05:12");
+		check("bornDate", sdf.format(BORN_VALUE));
+	}
+	
+	public void test_convertlib_decimal2double() {
+		doCompile("test_convertlib_decimal2double");
+		check("toDouble", 0.007d);
+	}
+	
+	public void test_convertlib_decimal2integer() {
+		doCompile("test_convertlib_decimal2integer");
+		check("toInteger", 0);
+		check("toInteger2", -500);
+		check("toInteger3", 1000000);
+	}
+	
+	public void test_convertlib_decimal2long() {
+		doCompile("test_convertlib_decimal2long");
+		check("toLong", 0l);
+		check("toLong2", -500l);
+		check("toLong3", 10000000000l);
+	}
+	
+	public void test_convertlib_double2integer() {
+		doCompile("test_convertlib_double2integer");
+		check("toInteger", 0);
+		check("toInteger2", -500);
+		check("toInteger3", 1000000);
+	}
+	
+	public void test_convertlib_double2long() {
+		doCompile("test_convertlib_double2long");
+		check("toLong", 0l);
+		check("toLong2", -500l);
+		check("toLong3", 10000000000l);
+	}
+
+	public void test_convertlib_getFieldName() {
+		doCompile("test_convertlib_getFieldName");
+		check("fieldNames",Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency"));
+	}
+
+	public void test_convertlib_getFieldType() {
+		doCompile("test_convertlib_getFieldType");
+		check("fieldTypes",Arrays.asList(DataFieldMetadata.STRING_TYPE, DataFieldMetadata.NUMERIC_TYPE, DataFieldMetadata.STRING_TYPE,
+				DataFieldMetadata.DATE_TYPE, DataFieldMetadata.LONG_TYPE, DataFieldMetadata.INTEGER_TYPE, DataFieldMetadata.BOOLEAN_TYPE,
+				DataFieldMetadata.BYTE_TYPE, DataFieldMetadata.DECIMAL_TYPE));
+	}
+	
+	public void test_convertlib_hex2byte() {
+		doCompile("test_convertlib_hex2byte");
+		assertTrue(Arrays.equals((byte[])getVariable("fromHex"), BYTEARRAY_VALUE));
+	}
+	
+	public void test_convertlib_long2date() {
+		doCompile("test_convertlib_long2date");
+		check("fromLong1", new Date(0));
+		check("fromLong2", new Date(50000000000L));
+		check("fromLong3", new Date(-5000L));
+	}
+	
+	public void test_convertlib_long2integer() {
+		doCompile("test_convertlib_long2integer");
+		check("fromLong1", 10);
+		check("fromLong2", -10);
+	}
+	
+	//TODO
+	/*public void test_convertlib_long2packDecimal() {
+		doCompile("test_convertlib_long2packDecimal");
+		check("",);
+	}*/
+	
+	public void test_convertlib_md5() {
+		doCompile("test_convertlib_md5");
+		assertTrue(Arrays.equals((byte[])getVariable("md5Hash1"), Digest.digest(DigestType.MD5, "The quick brown fox jumps over the lazy dog")));
+		assertTrue(Arrays.equals((byte[])getVariable("md5Hash2"), Digest.digest(DigestType.MD5, BYTEARRAY_VALUE)));
+	}
+
+	public void test_convertlib_num2bool() {
+		doCompile("test_convertlib_num2bool");
+		check("integerTrue", true);
+		check("integerFalse", false);
+		check("longTrue", true);
+		check("longFalse", false);
+		check("doubleTrue", true);
+		check("doubleFalse", false);
+		check("decimalTrue", true);
+		check("decimalFalse", false);
+	}
+	
 	public void test_convertlib_num2str() {
 		System.out.println("num2str() test:");
 		doCompile("test_convertlib_num2str");
@@ -2229,5 +2350,81 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("doubleOutput", createList("16.16", "0x1.028f5c28f5c29p4"));
 		check("decimalOutput", createList("16.16"));
 	}
-	
+
+	/*public void test_convertlib_packdecimal2long() {
+		doCompile("test_convertlib_packdecimal2long");
+		check("",);
+	}*/
+
+	public void test_convertlib_sha() {
+		doCompile("test_convertlib_sha");
+		assertTrue(Arrays.equals((byte[])getVariable("shaHash1"), Digest.digest(DigestType.SHA, "The quick brown fox jumps over the lazy dog")));
+		assertTrue(Arrays.equals((byte[])getVariable("shaHash2"), Digest.digest(DigestType.SHA, BYTEARRAY_VALUE)));
+	}
+
+	/*public void test_convertlib_str2bits() {
+		doCompile("test_convertlib_str2bits");
+		check("",);
+	}*/
+
+	public void test_convertlib_str2bool() {
+		doCompile("test_convertlib_str2bool");
+		check("fromTrueString", true);
+		check("fromFalseString", false);
+	}
+
+	public void test_convertlib_str2date() {
+		doCompile("test_convertlib_str2date");
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(2050, 4, 19, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		Date checkDate = cal.getTime();
+		
+		check("date1", checkDate);
+		check("date2", checkDate);
+		check("date3", checkDate);
+		check("date4", checkDate);
+	}
+
+	public void test_convertlib_str2decimal() {
+		doCompile("test_convertlib_str2decimal");
+		check("parsedDecimal1", new BigDecimal("100.13"));
+		check("parsedDecimal2", new BigDecimal("123123123.123"));
+		check("parsedDecimal3", new BigDecimal("-350000.01"));
+	}
+
+	public void test_convertlib_str2double() {
+		doCompile("test_convertlib_str2double");
+		check("parsedDouble1", 100.13);
+		check("parsedDouble2", 123123123.123);
+		check("parsedDouble3", -350000.01);
+	}
+
+	public void test_convertlib_str2integer() {
+		doCompile("test_convertlib_str2integer");
+		check("parsedInteger1", 123456789);
+		check("parsedInteger2", 123123);
+		check("parsedInteger3", -350000);
+		check("parsedInteger4", 419);
+	}
+
+	public void test_convertlib_str2long() {
+		doCompile("test_convertlib_str2long");
+		check("parsedLong1", 1234567890123L);
+		check("parsedLong2", 123123123456789L);
+		check("parsedLong3", -350000L);
+		check("parsedLong4", 133L);
+	}
+
+	public void test_convertlib_toString() {
+		doCompile("test_convertlib_toString");
+		check("integerString", "10");
+		check("longString", "110654321874");
+		check("doubleString", "1.547874E-14");
+		check("decimalString", "-6847521431.1545874");
+		check("listString", "[not ALI A, not ALI B, not ALI D..., but, ALI H!]");
+		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
+	}	
 }
