@@ -48,6 +48,13 @@ public class DateLib extends TLFunctionLibrary {
     
 		return ret;
     }
+    
+	private static String LIBRARY_NAME = "Convert";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
 
     @TLFunctionAnnotation("Returns current date and time.")
     public static final Date today(TLFunctionCallContext context) {

@@ -66,6 +66,13 @@ public class RandomLib extends TLFunctionLibrary {
 
 		return ret;
 	}
+	
+	private static String LIBRARY_NAME = "Random";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
 
 	@TLFunctionAnnotation("Random number (>=0, <1)")
 	public static final Double random(TLFunctionCallContext context) {

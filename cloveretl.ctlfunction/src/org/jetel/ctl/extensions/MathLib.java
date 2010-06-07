@@ -53,6 +53,13 @@ public class MathLib extends TLFunctionLibrary {
 		return ret;
 	}
 	
+	private static String LIBRARY_NAME = "Math";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
+	
     
 	@TLFunctionAnnotation("Square root.")
 	public static final Double sqrt(TLFunctionCallContext context, double i) {

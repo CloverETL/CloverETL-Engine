@@ -79,6 +79,13 @@ public class StringLib extends TLFunctionLibrary {
 		return ret;
 	}
 	
+	private static String LIBRARY_NAME = "String";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
+	
 	// CONCAT
 	@TLFunctionAnnotation("Concatenates two or more strings.")
 	public static final String concat(TLFunctionCallContext context, String... operands) {

@@ -47,7 +47,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	final Log logger = LogFactory.getLog(TLFunctionLibrary.class);
 
     protected Map<String, List<TLFunctionDescriptor>> library;
-
+    
     public TLFunctionLibrary() {
         library = new HashMap<String, List<TLFunctionDescriptor>>();
     }
@@ -56,6 +56,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     public Map<String, List<TLFunctionDescriptor>> getAllFunctions() {
     	return Collections.unmodifiableMap(library);
     }
+    
+    abstract public String getName();
     
     public String getLibraryClassName() {
     	return getClass().getName();
