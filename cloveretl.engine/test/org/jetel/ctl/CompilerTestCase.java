@@ -889,16 +889,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		c.set(Calendar.MILLISECOND, 0);
 		assertEquals("Monday", dayInWeek.get(c.getTime()));
 
+		Map<Date, String> dayInWeekCopy = (Map<Date, String>) getVariable("dayInWeekCopy");
 		c.set(2009, Calendar.MARCH, 3, 0, 0, 0);
 		c.set(Calendar.MILLISECOND, 0);
 		assertEquals("Tuesday", ((Map<Date, String>) getVariable("tuesday")).get(c.getTime()));
-		assertEquals("Tuesday", dayInWeek.get(c.getTime()));
+		assertEquals("Tuesday", dayInWeekCopy.get(c.getTime()));
 
 		c.set(2009, Calendar.MARCH, 4, 0, 0, 0);
 		c.set(Calendar.MILLISECOND, 0);
 		assertEquals("Wednesday", ((Map<Date, String>) getVariable("wednesday")).get(c.getTime()));
-		assertEquals("Wednesday", dayInWeek.get(c.getTime()));
-		assertEquals(dayInWeek, getVariable("dayInWeekCopy"));
+		assertEquals("Wednesday", dayInWeekCopy.get(c.getTime()));
+		assertFalse(dayInWeek.equals(dayInWeekCopy));
 	}
 	
 	public void test_type_record() {
