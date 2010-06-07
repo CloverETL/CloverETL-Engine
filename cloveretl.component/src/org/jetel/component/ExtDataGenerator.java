@@ -235,7 +235,7 @@ public class ExtDataGenerator extends DataGenerator {
 	private void verifyAutofilling(DataRecordMetadata outMetadata) throws ComponentNotReadyException {
 
 		// if no generator then verify and prepare autofilling
-		if (generatorSource == null && generatorClassName == null && generatorURL == null) {
+		if (generatorSource == null && generatorClassName == null && generatorURL == null && generatorClass == null) {
 			boolean isAutoFilling = false;
 			for (DataFieldMetadata fMetadata : outMetadata.getFields()) {
 				if (fMetadata.isAutoFilled()) {
