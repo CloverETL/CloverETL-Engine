@@ -39,12 +39,12 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.primitive.TypedProperties;
-import org.jetel.util.string.StringUtils;
-
+import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.StringUtils;
 
 public abstract class CompilerTestCase extends CloverTestCase {
 
@@ -2207,11 +2207,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_base64byte");
 		assertTrue(Arrays.equals((byte[])getVariable("base64input"), Base64.decode("The quick brown fox jumps over the lazy dog")));
 	}
-	//TODO
-	/*public void test_convertlib_bits2str() {
+	
+	public void test_convertlib_bits2str() {
 		doCompile("test_convertlib_bits2str");
-		check("",);
-	}*/
+		check("bitsAsString1", "0");
+		check("bitsAsString2", "11111111");
+		check("bitsAsString3", "0101000001001101101");
+	}
 	
 	public void test_convertlib_bool2num() {
 		doCompile("test_convertlib_bool2num");
@@ -2245,6 +2247,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("yearBorn", cal.get(Calendar.YEAR));
 		check("monthBorn", cal.get(Calendar.MONTH) + 1); //Calendar enumerates months from 0, not 1;
 		check("secondBorn", cal.get(Calendar.SECOND));
+		check("yearMin", 1970);
+		check("monthMin", 1);
+		check("weekMin", 1);
+		check("dayMin", 1);
+		check("hourMin", 1); //TODO: check!
+		check("minuteMin", 0);
+		check("secondMin", 0);
+		check("millisecMin", 0);
 	}
 	
 	public void test_convertlib_date2str() {
@@ -2317,11 +2327,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("fromLong2", -10);
 	}
 	
-	//TODO
-	/*public void test_convertlib_long2packDecimal() {
+	
+	public void test_convertlib_long2packDecimal() {
 		doCompile("test_convertlib_long2packDecimal");
-		check("",);
-	}*/
+		assertTrue(Arrays.equals((byte[])getVariable("packedLong"), new byte[] {5, 0, 12}));
+	}
 	
 	public void test_convertlib_md5() {
 		doCompile("test_convertlib_md5");
@@ -2351,10 +2361,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalOutput", createList("16.16"));
 	}
 
-	/*public void test_convertlib_packdecimal2long() {
+	public void test_convertlib_packdecimal2long() {
 		doCompile("test_convertlib_packdecimal2long");
-		check("",);
-	}*/
+		check("unpackedLong", PackedDecimal.parse(BYTEARRAY_VALUE));
+	}
 
 	public void test_convertlib_sha() {
 		doCompile("test_convertlib_sha");
@@ -2362,10 +2372,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[])getVariable("shaHash2"), Digest.digest(DigestType.SHA, BYTEARRAY_VALUE)));
 	}
 
-	/*public void test_convertlib_str2bits() {
+	public void test_convertlib_str2bits() {
 		doCompile("test_convertlib_str2bits");
-		check("",);
-	}*/
+		//TODO: uncommnet -> test will pass, but is that correct?
+		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits1"), new byte[] {0/*, 0, 0, 0, 0, 0, 0, 0*/}));
+		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits2"), new byte[] {-1/*, 0, 0, 0, 0, 0, 0, 0*/}));
+		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits3"), new byte[] {10, -78, 5/*, 0, 0, 0, 0, 0*/}));
+	}
 
 	public void test_convertlib_str2bool() {
 		doCompile("test_convertlib_str2bool");
