@@ -631,7 +631,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from decimal to long value.")
 	public static final Long decimal2long(TLFunctionCallContext context, BigDecimal d) {
 		return d.longValue();
@@ -647,7 +646,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	// TODO: add test case
 	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
 	public static final Double decimal2double(TLFunctionCallContext context, BigDecimal d) {
 		return d.doubleValue();
@@ -662,8 +660,6 @@ public class ConvertLib extends TLFunctionLibrary {
 			stack.push(decimal2double(context, stack.popDecimal()));
 		}
 	}
-
-	
 
 	// NUM2BOOL
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
@@ -728,7 +724,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		return "true".equals(s);
 	}
 	
-	// TODO: add test case
 	// STR2BOOL
 	class Str2BoolFunction implements TLFunctionPrototype {
 
@@ -776,7 +771,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		return toStringInternal(map);
 	}
 	
-	// TODO: add test case
 	// toString
 	class ToStringFunction implements TLFunctionPrototype {
 
@@ -794,7 +788,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public static final Date long2date(TLFunctionCallContext context, Long l) {
 		return new Date(l);
 	}
-	// TODO: add test case
+	
 	// Long2Date
 	class Long2DateFunction implements TLFunctionPrototype {
 
@@ -812,7 +806,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public static final Long date2long(TLFunctionCallContext context, Date d) {
 		return d.getTime();
 	}
-	// TODO: add test case
+	
 	// DATE2LONG
 	class Date2LongFunction implements TLFunctionPrototype {
 
