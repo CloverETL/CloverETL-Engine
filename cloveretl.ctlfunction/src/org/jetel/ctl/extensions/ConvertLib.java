@@ -87,6 +87,13 @@ public class ConvertLib extends TLFunctionLibrary {
 		return ret;
 			
 	}
+	
+	private static String LIBRARY_NAME = "Convert";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
 		
 	// NUM2STR
 	

@@ -29,7 +29,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLTypeList;
 
 public class ContainerLib extends TLFunctionLibrary {
-
+	
     @Override
     public TLFunctionPrototype getExecutable(String functionName) 
     throws IllegalArgumentException {
@@ -52,6 +52,13 @@ public class ContainerLib extends TLFunctionLibrary {
     	
     	return ret;
     }
+    
+	private static String LIBRARY_NAME = "Container";
+
+	public String getName() {
+		return LIBRARY_NAME;
+	}
+
     
     
     // CLEAR
@@ -337,4 +344,5 @@ public class ContainerLib extends TLFunctionLibrary {
 			}
 		}
 	}
+
 }
