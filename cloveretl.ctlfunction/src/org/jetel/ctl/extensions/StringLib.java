@@ -715,10 +715,6 @@ public class StringLib extends TLFunctionLibrary {
 
 		while (m.find()) {
 			ret.add(m.group());
-			int i = 0;
-			while (i < m.groupCount()) {
-				ret.add(m.group(++i));
-			}
 		}
 
 		return ret;
