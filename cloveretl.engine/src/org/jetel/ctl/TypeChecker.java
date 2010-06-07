@@ -1380,7 +1380,7 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 		
-		error(node,functionErrorMessage("print_err", formal, actual));
+		error(node,functionErrorMessage("printErr", formal, actual));
 		node.setType(TLType.ERROR);
 		return data;
 	}
