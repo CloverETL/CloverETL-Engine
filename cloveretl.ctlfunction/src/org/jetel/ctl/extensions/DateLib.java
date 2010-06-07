@@ -229,7 +229,7 @@ public class DateLib extends TLFunctionLibrary {
 	}
 
     @TLFunctionInitAnnotation
-	public void extractTimeInit(TLFunctionCallContext context) {
+	public static void extractTimeInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
 	}
 
