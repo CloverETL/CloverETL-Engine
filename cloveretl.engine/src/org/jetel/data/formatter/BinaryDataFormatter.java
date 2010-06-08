@@ -54,7 +54,6 @@ public class BinaryDataFormatter implements Formatter {
 
 	WritableByteChannel writer;
 	ByteBuffer buffer;
-	OutputStream backendOutputStream;
 	DataRecordMetadata metaData;
 	/*
 	 * Charset name used for encoding/decoding string fields
@@ -84,6 +83,10 @@ public class BinaryDataFormatter implements Formatter {
 		setDataTarget(outputStream);
 	}
 
+	public BinaryDataFormatter(WritableByteChannel writableByteChannel) {
+		setDataTarget(writableByteChannel);
+	}
+
 	public String getStringCharset() {
 		return stringCharset;
 	}
@@ -109,9 +112,6 @@ public class BinaryDataFormatter implements Formatter {
 			try {
 				flush();
 				writer.close();
-				if (backendOutputStream != null) {
-					backendOutputStream.close();
-				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -151,15 +151,15 @@ public class BinaryDataFormatter implements Formatter {
 	public void setDataTarget(Object outputDataTarget) {
 		if (outputDataTarget instanceof File) {
 			try {
-				backendOutputStream = new FileOutputStream((File) outputDataTarget); 
-				writer = Channels.newChannel(backendOutputStream);
+				writer = Channels.newChannel(new FileOutputStream((File) outputDataTarget));
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else if (outputDataTarget instanceof OutputStream) {
-			backendOutputStream = (OutputStream)outputDataTarget;
-			writer = Channels.newChannel(backendOutputStream);
+			writer = Channels.newChannel((OutputStream)outputDataTarget);
+		} else if (outputDataTarget instanceof WritableByteChannel) {
+			writer = (WritableByteChannel) outputDataTarget;
 		}
 	}
 
