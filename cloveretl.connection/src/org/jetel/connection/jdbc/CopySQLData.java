@@ -20,6 +20,7 @@ package org.jetel.connection.jdbc;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.ParameterMetaData;
@@ -48,6 +49,7 @@ import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.exception.JetelException;
@@ -292,7 +294,7 @@ public abstract class CopySQLData {
 			 */
 			transMap[i] = createCopyObject(
 					(record.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD
-					        && type != CopyOracleXml.XML_TYPE) ? Types.VARCHAR : type.shortValue(),
+					        && type != CopyOracleXml.XML_TYPE && type != Types.ARRAY) ? Types.VARCHAR : type.shortValue(),
 					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
@@ -560,6 +562,9 @@ public abstract class CopySQLData {
 		char jetelType = fieldMetadata.getType();
 		CopySQLData obj = null;
 		switch (SQLType) {
+			case Types.ARRAY:
+				obj = new CopyArray(record, fromIndex, toIndex);
+				break;
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
 			case Types.VARCHAR:
@@ -675,7 +680,95 @@ public abstract class CopySQLData {
 		
 	}
 
+	static class CopyArray extends CopySQLData{
 
+		/**
+		 * @param record
+		 * @param fieldSQL
+		 * @param fieldJetel
+		 */
+		CopyArray(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+		/**
+		 *  Sets the Jetel attribute of the CopyString object
+		 *
+		 * @param  resultSet         The new Jetel value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			Array fieldVal = resultSet.getArray(fieldSQL);
+			Object obj = fieldVal.getArray();
+
+        	Object [] objectArray = (Object []) obj;   // cast it to an array of objects
+        	
+        	StringBuffer buffer = new StringBuffer("{");
+        	buffer.append(String.valueOf(objectArray[0]));
+        	for (int j=1; j < objectArray.length; j++)
+        	   {
+        			buffer.append(", ").append(String.valueOf(objectArray[j]));
+        	   }
+        	buffer.append("}");
+			if (resultSet.wasNull()) {
+				((StringDataField) field).setValue((Object)null);
+			} else {
+				((StringDataField) field).setValue(buffer.toString());
+			}
+		}
+
+		void setJetel(CallableStatement statement) throws SQLException {
+			Array fieldVal = statement.getArray(fieldSQL);
+			Object obj = fieldVal.getArray();
+
+        	Object [] objectArray = (Object []) obj;   // cast it to an array of objects
+        	
+        	StringBuffer buffer = new StringBuffer("{");
+        	buffer.append(String.valueOf(objectArray[0]));
+        	for (int j=1; j < objectArray.length; j++)
+        	   {
+        			buffer.append(", ").append(String.valueOf(objectArray[j]));
+        	   }
+        	buffer.append("}");
+			if (statement.wasNull()) {
+				((StringDataField) field).setValue((Object)null);
+			} else {
+				((StringDataField) field).setValue(buffer.toString());
+			}
+		}
+
+		/**
+		 *  Need a vector field for DataTypes
+		 *
+		 * @param  pStatement        The new SQL value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+		    	pStatement.setString(fieldSQL, field.toString());
+		   	}else{
+			   	pStatement.setNull(fieldSQL, java.sql.Types.ARRAY);
+		   	}
+		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			Array fieldVal = resultSet.getArray(fieldSQL);
+			return resultSet.wasNull() ? null : fieldVal;
+		}
+
+
+		@Override
+		public Object getDbValue(CallableStatement statement)
+				throws SQLException {
+			Array fieldVal = statement.getArray(fieldSQL);
+			return statement.wasNull() ? null : fieldVal;
+		}
+
+		
+	}
 	/**
 	 *  Description of the Class
 	 *
