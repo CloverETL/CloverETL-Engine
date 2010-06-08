@@ -1529,10 +1529,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res", Integer.valueOf(3));
 	}
 	
+	public void test_return_incorrect() {
+		doCompileExpectError("test_return_incorrect", "Can't convert from 'string' to 'integer'");
+	}
+	
 	public void test_overloading() {
 		doCompile("test_overloading");
 		check("res1", Integer.valueOf(3));
 		check("res2", "Memento mori");
+	}
+	
+	
+	public void test_overloading_incorrect() {
+		doCompileExpectErrors("test_overloading_incorrect", Arrays.asList(
+				"Duplicate function 'integer sum(integerinteger)'",
+				"Duplicate function 'integer sum(integerinteger)'"));
 	}
 	
 	//Test case for 4038
