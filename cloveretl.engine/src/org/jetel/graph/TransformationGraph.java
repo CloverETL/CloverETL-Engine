@@ -428,7 +428,7 @@ public final class TransformationGraph extends GraphElement {
 			}
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.registerGraph(this);
+			ContextProvider.unregister();
 		}
 	}
 
@@ -857,7 +857,7 @@ public final class TransformationGraph extends GraphElement {
 	    	setWatchDog(null);
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.registerGraph(this);
+			ContextProvider.unregister();
 		}
     }
     
@@ -1011,7 +1011,7 @@ public final class TransformationGraph extends GraphElement {
 	        return status;
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.registerGraph(this);
+			ContextProvider.unregister();
 		}
     }
     
