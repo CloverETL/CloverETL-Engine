@@ -23,9 +23,14 @@ import java.util.List;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 
+/**
+ * Caution: the items of list may be something else than literals, class name is misleading! 
+ * Check areAllItemsLiterals() for real content before use.
+ */
 public class CLVFListOfLiterals extends SimpleNode {
 
 	private List<Object> value;
+	private boolean allItemsLiterals;
 	
 	public CLVFListOfLiterals(int id) {
 		super(id);
@@ -55,6 +60,14 @@ public class CLVFListOfLiterals extends SimpleNode {
 	
 	public void setValue(List<Object> value) {
 		this.value = value;
+	}
+
+	public void setAllItemsLiterals(boolean allItemsLiterals) {
+		this.allItemsLiterals = allItemsLiterals;
+	}
+
+	public boolean areAllItemsLiterals() {
+		return allItemsLiterals;
 	}
 
 	

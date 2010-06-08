@@ -1996,7 +1996,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 
 	public Object visit(CLVFListOfLiterals node, Object data) {
-		if (node.getValue() == null) {
+		
+		if (!node.areAllItemsLiterals() || node.getValue() == null) {
 			List<Object> value = new ArrayList<Object>();
 			for (int i=0; i<node.jjtGetNumChildren(); i++) {
 				node.jjtGetChild(i).jjtAccept(this, data);

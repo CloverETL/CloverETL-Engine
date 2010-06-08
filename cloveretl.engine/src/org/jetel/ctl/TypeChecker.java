@@ -913,13 +913,16 @@ public class TypeChecker extends NavigatingVisitor {
 		 */
 		TLType closure = null;
 		TLType lastClosure  = null;
+		boolean allItemsLiterals = true;
 		for (int i=0; i<node.jjtGetNumChildren(); i++) {
 			SimpleNode child = (SimpleNode)node.jjtGetChild(i);
+			if (child.getId() != TransformLangParserTreeConstants.JJTLITERAL)
+				allItemsLiterals = false;
 			if ( ( closure = checkListElements(lastClosure = closure,child.getType())).isError()) {
 				error(child,"Cannot convert from '" + child.getType().name() + "' to '" + lastClosure.name());
 				node.setType(TLType.ERROR);
-			return data;
-		}
+				return data;
+			}
 
 			
 //			switch (child.getId()) {
@@ -949,6 +952,7 @@ public class TypeChecker extends NavigatingVisitor {
 //				return data;
 //			}
 		}
+		node.setAllItemsLiterals(allItemsLiterals);
 		
 		// the closure is known: generate type-casts to the closure type if necessary
 		for (int i=0; i<node.jjtGetNumChildren(); i++) {
