@@ -2333,10 +2333,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		System.out.println("num2str() test:");
 		doCompile("test_convertlib_num2str");
 
-		check("intOutput", Arrays.asList("16", "10000", "20", "10"));
-		check("longOutput", Arrays.asList("16", "10000", "20", "10"));
-		check("doubleOutput", Arrays.asList("16.16", "0x1.028f5c28f5c29p4"));
-		check("decimalOutput", Arrays.asList("16.16"));
+		check("intOutput", Arrays.asList("16", "10000", "20", "10", "1.235E3", "12 350 001 Kcs"));
+		check("longOutput", Arrays.asList("16", "10000", "20", "10", "1.235E13", "12 350 001 Kcs"));
+		check("doubleOutput", Arrays.asList("16.16", "0x1.028f5c28f5c29p4", "1.23548E3", "12 350 001,1 Kcs"));
+		check("decimalOutput", Arrays.asList("16.16", "1235.44", "12 350 001,1 Kcs"));
 	}
 
 	public void test_convertlib_packdecimal2long() {
