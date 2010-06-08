@@ -4,6 +4,9 @@ string[] doubleOutput;
 string[] decimalOutput;
 		
 function integer transform() {
+	// TODO: please test formats thoroughly, this one only tests format cache initialization
+	num2str(1235,'0.###E0');
+
 	// integer conversions
 	intOutput[0] = num2str(16);
 	intOutput[1] = num2str(16,2);
