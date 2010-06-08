@@ -1553,6 +1553,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Duplicate function 'integer sum(integerinteger)'"));
 	}
 	
+	public void test_overloading_incorrect_library() {
+		doCompileExpectErrors("test_overloading_incorrect_library", Arrays.asList(
+		"TODO: add correct error message here, when problem is fixed"));
+	}
+	
 	//Test case for 4038
 	public void test_function_parameter_without_type() {
 		doCompileExpectError("test_function_parameter_without_type", "Syntax error on token ')'");
