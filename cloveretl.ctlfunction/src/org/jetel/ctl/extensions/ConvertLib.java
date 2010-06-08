@@ -96,7 +96,6 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		
 	// NUM2STR
-	
 	@TLFunctionInitAnnotation
 	public static final void num2strInit(TLFunctionCallContext context) {
 		TLDecimalFormatLocaleCache cache = new TLDecimalFormatLocaleCache();
@@ -189,8 +188,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	class Num2StrFunction implements TLFunctionPrototype {
 		
 		public void init(TLFunctionCallContext context) {
+			num2strInit(context);
 		}
-
 		
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
