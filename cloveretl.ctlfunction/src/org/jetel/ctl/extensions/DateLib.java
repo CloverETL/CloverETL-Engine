@@ -128,30 +128,30 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Returns the difference between dates")
-    public static final Integer dateDiff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
+    public static final Long dateDiff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
 		long diffSec = (lhs.getTime() - rhs.getTime()) / 1000L;
-        int diff = 0;
+        long diff = 0;
         
         Calendar cal = null;
         switch (unit) {
         case SECOND:
             // we have the difference in seconds
-            diff = (int) diffSec;
+            diff = diffSec;
             break;
         case MINUTE:
             // how many minutes'
-            diff = (int) (diffSec / 60L);
+            diff = diffSec / 60L;
             break;
         case HOUR:
-            diff = (int) (diffSec / 3600L);
+            diff = diffSec / 3600L;
             break;
         case DAY:
             // how many days is the difference
-            diff = (int) (diffSec / 86400L);
+            diff = diffSec / 86400L;
             break;
         case WEEK:
             // how many weeks
-            diff = (int) (diffSec / 604800L);
+            diff = diffSec / 604800L;
             break;
         case MONTH:
         	cal = ((TLCalendarCache)context.getCache()).getCalendar();
