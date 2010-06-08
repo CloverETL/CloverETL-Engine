@@ -1558,6 +1558,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		"TODO: add correct error message here, when problem is fixed"));
 	}
 	
+	public void test_duplicate_hardcoded() {
+		doCompileExpectErrors("test_duplicate_hardcoded", Arrays.asList(
+				"Unknown error message"));
+	}
+	
 	//Test case for 4038
 	public void test_function_parameter_without_type() {
 		doCompileExpectError("test_function_parameter_without_type", "Syntax error on token ')'");
