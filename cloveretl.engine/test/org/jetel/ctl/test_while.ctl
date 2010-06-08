@@ -10,7 +10,7 @@ function integer transform() {
 	printErr('while1: simple loop'); 
 	ctr1 = -1;
 	while (++ctr1<3) {
-		res1= res1 + ctr1;
+		res1 = append(res1, ctr1);
 		printErr('Iteration ' + ctr1);
 	} 
 	// continue test
@@ -20,7 +20,7 @@ function integer transform() {
 		if (ctr2 == 1) {
 			continue;
 		} 	
-		res2 = res2 + ctr2;
+		res2 = append(res2, ctr2);
 		printErr('Iteration ' + ctr2);
 	}
 	// break test
@@ -30,7 +30,7 @@ function integer transform() {
 		if (ctr3 == 1) {
 			break;
 		} 	
-		res3= res3 + ctr3;
+		res3 = append(res3, ctr3);
 		printErr('Iteration ' + ctr3);
 	}
 	d = 10;
