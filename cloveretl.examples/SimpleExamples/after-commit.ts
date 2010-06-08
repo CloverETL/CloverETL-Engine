@@ -124,9 +124,8 @@
 <FunctionalTest ident="DictionaryTL" graphFile="graph/graphDictionaryTL.grf">
 	 <FlatFile outputFile="data-out/smaller_half.txt" supposedFile="supposed-out/smaller_half.DictionaryTL.txt"/>
 	 <FlatFile outputFile="data-out/greater_half.txt" supposedFile="supposed-out/greater_half.DictionaryTL.txt"/>
-<!-- Trash output is not logged on	 
 	 <RegEx expression="TRASH_MIN \|# 1    \|68" occurences="1"/>
-	 <RegEx expression="TRASH_MAX \|# 1    \|9975" occurences="1"/> -->
+	 <RegEx expression="TRASH_MAX \|# 1    \|9975" occurences="1"/> 
 	 <RegEx expression="DictEntry:min:string:\{value=68\}" occurences="1"/>
 	 <RegEx expression="DictEntry:median:string:\{value=5053.0\}" occurences="1"/>
 	 <RegEx expression="DictEntry:max:string:\{value=9975\}" occurences="1"/>
@@ -399,7 +398,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="RunGraph" graphFile="graph/graphRunGraph.grf">
-		<Property name="GRAPH_DIR" value="../cloveretl.engine/examples/simpleExamples/graph"/>
+		<Property name="GRAPH_DIR" value="../cloveretl.examples/SimpleExamples/graph"/>
 		<RegEx expression="DEDUP0                 FINISHED_OK" occurences="2"/>
 		<RegEx expression="DENORMALIZE            FINISHED_OK" occurences="2"/>
 		<RegEx expression="EXT_SORT0              FINISHED_OK" occurences="4"/>
