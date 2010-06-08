@@ -1558,6 +1558,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		"TODO: add correct error message here, when problem is fixed"));
 	}
 	
+	public void test_duplicate_library() {
+		doCompileExpectErrors("test_duplicate_library", Arrays.asList(
+		"Unknown error message"));
+	}
+	
 	public void test_duplicate_hardcoded() {
 		doCompileExpectErrors("test_duplicate_hardcoded", Arrays.asList(
 				"Unknown error message"));
