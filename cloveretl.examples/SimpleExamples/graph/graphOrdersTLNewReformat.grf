@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Mon Jun 07 17:15:36 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.18">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Tue Jun 08 09:49:40 CEST 2010" modifiedBy="avackova" name="Testing Reformat" revision="1.26">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
@@ -18,11 +18,8 @@ This graph is an equivalent of graphOrdersTLReformat.grf.
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="Orders Transformed" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="Reformat" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
-
 integer key;
 
-
- 
 key=-1; // assign value to it
 
 /* 
@@ -32,12 +29,11 @@ function number sum(number a, number b){
 	return a+b;
 }
 
-
 function integer transform() {
 	$0.CUSTOMERID = $0.CustomerID;
 	$0.PRODUCTID = ++key;
 	$0.ORDERID = $0.OrderID;
-	$0.CUSTOMER = $0.ShipName+$0.ShipAddress+$0.ShipCity+$0.ShipCountry;
+	$0.CUSTOMER = concat($0.ShipName,';',$0.ShipAddress,';',$0.ShipCity,';',$0.ShipCountry);
 	$0.SHIPTIME = dateDiff($0.RequiredDate,$0.ShippedDate,day);
 
 	return 0;
@@ -46,6 +42,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
-<Edge debugMode="true" fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
