@@ -1,4 +1,3 @@
-//#TL
 integer phone_number = -1;
 string absoluteFilePath = "";
 

@@ -8,7 +8,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -23,9 +22,7 @@ import java.util.Map;
 import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
-import org.jetel.component.CTLRecordTransformAdapter;
 import org.jetel.component.RecordTransform;
-import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
@@ -462,22 +459,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			System.out.println((i + 1) + "\t:" + lines[i]);
 		}
 	}
-
-	protected static <E> List<E> createList(E... values) {
-		final ArrayList<E> ret = new ArrayList<E>();
-		for (int i = 0; i < values.length; i++) {
-			ret.add(values[i]);
-		}
-		return ret;
-	}
-
 	
 //----------------------------- TESTS -----------------------------
-
-	//TODO test case for issue
-	/*public void test_list_concatenate() {
-		doCompile("test_list_concatenate");
-	}*/
 
 	public void test_return_constants() {
 		// test case for issue 2257
@@ -556,20 +539,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		URL importLoc = getClass().getResource("import.ctl");
 		String expStr = "import '" + importLoc + "';\n";
 		importLoc = getClass().getResource("other.ctl");
-		expStr += "import '" + importLoc + "';\n";
-		expStr += "if (a1) { a2++; };\n";
-
-		TransformationGraph graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-
-		print_code(expStr);
-		TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-		List<ErrorMessage> messages = compiler.validate(expStr);
-		printMessages(messages);
-
-		CLVFStart parseTree = compiler.getStart();
-		parseTree.dump("");
+		expStr += "import '" + importLoc + "';\n" +
+				"integer sumInt;\n" +
+				"function integer transform() {\n" +
+				"	if (a == 3) {\n" +
+				"		otherImportVar++;\n" +
+				"	}\n" +
+				"	sumInt = sum(a, otherImportVar);\n" + 
+				"	return 0;\n" +
+				"}\n";
+		doCompile(expStr, "test_import");
 	}
 
 	public void test_scope() throws ComponentNotReadyException, TransformException {
@@ -608,26 +587,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// " 	return 0;\n" +
 		// "}\n";
 
-		TransformationGraph graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
-
-		DataRecord[] inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)) };
-
-		DataRecord[] outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)) };
-
-		print_code(expStr);
-		TLCompiler compiler = new TLCompiler(graph, inMetadata, outMetadata);
-		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, "test_scope");
-		printMessages(messages);
-
-		if (messages.size() > 0) {
-			throw new AssertionFailedError("Error in execution. Check standard output for details.");
-		}
-
-		CTLRecordTransformAdapter executor = new CTLRecordTransformAdapter((TransformLangExecutor) compiler.getCompiledCode(), graph.getLogger());
-		executor.init(null, inMetadata, outMetadata);
-		executor.transform(inputRecords, outputRecords);
+		doCompile(expStr, "test_scope");
 
 	}
 
@@ -854,20 +814,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	@SuppressWarnings("unchecked")
 	public void test_type_list() {
 		doCompile("test_type_list");
-		List<Integer> intList = (List<Integer>) getVariable("intList");
-		assertEquals(Integer.valueOf(1), intList.get(0));
-		assertEquals(Integer.valueOf(2), intList.get(1));
-		assertEquals(Integer.valueOf(3), intList.get(2));
-		assertEquals(Integer.valueOf(4), intList.get(3));
-		assertEquals(4, intList.size());
-		List<String> stringList = (List<String>) getVariable("stringList");
-		assertEquals("first", stringList.get(0));
-		assertEquals("replaced", stringList.get(1));
-		assertEquals("third", stringList.get(2));
-		assertEquals("fourth", stringList.get(3));
-		assertEquals("fifth", stringList.get(4));
-		assertEquals("extra", stringList.get(5));
-		assertEquals(stringList, (List<String>) getVariable("stringListCopy"));
+		check("intList", Arrays.asList(1, 2, 3, 4, 5, 6));
+		check("intList2", Arrays.asList(1, 2, 3));
+		check("stringList", Arrays.asList(
+				"first", "replaced", "third", "fourth",
+				"fifth", "sixth", "seventh", "extra"));
+		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1197,9 +1149,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("needle", Integer.valueOf(2));
 		check("b1", true);
 		check("b2", false);
-		check("h2", createList(2.1D, 2.0D, 2.2D));
+		check("h2", Arrays.asList(2.1D, 2.0D, 2.2D));
 		check("b3", true);
-		check("h3", createList("memento", "mori", "memento mori"));
+		check("h3", Arrays.asList("memento", "mori", "memento mori"));
 		check("n3", "memento mori");
 		check("b4", true);
 	}
@@ -1416,7 +1368,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res63", false);
 
 		// continue test
-		check("res7", createList(
+		check("res7", Arrays.asList(
 		/* i=0 */false, false, false,
 		/* i=1 */true, true, false,
 		/* i=2 */true, true, false,
@@ -1425,7 +1377,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		/* i=5 */false, false, true));
 
 		// return test
-		check("res8", createList("0123", "123", "23", "3", "4", "3"));
+		check("res8", Arrays.asList("0123", "123", "23", "3", "4", "3"));
 	}
 	
 	public void test_non_int_switch(){
@@ -1468,7 +1420,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res63", false);
 
 		// continue test
-		check("res7", createList(
+		check("res7", Arrays.asList(
 		/* i=0 */false, false, false,
 		/* i=1 */true, true, false,
 		/* i=2 */true, true, false,
@@ -1477,57 +1429,57 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		/* i=5 */false, false, true));
 
 		// return test
-		check("res8", createList("0123", "123", "23", "3", "4", "3"));		
+		check("res8", Arrays.asList("0123", "123", "23", "3", "4", "3"));		
 	}
 	
 	public void test_while() {
 		doCompile("test_while");
 		// simple while
-		check("res1", createList(0, 1, 2));
+		check("res1", Arrays.asList(0, 1, 2));
 		// continue
-		check("res2", createList(0, 2));
+		check("res2", Arrays.asList(0, 2));
 		// break
-		check("res3", createList(0));
+		check("res3", Arrays.asList(0));
 	}
 
 	public void test_do_while() {
 		doCompile("test_do_while");
 		// simple while
-		check("res1", createList(0, 1, 2));
+		check("res1", Arrays.asList(0, 1, 2));
 		// continue
-		check("res2", createList(0, null, 2));
+		check("res2", Arrays.asList(0, null, 2));
 		// break
-		check("res3", createList(0));
+		check("res3", Arrays.asList(0));
 	}
 	
 	public void test_for() {
 		doCompile("test_for");
 		
 		// simple loop
-		check("res1", createList(0,1,2));
+		check("res1", Arrays.asList(0,1,2));
 		// continue
-		check("res2", createList(0,null,2));
+		check("res2", Arrays.asList(0,null,2));
 		// break
-		check("res3", createList(0));
+		check("res3", Arrays.asList(0));
 		// empty init
-		check("res4", createList(0,1,2));
+		check("res4", Arrays.asList(0,1,2));
 		// empty update
-		check("res5", createList(0,1,2));
+		check("res5", Arrays.asList(0,1,2));
 		// empty final condition
-		check("res6", createList(0,1,2));
+		check("res6", Arrays.asList(0,1,2));
 		// all conditions empty
-		check("res7", createList(0,1,2));
+		check("res7", Arrays.asList(0,1,2));
 	}
 	
 	public void test_foreach() {
 		doCompile("test_foreach");
-		check("intRes", createList(VALUE_VALUE));
-		check("longRes", createList(BORN_MILLISEC_VALUE));
-		check("doubleRes", createList(AGE_VALUE));
-		check("decimalRes", createList(CURRENCY_VALUE));
-		check("booleanRes", createList(FLAG_VALUE));
-		check("stringRes", createList(NAME_VALUE, CITY_VALUE));
-		check("dateRes", createList(BORN_VALUE));
+		check("intRes", Arrays.asList(VALUE_VALUE));
+		check("longRes", Arrays.asList(BORN_MILLISEC_VALUE));
+		check("doubleRes", Arrays.asList(AGE_VALUE));
+		check("decimalRes", Arrays.asList(CURRENCY_VALUE));
+		check("booleanRes", Arrays.asList(FLAG_VALUE));
+		check("stringRes", Arrays.asList(NAME_VALUE, CITY_VALUE));
+		check("dateRes", Arrays.asList(BORN_VALUE));
 	}
 	
 	public void test_return(){
@@ -1554,24 +1506,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Duplicate function 'integer sum(integerinteger)'"));
 	}
 	
-	public void test_overloading_incorrect_library() {
-		doCompileExpectErrors("test_overloading_incorrect_library", Arrays.asList(
-		"TODO: add correct error message here, when problem is fixed"));
-	}
-	
-	public void test_duplicate_library() {
-		doCompileExpectErrors("test_duplicate_library", Arrays.asList(
-		"Unknown error message"));
-	}
-	
-	public void test_duplicate_hardcoded() {
-		doCompileExpectErrors("test_duplicate_hardcoded", Arrays.asList(
-				"Unknown error message"));
-	}
-	
 	//Test case for 4038
 	public void test_function_parameter_without_type() {
 		doCompileExpectError("test_function_parameter_without_type", "Syntax error on token ')'");
+	}
+	
+	public void test_duplicate_import() {
+		URL importLoc = getClass().getResource("test_duplicate_import.ctl");
+		String expStr = "import '" + importLoc + "';\n";
+		expStr += "import '" + importLoc + "';\n";
+		
+		doCompileExpectError(expStr, "test_duplicate_import", Arrays.asList("TODO: Unknown error"));
 	}
 	
 	public void test_built_in_functions(){
@@ -1603,9 +1548,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_sequence(){
 		doCompile("test_sequence");
-		check("intRes", createList(1,2,3));
-		check("longRes", createList(Long.valueOf(1),Long.valueOf(2),Long.valueOf(3)));
-		check("stringRes", createList("1","2","3"));
+		check("intRes", Arrays.asList(1,2,3));
+		check("longRes", Arrays.asList(Long.valueOf(1),Long.valueOf(2),Long.valueOf(3)));
+		check("stringRes", Arrays.asList("1","2","3"));
 		check("intCurrent", Integer.valueOf(3));
 		check("longCurrent", Long.valueOf(3));
 		check("stringCurrent", "3");
@@ -1614,10 +1559,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	//TODO: If this test fails please double check whether the test is correct?
 	public void test_lookup(){
         doCompile("test_lookup");
-		check("alphaResult", createList("Andorra la Vella","Andorra la Vella"));
-		check("bravoResult", createList("Bruxelles","Bruxelles"));
-		check("charlieResult", createList("Chamonix","Chomutov","Chamonix","Chomutov"));
-		check("countResult", createList(2,2));
+		check("alphaResult", Arrays.asList("Andorra la Vella","Andorra la Vella"));
+		check("bravoResult", Arrays.asList("Bruxelles","Bruxelles"));
+		check("charlieResult", Arrays.asList("Chamonix","Chomutov","Chamonix","Chomutov"));
+		check("countResult", Arrays.asList(2,2));
 	}
 	
 //------------------------- ContainerLib Tests---------------------
@@ -1626,7 +1571,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_containerlib_append");
 		
 		check("appendElem", Integer.valueOf(10));
-		check("appendList", createList(1, 2, 3, 4, 5, 10));
+		check("appendList", Arrays.asList(1, 2, 3, 4, 5, 10));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1639,7 +1584,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_copy() {
 		doCompile("test_containerlib_copy");
 
-		check("copyList", createList(1, 2, 3, 4, 5));
+		check("copyList", Arrays.asList(1, 2, 3, 4, 5));
 	}
 
 	public void test_containerlib_insert() {
@@ -1647,28 +1592,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		check("insertElem", Integer.valueOf(7));
 		check("insertIndex", Integer.valueOf(3));
-		check("insertList", createList(1, 2, 3, 7, 4, 5));
+		check("insertList", Arrays.asList(1, 2, 3, 7, 4, 5));
 	}
 
 	public void test_containerlib_poll() {
 		doCompile("test_containerlib_poll");
 
 		check("pollElem", Integer.valueOf(1));
-		check("pollList", createList(2, 3, 4, 5));
+		check("pollList", Arrays.asList(2, 3, 4, 5));
 	}
 
 	public void test_containerlib_pop() {
 		doCompile("test_containerlib_pop");
 
 		check("popElem", Integer.valueOf(5));
-		check("popList", createList(1, 2, 3, 4));
+		check("popList", Arrays.asList(1, 2, 3, 4));
 	}
 
 	public void test_containerlib_push() {
 		doCompile("test_containerlib_push");
 
 		check("pushElem", Integer.valueOf(6));
-		check("pushList", createList(1, 2, 3, 4, 5, 6));
+		check("pushList", Arrays.asList(1, 2, 3, 4, 5, 6));
 	}
 
 	public void test_containerlib_remove() {
@@ -1676,19 +1621,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		check("removeElem", Integer.valueOf(3));
 		check("removeIndex", Integer.valueOf(2));
-		check("removeList", createList(1, 2, 4, 5));
+		check("removeList", Arrays.asList(1, 2, 4, 5));
 	}
 
 	public void test_containerlib_reverse() {
 		doCompile("test_containerlib_reverse");
 
-		check("reverseList", createList(5, 4, 3, 2, 1));
+		check("reverseList", Arrays.asList(5, 4, 3, 2, 1));
 	}
 
 	public void test_containerlib_sort() {
 		doCompile("test_containerlib_sort");
 
-		check("sortList", createList(1, 1, 2, 3, 5));
+		check("sortList", Arrays.asList(1, 1, 2, 3, 5));
 	}
 //---------------------- StringLib Tests ------------------------	
 	
@@ -1766,10 +1711,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_join() {
 		doCompile("test_stringlib_join");
-		check("joinedString", "Bagr,3,3.5641,-87L,CTL2");
-		check("joinedString1", "5♫54♫65♫67♫231");
-		check("joinedString2", "80=5455.987\"-5=5455.987\"3=0.1");
-		check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
+		//check("joinedString", "Bagr,3,3.5641,-87L,CTL2");
+		check("joinedString1", "3=0.1\"80=5455.987\"-5=5455.987");
+		check("joinedString2", "5.0♫54.65♫67.0♫231.0");
+		//check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
 	}
 	
 	public void test_stringlib_left() {
@@ -2097,20 +2042,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("power1", Math.pow(3,1.2));
 		check("power2", Double.NaN);
 		
-		check("intResult", createList(8d, 8d, 8d, 8d));
-		check("longResult", createList(8d, 8d, 8d, 8d));
-		check("doubleResult", createList(8d, 8d, 8d, 8d));
-		check("decimalResult", createList(8d, 8d, 8d, 8d));
+		check("intResult", Arrays.asList(8d, 8d, 8d, 8d));
+		check("longResult", Arrays.asList(8d, 8d, 8d, 8d));
+		check("doubleResult", Arrays.asList(8d, 8d, 8d, 8d));
+		check("decimalResult", Arrays.asList(8d, 8d, 8d, 8d));
 	}
 	
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
 		check("round1", Long.parseLong("-4"));
 		
-		check("intResult", createList(2l, 3l));
-		check("longResult", createList(2l, 3l));
-		check("doubleResult", createList(2l, 4l));
-		check("decimalResult", createList(2l, 4l));
+		check("intResult", Arrays.asList(2l, 3l));
+		check("longResult", Arrays.asList(2l, 3l));
+		check("doubleResult", Arrays.asList(2l, 4l));
+		check("decimalResult", Arrays.asList(2l, 4l));
 	}
 	
 	public void test_mathlib_sqrt() {
@@ -2388,10 +2333,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		System.out.println("num2str() test:");
 		doCompile("test_convertlib_num2str");
 
-		check("intOutput", createList("16", "10000", "20", "10"));
-		check("longOutput", createList("16", "10000", "20", "10"));
-		check("doubleOutput", createList("16.16", "0x1.028f5c28f5c29p4"));
-		check("decimalOutput", createList("16.16"));
+		check("intOutput", Arrays.asList("16", "10000", "20", "10"));
+		check("longOutput", Arrays.asList("16", "10000", "20", "10"));
+		check("doubleOutput", Arrays.asList("16.16", "0x1.028f5c28f5c29p4"));
+		check("decimalOutput", Arrays.asList("16.16"));
 	}
 
 	public void test_convertlib_packdecimal2long() {
@@ -2407,7 +2352,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_str2bits() {
 		doCompile("test_convertlib_str2bits");
-		//TODO: uncommnet -> test will pass, but is that correct?
+		//TODO: uncomment -> test will pass, but is that correct?
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits1"), new byte[] {0/*, 0, 0, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits2"), new byte[] {-1/*, 0, 0, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits3"), new byte[] {10, -78, 5/*, 0, 0, 0, 0, 0*/}));
