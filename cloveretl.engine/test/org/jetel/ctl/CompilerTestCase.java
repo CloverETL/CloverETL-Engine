@@ -82,6 +82,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	/** Flag to trigger Java compilation */
 	private boolean compileToJava;
+	
+	protected DataRecord[] inputRecords;
+	protected DataRecord[] outputRecords;
 
 	public CompilerTestCase(boolean compileToJava) {
 		this.compileToJava = compileToJava;
@@ -118,6 +121,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void setUp() {
 		initEngine();
+	}
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		inputRecords = null;
+		outputRecords = null;
 	}
 
 	protected TransformationGraph createEmptyGraph() {
@@ -896,8 +905,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataRecord expected = createDefaultRecord(createDefaultMetadata("expected"));
 
 		// simple copy
-		// TODO: is this necessary?
-		// assertTrue(recordEquals(expected,inputRecords[0]));
+		assertTrue(recordEquals(expected, inputRecords[0]));
 		assertTrue(recordEquals(expected, (DataRecord) getVariable("copy")));
 
 		// copy and modify
@@ -920,8 +928,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(getVariable("modified3") == getVariable("reference"));
 		
 		// output record
-		// TODO: is this necessary?
-		// assertTrue(recordEquals(expected, outputRecords[1]));
+		assertTrue(recordEquals(expected, outputRecords[1]));
 		
 		// null record
 		expected.setToNull();
@@ -1568,15 +1575,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_mapping(){
 		doCompile("test_mapping");
-//TODO: somehow adapt		
-//		// simple mappings
-//		assertEquals(NAME_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("Name")).getValue()).toString());
-//		assertEquals(AGE_VALUE, ((NumericDataField)outputRecords[0].getField("Age")).getValue());
-//		assertEquals(CITY_VALUE, ((StringBuilder)((StringDataField)outputRecords[0].getField("City")).getValue()).toString());
-//		assertEquals(BORN_VALUE, ((DateDataField)outputRecords[0].getField("Born")).getValue());
-//		
-//		// * mapping
-//		assertTrue(recordEquals(inputRecords[1],outputRecords[1]));
+		// simple mappings
+		assertEquals("Name", NAME_VALUE, outputRecords[0].getField("Name").getValue().toString());
+		assertEquals("Age", AGE_VALUE, outputRecords[0].getField("Age").getValue());
+		assertEquals("City", CITY_VALUE, outputRecords[0].getField("City").getValue().toString());
+		assertEquals("Born", BORN_VALUE, outputRecords[0].getField("Born").getValue());
+		
+		// * mapping
+		assertTrue(recordEquals(inputRecords[1], outputRecords[1]));
 	}
 	
 	public void test_sequence(){
