@@ -196,6 +196,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		try {
 			lkp.checkConfig(new ConfigurationStatus());
 			lkp.init();
+			lkp.preExecute();
 		} catch (ComponentNotReadyException ex) {
 			throw new RuntimeException(ex);
 		}
