@@ -195,7 +195,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 				throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
 			}
 		} else {
-			if (getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
+			if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
 				try {
 					dbConnection = connection.getConnection(getId(), OperationType.READ);
 				} catch (JetelException e) {
