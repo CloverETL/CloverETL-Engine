@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Wed Jun 09 12:07:07 CEST 2010" modifiedBy="cloveruser" name="stringSubstring" revision="1.33">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Wed Jun 09 12:15:59 CEST 2010" modifiedBy="cloveruser" name="stringSubstring" revision="1.34">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_intWithRangeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -43,7 +43,7 @@ function integer generate() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRandom_intWithRangeOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRandomIntegerWithRangeOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
