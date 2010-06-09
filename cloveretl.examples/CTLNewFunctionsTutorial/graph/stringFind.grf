@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation Devel" modified="Wed Jun 09 13:50:07 CEST 2010" modifiedBy="cloveruser" name="containerCut" revision="1.40">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="findInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Regex" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="findOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="Regex" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string[] find(string arg, string regex)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="528" x="51" y="116">
+<attr name="text"><![CDATA[
+The find(string, string) function accepts two string arguments. The second one is a regular expression. The function takes them and returns a list of substrings corresponding to the regex pattern that are found in the string specified as the first argument.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringFind.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="49" guiY="274" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringFindOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="453" guiY="274" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="245" guiY="274" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+// Declarations.
+string[] lw;
+string[] lw_for_print;
+integer lengthvar;
+string string_a;
+string string_b;
+
+// Creates a list from a string and a regular expression. Characters that match the regular expression are used as the elements of the list.
+lw=find($0.Arg,$0.Regex);
+lw_for_print=lw;
+
+// Prints the list. (We use the copy of the list. It will be emptied during the print. The original list, however, remains unchanged.)
+
+// Getts the length of the list and assigns the length to a new variable.
+lengthvar=length(lw_for_print);
+
+//Gets the first string element from the list for printing.	      
+string_b=poll(lw_for_print);
+lengthvar--;
+     
+// Concatenates substrings with a colon between each pair of these substrings.
+while (lengthvar != 0) { 
+string_a=poll(lw_for_print);	 
+string_b=concat(string_b,",",string_a);
+lengthvar--;
+}	 
+
+// Surrounds the resulting string by brackets.
+string_b=concat("[",string_b,"]"); 
+
+$0.Arg = $0.Arg;
+$0.Regex = $0.Regex;
+$0.Function = "find($0.Arg,$0.Regex)";
+$0.Result = string_b;
+return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
