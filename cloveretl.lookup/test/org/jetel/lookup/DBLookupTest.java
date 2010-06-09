@@ -13,6 +13,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.TransactionMethod;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 
@@ -28,6 +29,7 @@ public class DBLookupTest extends CloverTestCase {
 	@Override
 	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException, JetelException {
 		initEngine();
+		
 	    
 		DBConnection conn = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 		conn.init();
@@ -43,6 +45,7 @@ public class DBLookupTest extends CloverTestCase {
 		parser.setDataSource(aDBConnection);
 
 		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);
+		lookupTable.setGraph(new TransformationGraph());
 		lookupTable.init();
 		recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
 		recordKey.init();
