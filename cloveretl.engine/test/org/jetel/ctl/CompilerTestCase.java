@@ -2117,7 +2117,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_datelib_dateDiff");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(BORN_VALUE);
-		int diff = cal.get(Calendar.YEAR);
+		long diff = cal.get(Calendar.YEAR);
 		cal.setTime(new Date());
 		diff -= cal.get(Calendar.YEAR);
 		check("ddiff", diff);
