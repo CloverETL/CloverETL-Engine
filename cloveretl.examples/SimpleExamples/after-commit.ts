@@ -472,7 +472,6 @@
 </FunctionalTest>
 
 <FunctionalTest ident="SystemExecute" graphFile="graph/graphSystemExecute.grf">
-		<Property name="GRAPH_DIR" value="../cloveretl.examples/SimpleExamples/graph" />
 	 <FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.SystemExecute.out"/>
 </FunctionalTest>
 
