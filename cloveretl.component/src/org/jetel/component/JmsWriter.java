@@ -42,6 +42,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaClass;
@@ -159,20 +160,34 @@ public class JmsWriter extends Node {
 			String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
 			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass, classPaths);
 		}
+		psor.setGraph(this.getGraph());
+	}
+	
+	
+
+    @Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {//a phase-dependent part of initialization
+			psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
+		} else {
+			psor.reset();
+		}
 		try {
-			connection.init();
 			producer = connection.createProducer();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
-		psor.setGraph(this.getGraph());
-		psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
 	}
 
-    synchronized public void reset() throws ComponentNotReadyException {
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		closeConnection();
+	}
+
+	synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
-    	connection.reset();
-    	psor.reset();
     }
 
 	@Override
