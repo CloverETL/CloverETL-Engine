@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229610254187" licenseType="Evaluation Devel" modified="Wed Jun 09 11:40:24 CEST 2010" modifiedBy="cloveruser" name="string_char_at" revision="1.54">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229610254187" licenseType="Evaluation Devel" modified="Wed Jun 09 12:16:15 CEST 2010" modifiedBy="cloveruser" name="string_char_at" revision="1.55">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="bit_lshiftInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -30,7 +30,7 @@ Another version of this function.]]></attr>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/mathBitLShift.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="88" guiY="247" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathBit_lshiftOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="493" guiY="247" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathBitLShiftOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="493" guiY="247" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="293" guiY="247" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
