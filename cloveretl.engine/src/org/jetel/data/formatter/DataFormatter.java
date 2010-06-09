@@ -33,7 +33,9 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.QuotingDecoder;
 
 /**
  * Outputs common data record. Handles encoding of characters. Uses WriteableChannel.
@@ -53,15 +55,19 @@ public class DataFormatter implements Formatter {
     private byte[] recordDelimiter;
 	private int[] delimiterLength;
 	private int[] fieldLengths;
+	private boolean[] quotedFields;
 	private ByteBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
 	private ByteBuffer footer; 
 	private ByteBuffer header; 
-
+	private boolean quotedStrings;
+	
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;
 
+	private QuotingDecoder quotingDecoder;
+	
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
 
@@ -100,8 +106,12 @@ public class DataFormatter implements Formatter {
 		delimiters = new byte[metadata.getNumFields()][];
         delimiterLength = new int[metadata.getNumFields()];
 		fieldLengths = new int[metadata.getNumFields()];
+		quotedFields = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
+				quotedFields[i] = quotedStrings 
+						&& metadata.getField(i).getType() != DataFieldMetadata.BYTE_FIELD
+						&& metadata.getField(i).getType() != DataFieldMetadata.BYTE_FIELD_COMPRESSED;
                 try {
                 	String[] fDelimiters = metadata.getField(i).getDelimiters();
                 	if (fDelimiters != null) { //for eof delimiter
@@ -133,6 +143,8 @@ public class DataFormatter implements Formatter {
 			delimiterLength[lastIncludedFieldIndex] = delimiterLength[lastFieldIndex];
 			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
 		}
+		
+		quotingDecoder = new QuotingDecoder();
 	}
 
 	public void reset() {
@@ -211,7 +223,12 @@ public class DataFormatter implements Formatter {
 				i = index;
 				if(metadata.getField(i).isDelimited()) {
 					fieldBuffer.clear();
-					record.getField(i).toByteBuffer(fieldBuffer, encoder);
+					if (quotedFields[i]) {
+						//could it be written in better way? faster?
+						fieldBuffer.put(encoder.encode(CharBuffer.wrap(quotingDecoder.encode(record.getField(i).toString()))));
+					} else {
+						record.getField(i).toByteBuffer(fieldBuffer, encoder);
+					}
 					int fieldLen = fieldBuffer.position() + delimiterLength[i];
 					if(fieldLen > dataBuffer.remaining()) {
 						flush();
@@ -315,4 +332,12 @@ public class DataFormatter implements Formatter {
     	sHeader = header;
     }
 
+    public void setQuotedStrings(boolean quotedStrings) {
+    	this.quotedStrings = quotedStrings;
+    }
+    
+    public boolean getQuotedStrings() {
+    	return quotedStrings;
+    }
+    
 }

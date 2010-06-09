@@ -2,13 +2,14 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
-REL 3-0
+REL 3-0-0
 ---------
 + new RunGraph component attribute "paramsToPass"
 + dedicated graph property name "PROJECT_DIR" (absolute path to project home directory) was substituted by attribute at GraphRuntimeContext.contextURL
 	- new command line attribute -contexturl <path> should be used instead of -P:PROJECT_DIR="<path>"
 + equalNulls attribute of Merge component was removed - value of this attribute was fixed on 'true' value 
 + list of components in tracking log (in console) are topologically sorted
++ new attribute 'quotedStrings' on DataWritter component - all written data can be quoted
 
 REL 2-9-2
 ---------
