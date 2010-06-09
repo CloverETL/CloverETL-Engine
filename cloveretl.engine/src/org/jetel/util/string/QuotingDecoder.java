@@ -29,6 +29,10 @@ package org.jetel.util.string;
 */
 public class QuotingDecoder {
 	
+	private static final char DOUBLE_QUOTE = '\"';
+	
+	private static final char SINGLE_QUOTE = '\'';
+	
 	private char startQuote;
 	
 	public QuotingDecoder() {
@@ -51,6 +55,35 @@ public class QuotingDecoder {
 		}
 
 		return quoted;
+	}
+	
+	/**
+	 * Quote given string. All quoting characters will be doubled.
+	 * For instance the string:
+	 * a "b" c
+	 * will be transformed:
+	 * "a ""b"" c"
+	 * 
+	 * @param unquoted
+	 * @return
+	 */
+	public CharSequence encode(CharSequence unquoted) {
+		int unquotedLen = unquoted.length();
+		StringBuilder result = new StringBuilder(unquotedLen + 2);
+
+		result.append(DOUBLE_QUOTE);
+		for (int i = 0; i < unquotedLen; i++) {
+			final char ch = unquoted.charAt(i);
+			if (ch == DOUBLE_QUOTE) {
+				result.append(DOUBLE_QUOTE);
+				result.append(DOUBLE_QUOTE);
+			} else {
+				result.append(ch);
+			}
+		}
+		result.append(DOUBLE_QUOTE);
+		
+		return result;
 	}
 	
 	/*

@@ -32,7 +32,8 @@ public class DataFormatterProvider implements FormatterProvider {
 	private String charEncoder;
 	private String header;
 	private String charSet;
-
+	private boolean quotedStrings;
+	
 	private String[] excludedFieldNames;
 
 	/**
@@ -59,6 +60,7 @@ public class DataFormatterProvider implements FormatterProvider {
 		formatter.setHeader(header);
 		charSet = formatter.getCharsetName();
 		formatter.setExcludedFieldNames(excludedFieldNames);
+		formatter.setQuotedStrings(quotedStrings);
 		return formatter;
 	}
 
@@ -70,6 +72,14 @@ public class DataFormatterProvider implements FormatterProvider {
 	public void setHeader(String header) {
     	this.header = header;
     }
+	
+	public void setQuotedStrings(boolean quotedStrings) {
+		this.quotedStrings = quotedStrings;
+	}
+	
+	public boolean getQuotedStrings() {
+		return quotedStrings;
+	}
 	
 	public String getCharsetName() {
 		return charSet ;

@@ -352,9 +352,8 @@ public class DataParser implements Parser {
 		int fieldCounter;
 		int character = -1;
 		int mark;
-		boolean inQuote;
+		boolean inQuote, quoteFound;
 		boolean skipLBlanks, skipTBlanks;
-		char type;
 		boolean quotedField;
 		
 		recordCounter++;
@@ -373,6 +372,7 @@ public class DataParser implements Parser {
 			fieldBuffer.setLength(0);
 			if (fieldLengths[fieldCounter] == 0) { //delimited data field
 				inQuote = false;
+				quoteFound = false;
 				try {
 					while ((character = readChar()) != -1) {
 						recordIsParsed = true;
@@ -386,18 +386,27 @@ public class DataParser implements Parser {
 
 						//quotedStrings
 						if (quotedField) {
-							if (fieldBuffer.length() == 0 && !inQuote) {
+							if (fieldBuffer.length() == 0 && !inQuote) { //first quote character
 								if (qDecoder.isStartQuote((char) character)) {
 									inQuote = true;
 									continue;
 								}
 							} else {
-								if (inQuote && qDecoder.isEndQuote((char) character)) {
-									if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
-										findFirstRecordDelimiter();
-										return parsingErrorFound("Bad quote format", record, fieldCounter);
+								if (inQuote && qDecoder.isEndQuote((char) character)) { //quote character found in quoted field
+									if (!quoteFound) { // do nothing, we will see if we get one more quoting character next time
+										quoteFound = true;
+										continue;
+									} else { //we found double quotes "" - will be handled as a escape sequence for single quote
+										quoteFound = false;
 									}
-									break;
+								} else {
+									if (quoteFound) {
+										if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
+											findFirstRecordDelimiter();
+											return parsingErrorFound("Bad quote format", record, fieldCounter);
+										}
+										break;
+									}
 								}
 							}
 						}
@@ -533,7 +542,7 @@ public class DataParser implements Parser {
 		final int size;
         CoderResult result;
 
-		if(treatMultipleDelimitersAsOne && tempReadBuffer.length() > 0) { // the tempReadBuffer is used just in case treatMultipleDelimitersAsOne is true
+		if(tempReadBuffer.length() > 0) { // the tempReadBuffer is used as a cache of already read characters which should be read again
 			character = tempReadBuffer.charAt(0);
 			tempReadBuffer.deleteCharAt(0);
 			return character;
@@ -764,6 +773,12 @@ public class DataParser implements Parser {
 	StringBuffer temp = new StringBuffer();
 	private boolean followFieldDelimiter(int fieldNum) {
 		int character;
+		
+		//if reading cursor is already on fieldDelimiter return true 
+		if (delimiterSearcher.isPattern(fieldNum)) {
+			return true;
+		}
+		
 		temp.setLength(0);
 		try {
 			while ((character = readChar()) != -1) {

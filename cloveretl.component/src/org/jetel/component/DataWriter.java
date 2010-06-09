@@ -110,6 +110,7 @@ public class DataWriter extends Node {
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
+	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -121,7 +122,9 @@ public class DataWriter extends Node {
 	private WritableByteChannel writableByteChannel;
     private int skip;
 	private int numRecords;
-
+	private boolean quotedStrings;
+	private String charset;	
+	
 	private String partition;
 	private String attrPartitionKey;
 	private LookupTable lookupTable;
@@ -150,13 +153,13 @@ public class DataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		this.charset = charset;
 	}
 	
 	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		this.charset = charset;
 	}
 
 	@Override
@@ -197,6 +200,10 @@ public class DataWriter extends Node {
 		super.init();
 		TransformationGraph graph = getGraph();
 
+		//prepare formatter provider
+		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterProvider.setQuotedStrings(quotedStrings);
+		
 		initLookupTable();
 
 		// initialize multifile writer based on prepared formatter
@@ -336,6 +343,9 @@ public class DataWriter extends Node {
         if (!StringUtils.isEmpty(excludeFields)) {
             xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
         }
+        if (quotedStrings) {
+            xmlElement.setAttribute(XML_QUOTEDSTRINGS_ATTRIBUTE, Boolean.toString(quotedStrings));
+        }
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 	}
@@ -393,6 +403,9 @@ public class DataWriter extends Node {
             }
             if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
                 aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+            if(xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)) {
+                aDataWriter.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
             }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -585,6 +598,14 @@ public class DataWriter extends Node {
         this.excludeFields = excludeFields;
     }
 
+    public void setQuotedStrings(boolean quotedStrings) {
+    	this.quotedStrings = quotedStrings;
+    }
+    
+    public boolean getQuotedStrings() {
+    	return quotedStrings;
+    }
+    
 	@Override
 	public synchronized void free() {
 		super.free();
