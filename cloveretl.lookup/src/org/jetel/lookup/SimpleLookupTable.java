@@ -529,7 +529,11 @@ class SimpleLookup implements Lookup {
 	}
 
 	public int getNumFound() {
-		return numFound;
+		if (duplicate) {
+			return iterator != null ? iterator.size() : 0;
+		} else {
+			return numFound;
+		}
 	}
 
 	public void seek() {
@@ -537,6 +541,7 @@ class SimpleLookup implements Lookup {
 			iterator = tableLookup.getAll();
 		} else {
 			curentResult = tableLookup.get();
+			numFound = curentResult != null ? 1 : 0;
 		}
 	}
 
