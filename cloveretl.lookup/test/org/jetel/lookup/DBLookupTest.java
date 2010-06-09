@@ -45,7 +45,6 @@ public class DBLookupTest extends CloverTestCase {
 		parser.setDataSource(aDBConnection);
 
 		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);
-		lookupTable.setGraph(new TransformationGraph());
 		lookupTable.init();
 		recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
 		recordKey.init();
