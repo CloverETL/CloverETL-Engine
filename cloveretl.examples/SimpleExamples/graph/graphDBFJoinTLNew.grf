@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Mon Jun 07 16:48:28 CEST 2010" modifiedBy="cloveruser" name="ComplexTransformation" revision="1.59">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Wed Jun 09 11:47:13 CEST 2010" modifiedBy="avackova" name="ComplexTransformation" revision="1.62">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata3"/>
@@ -39,8 +39,8 @@ This is an equivalent of graphDBFJoinTL.grf written in a new Clover transformati
 <Node enabled="enabled" guiHeight="25" guiName="ExtSort (ORDERID)" guiWidth="50" guiX="196" guiY="281" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="Orders Details" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="Orders General" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
-<Edge debugMode="true" fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:1"/>
-<Edge debugMode="true" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
 <Edge debugMode="false" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_DETAILS:0"/>
 <Edge debugMode="false" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_ORDERS:0"/>
 </Phase>
@@ -57,7 +57,7 @@ function double price_per_unit(double unit_price,double quantity,double discount
 }
 
 
-function integer ship_time(date ordered,date shipped){
+function long ship_time(date ordered,date shipped){
 	if (shipped.lt.ordered) {
 		raiseError("Ship time can't be lower than order date");
 	}
@@ -69,7 +69,7 @@ function integer transform(){
 	integer shiptime;
 	datum = $ORDERS_DBF.SHIPPEDDAT;
 	if (!isnull(datum)) {
-		shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
+		shiptime= long2integer(ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd"))); 
 	} else { shiptime=-1;}
 	$ORDERS_Info.ORDERID=$ORDERS_DBF.ORDERID;
 	$ORDERS_Info.CUSTOMERID=$ORDERS_DBF.CUSTOMERID;
@@ -105,10 +105,10 @@ function integer transform(){
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="25" guiName="Orders-Customers" guiWidth="50" guiX="883" guiY="199" id="WRITER1" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="Orders-N/ACustomers" guiWidth="50" guiX="882" guiY="296" id="WRITER2" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER1:0"/>
-<Edge debugMode="true" fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" router="Manhattan" toNode="WRITER2:0"/>
-<Edge debugMode="true" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN_CUSTOMER:1"/>
-<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN_CUSTOMER:0"/>
-<Edge debugMode="true" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="FILTER:0"/>
+<Edge debugMode="false" fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" router="Manhattan" toNode="WRITER2:0"/>
+<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN_CUSTOMER:0"/>
+<Edge debugMode="false" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="FILTER:0"/>
 </Phase>
 </Graph>
