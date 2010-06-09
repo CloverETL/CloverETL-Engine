@@ -47,6 +47,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.classloader.GreedyURLClassLoader;
@@ -122,6 +123,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Destination destination = null;
 	private URL[] librariesUrls = null;
 	private URL contextURL;
+	
+	private ConnectionFactory factory = null;
+	private Context initCtx = null;
 
 	public JmsConnection(String id, String iniCtxFtory, String providerUrl, String conFtory,
 			String user, String pwd, String destId, boolean passwordEncrypted, String libraries) {
@@ -197,124 +201,98 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}*/
 
 	synchronized public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if (isInitialized()) return;
 		super.init();
-		
+
 		// prepare context URL
 		if (contextURL == null) {
 			contextURL = getGraph() == null ? null : getGraph().getRuntimeContext().getContextURL();
 		}
-		
+
 		try {
-			
+
 			if (libraries != null)
-				this.librariesUrls = getLibrariesURL( contextURL, libraries );
-			Context ctx = null;
+				this.librariesUrls = getLibrariesURL(contextURL, libraries);
 
 			ClassLoader prevCl = null;
 			try {
-				if (libraries != null){
-				    // Save the class loader so that you can restore it later
+				if (libraries != null) {
+					// Save the class loader so that you can restore it later
 					prevCl = Thread.currentThread().getContextClassLoader();
 					// Create the class loader by using the given URL
-					GreedyURLClassLoader loader = new GreedyURLClassLoader( librariesUrls, this.getClass().getClassLoader() );
+					GreedyURLClassLoader loader = new GreedyURLClassLoader(librariesUrls, this.getClass().getClassLoader());
 					// InitialContext uses thread Class-Loader
-				    Thread.currentThread().setContextClassLoader(loader);
+					Thread.currentThread().setContextClassLoader(loader);
 				}
 
-			    try {
+				try {
 					if (iniCtxFtory != null) {
 						Hashtable<String, String> properties = new Hashtable<String, String>();
 						properties.put(Context.INITIAL_CONTEXT_FACTORY, iniCtxFtory);
 						properties.put(Context.PROVIDER_URL, providerUrl);
-						ctx = new InitialContext(properties);			
-					} else {	// use jndi.properties
-						ctx = new InitialContext();
+						initCtx = new InitialContext(properties);
+					} else { // use jndi.properties
+						initCtx = new InitialContext();
 					}
-			    } catch (NoInitialContextException e){
-			    	if (e.getRootCause() instanceof ClassNotFoundException)
-			    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
-			    	else
+				} catch (NoInitialContextException e) {
+					if (e.getRootCause() instanceof ClassNotFoundException)
+						throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+					else
 						throw new ComponentNotReadyException("Cannot create initial context", e);
-			    } catch (Exception e){
+				} catch (Exception e) {
 					throw new ComponentNotReadyException("Cannot create initial context", e);
-			    } 
-			    ConnectionFactory ftory = null;
-			    try {
-			    	Object o = ctx.lookup(conFtory);
-			    	if (o instanceof ConnectionFactory)
-			    		ftory = (ConnectionFactory)o;
-			    	else
-						throw new ComponentNotReadyException("Cannot find connection factory "+ConnectionFactory.class + " loaded by:"+ConnectionFactory.class.getClassLoader() + " with jndiName:"+conFtory + " found:"+o + " "+ (o != null ? ((""+o.getClass()+" loaded by:"+o.getClass().getClassLoader())) : ""));
-			    		
-			    } catch (ComponentNotReadyException e) {
-			    	throw e;
-				} catch (NamingException e){
-			    	throw e;
-			    } catch (Exception e) {
-					throw new ComponentNotReadyException("Cannot create connection factory; "+e.getMessage());
-			    }
-			    if (ftory == null)
-					throw new ComponentNotReadyException("Cannot create connection factory");
-			    
-			    if (passwordEncrypted) {
-	            	Enigma enigma = getGraph().getEnigma();
-	                if (enigma == null) {
-	                	throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
-	                }
-		            //Enigma enigma = Enigma.getInstance();
-		            String decryptedPassword = null;
-		            try {
-		                decryptedPassword = enigma.decrypt(pwd);
-		            } catch (JetelException e) {
-		                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Incorrect password.", e);
-		            }
-		            // If password decryption fails, try to use the unencrypted password
-		            if (decryptedPassword != null) {
-		                pwd = decryptedPassword;
-		                passwordEncrypted = false;
-		            }
-			    }
-
-			    try {
-				    connection = ftory.createConnection(user, pwd);
-			    } catch (Exception e){
-			    	throw new ComponentNotReadyException("Cannot establish JMS connection ("+e.getMessage()+")", e);
-			    }
-			    if (connection == null) 
-			    	throw new ComponentNotReadyException("Cannot establish JMS connection");
-				session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
-			    if (session == null) 
-			    	throw new ComponentNotReadyException("Cannot create JMS session");
-			    try {
-			    	Object o = ctx.lookup(destId);
-			    	if (!(o instanceof Destination))
-			    		throw new ComponentNotReadyException(this, "Specified destination "+destId+" doesn't contain instance of "+Destination.class+", but:"+o);
-					destination = (Destination)o;
-				} catch (NamingException e) {
-			    	throw new ComponentNotReadyException("Cannot find destination \""+destId+"\" in initial context");
 				}
-			    if (destination == null) 
-			    	throw new ComponentNotReadyException("Cannot find destination in \""+destId+"\" initial context");
-				connection.start();
+				try {
+					Object o = initCtx.lookup(conFtory);
+					if (o instanceof ConnectionFactory)
+						factory = (ConnectionFactory) o;
+					else
+						throw new ComponentNotReadyException("Cannot find connection factory " + ConnectionFactory.class + " loaded by:" + ConnectionFactory.class.getClassLoader() + " with jndiName:" + conFtory + " found:" + o + " " + (o != null ? (("" + o.getClass() + " loaded by:" + o.getClass().getClassLoader())) : ""));
+
+				} catch (ComponentNotReadyException e) {
+					throw e;
+				} catch (NamingException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new ComponentNotReadyException("Cannot create connection factory; " + e.getMessage());
+				}
+				if (factory == null)
+					throw new ComponentNotReadyException("Cannot create connection factory");
+
+				if (passwordEncrypted) {
+					Enigma enigma = getGraph().getEnigma();
+					if (enigma == null) {
+						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+					}
+					// Enigma enigma = Enigma.getInstance();
+					String decryptedPassword = null;
+					try {
+						decryptedPassword = enigma.decrypt(pwd);
+					} catch (JetelException e) {
+						throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Incorrect password.", e);
+					}
+					// If password decryption fails, try to use the unencrypted password
+					if (decryptedPassword != null) {
+						pwd = decryptedPassword;
+						passwordEncrypted = false;
+					}
+				}
 			} finally {
 				if (libraries != null)
 					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
-	    		throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");//e.printStackTrace();
+			throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");// e.printStackTrace();
 		} catch (NamingException e) {
-	    	if (e.getRootCause() instanceof NoClassDefFoundError)
-	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
-	    	else if (e.getRootCause() instanceof ClassNotFoundException)
-	    		throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
-	    	else
-				throw new ComponentNotReadyException("Cannot create initial context; "+e.getMessage(), e);
+			if (e.getRootCause() instanceof NoClassDefFoundError)
+				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+			else if (e.getRootCause() instanceof ClassNotFoundException)
+				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+			else
+				throw new ComponentNotReadyException("Cannot create initial context; " + e.getMessage(), e);
 		} catch (IllegalStateException e) {
 			throw new ComponentNotReadyException(e);
-		} catch (JMSException e) {
-			throw new ComponentNotReadyException(e);
-		} 
+		}
 	}
 	
 	/*
@@ -354,6 +332,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}*/
 	
 	
+	
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
@@ -370,6 +350,66 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 
+	
+
+	@Override
+	public synchronized void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {
+			initConnection();
+		} else {
+			if (getGraph().getRuntimeContext().isBatchMode()) {
+				initConnection();
+			}
+		}
+		try {
+		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		if (session == null)
+			throw new ComponentNotReadyException("Cannot create JMS session");
+		} catch (JMSException e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+	
+	public synchronized void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		try {
+			if (getGraph().getRuntimeContext().isBatchMode()) {
+				connection.close();
+				connection = null;
+			} else {
+				session.close();
+			}
+		} catch (JMSException e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+
+	private void initConnection() throws ComponentNotReadyException {
+		try {
+			try {
+				connection = factory.createConnection(user, pwd);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException("Cannot establish JMS connection (" + e.getMessage() + ")", e);
+			}
+			if (connection == null)
+				throw new ComponentNotReadyException("Cannot establish JMS connection");
+			try {
+				Object o = initCtx.lookup(destId);
+				if (!(o instanceof Destination))
+					throw new ComponentNotReadyException(this, "Specified destination " + destId + " doesn't contain instance of " + Destination.class + ", but:" + o);
+				destination = (Destination) o;
+			} catch (NamingException e) {
+				throw new ComponentNotReadyException("Cannot find destination \"" + destId + "\" in initial context");
+			}
+			if (destination == null)
+				throw new ComponentNotReadyException("Cannot find destination in \"" + destId + "\" initial context");
+			connection.start();
+		} catch (JMSException ex) {
+			throw new ComponentNotReadyException(ex);
+		}
+	}
+	
 	public DataRecordMetadata createMetadata(Properties parameters) {
 		throw new UnsupportedOperationException("JMS connection doesn't support operation 'createMetadata()'");
 	}

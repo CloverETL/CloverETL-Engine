@@ -40,6 +40,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
@@ -177,13 +178,7 @@ public class JmsReader extends Node {
 			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
 		}
 
-		connection = (JmsConnection)c;
-		try {
-			connection.init();
-			consumer = connection.createConsumer(selector);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
-		}
+		connection = (JmsConnection)c;		
 		if (psor == null) {
 			if (psorClass == null && psorCode == null) {
 				psorCode = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), psorURL, charset);
@@ -202,20 +197,39 @@ public class JmsReader extends Node {
 		autoFilling.setFilename(conId + ": " + (psorClass != null ? psorClass : psorCode));
 	}
 
-    synchronized public void reset() throws ComponentNotReadyException {
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+		} else {
+			psor.reset();
+	    	msgCounter = 0;
+	    	exhausted = false;
+	    	lastMsg = null;
+			autoFilling.reset();
+		}
+		try {
+			consumer = connection.createConsumer(selector);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		closeConnection();
+	}
+
+	synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
-    	connection.reset();
-    	psor.reset();
-    	msgCounter = 0;
-    	exhausted = false;
-    	lastMsg = null;
-		autoFilling.reset();
     }
 
 	@Override
 	public synchronized void free() {
 		super.free();
-        closeConnection();
+		closeConnection();
 	}
 
 	/** Creates processor instance of a class specified by its name.
