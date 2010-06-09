@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231950107312" licenseType="Evaluation Devel" modified="Wed Jun 09 15:31:45 CEST 2010" modifiedBy="cloveruser" name="miscellaneousNvl2" revision="1.18">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="nvl2Input" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="DefaultIfNonNull" type="string"/>
+<Field name="DefaultIfNull" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="nvl2Overview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="DefaultIfNonNull" type="string"/>
+<Field name="DefaultIfNull" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="152" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="anytype nvl2(anytype arg, anytype ifnonnull, anytype ifnull)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="108" y="80">
+<attr name="text"><![CDATA[
+The nvl2(anytype, anytype, anytype) function accepts three arguments of any data type. This data type must be the same for all arguments and return value. 
+If the first argument is not null, the function returns the value of the second argument. 
+If the first argument is null, the function returns the value of the third argument.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousNvl2.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="99" guiY="273" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousNvl2Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="504" guiY="273" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="304" guiY="273" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Arg = $0.Arg;
+	$0.DefaultIfNonNull = $0.DefaultIfNonNull;
+	$0.DefaultIfNull = $0.DefaultIfNull;
+	$0.Function = 'nvl2($0.Arg,$0.DefaultIfNonNull,$0.DefaultIfNull)';
+	$0.Result = nvl2($0.Arg,$0.DefaultIfNonNull,$0.DefaultIfNull);
+	return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
