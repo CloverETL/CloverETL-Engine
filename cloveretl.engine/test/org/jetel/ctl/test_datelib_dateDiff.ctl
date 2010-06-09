@@ -1,6 +1,6 @@
 date born;
 date otherDate;
-integer ddiff;
+long ddiff;
 
 function integer transform() {
 	born=$firstInput.Born;
