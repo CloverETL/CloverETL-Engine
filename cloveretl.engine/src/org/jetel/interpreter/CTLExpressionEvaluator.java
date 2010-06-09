@@ -18,8 +18,6 @@
  */
 package org.jetel.interpreter;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -32,9 +30,6 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since 17th August 2009
  */
 public class CTLExpressionEvaluator {
-
-	/** the logger for this class */
-	private static final Log logger = LogFactory.getLog(CTLExpressionEvaluator.class);
 
 	/**
 	 * Evaluates a given expression in interpreted mode and returns its result as a string. This method may be called
