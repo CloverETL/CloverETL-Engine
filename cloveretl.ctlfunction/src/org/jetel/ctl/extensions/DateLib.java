@@ -82,7 +82,7 @@ public class DateLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final DateFieldEnum unit = (DateFieldEnum)stack.pop();
-			final Integer shift = stack.popInt();
+			final Long shift = stack.popLong();
 			final Date lhs = stack.popDate();
 			
 			stack.push(dateAdd(context, lhs,shift,unit));
@@ -95,10 +95,10 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Adds to a component of a date (e.g. month)")
-    public static final Date dateAdd(TLFunctionCallContext context, Date lhs, Integer shift, DateFieldEnum unit) {
+    public static final Date dateAdd(TLFunctionCallContext context, Date lhs, Long shift, DateFieldEnum unit) {
     	Calendar c = ((TLCalendarCache)context.getCache()).getCalendar();
     	c.setTime(lhs);
-    	c.add(unit.asCalendarField(),shift);
+    	c.add(unit.asCalendarField(), shift.intValue());
     	
         return c.getTime();
 
