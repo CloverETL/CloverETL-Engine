@@ -26,6 +26,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLRecordValue;
@@ -128,6 +129,18 @@ public class RecordRollupTL implements RecordRollup {
         wrapper.executePreparedFunction(functionInitGroupId, inputRecord,
                 new TLValue[] { new TLRecordValue(groupAccumulator) });
     }
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
 
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
         return executeGroupFunction(functionUpdateGroupId, inputRecord, groupAccumulator, false);

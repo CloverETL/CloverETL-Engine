@@ -22,6 +22,8 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -43,6 +45,18 @@ public class RoundRobinPartition implements PartitionFunction{
         this.last=-1;
     }
     
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+
     public int getOutputPort(DataRecord record){
         last=(last+1)%numPorts;
         return last;

@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -120,6 +121,27 @@ public interface RecordRollup {
      */
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
 
+    /**
+     * This is also initialization method, which is invoked before each separate graph run.
+     * Contrary the init() procedure here should be allocated only resources for this graph run.
+     * All here allocated resources should be released in #postExecute() method.
+     * 
+     * @throws ComponentNotReadyException some of the required resource is not available or other
+     * precondition is not accomplish
+     */
+    public void preExecute() throws ComponentNotReadyException; 
+
+    /**
+     * This is de-initialization method for a single graph run. All resources allocated 
+     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
+     * is invoked after graph finish at the latest. For some graph elements, for instance
+     * components, is this method called immediately after phase finish.
+     * 
+     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
+     * @throws ComponentNotReadyException
+     */
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+    
     /**
      * This method is called for each data record (including the first one as well as the last one) in a group
      * in order to update the group "accumulator".

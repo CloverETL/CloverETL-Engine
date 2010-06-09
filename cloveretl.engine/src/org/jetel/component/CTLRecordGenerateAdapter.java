@@ -27,6 +27,7 @@ import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -101,6 +102,17 @@ public class CTLRecordGenerateAdapter implements RecordGenerate {
 		return retVal;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordGenerate#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
 	
 	/** Method represents code in the global scope */
 	public void global() {

@@ -25,6 +25,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
 
@@ -79,6 +80,18 @@ public class RangePartition implements PartitionFunction{
         lookup = lookupTable.createLookup(partitionKey);
     }
     
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+
     /* (non-Javadoc)
      * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
      */

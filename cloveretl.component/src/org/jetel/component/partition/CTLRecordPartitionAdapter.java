@@ -30,6 +30,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -116,7 +117,18 @@ public class CTLRecordPartitionAdapter implements PartitionFunction {
 		
  	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+
 	public void global() {
 			// execute code in global scope
 			executor.execute();

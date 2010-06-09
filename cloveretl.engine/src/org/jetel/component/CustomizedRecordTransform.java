@@ -41,6 +41,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -974,6 +975,18 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return init();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	/**
 	 * Checks if given string contans wild cards
 	 * 
