@@ -611,6 +611,15 @@ public class DataRecordMap {
 		public void reset() {
 			this.current = origin;
 		}
+		
+		public int size() {
+			DataRecordEntry entry = origin;
+			int result = 1;
+			while ((entry = entry.duplicate) != null) {
+				result++;
+			}
+			return result;
+		}
 	}
 
 	private class OrphanedDataRecordIterator implements Iterator<DataRecord> {
