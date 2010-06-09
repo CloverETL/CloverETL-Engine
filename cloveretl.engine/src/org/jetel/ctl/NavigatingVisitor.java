@@ -71,6 +71,8 @@ import org.jetel.ctl.ASTnode.CLVFSubNode;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
+import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
@@ -169,6 +171,16 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 
 	public Object visit(CLVFUnaryExpression node, Object data) {
 
+		return visitNode(node, data);
+	}
+	
+	public Object visit(CLVFUnaryStatement node, Object data) {
+
+		return visitNode(node, data);
+	}
+
+	public Object visit(CLVFUnaryNonStatement node, Object data) {
+		
 		return visitNode(node, data);
 	}
 

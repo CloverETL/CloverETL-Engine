@@ -23,7 +23,8 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFMulNode node, Object data);
   public Object visit(CLVFDivNode node, Object data);
   public Object visit(CLVFModNode node, Object data);
-  public Object visit(CLVFUnaryExpression node, Object data);
+  public Object visit(CLVFUnaryStatement node, Object data);
+  public Object visit(CLVFUnaryNonStatement node, Object data);
   public Object visit(CLVFPostfixExpression node, Object data);
   public Object visit(CLVFMemberAccessExpression node, Object data);
   public Object visit(CLVFArrayAccessExpression node, Object data);
@@ -61,4 +62,4 @@ public interface TransformLangParserVisitor extends SyntheticNodeVisitor
   public Object visit(CLVFSequenceNode node, Object data);
   public Object visit(CLVFLookupNode node, Object data);
 }
-/* JavaCC - OriginalChecksum=ceb53fd470f00ef6b3c0bfc074239cc7 (do not edit this line) */
+/* JavaCC - OriginalChecksum=8442b65d9998872206f75be64b7e95a5 (do not edit this line) */

@@ -85,6 +85,8 @@ import org.jetel.ctl.ASTnode.CLVFSubNode;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
+import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
@@ -1932,7 +1934,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFUnaryExpression node, Object data) {
 		final SimpleNode child = (SimpleNode)node.jjtGetChild(0);
 		child.jjtAccept(this, data);
+
+		return data;
+	}
+	
+	public Object visit(CLVFUnaryStatement node, Object data) {
 		
+		final SimpleNode child = (SimpleNode)node.jjtGetChild(0);
+		child.jjtAccept(this, data);
+
 		final TLType opType = node.getType();
 		
 		switch (node.getOperator()) {
@@ -1974,6 +1984,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				setVariable(child, result);
 			} 
 			break;
+		default:
+			throw new TransformLangExecutorRuntimeException(node, "Unknown prefix operator '" + node.getOperator() + "'");
+		}
+
+		return data;
+
+	}
+
+	public Object visit(CLVFUnaryNonStatement node, Object data) {
+		final SimpleNode child = (SimpleNode)node.jjtGetChild(0);
+		child.jjtAccept(this, data);
+
+		final TLType opType = node.getType();
+		
+		switch (node.getOperator()) {
 		case NOT:
 			stack.push(! stack.popBoolean());
 			break;
@@ -1994,6 +2019,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
+
 
 	public Object visit(CLVFListOfLiterals node, Object data) {
 		
@@ -2482,4 +2508,5 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		return true;
 	}
+
 }

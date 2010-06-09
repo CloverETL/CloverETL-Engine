@@ -2417,5 +2417,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalString", "-6847521431.1545874");
 		check("listString", "[not ALI A, not ALI B, not ALI D..., but, ALI H!]");
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
-	}	
+	}
+	
+	
+	public void test_expression_statement(){
+		// test case for issue 4174
+        doCompileExpectErrors("test_expression_statement", Arrays.asList("Syntax error, statement expected","Syntax error, statement expected"));
+	}
+
 }

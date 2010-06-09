@@ -1193,8 +1193,17 @@ void ConditionalExpression() #ConditionalExpression(>2) : {}{	ConditionalOrEx
    |
     <REGEX_CONTAINS> AdditiveExpression() { jjtThis.setOperator(REGEX_CONTAINS); } #Comparison(2)  )*}void AdditiveExpression() #void :
 {}{ MultiplicativeExpression() (     <PLUS> MultiplicativeExpression() #AddNode(2)   |     <MINUS> MultiplicativeExpression() #SubNode(2)  )*}void MultiplicativeExpression() #void : 
-{}{     UnaryExpression()  (    <MULTIPLY> UnaryExpression() #MulNode(2)   |    <DIVIDE> UnaryExpression() #DivNode(2)   |    <MODULO> UnaryExpression() #ModNode(2)  )*}
-void UnaryExpression() #UnaryExpression(isPrefix) :{
+{}{     UnaryExpression()  (    <MULTIPLY> UnaryExpression() #MulNode(2)   |    <DIVIDE> UnaryExpression() #DivNode(2)   |    <MODULO> UnaryExpression() #ModNode(2)  )*}
+
+void UnaryExpression() #void :
+{}
+{  (    UnaryStatement()
+  |
+    UnaryNonStatement()
+  )
+}
+  
+void UnaryStatement() #UnaryStatement(isPrefix) :{
 	boolean isPrefix = false;
 }
 { 		 PostfixExpression()	|	
@@ -1204,10 +1213,40 @@ void UnaryExpression() #UnaryExpression(isPrefix) :{
 			// set the flag asap before jjtree has a chance to close node scope
 			isPrefix = true;
 		}	 	
-	 	PrefixOp(jjtThis)
+	 	PrefixStatementOp(jjtThis)
 	 	UnaryExpression() 
-	 )}void PrefixOp(CLVFUnaryExpression expr) #void :{}{   (  "++" | "--" | "-" | <NOT> )  {
-  	expr.begin(token.beginLine,token.beginColumn);    expr.setOperator(token.kind);  }}
+	 )}
+
+void PrefixStatementOp(CLVFUnaryStatement expr) #void :
+{}
+{ 
+  (  "++" | "--"  )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
+void UnaryNonStatement() #UnaryNonStatement() :
+{
+}
+
+{ 
+	 (
+	 	PrefixNonStatementOp(jjtThis)
+	 	UnaryExpression() 
+	 )
+}
+void PrefixNonStatementOp(CLVFUnaryNonStatement expr) #void :
+{}
+{ 
+  (  "-" | < NOT > )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
 void PostfixExpression() #PostfixExpression(isPostfix) :{
 	boolean isPostfix = false;
 }

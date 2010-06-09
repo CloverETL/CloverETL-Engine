@@ -21,43 +21,44 @@ public interface TransformLangParserTreeConstants
   public int JJTMULNODE = 15;
   public int JJTDIVNODE = 16;
   public int JJTMODNODE = 17;
-  public int JJTUNARYEXPRESSION = 18;
-  public int JJTPOSTFIXEXPRESSION = 19;
-  public int JJTMEMBERACCESSEXPRESSION = 20;
-  public int JJTARRAYACCESSEXPRESSION = 21;
-  public int JJTINFUNCTION = 22;
-  public int JJTFUNCTIONCALL = 23;
-  public int JJTISNULLNODE = 24;
-  public int JJTNVLNODE = 25;
-  public int JJTNVL2NODE = 26;
-  public int JJTIIFNODE = 27;
-  public int JJTPRINTERRNODE = 28;
-  public int JJTPRINTLOGNODE = 29;
-  public int JJTPRINTSTACKNODE = 30;
-  public int JJTRAISEERRORNODE = 31;
-  public int JJTREADDICTNODE = 32;
-  public int JJTWRITEDICTNODE = 33;
-  public int JJTDELETEDICTNODE = 34;
-  public int JJTFIELDACCESSEXPRESSION = 35;
-  public int JJTIDENTIFIER = 36;
-  public int JJTARGUMENTS = 37;
-  public int JJTDATEFIELD = 38;
-  public int JJTLOGLEVEL = 39;
-  public int JJTLITERAL = 40;
-  public int JJTLISTOFLITERALS = 41;
-  public int JJTBLOCK = 42;
-  public int JJTIFSTATEMENT = 43;
-  public int JJTSWITCHSTATEMENT = 44;
-  public int JJTCASESTATEMENT = 45;
-  public int JJTWHILESTATEMENT = 46;
-  public int JJTFORSTATEMENT = 47;
-  public int JJTFOREACHSTATEMENT = 48;
-  public int JJTDOSTATEMENT = 49;
-  public int JJTBREAKSTATEMENT = 50;
-  public int JJTCONTINUESTATEMENT = 51;
-  public int JJTRETURNSTATEMENT = 52;
-  public int JJTSEQUENCENODE = 53;
-  public int JJTLOOKUPNODE = 54;
+  public int JJTUNARYSTATEMENT = 18;
+  public int JJTUNARYNONSTATEMENT = 19;
+  public int JJTPOSTFIXEXPRESSION = 20;
+  public int JJTMEMBERACCESSEXPRESSION = 21;
+  public int JJTARRAYACCESSEXPRESSION = 22;
+  public int JJTINFUNCTION = 23;
+  public int JJTFUNCTIONCALL = 24;
+  public int JJTISNULLNODE = 25;
+  public int JJTNVLNODE = 26;
+  public int JJTNVL2NODE = 27;
+  public int JJTIIFNODE = 28;
+  public int JJTPRINTERRNODE = 29;
+  public int JJTPRINTLOGNODE = 30;
+  public int JJTPRINTSTACKNODE = 31;
+  public int JJTRAISEERRORNODE = 32;
+  public int JJTREADDICTNODE = 33;
+  public int JJTWRITEDICTNODE = 34;
+  public int JJTDELETEDICTNODE = 35;
+  public int JJTFIELDACCESSEXPRESSION = 36;
+  public int JJTIDENTIFIER = 37;
+  public int JJTARGUMENTS = 38;
+  public int JJTDATEFIELD = 39;
+  public int JJTLOGLEVEL = 40;
+  public int JJTLITERAL = 41;
+  public int JJTLISTOFLITERALS = 42;
+  public int JJTBLOCK = 43;
+  public int JJTIFSTATEMENT = 44;
+  public int JJTSWITCHSTATEMENT = 45;
+  public int JJTCASESTATEMENT = 46;
+  public int JJTWHILESTATEMENT = 47;
+  public int JJTFORSTATEMENT = 48;
+  public int JJTFOREACHSTATEMENT = 49;
+  public int JJTDOSTATEMENT = 50;
+  public int JJTBREAKSTATEMENT = 51;
+  public int JJTCONTINUESTATEMENT = 52;
+  public int JJTRETURNSTATEMENT = 53;
+  public int JJTSEQUENCENODE = 54;
+  public int JJTLOOKUPNODE = 55;
 
 
   public String[] jjtNodeName = {
@@ -79,7 +80,8 @@ public interface TransformLangParserTreeConstants
     "MulNode",
     "DivNode",
     "ModNode",
-    "UnaryExpression",
+    "UnaryStatement",
+    "UnaryNonStatement",
     "PostfixExpression",
     "MemberAccessExpression",
     "ArrayAccessExpression",
@@ -118,4 +120,4 @@ public interface TransformLangParserTreeConstants
     "LookupNode",
   };
 }
-/* JavaCC - OriginalChecksum=ca0bbd59769261cd299e913154691f9d (do not edit this line) */
+/* JavaCC - OriginalChecksum=6ef61590ebdf38b5894b97724d8f8fd0 (do not edit this line) */
