@@ -401,6 +401,9 @@ public class DataParser implements Parser {
 									}
 								} else {
 									if (quoteFound) {
+										//final quote character for field found (no double quote) so we return the last read character back to reading stream
+										//and check whether the field delimiter follows
+										tempReadBuffer.append((char) character);
 										if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
 											findFirstRecordDelimiter();
 											return parsingErrorFound("Bad quote format", record, fieldCounter);
@@ -773,11 +776,6 @@ public class DataParser implements Parser {
 	StringBuffer temp = new StringBuffer();
 	private boolean followFieldDelimiter(int fieldNum) {
 		int character;
-		
-		//if reading cursor is already on fieldDelimiter return true 
-		if (delimiterSearcher.isPattern(fieldNum)) {
-			return true;
-		}
 		
 		temp.setLength(0);
 		try {
