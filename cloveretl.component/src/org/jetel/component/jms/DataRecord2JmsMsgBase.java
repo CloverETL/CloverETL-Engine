@@ -26,6 +26,7 @@ import javax.jms.Session;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -49,6 +50,18 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 		this.session = session;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.DataRecord2JmsMsg#finished()
 	 */

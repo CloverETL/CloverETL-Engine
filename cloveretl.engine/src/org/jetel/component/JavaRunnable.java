@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -45,6 +46,27 @@ public interface JavaRunnable {
 	 * @return                  True if OK, otherwise False
 	 */
 	public boolean init(Properties parameters) throws ComponentNotReadyException;
+
+    /**
+     * This is also initialization method, which is invoked before each separate graph run.
+     * Contrary the init() procedure here should be allocated only resources for this graph run.
+     * All here allocated resources should be released in #postExecute() method.
+     * 
+     * @throws ComponentNotReadyException some of the required resource is not available or other
+     * precondition is not accomplish
+     */
+    public void preExecute() throws ComponentNotReadyException; 
+
+    /**
+     * This is de-initialization method for a single graph run. All resources allocated 
+     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
+     * is invoked after graph finish at the latest. For some graph elements, for instance
+     * components, is this method called immediately after phase finish.
+     * 
+     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
+     * @throws ComponentNotReadyException
+     */
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
 
 	/**
 	 * The core method, which holds implementation of the Java code to be run by 

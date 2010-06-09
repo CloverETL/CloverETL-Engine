@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 public abstract class BasicJavaRunnable implements JavaRunnable {
@@ -56,6 +57,18 @@ public abstract class BasicJavaRunnable implements JavaRunnable {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.JavaRunnable#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.JavaRunnable#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	abstract public void run();
 	
 }

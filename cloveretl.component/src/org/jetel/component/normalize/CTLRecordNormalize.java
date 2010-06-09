@@ -25,6 +25,7 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -64,6 +65,18 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	protected boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.normalize.RecordNormalize#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.normalize.RecordNormalize#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 	}
 
 	public final int count(DataRecord source) throws TransformException {

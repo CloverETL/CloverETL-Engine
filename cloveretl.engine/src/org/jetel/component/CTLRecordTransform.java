@@ -25,6 +25,7 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -65,6 +66,18 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	public final int transform(DataRecord[] sources, DataRecord[] targets) throws TransformException {
 		inputRecords = sources;
 		outputRecords = targets;

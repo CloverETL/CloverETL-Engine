@@ -25,6 +25,7 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -95,6 +96,18 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	/**
 	 * Called by {@link #updateGroup(DataRecord, DataRecord)} to update processing of a group of data records in a
 	 * user-specific way defined in the CTL transform. Has to be overridden by the generated transform class.

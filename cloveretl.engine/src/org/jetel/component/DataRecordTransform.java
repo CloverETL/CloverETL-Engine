@@ -25,6 +25,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -113,6 +114,19 @@ public abstract class DataRecordTransform implements RecordTransform {
 		return true;
 	}
 
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	}
+	
 	/**
 	 * Transforms source data records into target data records. Derived class should perform this functionality.<br>
 	 * This basic version only copies content of inputRecord into outputRecord field by field. See
