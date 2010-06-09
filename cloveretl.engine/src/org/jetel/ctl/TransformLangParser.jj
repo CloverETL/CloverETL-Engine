@@ -2010,15 +2010,24 @@ void ConditionalExpression()                            : {/*@bgen(jjtree) #Con
                  jjtree.closeNodeScope(jjtn003,  2);
                }
              }
-/*@egen*/              )*}
-void UnaryExpression()                            :{/*@bgen(jjtree) #UnaryExpression( isPrefix) */
-        CLVFUnaryExpression jjtn000 = new CLVFUnaryExpression(this, JJTUNARYEXPRESSION);
+/*@egen*/              )*}
+
+void UnaryExpression()       :
+{}
+{  (    UnaryStatement()
+  |
+    UnaryNonStatement()
+  )
+}
+  
+void UnaryStatement()                           :{/*@bgen(jjtree) #UnaryStatement( isPrefix) */
+        CLVFUnaryStatement jjtn000 = new CLVFUnaryStatement(this, JJTUNARYSTATEMENT);
         boolean jjtc000 = true;
         jjtree.openNodeScope(jjtn000);
 /*@egen*/
 	boolean isPrefix = false;
 }
-{/*@bgen(jjtree) #UnaryExpression( isPrefix) */
+{/*@bgen(jjtree) #UnaryStatement( isPrefix) */
          try {
 /*@egen*/ 		 PostfixExpression()	|	
 	 (
@@ -2027,7 +2036,7 @@ void UnaryExpression()                            :{/*@bgen(jjtree) #UnaryExpre
 			// set the flag asap before jjtree has a chance to close node scope
 			isPrefix = true;
 		}	 	
-	 	PrefixOp(jjtn000)
+	 	PrefixStatementOp(jjtn000)
 	 	UnaryExpression() 
 	 )/*@bgen(jjtree)*/
          } catch (Throwable jjte000) {
@@ -2049,8 +2058,64 @@ void UnaryExpression()                            :{/*@bgen(jjtree) #UnaryExpre
              jjtree.closeNodeScope(jjtn000,  isPrefix);
            }
          }
-/*@egen*/}void PrefixOp(CLVFUnaryExpression expr)       :{}{   (  "++" | "--" | "-" | <NOT> )  {
-  	expr.begin(token.beginLine,token.beginColumn);    expr.setOperator(token.kind);  }}
+/*@egen*/}
+
+void PrefixStatementOp(CLVFUnaryStatement expr)       :
+{}
+{ 
+  (  "++" | "--"  )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
+void UnaryNonStatement()                      :
+{/*@bgen(jjtree) #UnaryNonStatement(true) */
+  CLVFUnaryNonStatement jjtn000 = new CLVFUnaryNonStatement(this, JJTUNARYNONSTATEMENT);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/
+}
+
+{/*@bgen(jjtree) #UnaryNonStatement(true) */
+         try {
+/*@egen*/ 
+	 (
+	 	PrefixNonStatementOp(jjtn000)
+	 	UnaryExpression() 
+	 )/*@bgen(jjtree)*/
+         } catch (Throwable jjte000) {
+           if (jjtc000) {
+             jjtree.clearNodeScope(jjtn000);
+             jjtc000 = false;
+           } else {
+             jjtree.popNode();
+           }
+           if (jjte000 instanceof RuntimeException) {
+             throw (RuntimeException)jjte000;
+           }
+           if (jjte000 instanceof ParseException) {
+             throw (ParseException)jjte000;
+           }
+           throw (Error)jjte000;
+         } finally {
+           if (jjtc000) {
+             jjtree.closeNodeScope(jjtn000, true);
+           }
+         }
+/*@egen*/
+}
+void PrefixNonStatementOp(CLVFUnaryNonStatement expr)       :
+{}
+{ 
+  (  "-" | < NOT > )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
 void PostfixExpression()                               :{/*@bgen(jjtree) #PostfixExpression( isPostfix) */
         CLVFPostfixExpression jjtn000 = new CLVFPostfixExpression(this, JJTPOSTFIXEXPRESSION);
         boolean jjtc000 = true;

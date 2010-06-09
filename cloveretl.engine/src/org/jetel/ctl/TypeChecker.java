@@ -80,6 +80,8 @@ import org.jetel.ctl.ASTnode.CLVFSubNode;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
+import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
@@ -1640,7 +1642,15 @@ public class TypeChecker extends NavigatingVisitor {
 	@Override
 	public Object visit(CLVFUnaryExpression node, Object data) {
 		super.visit(node, data);
+		node.setType(TLType.VOID);
+		checkChildren(node);
+		return data;
+	}
+	
+	@Override
+	public Object visit(CLVFUnaryStatement node, Object data) {
 
+		super.visit(node, data);
 		if (!checkChildren(node)) {
 			return data;
 		}
@@ -1662,6 +1672,31 @@ public class TypeChecker extends NavigatingVisitor {
 				node.setType(TLType.ERROR);
 				return data;
 			}
+			if (operand.getType().isNumeric()) {
+				node.setType(operand.getType());
+			} else {
+				error(node, "Expression does not have a numeric type");
+				node.setType(TLType.ERROR);
+			}
+			break;
+		default:
+			error(node, "Unknown prefix operator (" + node.getOperator() + ")");
+			throw new IllegalArgumentException("Unknown prefix operator (" + node.getOperator() + ")");
+		}
+
+		return data;
+	}
+	
+	@Override
+	public Object visit(CLVFUnaryNonStatement node, Object data) {
+
+		super.visit(node, data);
+		if (!checkChildren(node)) {
+			return data;
+		}
+
+		SimpleNode operand = (SimpleNode) node.jjtGetChild(0);
+		switch (node.getOperator()) {
 		case TransformLangParserConstants.MINUS:
 			if (operand.getType().isNumeric()) {
 				node.setType(operand.getType());
@@ -1685,6 +1720,7 @@ public class TypeChecker extends NavigatingVisitor {
 
 		return data;
 	}
+
 
 	@Override
 	public Object visit(CLVFVariableDeclaration node, Object data) {

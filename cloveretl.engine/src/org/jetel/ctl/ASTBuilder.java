@@ -46,6 +46,8 @@ import org.jetel.ctl.ASTnode.CLVFStartExpression;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
 import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
+import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -602,9 +604,9 @@ public class ASTBuilder extends NavigatingVisitor {
 	 * is replaced by the literal.
 	 */
 	@Override
-	public Object visit(CLVFUnaryExpression node, Object data) {
-		if (node.getOperator() == TransformLangParserConstants.MINUS &&
-			((SimpleNode)node.jjtGetChild(0)).getId() == TransformLangParserTreeConstants.JJTLITERAL) {
+	public Object visit(CLVFUnaryNonStatement node, Object data) {
+		if (((CLVFUnaryNonStatement)node).getOperator() == TransformLangParserConstants.MINUS 
+				&& ((SimpleNode)node.jjtGetChild(0)).getId() == TransformLangParserTreeConstants.JJTLITERAL) {
 			CLVFLiteral lit = (CLVFLiteral)node.jjtGetChild(0);
 			int idx = 0;
 			final SimpleNode parent = (SimpleNode)node.jjtGetParent();
@@ -886,7 +888,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTRETURNSTATEMENT:
 			case TransformLangParserTreeConstants.JJTSEQUENCENODE:
 			case TransformLangParserTreeConstants.JJTSWITCHSTATEMENT:
-			case TransformLangParserTreeConstants.JJTUNARYEXPRESSION:
+			case TransformLangParserTreeConstants.JJTUNARYSTATEMENT:
 			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
 			case TransformLangParserTreeConstants.JJTWHILESTATEMENT:
 			case TransformLangParserTreeConstants.JJTWRITEDICTNODE:

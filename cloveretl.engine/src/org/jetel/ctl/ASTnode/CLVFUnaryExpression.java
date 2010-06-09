@@ -23,9 +23,6 @@ import org.jetel.ctl.TransformLangParserVisitor;
 
 public class CLVFUnaryExpression extends SimpleNode {
 
-	// One of ++, --, -, not
-	private int operator;
-	
 	public CLVFUnaryExpression(int id) {
 		super(id);
 	}
@@ -36,24 +33,22 @@ public class CLVFUnaryExpression extends SimpleNode {
 
 	public CLVFUnaryExpression(CLVFUnaryExpression node) {
 		super(node);
-		this.operator = node.operator;
 	}
 
 	/** Accept the visitor. * */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
 	}
-	
-	public void setOperator(int operator) {
-		this.operator = operator;
-	}
-	
-	public int getOperator() {
-		return operator;
-	}
-	
+		
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFUnaryExpression(this);
+	}
+
+	/**
+	 * @return
+	 */
+	public int getOperator() {
+		return -1;
 	}
 }
