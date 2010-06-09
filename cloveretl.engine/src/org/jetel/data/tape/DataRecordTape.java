@@ -138,8 +138,13 @@ public class DataRecordTape {
 	 */
 	public void open() throws IOException {
         if(tmpFileName == null)
-            tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tmpDirectory);
-        else {
+			try {
+				tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tmpDirectory);
+			} catch (IOException e) {
+				throw new IOException("Creating tmp file (prefix: " + TMP_FILE_PREFIX + ", suffix: " + TMP_FILE_SUFFIX + 
+						 " in directory: " + tmpDirectory + ") failed.", e);
+			}
+		else {
             tmpFile = new File(tmpFileName);
             if(deleteOnStart && tmpFile.exists()) {
                 if (!tmpFile.delete()) {
