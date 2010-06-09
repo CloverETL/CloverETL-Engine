@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Tue Jun 08 09:49:40 CEST 2010" modifiedBy="avackova" name="Testing Reformat" revision="1.26">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Wed Jun 09 11:49:47 CEST 2010" modifiedBy="avackova" name="Testing Reformat" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
@@ -34,7 +34,7 @@ function integer transform() {
 	$0.PRODUCTID = ++key;
 	$0.ORDERID = $0.OrderID;
 	$0.CUSTOMER = join(';',[$0.ShipName,$0.ShipAddress,$0.ShipCity,$0.ShipCountry]);
-	$0.SHIPTIME = dateDiff($0.RequiredDate,$0.ShippedDate,day);
+	$0.SHIPTIME = long2integer(dateDiff($0.RequiredDate,$0.ShippedDate,day));
 
 	return 0;
 }
