@@ -754,6 +754,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFInputFieldLiteral node, Object data) {
+    	if (inputRecords == null) {
+			throw new TransformLangExecutorRuntimeException(node, "Cannot access input fields within this scope!");
+    	}
+
     	DataRecord record = inputRecords[node.recordNo];
     	int fieldNo=-1;
 		if (record == NullRecord.NULL_RECORD || record == null) {
