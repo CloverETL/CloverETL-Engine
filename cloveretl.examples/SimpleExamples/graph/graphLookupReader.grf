@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="0.0.0.devel" id="1199361218607" licenseType="Evaluation Devel" modified="Thu Mar 18 14:04:35 CET 2010" modifiedBy="avackova" name="graphLookupReader" revision="1.51">
+<Graph author="avackova" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="0.0.0.devel" id="1199361218607" licenseType="Evaluation Devel" modified="Thu Jun 10 11:21:06 CEST 2010" modifiedBy="avackova" name="graphLookupReader" revision="1.53">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -26,15 +26,16 @@ While in 1st case data with the same key are replaced with the new data, in the 
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="228" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writing to&#10;Lookup Tables" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="203" x="360" y="-46"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="234" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading from&#10;Lookup Tables" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="200" x="0" y="137"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Employees (Controlled)" guiWidth="0" guiX="24" guiY="12" id="DATA_READER0" quotedStrings="true" type="DATA_READER"/>
+<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Employees (Controlled)" guiWidth="0" guiX="24" guiY="12" id="DATA_READER0" quotedStrings="true" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="Duplicate NO" guiWidth="50" guiX="396" guiY="12" id="EmptyLookup" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="Duplicate YES" guiWidth="50" guiX="396" guiY="108" id="EmptyLookup1" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="216" guiY="12" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EmptyLookup:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EmptyLookup1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EmptyLookup:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EmptyLookup1:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="216" guiY="192" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
@@ -43,9 +44,9 @@ While in 1st case data with the same key are replaced with the new data, in the 
 <Node enabled="enabled" guiHeight="25" guiName="Duplicate YES" guiWidth="50" guiX="24" guiY="288" id="JOIN1" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_without_duplicates.out" guiHeight="25" guiName="Sorted Unique Employees" guiWidth="50" guiX="396" guiY="192" id="WRITER" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_with_duplicates.out" guiHeight="25" guiName="Sorted Duplicate Employees" guiWidth="50" guiX="396" guiY="288" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
-<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="JOIN1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="JOIN1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>
