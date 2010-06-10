@@ -152,6 +152,10 @@ public class RecordNormalizeTL implements RecordNormalize {
 		}
 	}
 	
+	/**
+	 * Use postExecute method.
+	 */
+	@Deprecated
 	public void finished() {
 		try {
 			wrapper.execute(FINISHED_FUNCTION_NAME,null);
@@ -179,6 +183,10 @@ public class RecordNormalizeTL implements RecordNormalize {
         return ((result != null) ? result.toString() : null);
     }
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
 		wrapper.reset();
 		errorMessage = null;

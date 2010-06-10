@@ -19,7 +19,9 @@
 package org.jetel.component;
 
 import org.apache.commons.logging.Log;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLValue;
 
@@ -79,6 +81,10 @@ public class RecordTransformCommonTL {
 		return semiResult;
 	}
 	
+	/**
+	 * Use postExecute method.
+	 */
+	@Deprecated
 	public void finished(){
         // execute finished transformFunction
 		semiResult = null;
@@ -97,6 +103,10 @@ public class RecordTransformCommonTL {
         return graph;
     }
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
         // execute reset transformFunction
 		semiResult = null;
@@ -105,6 +115,18 @@ public class RecordTransformCommonTL {
 		} catch (JetelException e) {
 			//do nothing: function reset is not necessary
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordGenerate#preExecute()
+	 */
+	public void preExecute() throws ComponentNotReadyException {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 	}
 }
 

@@ -60,9 +60,10 @@ public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#finished()
+	/**
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
 	}
 
@@ -80,10 +81,10 @@ public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 		this.errMsg = errMsg;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#reset()
-	 */
+    /**
+     * Use preExecute method.
+     */
+    @Deprecated
 	public void reset() {
 		setErrorMsg(null);
 	}

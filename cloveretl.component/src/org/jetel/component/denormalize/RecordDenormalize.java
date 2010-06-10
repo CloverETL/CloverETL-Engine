@@ -68,11 +68,8 @@ public interface RecordDenormalize {
      */
     public void preExecute() throws ComponentNotReadyException; 
 
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated 
-     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-     * is invoked after graph finish at the latest. For some graph elements, for instance
-     * components, is this method called immediately after phase finish.
+	/**
+	 * Releases used resources.
      * 
      * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
@@ -104,10 +101,11 @@ public interface RecordDenormalize {
 	 * Finalize current round/clean after current round - called after the transform method was called for the input record
 	 */
 	public void clean();
-	
+
 	/**
-	 * Releases used resources.
+	 * Use postExecuste method.
 	 */
+	@Deprecated
 	public void finished();
 
 	/**
@@ -118,8 +116,9 @@ public interface RecordDenormalize {
 	public String getMessage();
 
 	/**
-	 * Reset denormalizer for next graph execution.
+	 * Use preExecute method.
 	 */
+	@Deprecated
 	public void reset();
 	
 	/**

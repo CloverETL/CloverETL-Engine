@@ -219,6 +219,8 @@ public class Reformat extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+		transformation.preExecute();
+
     	if (firstRun()) {//a phase-dependent part of initialization
             if (errorLogURL != null) {
             	try {
@@ -318,8 +320,6 @@ public class Reformat extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 
-		transformation.finished();
-
 		if (errorLog != null){
 			errorLog.flush();
 		}
@@ -332,7 +332,9 @@ public class Reformat extends Node {
     @Override
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
-    	
+		transformation.postExecute(transactionMethod);
+		transformation.finished();
+
     	try {
     		if (errorLog != null) {
     			errorLog.close();

@@ -40,9 +40,10 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 	protected String errorMessage;
 	private TransformationGraph graph;
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#finished()
+	/**
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
 	}
 
@@ -85,10 +86,10 @@ public abstract class DataRecordNormalize implements RecordNormalize {
 		//do nothing
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.normalize.RecordNormalize#reset()
+	/**
+	 * Use preExecute method.
 	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

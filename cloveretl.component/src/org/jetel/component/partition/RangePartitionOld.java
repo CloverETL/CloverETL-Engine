@@ -25,6 +25,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
@@ -104,6 +105,10 @@ public class RangePartitionOld implements PartitionFunction{
         }
     }
     
+    /**
+	 * Use setNode method.
+	 */
+    @Deprecated
     public void setGraph(TransformationGraph graph) {
     	// not used here
     }
@@ -113,6 +118,19 @@ public class RangePartitionOld implements PartitionFunction{
     	return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+     */
+    public void setNode(Node node) {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#getNode()
+     */
+    public Node getNode() {
+    	return null;
+    }
+    
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

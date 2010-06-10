@@ -418,6 +418,8 @@ public class Denormalizer extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+		denorm.preExecute();
+		
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -441,8 +443,6 @@ public class Denormalizer extends Node {
         } catch (Exception e) {
             throw e;
         } finally {
-			denorm.finished();
-
 		    if (errorLog != null){
 				errorLog.flush();
 			}
@@ -457,7 +457,9 @@ public class Denormalizer extends Node {
     @Override
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
-    	
+		denorm.postExecute(transactionMethod);
+		denorm.finished();
+
     	try {
 		    if (errorLog != null) {
 				errorLog.close();

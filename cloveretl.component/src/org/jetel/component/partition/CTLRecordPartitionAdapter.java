@@ -24,12 +24,11 @@ import org.apache.commons.logging.Log;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
@@ -53,8 +52,9 @@ public class CTLRecordPartitionAdapter implements PartitionFunction {
     private CLVFFunctionDeclaration init;
     private CLVFFunctionDeclaration getOuputPort;
     
+    @Deprecated	// use node
 	private TransformationGraph graph;
-
+	private Node node;
 	
 	private Log logger;
 	private TransformLangExecutor executor;
@@ -135,13 +135,31 @@ public class CTLRecordPartitionAdapter implements PartitionFunction {
 	}
 	
 	public TransformationGraph getGraph() {
-		return graph;
+		return node != null ? node.getGraph() : graph;
 	}
 
+	/**
+	 * Use setNode method.
+	 */
+	@Deprecated
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#getNode()
+	 */
+	public Node getNode() {
+		return node;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+	 */
+	public void setNode(Node node) {
+		this.node = node;
+	}
+	
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

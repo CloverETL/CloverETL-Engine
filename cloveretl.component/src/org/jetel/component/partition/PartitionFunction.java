@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
@@ -87,8 +88,21 @@ public interface PartitionFunction {
 	    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
 	    
 	    /**
-		 *  Passes instance of transformation graph to denormalize transformation
+	     * Passes graph node.
+	     * @param node
+	     */
+	    public void setNode(Node node);
+	    
+	    /**
+	     * Gets graph node.
+	     * @return
+	     */
+	    public Node getNode();
+	    
+	    /**
+		 * Use setNode method.
 		 */
+	    @Deprecated
 		public void setGraph(TransformationGraph graph);
 
 		/**

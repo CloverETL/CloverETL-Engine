@@ -34,6 +34,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -106,6 +107,11 @@ public class ExtDataGenerator extends DataGenerator {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+    	
+		if (generatorClass != null) {
+			generatorClass.preExecute();
+		}
+
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -114,6 +120,17 @@ public class ExtDataGenerator extends DataGenerator {
     	}
     }    
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+     */
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	
+		if (generatorClass != null) {
+			generatorClass.postExecute(transactionMethod);
+			generatorClass.finished();
+		}
+    }
 	
 	@Override
 	public Result execute() throws Exception {
@@ -165,10 +182,6 @@ public class ExtDataGenerator extends DataGenerator {
 			}
 
 			SynchronizeUtils.cloverYield();
-		}
-
-		if (generatorClass != null) {
-			generatorClass.finished();
 		}
 	}
 

@@ -20,7 +20,6 @@ package org.jetel.component.jms;
 
 import java.util.Properties;
 
-import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
@@ -89,6 +88,10 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		return msg;
 	}
 
+	/**
+	 * Use preExecute method. 
+	 */
+    @Deprecated
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
 	}

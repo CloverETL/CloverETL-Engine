@@ -75,6 +75,13 @@ public interface JavaRunnable {
 	public void run();
     
     /**
+     * This is de-initialization method for this graph element. All resources allocated
+     * in {@link #init()} method should be released here. This method is invoked only once
+     * at the end of element existence.
+     */
+    public void free();
+	
+    /**
      * Method which passes into transformation graph instance within
      * which transformation will be executed.<br>
      * Since TransformationGraph singleton pattern was removed it is

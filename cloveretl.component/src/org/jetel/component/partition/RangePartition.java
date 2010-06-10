@@ -25,6 +25,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
@@ -102,6 +103,10 @@ public class RangePartition implements PartitionFunction{
     		rejectedPort;
     }
     
+    /**
+	 * Use setNode method.
+	 */
+    @Deprecated
     public void setGraph(TransformationGraph graph) {
     	// not used here
     }
@@ -111,6 +116,21 @@ public class RangePartition implements PartitionFunction{
     	return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+     */
+    public void setNode(Node node) {
+    	// not used here
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#getNode()
+     */
+    public Node getNode() {
+    	// not used here
+    	return null;
+    }
+    
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

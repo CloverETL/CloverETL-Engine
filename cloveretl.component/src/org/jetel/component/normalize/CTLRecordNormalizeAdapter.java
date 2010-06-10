@@ -24,7 +24,6 @@ import org.apache.commons.logging.Log;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -200,11 +199,10 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 			}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordNormalize#finished()
+	/**
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
 		if (finished == null) {
 			return;
@@ -227,11 +225,10 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 		return errorMessage;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.normalize.RecordNormalize#reset()
+	/**
+	 * Use preExecute method.
 	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

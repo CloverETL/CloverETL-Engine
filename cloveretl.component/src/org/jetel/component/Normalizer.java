@@ -342,6 +342,8 @@ public class Normalizer extends Node {
 	@Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+	    norm.preExecute();
+	    
         if (errorLogURL != null) {
            	try {
            		errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
@@ -358,8 +360,6 @@ public class Normalizer extends Node {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-		    norm.finished();
-
 		    if (errorLog != null){
 				errorLog.flush();
 			}
@@ -374,7 +374,9 @@ public class Normalizer extends Node {
     @Override
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
-    	
+	    norm.postExecute(transactionMethod);
+	    norm.finished();
+
     	try {
 		    if (errorLog != null){
 				errorLog.flush();

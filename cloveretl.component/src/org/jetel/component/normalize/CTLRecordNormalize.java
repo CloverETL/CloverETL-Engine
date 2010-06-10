@@ -133,11 +133,19 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		return null;
 	}
 
+	/**
+	 * Use postExecute method.
+	 */
+	@Deprecated
 	@CTLEntryPoint(name = "finished", required = false)
 	public void finished() {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	@CTLEntryPoint(name = "reset", required = false)
 	public void reset() {
 		// does nothing by default, may be overridden by generated transform classes

@@ -43,6 +43,7 @@ import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -232,6 +233,23 @@ public class Partition extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#preExecute()
+	 */
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		partitionFce.preExecute();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+	 */
+	@Override
+	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+		super.postExecute(transactionMethod);
+		partitionFce.postExecute(transactionMethod);
+	}
 	
 	private void executeNonDirect(InputPortDirect inPort,
 			OutputPortDirect[] outPorts) throws Exception {
