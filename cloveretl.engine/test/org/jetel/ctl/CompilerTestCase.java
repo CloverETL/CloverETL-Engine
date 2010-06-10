@@ -1502,8 +1502,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_overloading_incorrect() {
 		doCompileExpectErrors("test_overloading_incorrect", Arrays.asList(
-				"Duplicate function 'integer sum(integerinteger)'",
-				"Duplicate function 'integer sum(integerinteger)'"));
+				"Duplicate function 'integer sum(integer, integer)'",
+				"Duplicate function 'integer sum(integer, integer)'"));
 	}
 	
 	//Test case for 4038
