@@ -182,8 +182,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     		watchDogStatus = Result.RUNNING;
 
-//    		runIt = true;
-    		
     		//creates tracking logger for cloverJMX mbean
             TrackingLogger.track(cloverJMX);
           	
@@ -192,11 +190,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	//pre-execute initialization of graph
            	try {
            		graph.preExecute();
-           	} catch (ComponentNotReadyException e) {
+           	} catch (Exception e) {
     			causeException = e;
-    			causeGraphElement = e.getGraphElement();
+    			if (e instanceof ComponentNotReadyException) {
+    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+    			}
            		watchDogStatus = Result.ERROR;
-           		logger.error("Graph pre-execute initialization faild.", e);
+           		logger.error("Graph pre-execute initialization failed.", e);
            	}
 
            	//run all phases
@@ -243,12 +243,49 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	                }
 	           		cloverJMX.phaseFinished();
 	            }
-	            //aborted graph does not follow last phase status
+	           	//post-execution of graph
+	           	try {
+	           		graph.postExecute(null);
+	           	} catch (Exception e) {
+	    			causeException = e;
+	    			if (e instanceof ComponentNotReadyException) {
+	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+	    			}
+	           		watchDogStatus = Result.ERROR;
+	           		logger.error("Graph post-execute method failed.", e);
+	           	}
+
+	           	//aborted graph does not follow last phase status
 	           	if (watchDogStatus == Result.RUNNING) {
 	           		watchDogStatus = phaseResult;
 	           	}
            	}
 
+           	//commit or rollback
+           	if (watchDogStatus == Result.FINISHED_OK) {
+           		try {
+           			graph.commit();
+           		} catch (Exception e) {
+           			causeException = e;
+	    			if (e instanceof ComponentNotReadyException) {
+	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+	    			}
+	           		watchDogStatus = Result.ERROR;
+	           		logger.fatal("Graph commit failed:" + e.getMessage(), e);
+           		}
+           	} else {
+           		try {
+           			graph.rollback();
+           		} catch (Exception e) {
+           			causeException = e;
+	    			if (e instanceof ComponentNotReadyException) {
+	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+	    			}
+	           		watchDogStatus = Result.ERROR;
+	           		logger.fatal("Graph rollback failed:" + e.getMessage(), e);
+           		}
+           	}
+           	
     		//print initial dictionary content
     		graph.getDictionary().printContent(logger, "Final dictionary content:");
 

@@ -92,6 +92,40 @@ public interface IGraphElement {
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
     
     /**
+     * This method is called in case the graph run finished with success - Result.FINISHED_OK.
+     * Graph elements should use this for tasks which should be done if and only if 
+     * all graph processing was completely successful.
+     * 
+     * Each exception thrown from this method causes a FATAL error - the graph and all affected
+     * systems are in unexpected state.
+     * 
+     * This method can be called only once the postExecute() method was already finished. Only
+     * one of commit() and rollback() methods can be invoked.
+     *  
+     * NOTE: in the future this method will be called in the end of so called check-point area, what
+     * is something like restart-ability point defined somewhere inside the graph. For now whole graph
+     * forms one restart-ability area.
+     */
+    public void commit();
+    
+    /**
+     * This method is called in case the graph run finished with error or was aborted - Result.ERROR, 
+     * Result.ABORTED. Graph elements should use this for tasks which should be done if and only if 
+     * some part of graph failed.
+     * 
+     * Each exception thrown from this method causes a FATAL error - the graph and all affected
+     * systems are in unexpected state.
+     * 
+     * This method can be called only once the postExecute() method was already finished. Only
+     * one of commit() and rollback() methods can be invoked.
+     * 
+     * NOTE: in the future this method will be called in the end of so called check-point area, what
+     * is something like restart-ability point defined somewhere inside the graph. For now whole graph
+     * forms one restart-ability area.
+     */
+    public void rollback();
+    
+    /**
      * @deprecated this method was substituted by pair of another methods {@link #preExecute()}
      * and {@link #postExecute()}.
      * 

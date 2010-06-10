@@ -564,6 +564,68 @@ public final class TransformationGraph extends GraphElement {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#commit()
+	 */
+	@Override
+	public void commit() {
+		super.commit();
+		
+		//commit dictionary
+		dictionary.commit();
+		
+		//commit all phases
+		for (Phase phase : phases.values()) {
+			phase.commit();
+		}
+
+		//commit connections
+		for (IConnection connection : connections.values()) {
+			connection.commit();
+		}
+
+		//commit sequences
+		for (Sequence sequence : sequences.values()) {
+			sequence.commit();
+		}
+
+		//commit lookup tables
+		for (LookupTable lookupTable : lookupTables.values()) {
+			lookupTable.commit();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#rollback()
+	 */
+	@Override
+	public void rollback() {
+		super.rollback();
+		
+		//rollback dictionary
+		dictionary.rollback();
+		
+		//rollback all phases
+		for (Phase phase : phases.values()) {
+			phase.rollback();
+		}
+
+		//rollback connections
+		for (IConnection connection : connections.values()) {
+			connection.rollback();
+		}
+
+		//rollback sequences
+		for (Sequence sequence : sequences.values()) {
+			sequence.rollback();
+		}
+
+		//rollback lookup tables
+		for (LookupTable lookupTable : lookupTables.values()) {
+			lookupTable.rollback();
+		}
+	}
+	
 	/**  Free all allocated resources which need special care */
 	private void freeResources() {
 		// Free (close) all opened db connections
