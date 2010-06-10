@@ -60,6 +60,7 @@ import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -312,7 +313,7 @@ public class DBConnection extends GraphElement implements IConnection {
 
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
 		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null));
-		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null));
+		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		setDbDriver(typedProperties.getStringProperty(XML_DBDRIVER_ATTRIBUTE, null));
 		setDatabase(typedProperties.getStringProperty(XML_DATABASE_ATTRIBUTE, null));
 		setDriverLibrary(typedProperties.getStringProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, null));

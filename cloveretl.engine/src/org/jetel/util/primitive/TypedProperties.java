@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 
 /**
  * This class provides typed access to attributes in java.util.Properties.
@@ -166,6 +167,12 @@ public class TypedProperties extends Properties {
         return (prop != null) ? prop : defaultValue;
     }
 
+    public String getStringProperty(String key, String defaultValue, RefResFlag refResFlag) {
+        String prop = getProperty(key);
+        prop = resolvePropertyReferences(prop, refResFlag);
+        return prop != null ? prop : defaultValue;
+    }
+    
     /**
      * Returns subset of properties, which names start with given prefix.
      * @param prefix
@@ -183,7 +190,19 @@ public class TypedProperties extends Properties {
         
         return new TypedProperties(ret, propertyRefResolver != null ? propertyRefResolver.getProperties() : null);
     }
-    
+
+    private String resolvePropertyReferences(String s, RefResFlag refResFlag) {
+    	if (s != null) {
+    		s = localPropertyRefResolver.resolveRef(s, refResFlag);
+    	}
+    	
+    	if(propertyRefResolver != null && s != null) {
+    		return propertyRefResolver.resolveRef(s, refResFlag);
+    	} else {
+    		return s;
+    	}
+    }
+
     private String resolvePropertyReferences(String s) {
     	if (s != null) {
     		s = localPropertyRefResolver.resolveRef(s);
