@@ -102,12 +102,9 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 			buf.append("null");
 		} else {
 			for (TLType f : formalParams) {
-				if (f != formalParams[0]) {
-					buf.append(",").append(f.name());
-				} else {
-					buf.append(f.name());
-				}
+				buf.append(f.name()).append(", ");
 			}
+			buf.delete(buf.length() - 2, buf.length());
 		}
 		buf.append(")");
 		return buf.toString();
