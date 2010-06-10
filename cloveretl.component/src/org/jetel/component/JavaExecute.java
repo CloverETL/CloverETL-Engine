@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
@@ -197,6 +198,24 @@ public class JavaExecute extends Node {
             }
         }
         return codeToRun;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.graph.Node#preExecute()
+     */
+    @Override
+    public void preExecute() throws ComponentNotReadyException {
+    	super.preExecute();
+    	codeToRun.preExecute();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+     */
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	codeToRun.postExecute(transactionMethod);
     }
     
     /**
@@ -389,6 +408,6 @@ public class JavaExecute extends Node {
 	@Override
 	public synchronized void free() {	
 		super.free();
+		codeToRun.free();
 	}
-
 }

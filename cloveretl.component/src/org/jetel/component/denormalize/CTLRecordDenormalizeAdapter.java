@@ -180,9 +180,10 @@ public class CTLRecordDenormalizeAdapter implements RecordDenormalize {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#finished()
+	/**
+	 * Use postExecuste method.
 	 */
+	@Deprecated
 	@CTLEntryPoint(
 			name = "finished",
 			required = true
@@ -206,6 +207,10 @@ public class CTLRecordDenormalizeAdapter implements RecordDenormalize {
 		return errorMessage;
 	}
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

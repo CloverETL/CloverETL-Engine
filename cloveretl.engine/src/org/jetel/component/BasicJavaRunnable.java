@@ -71,4 +71,9 @@ public abstract class BasicJavaRunnable implements JavaRunnable {
 	
 	abstract public void run();
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.JavaRunnable#free()
+	 */
+	public void free() {
+	}
 }

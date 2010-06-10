@@ -164,12 +164,10 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	}
 
 	/**
-	 * Method called at the end of transformation process.  
-	 * 
-	 * @see org.jetel.component.RecordTransform#finished()
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
-
 	}
 
 	/**
@@ -238,11 +236,10 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 		return graph;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#reset()
-	 */
+    /**
+     * Use preExecute method.
+     */
+    @Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

@@ -222,7 +222,6 @@ public class AproxMergeJoin extends Node {
 	private final static double DEFAULT_CONFORMITY_LIMIT=0.75;
 
 	private final static int CURRENT = 0;
-	private final static int PREVIOUS = 1;
 	private final static int TEMPORARY = 1;
 
 	private String transformClassName;
@@ -555,6 +554,10 @@ public class AproxMergeJoin extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+    	
+		transformation.preExecute();
+		transformationForSuspicious.preExecute();
+    	
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -670,9 +673,6 @@ public class AproxMergeJoin extends Node {
 
 		readRemainingSlaveRecords(slavePort, notMatchSlavePort, slaveRecords[CURRENT]);
 
-		transformation.finished();
-		transformationForSuspicious.finished();
-
 		if (errorLog != null){
 			errorLog.flush();
 		}
@@ -686,6 +686,12 @@ public class AproxMergeJoin extends Node {
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
     	
+		transformation.postExecute(transactionMethod);
+		transformationForSuspicious.postExecute(transactionMethod);
+
+		transformation.finished();
+		transformationForSuspicious.finished();
+
     	try {
     		if (errorLog != null){
     			errorLog.close();

@@ -55,11 +55,8 @@ public interface JmsMsg2DataRecord {
      */
     public void preExecute() throws ComponentNotReadyException; 
 
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated 
-     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-     * is invoked after graph finish at the latest. For some graph elements, for instance
-     * components, is this method called immediately after phase finish.
+	/**
+	 * Releases resources. 
      * 
      * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
@@ -81,8 +78,9 @@ public interface JmsMsg2DataRecord {
 	public DataRecord extractRecord(Message msg) throws JMSException;
 	
 	/**
-	 * Releases resources. 
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished();
 	
 	/**
@@ -99,9 +97,10 @@ public interface JmsMsg2DataRecord {
     public void setGraph(TransformationGraph graph);
 	
     public TransformationGraph getGraph();
-	
-	/**
-	 * Reset processor for next graph execution. 
-	 */
+
+    /**
+     * Use preExecute method.
+     */
+    @Deprecated
 	public void reset();
 }

@@ -27,6 +27,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLNumericValue;
@@ -52,6 +53,7 @@ public class PartitionTL implements PartitionFunction {
     
 	private WrapperTL wrapper;
 	private TransformationGraph graph;
+	private Node node;
 
     /**
      * @param srcCode code written in CloverETL language
@@ -108,13 +110,31 @@ public class PartitionTL implements PartitionFunction {
 	}
 
 	public TransformationGraph getGraph() {
-		return graph;
+		return node != null ? node.getGraph() : graph;
 	}
 
+	/**
+	 * Use setNode method.
+	 */
+	@Deprecated
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#getNode()
+	 */
+	public Node getNode() {
+		return node;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+	 */
+	public void setNode(Node node) {
+		this.node = node;
+	}
+	
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

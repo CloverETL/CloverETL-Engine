@@ -103,8 +103,9 @@ public interface RecordNormalize {
 	public void clean();
 	
 	/**
-	 * Releases used resources.
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished();
 
 	/**
@@ -114,8 +115,9 @@ public interface RecordNormalize {
 	public String getMessage();
 
 	/**
-	 * Resets normalizer for next graph execution. 
-	 */	
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset();
 
 	/**

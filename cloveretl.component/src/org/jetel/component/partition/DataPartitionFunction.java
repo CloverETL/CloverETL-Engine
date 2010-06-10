@@ -20,6 +20,7 @@ package org.jetel.component.partition;
 
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
@@ -35,20 +36,41 @@ public abstract class DataPartitionFunction implements PartitionFunction {
 	
 	/** a transformation graph associated with this partition function */
 	protected TransformationGraph graph;
-	
+
+	/** a graph node */
+	protected Node node;
+
 	/** how many partitions we have */
 	protected int numPartitions;	
 	/** a set of fields composing key based on which should the partition be determined */	   
 	protected RecordKey partitionKey;	
 
 	public final TransformationGraph getGraph() {
-		return graph;
+		return node != null ? node.getGraph() : graph;
 	}
 	
+    /**
+	 * Use setNode method.
+	 */
+    @Deprecated
 	public final void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#getNode()
+	 */
+	public Node getNode() {
+		return node;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+	 */
+	public void setNode(Node node) {
+		this.node = node;
+	}
+	
 	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
 		this.numPartitions = numPartitions;
 		this.partitionKey = partitionKey;

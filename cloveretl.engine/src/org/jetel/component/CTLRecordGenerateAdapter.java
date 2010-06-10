@@ -132,11 +132,10 @@ public class CTLRecordGenerateAdapter implements RecordGenerate {
 		return (Integer)retVal;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordNormalize#finished()
+	/**
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
 		if (finished == null) {
 			return;
@@ -161,6 +160,10 @@ public class CTLRecordGenerateAdapter implements RecordGenerate {
 		return null;
 	}
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
 		// nothing to do
 	}

@@ -138,10 +138,10 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		return record;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#reset()
-	 */
+    /**
+     * Use preExecute method.
+     */
+    @Deprecated
 	public void reset() {
 		super.reset();
 		// no operations needed

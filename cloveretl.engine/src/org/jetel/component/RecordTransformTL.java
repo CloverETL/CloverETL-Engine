@@ -25,7 +25,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -73,18 +72,6 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-	}
-	
 	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
 		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
 		errorMessage = null;

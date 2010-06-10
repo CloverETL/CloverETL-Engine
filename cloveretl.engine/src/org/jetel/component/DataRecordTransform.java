@@ -192,11 +192,10 @@ public abstract class DataRecordTransform implements RecordTransform {
 
 	/*
 	 * (non-Javadoc)
-	 * 
 	 * @see org.jetel.component.RecordTransform#finished()
 	 */
+	@Deprecated
 	public void finished() {
-
 	}
 
 	/**
@@ -253,11 +252,10 @@ public abstract class DataRecordTransform implements RecordTransform {
 		return graph;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#reset()
+	/**
+	 * Use preExecute method.
 	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

@@ -46,6 +46,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -281,6 +282,8 @@ public class LookupJoin extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+		transformation.preExecute();
+    	
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -296,6 +299,16 @@ public class LookupJoin extends Node {
         }
     }    
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
+     */
+    @Override
+    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    	super.postExecute(transactionMethod);
+    	transformation.postExecute(transactionMethod);
+        transformation.finished();
+    }
+    
 	@Override
 	public Result execute() throws Exception {
 		// initialize in and out records
@@ -394,8 +407,6 @@ public class LookupJoin extends Node {
 			}
 			counter++;
 		}
-
-        transformation.finished();
 
 		if (freeLookupTable) {
 			lookup.getLookupTable().free();

@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
@@ -45,18 +44,6 @@ public class RecordFilterTL implements RecordFilter {
 	
 	public void init() throws ComponentNotReadyException {
 		filterExpression.init();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordFilter#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordFilter#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 	}
 
 	public boolean isValid(DataRecord record) {

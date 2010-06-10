@@ -67,18 +67,6 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-	}
-	
 	/**
 	 * Generate data for output records.
 	 */

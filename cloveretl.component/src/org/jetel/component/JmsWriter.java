@@ -168,6 +168,8 @@ public class JmsWriter extends Node {
     @Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		psor.preExecute();
+		
 		if (firstRun()) {//a phase-dependent part of initialization
 			psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
 		} else {
@@ -183,6 +185,9 @@ public class JmsWriter extends Node {
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
+		psor.postExecute(transactionMethod);
+		psor.finished();
+		
 		closeConnection();
 	}
 
@@ -277,8 +282,6 @@ public class JmsWriter extends Node {
 			logger.error("JmxWriter execute", e);
 			throw e;
 		}
-        if (psor != null)
-            psor.finished();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

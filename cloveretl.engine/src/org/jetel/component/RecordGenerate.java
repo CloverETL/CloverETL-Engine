@@ -75,11 +75,10 @@ public interface RecordGenerate {
      */
     public void preExecute() throws ComponentNotReadyException; 
 
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated 
-     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-     * is invoked after graph finish at the latest. For some graph elements, for instance
-     * components, is this method called immediately after phase finish.
+	/**
+	 * Method called at the end of generate process. No more
+	 * records will be processed. The implementing class should release
+	 * any resource reserved during init() or runtime at this point. 
      * 
      * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
@@ -131,10 +130,9 @@ public interface RecordGenerate {
 	public Object getSemiResult();
 	
 	/**
-	 * Method called at the end of generate process. No more
-	 * records will be processed. The implementing class should release
-	 * any resource reserved during init() or runtime at this point. 
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished();
     
     /**
@@ -151,8 +149,9 @@ public interface RecordGenerate {
     public TransformationGraph getGraph();
 
     /**
-     * Reset generate for next graph execution.
+     * Use preExecute method.
      */
+    @Deprecated
 	public void reset();
 }
 

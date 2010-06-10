@@ -24,7 +24,6 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 public class CTLRecordFilterAdapter implements RecordFilter {
@@ -70,18 +69,6 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 		}
 		
  	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordFilter#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordFilter#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-	}
 
 	public void global() {
 			// execute code in global scope

@@ -159,6 +159,10 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		}
 	}
 	
+	/**
+	 * Use postExecuste method.
+	 */
+	@Deprecated
 	public void finished() {
 		try {
 			wrapper.execute(FINISHED_FUNCTION_NAME, null);
@@ -186,6 +190,10 @@ public class RecordDenormalizeTL implements RecordDenormalize {
         return ((result != null) ? result.toString() : null);
     }
 
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 		wrapper.reset();

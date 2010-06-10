@@ -62,9 +62,10 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsg#finished()
+	/**
+	 * Use postExecute method.
 	 */
+	@Deprecated
 	public void finished() {
 	}
 
@@ -99,10 +100,10 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 		this.errMsg = errMsg;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#reset()
+	/**
+	 * Use preExecute method. 
 	 */
+    @Deprecated
 	public void reset() throws ComponentNotReadyException {
 		setErrorMsg(null);
 	}

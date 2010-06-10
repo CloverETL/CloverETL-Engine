@@ -299,10 +299,6 @@ public class DBJoin extends Node {
 				counter++;
 		}
 
-		if (transformation != null) {
-		    transformation.finished();
-		}
-
 		if (errorLog != null){
 			errorLog.flush();
 		}
@@ -481,6 +477,10 @@ public class DBJoin extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		
+		if (transformation != null) {
+		    transformation.preExecute();
+		}
 
 		if (firstRun()) {// a phase-dependent part of initialization
 			//all necessary elements have been initialized in init()
@@ -511,6 +511,12 @@ public class DBJoin extends Node {
     @Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
+		
+		if (transformation != null) {
+		    transformation.postExecute(transactionMethod);
+		    transformation.finished();
+		}
+		
 		lookup.getLookupTable().postExecute(transactionMethod);
 		lookup = null;
 		try {

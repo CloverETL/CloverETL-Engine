@@ -936,9 +936,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		rules.put(patternOut, new DeleteRule());
 	}
 
+	/**
+	 * Use postExecute method.
+	 */
+	@Deprecated
 	public void finished() {
-		// TODO Auto-generated method stub
-
 	}
 
 	public TransformationGraph getGraph() {
@@ -1769,11 +1771,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return params.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#reset()
+	/**
+	 * Use preExecute method.
 	 */
+	@Deprecated
 	public void reset() {
 		errorMessage = null;
 	}

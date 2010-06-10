@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
@@ -67,6 +68,10 @@ public class HashPartition implements PartitionFunction{
         return Math.abs(hashKey.hashCode() % numPorts);
     }
     
+    /**
+	 * Use setNode method.
+	 */
+    @Deprecated
     public void setGraph(TransformationGraph graph) {
     	// not used here
     }
@@ -76,6 +81,21 @@ public class HashPartition implements PartitionFunction{
     	return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
+     */
+    public void setNode(Node node) {
+    	// not used here
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#getNode()
+     */
+    public Node getNode() {
+    	// not used here
+    	return null;
+    }
+    
     public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}

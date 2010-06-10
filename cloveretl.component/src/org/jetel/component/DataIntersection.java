@@ -406,6 +406,8 @@ public class DataIntersection extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+		transformation.preExecute();
+
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -471,8 +473,6 @@ public class DataIntersection extends Node {
 		// flush remaining slave records
 		flush(slaveReader, outPortB) ; 
 
-		transformation.finished();
-
 		if (errorLog != null){
 			errorLog.flush();
 		}
@@ -484,7 +484,10 @@ public class DataIntersection extends Node {
     @Override
     public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
     	super.postExecute(transactionMethod);
-    	
+		transformation.postExecute(transactionMethod);
+
+		transformation.finished();
+
     	try {
     		if (errorLog != null){
     			errorLog.close();

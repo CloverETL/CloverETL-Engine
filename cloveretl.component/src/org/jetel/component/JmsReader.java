@@ -200,6 +200,8 @@ public class JmsReader extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		psor.preExecute();
+
 		if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
 		} else {
@@ -219,6 +221,8 @@ public class JmsReader extends Node {
 	@Override
 	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
 		super.postExecute(transactionMethod);
+        psor.postExecute(transactionMethod);
+        psor.finished();
 		closeConnection();
 	}
 
@@ -332,7 +336,6 @@ public class JmsReader extends Node {
 		}finally{
 	        broadcastEOF();
 		}
-        if (psor != null) psor.finished();
 		Result r = runIt ? Result.FINISHED_OK : Result.ABORTED;
 		runIt = false;	// for interruptor
 		return r;

@@ -176,6 +176,7 @@ public final class CTLRecordTransformAdapter implements RecordTransform {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#finished()
 	 */
+	@Deprecated
 	public void finished(){
 		if (finished == null){
 			return;
@@ -202,10 +203,10 @@ public final class CTLRecordTransformAdapter implements RecordTransform {
         return graph;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.jetel.component.RecordTransform#reset()
-     */
+	/**
+	 * Use preExecute method.
+	 */
+	@Deprecated
 	public void reset() {
 		if (reset == null) {
 			return;
