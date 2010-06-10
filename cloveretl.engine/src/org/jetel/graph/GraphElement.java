@@ -136,6 +136,22 @@ public abstract class GraphElement implements IGraphElement {
     	firstRun = false;
     }
     
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#commit()
+     */
+    @Override
+    public void commit() {
+    	//default empty implementation
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#rollback()
+     */
+    @Override
+    public void rollback() {
+    	//default empty implementation
+    }
+    
     /**
      * @see org.jetel.graph.IGraphElement#reset()
      * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 

@@ -30,9 +30,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.exception.JetelException;
 
 
 /**
@@ -277,6 +277,42 @@ public class Phase extends GraphElement implements Comparable {
 		}
         
 		logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#commit()
+	 */
+	@Override
+	public void commit() {
+		super.commit();
+
+        //commit of all edges
+        for (Edge edge : edges.values()) {
+        	edge.commit();
+        }
+
+		//commit of all nodes
+		for (Node node : nodes.values()) {
+			node.commit();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#rollback()
+	 */
+	@Override
+	public void rollback() {
+		super.rollback();
+		
+        //rollback of all edges
+        for (Edge edge : edges.values()) {
+        	edge.rollback();
+        }
+
+		//rollback of all nodes
+		for (Node node : nodes.values()) {
+			node.rollback();
+		}
 	}
 	
 	/**

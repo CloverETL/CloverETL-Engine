@@ -607,7 +607,7 @@ public class DBExecute extends Node {
 		}
 	}
 	
-	private void commit() throws IOException, InterruptedException, SQLException{
+	private void dbCommit() throws IOException, InterruptedException, SQLException{
 		if (!connectionInstance.getSqlConnection().getAutoCommit()) {
     		try {
     			connectionInstance.getSqlConnection().commit();
@@ -649,11 +649,11 @@ public class DBExecute extends Node {
     					}
     					index++;
     					if (transaction == InTransaction.ONE){
-    						commit();
+    						dbCommit();
     					}
     				}
     				if (transaction == InTransaction.SET){
-    					commit();
+    					dbCommit();
     				}
     			}
     		}else{//sql statements are "solid" (set as sql query)
@@ -673,11 +673,11 @@ public class DBExecute extends Node {
     						handleException(e, inRecord, i);
     					}
     					if (transaction == InTransaction.ONE){
-    						commit();
+    						dbCommit();
     					}
     				}
     				if (transaction == InTransaction.SET){
-    					commit();
+    					dbCommit();
     				}
     				if (inPort != null) {
     					inRecord = inPort.readRecord(inRecord);
@@ -685,7 +685,7 @@ public class DBExecute extends Node {
     			} while (runIt && inRecord != null);
     		}
     		if (runIt && transaction == InTransaction.ALL){
-    			commit();
+    			dbCommit();
     		}
     		if (!runIt) {
     			connectionInstance.getSqlConnection().rollback();
