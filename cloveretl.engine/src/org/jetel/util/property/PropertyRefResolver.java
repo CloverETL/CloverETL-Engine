@@ -387,6 +387,19 @@ public class PropertyRefResolver {
 	}
 
 	/**
+	 * Evaluates CTL expressions and resolves property references present in each property in the given properties.
+	 * The result is then stored back into the given properties.
+	 * 
+	 * @param properties
+	 * @param refResFlag
+	 */
+	public void resolveAll(Properties properties, RefResFlag refResFlag) {
+		for (Entry<Object, Object> property : properties.entrySet()) {
+			properties.setProperty((String) property.getKey(), resolveRef((String) property.getValue(), refResFlag));
+		}
+	}
+
+	/**
 	 * @param value
 	 * @return <code>true</code> if value contains at least one parameter.
 	 */
