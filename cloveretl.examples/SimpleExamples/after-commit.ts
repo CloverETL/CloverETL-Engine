@@ -399,9 +399,9 @@
 
 <FunctionalTest ident="RunGraph" graphFile="graph/graphRunGraph.grf">
 		<Property name="GRAPH_DIR" value="../cloveretl.examples/SimpleExamples/graph"/>
-		<RegEx expression="DEDUP0                 FINISHED_OK" occurences="2"/>
-		<RegEx expression="DENORMALIZE            FINISHED_OK" occurences="2"/>
-		<RegEx expression="EXT_SORT0              FINISHED_OK" occurences="4"/>
+		<RegEx expression="DEDUP0\s+FINISHED_OK" occurences="2"/>
+		<RegEx expression="DENORMALIZE\s+FINISHED_OK" occurences="2"/>
+		<RegEx expression="EXT_SORT0\s+FINISHED_OK" occurences="4"/>
 </FunctionalTest>
 
 
