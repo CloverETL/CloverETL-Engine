@@ -602,7 +602,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     			logger.error("Phase post-execute finalization [transaction method=" + transactionMethod + "] failed with reason: " + e.getMessage(), e);
     			causeException = e;
     			causeGraphElement = e.getGraphElement();
-    			return Result.ERROR;
+    			phaseStatus = Result.ERROR;
         	}
         }
         
