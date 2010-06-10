@@ -415,7 +415,7 @@
 
 
 <FunctionalTest ident="SequenceChecker" graphFile="graph/graphSequenceChecker.grf" assertion="false">
-		<RegEx expression="SEQUENCE_CHECKER0      FINISHED_OK" occurences="1"/>
+		<RegEx expression="SEQUENCE_CHECKER0\s+FINISHED_OK" occurences="1"/>
 		<RegEx expression="The sequence checker fails at row '6'." occurences="1"/>
 </FunctionalTest>
 
