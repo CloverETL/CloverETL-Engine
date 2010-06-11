@@ -220,7 +220,8 @@ public class DateLib extends TLFunctionLibrary {
     	cal.set(Calendar.DAY_OF_MONTH, portion[0]);
     	cal.set(Calendar.MONTH, portion[1]);
     	cal.set(Calendar.YEAR, portion[2]);
-    	return cal.getTime();
+    	d.setTime(cal.getTimeInMillis());
+    	return d;
     }
     
     // extractTime
@@ -252,7 +253,8 @@ public class DateLib extends TLFunctionLibrary {
     	cal.set(Calendar.MINUTE, portion[1]);
     	cal.set(Calendar.SECOND, portion[2]);
     	cal.set(Calendar.MILLISECOND, portion[3]);
-    	return cal.getTime();
+    	d.setTime(cal.getTimeInMillis());
+    	return d;
     }
 
     //Trunc
@@ -292,16 +294,17 @@ public class DateLib extends TLFunctionLibrary {
     	return value.longValue();
     }
     
-    @TLFunctionAnnotation("Returns date with the same year,month and day, but hour, minute, second and millisecond are set to zero values.")
-    public static final Date trunc(TLFunctionCallContext context, Date value) {
+    @TLFunctionAnnotation("Truncates other, but date-time values to zero.")
+    public static final Date trunc(TLFunctionCallContext context, Date date) {
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
-    	cal.setTime(value);
-    	cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE , 0);
-        cal.set(Calendar.SECOND , 0);
-        cal.set(Calendar.MILLISECOND , 0);
-        value.setTime(cal.getTimeInMillis());
-        return value;
+    	cal.setTime(date);
+    	int[] portion = new int[]{cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)};
+    	cal.clear();
+    	cal.set(Calendar.DAY_OF_MONTH, portion[0]);
+    	cal.set(Calendar.MONTH, portion[1]);
+    	cal.set(Calendar.YEAR, portion[2]);
+    	date.setTime(cal.getTimeInMillis());
+    	return date;
     }
     
     @TLFunctionAnnotation("Emptyes the passed List and returns null.")
@@ -333,14 +336,17 @@ public class DateLib extends TLFunctionLibrary {
     	context.setCache(new TLCalendarCache());
     }
 
-    @TLFunctionAnnotation("Returns the date with the same hour, minute, second and millisecond, but year, month and day are set to zero values.")
+    @TLFunctionAnnotation("Truncates other, but day time values to zero.")
     public static final Date truncDate(TLFunctionCallContext context, Date date) {
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(date);
-    	cal.set(Calendar.YEAR,0);
-        cal.set(Calendar.MONTH,0);
-        cal.set(Calendar.DAY_OF_MONTH,1);
-        date.setTime(cal.getTimeInMillis());
-        return date;
+    	int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
+    	cal.clear();
+    	cal.set(Calendar.HOUR_OF_DAY, portion[0]);
+    	cal.set(Calendar.MINUTE, portion[1]);
+    	cal.set(Calendar.SECOND, portion[2]);
+    	cal.set(Calendar.MILLISECOND, portion[3]);
+    	date.setTime(cal.getTimeInMillis());
+    	return date;
     }
 }

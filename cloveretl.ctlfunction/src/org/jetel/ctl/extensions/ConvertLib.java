@@ -261,14 +261,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			boolean lenient = false;
 			String locale = null;
 			
 			if (context.getParams().length > 2) {
-				
-				if (context.getParams().length > 3 ) {
-					lenient = stack.popBoolean();
-				}
 				
 				locale = stack.popString();
 			}
@@ -276,7 +271,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 		
-			stack.push(str2date(context, input,pattern,locale,lenient));
+			stack.push(str2date(context, input,pattern,locale));
 		}
 	}
 
@@ -286,22 +281,15 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, boolean lenient) {
-		
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
 		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
-		formatter.setLenient(lenient);
 
 		return formatter.parseDate(input);
-	}
-	
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return str2date(context, input,pattern,locale,false);
 	}
 
 	@TLFunctionAnnotation("Converts string to date based on a pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input,pattern,null,false);
+		return str2date(context, input,pattern,null);
 	}
 
 	// DATE2NUM
