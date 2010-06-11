@@ -46,7 +46,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -303,9 +302,9 @@ public class LookupJoin extends Node {
      * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
      */
     @Override
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-    	super.postExecute(transactionMethod);
-    	transformation.postExecute(transactionMethod);
+    public void postExecute() throws ComponentNotReadyException {
+    	super.postExecute();
+    	transformation.postExecute();
         transformation.finished();
     }
     

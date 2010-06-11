@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -63,10 +62,9 @@ public interface JavaRunnable {
      * is invoked after graph finish at the latest. For some graph elements, for instance
      * components, is this method called immediately after phase finish.
      * 
-     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
      */
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+    public void postExecute() throws ComponentNotReadyException;
 
 	/**
 	 * The core method, which holds implementation of the Java code to be run by 

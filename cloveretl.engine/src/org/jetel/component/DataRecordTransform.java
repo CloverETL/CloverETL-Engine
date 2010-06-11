@@ -25,7 +25,6 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -124,7 +123,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
 	/**

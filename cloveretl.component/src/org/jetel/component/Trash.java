@@ -35,7 +35,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -193,8 +192,8 @@ public class Trash extends Node {
 		}
 	}
     @Override
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-    	super.postExecute(transactionMethod);
+    public void postExecute() throws ComponentNotReadyException {
+    	super.postExecute();
     	
     	try {
     		if (writer!=null) {

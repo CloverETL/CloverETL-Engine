@@ -44,7 +44,6 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -631,8 +630,8 @@ public class XLSReader extends Node {
     }
 
     @Override
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-    	super.postExecute(transactionMethod);
+    public void postExecute() throws ComponentNotReadyException {
+    	super.postExecute();
     	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
             try {
                 Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);

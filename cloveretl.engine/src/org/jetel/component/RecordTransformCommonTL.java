@@ -21,7 +21,6 @@ package org.jetel.component;
 import org.apache.commons.logging.Log;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLValue;
 
@@ -126,7 +125,7 @@ public class RecordTransformCommonTL {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 }
 

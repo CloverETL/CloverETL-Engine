@@ -33,7 +33,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -205,8 +204,8 @@ public class TextTableWriter extends Node {
 	}
 
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		try {
 			writer.close();
 		}

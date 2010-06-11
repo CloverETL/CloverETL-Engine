@@ -242,8 +242,8 @@ public class Phase extends GraphElement implements Comparable {
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		
 		logger.info("[Clover] Post-execute phase finalization: " + phaseNum);
 
@@ -251,7 +251,7 @@ public class Phase extends GraphElement implements Comparable {
 		logger.debug(" post-execute edges finalizing: ");
         for (Edge edge : edges.values()) {
         	try {
-        		edge.postExecute(transactionMethod);
+        		edge.postExecute();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
         		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
@@ -263,7 +263,7 @@ public class Phase extends GraphElement implements Comparable {
 		logger.debug(" post-execute nodes finalizing: ");
 		for(Node node : nodes.values()) {
 			try {
-				node.postExecute(transactionMethod);
+				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
 				node.setResultCode(Result.ERROR);

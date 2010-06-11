@@ -132,7 +132,7 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#postExecute()
      */
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+    public void postExecute() throws ComponentNotReadyException {
     	firstRun = false;
     }
     

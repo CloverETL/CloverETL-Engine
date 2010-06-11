@@ -40,7 +40,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
@@ -219,9 +218,9 @@ public class JmsReader extends Node {
 	}
 
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
-        psor.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+        psor.postExecute();
         psor.finished();
 		closeConnection();
 	}

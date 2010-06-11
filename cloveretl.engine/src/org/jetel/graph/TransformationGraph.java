@@ -518,17 +518,17 @@ public final class TransformationGraph extends GraphElement {
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		
 		//post-execute initialization of dictionary
-		dictionary.postExecute(transactionMethod);
+		dictionary.postExecute();
 		
 		//post-execute finalization of connections
 		for (IConnection connection : connections.values()) {
 			logger.info("Post-execute finalization of connection:");
 			try {
-				connection.postExecute(transactionMethod);
+				connection.postExecute();
 				logger.info(connection + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize connection " + connection + ".", e);
@@ -541,7 +541,7 @@ public final class TransformationGraph extends GraphElement {
 		for (Sequence sequence : sequences.values()) {
 			logger.info("Post-execute finalization of sequence:");
 			try {
-				sequence.postExecute(transactionMethod);
+				sequence.postExecute();
 				logger.info(sequence + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize sequence " + sequence + ".", e);
@@ -554,7 +554,7 @@ public final class TransformationGraph extends GraphElement {
 		for (LookupTable lookupTable : lookupTables.values()) {
 			logger.info("Post-execute finalization of lookup table:");
 			try {
-				lookupTable.postExecute(transactionMethod);
+				lookupTable.postExecute();
 				logger.info(lookupTable + " ... OK");
 			} catch (ComponentNotReadyException e) {
 				throw new ComponentNotReadyException(this, "Can't finalize lookup table " + lookupTable + ".", e);

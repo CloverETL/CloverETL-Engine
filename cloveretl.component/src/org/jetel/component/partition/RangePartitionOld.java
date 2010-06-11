@@ -26,7 +26,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -67,7 +66,7 @@ public class RangePartitionOld implements PartitionFunction{
 	/* (non-Javadoc)
 	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 
     public int getOutputPort(DataRecord record){

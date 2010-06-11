@@ -62,7 +62,6 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -1349,8 +1348,8 @@ public class XMLExtract extends Node {
     }
     
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		//no input channel is closed here - this could be changed in future
 	}
 

@@ -42,7 +42,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaClass;
@@ -183,9 +182,9 @@ public class JmsWriter extends Node {
 	}
 
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
-		psor.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		psor.postExecute();
 		psor.finished();
 		
 		closeConnection();

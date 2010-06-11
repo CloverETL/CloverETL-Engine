@@ -21,7 +21,6 @@ package org.jetel.component.jms;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -50,7 +49,7 @@ public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.jms.JmsMsg2DataRecord#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
 	/* (non-Javadoc)

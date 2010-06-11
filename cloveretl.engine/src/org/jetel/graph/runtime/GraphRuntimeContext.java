@@ -25,7 +25,6 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 

@@ -25,7 +25,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.metadata.DataRecordMetadata;
 
