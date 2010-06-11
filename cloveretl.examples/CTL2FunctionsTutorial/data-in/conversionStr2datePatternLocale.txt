@@ -1,0 +1,12 @@
+10/09/1978;MM/dd/yyyy;cs.CZ
+05/03/1979;dd/MM/yyyy;cs.CZ
+10/09/1988;MM/dd/yyyy;en.US
+05/03/1989;dd/MM/yyyy;en.US
+10/09/1998;MM/dd/yyyy;en.GB
+05/03/1999;dd/MM/yyyy;en.GB
+10.09.1978;MM.dd.yyyy;cs.CZ
+05.03.1979;dd.MM.yyyy;cs.CZ
+10.09.1988;MM.dd.yyyy;en.US
+05.03.1989;dd.MM.yyyy;en.US
+10.09.1998;MM.dd.yyyy;en.GB
+05.03.1999;dd.MM.yyyy;en.GB
