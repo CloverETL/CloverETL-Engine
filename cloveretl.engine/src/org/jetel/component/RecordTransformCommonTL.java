@@ -39,6 +39,8 @@ public class RecordTransformCommonTL {
     public static final String INIT_FUNCTION_NAME="init";
     public static final String RESET_FUNCTION_NAME="reset";
     public static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
+    public static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
+    public static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
     
     protected TransformationGraph graph;
     protected Log logger;
@@ -120,12 +122,26 @@ public class RecordTransformCommonTL {
 	 * @see org.jetel.component.RecordGenerate#preExecute()
 	 */
 	public void preExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		semiResult = null;
+		try {
+			semiResult = wrapper.execute(PRE_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	public void postExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		semiResult = null;
+		try {
+			semiResult = wrapper.execute(POST_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 }
 
