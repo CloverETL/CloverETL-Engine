@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -30,18 +31,17 @@ import org.jetel.exception.TransformException;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 11th June 2010
  * @created 28th April 2009
  *
  * @see RecordFilter
  */
 public abstract class CTLRecordFilter extends CTLAbstractTransform implements RecordFilter {
 
-	public final void init() throws ComponentNotReadyException {
-		// a single input data record is required, no output data records are used
-		this.inputRecords = new DataRecord[1];
-		this.outputRecords = NO_DATA_RECORDS;
+	/** Input data record used for filtering, or <code>null</code> if not accessible. */
+	private DataRecord inputRecord = null;
 
+	public final void init() throws ComponentNotReadyException {
 		globalScopeInit();
 		initDelegate();
 	}
@@ -58,14 +58,22 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 	}
 
 	public boolean isValid(DataRecord record) throws TransformException {
-		inputRecords[0] = record;
+		boolean result = false;
+
+		// only input record is accessible within the isValid() function
+		inputRecord = record;
 
 		try {
-			return isValidDelegate();
+			result = isValidDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		inputRecord = null;
+
+		return result;
 	}
 
 	/**
@@ -77,5 +85,21 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 	 */
 	@CTLEntryPoint(name = "isValid", required = true)
 	protected abstract boolean isValidDelegate() throws ComponentNotReadyException, TransformException;
+
+	protected final DataRecord getInputRecord(int index) {
+		if (inputRecord == null) {
+			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index != 0) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
+		}
+
+		return inputRecord;
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
+	}
 
 }

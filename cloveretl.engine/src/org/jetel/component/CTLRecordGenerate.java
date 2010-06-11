@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -34,18 +35,18 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 6th May 2010
+ * @version 11th June 2010
  * @created 27th July 2009
  *
  * @see RecordGenerate
  */
 public abstract class CTLRecordGenerate extends CTLAbstractTransform implements RecordGenerate {
 
+	/** Output data records used by the generator, or <code>null</code> if not accessible. */
+	private DataRecord[] outputRecords = null;
+
 	public final boolean init(Properties parameters, DataRecordMetadata[] targetMetadata)
 			throws ComponentNotReadyException {
-		// no input data records are used, array of output records is provided directly via method call
-		this.inputRecords = NO_DATA_RECORDS;
-
 		globalScopeInit();
 
 		return initDelegate();
@@ -64,27 +65,28 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#preExecute()
-	 */
+	@CTLEntryPoint(name = "preExecute", required = false)
 	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
+
 	public final int generate(DataRecord[] target) throws TransformException {
+		int result = 0;
+
+		// only output records are accessible within the generate() function
 		outputRecords = target;
 
 		try {
-			return generateDelegate();
+			result = generateDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the output records inaccessible again
+		outputRecords = null;
+
+		return result;
 	}
 
 	/**
@@ -111,22 +113,39 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 		return null;
 	}
 
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	@CTLEntryPoint(name = "finished", required = false)
-	public void finished() {
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	protected final DataRecord getInputRecord(int index) {
+		throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		if (outputRecords == null) {
+			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index < 0 || index >= outputRecords.length) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, OUTPUT_RECORD_NOT_DEFINED);
+		}
+
+		return outputRecords[index];
+	}
+
 	/**
-	 * Use preExecute method.
+	 * Use {@link #postExecute()} method.
 	 */
 	@Deprecated
-	@CTLEntryPoint(name = "reset", required = false)
+	public void finished() {
+	}
+
+	/**
+	 * Use {@link #preExecute()} method.
+	 */
+	@Deprecated
 	public void reset() {
-		// does nothing by default, may be overridden by generated transform classes
 	}
 
 }

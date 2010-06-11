@@ -70,7 +70,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 4th May 2010
+ * @version 11th June 2010
  * @since 24th February 2009
  */
 public interface RecordRollup {
@@ -109,6 +109,15 @@ public interface RecordRollup {
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException;
 
     /**
+     * This is also initialization method, which is invoked before each separate graph run. Comparing to the init()
+     * method, here should be allocated only resources for this graph run. All allocated resources should be released
+     * in the {@link #postExecute()} method.
+     *
+     * @throws ComponentNotReadyException if an error occurred during initialization
+     */
+    public void preExecute() throws ComponentNotReadyException; 
+
+    /**
      * This method is called for the first data record in a group. Any initialization of the group "accumulator" should
      * be placed here.
      *
@@ -120,27 +129,6 @@ public interface RecordRollup {
      */
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
 
-    /**
-     * This is also initialization method, which is invoked before each separate graph run.
-     * Contrary the init() procedure here should be allocated only resources for this graph run.
-     * All here allocated resources should be released in #postExecute() method.
-     * 
-     * @throws ComponentNotReadyException some of the required resource is not available or other
-     * precondition is not accomplish
-     */
-    public void preExecute() throws ComponentNotReadyException; 
-
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated 
-     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-     * is invoked after graph finish at the latest. For some graph elements, for instance
-     * components, is this method called immediately after phase finish.
-     * 
-     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
-     * @throws ComponentNotReadyException
-     */
-    public void postExecute() throws ComponentNotReadyException;
-    
     /**
      * This method is called for each data record (including the first one as well as the last one) in a group
      * in order to update the group "accumulator".
@@ -221,8 +209,20 @@ public interface RecordRollup {
     public String getMessage();
 
     /**
-     * Called at the end of the rollup transform after all input data records were processed.
+     * This is de-initialization method for a single graph run. All resources allocated in {@link #preExecute()}
+     * method should be released here. It is guaranteed that this method is invoked after graph finish at the latest.
+     * For some graph elements, for instance components, is this method called immediately after phase finish.
+     *
+     * @throws ComponentNotReadyException if an error occurred during de-initialization
      */
+    public void postExecute() throws ComponentNotReadyException;
+    
+    /**
+     * Called at the end of the rollup transform after all input data records were processed.
+     *
+     * @deprecated Use {@link #postExecute()} method.
+     */
+    @Deprecated
     public void finished();
 
     /**
@@ -230,7 +230,10 @@ public interface RecordRollup {
      * if the {@link #init(Properties, DataRecordMetadata, DataRecordMetadata)} method has already been called.
      *
      * @throws ComponentNotReadyException if an error occurred during the reset
+     *
+     * @deprecated Use {@link #preExecute()} method.
      */
+    @Deprecated
     public void reset() throws ComponentNotReadyException;
 
 }

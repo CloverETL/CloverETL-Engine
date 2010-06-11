@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -34,17 +35,20 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 6th May 2010
+ * @version 11th June 2010
  * @created 28th April 2009
  *
  * @see RecordTransform
  */
 public abstract class CTLRecordTransform extends CTLAbstractTransform implements RecordTransform {
 
+	/** Input data records used for transform, or <code>null</code> if not accessible. */
+	private DataRecord[] inputRecords = null;
+	/** Output data records used for transform, or <code>null</code> if not accessible. */
+	private DataRecord[] outputRecords = null;
+
 	public final boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata,
 			DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
-		// arrays of both input and output data records are provided via method call
-
 		globalScopeInit();
 
 		return initDelegate();
@@ -65,28 +69,30 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#preExecute()
-	 */
+	@CTLEntryPoint(name = "preExecute", required = false)
 	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
+
 	public final int transform(DataRecord[] sources, DataRecord[] targets) throws TransformException {
+		int result = 0;
+
+		// both input and output records are accessible within the transform() function
 		inputRecords = sources;
 		outputRecords = targets;
 
 		try {
-			return transformDelegate();
+			result = transformDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make both input and output records inaccessible again
+		inputRecords = null;
+		outputRecords = null;
+
+		return result;
 	}
 
 	/**
@@ -113,22 +119,47 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		return null;
 	}
 
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	@CTLEntryPoint(name = "finished", required = false)
-	public void finished() {
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	protected final DataRecord getInputRecord(int index) {
+		if (inputRecords == null) {
+			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index < 0 || index >= inputRecords.length) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
+		}
+
+		return inputRecords[index];
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		if (outputRecords == null) {
+			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index < 0 || index >= outputRecords.length) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, OUTPUT_RECORD_NOT_DEFINED);
+		}
+
+		return outputRecords[index];
+	}
+
 	/**
-	 * Use preExecute method.
+	 * Use {@link #postExecute()} method.
 	 */
 	@Deprecated
-	@CTLEntryPoint(name = "reset", required = false)
+	public void finished() {
+	}
+
+	/**
+	 * Use {@link #preExecute()} method.
+	 */
+	@Deprecated
 	public void reset() {
-		// does nothing by default, may be overridden by generated transform classes
 	}
 
 }
