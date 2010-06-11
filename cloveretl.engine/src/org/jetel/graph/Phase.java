@@ -19,10 +19,12 @@
 package org.jetel.graph;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -244,39 +246,51 @@ public class Phase extends GraphElement implements Comparable {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		
+
 		logger.info("[Clover] Post-execute phase finalization: " + phaseNum);
 
-        //post-execute initialization of all edges
+		Set<GraphElement> failedElements = new HashSet<GraphElement>();
+		// post-execute finalization of all edges
 		logger.debug(" post-execute edges finalizing: ");
-        for (Edge edge : edges.values()) {
-        	try {
-        		edge.postExecute();
-        	} catch (ComponentNotReadyException e) {
+		for (Edge edge : edges.values()) {
+			try {
+				edge.postExecute();
+			} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
-        	}
-        }
-		logger.debug(" all edges finalized successfully... ");
+				failedElements.add(edge);
+				logger.error("Edge " + edge.getId() + " finalization failed.", e);
+			}
+		}
+		logger.debug(" edges finalized " + (failedElements.size() != 0 ? "with errors... " : "successfully... "));
 
-		// iterate through all nodes and initialize them
+		// iterate through all nodes and finalize them
 		logger.debug(" post-execute nodes finalizing: ");
-		for(Node node : nodes.values()) {
+		for (Node node : nodes.values()) {
 			try {
 				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
+				failedElements.add(node);
+				logger.error(node.getId() + " ...FAILED ! \nReason: " + ex.getMessage(), ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
+				failedElements.add(node);
+				logger.error(node.getId() + " ...FATAL ERROR !\nReason: " + ex.getMessage(), ex);
 			}
 		}
-        
-		logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
+		if (failedElements.isEmpty()) {
+			logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
+		} else {
+			StringBuffer sb = new StringBuffer();
+			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED due to failure of following graph elements:\n");
+			for (GraphElement failedElement : failedElements) {
+				sb.append(failedElement.getId()).append("\n");
+			}
+			throw new ComponentNotReadyException(sb.toString());
+		}
 	}
 	
 	/* (non-Javadoc)
