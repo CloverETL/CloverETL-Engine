@@ -2097,9 +2097,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_datelib_truncDate");
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(BORN_VALUE);
-		cal.set(Calendar.YEAR,0);
-        cal.set(Calendar.MONTH,0);
-        cal.set(Calendar.DAY_OF_MONTH,1);
+		int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
+    	cal.clear();
+    	cal.set(Calendar.HOUR_OF_DAY, portion[0]);
+    	cal.set(Calendar.MINUTE, portion[1]);
+    	cal.set(Calendar.SECOND, portion[2]);
+    	cal.set(Calendar.MILLISECOND, portion[3]);
         check("truncBornDate", cal.getTime());
 	}
 	
@@ -2178,7 +2181,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("date11", checkDate);
 		check("date12", checkDate);
 		check("date13", checkDate);
-		check("date21", checkDate);
 	}
 	
 	public void test_convertlib_base64byte() {
@@ -2375,8 +2377,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("date1", checkDate);
 		check("date2", checkDate);
-		check("date3", checkDate);
-		check("date4", checkDate);
 	}
 
 	public void test_convertlib_str2decimal() {

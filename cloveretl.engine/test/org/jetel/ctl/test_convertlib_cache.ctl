@@ -33,8 +33,6 @@ function integer transform() {
 		date11 = str2date(ds1, ds2);
 		date12 = str2date('20Jul2000',ds2);
 		date13 = str2date('20Jul2000','ddMMMyyyy');
-		
-		date21 = str2date(ds1, ds2, ds3, true);
 	}
 	
 	
