@@ -1,0 +1,6 @@
+31-Dec-2008;dd-MMM-yyyy;en.US
+310-Dec-2008;dd-MMM-yyyy;en.US
+31-Dec-2008;dd-MMM-yyyy;cs.CZ
+31-Prosinec-2008;dd-MMM-yyyy;en.US
+31-Prosinec-2008;dd-MMM-yyyy;cs.CZ
+310-Prosinec-2008;dd-MMM-yyyy;cs.CZ

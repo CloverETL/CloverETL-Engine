@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jun 09 12:55:32 CEST 2010" modifiedBy="cloveruser" name="dateTrunc_date" revision="1.22">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="truncInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="truncOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field name="Function" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="TruncatedDate" type="date"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date trunc(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="142" y="85">
+<attr name="text"><![CDATA[
+The trunc(date) function takes one date argument and returns the date with the same year, month and day, but hour, minute, second and millisecond are set to 0.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateTrunc.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="74" guiY="250" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dataTruncOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="250" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="265" guiY="250" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Date = $0.Date;
+	$0.Function = "trunc($0.Date)";
+	$0.TruncatedDate = trunc($0.Date);
+	return 0;
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
