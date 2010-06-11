@@ -47,7 +47,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.classloader.GreedyURLClassLoader;
@@ -371,8 +370,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 	
-	public synchronized void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public synchronized void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		try {
 			if (getGraph().getRuntimeContext().isBatchMode()) {
 				connection.close();

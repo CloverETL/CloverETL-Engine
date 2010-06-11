@@ -25,7 +25,6 @@ import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLValue;
@@ -121,7 +120,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.denormalize.RecordDenormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 
 	public int append(DataRecord inRecord) {

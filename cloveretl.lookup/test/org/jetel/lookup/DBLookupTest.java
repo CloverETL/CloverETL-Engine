@@ -12,8 +12,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.TransactionMethod;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 
@@ -77,7 +75,7 @@ public class DBLookupTest extends CloverTestCase {
 				assertEquals(customer.getField("lname"), record.getField("last_name"));
 			}
 		}
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 	}
 	
 	
@@ -98,7 +96,7 @@ public class DBLookupTest extends CloverTestCase {
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 //		lookupTable.free();
 
 		lookupTable.preExecute();
@@ -118,7 +116,7 @@ public class DBLookupTest extends CloverTestCase {
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 //		lookupTable.free();
 
 		lookupTable.preExecute();
@@ -141,7 +139,7 @@ public class DBLookupTest extends CloverTestCase {
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 //		lookupTable.free();
 
 		lookupTable.preExecute();
@@ -164,7 +162,7 @@ public class DBLookupTest extends CloverTestCase {
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 //		lookupTable.free();
 
 		lookupTable.preExecute();
@@ -187,7 +185,7 @@ public class DBLookupTest extends CloverTestCase {
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 //		lookupTable.free();
 
 		lookupTable.preExecute();
@@ -206,7 +204,7 @@ public class DBLookupTest extends CloverTestCase {
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		lookupTable.postExecute(TransactionMethod.COMMIT);
+		lookupTable.postExecute();
 		System.out.println("Cashing=3000, storeNulls=true:");
 		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
 		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());

@@ -23,7 +23,6 @@ import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -83,7 +82,7 @@ public interface RecordGenerate {
      * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
      */
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+    public void postExecute() throws ComponentNotReadyException;
 
 	/**
 	 * Performs generator of target records.

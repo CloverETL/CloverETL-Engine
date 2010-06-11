@@ -26,7 +26,6 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -119,7 +118,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
 	/**

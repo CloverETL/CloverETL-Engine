@@ -28,7 +28,6 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -147,7 +146,7 @@ public class CTLRecordNormalizeAdapter implements RecordNormalize {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.normalize.RecordNormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 
 	public void global() {

@@ -48,7 +48,6 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.util.primitive.DuplicateKeyMap;
@@ -245,7 +244,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	            }
 	           	//post-execution of graph
 	           	try {
-	           		graph.postExecute(null);
+	           		graph.postExecute();
 	           	} catch (Exception e) {
 	    			causeException = e;
 	    			if (e instanceof ComponentNotReadyException) {
@@ -620,23 +619,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
             	/////////////////
                 threadManager.notifyAll();
             }
-        	
-        	//specify transaction mode for postExecute()
-        	TransactionMethod transactionMethod = TransactionMethod.DEFAULT;
-        	if (runtimeContext.isTransactionMode()) {
-	        	switch (phaseStatus) {
-	        	case FINISHED_OK:
-	        		transactionMethod = TransactionMethod.COMMIT;
-	        		break;
-	       		default:
-	        		transactionMethod = TransactionMethod.ROLLBACK;
-	        	}
-        	}
         	//postExecute() invocation
         	try {
-        		phase.postExecute(transactionMethod);
+        		phase.postExecute();
         	} catch (ComponentNotReadyException e) {
-    			logger.error("Phase post-execute finalization [transaction method=" + transactionMethod + "] failed with reason: " + e.getMessage(), e);
+    			logger.error("Phase post-execute finalization failed with reason: " + e.getMessage(), e);
     			causeException = e;
     			causeGraphElement = e.getGraphElement();
     			phaseStatus = Result.ERROR;

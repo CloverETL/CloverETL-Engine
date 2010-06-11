@@ -55,7 +55,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -530,24 +529,37 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		try {
-			if (transactionMethod.equals(TransactionMethod.ROLLBACK) || runResult == Result.ERROR) {
-				sqlConnection.rollback();
-				logger.warn(this.getId() + " finished with error. The current transaction has been rolled back.");
-			}else{
-				sqlConnection.commit();
-			}
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(this, e);
-		}
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 	}
+	
+	
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
 	
+	@Override
+	public void commit() {
+		super.commit();
+		try {
+			sqlConnection.commit();
+		} catch (SQLException e) {
+			throw new RuntimeException(this.getId() + " Rollback failed!");
+		}
+	}
+
+	@Override
+	public void rollback() {
+		super.rollback();
+		try {
+			sqlConnection.rollback();
+		} catch (SQLException e) {
+			throw new RuntimeException(this.getId() + " Rollback failed!");
+		}
+		logger.warn(this.getId() + " finished with error. The current transaction has been rolled back.");
+	}
+
 	public String getType() {
 		return COMPONENT_TYPE;
 	}

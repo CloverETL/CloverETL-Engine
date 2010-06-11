@@ -300,8 +300,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	@Override
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
-		super.postExecute(transactionMethod);
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
 		
         if (edgeDebuger != null) {
             edgeDebuger.close();

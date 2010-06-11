@@ -19,7 +19,6 @@ import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.XLSParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -178,12 +177,12 @@ public class RangeLookupTest extends CloverTestCase {
 
 		DataRecord tmp;
 		System.out.println("Lookup table:");
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next() + "\n");
 		}
 
 		System.out.println("LookupNotOverlap table:");
-		for (Iterator iter = lookupNotOverlap.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookupNotOverlap.iterator(); iter.hasNext();) {
 			System.out.print(iter.next() + "\n");
 		}
 
@@ -208,8 +207,8 @@ public class RangeLookupTest extends CloverTestCase {
 				}
 			}
 		}
-		lookup.postExecute(TransactionMethod.COMMIT);
-		lookupNotOverlap.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
+		lookupNotOverlap.postExecute();
 	}
 
 	public void test_getDataRecord2() throws IOException, ComponentNotReadyException {
@@ -349,12 +348,12 @@ public class RangeLookupTest extends CloverTestCase {
 
 		DataRecord tmp, tmp1;
 		System.out.println("Lookup table:");
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next() + "\n");
 		}
 
 		System.out.println("LookupNotOverlap table:");
-		for (Iterator iter = lookupNotOverlap.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookupNotOverlap.iterator(); iter.hasNext();) {
 			System.out.print(iter.next() + "\n");
 		}
 
@@ -386,8 +385,8 @@ public class RangeLookupTest extends CloverTestCase {
 				}
 			} while (tmp != null || tmp1 != null);
 		}
-		lookup.postExecute(TransactionMethod.COMMIT);
-		lookupNotOverlap.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
+		lookupNotOverlap.postExecute();
 	}
 
 	public void test_largeData() throws IOException, ComponentNotReadyException, JetelException {
@@ -487,7 +486,7 @@ public class RangeLookupTest extends CloverTestCase {
 				assertTrue(((Date) record.getField("value8").getValue()).compareTo((Date) tmp.getField("e8").getValue()) <= 0);
 			}
 		}
-		lookup.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
 	}
 
 	public void test_IncludeExclude() throws ComponentNotReadyException {
@@ -527,7 +526,7 @@ public class RangeLookupTest extends CloverTestCase {
 		record.getField("end1").setValue(100);
 		lookup.put(record);
 
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next());
 
 		}
@@ -570,7 +569,7 @@ public class RangeLookupTest extends CloverTestCase {
 		lookupResult = lookup.createLookup(key, record);
 		lookupResult.seek();
 		assertEquals(2, lookupResult.getNumFound());
-		lookup.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
 	}
 
 	public void test_Strings() throws ComponentNotReadyException {
@@ -618,7 +617,7 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.put(record);
 
 		DataRecord tmp;
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next());
 
 		}
@@ -645,7 +644,7 @@ public class RangeLookupTest extends CloverTestCase {
 			}
 		}
 
-		lookup.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
 	}
 
 	public void test_nulls() throws ComponentNotReadyException {
@@ -671,7 +670,7 @@ public class RangeLookupTest extends CloverTestCase {
 		record.getField("end").setValue(null);
 		lookup.put(record);
 
-		for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+		for (Iterator<DataRecord> iter = lookup.iterator(); iter.hasNext();) {
 			System.out.print(iter.next());
 
 		}
@@ -733,7 +732,7 @@ public class RangeLookupTest extends CloverTestCase {
 		System.out.println(lookupResult.next());
 		System.out.println(lookupResult.next());
 		assertEquals(3, lookupResult.getNumFound());
-		lookup.postExecute(TransactionMethod.COMMIT);
+		lookup.postExecute();
 	}
 
 	private boolean checkOrder(DataRecord previous, DataRecord following) {

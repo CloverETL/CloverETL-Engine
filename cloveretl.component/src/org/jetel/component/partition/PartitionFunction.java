@@ -25,7 +25,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -82,10 +81,9 @@ public interface PartitionFunction {
 	     * is invoked after graph finish at the latest. For some graph elements, for instance
 	     * components, is this method called immediately after phase finish.
 	     * 
-	     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
 	     * @throws ComponentNotReadyException
 	     */
-	    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+	    public void postExecute() throws ComponentNotReadyException;
 	    
 	    /**
 	     * Passes graph node.

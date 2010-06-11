@@ -25,7 +25,6 @@ import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -77,7 +76,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	/* (non-Javadoc)
 	 * @see org.jetel.component.denormalize.RecordDenormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
 	public final int append(DataRecord inRecord) throws TransformException {

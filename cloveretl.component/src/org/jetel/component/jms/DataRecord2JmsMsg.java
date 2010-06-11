@@ -26,7 +26,6 @@ import javax.jms.Session;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -60,10 +59,9 @@ public interface DataRecord2JmsMsg {
 	/**
 	 * Releases resources. 
      * 
-     * @param transactionMethod type of transaction finalize method; was the graph/phase run successful?
      * @throws ComponentNotReadyException
      */
-    public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException;
+    public void postExecute() throws ComponentNotReadyException;
 	
 	/**
 	 * Transforms data record to JMS message. Is called for all data records. 

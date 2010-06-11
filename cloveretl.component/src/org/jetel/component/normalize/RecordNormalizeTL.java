@@ -27,7 +27,6 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLNumericValue;
@@ -110,7 +109,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.normalize.RecordNormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 
 	public int count(DataRecord source) {

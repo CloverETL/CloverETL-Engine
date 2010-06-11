@@ -21,7 +21,6 @@ package org.jetel.component.rollup;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransactionMethod;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -87,7 +86,7 @@ public abstract class DataRecordRollup implements RecordRollup {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
 	 */
-	public void postExecute(TransactionMethod transactionMethod) throws ComponentNotReadyException {
+	public void postExecute() throws ComponentNotReadyException {
 	}
 
     public final String getMessage() {
