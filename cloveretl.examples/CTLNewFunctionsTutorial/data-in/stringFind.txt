@@ -1,3 +1,0 @@
-someverylongstring;[era]
-someverylongstring;[eoi]
-anotherverylooongstring;[eor]
