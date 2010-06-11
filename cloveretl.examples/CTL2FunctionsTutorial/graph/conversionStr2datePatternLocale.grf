@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Fri Jun 11 15:18:25 CEST 2010" guiVersion="0.0.0.devel" id="1276271145104" licenseType="Evaluation Devel" modified="Fri Jun 11 17:53:29 CEST 2010" modifiedBy="cloveruser" name="conversionStr2datePatternLocale" revision="1.4">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2datePatternLocaleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Pattern" type="string"/>
+<Field name="Locale" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2datePatternLocaleOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Pattern" type="string"/>
+<Field name="Locale" type="string"/>
+<Field name="FunctionSystemLocale" type="string"/>
+<Field format="yyyy-MM-dd" name="ResultSystemLocale" type="date"/>
+<Field name="FunctionLocale" type="string"/>
+<Field format="yyyy-MM-dd" name="ResultLocale" type="date"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2datePatternLocale.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="230" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2datePatternLocaleOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="455" guiY="229" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="235" guiY="230" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.String = $0.String;
+	$0.Pattern = $0.Pattern;
+	$0.Locale = $0.Locale;
+	$FunctionSystemLocale = "str2date($0.String,$0.Pattern)";
+	$ResultSystemLocale = str2date($0.String,$0.Pattern);	
+	$FunctionLocale = "str2date($0.String,$0.Pattern,$Locale)";	
+	$ResultLocale = str2date($0.String,$0.Pattern,$0.Locale);	
+	return 0;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
