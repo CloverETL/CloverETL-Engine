@@ -229,13 +229,18 @@ public class FixLenDataReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-    	storeValues();
 		try {
 			reader.close();
 		}
 		catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
 		}
+	}
+	
+	@Override
+	public void commit() {
+		super.commit();
+		storeValues();
 	}
 
 
@@ -284,17 +289,15 @@ public class FixLenDataReader extends Node {
      * Stores all values as incremental reading.
      */
     private void storeValues() {
-    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
-    		try {
-    			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-    			if (dictValue != null && dictValue == Boolean.FALSE) {
-    				return;
-    			}
-				reader.storeIncrementalReading();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+		try {
+			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+			if (dictValue != null && dictValue == Boolean.FALSE) {
+				return;
 			}
-    	}
+			reader.storeIncrementalReading();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
     
     /**

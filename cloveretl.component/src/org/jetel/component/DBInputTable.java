@@ -282,16 +282,20 @@ public class DBInputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		if (parser.getIncrementalFile() != null){
-			storeValues();
-		}
 		if (getGraph().getRuntimeContext().isBatchMode()) { 
 			// otherwise connection is closed in TransformationGraph.free()
 			connection.closeConnection(getId(), OperationType.READ);
 		}
 	}
+	
+	@Override
+	public void commit() {
+		super.commit();
+		storeValues();
+	}
 
-    @Override
+
+	@Override
     public synchronized void free() {
     	super.free();    	
     }
@@ -409,17 +413,15 @@ public class DBInputTable extends Node {
      * Stores all values as incremental reading.
      */
     private void storeValues() {
-    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
-    		try {
-    			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-    			if (dictValue != null && dictValue == Boolean.FALSE) {
-    				return;
-    			}
-    			parser.storeIncrementalReading();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+		try {
+			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+			if (dictValue != null && dictValue == Boolean.FALSE) {
+				return;
 			}
-    	}
+			parser.storeIncrementalReading();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
     }
 
 	/**

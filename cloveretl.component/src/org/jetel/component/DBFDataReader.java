@@ -212,8 +212,7 @@ public class DBFDataReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-    	storeValues();
-		try {
+    	try {
 			reader.close();
 		}
 		catch (IOException e) {
@@ -221,6 +220,13 @@ public class DBFDataReader extends Node {
 		}
 	}
 	
+	@Override
+	public void commit() {
+		super.commit();
+		storeValues();
+	}
+
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
@@ -240,19 +246,17 @@ public class DBFDataReader extends Node {
     /**
      * Stores all values as incremental reading.
      */
-    private void storeValues() {
-    	if (getPhase() != null && getPhase().getResult() == Result.FINISHED_OK) {
-    		try {
-    			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-    			if (dictValue != null && dictValue == Boolean.FALSE) {
-    				return;
-    			}
-				reader.storeIncrementalReading();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+	private void storeValues() {
+		try {
+			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+			if (dictValue != null && dictValue == Boolean.FALSE) {
+				return;
 			}
-    	}
-    }
+			reader.storeIncrementalReading();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
     
 	/**
 	 *  Description of the Method
