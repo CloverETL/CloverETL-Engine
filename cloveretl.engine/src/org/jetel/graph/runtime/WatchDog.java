@@ -266,9 +266,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
            			graph.commit();
            		} catch (Exception e) {
            			causeException = e;
-	    			if (e instanceof ComponentNotReadyException) {
-	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
-	    			}
 	           		watchDogStatus = Result.ERROR;
 	           		logger.fatal("Graph commit failed:" + e.getMessage(), e);
            		}
@@ -277,9 +274,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
            			graph.rollback();
            		} catch (Exception e) {
            			causeException = e;
-	    			if (e instanceof ComponentNotReadyException) {
-	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
-	    			}
 	           		watchDogStatus = Result.ERROR;
 	           		logger.fatal("Graph rollback failed:" + e.getMessage(), e);
            		}
