@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 14:07:56 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.58">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="long2integerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Long" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="long2integerOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Long" type="long"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="long2integerWhetherBoolean" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Long" type="long"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="254" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer long2integer(long arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="426" x="176" y="-10">
+<attr name="text"><![CDATA[
+The long2integer(long) function takes one long argument and converts it to an integer. As an example the maximum integer value (2147483648) is converted to null automatically. 2147483647 is preserved, but, e.g., 2147483649 goes to negative value and also greater longs are converted in an unpredictable way. Such conversions (of long greater than maximum positive integer or less than minimum negative integer) are meaningless. Graph should fail.
+
+On the other hand, any integer can be mapped to a long without any restriction and loss of information.
+
+The second Reformat is in the PassThrough mode. If you enable it, you can see how maximum integer is converted to null.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionLong2integer.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionLong2integerOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="258" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="257" guiY="259" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Long = $0.Long;
+	$0.Function = "long2integer($0.Long)";
+	$0.Result = long2integer($0.Long);
+	return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="445" guiY="259" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL1
+
+// Transforms input record into output record.
+function transform() {
+	$0.Long := $0.Long;
+	$0.Function := $0.Function;
+	$0.Result := isnull($0.Result);
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
