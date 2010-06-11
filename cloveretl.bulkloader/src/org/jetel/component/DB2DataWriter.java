@@ -1012,9 +1012,6 @@ public class DB2DataWriter extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		if (formatter != null) {
-			formatter.reset();
-		}
 	}
 	
 	@Override
@@ -1548,6 +1545,18 @@ public class DB2DataWriter extends Node {
 			}
 		}.start();
 		return box.join();
+	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+		} else {
+			if (formatter != null) {
+				formatter.reset();
+			}
+		}
 	}
 
 	@Override
