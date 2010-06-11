@@ -45,6 +45,7 @@ import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -483,6 +484,11 @@ public class XLSWriter extends Node {
             status.add(problem);
         }
 
+        if (formatterProvider.isAppend() && FileURLParser.isArchiveURL(fileURL)) {
+            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
+            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+        }
+        
         if (!StringUtils.isEmpty(excludeFields)) {
             DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
             int[] includedFieldIndices = null;

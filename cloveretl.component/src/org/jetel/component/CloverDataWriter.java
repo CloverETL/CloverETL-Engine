@@ -246,6 +246,11 @@ public class CloverDataWriter extends Node {
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
         
+        if (append && FileURLParser.isArchiveURL(fileURL)) {
+            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
+            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+        }
+        
         return status;
     }
 
