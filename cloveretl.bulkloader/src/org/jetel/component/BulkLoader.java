@@ -126,6 +126,21 @@ public abstract class BulkLoader extends Node {
 		this.database = database;
 	}
 
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		if (firstRun()) {//a phase-dependent part of initialization
+    		//all necessary elements have been initialized in init()
+		} else {
+			if (formatter != null) {
+				formatter.reset();
+			}
+		}
+		tempDir = null;
+	}
+
+
 	@Override
 	public Result execute() throws Exception {
 		alreadyExecuted = true;
@@ -339,12 +354,6 @@ public abstract class BulkLoader extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
-		
-		if (formatter != null) {
-			formatter.reset();
-		}
-		
-		tempDir = null;
 	}
 	
 	/**
