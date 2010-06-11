@@ -54,7 +54,9 @@ public class RecordNormalizeTL implements RecordNormalize {
     private static final String INIT_FUNCTION_NAME="init";
     private static final String CLEAN_FUNCTION_NAME="clean";
     private static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
-    
+    private static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
+    private static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
+
     private int lenghtFunctionIdentifier;
     private int transformFunctionIdentifier;
     private int cleanFunctionIdentifier;
@@ -104,12 +106,24 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 * @see org.jetel.component.normalize.RecordNormalize#preExecute()
 	 */
 	public void preExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(PRE_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.normalize.RecordNormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	public void postExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(POST_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 
 	public int count(DataRecord source) {

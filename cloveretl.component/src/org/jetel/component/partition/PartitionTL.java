@@ -48,7 +48,8 @@ public class PartitionTL implements PartitionFunction {
 
     public static final String INIT_FUNCTION_NAME="init";
     public static final String GETOUTPUTPORT_FUNCTION_NAME="getOutputPort";
-    
+    public static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
+    public static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
     
 	private WrapperTL wrapper;
 	private TransformationGraph graph;
@@ -100,12 +101,24 @@ public class PartitionTL implements PartitionFunction {
 	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
 	 */
 	public void preExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(PRE_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function preExecute is not necessary
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	public void postExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(POST_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 
 	public TransformationGraph getGraph() {
