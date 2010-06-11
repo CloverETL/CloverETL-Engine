@@ -487,8 +487,6 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
 		
-		setWatchDog(null);
-		
 		//reset dictionary
 		dictionary.reset();
 		
@@ -562,6 +560,9 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(this, "FATAL - Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
+		
+		//remove watchdog reference from this graph
+		setWatchDog(null);
 	}
 	
 	/* (non-Javadoc)
