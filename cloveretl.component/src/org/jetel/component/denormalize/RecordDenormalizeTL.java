@@ -52,6 +52,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	private static final String ADDINPUT_FUNCTION_NAME="append";
 	private static final String GETOUTPUT_FUNCTION_NAME="transform";
     private static final String GET_MESSAGE_FUNCTION_NAME="getMessage";
+    private static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
+    private static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
 
     private int appendFunctionIdentifier;
     private int transformFunctionIdentifier;
@@ -115,12 +117,24 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 * @see org.jetel.component.denormalize.RecordDenormalize#preExecute()
 	 */
 	public void preExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(PRE_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function preExecute is not necessary
+		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.denormalize.RecordDenormalize#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	public void postExecute() throws ComponentNotReadyException {
+        // execute postExecute transformFunction
+		try {
+			wrapper.execute(POST_EXECUTE_FUNCTION_NAME, null);
+		} catch (JetelException e) {
+			//do nothing: function postExecute is not necessary
+		}
 	}
 
 	public int append(DataRecord inRecord) {
