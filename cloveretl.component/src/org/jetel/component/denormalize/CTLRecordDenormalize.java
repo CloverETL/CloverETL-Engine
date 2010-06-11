@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -34,19 +35,20 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 11th June 2010
  * @created 2nd April 2009
  *
  * @see RecordDenormalize
  */
 public abstract class CTLRecordDenormalize extends CTLAbstractTransform implements RecordDenormalize {
 
+	/** Input data record used for denormalization, or <code>null</code> if not accessible. */
+	private DataRecord inputRecord = null;
+	/** Output data record used for denormalization, or <code>null</code> if not accessible. */
+	private DataRecord outputRecord = null;
+
 	public final boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
-		// a single input/output data record is required
-		this.inputRecords = new DataRecord[1];
-		this.outputRecords = new DataRecord[1];
-
 		globalScopeInit();
 
 		return initDelegate();
@@ -67,27 +69,28 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.denormalize.RecordDenormalize#preExecute()
-	 */
+	@CTLEntryPoint(name = "preExecute", required = false)
 	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.denormalize.RecordDenormalize#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
+
 	public final int append(DataRecord inRecord) throws TransformException {
-		inputRecords[0] = inRecord;
+		int result = 0;
+
+		// only input record is accessible within the append() function
+		inputRecord = inRecord;
 
 		try {
-			return appendDelegate();
+			result = appendDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		inputRecord = null;
+
+		return result;
 	}
 
 	/**
@@ -101,14 +104,22 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	protected abstract int appendDelegate() throws ComponentNotReadyException, TransformException;
 
 	public final int transform(DataRecord outRecord) throws TransformException {
-		outputRecords[0] = outRecord;
+		int result = 0;
+
+		// only output record is accessible within the transform() function
+		outputRecord = outRecord;
 
 		try {
-			return transformDelegate();
+			result = transformDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		outputRecord = null;
+
+		return result;
 	}
 
 	/**
@@ -132,22 +143,47 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		return null;
 	}
 
-	/**
-	 * Use postExecuste method.
-	 */
-	@Deprecated
-	@CTLEntryPoint(name = "finished", required = false)
-	public void finished() {
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	protected final DataRecord getInputRecord(int index) {
+		if (inputRecord == null) {
+			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index != 0) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
+		}
+
+		return inputRecord;
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		if (outputRecord == null) {
+			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index != 0) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, OUTPUT_RECORD_NOT_DEFINED);
+		}
+
+		return outputRecord;
+	}
+
 	/**
-	 * Use preExecute method.
+	 * Use {@link #postExecute()} method.
 	 */
 	@Deprecated
-	@CTLEntryPoint(name = "reset", required = false)
+	public void finished() {
+	}
+
+	/**
+	 * Use {@link #preExecute()} method.
+	 */
+	@Deprecated
 	public void reset() {
-		// does nothing by default, may be overridden by generated transform classes
 	}
 
 }

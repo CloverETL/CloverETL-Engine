@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -32,18 +33,20 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 11th June 2010
  * @created 22nd April 2010
  *
  * @see RecordRollup
  */
 public abstract class CTLRecordRollup extends CTLAbstractTransform implements RecordRollup {
 
+	/** Input data record used by rollup transform, or <code>null</code> if not accessible. */
+	private DataRecord inputRecord = null;
+	/** Output data records used by rollup transform, or <code>null</code> if not accessible. */
+	private DataRecord[] outputRecords = null;
+
 	public final void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
 			DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
-		// a single input data record is required, array of output data records is provided directly via method call
-		this.inputRecords = new DataRecord[1];
-
 		globalScopeInit();
 		initDelegate();
 	}
@@ -60,9 +63,14 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	@CTLEntryPoint(name = "preExecute", required = false)
+	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
+	}
+
 	public final void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-		this.inputRecords[0] = inputRecord;
-		this.outputRecords = NO_DATA_RECORDS;
+		// only input record is accessible within the initGroup() function
+		this.inputRecord = inputRecord;
 
 		try {
 			initGroupDelegate(groupAccumulator);
@@ -70,6 +78,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		this.inputRecord = null;
 	}
 
 	/**
@@ -84,29 +95,24 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 			throws ComponentNotReadyException, TransformException;
 
 	public final boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-		this.inputRecords[0] = inputRecord;
-		this.outputRecords = NO_DATA_RECORDS;
+		boolean result = false;
+
+		// only input record is accessible within the updateGroup() function
+		this.inputRecord = inputRecord;
 
 		try {
-			return updateGroupDelegate(groupAccumulator);
+			result = updateGroupDelegate(groupAccumulator);
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		this.inputRecord = null;
+
+		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
 	/**
 	 * Called by {@link #updateGroup(DataRecord, DataRecord)} to update processing of a group of data records in a
 	 * user-specific way defined in the CTL transform. Has to be overridden by the generated transform class.
@@ -119,15 +125,22 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 			throws ComponentNotReadyException, TransformException;
 
 	public final boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-		this.inputRecords[0] = inputRecord;
-		this.outputRecords = NO_DATA_RECORDS;
+		boolean result = false;
+
+		// only input record is accessible within the finishGroup() function
+		this.inputRecord = inputRecord;
 
 		try {
-			return finishGroupDelegate(groupAccumulator);
+			result = finishGroupDelegate(groupAccumulator);
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		this.inputRecord = null;
+
+		return result;
 	}
 
 	/**
@@ -143,15 +156,24 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 
 	public final int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
 			DataRecord[] outputRecords) throws TransformException {
-		this.inputRecords[0] = inputRecord;
+		int result = 0;
+
+		// both input and output records are accessible within the updateTransform() function
+		this.inputRecord = inputRecord;
 		this.outputRecords = outputRecords;
 
 		try {
-			return updateTransformDelegate(counter, groupAccumulator);
+			result = updateTransformDelegate(counter, groupAccumulator);
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make both input and output records inaccessible again
+		this.inputRecord = null;
+		this.outputRecords = null;
+
+		return result;
 	}
 
 	/**
@@ -167,15 +189,24 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 
 	public final int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
 			DataRecord[] outputRecords) throws TransformException {
-		this.inputRecords[0] = inputRecord;
+		int result = 0;
+
+		// both input and output records are accessible within the transform() function
+		this.inputRecord = inputRecord;
 		this.outputRecords = outputRecords;
 
 		try {
-			return transformDelegate(counter, groupAccumulator);
+			result = transformDelegate(counter, groupAccumulator);
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make both input and output records inaccessible again
+		this.inputRecord = null;
+		this.outputRecords = null;
+
+		return result;
 	}
 
 	/**
@@ -195,14 +226,47 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		return null;
 	}
 
-	@CTLEntryPoint(name = "finished", required = false)
-	public void finished() {
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
-	@CTLEntryPoint(name = "reset", required = false)
+	protected final DataRecord getInputRecord(int index) {
+		if (inputRecord == null) {
+			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index != 0) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
+		}
+
+		return inputRecord;
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		if (outputRecords == null) {
+			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index < 0 || index >= outputRecords.length) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, OUTPUT_RECORD_NOT_DEFINED);
+		}
+
+		return outputRecords[index];
+	}
+
+	/**
+	 * @deprecated Use {@link #postExecute()} method.
+	 */
+	@Deprecated
+	public void finished() {
+	}
+
+	/**
+	 * @deprecated Use {@link #preExecute()} method.
+	 */
+	@Deprecated
 	public void reset() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
 	}
 
 }

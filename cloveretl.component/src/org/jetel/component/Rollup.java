@@ -160,7 +160,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 1st June 2010
+ * @version 11th June 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -577,18 +577,17 @@ public class Rollup extends Node {
         }
     }
 
-
     @Override
+    @SuppressWarnings("deprecation")
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
-    	}
-    	else {
+    	} else {
     	    recordRollup.reset();
     	}
     }    
-
 
     @Override
     public Result execute() throws Exception {
@@ -602,7 +601,6 @@ public class Rollup extends Node {
             executeInputUnsorted();
         }
 
-        recordRollup.finished();
         broadcastEOF();
 
         return (runIt ? Result.FINISHED_OK : Result.ABORTED);
@@ -803,8 +801,11 @@ public class Rollup extends Node {
 
 	@Override
     @SuppressWarnings("deprecation")
-    public synchronized void reset() throws ComponentNotReadyException {
-        super.reset();
+    public void postExecute() throws ComponentNotReadyException {
+    	super.postExecute();
+
+    	recordRollup.postExecute();
+    	recordRollup.finished();
     }
 
     @Override

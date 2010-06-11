@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -33,18 +34,17 @@ import org.jetel.exception.TransformException;
  * @author Michal Tomcanyi, Javlin a.s. &lt;michal.tomcanyi@javlin.cz&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 5th May 2010
+ * @version 11th June 2010
  * @created 2nd April 2009
  *
  * @see PartitionFunction
  */
 public abstract class CTLRecordPartition extends CTLAbstractTransform implements PartitionFunction {
 
-	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
-		// a single input data record is required, no output data records are used
-		this.inputRecords = new DataRecord[1];
-		this.outputRecords = NO_DATA_RECORDS;
+	/** Input data record used for partitioning, or <code>null</code> if not accessible. */
+	private DataRecord inputRecord = null;
 
+	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
 		globalScopeInit();
 		initDelegate(numPartitions);
 	}
@@ -62,31 +62,32 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
+	@CTLEntryPoint(name = "preExecute", required = false)
 	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
+
 	public final boolean supportsDirectRecord() {
 		return false;
 	}
 
 	public final int getOutputPort(DataRecord record) throws TransformException {
-		inputRecords[0] = record;
+		int result = 0;
+
+		// only input record is accessible within the getOutputPort() function
+		inputRecord = record;
 
 		try {
-			return getOutputPortDelegate();
+			result = getOutputPortDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
+
+		// make the input record inaccessible again
+		inputRecord = null;
+
+		return result;
 	}
 
 	/**
@@ -101,6 +102,27 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 
 	public final int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
+	}
+
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
+	}
+
+	protected final DataRecord getInputRecord(int index) {
+		if (inputRecord == null) {
+			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
+		}
+
+		if (index != 0) {
+			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
+		}
+
+		return inputRecord;
+	}
+
+	protected final DataRecord getOutputRecord(int index) {
+		throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
 	}
 
 }
