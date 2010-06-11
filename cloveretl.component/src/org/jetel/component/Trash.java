@@ -387,6 +387,11 @@ public class Trash extends Node {
 	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
 	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
 				}
+                
+                if (debugAppend && FileURLParser.isArchiveURL(debugFilename)) {
+                    status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
+                    		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+                }
     		}
             
     		return status;
