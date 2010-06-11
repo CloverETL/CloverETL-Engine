@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 14:44:17 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.84">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 15:21:21 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.86">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="decimal2integerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="decimal2longInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="decimal2integerOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="decimal2longOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 <Field name="Function" type="string"/>
 <Field name="Result" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="decimal2integerWhetherBoolean" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="decimal2longWhetherBoolean" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 <Field name="Function" type="string"/>
 <Field name="Result" type="boolean"/>
@@ -59,7 +59,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
+<Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 14:36:58 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.79">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 15:19:53 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.81">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="decimal2integerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -10,7 +10,7 @@
 <Record fieldDelimiter=";" name="decimal2integerOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 <Field name="Function" type="string"/>
-<Field name="Result" type="long"/>
+<Field name="Result" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -38,16 +38,16 @@ The second Reformat is in the PassThrough mode. If you enable it, you can see ho
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2long.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2longOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="258" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2integer.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2integerOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="258" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="262" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
 	$0.Decimal = $0.Decimal;
-	$0.Function = "decimal2long($0.Decimal)";
-	$0.Result = decimal2long($0.Decimal);
+	$0.Function = "decimal2integer($0.Decimal)";
+	$0.Result = decimal2integer($0.Decimal);
 
 	return 0;
 }
@@ -59,7 +59,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
+<Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
