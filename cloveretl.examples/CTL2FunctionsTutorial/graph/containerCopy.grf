@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Fri Jun 11 16:32:52 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.64">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="copyInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List1Element0" type="string"/>
+<Field name="List1Element1" type="string"/>
+<Field name="List1Element2" type="string"/>
+<Field name="List2Element0" type="string"/>
+<Field name="List2Element1" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="copyOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List1" type="string"/>
+<Field name="List2" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="ReturnValue" type="string"/>
+<Field name="NewValueOfList1" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="152" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementtype[] copy(elementtype[] List1, elementtype[] List2)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="69" y="34">
+<attr name="text"><![CDATA[
+The copy(elementtype[], elementtype[]) function accepts two arguments, each of them is list of any data type. 
+The function takes the second argument, adds it to the end of the first list and returns it as a new list. Thus, the resulting list is a sum of both lists specified as arguments. 
+Also the list specified as the first argument changes to this new value.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="68" y="198">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List1 consists of 3 elements. 
+List2 consists of 2 elements. 
+copy(List1, List2) returns a new list of five string elements. 
+And the new value of List1 is this return value of the function.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerCopy.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="66" guiY="352" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerCopyOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="458" guiY="352" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="268" guiY="352" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+//Declarations.
+string[] list1;
+string[] list2;
+string[] list3;
+
+// Creates the first list.
+push(list1,$0.List1Element0);
+push(list1,$0.List1Element1);
+push(list1,$0.List1Element2);
+
+// Creates the second list.
+push(list2,$0.List2Element0);
+push(list2,$0.List2Element1);
+
+//Prints the two lists, the return value of the function and the new value of list1.
+$0.List1 = toString(list1);
+$0.List2 = toString(list2);
+$0.Function = "copy(List1,List2)";
+$0.ReturnValue = toString(copy(list1,list2));
+$0.NewValueOfList1 = toString(list1);
+return 0;
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
