@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 27 09:23:39 CET 2009" guiVersion="0.0.0.devel" id="1233044619779" licenseType="Evaluation Devel" modified="Wed Jun 09 15:19:09 CEST 2010" modifiedBy="cloveruser" name="stringeditDistance" revision="1.32">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="editDistanceInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String1" type="string"/>
+<Field name="String2" type="string"/>
+<Field name="Strength" type="integer"/>
+<Field name="Locale" type="string"/>
+<Field name="MaxDifference" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="editDistanceOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String1" type="string"/>
+<Field name="String2" type="string"/>
+<Field name="Strength" type="integer"/>
+<Field name="Locale" type="string"/>
+<Field name="MaxDifference" type="integer"/>
+<Field name="AllArguments" type="string"/>
+<Field name="ResultAllArguments" type="integer"/>
+<Field name="DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultMaxDiffDefault" type="integer"/>
+<Field name="DefaultLocaleIsSystemValue" type="string"/>
+<Field name="ResultLocaleDefault" type="integer"/>
+<Field name="DefaultStrengthIs4" type="string"/>
+<Field name="ResultStrengthDefault" type="integer"/>
+<Field name="DefaultLocaleIsSystem_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultLocaleMaxDiffDefault" type="integer"/>
+<Field name="DefaultStrengthIs4_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultStrengthMaxDiffDefault" type="integer"/>
+<Field name="DefaultStrengthIs4_DefaultLocaleIsSystem_DefaultMaxDifferenceIs3" type="string"/>
+<Field name="ResultStrengthLocaleMaxDiffDefault" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="228" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Versions of the editDistance() function." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="974" x="54" y="244">
+<attr name="text"><![CDATA[
+The editDistance(string arg1, string arg2, integer strength, string locale) function equals to editDistance(string arg1, string arg2, integer strength, string locale, 3).
+
+The editDistance(string arg1, string arg2, integer strength, integer maxDifference) function equals to editDistance(string arg1, string arg2, integer strength, SystemLocale, integer maxDifference). 
+
+The editDistance(string arg1, string arg2, string locale, integer maxDifference) function equals to editDistance(string arg1, string arg2, 4, string locale, integer maxDifference). 
+
+The editDistance(string arg1, string arg2, integer strength) function equals to editDistance(string arg1, string arg2, integer strength, SystemLocale, 3). 
+
+The editDistance(string arg1, string arg2, string locale) function equals to editDistance(string arg1, string arg2, 4, string locale, 3).
+
+The editDistance(string arg1, string arg2) function equals to editDistance(string arg1, string arg2, 4, SystemLocale, 3).  ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="291" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer editDistance(string arg1, string arg2, int strength, string locale, integer maxDifference)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="655" x="57" y="-68">
+<attr name="text"><![CDATA[
+The editDistance(string, string, integer, string, integer) function accepts five arguments. The first two are strings, the three others are integer, string and integer, respectively. The function takes the first two arguments and compares them to each other using the other three arguments.
+The third argument (integer number) specifies the strength of comparison. It can have any value from 1 to 4. 
+If it is 4 (identical comparison), that means that only identical letters are considered equal. 
+In case of 3 (tertiary comparison), that means that upper and lower cases are considered equal. 
+If it is 2 (secondary comparison), that means that letters with diacritic signs are considered equal. 
+And, if the strength of comparison is 1 (primary comparison), that means that even the letters with some specific signs are considered equal. 
+The fifth argument (integer number) means the number of letters that should be changed to transform one of the first two arguments to the other. 
+The function returns the number of letters that should be changed to transform one of the first two arguments to the other. However, when the function is executed, if it counts that the number of letters that should be changed is at least the number specified as the maximum difference, the execution terminates and the function returns (maxDifference+1) as its return value.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="61" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="In this example, secondary strength is shown." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="532" x="54" y="496"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/stringeditDistanceSECONDARY.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="47" guiY="576" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/stringeditDistanceSECONDARYOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="507" guiY="576" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="269" guiY="576" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.String1 = $0.String1;
+	$0.String2 = $0.String2;
+	$0.Strength = $0.Strength;
+	$0.Locale = $0.Locale;
+	$0.MaxDifference = $0.MaxDifference;
+	$0.AllArguments = "editDistance($0.String1,$0.String2,$0.Strength,$0.Locale,$0.MaxDifference)";
+	$0.ResultAllArguments = editDistance($0.String1,$0.String2,$0.Strength,$0.Locale,$0.MaxDifference);
+	$0.DefaultMaxDifferenceIs3 = "editDistance($0.String1,$0.String2,$0.Strength,$0.Locale)";
+	$0.ResultMaxDiffDefault = editDistance($0.String1,$0.String2,$0.Strength,$0.Locale);
+	$0.DefaultLocaleIsSystemValue = "editDistance($0.String1,$0.String2,$0.Strength,$0.MaxDifference)";
+	$0.ResultLocaleDefault = editDistance($0.String1,$0.String2,$0.Strength,$0.MaxDifference);
+	$0.DefaultStrengthIs4 = "editDistance($0.String1,$0.String2,$0.Locale,$0.MaxDifference)";
+	$0.ResultStrengthDefault = editDistance($0.String1,$0.String2,$0.Locale,$0.MaxDifference);
+	$0.DefaultLocaleIsSystem_DefaultMaxDifferenceIs3 = "editDistance($0.String1,$0.String2,$0.Strength)";
+	$0.ResultLocaleMaxDiffDefault = editDistance($0.String1,$0.String2,$0.Strength);
+	$0.DefaultStrengthIs4_DefaultMaxDifferenceIs3 = "editDistance($0.String1,$0.String2,$0.Locale)";
+	$0.ResultStrengthMaxDiffDefault = editDistance($0.String1,$0.String2,$0.Locale);
+	$0.DefaultStrengthIs4_DefaultLocaleIsSystem_DefaultMaxDifferenceIs3 = "editDistance($0.String1,$0.String2)";
+	$0.ResultStrengthLocaleMaxDiffDefault = editDistance($0.String1,$0.String2);
+	return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

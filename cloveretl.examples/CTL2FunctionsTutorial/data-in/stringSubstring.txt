@@ -1,0 +1,10 @@
+Andrew Fuller;0;2
+Andrew Fuller;0;5
+Andrew Fuller;1;4
+Andrew Fuller;1;5
+Nancy Davolio;2;1
+Nancy Davolio;2;2
+Nancy Davolio;2;3
+Nancy Davolio;2;5
+Nancy Davolio;2;8
+Nancy Davolio;3;3

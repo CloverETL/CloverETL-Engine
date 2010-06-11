@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231945408500" licenseType="Evaluation Devel" modified="Wed Jun 09 15:48:12 CEST 2010" modifiedBy="cloveruser" name="miscellaneousIFF" revision="1.22">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="iifInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Condition" type="boolean"/>
+<Field name="IfConditionTrue" type="string"/>
+<Field name="IfConditionFalse" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="iifOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Condition" type="boolean"/>
+<Field name="IfConditionTrue" type="string"/>
+<Field name="IfConditionFalse" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="anytype iif(boolean con, anytype ifcontrue, anytype ifconfalse)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="138" y="66">
+<attr name="text"><![CDATA[
+The iif(boolean, anytype, anytype) function accepts three arguments: one is boolean and two are of any data type. 
+Both argument data types and return type are the same.
+The function takes the first argument and returns the second one if the first is true or the third one if the first is false.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousIif.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="86" guiY="252" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousIffOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="491" guiY="252" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="291" guiY="252" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Condition = $0.Condition;
+	$0.IfConditionTrue = $0.IfConditionTrue;
+	$0.IfConditionFalse = $0.IfConditionFalse;
+	$0.Function = 'iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse)';
+	$0.Result = iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse);
+	return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

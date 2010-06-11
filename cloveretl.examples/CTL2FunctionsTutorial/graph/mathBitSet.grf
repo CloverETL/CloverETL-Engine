@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229610254187" licenseType="Evaluation Devel" modified="Wed Jun 09 12:16:16 CEST 2010" modifiedBy="cloveruser" name="string_char_at" revision="1.66">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="bit_setInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="integer"/>
+<Field name="Index" type="integer"/>
+<Field name="SetBitTo1" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="bit_setOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="integer"/>
+<Field name="Index" type="integer"/>
+<Field name="SetBitTo1" type="boolean"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="integer"/>
+<Field name="ArgBitwise" type="string"/>
+<Field name="ResultBitwise" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer bitSet(integer Arg, integer Index, boolean SetBitTo1)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="108" y="-12">
+<attr name="text"><![CDATA[
+The bitSet(integer, integer, boolean) function accepts two ineteger and one boolean arguments. It takes the two integer arguments and sets the value of the bit whose Index is specified as the second argument to 1 or 0 if the third argument is true or false, respectively.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="84" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long bitSet(long Arg, integer Index, boolean SetBitTo1)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="479" x="110" y="144">
+<attr name="text"><![CDATA[
+Another version of this function.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/mathBitSet.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="88" guiY="247" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathBitSetOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="493" guiY="247" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="293" guiY="247" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Arg = $0.Arg;
+	$0.Index = $0.Index;
+	$0.SetBitTo1 = $0.SetBitTo1;
+	$0.Function = "bitSet($0.Arg,$0.Index,$0.SetBitTo1)";
+	$0.Result = bitSet($0.Arg,$0.Index,$0.SetBitTo1);
+	$0.ArgBitwise = num2str($0.Arg,2);
+	$0.ResultBitwise = num2str(bitSet($0.Arg,$0.Index,$0.SetBitTo1),2);
+	return 0;
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
