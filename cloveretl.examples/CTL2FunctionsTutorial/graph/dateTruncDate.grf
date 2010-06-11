@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jun 09 12:51:44 CEST 2010" modifiedBy="cloveruser" name="dateTrunc_date" revision="1.21">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Fri Jun 11 15:51:51 CEST 2010" modifiedBy="cloveruser" name="dateTrunc_date" revision="1.23">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="trunc_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -17,7 +17,7 @@
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date truncDate(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="119" y="82">
 <attr name="text"><![CDATA[
 The truncDate(date) function takes one date argument and returns the date with the same hour, minute, second and millisecond, but year, month and day are set to 0. 
-The 0 date is 0001-01-01.]]></attr>
+The 0 date is 1970-01-01.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
