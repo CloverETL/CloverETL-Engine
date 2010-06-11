@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Fri Jun 11 16:39:40 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.69">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="forSortInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListElement0" type="string"/>
+<Field name="ListElement1" type="string"/>
+<Field name="ListElement2" type="string"/>
+<Field name="ListElement3" type="string"/>
+<Field name="ListElement4" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="sortOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="ReturnValue" type="string"/>
+<Field name="NewValueOfList" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="158" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="39" y="170">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List consists of 5 elements. 
+sort(List) sorts the list elements in ascending order.
+And after the function is executed, List consists of the same sorted 5 elements.
+The function returns this new value of List.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="138" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementtype[] sort(elementtype[] arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="40" y="18">
+<attr name="text"><![CDATA[
+The sort(elementtype[]) function accepts one argument of list of any data type. It takes this argument, sorts the elements of the list in ascending order according to their values and returns such new list. 
+The list specified as the argument changes to this new value.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerSort.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="338" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerSortOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="431" guiY="338" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="241" guiY="338" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+//Declarations.
+string[] list1;
+
+// Creates the original list.
+push(list1,$0.ListElement0);
+push(list1,$0.ListElement1);
+push(list1,$0.ListElement2);
+push(list1,$0.ListElement3);
+push(list1,$0.ListElement4);
+
+//Prints the original list, the return value of the function and the new value of the original list.
+$0.List = toString(list1);
+$0.Function = "sort(list1)";
+$0.ReturnValue = toString(sort(list1));
+$0.NewValueOfList = toString(list1);
+return 0;
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
