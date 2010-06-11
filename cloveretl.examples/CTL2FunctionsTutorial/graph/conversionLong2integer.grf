@@ -53,13 +53,14 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="445" guiY="259" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#CTL1
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.Long := $0.Long;
-	$0.Function := $0.Function;
-	$0.Result := isnull($0.Result);
+function integer transform() {
+	$0.Long = $0.Long;
+	$0.Function = $0.Function;
+	$0.Result = isnull($0.Result);
+	return 0;
 }
 
 // Called to return a user-defined error message when an error occurs.
