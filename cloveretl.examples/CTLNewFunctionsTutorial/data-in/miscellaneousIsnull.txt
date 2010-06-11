@@ -1,5 +1,0 @@
-Nancy;12
-Andrew;1
-;12
-Peter;
-;

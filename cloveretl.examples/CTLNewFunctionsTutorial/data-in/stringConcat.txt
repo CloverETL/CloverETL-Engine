@@ -1,2 +1,0 @@
-Nancy;Davolio;0;2008-12-08;2.78
-Andrew;Fuller;4;2007-01-15;1.978
