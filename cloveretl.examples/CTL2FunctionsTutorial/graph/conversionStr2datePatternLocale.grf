@@ -1,31 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Fri Jun 11 15:18:25 CEST 2010" guiVersion="0.0.0.devel" id="1276271145104" licenseType="Evaluation Devel" modified="Fri Jun 11 17:53:29 CEST 2010" modifiedBy="cloveruser" name="conversionStr2datePatternLocale" revision="1.4">
+<Graph author="cloveruser" created="Fri Jun 11 15:18:25 CEST 2010" guiVersion="0.0.0.devel" id="1276271145104" licenseType="Evaluation Devel" modified="Mon Jun 14 09:17:23 CEST 2010" modifiedBy="cloveruser" name="conversionStr2datePatternLocale" revision="1.22">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="str2datePatternLocaleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="str2datePatternLocale0Input" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="String" type="string"/>
 <Field name="Pattern" type="string"/>
 <Field name="Locale" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="str2datePatternLocaleOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2datePatternLocale0Overview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="String" type="string"/>
 <Field name="Pattern" type="string"/>
 <Field name="Locale" type="string"/>
 <Field name="FunctionSystemLocale" type="string"/>
-<Field format="yyyy-MM-dd" name="ResultSystemLocale" type="date"/>
+<Field name="ResultSystemLocale" type="date"/>
 <Field name="FunctionLocale" type="string"/>
-<Field format="yyyy-MM-dd" name="ResultLocale" type="date"/>
+<Field name="ResultLocale" type="date"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2datePatternSystemLocaleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Pattern" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2datePatternSystemLocaleOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Pattern" type="string"/>
+<Field name="FunctionSystemLocale" type="string"/>
+<Field name="ResultSystemLocale" type="date"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date str2date(string arg, string pattern, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="545" x="34" y="-78">
+<attr name="text"><![CDATA[
+The str2date(string, string, string) function accepts three string arguments. The function takes them and compares the first string argument with the second one as a pattern using the third one - locale and returns date.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="192" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date str2date(string arg, string pattern)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="545" x="37" y="157">
+<attr name="text"><![CDATA[
+Another version of the str2date() function:
+The str2date(string, string) function accepts two string arguments. The function takes them and compares the first string argument with the second one as a pattern using the value of system locale and returns date.
+In the phase 1 below, english system locale is used for the first record:
+May/09/1978;MMM/dd/yyyy
+If the phase fails, replace the name of the month by another one corresponding to your system locale.
+
+]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2datePatternLocale.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="230" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2datePatternLocaleOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="455" guiY="229" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="235" guiY="230" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2datePatternLocale0.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="35" guiY="78" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2datePatternLocale0Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="443" guiY="79" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="231" guiY="78" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -33,10 +62,9 @@ function integer transform() {
 	$0.String = $0.String;
 	$0.Pattern = $0.Pattern;
 	$0.Locale = $0.Locale;
-	$FunctionSystemLocale = "str2date($0.String,$0.Pattern)";
-	$ResultSystemLocale = str2date($0.String,$0.Pattern);	
-	$FunctionLocale = "str2date($0.String,$0.Pattern,$Locale)";	
-	$ResultLocale = str2date($0.String,$0.Pattern,$0.Locale);	
+	$0.FunctionLocale = "str2date($0.String,$0.Pattern,$Locale)";
+	$0.ResultLocale = str2date($0.String,$0.Pattern,$0.Locale);
+
 	return 0;
 }
 
@@ -50,7 +78,35 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2datePatternLocale1.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="372" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2datePatternLocale1Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="456" guiY="371" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="236" guiY="372" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.String = $0.String;
+	$0.Pattern = $0.Pattern;
+	$0.FunctionSystemLocale = "str2date($0.String,$0.Pattern)";
+	$0.ResultSystemLocale = str2date($0.String,$0.Pattern);
+	return 0;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
