@@ -1,6 +1,5 @@
 package org.jetel.ctl;
 
-import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.AssertionFailedError;
