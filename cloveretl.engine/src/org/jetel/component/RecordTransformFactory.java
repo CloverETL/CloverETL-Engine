@@ -55,6 +55,7 @@ import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.CommentsProcessor;
 
 public class RecordTransformFactory {
 
@@ -348,7 +349,7 @@ public class RecordTransformFactory {
      */
     public static int guessTransformType(String transform){
     	
-    	String commentsStripped = stripComments(transform);
+    	String commentsStripped = CommentsProcessor.stripComments(transform);
       
         if (commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1 || commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID2) != -1){
             // clover internal transformation language
@@ -384,14 +385,6 @@ public class RecordTransformFactory {
         
         return -1;
     }
-
-    /**
-	 * @param transform
-	 * @return
-	 */
-	private static String stripComments(String transform) {
-		return transform.replaceAll("(?://.*)","").replaceAll("/\\*(?:.|[\\n\\r])*?\\*/","");
-	}
 
 	// Following old TL parser functions are now deprecated 
     @Deprecated
