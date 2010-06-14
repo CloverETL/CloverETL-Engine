@@ -19,12 +19,12 @@
 package org.jetel.graph;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -249,7 +249,7 @@ public class Phase extends GraphElement implements Comparable {
 
 		logger.info("[Clover] Post-execute phase finalization: " + phaseNum);
 
-		Set<GraphElement> failedElements = new HashSet<GraphElement>();
+		Map<GraphElement, Exception> failedElements = new HashMap<GraphElement, Exception>();
 		// post-execute finalization of all edges
 		logger.debug(" post-execute edges finalizing: ");
 		for (Edge edge : edges.values()) {
@@ -257,7 +257,7 @@ public class Phase extends GraphElement implements Comparable {
 				edge.postExecute();
 			} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-				failedElements.add(edge);
+				failedElements.put(edge, e);
 				logger.error("Edge " + edge.getId() + " finalization failed.", e);
 			}
 		}
@@ -272,12 +272,12 @@ public class Phase extends GraphElement implements Comparable {
 			} catch (ComponentNotReadyException ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				failedElements.add(node);
+				failedElements.put(node, ex);
 				logger.error(node.getId() + " ...FAILED ! \nReason: " + ex.getMessage(), ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				failedElements.add(node);
+				failedElements.put(node, ex);
 				logger.error(node.getId() + " ...FATAL ERROR !\nReason: " + ex.getMessage(), ex);
 			}
 		}
@@ -285,9 +285,9 @@ public class Phase extends GraphElement implements Comparable {
 			logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
 		} else {
 			StringBuffer sb = new StringBuffer();
-			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED due to failure of following graph elements:\n");
-			for (GraphElement failedElement : failedElements) {
-				sb.append(failedElement.getId()).append("\n");
+			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:\n");
+			for (Entry<GraphElement, Exception> element : failedElements.entrySet()) {
+				sb.append(element.getKey().getId()).append('\n').append(element.getValue());
 			}
 			throw new ComponentNotReadyException(sb.toString());
 		}
