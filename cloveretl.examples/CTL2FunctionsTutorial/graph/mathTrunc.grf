@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jun 14 12:22:24 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.94">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jun 14 13:43:50 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.96">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="truncInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,7 +14,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="222" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long trunc(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="52" y="-1">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="222" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long trunc(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="640" x="52" y="-102">
 <attr name="text"><![CDATA[
 The trunc(decimal) function takes one decimal argument and returns its truncated long value. 
 
@@ -27,6 +27,10 @@ As regards decimal numbers that are greater than maximum long number or less tha
 
 
 ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long trunc(number arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="637" x="54" y="136">
+<attr name="text"><![CDATA[
+Another function with similar meaning is: long trunc(number arg).]]></attr>
 </Note>
 <Dictionary/>
 </Global>
