@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:36:06 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.65">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:32:28 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.70">
 <Global>
-<Metadata id="Metadata2">
-<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
-<Field name="field1" type="boolean"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="truncListInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="clearListInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="ListElement0" type="string"/>
 <Field name="ListElement1" type="string"/>
 <Field name="ListElement2" type="string"/>
@@ -15,12 +10,15 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="truncListOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="clearListOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="List" type="string"/>
 <Field name="Function" type="string"/>
-<Field name="Result" type="boolean"/>
-<Field name="FunctionForResultingList" type="string"/>
-<Field name="ResultingList" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="boolean"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -28,19 +26,19 @@
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 4 elements. 
-trunc(List) empties the list and returns null.]]></attr>
+clear(List) empties the list and returns void.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="null trunc(elementtype[] arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="41" y="28">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="void clear(elementtype[] arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="41" y="28">
 <attr name="text"><![CDATA[
-The trunc(elementtype[]) function accepts one argument of list of any data type. It takes this argument, empties the list and returns null. 
+The clear(elementtype[]) function accepts one argument of list of any data type. It takes this argument, empties the list and returns void. 
 The resulting list is an empty list.
 ]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerTruncList.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="339" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerTruncListOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="467" guiY="340" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerClearList.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="339" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerClearListOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="467" guiY="340" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="241" guiY="339" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -59,11 +57,11 @@ push(list1,$0.ListElement3);
 //Prints the elements of the original list.
 $0.List = toString(list1);
 
+//Empties the list.
+clear(list1);
 
-$0.Function = "isnull(trunc(list1))";
-$0.Result = isnull(trunc(list1));
-$0.FunctionForResultingList = "toString(list1)";
-$0.ResultingList = toString(list1);
+$0.Function = "clear(list1)";
+$0.Result = toString(list1);
 return 0;
 }
 
