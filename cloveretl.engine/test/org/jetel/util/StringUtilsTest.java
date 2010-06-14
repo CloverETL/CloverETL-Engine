@@ -21,6 +21,7 @@
 package org.jetel.util;
 
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.string.CommentsProcessor;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -476,6 +477,20 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("TRANAN", StringUtils.NYSIIS("Trueman"));
 		assertEquals("TRANAN", StringUtils.NYSIIS("Truman"));
 	}
+	
+	public void testStripComments() {
+		String transform = "//comment\n"
+			+ "function a() { /* comment */\n"
+			+ "// comment\n"
+			+ "		metoda(A);\n"
+			+ "/*\n"
+			+ "	multiline comment\n"
+			+ " one more line\n"
+			+ " end of comment */\n"
+			+ "}\n";
+		System.out.println(CommentsProcessor.stripComments(transform));
+	}
+	
 }
 
 /*
