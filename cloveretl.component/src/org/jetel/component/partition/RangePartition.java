@@ -72,29 +72,19 @@ public class RangePartition implements PartitionFunction{
     	this(lookup, portField, NONEXISTENT_REJECTED_PORT);
     }
     
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
-     */
     public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
         lookupTable.init();
         lookup = lookupTable.createLookup(partitionKey);
     }
     
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
 	public void preExecute() throws ComponentNotReadyException {
+		lookupTable.preExecute();
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
 	public void postExecute() throws ComponentNotReadyException {
+		lookupTable.postExecute();
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
-     */
     public int getOutputPort(DataRecord record){
     	lookup.seek(record);
     	portRecord = lookup.hasNext() ? lookup.next() : null;
