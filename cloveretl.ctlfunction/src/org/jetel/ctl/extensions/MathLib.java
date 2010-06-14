@@ -405,12 +405,12 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
-    public static final Long bitLShift(TLFunctionCallContext context, Long j, Long i) {
+    public static final Long bitLShift(TLFunctionCallContext context, Long i, Long j) {
     	return i << j;
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
-    public static final Integer bitLShift(TLFunctionCallContext context, Integer j, Integer i) {
+    public static final Integer bitLShift(TLFunctionCallContext context, Integer i, Integer j) {
     	return i << j;
     }
     
@@ -421,24 +421,26 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bitLShift(context, stack.popInt(), stack.popInt()));
+				Integer second = stack.popInt();
+				stack.push(bitLShift(context, stack.popInt(), second));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bitLShift(context, stack.popLong(), stack.popLong()));
+				Long second = stack.popLong();
+				stack.push(bitLShift(context, stack.popLong(), second));
 				return;
 			} 
 		} 
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
-    public static final Long bitRShift(TLFunctionCallContext context, Long j, Long i) {
+    public static final Long bitRShift(TLFunctionCallContext context, Long i, Long j) {
     	return i >> j;
     }
 
     @TLFunctionAnnotation("Shifts the first operand to the right by bits specified in the second operand.")
-    public static final Integer bitRShift(TLFunctionCallContext context, Integer j, Integer i) {
+    public static final Integer bitRShift(TLFunctionCallContext context, Integer i, Integer j) {
     	return i >> j;
     }
     
@@ -449,12 +451,14 @@ public class MathLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bitRShift(context, stack.popInt(), stack.popInt()));
+				Integer second = stack.popInt();
+				stack.push(bitRShift(context, stack.popInt(), second));
 				return;
 			} 
 			
 			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bitRShift(context, stack.popLong(), stack.popLong()));
+				Long second = stack.popLong();
+				stack.push(bitRShift(context, stack.popLong(), second));
 				return;
 			} 
 		} 
