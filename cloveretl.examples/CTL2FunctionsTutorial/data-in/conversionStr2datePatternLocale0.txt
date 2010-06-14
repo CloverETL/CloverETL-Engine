@@ -1,0 +1,14 @@
+December/21/1978;MMM/dd/yyyy;en.US
+Prosinec/03/1978;MMM/dd/yyyy;cs.CZ
+07/Februar/1979;dd/MMM/yyyy;de.DE
+Luty/27/1988;MMM/dd/yyyy;pl.PL
+30/Enero/1989;dd/MMM/yyyy;es.ES
+Septembre/09/1998;MMM/dd/yyyy;fr.FR
+12/Szeptember/1999;dd/MMM/yyyy;hu.HU
+Maggio.10.1978;MMM.dd.yyyy;it.IT
+17.Januari.1979;dd.MMM.yyyy;sv.SV
+10.Maaliskuu.1988;dd.MMM.yyyy;fi.FI
+25.Marts.1989;dd.MMM.yyyy;da.DA
+Junho.09.1998;MMM.dd.yyyy;pt.PT
+05.Avgust.1999;dd.MMM.yyyy;sl.SL
+15.Maart.1999;dd.MMM.yyyy;nl.NL
