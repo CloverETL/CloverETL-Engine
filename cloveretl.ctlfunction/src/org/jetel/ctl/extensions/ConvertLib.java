@@ -32,7 +32,6 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.ByteArray;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -840,8 +839,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts bits into their string representation.")
 	public static final String bits2str(TLFunctionCallContext context, byte[] src) {
-		// TODO: ByteArray (and other types from org.jetel.data.primitive) shouldn't be used anymore 
-		return new ByteArray(src).decodeBitString('1', '0', 0, src.length == 0 ? 0 : (src.length << 3) - 1).toString();
+		StringBuilder sb = new StringBuilder();
+		for (int i=0; i < src.length << 3; i++) {
+			sb.append((src[i >> 3] & (1 << (i & 7))) != 0 ? '1' : '0');
+		}
+		return sb.toString();
 	}
 
 	// BITS2STR
@@ -857,10 +859,13 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts string representation of bits into binary value.")
 	public static final byte[] str2bits(TLFunctionCallContext context, String src) {
-		// TODO: ByteArray (and other types from org.jetel.data.primitive) shouldn't be used anymore		
-		ByteArray array = new ByteArray();
-		array.encodeBitString(src, '1', true);
-		return array.getValue();
+		byte[] bits = new byte[(src.length() >> 3) + ((src.length() & 7) != 0 ? 1 : 0)];
+		for (int i = 0; i < src.length(); i++) {
+			if (src.charAt(i) == '1') {
+				bits[i >> 3] |= (1 << (i & 7));
+			}
+		}
+		return bits;
 	}
 
 	// STR2BITS
