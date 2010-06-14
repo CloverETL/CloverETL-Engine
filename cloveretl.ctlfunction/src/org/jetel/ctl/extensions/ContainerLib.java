@@ -309,7 +309,6 @@ public class ContainerLib extends TLFunctionLibrary {
 			} else {
 				stack.push(isEmpty(context, stack.popList()));
 			}
-			stack.popList();
 		}
 	}
 	
