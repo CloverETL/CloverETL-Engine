@@ -1,17 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:08:17 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.86">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:06:58 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.89">
 <Global>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="forPushInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ListElement0" type="string"/>
-<Field name="ListElement1" type="string"/>
-<Field name="ListElement2" type="string"/>
-<Field name="ListElement3" type="string"/>
-<Field name="NewElement" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="pushOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="AppendOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="List" type="string"/>
 <Field name="NewElement" type="string"/>
 <Field name="Function" type="string"/>
@@ -19,18 +10,27 @@
 <Field name="NewValueOfList" type="string"/>
 </Record>
 </Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="forAppendInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListElement0" type="string"/>
+<Field name="ListElement1" type="string"/>
+<Field name="ListElement2" type="string"/>
+<Field name="ListElement3" type="string"/>
+<Field name="NewElement" type="string"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="148" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="50" y="202">
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 4 elements. 
-push(List, element) adds the new element to the end of List. 
+append(List, element) adds the new element to the end of List. 
 And after the function is executed, List consists of 5 resulting elements.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementtype[] push(elementtype[] arg, elementtype newElement)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="51" y="38">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementtype[] append(elementtype[] arg, elementtype newElement)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="51" y="38">
 <attr name="text"><![CDATA[
-The push(elementtype[], elementtype) function accepts two arguments: the first is list of any data type and the second is the element data type. 
+The append(elementtype[], elementtype) function accepts two arguments: the first is list of any data type and the second is the element data type. 
 The function takes the second argument and adds it to the end of the first argument. 
 The list specified as the first argument changes to this new value. 
 The function returns the resulting list.]]></attr>
@@ -38,8 +38,8 @@ The function returns the resulting list.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerPush.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="50" guiY="375" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerPushOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="442" guiY="375" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerAppend.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="50" guiY="375" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerAppendOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="442" guiY="375" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="252" guiY="375" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -59,8 +59,8 @@ push(list1,$0.ListElement3);
 //Prints the original list, the new element that should be added to the end of the original list, the return value of the function and the new value of the list. 
 $0.List = toString(list1);
 $0.NewElement = $0.NewElement;
-$0.Function = "push(List,$0.NewElement)";
-$0.ReturnValue = toString(push(list1,$0.NewElement));
+$0.Function = "append(List,$0.NewElement)";
+$0.ReturnValue = toString(append(list1,$0.NewElement));
 $0.NewValueOfList = toString(list1);
 return 0;
 }
