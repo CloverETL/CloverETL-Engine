@@ -2199,9 +2199,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_bits2str() {
 		doCompile("test_convertlib_bits2str");
-		check("bitsAsString1", "0");
+		check("bitsAsString1", "00000000");
 		check("bitsAsString2", "11111111");
-		check("bitsAsString3", "0101000001001101101");
+		check("bitsAsString3", "010100000100110110100000");
 	}
 	
 	public void test_convertlib_bool2num() {
