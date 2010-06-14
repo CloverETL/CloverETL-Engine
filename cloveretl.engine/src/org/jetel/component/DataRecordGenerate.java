@@ -50,16 +50,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see org.jetel.component.RecordTransform
  */
 @SuppressWarnings("EI")
-public abstract class DataRecordGenerate implements RecordGenerate {
-
-	protected TransformationGraph graph;
+public abstract class DataRecordGenerate extends AbstractDataTransform implements RecordGenerate {
 
 	protected String generateName;
-	/**
-	 * Use <code>errorMessage</code> to report details of problems which occured within generate method.<br>
-	 * Ideally, within catch() section assign meaningful message to errorMessage field.
-	 */
-	protected String errorMessage;
 
 	protected Properties parameters;
 	protected DataRecordMetadata[] targetMetadata;
@@ -95,6 +88,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	public boolean init(Properties parameters, DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
 		this.parameters = parameters;
 		this.targetMetadata = targetRecordsMetadata;
+
 		return init();
 	}
 
@@ -109,18 +103,6 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordGenerate#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
 	/**
 	 * Generates target data records. Derived class should perform this functionality.<br>
 	 * 
@@ -134,39 +116,12 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	 */
 	public abstract int generate(DataRecord[] outputRecords) throws TransformException;
 
-	/**
-	 * Returns description of error if one of the methods failed
-	 * 
-	 * @return Error message
-	 * @since April 18, 2002
-	 */
-	public String getMessage() {
-		return errorMessage;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#signal() In this implementation does nothing.
-	 */
 	public void signal(Object signalObject) {
-
+		// do nothing by default
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getSemiResult()
-	 */
 	public Object getSemiResult() {
 		return null;
-	}
-
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished() {
 	}
 
 	/**
@@ -178,7 +133,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	 * @return IConnection object if found, otherwise NULL
 	 */
 	public final IConnection getConnection(String id) {
-		return graph.getConnection(id);
+		return getGraph().getConnection(id);
 	}
 
 	/**
@@ -190,7 +145,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	 * @return DataRecordMetadata object if found, otherwise NULL
 	 */
 	public final DataRecordMetadata getDataRecordMetadata(String id) {
-		return graph.getDataRecordMetadata(id);
+		return getGraph().getDataRecordMetadata(id);
 	}
 
 	/**
@@ -202,7 +157,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	 * @return LookupTable object if found, otherwise NULL
 	 */
 	public final LookupTable getLookupTable(String id) {
-		return graph.getLookupTable(id);
+		return getGraph().getLookupTable(id);
 	}
 
 	/**
@@ -214,33 +169,7 @@ public abstract class DataRecordGenerate implements RecordGenerate {
 	 * @return Sequence object if found, otherwise NULL
 	 */
 	public final Sequence getSequence(String id) {
-		return graph.getSequence(id);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getGraph()
-	 */
-	public TransformationGraph getGraph() {
-		return graph;
-	}
-
-    /**
-     * Use preExecute method.
-     */
-    @Deprecated
-	public void reset() {
-		errorMessage = null;
+		return getGraph().getSequence(id);
 	}
 
 }

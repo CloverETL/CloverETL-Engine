@@ -45,6 +45,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	/** Output data records used by rollup transform, or <code>null</code> if not accessible. */
 	private DataRecord[] outputRecords = null;
 
+	@Override
 	public final void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
 			DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
 		globalScopeInit();
@@ -63,11 +64,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
-	@CTLEntryPoint(name = "preExecute", required = false)
-	public void preExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	public final void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
 		// only input record is accessible within the initGroup() function
 		this.inputRecord = inputRecord;
@@ -94,6 +91,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	protected abstract void initGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
 		boolean result = false;
 
@@ -124,6 +122,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	protected abstract boolean updateGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
 		boolean result = false;
 
@@ -154,6 +153,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	protected abstract boolean finishGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
 			DataRecord[] outputRecords) throws TransformException {
 		int result = 0;
@@ -187,6 +187,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	protected abstract int updateTransformDelegate(int counter, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
 			DataRecord[] outputRecords) throws TransformException {
 		int result = 0;
@@ -220,17 +221,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	protected abstract int transformDelegate(int counter, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
-	@CTLEntryPoint(name = "getMessage", required = false)
-	public String getMessage() {
-		// null by default, may be overridden by generated transform classes
-		return null;
-	}
-
-	@CTLEntryPoint(name = "postExecute", required = false)
-	public void postExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecord == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
@@ -243,6 +234,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		return inputRecord;
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		if (outputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
@@ -253,20 +245,6 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		}
 
 		return outputRecords[index];
-	}
-
-	/**
-	 * @deprecated Use {@link #postExecute()} method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
-
-	/**
-	 * @deprecated Use {@link #preExecute()} method.
-	 */
-	@Deprecated
-	public void reset() throws ComponentNotReadyException {
 	}
 
 }

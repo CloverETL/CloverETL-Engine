@@ -176,7 +176,7 @@ public class PartitionFunctionFactory {
 		//check if source code is in CloverETL format
 		if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
 			PartitionTL function =  new PartitionTL(partitionSource, metadata, additionalParameters, logger);
-			function.setGraph(node.getGraph());
+			function.setNode(node);
 			return function;
 		} else if (transformType == RecordTransformFactory.TRANSFORM_CTL) {
 			// compile the CTL code
@@ -206,7 +206,7 @@ public class PartitionFunctionFactory {
         		throw new ComponentNotReadyException("Invalid type of record transformation.");
         	}
         	// pass graph instance to transformation (if CTL it can use lookups etc.)
-			function.setGraph(node.getGraph());
+			function.setNode(node);
 			return function;
 		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
 			//get partition function form java code

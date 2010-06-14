@@ -20,6 +20,9 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.jetel.component.Rollup;
+import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
@@ -28,7 +31,6 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.Concatenate;
 
@@ -37,21 +39,13 @@ import org.jetel.util.string.Concatenate;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 20th April 2010
+ * @version 11th June 2010
  * @created 20th April 2010
  *
  * @see RecordRollup
  * @see Rollup
  */
-public final class CTLRecordRollupAdapter implements RecordRollup {
-
-	/** an empty array of arguments used for calls to functions without any arguments */
-    private static final Object[] NO_ARGUMENTS = new Object[0];
-	/** an empty array of data records used for calls to functions that do not access to any data records */
-    private static final DataRecord[] NO_DATA_RECORDS = new DataRecord[0];
-
-    /** the CTL executor to be used for this rollup transform */
-    private final TransformLangExecutor executor;
+public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter implements RecordRollup {
 
     /** an array for arguments passed to *group() functions -- for optimization purposes */
     private final Object[] groupArguments = new Object[1];
@@ -71,48 +65,25 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
     /** the CTL declaration of the required transform() function */
     private CLVFFunctionDeclaration functionTransform;
 
-    /** the CTL declaration of the optional getMessage() function */
-    private CLVFFunctionDeclaration functionGetMessage;
-    /** the CTL declaration of the optional finished() function */
-    private CLVFFunctionDeclaration functionFinished;
-
     /** empty data record used instead of null group accumulator for better error reporting in scope of CTL */
     private DataRecord emptyRecord;
 
     /**
-     * Constructs a <code>CTLRecordRollupAdapter</code> for a given CTL executor.
+     * Constructs a <code>CTLRecordRollupAdapter</code> for a given CTL executor and logger.
      *
-     * @param executor the CTL executor to be used for this rollup transform, may not be <code>null</code>
+     * @param executor the CTL executor to be used by this transform adapter, may not be <code>null</code>
+     * @param executor the logger to be used by this transform adapter, may not be <code>null</code>
      *
-     * @throws NullPointerException if the executor is <code>null</code>
+     * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-    public CTLRecordRollupAdapter(TransformLangExecutor executor) {
-		if (executor == null) {
-			throw new NullPointerException("executor");
-		}
-
-		this.executor = executor;
-	}
-
-	/**
-	 * Calls to this method are ignored, associating a graph is meaningless in case of CTL.
-	 */
-	public void setGraph(TransformationGraph graph) {
-		// do nothing
-	}
-
-	/**
-	 * @return always <code>null</code>, no graph can be associated with this rollup transform
-	 */
-	public TransformationGraph getGraph() {
-		return null;
+    public CTLRecordRollupAdapter(TransformLangExecutor executor, Log logger) {
+		super(executor, logger);
 	}
 
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
-		// we will be calling one function at a time so we need global scope active
-		executor.keepGlobalScope();
-		executor.init();
+        // initialize global scope and call user initialization function
+		super.init();
 
 		// initialize required CTL functions
 		functionInitGroup = executor.getFunction(RecordRollupTL.FUNCTION_INIT_GROUP_NAME, TLType.RECORD);
@@ -124,17 +95,10 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
 		// check if all required functions are present, otherwise we cannot continue
 		checkRequiredFunctions();
 
-		// initialize optional CTL functions
-		functionGetMessage = executor.getFunction(RecordRollupTL.FUNCTION_GET_MESSAGE_NAME);
-		functionFinished = executor.getFunction(RecordRollupTL.FUNCTION_FINISHED_NAME);
-
 		// prepare an empty data record to be used instead of a null group accumulator
         emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
         emptyRecord.init();
         emptyRecord.reset();
-
-        // initialize global scope and call user initialization function
-        init();
     }
 
     private void checkRequiredFunctions() throws ComponentNotReadyException {
@@ -165,25 +129,6 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
     	}
     }
 
-    private void init() throws ComponentNotReadyException {
-		try {
-			executor.execute();
-		} catch (TransformLangExecutorRuntimeException exception) {
-			throw new ComponentNotReadyException("Failed to initialize global scope!", exception);
-		}
-
-		CLVFFunctionDeclaration functionInit = executor.getFunction(RecordRollupTL.FUNCTION_INIT_NAME);
-
-		if (functionInit != null) {
-			try {
-				executor.executeFunction(functionInit, NO_ARGUMENTS);
-			} catch (TransformLangExecutorRuntimeException exception) {
-				throw new ComponentNotReadyException("Execution of " + functionInit.getName()
-						+ "() function failed!", exception);
-			}
-		}
-    }
-
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
         // if group accumulator is empty, use an empty record for better error reporting in scope of CTL
     	groupArguments[0] = (groupAccumulator != null) ? groupAccumulator : emptyRecord;
@@ -191,18 +136,6 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
 
     	executor.executeFunction(functionInitGroup, groupArguments, inputRecords, NO_DATA_RECORDS);
     }
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
 
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
         return executeGroupFunction(functionUpdateGroup, inputRecord, groupAccumulator);
@@ -251,31 +184,6 @@ public final class CTLRecordRollupAdapter implements RecordRollup {
         }
 
         return (Integer) result;
-    }
-
-    public String getMessage() {
-    	if (functionGetMessage == null) {
-    		return null;
-    	}
-
-		Object result = executor.executeFunction(functionGetMessage, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
-
-        if (!(result instanceof String)) {
-            throw new TransformLangExecutorRuntimeException(functionGetMessage.getName()
-            		+ "() function must return a string!");
-        }
-
-        return (String) result;
-    }
-
-    public void finished() {
-    	if (functionFinished != null) {
-			executor.executeFunction(functionFinished, NO_ARGUMENTS);
-    	}
-    }
-
-    public void reset() throws ComponentNotReadyException {
-    	// nothing to do here
     }
 
 }

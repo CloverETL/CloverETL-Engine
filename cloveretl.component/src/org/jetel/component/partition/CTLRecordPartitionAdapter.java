@@ -21,150 +21,72 @@ package org.jetel.component.partition;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
+import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 
 /**
  * Class for executing partition function written in CloverETL language
  * 
- * @author avackova (agata.vackova@javlinconsulting.cz) 
- * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz> ;
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
- *
+ * @author avackova (agata.vackova@javlinconsulting.cz)
+ * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz> ; (c) JavlinConsulting s.r.o. www.javlinconsulting.cz
+ * 
  * @since Nov 30, 2006
- *
+ * 
  */
-public class CTLRecordPartitionAdapter implements PartitionFunction {
+public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter implements PartitionFunction {
 
-    public static final String INIT_FUNCTION_NAME="init";
-    public static final String GETOUTPUTPORT_FUNCTION_NAME="getOutputPort";
-    private static final Object[] EMPTY_ARGUMENTS = new Object[0];
-    
-    private CLVFFunctionDeclaration init;
-    private CLVFFunctionDeclaration getOuputPort;
-    
-    @Deprecated	// use node
-	private TransformationGraph graph;
-	private Node node;
-	
-	private Log logger;
-	private TransformLangExecutor executor;
+	public static final String GETOUTPUTPORT_FUNCTION_NAME = "getOutputPort";
+
+	private CLVFFunctionDeclaration getOuputPort;
+
 	private final DataRecord[] inputRecords = new DataRecord[1];
-	
+
     /**
-     * @param srcCode code written in CloverETL language
-     * @param metadata
-     * @param parameters
-     * @param logger
+     * Constructs a <code>CTLRecordPartitionAdapter</code> for a given CTL executor and logger.
+     *
+     * @param executor the CTL executor to be used by this transform adapter, may not be <code>null</code>
+     * @param executor the logger to be used by this transform adapter, may not be <code>null</code>
+     *
+     * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-    public CTLRecordPartitionAdapter(TransformLangExecutor executor, Log logger) {
-        this.logger = logger;
-        this.executor = executor;
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
-	 */
-	public int getOutputPort(DataRecord record) {
-		inputRecords[0] = record;
-		final Object retVal = executor.executeFunction(getOuputPort, EMPTY_ARGUMENTS, inputRecords, null);
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("getOutputPort() function must return 'int'");
-		}
-		return (Integer)retVal;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
-	 */
-	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
-		
-		// we will be running in one-function-a-time so we need global scope active
-		executor.keepGlobalScope();
-		executor.init();
-		
-		this.init = executor.getFunction(INIT_FUNCTION_NAME, TLTypePrimitive.INTEGER);
-		this.getOuputPort= executor.getFunction(GETOUTPUTPORT_FUNCTION_NAME);
-		
-		if (getOuputPort == null ) {
-			throw new ComponentNotReadyException(GETOUTPUTPORT_FUNCTION_NAME	+ " is not defined");
-		}
-		
-		try {
-			global();
-		} catch (TransformLangExecutorRuntimeException e) {
-			logger.warn("Failed to initialize global scope: " + e.getMessage());
-		}
-		
-		try {
-			// initialize global scope
-			// call user-init function afterwards
-			if (init != null) {
-				executor.executeFunction(init, new Object[]{numPartitions});
-			}
-		} catch (TransformLangExecutorRuntimeException e) {
-			logger.warn("Failed to execute " + INIT_FUNCTION_NAME + "() function: " + e.getMessage());
-		}
-		
- 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-
-	public void global() {
-			// execute code in global scope
-			executor.execute();
-	}
-	
-	public TransformationGraph getGraph() {
-		return node != null ? node.getGraph() : graph;
-	}
-
-	/**
-	 * Use setNode method.
-	 */
-	@Deprecated
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#getNode()
-	 */
-	public Node getNode() {
-		return node;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
-	 */
-	public void setNode(Node node) {
-		this.node = node;
-	}
-	
-	public int getOutputPort(ByteBuffer directRecord) {
-		throw new UnsupportedOperationException();
+	public CTLRecordPartitionAdapter(TransformLangExecutor executor, Log logger) {
+		super(executor, logger);
 	}
 
 	public boolean supportsDirectRecord() {
 		return false;
+	}
+
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+        // initialize global scope and call user initialization function
+		super.init();
+
+		this.getOuputPort = executor.getFunction(GETOUTPUTPORT_FUNCTION_NAME);
+
+		if (getOuputPort == null) {
+			throw new ComponentNotReadyException(GETOUTPUTPORT_FUNCTION_NAME + " is not defined");
+		}
+	}
+
+	public int getOutputPort(DataRecord record) {
+		inputRecords[0] = record;
+
+		final Object retVal = executor.executeFunction(getOuputPort, NO_ARGUMENTS, inputRecords, null);
+
+		if (retVal == null || retVal instanceof Integer == false) {
+			throw new TransformLangExecutorRuntimeException("getOutputPort() function must return 'int'");
+		}
+
+		return (Integer) retVal;
+	}
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
 	}
 
 }

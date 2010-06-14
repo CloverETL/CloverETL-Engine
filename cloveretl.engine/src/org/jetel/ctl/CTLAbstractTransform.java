@@ -18,8 +18,12 @@
  */
 package org.jetel.ctl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.StringDictionaryType;
 
@@ -31,7 +35,10 @@ import org.jetel.graph.dictionary.StringDictionaryType;
  * @version 11th June 2010
  * @created 5th May 2010
  */
-public abstract class CTLAbstractTransform {
+public abstract class CTLAbstractTransform implements Transform {
+
+	/** The logger used by this class. */
+	private static final Log logger = LogFactory.getLog(CTLAbstractTransform.class);
 
 	/** Runtime error message used when input records are not accessible. */
 	protected static final String INPUT_RECORDS_NOT_ACCESSIBLE = "Cannot access input records within this scope!";
@@ -43,24 +50,41 @@ public abstract class CTLAbstractTransform {
 	/** Runtime error message used when invalid output record is requested. */
 	protected static final String OUTPUT_RECORD_NOT_DEFINED = "No output record defined for given index!";
 
-	/** A transformation graph associated with this transform used to query LUTs, sequences, etc. */
-	protected TransformationGraph graph;
+	/** A graph node associated with this CTL transform used to query graph, LUTs, sequences, etc.. */
+	private Node node;
 
-    /**
-     * Associates a graph with this CTL transform.
-     *
-     * @param graph a <code>TransformationGraph</code> graph to be set
-     */
-	public final void setGraph(TransformationGraph graph) {
-		this.graph = graph;
+	@Override
+	public void setNode(Node node) {
+		this.node = node;
 	}
 
-    /**
-	 * @return a <code>TransformationGraph</code> associated with this CTL transform, or <code>null</code>
-	 * if no graph is associated
-	 */
+	@Override
+	public Node getNode() {
+		return node;
+	}
+
+	@Override
 	public final TransformationGraph getGraph() {
-		return graph;
+		return (node != null) ? node.getGraph() : null;
+	}
+
+	@Override
+	@CTLEntryPoint(name = "preExecute", required = false)
+	public void preExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
+	}
+
+	@Override
+	@CTLEntryPoint(name = "postExecute", required = false)
+	public void postExecute() throws ComponentNotReadyException {
+		// does nothing by default, may be overridden by generated transform classes
+	}
+
+	@Override
+	@CTLEntryPoint(name = "getMessage", required = false)
+	public String getMessage() {
+		// null by default, may be overridden by generated transform classes
+		return null;
 	}
 
 	/**
@@ -101,12 +125,28 @@ public abstract class CTLAbstractTransform {
 	 */
 	protected final void writeDict(String key, String value) {
 		try {
-			graph.getDictionary().setValue(key, StringDictionaryType.TYPE_ID, value);
+			getGraph().getDictionary().setValue(key, StringDictionaryType.TYPE_ID, value);
 		} catch (ComponentNotReadyException e) {
 			throw new TransformLangExecutorRuntimeException(e.getMessage());
 		}
 	}
 
-	// TODO: All common methods should be moved here when there is a common transformation interface.
+	/**
+	 * @deprecated Use {@link #postExecute()} method.
+	 */
+	@Deprecated
+	@Override
+	public final void finished() {
+		logger.warn("Call to the finished() function ignored!");
+	}
+
+	/**
+	 * @deprecated Use {@link #preExecute()} method.
+	 */
+	@Deprecated
+	@Override
+	public final void reset() {
+		logger.warn("Call to the reset() function ignored!");
+	}
 
 }

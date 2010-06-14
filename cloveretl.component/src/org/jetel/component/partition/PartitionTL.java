@@ -22,13 +22,11 @@ import java.nio.ByteBuffer;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
-import org.jetel.component.WrapperTL;
+import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
@@ -37,122 +35,60 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * Class for executing partition function written in CloverETL language
  * 
- * @author avackova (agata.vackova@javlinconsulting.cz) ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
- *
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; (c) JavlinConsulting s.r.o. www.javlinconsulting.cz
+ * 
  * @since Nov 30, 2006
- *
+ * 
  */
-public class PartitionTL implements PartitionFunction {
+public class PartitionTL extends AbstractTransformTL implements PartitionFunction {
 
-    public static final String INIT_FUNCTION_NAME="init";
-    public static final String GETOUTPUTPORT_FUNCTION_NAME="getOutputPort";
-    public static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
-    public static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
-    
-	private WrapperTL wrapper;
-	private TransformationGraph graph;
-	private Node node;
+	public static final String GETOUTPUTPORT_FUNCTION_NAME = "getOutputPort";
 
-    /**
-     * @param srcCode code written in CloverETL language
-     * @param metadata
-     * @param parameters
-     * @param logger
-     */
-    public PartitionTL(String srcCode, DataRecordMetadata metadata, 
-    		Properties parameters, Log logger) {
-        wrapper = new WrapperTL(srcCode, metadata, parameters, logger);
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param metadata
+	 * @param parameters
+	 * @param logger
 	 */
-	public int getOutputPort(DataRecord record) {
-		TLValue value;
-		value=wrapper.executePreparedFunction(record, null);
-		if (value.type.isNumeric()){
-			return ((TLNumericValue)value).getInt();
-		}else{
-			throw new RuntimeException("Partition - getOutputPort() functions does not return integer value !");
-		}
+	public PartitionTL(String srcCode, DataRecordMetadata metadata, Properties parameters, Log logger) {
+		super(srcCode, logger);
+
+		wrapper.setMatadata(metadata);
+		wrapper.setParameters(parameters);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
-	 */
-	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
-		if (graph != null) {
-			wrapper.setGraph(graph);
-		}
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+        wrapper.setGraph(getGraph());
 		wrapper.init();
-		TLValue params[] = new TLValue[] { TLValue.create(TLValueType.INTEGER)};
+
+		TLValue params[] = new TLValue[] { TLValue.create(TLValueType.INTEGER) };
 		params[0].getNumeric().setValue(numPartitions);
+
 		try {
 			wrapper.execute(INIT_FUNCTION_NAME, params);
 		} catch (JetelException e) {
-			//do nothing: function init is not necessary
+			// do nothing: function init is not necessary
 		}
+
 		wrapper.prepareFunctionExecution(GETOUTPUTPORT_FUNCTION_NAME);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-        // execute postExecute transformFunction
-		try {
-			wrapper.execute(PRE_EXECUTE_FUNCTION_NAME, null);
-		} catch (JetelException e) {
-			//do nothing: function preExecute is not necessary
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-        // execute postExecute transformFunction
-		try {
-			wrapper.execute(POST_EXECUTE_FUNCTION_NAME, null);
-		} catch (JetelException e) {
-			//do nothing: function postExecute is not necessary
-		}
-	}
-
-	public TransformationGraph getGraph() {
-		return node != null ? node.getGraph() : graph;
-	}
-
-	/**
-	 * Use setNode method.
-	 */
-	@Deprecated
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#getNode()
-	 */
-	public Node getNode() {
-		return node;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
-	 */
-	public void setNode(Node node) {
-		this.node = node;
-	}
-	
-	public int getOutputPort(ByteBuffer directRecord) {
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean supportsDirectRecord() {
 		return false;
+	}
+
+	public int getOutputPort(DataRecord record) {
+		TLValue result = wrapper.executePreparedFunction(record, null);
+
+		if (result.type.isNumeric()) {
+			return ((TLNumericValue<?>) result).getInt();
+		}
+
+		throw new RuntimeException("Partition - getOutputPort() functions does not return integer value !");
+	}
+
+	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
 	}
 
 }

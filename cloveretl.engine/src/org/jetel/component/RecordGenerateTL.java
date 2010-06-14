@@ -32,7 +32,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created     March 25, 2009
  * @see         org.jetel.component.RecordGenerate
  */
-public class RecordGenerateTL extends RecordTransformCommonTL implements RecordGenerate {
+public class RecordGenerateTL extends AbstractTransformTL implements RecordGenerate {
 
     public static final String GENERATE_FUNCTION_NAME = "generate";
     
@@ -51,10 +51,9 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 			throws ComponentNotReadyException{
 		wrapper.setMetadata(new DataRecordMetadata[]{}, targetRecordsMetadata);
 		wrapper.setParameters(parameters);
-		if (graph != null){
-	        wrapper.setGraph(graph);
-		}
+        wrapper.setGraph(getGraph());
 		wrapper.init();
+
 		try {
 			semiResult = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
@@ -87,5 +86,13 @@ public class RecordGenerateTL extends RecordTransformCommonTL implements RecordG
 
 		return SKIP;
 	}
-}
 
+	public void signal(Object signalObject) {
+		// does nothing
+	}
+
+	public Object getSemiResult() {
+		return semiResult;
+	}
+
+}

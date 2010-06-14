@@ -341,7 +341,7 @@ public class Partition extends Node {
 		}
 		
 		partitionFce.init(outPorts.size(),partitionKey);
-		partitionFce.setGraph(getGraph());
+		partitionFce.setNode(this);
 	}
 
 

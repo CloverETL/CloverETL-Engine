@@ -20,21 +20,25 @@ package org.jetel.component.normalize;
 
 import java.util.Properties;
 
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Interface to be implemented by classes implementing normalization, ie decomposition of
- * one input record to several output records.
- * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
- * @since 11/21/06  
- * @see org.jetel.component.Normalizer
+ * Interface to be implemented by classes implementing normalization, i.e. decomposition of one input record to several
+ * output records.
  *
+ * @author Jan Hadrava, Javlin a.s. &lt;jan.hadrava@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ *
+ * @version 11th June 2010
+ * @created 21st November 2006
+ *
+ * @see org.jetel.component.Normalizer
  */
-public interface RecordNormalize {
+public interface RecordNormalize extends Transform {
 	
 	/** the return value of the transform() method specifying that the record will be sent to output port */
 	public static final int OK = 0;
@@ -52,36 +56,15 @@ public interface RecordNormalize {
 	 *@param  targetMetadata   Metadata describing target data record
 	 *@return                  True if OK, otherwise False
 	 */
-	public boolean init(Properties parameters,
-			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
-	throws ComponentNotReadyException;
+	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
+			throws ComponentNotReadyException;
 
-    /**
-     * This is also initialization method, which is invoked before each separate graph run.
-     * Contrary the init() procedure here should be allocated only resources for this graph run.
-     * All here allocated resources should be released in #postExecute() method.
-     * 
-     * @throws ComponentNotReadyException some of the required resource is not available or other
-     * precondition is not accomplish
-     */
-    public void preExecute() throws ComponentNotReadyException; 
-
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated 
-     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-     * is invoked after graph finish at the latest. For some graph elements, for instance
-     * components, is this method called immediately after phase finish.
-     * 
-     * @throws ComponentNotReadyException
-     */
-    public void postExecute() throws ComponentNotReadyException;
-	
 	/**
 	 * @param source Input record
 	 * @return Number of output records which will be create from specified input record 
 	 */
 	public int count(DataRecord source) throws TransformException;
-	
+
 	/**
 	 * 
 	 * @param source Input record
@@ -94,39 +77,9 @@ public interface RecordNormalize {
 	 */
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException;
 
-	
 	/**
 	 * Finalize current round/clean after current round - called after the last transform method was called for the input record
 	 */
 	public void clean();
-	
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished();
-
-	/**
-	 *  Returns description of error if one of the methods failed. Can be
-	 * also used to get any message produced by transformation.
-	 */
-	public String getMessage();
-
-	/**
-	 * Use preExecute method.
-	 */
-	@Deprecated
-	public void reset();
-
-	/**
-	 *  Passes instance of transformation graph to normalize transformation
-	 */
-	public void setGraph(TransformationGraph graph);
-	
-	/**
-	 *  Returns the instance of graph actually set for normalize transformation
-	 */
-	public TransformationGraph getGraph();
-
 
 }

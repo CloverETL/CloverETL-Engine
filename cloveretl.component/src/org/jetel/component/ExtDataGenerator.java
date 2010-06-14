@@ -233,7 +233,7 @@ public class ExtDataGenerator extends DataGenerator {
 	}
 
 	private void initGeneratorClass(DataRecordMetadata[] outMetadata) throws ComponentNotReadyException {
-        generatorClass.setGraph(getGraph());
+        generatorClass.setNode(this);
 		
 		if (!generatorClass.init(generateParameters, outMetadata)) {
 			throw new ComponentNotReadyException("Generator failed to initialize: " + generatorClass.getMessage());

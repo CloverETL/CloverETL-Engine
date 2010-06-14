@@ -20,99 +20,49 @@ package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
 
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 
 /**
  * Simple interface for partition functions.
- * 
- * @author david.pavlis
- * @since  1.3.2005
+ *
+ * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
+ * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ *
+ * @version 11th June 2010
+ * @created 1st March 2005
  */
+public interface PartitionFunction extends Transform {
 
-public interface PartitionFunction {
+	/**
+	 * Indicates whether partition function supports operation on serialized records /aka direct
+	 * 
+	 * @return true if getOutputPort(ByteBuffer) method can be called
+	 */
+	public boolean supportsDirectRecord();
 
-	    
-	    /**
-	     * @param record data record which should be used for determining partition???
-	     * number
-	     * @return port number which should be used for sending
-	     * data out.
-	     * @throws TransformException 
-	     */
-	    int getOutputPort(DataRecord record) throws TransformException;
-	    
-	    
-	    /**
-	     * @param record data record which should be used for determining partition???
-	     * number
-	     * @return port number which should be used for sending
-	     * data out.
-	     */
-	    int getOutputPort(ByteBuffer directRecord);
-	    
-	    
-	    /**
-	     * Called befor partiton function is first used (getOutputPort is used).
-	     * @param numPartitions how many partitions we have
-	     * @param recordKey set of fields composing key based on which should the
-	     * partition be determined
-	     */
-	    
-	    void init(int numPartitions,RecordKey partitionKey) throws ComponentNotReadyException;
-	    
-	    /**
-	     * This is also initialization method, which is invoked before each separate graph run.
-	     * Contrary the init() procedure here should be allocated only resources for this graph run.
-	     * All here allocated resources should be released in #postExecute() method.
-	     * 
-	     * @throws ComponentNotReadyException some of the required resource is not available or other
-	     * precondition is not accomplish
-	     */
-	    public void preExecute() throws ComponentNotReadyException; 
+	/**
+	 * Called befor partiton function is first used (getOutputPort is used).
+	 * 
+	 * @param numPartitions how many partitions we have
+	 * @param recordKey set of fields composing key based on which should the partition be determined
+	 */
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException;
 
-	    /**
-	     * This is de-initialization method for a single graph run. All resources allocated 
-	     * in {@link #preExecute()} method should be released here. It is guaranteed that this method
-	     * is invoked after graph finish at the latest. For some graph elements, for instance
-	     * components, is this method called immediately after phase finish.
-	     * 
-	     * @throws ComponentNotReadyException
-	     */
-	    public void postExecute() throws ComponentNotReadyException;
-	    
-	    /**
-	     * Passes graph node.
-	     * @param node
-	     */
-	    public void setNode(Node node);
-	    
-	    /**
-	     * Gets graph node.
-	     * @return
-	     */
-	    public Node getNode();
-	    
-	    /**
-		 * Use setNode method.
-		 */
-	    @Deprecated
-		public void setGraph(TransformationGraph graph);
+	/**
+	 * @param record data record which should be used for determining partition??? number
+	 * @return port number which should be used for sending data out.
+	 * @throws TransformException
+	 */
+	public int getOutputPort(DataRecord record) throws TransformException;
 
-		/**
-		 * @return a <code>TransformationGraph</code> associated with this partition function or <code>null</code>
-		 * if no graph is associated
-		 */
-		public TransformationGraph getGraph();
-
-		/**
-		 * Indicates whether partition function supports operation on serialized records /aka direct
-		 * @return true if getOutputPort(ByteBuffer) method can be called
-		 */
-		public boolean supportsDirectRecord();
+	/**
+	 * @param record data record which should be used for determining partition??? number
+	 * @return port number which should be used for sending data out.
+	 */
+	public int getOutputPort(ByteBuffer directRecord);
 
 }

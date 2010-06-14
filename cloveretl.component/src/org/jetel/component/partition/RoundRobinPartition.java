@@ -97,4 +97,27 @@ public class RoundRobinPartition implements PartitionFunction{
 		return true;
 	}
     
+	@Override
+	public String getMessage() {
+		return null;
+	}
+
+	/**
+	 * @deprecated Use {@link #postExecute()} method.
+	 */
+	@Deprecated
+	@Override
+	public void finished(){
+		// do nothing by default
+	}
+
+	/**
+	 * @deprecated Use {@link #preExecute()} method.
+	 */
+	@Deprecated
+	@Override
+	public void reset() {
+		// do nothing by default
+	}
+
 }

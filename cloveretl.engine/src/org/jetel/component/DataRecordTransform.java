@@ -49,16 +49,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see org.jetel.component.RecordTransform
  */
 @SuppressWarnings("EI")
-public abstract class DataRecordTransform implements RecordTransform {
-
-	protected TransformationGraph graph;
+public abstract class DataRecordTransform extends AbstractDataTransform implements RecordTransform {
 
 	protected String transformName;
-	/**
-	 * Use <code>errorMessage</code> to report details of problems which occured within transform method.<br>
-	 * Ideally, within catch() section assign meaningful message to errorMessage field.
-	 */
-	protected String errorMessage;
 
 	protected Properties parameters;
 	protected DataRecordMetadata[] sourceMetadata;
@@ -99,6 +92,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 		this.parameters = parameters;
 		this.sourceMetadata = sourceRecordsMetadata;
 		this.targetMetadata = targetRecordsMetadata;
+
 		return init();
 	}
 
@@ -113,19 +107,6 @@ public abstract class DataRecordTransform implements RecordTransform {
 		return true;
 	}
 
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
 	/**
 	 * Transforms source data records into target data records. Derived class should perform this functionality.<br>
 	 * This basic version only copies content of inputRecord into outputRecord field by field. See
@@ -161,40 +142,12 @@ public abstract class DataRecordTransform implements RecordTransform {
 		return true;
 	}
 
-	/**
-	 * Returns description of error if one of the methods failed
-	 * 
-	 * @return Error message
-	 * @since April 18, 2002
-	 */
-	public String getMessage() {
-		return errorMessage;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#signal() In this implementation does nothing.
-	 */
 	public void signal(Object signalObject) {
-
+		// do nothing by default
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getSemiResult()
-	 */
 	public Object getSemiResult() {
 		return null;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.RecordTransform#finished()
-	 */
-	@Deprecated
-	public void finished() {
 	}
 
 	/**
@@ -206,7 +159,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return IConnection object if found, otherwise NULL
 	 */
 	public final IConnection getConnection(String id) {
-		return graph.getConnection(id);
+		return getGraph().getConnection(id);
 	}
 
 	/**
@@ -218,7 +171,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return DataRecordMetadata object if found, otherwise NULL
 	 */
 	public final DataRecordMetadata getDataRecordMetadata(String id) {
-		return graph.getDataRecordMetadata(id);
+		return getGraph().getDataRecordMetadata(id);
 	}
 
 	/**
@@ -230,33 +183,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return LookupTable object if found, otherwise NULL
 	 */
 	public final LookupTable getLookupTable(String id) {
-		return graph.getLookupTable(id);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.component.RecordTransform#getGraph()
-	 */
-	public TransformationGraph getGraph() {
-		return graph;
-	}
-
-	/**
-	 * Use preExecute method.
-	 */
-	@Deprecated
-	public void reset() {
-		errorMessage = null;
+		return getGraph().getLookupTable(id);
 	}
 
 }
