@@ -56,7 +56,18 @@ public class SimpleThreadManager implements IThreadManager {
 		nodeThread.start();
 	}
 
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#execute(java.lang.Runnable)
+	 */
+	@Override
+	public void execute(Runnable runnable) {
+		Thread nodeThread = new Thread(runnable.getClass().getName());
+		nodeThread.setContextClassLoader(runnable.getClass().getClassLoader());
+		nodeThread.setPriority(Thread.MIN_PRIORITY);
+		nodeThread.setDaemon(true);
+		nodeThread.start();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#getFreeThreadsCount()
 	 */

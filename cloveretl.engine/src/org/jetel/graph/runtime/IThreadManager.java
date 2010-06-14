@@ -45,6 +45,12 @@ public interface IThreadManager {
 	public void executeNode(Runnable node);
 	
 	/**
+	 * Runs arbitrary runnable code with thread re-usability.
+	 * @param node
+	 */
+	public void execute(Runnable runnable);
+	
+	/**
 	 * Returns the approximate number of available free threads.
 	 * @return number of threads
 	 */
