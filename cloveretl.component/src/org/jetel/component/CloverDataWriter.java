@@ -207,7 +207,6 @@ public class CloverDataWriter extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		formatter.finish();
 		if (saveMetadata){
 			saveMetadata();
 		}
@@ -217,7 +216,12 @@ public class CloverDataWriter extends Node {
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-    	
+
+		try {
+			formatter.finish();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
   		formatter.close(); //indirectly closes out    		
     }
     
