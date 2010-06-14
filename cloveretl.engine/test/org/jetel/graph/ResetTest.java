@@ -198,7 +198,7 @@ public class ResetTest extends TestCase{
 	public void testExample(File file) throws Exception {
 		TransformationGraph graph = null;
 		Future<Result> futureResult = null;
-		log("Analizing graph " + file.getName());
+		log("Analyzing graph " + file.getName());
 		try {
 				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext);
 				graph.setDebugMode(false);
@@ -252,16 +252,6 @@ public class ResetTest extends TestCase{
 //					fail();
 					errors.put(file.getName(), new RuntimeException("Execution of graph failed !"));
 					return;
-				}
-
-				if (i < 2) {
-					try {
-						graph.reset();
-					} catch (ComponentNotReadyException e) {
-						log("Graph reseting failed: " + e.getMessage());
-						errors.put(file.getName(), e);
-						return;
-					}
 				}
 			}
 
