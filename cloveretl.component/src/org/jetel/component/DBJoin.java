@@ -379,33 +379,38 @@ public class DBJoin extends Node {
             status.add(problem);
         }
 
-        DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { getInputPort(READ_FROM_PORT).getMetadata(), dbMetadata };
-        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
+        if (dbMetadata != null) {
+	        DataRecordMetadata[] inMetadata = new DataRecordMetadata[] {
+	        		getInputPort(READ_FROM_PORT).getMetadata(), dbMetadata };
+	        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+	        		getOutputPort(WRITE_TO_PORT).getMetadata() };
 
-		// transformation source for checkconfig
-        String checkTransform = null;
-        if (transformSource != null) {
-        	checkTransform = transformSource;
-        } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-    			try {
-					URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
-    				transformation = RecordTransformFactory.createTransform(
-    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
+			// transformation source for checkconfig
+	        String checkTransform = null;
+	        if (transformSource != null) {
+	        	checkTransform = transformSource;
+	        } else if (transformURL != null) {
+	        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(),
+	        			transformURL, charset);
+	        }
+	        // only the transform and transformURL parameters are checked, transformClass is ignored
+	        if (checkTransform != null) {
+	        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
+	        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
+	        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
+	    			try {
+						URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
+	    				transformation = RecordTransformFactory.createTransform(
+	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
+	    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPaths);
+					} catch (ComponentNotReadyException e) {
+						// find which component attribute was used
+						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
+						// report CTL error as a warning
+						status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
+					}
+	        	}
+	        }
         }
 
         return status;
