@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Fri Jun 11 16:30:29 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.48">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:34:26 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.50">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="forPopInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -53,7 +53,7 @@ push(list1,$0.ListElement3);
 //Prints the elements of the original list.
 $0.List = toString(list1);
 
-//Prints the first element of the list. The poll() function returns the first element of the list.
+//Prints the last element of the list.
 $0.Function = "pop(List)";
 $0.ReturnValue = pop(list1);
 
