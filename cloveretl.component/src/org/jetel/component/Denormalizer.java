@@ -292,7 +292,7 @@ public class Denormalizer extends Node {
 				}
 			}
 			// set graph to transformation (if CTL it can use lookups etc.)
-			denorm.setGraph(getGraph());
+			denorm.setNode(this);
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());

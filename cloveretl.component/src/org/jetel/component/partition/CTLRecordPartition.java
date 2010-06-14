@@ -44,6 +44,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	/** Input data record used for partitioning, or <code>null</code> if not accessible. */
 	private DataRecord inputRecord = null;
 
+	@Override
 	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
 		globalScopeInit();
 		initDelegate(numPartitions);
@@ -62,15 +63,12 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
-	@CTLEntryPoint(name = "preExecute", required = false)
-	public void preExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	public final boolean supportsDirectRecord() {
 		return false;
 	}
 
+	@Override
 	public final int getOutputPort(DataRecord record) throws TransformException {
 		int result = 0;
 
@@ -100,15 +98,12 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	@CTLEntryPoint(name = "getOutputPort", required = true)
 	protected abstract int getOutputPortDelegate() throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 
-	@CTLEntryPoint(name = "postExecute", required = false)
-	public void postExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecord == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
@@ -121,6 +116,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		return inputRecord;
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
 	}

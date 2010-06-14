@@ -20,10 +20,10 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -73,25 +73,12 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 11th June 2010
  * @since 24th February 2009
  */
-public interface RecordRollup {
+public interface RecordRollup extends Transform {
 
     /** the return value of the transform() method specifying that the record will be sent to all the output ports */
     public static final int ALL = Integer.MAX_VALUE;
     /** the return value of the transform() method specifying that the record will be skipped */
     public static final int SKIP = -1;
-
-    /**
-     * Associates a graph with this rollup transform.
-     *
-     * @param graph a <code>TransformationGraph</code> graph to be set
-     */
-    public void setGraph(TransformationGraph graph);
-
-    /**
-	 * @return a <code>TransformationGraph</code> associated with this rollup transform, or <code>null</code>
-	 * if no graph is associated
-	 */
-    public TransformationGraph getGraph();
 
     /**
      * Initializes the rollup transform. This method is called once at the beginning of the life-cycle of the rollup
@@ -107,15 +94,6 @@ public interface RecordRollup {
      */
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException;
-
-    /**
-     * This is also initialization method, which is invoked before each separate graph run. Comparing to the init()
-     * method, here should be allocated only resources for this graph run. All allocated resources should be released
-     * in the {@link #postExecute()} method.
-     *
-     * @throws ComponentNotReadyException if an error occurred during initialization
-     */
-    public void preExecute() throws ComponentNotReadyException; 
 
     /**
      * This method is called for the first data record in a group. Any initialization of the group "accumulator" should
@@ -199,41 +177,5 @@ public interface RecordRollup {
      */
     public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException;
-
-    /**
-     * This method is called if the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} or
-     * {@link #transform(int, DataRecord, DataRecord, DataRecord[])} method returns value < RecordRollup.SKIP.
-     *
-     * @return a user-defined error message when an error occurs
-     */
-    public String getMessage();
-
-    /**
-     * This is de-initialization method for a single graph run. All resources allocated in {@link #preExecute()}
-     * method should be released here. It is guaranteed that this method is invoked after graph finish at the latest.
-     * For some graph elements, for instance components, is this method called immediately after phase finish.
-     *
-     * @throws ComponentNotReadyException if an error occurred during de-initialization
-     */
-    public void postExecute() throws ComponentNotReadyException;
-    
-    /**
-     * Called at the end of the rollup transform after all input data records were processed.
-     *
-     * @deprecated Use {@link #postExecute()} method.
-     */
-    @Deprecated
-    public void finished();
-
-    /**
-     * Resets the rollup transform to the initial state (for another execution). This method can be called only
-     * if the {@link #init(Properties, DataRecordMetadata, DataRecordMetadata)} method has already been called.
-     *
-     * @throws ComponentNotReadyException if an error occurred during the reset
-     *
-     * @deprecated Use {@link #preExecute()} method.
-     */
-    @Deprecated
-    public void reset() throws ComponentNotReadyException;
 
 }

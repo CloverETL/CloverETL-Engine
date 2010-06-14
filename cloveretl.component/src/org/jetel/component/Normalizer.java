@@ -223,7 +223,7 @@ public class Normalizer extends Node {
 				norm = createTransform(xform);
 			}
         	// set graph instance to transformation (if CTL it can access lookups etc.)
-        	norm.setGraph(getGraph());
+        	norm.setNode(this);
 		}
 		if (!norm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
@@ -435,7 +435,7 @@ public class Normalizer extends Node {
 			if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
     			try {
     				RecordNormalize norm = createTransform(checkTransform);
-    				norm.setGraph(getGraph());
+    				norm.setNode(this);
     				norm.init(transformationParameters, inMetadata, outMetadata);
     			} catch (ComponentNotReadyException e) {
 					// find which component attribute was used

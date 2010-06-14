@@ -37,7 +37,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created     June 25, 2006
  * @see         org.jetel.component.RecordTransform
  */
-public class RecordTransformTL extends RecordTransformCommonTL implements RecordTransform {
+public class RecordTransformTL extends AbstractTransformTL implements RecordTransform {
 
     public static final String TRANSFORM_FUNCTION_NAME = "transform";
     
@@ -57,10 +57,9 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 			throws ComponentNotReadyException{
 		wrapper.setMetadata(sourceRecordsMetadata, targetRecordsMetadata);
 		wrapper.setParameters(parameters);
-		if (graph != null){
-	        wrapper.setGraph(graph);
-		}
+        wrapper.setGraph(getGraph());
 		wrapper.init();
+
 		try {
 			semiResult = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
@@ -90,5 +89,14 @@ public class RecordTransformTL extends RecordTransformCommonTL implements Record
 
 		return SKIP;
 	}
+
+	public void signal(Object signalObject) {
+		// does nothing
+	}
+
+	public Object getSemiResult() {
+		return semiResult;
+	}
+
 }
 

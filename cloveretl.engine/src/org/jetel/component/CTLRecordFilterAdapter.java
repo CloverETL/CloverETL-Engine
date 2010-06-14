@@ -36,7 +36,6 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 	private DataRecord[] sourceRec;
 	private Log logger;
 	private TransformLangExecutor executor;
-	private TransformationGraph graph;
 	
 	/** Constructor for the DataRecordTransform object */
 	public CTLRecordFilterAdapter(TransformLangExecutor executor, Log logger) {
@@ -46,7 +45,7 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 	}
 
 	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
+		// do nothing
 	}
 
 	public void init() throws ComponentNotReadyException {

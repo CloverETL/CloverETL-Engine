@@ -41,6 +41,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -236,6 +237,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected DataRecordMetadata[] targetMetadata;
 
 	protected TransformationGraph graph;
+	protected Node node;
 
 	protected PolicyType fieldPolicy = PolicyType.STRICT;
 	protected boolean useAlternativeRules = false;
@@ -942,8 +944,15 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void finished() {
 	}
 
+	/**
+	 * @param graph the graph to set
+	 */
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
+	}
+
 	public TransformationGraph getGraph() {
-		return graph;
+		return (node != null) ? node.getGraph() : graph;
 	}
 
 	public String getMessage() {
@@ -1368,8 +1377,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return list;
 	}
 
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
+	@Override
+	public Node getNode() {
+		return node;
+	}
+
+	@Override
+	public void setNode(Node node) {
+		this.node = node;
 	}
 
 	public void signal(Object signalObject) {

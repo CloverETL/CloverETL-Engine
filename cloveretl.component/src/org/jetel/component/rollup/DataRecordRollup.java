@@ -20,8 +20,8 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
+import org.jetel.component.AbstractDataTransform;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -29,13 +29,10 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 4th January 2010
+ * @version 14th June 2010
  * @since 4th January 2010
  */
-public abstract class DataRecordRollup implements RecordRollup {
-
-	/** a transformation graph associated with this rollup transform */
-	protected TransformationGraph graph;
+public abstract class DataRecordRollup extends AbstractDataTransform implements RecordRollup {
 
 	/** parameters used during the initialization of this rollup transform */
 	protected Properties parameters;
@@ -45,17 +42,6 @@ public abstract class DataRecordRollup implements RecordRollup {
 	protected DataRecordMetadata accumulatorMetadata;
 	/** a metadata of output data records */
 	protected DataRecordMetadata[] outputMetadata;
-
-	/** an error message that occurred during this rollup transform */
-	protected String errorMessage;
-
-	public final void setGraph(TransformationGraph graph) {
-    	this.graph = graph;
-    }
-
-    public final TransformationGraph getGraph() {
-    	return graph;
-    }
 
     public final void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
@@ -75,30 +61,6 @@ public abstract class DataRecordRollup implements RecordRollup {
      */
     protected void init() throws ComponentNotReadyException {
     	// don't do anything
-    }
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-
-    public final String getMessage() {
-    	return errorMessage;
-    }
-
-    public void finished() {
-    	// don't do anything
-    }
-
-    public void reset() throws ComponentNotReadyException {
-    	errorMessage = null;
     }
 
 }

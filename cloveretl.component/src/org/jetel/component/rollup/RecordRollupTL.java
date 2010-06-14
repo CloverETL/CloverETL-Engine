@@ -20,13 +20,12 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.LogFactory;
-import org.jetel.component.WrapperTL;
+import org.apache.commons.logging.Log;
+import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLRecordValue;
 import org.jetel.interpreter.data.TLValue;
@@ -39,13 +38,11 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 2nd October 2009
+ * @version 14th June 2010
  * @since 28th April 2009
  */
-public class RecordRollupTL implements RecordRollup {
+public class RecordRollupTL extends AbstractTransformTL implements RecordRollup {
 
-    /** the name of the init() function in CTL */
-    public static final String FUNCTION_INIT_NAME = "init";
     /** the name of the initGroup() function in CTL */
     public static final String FUNCTION_INIT_GROUP_NAME = "initGroup";
     /** the name of the updateGroup() function in CTL */
@@ -56,13 +53,6 @@ public class RecordRollupTL implements RecordRollup {
     public static final String FUNCTION_UPDATE_TRANSFORM_NAME = "updateTransform";
     /** the name of the transform() function in CTL */
     public static final String FUNCTION_TRANSFORM_NAME = "transform";
-    /** the name of the getMessage() function in CTL */
-    public static final String FUNCTION_GET_MESSAGE_NAME = "getMessage";
-    /** the name of the finished() function in CTL */
-    public static final String FUNCTION_FINISHED_NAME = "finished";
-
-    /** the TL wrapper used to execute all the functions */
-    private final WrapperTL wrapper;
 
     /** the ID of the prepared initGroup() function */
     private int functionInitGroupId;
@@ -82,27 +72,21 @@ public class RecordRollupTL implements RecordRollup {
      * Creates an instance of the <code>RecordRollupTL</code> class.
      *
      * @param sourceCode the source code of the transformation
+     * @param logger the logger to be used by this TL wrapper
      */
-    public RecordRollupTL(String sourceCode) {
-        this.wrapper = new WrapperTL(sourceCode, LogFactory.getLog(RecordRollupTL.class));
+    public RecordRollupTL(String sourceCode, Log logger) {
+    	super(sourceCode, logger);
     }
-
-	public void setGraph(TransformationGraph graph) {
-		wrapper.setGraph(graph);
-	}
-
-	public TransformationGraph getGraph() {
-		return wrapper.getGraph();
-	}
 
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
         wrapper.setParameters(parameters);
         wrapper.setMetadata(new DataRecordMetadata[] { inputMetadata }, outputMetadata);
+        wrapper.setGraph(getGraph());
         wrapper.init();
 
         try {
-            wrapper.execute(FUNCTION_INIT_NAME, null);
+            wrapper.execute(INIT_FUNCTION_NAME, null);
         } catch (JetelException exception) {
             // OK, don't do anything, function init() is not necessary
         }
@@ -129,18 +113,6 @@ public class RecordRollupTL implements RecordRollup {
                 new TLValue[] { new TLRecordValue(groupAccumulator) });
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.rollup.RecordRollup#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
         return executeGroupFunction(functionUpdateGroupId, inputRecord, groupAccumulator, false);
     }
@@ -151,6 +123,9 @@ public class RecordRollupTL implements RecordRollup {
 
     private boolean executeGroupFunction(int functionId, DataRecord inputRecord, DataRecord groupAccumulator,
             boolean defaultReturnValue) {
+		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
+		errorMessage = null;
+
         // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
         if (groupAccumulator == null) {
             groupAccumulator = emptyRecord;
@@ -164,7 +139,7 @@ public class RecordRollupTL implements RecordRollup {
                 return (result == TLBooleanValue.TRUE);
             }
 
-            LogFactory.getLog(getClass()).warn("Unexpected return result: " + result + " (" + result.getType() + ")");
+            errorMessage = "Unexpected return result: " + result + " (" + result.getType() + ")";
         }
 
         return defaultReturnValue;
@@ -182,6 +157,9 @@ public class RecordRollupTL implements RecordRollup {
 
     private int executeTransformFunction(int functionId, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
             DataRecord[] outputRecords) {
+		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
+		errorMessage = null;
+
         TLValue counterTL = TLValue.create(TLValueType.INTEGER);
         counterTL.setValue(counter);
 
@@ -198,34 +176,10 @@ public class RecordRollupTL implements RecordRollup {
                 return result.getNumeric().getInt();
             }
 
-            LogFactory.getLog(getClass()).warn("Unexpected return result: " + result + " (" + result.getType() + ")");
+            errorMessage = "Unexpected return result: " + result + " (" + result.getType() + ")";
         }
 
         return SKIP;
-    }
-
-    public String getMessage() {
-        TLValue result = null;
-
-        try {
-            result = wrapper.execute(FUNCTION_GET_MESSAGE_NAME, null);
-        } catch (JetelException exception) {
-            // OK, don't do anything, function getMessage() is not necessary
-        }
-
-        return ((result != null) ? result.toString() : null);
-    }
-
-    public void finished() {
-        try {
-            wrapper.execute(FUNCTION_FINISHED_NAME, null);
-        } catch (JetelException exception) {
-            // OK, don't do anything, function free() is not necessary
-        }
-    }
-
-    public void reset() throws ComponentNotReadyException {
-        wrapper.reset();
     }
 
 }

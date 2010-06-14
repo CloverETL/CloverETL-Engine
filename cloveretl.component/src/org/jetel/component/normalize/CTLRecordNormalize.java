@@ -46,6 +46,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	/** Output data record used for normalization, or <code>null</code> if not accessible. */
 	private DataRecord outputRecord = null;
 
+	@Override
 	public final boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		globalScopeInit();
@@ -68,11 +69,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		return true;
 	}
 
-	@CTLEntryPoint(name = "preExecute", required = false)
-	public void preExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	public final int count(DataRecord source) throws TransformException {
 		int result = 0;
 
@@ -102,6 +99,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	@CTLEntryPoint(name = "count", required = true)
 	protected abstract int countDelegate() throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
 		int result = 0;
 
@@ -133,22 +131,13 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	@CTLEntryPoint(name = "transform", parameterNames = { "idx" }, required = true)
 	protected abstract int transformDelegate(int idx) throws ComponentNotReadyException, TransformException;
 
+	@Override
 	@CTLEntryPoint(name = "clean", required = false)
 	public void clean() {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
-	@CTLEntryPoint(name = "getMessage", required = false)
-	public String getMessage() {
-		// null by default, may be overridden by generated transform classes
-		return null;
-	}
-
-	@CTLEntryPoint(name = "postExecute", required = false)
-	public void postExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecord == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
@@ -161,6 +150,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		return inputRecord;
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		if (outputRecord == null) {
 			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
@@ -171,20 +161,6 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		}
 
 		return outputRecord;
-	}
-
-	/**
-	 * Use {@link #postExecute()} method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
-
-	/**
-	 * Use {@link #preExecute()} method.
-	 */
-	@Deprecated
-	public void reset() {
 	}
 
 }

@@ -247,7 +247,7 @@ public class RecordTransformFactory {
                         "Can't determine transformation code type at component ID :" + node.getId());
             }
         }
-        transformation.setGraph(node.getGraph());
+        transformation.setNode(node);
     	
         // init transformation
         if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {//TODO

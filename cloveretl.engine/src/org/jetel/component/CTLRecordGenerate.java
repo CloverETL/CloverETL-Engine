@@ -45,6 +45,7 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 	/** Output data records used by the generator, or <code>null</code> if not accessible. */
 	private DataRecord[] outputRecords = null;
 
+	@Override
 	public final boolean init(Properties parameters, DataRecordMetadata[] targetMetadata)
 			throws ComponentNotReadyException {
 		globalScopeInit();
@@ -65,11 +66,7 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 		return true;
 	}
 
-	@CTLEntryPoint(name = "preExecute", required = false)
-	public void preExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	public final int generate(DataRecord[] target) throws TransformException {
 		int result = 0;
 
@@ -99,29 +96,22 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 	@CTLEntryPoint(name = "generate", required = true)
 	protected abstract int generateDelegate() throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final void signal(Object signalObject) {
 		// does nothing
 	}
 
+	@Override
 	public final Object getSemiResult() {
 		return null;
 	}
 
-	@CTLEntryPoint(name = "getMessage", required = false)
-	public String getMessage() {
-		// null by default, may be overridden by generated transform classes
-		return null;
-	}
-
-	@CTLEntryPoint(name = "postExecute", required = false)
-	public void postExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		if (outputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
@@ -132,20 +122,6 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 		}
 
 		return outputRecords[index];
-	}
-
-	/**
-	 * Use {@link #postExecute()} method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
-
-	/**
-	 * Use {@link #preExecute()} method.
-	 */
-	@Deprecated
-	public void reset() {
 	}
 
 }

@@ -160,7 +160,7 @@ import org.w3c.dom.Element;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 14th June 2010
  * @created 30th April 2009
  *
  * @see RecordRollup
@@ -439,7 +439,7 @@ public class Rollup extends Node {
 
     			try {
     				RecordRollup rollup = createTransformFromSourceCode(checkTransform);
-    				rollup.setGraph(getGraph());
+    				rollup.setNode(this);
     				rollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
     						getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
     						getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -478,7 +478,7 @@ public class Rollup extends Node {
             recordRollup = createTransformFromClassName(transformClassName);
         }
 
-        recordRollup.setGraph(getGraph());
+        recordRollup.setNode(this);
         recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -528,7 +528,7 @@ public class Rollup extends Node {
         	Object compiledTransform = compiler.getCompiledCode();
 
         	if (compiledTransform instanceof TransformLangExecutor) {
-        		return new CTLRecordRollupAdapter((TransformLangExecutor) compiledTransform);
+        		return new CTLRecordRollupAdapter((TransformLangExecutor) compiledTransform, LogFactory.getLog(getClass()));
         	} else if (compiledTransform instanceof CTLRecordRollup){
         		return (CTLRecordRollup) compiledTransform;
         	}
@@ -537,7 +537,7 @@ public class Rollup extends Node {
         }
 
     	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
-        	return new RecordRollupTL(sourceCode);
+        	return new RecordRollupTL(sourceCode, LogFactory.getLog(getClass()));
         }
 
     	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {

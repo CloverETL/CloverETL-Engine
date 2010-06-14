@@ -41,6 +41,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 	/** Input data record used for filtering, or <code>null</code> if not accessible. */
 	private DataRecord inputRecord = null;
 
+	@Override
 	public final void init() throws ComponentNotReadyException {
 		globalScopeInit();
 		initDelegate();
@@ -57,6 +58,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
+	@Override
 	public boolean isValid(DataRecord record) throws TransformException {
 		boolean result = false;
 
@@ -86,6 +88,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 	@CTLEntryPoint(name = "isValid", required = true)
 	protected abstract boolean isValidDelegate() throws ComponentNotReadyException, TransformException;
 
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecord == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
@@ -98,6 +101,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 		return inputRecord;
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
 	}

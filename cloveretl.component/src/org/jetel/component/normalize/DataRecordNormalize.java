@@ -20,86 +20,34 @@ package org.jetel.component.normalize;
 
 import java.util.Properties;
 
+import org.jetel.component.AbstractDataTransform;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Base class for various normalization implementations.
+ * 
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
- * @since 11/21/06  
+ * @since 11/21/06
  * @see org.jetel.component.Denormalizer
  */
-public abstract class DataRecordNormalize implements RecordNormalize {
+public abstract class DataRecordNormalize extends AbstractDataTransform implements RecordNormalize {
 
 	protected Properties parameters;
 	protected DataRecordMetadata sourceMetadata;
 	protected DataRecordMetadata targetMetadata;
-		
-	protected String errorMessage;
-	private TransformationGraph graph;
 
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#init(org.jetel.graph.TransformationGraph, java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
-	 */
-	public boolean init(Properties parameters,
-			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
+	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		this.parameters = parameters;
 		this.sourceMetadata = sourceMetadata;
 		this.targetMetadata = targetMetadata;
-		this.errorMessage = null;
+
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.normalize.RecordNormalize#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
+	public void clean() {
+		// do nothing
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.normalize.RecordNormalize#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordNormalize#getMessage()
-	 */
-	public String getMessage() {
-		return errorMessage;
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 */
-	public void clean(){
-		//do nothing
-	}
-
-	/**
-	 * Use preExecute method.
-	 */
-	@Deprecated
-	public void reset() {
-		errorMessage = null;
-	}
-	
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-	public TransformationGraph getGraph() {
-		return graph;
-	}
-
-	
 }

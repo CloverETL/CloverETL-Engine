@@ -47,6 +47,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	/** Output data records used for transform, or <code>null</code> if not accessible. */
 	private DataRecord[] outputRecords = null;
 
+	@Override
 	public final boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata,
 			DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
 		globalScopeInit();
@@ -69,11 +70,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		return true;
 	}
 
-	@CTLEntryPoint(name = "preExecute", required = false)
-	public void preExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	public final int transform(DataRecord[] sources, DataRecord[] targets) throws TransformException {
 		int result = 0;
 
@@ -105,25 +102,17 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	@CTLEntryPoint(name = "transform", required = true)
 	protected abstract int transformDelegate() throws ComponentNotReadyException, TransformException;
 
+	@Override
 	public final void signal(Object signalObject) {
 		// does nothing
 	}
 
+	@Override
 	public final Object getSemiResult() {
 		return null;
 	}
 
-	@CTLEntryPoint(name = "getMessage", required = false)
-	public String getMessage() {
-		// null by default, may be overridden by generated transform classes
-		return null;
-	}
-
-	@CTLEntryPoint(name = "postExecute", required = false)
-	public void postExecute() throws ComponentNotReadyException {
-		// does nothing by default, may be overridden by generated transform classes
-	}
-
+	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
@@ -136,6 +125,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		return inputRecords[index];
 	}
 
+	@Override
 	protected final DataRecord getOutputRecord(int index) {
 		if (outputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(OUTPUT_RECORDS_NOT_ACCESSIBLE);
@@ -146,20 +136,6 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		}
 
 		return outputRecords[index];
-	}
-
-	/**
-	 * Use {@link #postExecute()} method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
-
-	/**
-	 * Use {@link #preExecute()} method.
-	 */
-	@Deprecated
-	public void reset() {
 	}
 
 }
