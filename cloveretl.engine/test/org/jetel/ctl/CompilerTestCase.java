@@ -1594,6 +1594,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("insertIndex", Integer.valueOf(3));
 		check("insertList", Arrays.asList(1, 2, 3, 7, 4, 5));
 	}
+	
+	public void test_containerlib_isEmpty() {
+		doCompile("test_containerlib_isEmpty");
+		
+		check("emptyMap", true);
+		check("fullMap", false);
+		check("emptyList", true);
+		check("fullList", false);
+	}
 
 	public void test_containerlib_poll() {
 		doCompile("test_containerlib_poll");
