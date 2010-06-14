@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jun 14 14:51:50 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.38">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="num2boolInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Integer" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="num2boolOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Integer" type="integer"/>
+<Field name="Function" type="string"/>
+<Field name="Boolean" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="121" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean num2bool(numerictype arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="426" x="150" y="95">
+<attr name="text"><![CDATA[
+The num2bool(numerictype) function takes one argument of any numeric data type and returns boolean false (if the argument is 0) or true (otherwise).]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionNum2bool.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="58" guiY="240" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionNum2boolOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="587" guiY="241" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="301" guiY="240" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Integer = $0.Integer;
+	$0.Function = "num2bool($0.Integer)";
+	$0.Boolean = num2bool($0.Integer);
+	return 0;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
