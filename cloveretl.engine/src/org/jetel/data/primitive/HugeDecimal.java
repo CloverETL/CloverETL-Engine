@@ -172,6 +172,8 @@ public final class HugeDecimal implements Decimal {
            setValue(value.longValue());
        }else if (value instanceof Integer){
            setValue(value.intValue());
+       }else if (value instanceof BigDecimal){
+    	   setValue((BigDecimal) value);
        }else{
            setValue(value.doubleValue());
        }
