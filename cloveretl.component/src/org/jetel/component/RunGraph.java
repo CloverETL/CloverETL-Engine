@@ -324,12 +324,13 @@ public class RunGraph extends Node{
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
     	
-    	try {
-    		outputFile.close();
-    	}
-    	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-    	}
+		if (outputFile != null) {
+			try {
+				outputFile.close();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+			}
+		}
     }
 
 
