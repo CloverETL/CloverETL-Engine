@@ -750,11 +750,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("fieldName", NAME_VALUE);
 		check("fieldCity", CITY_VALUE);
 		check("escapeChars", "a\u0101\u0102A");
-		check("doubleEscapeChars", "a\u0101\u0102A");
+		check("doubleEscapeChars", "a\\u0101\\u0102A");
 		check("specialChars", "špeciálne značky s mäkčeňom môžu byť");
 		check("dQescapeChars", "a\u0101\u0102A");
 		//TODO:Is next test correct?
-		check("dQdoubleEscapeChars", "a\u0101\u0102A");
+		check("dQdoubleEscapeChars", "a\\u0101\\u0102A");
 		check("dQspecialChars", "špeciálne značky s mäkčeňom môžu byť");
 		check("empty", "");
 		check("def", "");

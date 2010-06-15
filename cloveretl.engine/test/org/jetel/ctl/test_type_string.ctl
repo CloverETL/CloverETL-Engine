@@ -41,7 +41,7 @@ function integer transform() {
 	dQescapeChars="a\u0101\u0102A";
 	printErr(dQescapeChars);
 	 
-	dQdoubleEscapeChars="a\u0101\u0102A";
+	dQdoubleEscapeChars="a\\u0101\\u0102A";
 	printErr(dQdoubleEscapeChars);
 	 
 	dQspecialChars="špeciálne značky s mäkčeňom môžu byť";

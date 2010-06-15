@@ -494,6 +494,10 @@ TOKEN:
         				else
         					break LOOP;
         			break;
+        			case 'u':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				break;
         			case '\r':
         			case '\n':
         				if (prevChar=='\\')
