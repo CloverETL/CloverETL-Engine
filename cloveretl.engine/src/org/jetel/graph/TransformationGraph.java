@@ -560,9 +560,6 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(this, "FATAL - Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
-		
-		//remove watchdog reference from this graph
-		setWatchDog(null);
 	}
 	
 	/* (non-Javadoc)
