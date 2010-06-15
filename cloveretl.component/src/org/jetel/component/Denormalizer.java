@@ -536,6 +536,7 @@ public class Denormalizer extends Node {
 
     			try {
     				RecordDenormalizeTL denorm = new RecordDenormalizeTL(logger, checkTransform, getGraph());
+    				denorm.setNode(this);
     				denorm.init(transformationParameters, inMetadata, outMetadata);
     			} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
