@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620574531" licenseType="Evaluation Devel" modified="Tue Jun 15 17:37:15 CEST 2010" modifiedBy="cloveruser" name="stringLength" revision="1.32">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="lengthInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="lengthOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="FunctionLength" type="string"/>
+<Field name="ResultLength" type="integer"/>
+<Field name="StringAfterTrim" type="string"/>
+<Field name="FunctionLengthAfterTrim" type="string"/>
+<Field name="ResultLengthAfterTrim" type="integer"/>
+<Field name="StringAfterRemoveBlankSpace" type="string"/>
+<Field name="FunctionLengthAfterRemoveBlankSpace" type="string"/>
+<Field name="ResultLengthAfterRemoveBlankSpace" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer length(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="528" x="40" y="-25">
+<attr name="text"><![CDATA[
+The length(string) function accepts one argument of string data type. 
+It counts number of character in the string and returns this number.
+Remember that the function counts white space characters as well. 
+White spaces from the benning or the end can be removed using the trim(string) function.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="125" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Similar Functions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="525" x="41" y="137">
+<attr name="text"><![CDATA[
+integer length(byte arg)
+integer length(elementtype[] arg)
+integer length(map[typeOfKey,typeOfValue] arg)
+integer length(<metadata name> arg)]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringLength.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="282" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringLengthOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="445" guiY="282" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="249" guiY="282" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Arg = $0.Arg;
+	$0.FunctionLength = "length($0.Arg)";
+	$0.ResultLength = length($0.Arg);
+	$0.StringAfterTrim = trim($0.Arg);
+	$0.FunctionLengthAfterTrim = "length(trim($0.Arg))";
+	$0.ResultLengthAfterTrim = length(trim($0.Arg));
+	$0.StringAfterRemoveBlankSpace = removeBlankSpace($0.Arg);
+	$0.FunctionLengthAfterRemoveBlankSpace = "length(removeBlankSpace($0.Arg))";
+	$0.ResultLengthAfterRemoveBlankSpace = length(removeBlankSpace($0.Arg));
+	return 0;
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
