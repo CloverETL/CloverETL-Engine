@@ -432,6 +432,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
+        } else if (dbConnection == null) {
+        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
 
         DBLookup lookup;
