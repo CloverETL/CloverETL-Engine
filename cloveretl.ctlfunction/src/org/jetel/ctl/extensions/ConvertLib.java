@@ -467,7 +467,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	public static final Double str2double(TLFunctionCallContext context, String input, String format, String locale) {
 		DecimalFormat formatter = ((TLDecimalFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 		try {
-			return (Double)formatter.parse(input);
+			return formatter.parse(input).doubleValue();
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" " + 
 					"with format \"" + format +  "\"");
