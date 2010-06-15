@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Tue Jun 15 16:32:11 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.81">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="joinMapInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="MapValue0" type="string"/>
+<Field name="MapValue1" type="string"/>
+<Field name="MapValue2" type="string"/>
+<Field name="MapValue3" type="string"/>
+<Field name="Delimiter" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="joinMapOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Map" type="string"/>
+<Field name="Delimiter" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="40" y="192">
+<attr name="text"><![CDATA[
+Here we use a map consisting of 4 string elements mapped to other strings. 
+join(string, map) separates mappings by delimiter and returns it as a string.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string join(string delimiter, map[typeOfKey, typeOfValue] arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="41" y="28">
+<attr name="text"><![CDATA[
+The join(string, map[typeOfKey, typeOfValue]) function accepts one string argument and  one map of any key and any value data types. It takes this map, converts it into its string representation, seperates the mappings by specified delimiter, and returns it as a string.
+
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringJoinMap.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="339" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringJoinMapOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="467" guiY="340" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="241" guiY="339" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+//Declarations.
+map[string,string] myMap;
+
+// Creates a map.
+myMap["mine"] = $0.MapValue0;
+myMap["yours"] = $0.MapValue1;
+myMap["his"] = $0.MapValue2;
+myMap["hers"] = $0.MapValue3;
+
+//Prints the elements of the original map.
+$0.Map = toString(myMap);
+$0.Delimiter = $0.Delimiter;
+
+//Empties the original map.
+//clear(myMap);
+
+$0.Function = "join($0.Delimiter, myMap)";
+$0.Result = join($0.Delimiter, myMap);
+return 0;
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
