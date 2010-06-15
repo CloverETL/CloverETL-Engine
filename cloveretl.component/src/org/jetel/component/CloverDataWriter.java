@@ -207,18 +207,17 @@ public class CloverDataWriter extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		if (saveMetadata){
-			saveMetadata();
-		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-
-		try {
+    	try {
 			formatter.finish();
+			if (saveMetadata){
+				saveMetadata();
+			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
