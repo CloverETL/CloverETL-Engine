@@ -550,6 +550,7 @@ import org.jetel.ctl.ASTnode.*;
 
 public]]></replacevalue>
 		</replace>
+		
 		<replace file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
 			  <replacetoken><![CDATA[interface TransformLangParserVisitor
 {]]></replacetoken>
@@ -565,6 +566,16 @@ public]]></replacevalue>
     throw generateParseException();]]></replacevalue>
 		</replace>
 	
+		<replace file="${dir.src}/org/jetel/ctl/JJTTransformLangParserState.java" encoding="UTF-8" summary="true">
+			  <replacetoken><![CDATA[package org.jetel.ctl;
+
+public]]></replacetoken>
+			  <replacevalue><![CDATA[package org.jetel.ctl;
+
+import org.jetel.ctl.ASTnode.*;
+
+public]]></replacevalue>
+		</replace>
 	</target>
 	
 	<target name="generate-jaxb-dictionary">
