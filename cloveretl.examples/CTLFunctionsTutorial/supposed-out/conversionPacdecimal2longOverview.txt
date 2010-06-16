@@ -1,12 +1,0 @@
-;1c;pacdecimal2long($0.Pacdecimal);1
-;1d;pacdecimal2long($0.Pacdecimal);-1
-,;2c;pacdecimal2long($0.Pacdecimal);2
-4\;12345c;pacdecimal2long($0.Pacdecimal);12345
-4];12345d;pacdecimal2long($0.Pacdecimal);-12345
-L;02134c;pacdecimal2long($0.Pacdecimal);2134
-	�l;  09876c;pacdecimal2long($0.Pacdecimal);104
-#L;01234c;pacdecimal2long($0.Pacdecimal);1234
-'l;01276c;pacdecimal2long($0.Pacdecimal);1276
-�;  018c;pacdecimal2long($0.Pacdecimal);24
-|;7c;pacdecimal2long($0.Pacdecimal);7
-�;  9c;pacdecimal2long($0.Pacdecimal);14

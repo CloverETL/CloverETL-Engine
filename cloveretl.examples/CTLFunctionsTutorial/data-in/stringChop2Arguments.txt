@@ -1,8 +1,0 @@
-Nancy;cy
-Nancy;ncy
-Nancy;y
-Andrew;w
-Andrew;fw
-Andrew;nw
-Andrew;Andrew
-Andrew;And

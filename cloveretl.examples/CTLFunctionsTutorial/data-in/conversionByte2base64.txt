@@ -1,4 +1,0 @@
-a
-de
-ghi
-helloworld

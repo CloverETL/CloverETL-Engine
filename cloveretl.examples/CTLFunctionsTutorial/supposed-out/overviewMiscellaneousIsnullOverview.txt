@@ -1,5 +1,0 @@
-Nancy;isnull($0.ArgString);false;12;isnull($0.ArgInteger);false
-Andrew;isnull($0.ArgString);false;1;isnull($0.ArgInteger);false
-;isnull($0.ArgString);true;12;isnull($0.ArgInteger);false
-Peter;isnull($0.ArgString);false;;isnull($0.ArgInteger);true
-;isnull($0.ArgString);true;;isnull($0.ArgInteger);true

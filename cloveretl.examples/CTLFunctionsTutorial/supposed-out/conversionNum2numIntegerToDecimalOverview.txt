@@ -1,3 +1,0 @@
-123;num2num($0.Integer,decimal);123.00
-25;num2num($0.Integer,decimal);25.00
-16;num2num($0.Integer,decimal);16.00

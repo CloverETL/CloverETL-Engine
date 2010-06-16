@@ -1,6 +1,0 @@
-test;is_blank($0.Arg);false
-têst;is_blank($0.Arg);false
-5;is_blank($0.Arg);false
-123456732325;is_blank($0.Arg);false
-;is_blank($0.Arg);true
-1234.28e-3;is_blank($0.Arg);false

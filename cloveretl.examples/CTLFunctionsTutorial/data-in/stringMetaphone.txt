@@ -1,4 +1,0 @@
-Nancy;2
-Nancy;10
-Andrew;3
-Fuller;4

@@ -1,4 +1,0 @@
-Nancy
-;Davolio;chop($0.InputField1);Nancy;Davolio
-Andrew
-;Fuller;chop($0.InputField1);Andrew;Fuller

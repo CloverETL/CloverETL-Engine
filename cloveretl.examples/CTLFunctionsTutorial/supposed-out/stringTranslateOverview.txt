@@ -1,2 +1,0 @@
-Nancy Davolio;Davo;Beme;translate($0.Arg,$0.SearchingSet,$0.ReplaceSet);Nency Bemelie
-Andrew Fuller;Flr;Bsc;translate($0.Arg,$0.SearchingSet,$0.ReplaceSet);Andcew Bussec
