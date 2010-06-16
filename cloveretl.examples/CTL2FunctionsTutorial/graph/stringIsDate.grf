@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation Devel" modified="Wed Jun 09 16:35:18 CEST 2010" modifiedBy="cloveruser" name="stringIs_date" revision="1.82">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation Devel" modified="Wed Jun 16 10:10:15 CEST 2010" modifiedBy="cloveruser" name="stringIs_date" revision="1.84">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="isDateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -39,7 +39,7 @@ For better understanding, below we show the functions in which values of all arg
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIsDate.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="79" guiY="379" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIs_dateOverview1.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="379" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIsDate0Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="379" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="284" guiY="379" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -67,7 +67,7 @@ function integer transform() {
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/stringIsDate.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="79" guiY="579" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIsDateOverview2.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="579" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringIsDate1Overview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="484" guiY="579" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="284" guiY="579" id="REFORMAT2" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 

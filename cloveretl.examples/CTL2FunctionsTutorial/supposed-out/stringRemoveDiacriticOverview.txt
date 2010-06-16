@@ -1,0 +1,2 @@
+Maroš;removeDiacritic($0.Arg);Maros
+øezník;removeDiacritic($0.Arg);reznik

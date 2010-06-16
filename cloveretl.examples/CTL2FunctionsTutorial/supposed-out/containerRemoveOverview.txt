@@ -1,0 +1,5 @@
+[milk, butter, onion, apple, egg];2;remove(list1,$0.Index);onion;[milk, butter, apple, egg]
+[milk, butter, onion, apple, egg];0;remove(list1,$0.Index);milk;[butter, onion, apple, egg]
+[milk, butter, onion, apple, egg];1;remove(list1,$0.Index);butter;[milk, onion, apple, egg]
+[milk, butter, onion, apple, egg];3;remove(list1,$0.Index);apple;[milk, butter, onion, egg]
+[milk, butter, onion, apple, egg];4;remove(list1,$0.Index);egg;[milk, butter, onion, apple]

@@ -1,0 +1,12 @@
+12abc579;[a-z0-9]*;matches($0.Arg,$0.Regex);true
+asedert;[a-z0-9]*;matches($0.Arg,$0.Regex);true
+asedZDB;[a-z0-9]*;matches($0.Arg,$0.Regex);false
+12579;[a-z0-9]*;matches($0.Arg,$0.Regex);true
+12abc579;[a-z]*;matches($0.Arg,$0.Regex);false
+asedert;[a-z]*;matches($0.Arg,$0.Regex);true
+asedZDB;[a-z]*;matches($0.Arg,$0.Regex);false
+12579;[a-z]*;matches($0.Arg,$0.Regex);false
+12abc579;[0-9]*;matches($0.Arg,$0.Regex);false
+asedert;[0-9]*;matches($0.Arg,$0.Regex);false
+asedZDB;[0-9]*;matches($0.Arg,$0.Regex);false
+12579;[0-9]*;matches($0.Arg,$0.Regex);true

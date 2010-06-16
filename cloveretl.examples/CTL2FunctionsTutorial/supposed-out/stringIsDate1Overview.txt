@@ -1,0 +1,6 @@
+31-Dec-2008;dd-MMM-yyyy;en.US;isDate(31-Dec-2008,dd-MMM-yyyy);true;isDate(31-Dec-2008,dd-MMM-yyyy,en.US);true
+310-Dec-2008;dd-MMM-yyyy;en.US;isDate(310-Dec-2008,dd-MMM-yyyy);false;isDate(310-Dec-2008,dd-MMM-yyyy,en.US);false
+31-Dec-2008;dd-MMM-yyyy;cs.CZ;isDate(31-Dec-2008,dd-MMM-yyyy);true;isDate(31-Dec-2008,dd-MMM-yyyy,cs.CZ);false
+31-Prosinec-2008;dd-MMM-yyyy;en.US;isDate(31-Prosinec-2008,dd-MMM-yyyy);false;isDate(31-Prosinec-2008,dd-MMM-yyyy,en.US);false
+31-Prosinec-2008;dd-MMM-yyyy;cs.CZ;isDate(31-Prosinec-2008,dd-MMM-yyyy);false;isDate(31-Prosinec-2008,dd-MMM-yyyy,cs.CZ);true
+310-Prosinec-2008;dd-MMM-yyyy;cs.CZ;isDate(310-Prosinec-2008,dd-MMM-yyyy);false;isDate(310-Prosinec-2008,dd-MMM-yyyy,cs.CZ);false

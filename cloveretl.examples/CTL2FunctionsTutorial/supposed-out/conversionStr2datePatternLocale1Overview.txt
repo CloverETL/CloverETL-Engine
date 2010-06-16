@@ -1,0 +1,2 @@
+May/09/1978;MMM/dd/yyyy;str2date($0.String,$0.Pattern);1978-05-09
+05/01/1979;dd/MM/yyyy;str2date($0.String,$0.Pattern);1979-01-05

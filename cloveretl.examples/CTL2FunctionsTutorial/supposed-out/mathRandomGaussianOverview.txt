@@ -1,0 +1,10 @@
+randomGaussian();0.06943429072060585
+randomGaussian();-1.2151809088633259
+randomGaussian();-0.6859190702619826
+randomGaussian();-1.4152142001960062
+randomGaussian();-1.5132787487181059
+randomGaussian();0.04422137574173316
+randomGaussian();-0.8020875532489276
+randomGaussian();-0.398466810895278
+randomGaussian();2.116786713654078
+randomGaussian();1.4992028365348962

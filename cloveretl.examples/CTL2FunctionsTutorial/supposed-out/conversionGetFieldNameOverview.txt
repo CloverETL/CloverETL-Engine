@@ -1,0 +1,10 @@
+false|İÏÔƒ¾„Ñ46dîál¯ü|2010-07-05|28.99|11|90|37.72917233557036|uswua|6|getFieldName(myInputRecords, Index)|numberField
+false|<j¸Ã~ÂdhœĞp¹|2010-06-28|43.09|8|55|68.81588828384096|bjmwb|5|getFieldName(myInputRecords, Index)|longField
+true|ãXï¤‰õ€bñ×1ked|2010-06-25|27.12|48|68|6.323395104373364|ziqll|1|getFieldName(myInputRecords, Index)|byteField
+true|XŒKõ¯¶ÒT¶ş<À|2010-06-18|5.04|59|15|99.34833271630714|fjj|6|getFieldName(myInputRecords, Index)|numberField
+false|6ÓMz7y’Â–awã#–|2010-06-29|48.89|91|12|51.29071107297639|jsd|2|getFieldName(myInputRecords, Index)|dateField
+false|0+(¹ÎÏS‚ŸÀ”¦ŒÊ|2010-06-20|29.53|48|62|41.591478686271124|hjtth|6|getFieldName(myInputRecords, Index)|numberField
+false|eëÂQ˜ša>:ê6‡ù|2010-07-03|62.68|90|4|17.140474163532705|hoes|1|getFieldName(myInputRecords, Index)|byteField
+false|ÊÊhO?ğ"4&=ŒjBU¤|2010-06-20|56.95|6|15|27.269592325281256|zlv|7|getFieldName(myInputRecords, Index)|stringField
+false|ÒC­ñ#>GR ]OÒf‚|2010-07-03|60.49|65|53|79.04664582781726|him|6|getFieldName(myInputRecords, Index)|numberField
+false|Gñiv”‘6>ä”høÄè|2010-06-29|83.76|34|54|39.23654580577378|lyfl|0|getFieldName(myInputRecords, Index)|booleanField

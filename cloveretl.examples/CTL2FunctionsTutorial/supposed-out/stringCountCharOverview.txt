@@ -1,0 +1,6 @@
+Nancy Davolio;n;countChar($0.Arg,$0.Character);1
+Andrew Fuller;a;countChar($0.Arg,$0.Character);0
+Nancy Davolio;a;countChar($0.Arg,$0.Character);2
+Andrew Fuller;u;countChar($0.Arg,$0.Character);1
+Nancy Davolio;D;countChar($0.Arg,$0.Character);1
+Andrew Fuller;A;countChar($0.Arg,$0.Character);1

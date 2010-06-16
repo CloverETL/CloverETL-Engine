@@ -1,0 +1,5 @@
+11;1;bitRShift($0.Arg,$0.Shift);5;1011;101
+11;2;bitRShift($0.Arg,$0.Shift);2;1011;10
+11;3;bitRShift($0.Arg,$0.Shift);1;1011;1
+11;4;bitRShift($0.Arg,$0.Shift);0;1011;0
+11;5;bitRShift($0.Arg,$0.Shift);0;1011;0

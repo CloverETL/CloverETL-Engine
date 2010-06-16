@@ -1,0 +1,10 @@
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);1
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);90
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);66
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);48
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);72
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);90
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);20
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);0
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);30
+0;100;randomInteger($0.MinimumValue,$0.MaximumValue);74

@@ -1,0 +1,1 @@
+Error message text from user;printLog(debug,$0.Message);printLog(info,$0.Message);printLog(warn,$0.Message);printLog(error,$0.Message);printLog(fatal,$0.Message)
