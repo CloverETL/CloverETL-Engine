@@ -175,23 +175,23 @@ public class Rollup extends Node {
     //
 
     /** the name of an XML attribute used to store the group key fields */
-    private static final String XML_GROUP_KEY_FIELDS_ATTRIBUTE = "groupKeyFields";
+    public static final String XML_GROUP_KEY_FIELDS_ATTRIBUTE = "groupKeyFields";
     /** the name of an XML attribute used to store the ID of the group "accumulator" metadata */
-    private static final String XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE = "groupAccumulatorMetadataId";
+    public static final String XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE = "groupAccumulatorMetadataId";
 
     /** the name of an XML attribute used to store the source code of a Java/CTL transform */
-    private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+    public static final String XML_TRANSFORM_ATTRIBUTE = "transform";
     /** the name of an XML attribute used to store the URL of an external Java/CTL transform */
-    private static final String XML_TRANSFORM_URL_ATTRIBUTE = "transformUrl";
+    public static final String XML_TRANSFORM_URL_ATTRIBUTE = "transformUrl";
     /** the name of an XML attribute used to store the character set used in the rollup transform specified via an URL */
-    private static final String XML_TRANSFORM_URL_CHARSET_ATTRIBUTE = "transformUrlCharset";
+    public static final String XML_TRANSFORM_URL_CHARSET_ATTRIBUTE = "transformUrlCharset";
     /** the name of an XML attribute used to store the class name of a Java transform */
-    private static final String XML_TRANSFORM_CLASS_NAME_ATTRIBUTE = "transformClassName";
+    public static final String XML_TRANSFORM_CLASS_NAME_ATTRIBUTE = "transformClassName";
 
     /** the name of an XML attribute used to store the "input sorted" flag */
-    private static final String XML_INPUT_SORTED_ATTRIBUTE = "inputSorted";
+    public static final String XML_INPUT_SORTED_ATTRIBUTE = "inputSorted";
     /** the name of an XML attribute used to store the "equal NULL" flag */
-    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+    public static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 
     //
     // constants used during execution
