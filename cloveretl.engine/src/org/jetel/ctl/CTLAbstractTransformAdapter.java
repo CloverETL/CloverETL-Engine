@@ -38,11 +38,11 @@ public class CTLAbstractTransformAdapter implements Transform {
 
 	/** The name of the CTL init() function. */
 	private static final String FUNCTION_INIT_NAME = "init";
-	/** The name of the CTL init() function. */
+	/** The name of the CTL preExecute() function. */
 	private static final String FUNCTION_PRE_EXECUTE_NAME = "preExecute";
-	/** The name of the CTL init() function. */
+	/** The name of the CTL postExecute() function. */
 	private static final String FUNCTION_POST_EXECUTE_NAME = "postExecute";
-	/** The name of the CTL init() function. */
+	/** The name of the CTL getMessage() function. */
 	private static final String FUNCTION_GET_MESSAGE_NAME = "getMessage";
 
 	/** An empty array of arguments used for calls to functions without any arguments. */
