@@ -45,9 +45,7 @@ import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
 import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
 import org.jetel.ctl.ASTnode.CLVFType;
-import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
 import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
-import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -829,7 +827,8 @@ public class ASTBuilder extends NavigatingVisitor {
 					return TLType.ERROR;
 				}
 			} else if (ambiguousGraphMetadata.contains(meta.getName())) {
-				warn("Metadata name '" + meta.getName() + "' is ambiguous", "Rename the metadata to a unique name");
+				warn(typeNode, "Metadata name '" + meta.getName() + "' is ambiguous",
+						"Rename the metadata to a unique name");
 			} else if (voidMetadataAllowed(typeNode)) {
 				warn(typeNode, "Reference to '" + VOID_METADATA.getName() + "' is ambiguous",
 						"Rename metadata '" + VOID_METADATA.getName() + "'");
@@ -837,7 +836,8 @@ public class ASTBuilder extends NavigatingVisitor {
 			// variables of record type hold REFERENCE
 			return TLType.forRecord(meta,true);
 		case TransformLangParserConstants.MAP_VAR:
-			return TLType.createMap((TLTypePrimitive)createType((CLVFType)typeNode.jjtGetChild(0)),createType((CLVFType)typeNode.jjtGetChild(1)));
+			return TLType.createMap((TLTypePrimitive) createType((CLVFType) typeNode.jjtGetChild(0)),
+					createType((CLVFType) typeNode.jjtGetChild(1)));
 		case TransformLangParserConstants.LIST_VAR:
 			return TLType.createList(createType((CLVFType)typeNode.jjtGetChild(0)));
 		case TransformLangParserConstants.VOID_VAR:
