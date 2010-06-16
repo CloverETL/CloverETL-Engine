@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -166,6 +167,86 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	    rs.close();
 	    
 		return metadata;
+	}
+	
+	public int jetelType2sql(DataFieldMetadata field){
+		switch (field.getType()) {
+		case DataFieldMetadata.INTEGER_FIELD:
+			return Types.INTEGER;
+		case DataFieldMetadata.NUMERIC_FIELD:
+        case DataFieldMetadata.DECIMAL_FIELD:
+			return Types.NUMERIC;
+		case DataFieldMetadata.STRING_FIELD:
+			return field.isFixed() ? Types.CHAR : Types.VARCHAR;
+		case DataFieldMetadata.DATE_FIELD:
+			boolean isDate = field.isDateFormat();
+			boolean isTime = field.isTimeFormat();
+			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
+				return Types.TIMESTAMP;
+			if (isDate)
+				return Types.DATE;
+			if (isTime)
+				return Types.TIME;
+			return Types.TIMESTAMP;
+        case DataFieldMetadata.LONG_FIELD:
+            return Types.BIGINT;
+        case DataFieldMetadata.BYTE_FIELD:
+        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+        	if (!StringUtils.isEmpty(field.getFormatStr())
+					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
+        		return Types.BLOB;
+        	}
+            return field.isFixed() ? Types.BINARY : Types.VARBINARY;
+        case DataFieldMetadata.BOOLEAN_FIELD:
+        	return Types.BOOLEAN;
+		default:
+			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
+		}
+	}
+	public char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+			case Types.INTEGER:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+			    return DataFieldMetadata.INTEGER_FIELD;
+			//-------------------
+			case Types.BIGINT:
+			    return DataFieldMetadata.LONG_FIELD;
+			//-------------------
+			case Types.DECIMAL:
+			case Types.NUMERIC:
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.REAL:
+				return DataFieldMetadata.NUMERIC_FIELD;
+			//------------------
+			case Types.CHAR:
+			case Types.LONGVARCHAR:
+			case Types.VARCHAR:
+			case Types.CLOB:
+				return DataFieldMetadata.STRING_FIELD;
+			//------------------
+			case Types.DATE:
+			case Types.TIME:
+			case Types.TIMESTAMP:
+				return DataFieldMetadata.DATE_FIELD;
+            //-----------------
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+            case Types.BLOB:
+			case Types.OTHER:
+                return DataFieldMetadata.BYTE_FIELD;
+			//-----------------
+			case Types.BOOLEAN:
+				return DataFieldMetadata.BOOLEAN_FIELD;
+			// proximity assignment
+			case Types.BIT:
+			case Types.NULL:
+				return DataFieldMetadata.STRING_FIELD;
+			default:
+				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
+		}
 	}
 
     class SQLiteRSMetaData implements  ResultSetMetaData {
