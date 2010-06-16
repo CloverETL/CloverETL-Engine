@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Wed Jun 16 14:20:35 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.18">
+<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Wed Jun 16 16:05:34 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.20">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="getFieldTypeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -41,6 +41,10 @@ Remember that fields are indexed starting from 0.]]></attr>
 <Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="31" guiY="186" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
+function void preExecute() {
+    setRandomSeed(10);	
+}	
+
 // Generates output record.
 function integer generate() {
 	$0.booleanField = randomBoolean();
@@ -51,6 +55,7 @@ function integer generate() {
 	$0.longField = randomLong(0,100);
 	$0.stringField = randomString(3,5);
 	$0.numberField = random() * 100;
+
 	return 0;
 }
 
