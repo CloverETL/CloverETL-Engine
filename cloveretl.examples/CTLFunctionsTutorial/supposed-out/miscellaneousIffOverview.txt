@@ -1,4 +1,0 @@
-true;East;West;iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse);East
-false;East;West;iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse);West
-false;North;South;iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse);South
-true;North;South;iif($0.Condition,$0.IfConditionTrue,$0.IfConditionFalse);North

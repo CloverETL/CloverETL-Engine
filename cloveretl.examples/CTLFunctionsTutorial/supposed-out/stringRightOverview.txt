@@ -1,2 +1,0 @@
-Nancy Davolio;2;right($0.Arg,$0.AmountOfCharacters);io
-Andrew Fuller;8;right($0.Arg,$0.AmountOfCharacters);w Fuller
