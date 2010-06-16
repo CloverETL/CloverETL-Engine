@@ -1,0 +1,10 @@
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-07-08;0.94;randomGaussian();-1.63;randomInteger(0,100);10;randomLong(0,100);37;randomString(3,5);aznul
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-01-13;0.53;randomGaussian();0.09;randomInteger(0,100);50;randomLong(0,100);34;randomString(3,5);yaqlh
+randomBoolean();false;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-08-18;0.16;randomGaussian();-0.18;randomInteger(0,100);3;randomLong(0,100);58;randomString(3,5);nfr
+randomBoolean();false;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-02-06;0.18;randomGaussian();2.41;randomInteger(0,100);92;randomLong(0,100);4;randomString(3,5);zpogk
+randomBoolean();false;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-01-24;0.03;randomGaussian();1.72;randomInteger(0,100);49;randomLong(0,100);85;randomString(3,5);cyca
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-06-10;0.14;randomGaussian();-0.28;randomInteger(0,100);21;randomLong(0,100);21;randomString(3,5);qou
+randomBoolean();false;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-01-24;0.03;randomGaussian();-1.32;randomInteger(0,100);76;randomLong(0,100);37;randomString(3,5);jrkx
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-03-02;0.47;randomGaussian();0.71;randomInteger(0,100);81;randomLong(0,100);100;randomString(3,5);szxy
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-10-07;0.18;randomGaussian();-0.36;randomInteger(0,100);68;randomLong(0,100);17;randomString(3,5);tllpv
+randomBoolean();true;random();randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");2010-01-23;0.69;randomGaussian();2.02;randomInteger(0,100);58;randomLong(0,100);55;randomString(3,5);gdm

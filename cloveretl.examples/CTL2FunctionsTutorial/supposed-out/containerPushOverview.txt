@@ -1,0 +1,2 @@
+[milk, butter, onion, apple];egg;push(List,$0.NewElement);[milk, butter, onion, apple, egg];[milk, butter, onion, apple, egg]
+[honey, cherry, carrot, pear];garlic;push(List,$0.NewElement);[honey, cherry, carrot, pear, garlic];[honey, cherry, carrot, pear, garlic]

@@ -1,0 +1,1 @@
+{his=apple, hers=butter, mine=meat, yours=milk};clear(myMap);{}

@@ -1,0 +1,10 @@
+randomInteger();737153499
+randomInteger();1416123321
+randomInteger();-1677629386
+randomInteger();-1497840599
+randomInteger();598569833
+randomInteger();1131135076
+randomInteger();-1725876725
+randomInteger();1904723141
+randomInteger();-1319314453
+randomInteger();-529148392

@@ -1,0 +1,10 @@
+Nancy Davolio;length($0.Arg);13;Nancy Davolio;length(trim($0.Arg));13;NancyDavolio;length(removeBlankSpace($0.Arg));12
+Nancy  Davolio;length($0.Arg);14;Nancy  Davolio;length(trim($0.Arg));14;NancyDavolio;length(removeBlankSpace($0.Arg));12
+Nancy   Davolio;length($0.Arg);15;Nancy   Davolio;length(trim($0.Arg));15;NancyDavolio;length(removeBlankSpace($0.Arg));12
+       Nancy Davolio;length($0.Arg);20;Nancy Davolio;length(trim($0.Arg));13;NancyDavolio;length(removeBlankSpace($0.Arg));12
+       Nancy     Davolio;length($0.Arg);24;Nancy     Davolio;length(trim($0.Arg));17;NancyDavolio;length(removeBlankSpace($0.Arg));12
+Andrew Fuller;length($0.Arg);13;Andrew Fuller;length(trim($0.Arg));13;AndrewFuller;length(removeBlankSpace($0.Arg));12
+ Andrew Fuller;length($0.Arg);14;Andrew Fuller;length(trim($0.Arg));13;AndrewFuller;length(removeBlankSpace($0.Arg));12
+   Andrew Fuller;length($0.Arg);16;Andrew Fuller;length(trim($0.Arg));13;AndrewFuller;length(removeBlankSpace($0.Arg));12
+   Andrew   Fuller;length($0.Arg);18;Andrew   Fuller;length(trim($0.Arg));15;AndrewFuller;length(removeBlankSpace($0.Arg));12
+Andrew Fuller          ;length($0.Arg);23;Andrew Fuller;length(trim($0.Arg));13;AndrewFuller;length(removeBlankSpace($0.Arg));12

@@ -1,0 +1,3 @@
+teúcik;removeNonAscii($0.Arg);tecik
+ÊMaroö;removeNonAscii($0.Arg);Maro
+πfternoon;removeNonAscii($0.Arg);fternoon
