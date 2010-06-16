@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231945408500" licenseType="Evaluation Devel" modified="Wed Jun 09 15:48:12 CEST 2010" modifiedBy="cloveruser" name="miscellaneousIFF" revision="1.22">
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231945408500" licenseType="Evaluation Devel" modified="Wed Jun 16 11:18:53 CEST 2010" modifiedBy="cloveruser" name="miscellaneousIFF" revision="1.24">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="iifInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -28,7 +28,7 @@ The function takes the first argument and returns the second one if the first is
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousIif.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="86" guiY="252" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousIffOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="491" guiY="252" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousIifOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="491" guiY="252" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="291" guiY="252" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
