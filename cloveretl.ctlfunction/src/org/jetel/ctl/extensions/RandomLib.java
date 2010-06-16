@@ -37,9 +37,9 @@ import org.jetel.util.date.DateFormatterFactory;
  */
 public class RandomLib extends TLFunctionLibrary {
 	
-	private static Map<Thread, DataGenerator> dataGenerators = new HashMap<Thread, DataGenerator>();
+	private static Map<Object, DataGenerator> dataGenerators = new HashMap<Object, DataGenerator>();
 	
-	private static synchronized DataGenerator getGenerator(Thread key) {
+	private static synchronized DataGenerator getGenerator(Object key) {
     	DataGenerator generator = dataGenerators.get(key);
     	if (generator == null) {
     		generator = new DataGenerator();
@@ -76,7 +76,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Random number (>=0, <1)")
 	public static final Double random(TLFunctionCallContext context) {
-		return getGenerator(Thread.currentThread()).nextDouble();
+		return getGenerator(context.getTransformationID()).nextDouble();
 	}
 
 	// RANDOM
@@ -92,7 +92,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Random Gaussian number.")
 	public static final Double randomGaussian(TLFunctionCallContext context) {
-		return getGenerator(Thread.currentThread()).nextGaussian();
+		return getGenerator(context.getTransformationID()).nextGaussian();
 	}
 
 	// RANDOM Gaussian
@@ -108,7 +108,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Random boolean.")
 	public static final Boolean randomBoolean(TLFunctionCallContext context) {
-		return getGenerator(Thread.currentThread()).nextBoolean();
+		return getGenerator(context.getTransformationID()).nextBoolean();
 	}
 
 	// RANDOM Boolean
@@ -124,12 +124,12 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Random integer.")
 	public static final Integer randomInteger(TLFunctionCallContext context) {
-		return getGenerator(Thread.currentThread()).nextInt();
+		return getGenerator(context.getTransformationID()).nextInt();
 	}
 
 	@TLFunctionAnnotation("Random integer. Allows changing start and end value.")
 	public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max) {
-		return getGenerator(Thread.currentThread()).nextInt(min, max);
+		return getGenerator(context.getTransformationID()).nextInt(min, max);
 	}
 
 	// RANDOMINTEGER
@@ -153,12 +153,12 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Random long.")
 	public static final Long randomLong(TLFunctionCallContext context) {
-		return getGenerator(Thread.currentThread()).nextLong();
+		return getGenerator(context.getTransformationID()).nextLong();
 	}
 
 	@TLFunctionAnnotation("Random long. Allows changing start and end value.")
 	public static final Long randomLong(TLFunctionCallContext context, Long min, Long max) {
-		return getGenerator(Thread.currentThread()).nextLong(min, max);
+		return getGenerator(context.getTransformationID()).nextLong(min, max);
 	}
 
 	// RANDOMLONG
@@ -182,7 +182,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Generates a random string.")
 	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength) {
-		return getGenerator(Thread.currentThread()).nextString(minLength, maxLength);
+		return getGenerator(context.getTransformationID()).nextString(minLength, maxLength);
 	}
 
 	class RandomStringFunction implements TLFunctionPrototype {
@@ -247,7 +247,7 @@ public class RandomLib extends TLFunctionLibrary {
 		if (from > to) {
 			throw new TransformLangExecutorRuntimeException("randomDate - fromDate is greater than toDate");
 		}
-		return new Date(getGenerator(Thread.currentThread()).nextLong(from, to));
+		return new Date(getGenerator(context.getTransformationID()).nextLong(from, to));
 	}
 
 	@TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
@@ -275,7 +275,7 @@ public class RandomLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Changes seed of random.")
 	public static void setRandomSeed(TLFunctionCallContext context, long randomSeed) {
-		DataGenerator generator = getGenerator(Thread.currentThread());
+		DataGenerator generator = getGenerator(context.getTransformationID());
 		generator.setSeed(randomSeed);
 	}
 

@@ -108,6 +108,7 @@ public class TypeChecker extends NavigatingVisitor {
 	private Map<String, List<TLFunctionDescriptor>> externalFunctions;
 	private final HashMap<String,TLType> typeVarMapping = new HashMap<String, TLType>();
 	private ArrayList<TLFunctionCallContext> functionCalls = new ArrayList<TLFunctionCallContext>();
+	private final Object transformationID = new Object();
 	private int functionCallIndex = 0;
 	
 	public TypeChecker(ProblemReporter problemReporter, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, Map<String, List<TLFunctionDescriptor>> externalFunctions) {
@@ -674,7 +675,7 @@ public class TypeChecker extends NavigatingVisitor {
 			node.setCallTarget(extCandidate);
 
 			// All library function calls need a context
-			TLFunctionCallContext context = new TLFunctionCallContext();		
+			TLFunctionCallContext context = new TLFunctionCallContext(transformationID);		
 			context.setParams(actual);
 			context.setLiterals(isLiteral);
 			context.setParamValues(paramValues);
