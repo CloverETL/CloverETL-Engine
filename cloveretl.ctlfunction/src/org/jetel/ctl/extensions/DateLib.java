@@ -269,12 +269,8 @@ public class DateLib extends TLFunctionLibrary {
 				stack.push(trunc(context, stack.popDecimal()));
 			} else if (context.getParams()[0].isDouble()) {
 				stack.push(trunc(context, stack.popDouble()));
-			} else if (context.getParams()[0].isDate()) {
-				stack.push(trunc(context, stack.popDate()));
-			} else if (context.getParams()[0].isMap()) {
-				stack.push(trunc(context, stack.popMap()));
 			} else {
-				stack.push(trunc(context, stack.popList()));
+				stack.push(trunc(context, stack.popDate()));
 			}
 		}
     }
@@ -307,18 +303,6 @@ public class DateLib extends TLFunctionLibrary {
     	return date;
     }
     
-    @TLFunctionAnnotation("Emptyes the passed List and returns null.")
-    public static final <E> List<E> trunc(TLFunctionCallContext context, List<E> value) {
-    	value.clear();
-    	return null;
-    }
-    
-    @TLFunctionAnnotation("Emptyes the passed Map and returns null.")
-    public static final <E, F> Map<E, F> trunc(TLFunctionCallContext context, Map<E, F> value) {
-    	value.clear();
-    	return null;
-    }
-
     //Trunc date
     class TruncDateFunction implements TLFunctionPrototype {
 
