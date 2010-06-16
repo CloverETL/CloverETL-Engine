@@ -1,0 +1,10 @@
+FF;32;str2num($0.String,long,$0.Radix);495
+FF;16;str2num($0.String,long,$0.Radix);255
+EF;16;str2num($0.String,long,$0.Radix);239
+1A;16;str2num($0.String,long,$0.Radix);26
+12;8;str2num($0.String,long,$0.Radix);10
+10;8;str2num($0.String,long,$0.Radix);8
+12;10;str2num($0.String,long,$0.Radix);12
+10;2;str2num($0.String,long,$0.Radix);2
+101;2;str2num($0.String,long,$0.Radix);5
+11;2;str2num($0.String,long,$0.Radix);3

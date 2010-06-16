@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229620574531" licenseType="Evaluation license." modified="Fri May 15 14:35:47 CEST 2009" modifiedBy="cloveruser" name="stringLength" revision="1.21">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="lengthInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="lengthOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="FunctionLength" type="string"/>
+<Field name="ResultLength" type="integer"/>
+<Field name="FunctionLengthAfterTrim" type="string"/>
+<Field name="ResultLengthAfterTrim" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="int length(structuredtype arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="461" x="74" y="93">
+<attr name="text"><![CDATA[
+The length(structuredtype) function accepts one argument of structured data type: string, bytearray, list, map or record. 
+It takes this argument and returns the number of elements composing the argument.
+Remember that the function counts white space characters as well.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringLength.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="282" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringLengthOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="445" guiY="282" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="249" guiY="282" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Arg := $0.Arg;
+	$0.FunctionLength := "length($0.Arg)";
+	$0.ResultLength := length($0.Arg);
+	$0.FunctionLengthAfterTrim := "length(trim($0.Arg))";
+	$0.ResultLengthAfterTrim := length(trim($0.Arg));
+}
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

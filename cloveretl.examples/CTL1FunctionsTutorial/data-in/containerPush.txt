@@ -1,0 +1,2 @@
+milk;butter;onion;apple;egg
+honey;cherry;carrot;pear;garlic
