@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969573261" licenseType="Evaluation license." modified="Fri May 15 14:16:47 CEST 2009" modifiedBy="cloveruser" name="conversionTry_convert" revision="1.53">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromDecimalToStringOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="dd.MM.yyyy" name="Date" type="date"/>
+<Field name="Format" type="string"/>
+<Field name="FunctionFromDateToString" type="string"/>
+<Field name="TryConvertFromDateToString" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertFromStringToDecimalOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FromString" type="string"/>
+<Field name="ToDecimal" type="decimal"/>
+<Field name="FunctionFromStringToDecimal" type="string"/>
+<Field name="ReturnValueOfTryConvertFromStringToDecimal" type="boolean"/>
+<Field name="NewArgDecimal" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="try_convertInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field format="dd.MM.yyyy" name="Date" type="date"/>
+<Field name="Format" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="178" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string try_convert(date From, nameofstringdatatype string, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="534" x="29" y="29">
+<attr name="text"><![CDATA[
+The try_convert(date, nameofstringdatatype, string) function accepts three arguments: the first is of date data type, the second is the name of string data type and the third is a format of a string representation of a date.
+The string word specified as the second argument can neither be received through the edge nor be defined as variable. 
+The function takes these arguments and converts the first argument to a string in the form specified by the third argument.
+
+]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionTry_convertFromDateToString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="28" guiY="238" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionTry_convertFromDateToStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="558" guiY="238" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="303" guiY="238" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Date := $0.Date;
+	$0.Format := $0.Format;
+	$0.FunctionFromDateToString := "try_convert($0.Date,string,$0.Format)";
+	$0.TryConvertFromDateToString := try_convert($0.Date,string,$0.Format);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

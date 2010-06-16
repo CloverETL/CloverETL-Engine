@@ -1,0 +1,4 @@
+12.05.1967;dd.MM.yyyy
+12.05.1967;dd-MM-yyyy
+01.12.2003;dd.MM.yyyy
+2003/12/01;yyyy/MM/dd

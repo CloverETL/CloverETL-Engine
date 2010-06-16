@@ -1,0 +1,4 @@
+12.05.1967;dd.MM.yyyy;try_convert($0.String,date,$0.Format);1967-05-12
+12.05.1967;dd-MM-yyyy;try_convert($0.String,date,$0.Format);
+01.12.2003;dd.MM.yyyy;try_convert($0.String,date,$0.Format);2003-12-01
+2003/12/01;yyyy/MM/dd;try_convert($0.String,date,$0.Format);2003-12-01

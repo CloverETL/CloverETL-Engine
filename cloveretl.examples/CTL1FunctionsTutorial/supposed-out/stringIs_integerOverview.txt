@@ -1,0 +1,6 @@
+test;is_integer($0.Arg);false
+têst;is_integer($0.Arg);false
+5;is_integer($0.Arg);true
+123456;is_integer($0.Arg);true
+12345678910111213;is_integer($0.Arg);false
+1234.28e-3;is_integer($0.Arg);false

@@ -1,0 +1,2 @@
+---;Andrew;25;2008-12-24;true;2.56;join($0.Delimiter,$0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5);Andrew---25---Wed Dec 24 00:00:00 CET 2008---true---2.56
+::;Peter;12;2008-12-31;false;7.21;join($0.Delimiter,$0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5);Peter::12::Wed Dec 31 00:00:00 CET 2008::false::7.21

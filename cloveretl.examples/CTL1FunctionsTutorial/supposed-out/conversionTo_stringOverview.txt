@@ -1,0 +1,2 @@
+12.05;to_string($0.ArgDecimal);12.05
+134.89;to_string($0.ArgDecimal);134.89

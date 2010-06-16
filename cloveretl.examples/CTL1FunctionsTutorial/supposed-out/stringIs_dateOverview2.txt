@@ -1,0 +1,6 @@
+31-Dec-2008;dd-MMM-yyyy;en.US;false;is_date(31-Dec-2008,dd-MMM-yyyy);true;is_date(31-Dec-2008,dd-MMM-yyyy,false);true;is_date(31-Dec-2008,dd-MMM-yyyy,en.US);true;is_date(31-Dec-2008,dd-MMM-yyyy,en.US,false);true
+310-Dec-2008;dd-MMM-yyyy;en.US;true;is_date(310-Dec-2008,dd-MMM-yyyy);false;is_date(310-Dec-2008,dd-MMM-yyyy,false);false;is_date(310-Dec-2008,dd-MMM-yyyy,en.US);false;is_date(310-Dec-2008,dd-MMM-yyyy,en.US,false);false
+31-Dec-2008;dd-MMM-yyyy;cs.CZ;true;is_date(31-Dec-2008,dd-MMM-yyyy);true;is_date(31-Dec-2008,dd-MMM-yyyy,false);true;is_date(31-Dec-2008,dd-MMM-yyyy,cs.CZ);false;is_date(31-Dec-2008,dd-MMM-yyyy,cs.CZ,false);false
+31-Prosinec-2008;dd-MMM-yyyy;en.US;true;is_date(31-Prosinec-2008,dd-MMM-yyyy);false;is_date(31-Prosinec-2008,dd-MMM-yyyy,false);false;is_date(31-Prosinec-2008,dd-MMM-yyyy,en.US);false;is_date(31-Prosinec-2008,dd-MMM-yyyy,en.US,false);false
+31-Prosinec-2008;dd-MMM-yyyy;cs.CZ;false;is_date(31-Prosinec-2008,dd-MMM-yyyy);false;is_date(31-Prosinec-2008,dd-MMM-yyyy,false);false;is_date(31-Prosinec-2008,dd-MMM-yyyy,cs.CZ);true;is_date(31-Prosinec-2008,dd-MMM-yyyy,cs.CZ,false);true
+310-Prosinec-2008;dd-MMM-yyyy;cs.CZ;true;is_date(310-Prosinec-2008,dd-MMM-yyyy);false;is_date(310-Prosinec-2008,dd-MMM-yyyy,false);false;is_date(310-Prosinec-2008,dd-MMM-yyyy,cs.CZ);false;is_date(310-Prosinec-2008,dd-MMM-yyyy,cs.CZ,false);false

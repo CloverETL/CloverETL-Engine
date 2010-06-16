@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Fri May 15 14:16:49 CEST 2009" modifiedBy="cloveruser" name="string2bits" revision="1.33">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record name="byte2hexInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field eofAsDelimiter="true" name="Bytearray" type="byte"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="byte2hexOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Bytearray" type="byte"/>
+<Field name="Function" type="string"/>
+<Field name="StringHexadecimal" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="138" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string byte2hex(byte arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="410" x="174" y="49">
+<attr name="text"><![CDATA[
+The byte2hex(byte) function takes an array of bytes and converts it to a string in hexadecimal representation. 
+Its counterpart is the hex2byte(string) function.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionByte2hex.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="73" guiY="216" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionByte2hexOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="555" guiY="216" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="304" guiY="216" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Bytearray := $0.Bytearray;
+	$0.Function := "byte2hex($0.Bytearray)";
+	$0.StringHexadecimal := byte2hex($0.Bytearray);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

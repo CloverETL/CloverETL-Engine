@@ -1,0 +1,3 @@
+someverylongstring;1;2;2;4
+someverylongstring;0;2;3;3
+someverylongstring;3;2;1;3

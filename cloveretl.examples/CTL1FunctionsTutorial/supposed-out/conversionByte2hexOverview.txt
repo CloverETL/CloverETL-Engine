@@ -1,0 +1,12 @@
+a;byte2hex($0.Bytearray);61
+bc;byte2hex($0.Bytearray);6263
+def;byte2hex($0.Bytearray);646566
+ghi;byte2hex($0.Bytearray);676869
+helloworld++;byte2hex($0.Bytearray);68656c6c6f776f726c642b2b
+a;byte2hex($0.Bytearray);61
+b;byte2hex($0.Bytearray);62
+c;byte2hex($0.Bytearray);63
+d;byte2hex($0.Bytearray);64
+x;byte2hex($0.Bytearray);78
+y;byte2hex($0.Bytearray);79
+z;byte2hex($0.Bytearray);7a

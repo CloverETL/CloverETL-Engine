@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Fri May 15 14:16:48 CEST 2009" modifiedBy="cloveruser" name="string2bits" revision="1.38">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="long2dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Long" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="long2dateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Long" type="long"/>
+<Field name="Function" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="DateFormat1" type="date"/>
+<Field format="MM/dd/yyyy" name="DateFormat2" type="date"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date long2date(long arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="426" x="180" y="79">
+<attr name="text"><![CDATA[
+The long2date(long) function takes one long argument and converts it to a date. It adds the argument number of seconds to January 1, 1970, 00:00:00 000 UTC and returns the result as a date. Neither 0 date nor 0 value exist.
+Its counterpart is the date2long(date) function.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionLong2date.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="56" guiY="255" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionLong2dateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="585" guiY="256" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="299" guiY="255" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Long := $0.Long;
+	$0.Function := "long2date($0.Long)";
+	$0.DateFormat1 := long2date($0.Long);
+	$0.DateFormat2 := long2date($0.Long);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
