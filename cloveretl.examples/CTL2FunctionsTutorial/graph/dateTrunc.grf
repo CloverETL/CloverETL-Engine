@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jun 09 12:55:32 CEST 2010" modifiedBy="cloveruser" name="dateTrunc_date" revision="1.22">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jun 16 14:24:54 CEST 2010" modifiedBy="cloveruser" name="dateTrunc_date" revision="1.24">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="truncInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -22,7 +22,7 @@ The trunc(date) function takes one date argument and returns the date with the s
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/dateTrunc.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="74" guiY="250" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dataTruncOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="250" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateTruncOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="250" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="265" guiY="250" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 

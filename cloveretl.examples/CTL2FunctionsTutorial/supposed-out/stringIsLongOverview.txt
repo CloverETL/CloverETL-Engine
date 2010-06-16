@@ -1,5 +1,5 @@
-test;isLong($0.Arg);true
-têst;isLong($0.Arg);true
+test;isLong($0.Arg);false
+têst;isLong($0.Arg);false
 5;isLong($0.Arg);true
 123456732325;isLong($0.Arg);true
 1234.28e-3;isLong($0.Arg);true

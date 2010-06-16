@@ -1,10 +1,12 @@
-true|x+«ëÏÙ¹~ˆ¶76x|2010-06-23|14.20|37|70|19.213820539026795|ujwmm|1|getFieldType(myInputRecords, Index)|byte
-false|‰%óPRm¹ôKeùù—:©|2010-06-18|25.02|91|7|5.441588353629756|bzpcg|3|getFieldType(myInputRecords, Index)|decimal
-true|"á®«ÿx±6$7î­}Eô|2010-06-25|16.06|8|57|76.17779400442089|zdds|4|getFieldType(myInputRecords, Index)|integer
-false|®éQ•¿ê°ªÔ›ÌgõyÂ|2010-06-24|35.13|84|84|19.957963198864782|tarm|6|getFieldType(myInputRecords, Index)|number
-false|û­éãj?6ÓÖvÁ¸E×|2010-06-27|74.08|98|13|62.29490314429958|twt|2|getFieldType(myInputRecords, Index)|date
-true|‘ùØ¢½så›~¬#y5*|2010-06-28|39.18|24|37|64.88605697153994|zqzxz|7|getFieldType(myInputRecords, Index)|string
-true|êª}ô}tÆs{ù«óÿ‚|2010-07-04|40.20|13|20|20.303736591843645|usw|6|getFieldType(myInputRecords, Index)|number
-true|NUõzIÕ‰¡,Šù|2010-06-17|0.81|78|69|55.005411359682675|cys|3|getFieldType(myInputRecords, Index)|decimal
-false|\a‡âˆ^şÓ›bXÑ¨ë|2010-06-28|34.81|47|53|29.818245150489965|kovh|0|getFieldType(myInputRecords, Index)|boolean
-true|:a—]¸ašhÓŞ}®5ğ|2010-07-05|90.96|13|11|15.577119011578622|qhz|2|getFieldType(myInputRecords, Index)|date
+true|1Rä–d`PDşcÜÌà"|2010-06-24|27.55|72|50|30.985929022566474|obbgf|0|getFieldType(myInputRecords, Index)|boolean
+false|d¼.ñş=u·µ2zÒá|2010-07-05|88.50|52|26|81.930814937173|swwva|2|getFieldType(myInputRecords, Index)|date
+true|Àl{•Êö-_­áD
+®yğ|2010-06-26|28.67|75|74|84.64391449491511|cuzuo|4|getFieldType(myInputRecords, Index)|integer
+false|´R	I^^%@ş
+‚–êÛ|2010-07-04|33.74|14|29|45.46602863409802|bidfv|4|getFieldType(myInputRecords, Index)|integer
+true|·Û*ÛÁ[¤5¯}Á;_|2010-06-22|82.93|59|33|15.480640233838749|sru|0|getFieldType(myInputRecords, Index)|boolean
+false|e<ì”ß0i+Êà«Z÷í|2010-06-17|46.43|92|85|99.23478602461407|uvib|2|getFieldType(myInputRecords, Index)|date
+false|8‚ËÃi¥LÊZ‰¢ò¾|2010-06-17|29.49|73|75|2.584994804522378|bmpa|1|getFieldType(myInputRecords, Index)|byte
+true|EŸ„ñÂ“ŒÂ®ÀÒ2"+|2010-07-06|0.33|46|16|19.456012904192622|uwu|5|getFieldType(myInputRecords, Index)|long
+false|_³ğ»æjÙ–GcĞ_"|2010-06-26|69.61|67|10|23.495806264181763|btqh|4|getFieldType(myInputRecords, Index)|integer
+true|ƒ‡Œ‘8.àû—¨Äz|2010-06-18|49.29|46|65|40.351478345827275|smv|6|getFieldType(myInputRecords, Index)|number

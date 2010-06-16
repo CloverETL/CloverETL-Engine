@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Wed Jun 09 12:16:15 CEST 2010" modifiedBy="cloveruser" name="dateToday" revision="1.79">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Wed Jun 16 14:26:12 CEST 2010" modifiedBy="cloveruser" name="dateToday" revision="1.81">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_booleanOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,11 +18,15 @@ The randomBoolean() function accepts no argument and returns boolean values (tru
 <Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="137" guiY="239" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
+function void preExecute() {
+     setRandomSeed(10);
+}
 
 // Generates output record.
 function integer generate() {
 	$0.Random_booleanFunction = 'randomBoolean()';
 	$0.Result = randomBoolean();
+
 	return 0;
 }
 ]]></attr>
