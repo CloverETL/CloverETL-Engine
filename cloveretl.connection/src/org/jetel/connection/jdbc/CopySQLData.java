@@ -52,6 +52,7 @@ import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -607,10 +608,8 @@ public abstract class CopySQLData {
 					obj = new CopyInteger(record, fromIndex, toIndex);
 				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
 					obj = new CopyLong(record, fromIndex, toIndex);
-				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
-				    obj = new CopyNumeric(record, fromIndex, toIndex);
 				} else {
-					obj = new CopyDecimal(record, fromIndex, toIndex);
+					obj = new CopyNumeric(record, fromIndex, toIndex);
 				}
 				break;
 			case Types.DATE:
@@ -825,7 +824,7 @@ public abstract class CopySQLData {
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
+				pStatement.setDouble(fieldSQL, ((Numeric) field).getDouble());
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.NUMERIC);
 			}
