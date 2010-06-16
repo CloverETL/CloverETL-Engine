@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation Devel" modified="Wed Jun 09 12:59:44 CEST 2010" modifiedBy="cloveruser" name="dateDateDiff" revision="1.57">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation Devel" modified="Wed Jun 16 14:22:20 CEST 2010" modifiedBy="cloveruser" name="dateDateDiff" revision="1.59">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_dateInput" recordDelimiter="\r\n" type="delimited">
@@ -36,6 +36,10 @@ Both the first and the second arguments are compared to the third, which serves 
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="243" guiY="296" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
+function void preExecute() {
+     setRandomSeed(10);
+}
+
 // Transforms input record into output record.
 function integer transform() {
 	$0.StartDate = $0.StartDate;
@@ -46,6 +50,7 @@ function integer transform() {
 	$0.RandomDateWithLocale = randomDate($0.StartDate,$0.EndDate,$0.Pattern,$0.Locale);
 	$0.FunctionWithoutLocale = "randomDate($0.StartDate,$0.EndDate,$0.Pattern)";
 	$0.RandomDateWithoutLocale = randomDate($0.StartDate,$0.EndDate,$0.Pattern);
+
 	return 0;
 }
 

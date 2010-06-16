@@ -227,15 +227,15 @@
 </FunctionalTest>
 
 <FunctionalTest ident="dateTruncDate" graphFile="graph/dateTruncDate.grf">
-	 <FlatFile outputFile="data-out/dataTruncDateOverview.txt" supposedFile="supposed-out/dataTruncDateOverview.txt"/>
+	 <FlatFile outputFile="data-out/dateTruncDateOverview.txt" supposedFile="supposed-out/dateTruncDateOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="dateTrunc" graphFile="graph/dateTrunc.grf">
-	 <FlatFile outputFile="data-out/dataTruncOverview.txt" supposedFile="supposed-out/dataTruncOverview.txt"/>
+	 <FlatFile outputFile="data-out/dateTruncOverview.txt" supposedFile="supposed-out/dateTruncOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="dateZeroDate" graphFile="graph/dateZeroDate.grf">
-	 <FlatFile outputFile="data-out/dataZeroDateOverview.txt" supposedFile="supposed-out/dataZeroDateOverview.txt"/>
+	 <FlatFile outputFile="data-out/dateZeroDateOverview.txt" supposedFile="supposed-out/dateZeroDateOverview.txt"/>
 </FunctionalTest>
 
 
@@ -334,7 +334,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="stringIsLong" graphFile="graph/stringIsLong.grf">
-	 <FlatFile outputFile="data-out/stringIsLong.txt" supposedFile="supposed-out/stringIsLong.txt"/>
+	 <FlatFile outputFile="data-out/stringIsLongOverview.txt" supposedFile="supposed-out/stringIsLongOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="stringIsNumber" graphFile="graph/stringIsNumber.grf">
@@ -389,8 +389,8 @@
 	 <FlatFile outputFile="data-out/stringRemoveNonAsciiOverview.txt" supposedFile="supposed-out/stringRemoveNonAsciiOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="stringRemoveNonPritable" graphFile="graph/stringRemoveNonPritable.grf">
-	 <FlatFile outputFile="data-out/stringRemoveNonPritableOverview.txt" supposedFile="supposed-out/stringRemoveNonPritableOverview.txt"/>
+<FunctionalTest ident="stringRemoveNonPrintable" graphFile="graph/stringRemoveNonPrintable.grf">
+	 <FlatFile outputFile="data-out/stringRemoveNonPrintableOverview.txt" supposedFile="supposed-out/stringRemoveNonPrintableOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="stringReplace" graphFile="graph/stringReplace.grf">
