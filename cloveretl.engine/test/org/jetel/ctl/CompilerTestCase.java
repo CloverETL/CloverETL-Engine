@@ -2098,8 +2098,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_datelib_trunc");
 		check("truncLong", Long.parseLong("-3"));
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
-		assertTrue(((List<Integer>) getVariable("truncList")).isEmpty());
-		assertTrue(((Map<Integer, Integer>) getVariable("truncMap")).isEmpty());
+		check("truncNumber", Long.parseLong("3"));
 	}
 	
 	public void test_datelib_truncDate() {
