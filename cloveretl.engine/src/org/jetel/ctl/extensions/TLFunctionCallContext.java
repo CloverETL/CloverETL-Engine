@@ -36,7 +36,18 @@ public class TLFunctionCallContext {
 	private String libClassName;
 	private String initMethodName;
 	private TLCache cache;
+	private final Object transformationID;
 	
+	
+	public TLFunctionCallContext(Object transformationID) {
+		this.transformationID = transformationID;
+	}
+	/**
+	 * @return the transformationID
+	 */
+	public Object getTransformationID() {
+		return transformationID;
+	}
 	/**
 	 * @return the cache
 	 */
