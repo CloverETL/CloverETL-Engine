@@ -36,7 +36,8 @@ public class ResetTest extends TestCase{
 	private final static String[] EXAMPLE_PATH = {
 		"../cloveretl.examples/SimpleExamples/", 
 		"../cloveretl.examples/AdvancedExamples/",
-		"../cloveretl.examples/CTLFunctionsTutorial/",
+		"../cloveretl.examples/CTL1FunctionsTutorial/",
+		"../cloveretl.examples/CTL2FunctionsTutorial/",
 		"../cloveretl.examples/DataProfiling/",
 		"../cloveretl.examples/ExtExamples/",
 		"../cloveretl.test.scenarios/",
@@ -103,7 +104,7 @@ public class ResetTest extends TestCase{
 							&& !pathname.getName().equals("graphMsSqlDataWriter.grf") // ok, can only work with MsSql client
 							&& !pathname.getName().equals("graphMysqlDataWriter.grf") // ok, can only work with MySql client
 							&& !pathname.getName().equals("graphOracleDataWriter.grf") // ok, can only work with Oracle client
-							&& !pathname.getName().equals("graphPostgreDataWriter.grf") // ok, can only work with postgre client
+							&& !pathname.getName().equals("graphPostgreSqlDataWriter.grf") // ok, can only work with postgre client
 							&& !pathname.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
 							&& !pathname.getName().equals("graphInfobrightDataWriter.grf") // ok, can only work with infobright server
 							&& !pathname.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
