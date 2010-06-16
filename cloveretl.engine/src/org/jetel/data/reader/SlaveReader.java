@@ -65,7 +65,6 @@ public class SlaveReader implements InputReader {
 	}
 	
 	public void reset() throws ComponentNotReadyException {
-		inPort.reset();
 		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
 		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
