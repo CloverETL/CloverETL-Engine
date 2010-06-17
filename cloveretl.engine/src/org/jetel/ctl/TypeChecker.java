@@ -107,9 +107,11 @@ public class TypeChecker extends NavigatingVisitor {
 	private CLVFFunctionDeclaration activeFunction = null;
 	private Map<String, List<TLFunctionDescriptor>> externalFunctions;
 	private final HashMap<String,TLType> typeVarMapping = new HashMap<String, TLType>();
+	private HashMap<String,TLType> minTypeVarMapping;	
 	private ArrayList<TLFunctionCallContext> functionCalls = new ArrayList<TLFunctionCallContext>();
 	private final Object transformationID = new Object();
 	private int functionCallIndex = 0;
+
 	
 	public TypeChecker(ProblemReporter problemReporter, Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, Map<String, List<TLFunctionDescriptor>> externalFunctions) {
 		this.problemReporter = problemReporter;
@@ -623,6 +625,8 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 		
+		minTypeVarMapping = new HashMap<String, TLType>();
+		
 		// scan local function declarations for (best) match
 		final List<CLVFFunctionDeclaration> local = declaredFunctions.get(node.getName());
 		if (local != null) {
@@ -631,6 +635,7 @@ public class TypeChecker extends NavigatingVisitor {
 				final int distance = functionDistance(actual, fd.getFormalParameters(), false);
 				if (distance < minResult) {
 					minResult = distance;
+					minTypeVarMapping = new HashMap<String, TLType>(typeVarMapping);
 					localCandidate = fd;
 					if (distance == 0) {
 						// best possible match
@@ -661,6 +666,7 @@ public class TypeChecker extends NavigatingVisitor {
 				
 				if (distance < minResult) {
 					minResult = distance;
+					minTypeVarMapping = new HashMap<String, TLType>(typeVarMapping);
 					extCandidate = fd;
 					if (distance == 0) {
 						// best possible match
@@ -1981,7 +1987,7 @@ public class TypeChecker extends NavigatingVisitor {
 		
 		// if the return type is type variable itself  - return it's mapping
 		if (returnType.isTypeVariable()) {
-			return typeVarMapping.get(returnType.name());
+			return minTypeVarMapping.get(returnType.name());
 		}
 
 		if (returnType.isList()) {
