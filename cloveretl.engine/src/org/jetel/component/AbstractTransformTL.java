@@ -30,7 +30,7 @@ import org.jetel.interpreter.data.TLValue;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 14th June 2010
+ * @version 17th June 2010
  * @created 11th June 2010
  */
 public abstract class AbstractTransformTL implements Transform {
@@ -139,6 +139,8 @@ public abstract class AbstractTransformTL implements Transform {
 
 		try {
 			semiResult = wrapper.execute(FINISHED_FUNCTION_NAME, null);
+			logger.warn("CTL function " + FINISHED_FUNCTION_NAME + "() is deprecated, use "
+					+ POST_EXECUTE_FUNCTION_NAME + "() instead!");
 		} catch (JetelException e) {
 			// do nothing, the finished() function is optional
 		}
@@ -154,6 +156,8 @@ public abstract class AbstractTransformTL implements Transform {
 
 		try {
 			semiResult = wrapper.execute(RESET_FUNCTION_NAME, null);
+			logger.warn("CTL function " + RESET_FUNCTION_NAME + "() is deprecated, use "
+					+ PRE_EXECUTE_FUNCTION_NAME + "() instead!");
 		} catch (JetelException e) {
 			// do nothing, the reset() function is optional
 		}
