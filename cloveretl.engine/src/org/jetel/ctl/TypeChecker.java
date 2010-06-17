@@ -1302,7 +1302,7 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 
-		error(node, functionErrorMessage("delete_dict", formal, actual));
+		error(node, functionErrorMessage("deleteDict", formal, actual));
 		node.setType(TLType.ERROR);
 		return data;
 	}
@@ -1328,7 +1328,7 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 
-		error(node, functionErrorMessage("read_dict", formal, actual));
+		error(node, functionErrorMessage("readDict", formal, actual));
 		node.setType(TLType.ERROR);
 		return data;
 	}
@@ -1354,7 +1354,7 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 
-		error(node, functionErrorMessage("write_dict", formal, actual));
+		error(node, functionErrorMessage("writeDict", formal, actual));
 		node.setType(TLType.ERROR);
 		return data;
 	}
@@ -1427,7 +1427,7 @@ public class TypeChecker extends NavigatingVisitor {
 			}
 		}
 		
-		error(node,functionErrorMessage("print_log", formal, actual));
+		error(node,functionErrorMessage("printLog", formal, actual));
 		node.setType(TLType.ERROR);
 		return data;
 	}
@@ -1443,7 +1443,7 @@ public class TypeChecker extends NavigatingVisitor {
 			for (int i=0; i<actual.length; i++) {
 				actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
 			}
-			error(node,functionErrorMessage("print_stack", new TLType[0], actual));
+			error(node,functionErrorMessage("printStack", new TLType[0], actual));
 			node.setType(TLType.ERROR);
 			return data;
 		}
@@ -1460,7 +1460,7 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 		
-		if (!isFunctionNodeValid(node, "raise_error", new TLType[]{TLTypePrimitive.STRING})) {
+		if (!isFunctionNodeValid(node, "raiseError", new TLType[]{TLTypePrimitive.STRING})) {
 			return data;
 		}
 		
