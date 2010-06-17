@@ -1585,6 +1585,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_containerlib_copy");
 
 		check("copyList", Arrays.asList(1, 2, 3, 4, 5));
+		check("returnedList", Arrays.asList(1, 2, 3, 4, 5));
 	}
 
 	public void test_containerlib_insert() {
