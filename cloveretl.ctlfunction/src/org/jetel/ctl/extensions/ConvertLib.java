@@ -347,6 +347,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses string in given format and locale to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input, String format, String locale) {
 		DecimalFormat formatter = ((TLDecimalFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
+		formatter.setParseIntegerOnly(true);
 		try {
 			return formatter.parse(input).intValue();
 		} catch (ParseException e) {
@@ -407,6 +408,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses string in given format and locale to long.")
 	public static final Long str2long(TLFunctionCallContext context, String input, String format, String locale) {
 		DecimalFormat formatter = ((TLDecimalFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
+		formatter.setParseIntegerOnly(true);
 		try {
 			return (Long)formatter.parse(input);
 		} catch (ParseException e) {
