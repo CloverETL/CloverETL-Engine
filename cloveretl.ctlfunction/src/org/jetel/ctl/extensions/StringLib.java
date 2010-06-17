@@ -427,7 +427,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Checks if the string can be parsed into a long number")
 	public static final boolean isLong(TLFunctionCallContext context, String input) {
 		int result = StringUtils.isInteger(input);
-		return result > 0 && result < 3;
+		return result >= 0 && result < 3;
 	}
 
 	class IsLongFunction implements TLFunctionPrototype {
