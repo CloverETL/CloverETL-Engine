@@ -486,8 +486,4 @@
 	 <FlatFile outputFile="data-out/mathSetRandomSeedOverview.txt" supposedFile="supposed-out/mathSetRandomSeedOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="mathTrunc" graphFile="graph/mathTrunc.grf">
-	 <FlatFile outputFile="data-out/mathTruncOverview.txt" supposedFile="supposed-out/mathTruncOverview.txt"/>
-</FunctionalTest>
-
 </TestScenario>
