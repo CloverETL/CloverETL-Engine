@@ -47,4 +47,10 @@ public @interface CTLEntryPoint {
 	 * @return Parameter names - empty by default
 	 */
 	String[] parameterNames() default {};
+
+	/**
+	 * @return deprecation message to be logged as a warning if an optional deprecated method is implemented
+	 */
+	String deprecated() default "";
+
 }

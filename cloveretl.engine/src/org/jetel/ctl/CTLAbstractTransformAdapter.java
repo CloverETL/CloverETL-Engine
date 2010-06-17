@@ -31,7 +31,7 @@ import org.jetel.graph.TransformationGraph;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 16th June 2010
  * @created 5th May 2010
  */
 public class CTLAbstractTransformAdapter implements Transform {
@@ -44,6 +44,11 @@ public class CTLAbstractTransformAdapter implements Transform {
 	private static final String FUNCTION_POST_EXECUTE_NAME = "postExecute";
 	/** The name of the CTL getMessage() function. */
 	private static final String FUNCTION_GET_MESSAGE_NAME = "getMessage";
+
+	/** The name of the CTL finished() function. */
+	private static final String FUNCTION_FINISHED_NAME = "finished";
+	/** The name of the CTL reset() function. */
+	private static final String FUNCTION_RESET_NAME = "reset";
 
 	/** An empty array of arguments used for calls to functions without any arguments. */
     protected static final Object[] NO_ARGUMENTS = new Object[0];
@@ -61,6 +66,11 @@ public class CTLAbstractTransformAdapter implements Transform {
     private CLVFFunctionDeclaration functionPostExecute;
     /** The CTL declaration of the optional getMessage() function */
     private CLVFFunctionDeclaration functionGetMessage;
+
+    /** The CTL declaration of the deprecated finished() function */
+    private CLVFFunctionDeclaration functionFinished;
+    /** The CTL declaration of the deprecated reset() function */
+    private CLVFFunctionDeclaration functionReset;
 
     /**
      * Constructs a <code>CTLAbstractTransformAdapter</code> for a given CTL executor and logger.
@@ -133,6 +143,10 @@ public class CTLAbstractTransformAdapter implements Transform {
 		functionPreExecute = executor.getFunction(FUNCTION_PRE_EXECUTE_NAME);
 		functionPostExecute = executor.getFunction(FUNCTION_POST_EXECUTE_NAME);
 		functionGetMessage = executor.getFunction(FUNCTION_GET_MESSAGE_NAME);
+
+		// initialize deprecated CTL functions so we can issue a warning later on if present
+		functionFinished = executor.getFunction(FUNCTION_FINISHED_NAME);
+		functionReset = executor.getFunction(FUNCTION_RESET_NAME);
     }
 
     @Override
@@ -170,7 +184,9 @@ public class CTLAbstractTransformAdapter implements Transform {
 	@Deprecated
 	@Override
 	public final void finished() {
-		logger.warn("Call to the finished() function ignored!");
+		if (functionFinished != null) {
+			logger.warn("Call to the deprecated finished() function ignored, use postExecute() instead!");
+		}
 	}
 
 	/**
@@ -179,7 +195,9 @@ public class CTLAbstractTransformAdapter implements Transform {
 	@Deprecated
 	@Override
 	public final void reset() {
-		logger.warn("Call to the reset() function ignored!");
+		if (functionReset != null) {
+			logger.warn("Call to the deprecated reset() function ignored, use preExecute() instead!");
+		}
 	}
 
 }
