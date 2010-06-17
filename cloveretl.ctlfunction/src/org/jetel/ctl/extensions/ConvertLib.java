@@ -32,6 +32,10 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.primitive.StringFormat;
+import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -41,6 +45,8 @@ import org.jetel.util.date.DateFormatter;
 public class ConvertLib extends TLFunctionLibrary {
 
 	public static final int DEFAULT_RADIX = 10;
+	private static StringFormat trueFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
+	private static StringFormat falseFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
@@ -707,9 +713,15 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	}
 
-	@TLFunctionAnnotation("Converts string to true if and onle if it is identical to string 'true'. False otherwise")
+	@TLFunctionAnnotation("Converts string to a boolean based on a pattern (i.e. \"true\")")
 	public static final Boolean str2bool(TLFunctionCallContext context, String s) {
-		return "true".equals(s);
+		if (trueFormat.matches(s)) 
+			return Boolean.TRUE;
+		
+		if (falseFormat.matches(s)) 
+			return Boolean.FALSE;
+		
+		throw new TransformLangExecutorRuntimeException("str2bool - can't convert \"" + s + "\" to boolean");
 	}
 	
 	// STR2BOOL
