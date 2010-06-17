@@ -556,7 +556,7 @@ public class DBOutputTable extends Node {
 				try {
 					eachStatement.init();
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, e.getMessage());
+					throw new ComponentNotReadyException(this, e.getMessage(), e);
 				}
 			}
 		} else {
@@ -574,7 +574,7 @@ public class DBOutputTable extends Node {
 						try {
 							eachStatement.setConnection(connection);
 						} catch (Exception e) {
-							throw new ComponentNotReadyException(this, e.getMessage());
+							throw new ComponentNotReadyException(this, e.getMessage(), e);
 						}
 					}
 				} catch (JetelException exception) {
@@ -587,7 +587,7 @@ public class DBOutputTable extends Node {
 					eachStatement.setInRecord(inRecord);
 					eachStatement.reset();
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, e.getMessage());
+					throw new ComponentNotReadyException(this, e.getMessage(), e);
 				}
 			}
 			recCount = 0;
