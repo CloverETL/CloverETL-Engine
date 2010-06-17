@@ -253,4 +253,16 @@ public class AutoKeyGenerator{
 		return autoKeyType;
 	}
 
+	/**
+	 * Given connection instance has to have same JdbcSpecific as the former connection.
+	 * Otherwise new AutoKeyGenerator instance has to be created and initialized.
+	 * @param connection
+	 */
+	public void setConnection(DBConnectionInstance connection) {
+		if (this.connection.getJdbcSpecific() != connection.getJdbcSpecific()) {
+			throw new IllegalStateException("Given connection for AutoKeyGenerator has incompatible JdbcSpecific with the former connection.");
+		}
+		this.connection = connection;
+	}
+	
 }

@@ -26,8 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -380,6 +378,9 @@ public class SQLCloverStatement {
 
 	public void setConnection(DBConnectionInstance connection) {
 		this.connection = connection;
+		if (autoKeyGenerator != null) {
+			autoKeyGenerator.setConnection(connection);
+		}
 	}
 
 	/**
