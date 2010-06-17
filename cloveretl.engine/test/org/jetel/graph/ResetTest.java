@@ -165,14 +165,13 @@ public class ResetTest extends TestCase{
 					runtimeContext.addAdditionalProperty("LIB_DIR", current_directory.getAbsolutePath() + SCENARIOS_RELATIVE_PATH + "/lib");
 				}
 				try {
-					testExample(graphFile[j]);
-//				} catch (AssertionFailedError e) {
-//					fail(graphFile[j] + ": " + e.getMessage());
+					testExample(graphFile[j],true);
 				} catch (Exception e) {
-//					if (e.getMessage() == null){
-//						e.printStackTrace();
-//					}
-//					fail(graphFile[j] + ": " + e.getMessage());
+					errors.put(graphFile[j].getName(), e);
+				}
+				try {
+					testExample(graphFile[j],false);
+				} catch (Exception e) {
 					errors.put(graphFile[j].getName(), e);
 				}
 			}
@@ -199,9 +198,11 @@ public class ResetTest extends TestCase{
 		}
 	}
 	
-	public void testExample(File file) throws Exception {
+	public void testExample(File file, boolean batchMode) throws Exception {
+		runtimeContext.setBatchMode(batchMode);
 		TransformationGraph graph = null;
 		Future<Result> futureResult = null;
+		log("Batch mode: " + batchMode);
 		log("Analyzing graph " + file.getName());
 		try {
 				graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(file), runtimeContext);
@@ -287,6 +288,7 @@ public class ResetTest extends TestCase{
 	 * @throws MalformedURLException
 	 * @throws IOException
 	 */
+	//TODO add parameter for batch mode
 	public static void main(String[] args) throws Exception {
 		
 		// ".."
