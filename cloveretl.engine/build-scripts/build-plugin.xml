@@ -419,8 +419,7 @@
 			</javac>
 			<copy todir="${dir.classestest}">
 				<fileset dir="${dir.src.test}">
-					<include name="**/*.xml"/>
-					<include name="**/*.xsd"/>
+					<exclude name="**/*.java"/>
 				</fileset>
 			</copy>
 		</then></if>
