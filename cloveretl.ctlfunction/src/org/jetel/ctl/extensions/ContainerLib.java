@@ -243,7 +243,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	
 		
 	// all CTL types are comparable so this will work in runtime
-	@TLFunctionAnnotation("Inverts order of elements withing a list.")
+	@TLFunctionAnnotation("Inverts order of elements within a list.")
 	public static final <E extends Comparable<E>> List<E> reverse(TLFunctionCallContext context, List<E> list) { 
 		Collections.reverse(list);
 		return list;
