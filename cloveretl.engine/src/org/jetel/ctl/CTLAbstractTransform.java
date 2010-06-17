@@ -32,13 +32,13 @@ import org.jetel.graph.dictionary.StringDictionaryType;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 5th May 2010
  */
 public abstract class CTLAbstractTransform implements Transform {
 
-	/** The logger used by this class. */
-	private static final Log logger = LogFactory.getLog(CTLAbstractTransform.class);
+	/** The logger used by this class and generated transform classes. */
+	protected static final Log logger = LogFactory.getLog(CTLAbstractTransform.class);
 
 	/** Runtime error message used when input records are not accessible. */
 	protected static final String INPUT_RECORDS_NOT_ACCESSIBLE = "Cannot access input records within this scope!";
@@ -68,6 +68,12 @@ public abstract class CTLAbstractTransform implements Transform {
 		return (node != null) ? node.getGraph() : null;
 	}
 
+	/**
+	 * Initializes the global scope of the transform. Has to be overridden by the generated transform class.
+	 */
+	@CTLEntryPoint(name = "globalScopeInit", required = true)
+	public abstract void globalScopeInit() throws ComponentNotReadyException;
+
 	@Override
 	@CTLEntryPoint(name = "preExecute", required = false)
 	public void preExecute() throws ComponentNotReadyException {
@@ -88,10 +94,26 @@ public abstract class CTLAbstractTransform implements Transform {
 	}
 
 	/**
-	 * Initializes the global scope of the transform. Has to be overridden by the generated transform class.
+	 * @deprecated Use {@link #postExecute()} method.
 	 */
-	@CTLEntryPoint(name = "globalScopeInit", required = true)
-	public abstract void globalScopeInit() throws ComponentNotReadyException;
+	@Deprecated
+	@Override
+	@CTLEntryPoint(name = "finished", required = false,
+			deprecated = "Call to the deprecated finished() function ignored, use postExecute() instead!")
+	public void finished() {
+		// does nothing by default, may be overridden by generated transform classes
+	}
+
+	/**
+	 * @deprecated Use {@link #preExecute()} method.
+	 */
+	@Deprecated
+	@Override
+	@CTLEntryPoint(name = "reset", required = false,
+			deprecated = "Call to the deprecated reset() function ignored, use preExecute() instead!")
+	public void reset() {
+		// does nothing by default, may be overridden by generated transform classes
+	}
 
 	/**
 	 * Returns a data record for a given input port index.
@@ -129,24 +151,6 @@ public abstract class CTLAbstractTransform implements Transform {
 		} catch (ComponentNotReadyException e) {
 			throw new TransformLangExecutorRuntimeException(e.getMessage());
 		}
-	}
-
-	/**
-	 * @deprecated Use {@link #postExecute()} method.
-	 */
-	@Deprecated
-	@Override
-	public final void finished() {
-		logger.warn("Call to the finished() function ignored!");
-	}
-
-	/**
-	 * @deprecated Use {@link #preExecute()} method.
-	 */
-	@Deprecated
-	@Override
-	public final void reset() {
-		logger.warn("Call to the reset() function ignored!");
 	}
 
 }
