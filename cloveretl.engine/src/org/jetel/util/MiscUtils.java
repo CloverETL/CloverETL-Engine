@@ -18,6 +18,8 @@
  */
 package org.jetel.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -103,4 +105,19 @@ public final class MiscUtils {
 		}
 		return null;
 	}
+
+	/**
+	 * Converts stack trace of a given throwable to a string.
+	 *
+	 * @param throwable a throwable
+	 *
+	 * @return stack trace of the given throwable as a string
+	 */
+	public static String stackTraceToString(Throwable throwable) {
+		StringWriter stringWriter = new StringWriter();
+		throwable.printStackTrace(new PrintWriter(stringWriter));
+
+		return stringWriter.toString();
+	}
+
 }
