@@ -215,7 +215,7 @@
 </FunctionalTest>
 
 <FunctionalTest ident="dateRandomDate_LongArguments" graphFile="graph/dateRandomDate_LongArguments.grf">
-	 <FlatFile outputFile="data-out/dateRandomDate_LongArgumentsOverview.txt" supposedFile="supposed-out/dateRandomDate_DateArgumentsOverview.txt"/>
+	 <FlatFile outputFile="data-out/dateRandomDate_LongArgumentsOverview.txt" supposedFile="supposed-out/dateRandomDate_LongArgumentsOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="dateRandomDate_StringArguments" graphFile="graph/dateRandomDate_StringArguments.grf">
