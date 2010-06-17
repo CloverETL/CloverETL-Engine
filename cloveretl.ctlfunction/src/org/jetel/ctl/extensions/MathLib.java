@@ -31,7 +31,9 @@ public class MathLib extends TLFunctionLibrary {
 			"log".equals(functionName) ? new LogFunction() :
 			"log10".equals(functionName) ? new Log10Function() :
 			"exp".equals(functionName) ? new ExpFunction() :
+			"floor".equals(functionName) ? new FloorFunction() :
 			"round".equals(functionName) ? new RoundFunction() :
+			"ceil".equals(functionName) ? new CeilFunction() :
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
 			"e".equals(functionName) ? new EFunction() :
@@ -175,6 +177,32 @@ public class MathLib extends TLFunctionLibrary {
 		}
     }         
     
+    @TLFunctionAnnotation("Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is equal to a mathematical integer.")
+    public static final Double floor(TLFunctionCallContext context, double d) {
+    	return Math.floor(d);
+    }
+    
+    @TLFunctionAnnotation("Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is equal to a mathematical integer.")
+    public static final Double floor(TLFunctionCallContext context, BigDecimal d) {
+    	return floor(context, d.doubleValue()); 
+    }
+    
+    // FLOOR
+    class FloorFunction implements TLFunctionPrototype { 
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(floor(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(floor(context, stack.popDouble()));
+		}
+    }
 
     @TLFunctionAnnotation("Returns long value closest to the argument.")
     public static final Long round(TLFunctionCallContext context, double d) {
@@ -201,7 +229,34 @@ public class MathLib extends TLFunctionLibrary {
 			
 			stack.push(round(context, stack.popDouble()));
 		}
-    }                        
+    }
+    
+    @TLFunctionAnnotation("Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.")
+    public static final Double ceil(TLFunctionCallContext context, double d) {
+    	return Math.ceil(d);
+    }
+    
+    @TLFunctionAnnotation("Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.")
+    public static final Double ceil(TLFunctionCallContext context, BigDecimal d) {
+    	return ceil(context, d.doubleValue()); 
+    }
+    
+    // CEIL
+    class CeilFunction implements TLFunctionPrototype { 
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(ceil(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(ceil(context, stack.popDouble()));
+		}
+    }
     
     @TLFunctionAnnotation("Returns the value of the first argument raised to the power of the second argument.")
     public static final Double pow(TLFunctionCallContext context, double argument, double power) {

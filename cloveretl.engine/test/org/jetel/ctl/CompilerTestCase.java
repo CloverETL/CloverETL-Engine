@@ -2021,6 +2021,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("absDecimalMinus", new BigDecimal(5.0));
 	}
 	
+	public void test_mathlib_ceil() {
+		doCompile("test_mathlib_ceil");
+		check("ceil1", -3.0);
+		
+		check("intResult", Arrays.asList(2.0, 3.0));
+		check("longResult", Arrays.asList(2.0, 3.0));
+		check("doubleResult", Arrays.asList(3.0, -3.0));
+		check("decimalResult", Arrays.asList(3.0, -3.0));
+	}
+	
 	public void test_mathlib_e() {
 		doCompile("test_mathlib_e");
 		check("varE", Math.E);
@@ -2029,6 +2039,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_mathlib_exp() {
 		doCompile("test_mathlib_exp");
 		check("ex", Math.exp(1.123));
+	}
+	
+	public void test_mathlib_floor() {
+		doCompile("test_mathlib_floor");
+		check("floor1", -4.0);
+		
+		check("intResult", Arrays.asList(2.0, 3.0));
+		check("longResult", Arrays.asList(2.0, 3.0));
+		check("doubleResult", Arrays.asList(2.0, -4.0));
+		check("decimalResult", Arrays.asList(2.0, -4.0));
 	}
 	
 	public void test_mathlib_log() {
@@ -2059,7 +2079,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
-		check("round1", Long.parseLong("-4"));
+		check("round1", -4l);
 		
 		check("intResult", Arrays.asList(2l, 3l));
 		check("longResult", Arrays.asList(2l, 3l));
@@ -2093,12 +2113,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkEquals("date8", "date8d");
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void test_datelib_trunc() {
 		doCompile("test_datelib_trunc");
-		check("truncLong", Long.parseLong("-3"));
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
-		check("truncNumber", Long.parseLong("3"));
 	}
 	
 	public void test_datelib_truncDate() {

@@ -265,29 +265,13 @@ public class DateLib extends TLFunctionLibrary {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if(context.getParams()[0].isDecimal()) {
-				stack.push(trunc(context, stack.popDecimal()));
-			} else if (context.getParams()[0].isDouble()) {
-				stack.push(trunc(context, stack.popDouble()));
-			} else {
-				stack.push(trunc(context, stack.popDate()));
-			}
+			stack.push(trunc(context, stack.popDate()));
 		}
     }
     
     @TLFunctionInitAnnotation
     public static final void truncInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
-    }
-    
-	@TLFunctionAnnotation("Truncates BigDecimal - returns long part of number, decimal part is discarded.")
-    public static final Long trunc(TLFunctionCallContext context, BigDecimal value) {
-    	return value.longValue();
-    }
-    
-    @TLFunctionAnnotation("Truncates Double - returns long part of double, decimal part is discarded.")
-    public static final Long trunc(TLFunctionCallContext context, Double value) {
-    	return value.longValue();
     }
     
     @TLFunctionAnnotation("Truncates other, but date-time values to zero.")
