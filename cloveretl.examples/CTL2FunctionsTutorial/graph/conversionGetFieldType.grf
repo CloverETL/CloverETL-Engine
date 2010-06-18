@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 10:11:48 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.24">
+<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 10:31:21 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.25">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="getFieldTypeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -49,7 +49,7 @@ function void preExecute() {
 function integer generate() {
 	$0.booleanField = randomBoolean();
 	$0.byteField = md5(randomString(1,10));
-	$0.dateField = randomDate(today(),dateAdd(today(),20,day));
+	$0.dateField = randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");
 	$0.decimalField = random() * 100;
 	$0.integerField = randomInteger(0,100);
 	$0.longField = randomLong(0,100);
