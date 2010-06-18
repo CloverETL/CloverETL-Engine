@@ -259,18 +259,14 @@ public class WrapperTL {
 	 * @param functionName name of function, which will be executed many times
 	 * @throws ComponentNotReadyException
 	 */
-	public int prepareFunctionExecution(String functionName) throws ComponentNotReadyException{
-		if (functionCounter + 1 > functionNumber) {
-			functionNumber *= 2;
-			CLVFFunctionDeclaration[] tmp = function;
- 			function = new CLVFFunctionDeclaration[functionNumber];
- 			System.arraycopy(tmp, 0, function, 0, tmp.length);
-		}		
-		function[functionCounter] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
-		if (function[functionCounter] == null) {//function with given name not found
-			throw new ComponentNotReadyException("Function " + functionName + " not found");
+	public int prepareFunctionExecution(String functionName) throws ComponentNotReadyException {
+		int functionId = prepareOptionalFunctionExecution(functionName);
+
+		if (functionId >= 0) {
+			return functionId;
 		}
-		return functionCounter++;
+
+		throw new ComponentNotReadyException("Function " + functionName + " not found");
 	}
 	
     /**
@@ -281,12 +277,20 @@ public class WrapperTL {
      * @return an integer identification of the function if declared, -1 otherwise
      */
 	public int prepareOptionalFunctionExecution(String functionName) {
-		try {
-			return prepareFunctionExecution(functionName);
-		} catch (ComponentNotReadyException exception) {
-			// do nothing, optional function is not declared
+		if (functionCounter + 1 > functionNumber) {
+			functionNumber *= 2;
+			CLVFFunctionDeclaration[] tmp = function;
+			function = new CLVFFunctionDeclaration[functionNumber];
+			System.arraycopy(tmp, 0, function, 0, tmp.length);
 		}
 
+		function[functionCounter] = (CLVFFunctionDeclaration) parser.getFunctions().get(functionName);
+
+		if (function[functionCounter] != null) {
+			return functionCounter++;
+		}
+
+		//function with given name not found
 		return -1;
 	}
 
