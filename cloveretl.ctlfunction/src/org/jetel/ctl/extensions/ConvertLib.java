@@ -34,8 +34,6 @@ import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
-import org.jetel.interpreter.data.TLBooleanValue;
-import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -45,9 +43,9 @@ import org.jetel.util.date.DateFormatter;
 public class ConvertLib extends TLFunctionLibrary {
 
 	public static final int DEFAULT_RADIX = 10;
-	private static StringFormat trueFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
-	private static StringFormat falseFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
-
+	public static StringFormat trueFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
+	public static StringFormat falseFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
+	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
@@ -569,7 +567,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
 	public static final Integer long2integer(TLFunctionCallContext context, Long l) {
+		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
+			throw new TransformLangExecutorRuntimeException("long2integer: " + l + " - out of range of integer");
+		}
 		return l.intValue();
+		
 	}
 	
 	class Long2IntegerFunction implements TLFunctionPrototype {
@@ -584,6 +586,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
 	public static final Integer double2integer(TLFunctionCallContext context, Double l) {
+		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
+			throw new TransformLangExecutorRuntimeException("double2integer: " + l + " - out of range of integer");
+		}
 		return l.intValue();
 	}
 	class Double2IntegerFunction implements TLFunctionPrototype {
@@ -596,8 +601,14 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
+	public static final BigDecimal maxIntDecimal = new BigDecimal(Integer.MAX_VALUE);
+	public static final BigDecimal minIntDecimal = new BigDecimal(Integer.MIN_VALUE);
+	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
 	public static final Integer decimal2integer(TLFunctionCallContext context, BigDecimal l) {
+		if (l.compareTo(maxIntDecimal) > 0 || l.compareTo(minIntDecimal) <= 0) {
+			throw new TransformLangExecutorRuntimeException("decimal2integer: " + l + " - out of range of integer");
+		}
 		return l.intValue();
 	}
 	class Decimal2IntegerFunction implements TLFunctionPrototype {
@@ -612,6 +623,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to long value.")
 	public static final Long double2long(TLFunctionCallContext context, Double d) {
+		if (d > Long.MAX_VALUE || d <= Long.MIN_VALUE) {
+			throw new TransformLangExecutorRuntimeException("double2long: " + d + " - out of range of long");
+		}
 		return d.longValue();
 	}
 	
@@ -625,8 +639,14 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
+	public static final BigDecimal maxLongDecimal = new BigDecimal(Long.MAX_VALUE);
+	public static final BigDecimal minLongDecimal = new BigDecimal(Long.MIN_VALUE);
+	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to long value.")
 	public static final Long decimal2long(TLFunctionCallContext context, BigDecimal d) {
+		if (d.compareTo(maxLongDecimal) > 0 || d.compareTo(minLongDecimal) <= 0) {
+			throw new TransformLangExecutorRuntimeException("decimal2long: " + d + " - out of range of long");
+		}
 		return d.longValue();
 	}
 
@@ -639,9 +659,16 @@ public class ConvertLib extends TLFunctionLibrary {
 			stack.push(decimal2long(context, stack.popDecimal()));
 		}
 	}
+	
+	
+	public static final BigDecimal maxDoubleDecimal = new BigDecimal(Double.MAX_VALUE, TransformLangExecutor.MAX_PRECISION);
+	public static final BigDecimal minDoubleDecimal = new BigDecimal(Double.MIN_VALUE);
 
 	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
 	public static final Double decimal2double(TLFunctionCallContext context, BigDecimal d) {
+		if (d.compareTo(maxDoubleDecimal) > 0 || d.compareTo(minDoubleDecimal) < 0) {
+			throw new TransformLangExecutorRuntimeException("decimal2double: " + d + " - out of range of double");
+		}
 		return d.doubleValue();
 	}
 
