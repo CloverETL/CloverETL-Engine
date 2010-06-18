@@ -92,6 +92,11 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
+	public String quoteIdentifier(String identifier) {
+        return ('"' + identifier + '"');
+    }
+	
+	@Override
 	public String getValidateQuery(String query, QueryType queryType)
 			throws SQLException {
 		if(queryType==QueryType.SELECT) {
