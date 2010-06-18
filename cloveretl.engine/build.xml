@@ -834,7 +834,7 @@ public]]></replacevalue>
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
-					<include name="**/*Test.java"/>
+					<include name="${test.include}"/>
 					<exclude name="${test.exclude}"/>
 				</fileset>
 			</batchtest>

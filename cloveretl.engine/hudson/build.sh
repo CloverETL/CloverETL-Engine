@@ -16,6 +16,7 @@ cd cloveretl.engine
 	-Dcte.environment.config=engine-${CLOVER_VERSION_X_X}_java-1.6-Sun \
 	-Dcte.logpath=/data/cte-logs \
 	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER \
+	-Dtest.exclude=org/jetel/graph/ResetTest.java \
 	-Ddir.examples=../cloveretl.examples
 	
 if  [ "$(hostname)" != "klara" ] ; then
