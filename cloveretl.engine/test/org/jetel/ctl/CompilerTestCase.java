@@ -1594,6 +1594,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("insertElem", Integer.valueOf(7));
 		check("insertIndex", Integer.valueOf(3));
 		check("insertList", Arrays.asList(1, 2, 3, 7, 4, 5));
+		check("insertList1", Arrays.asList(7, 8, 11, 10, 11));
+		check("insertList2", Arrays.asList(7, 8, 10, 9, 11));
 	}
 	
 	public void test_containerlib_isEmpty() {

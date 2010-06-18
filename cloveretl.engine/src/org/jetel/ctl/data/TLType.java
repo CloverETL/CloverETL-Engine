@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.data;
 
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -836,7 +837,9 @@ public abstract class TLType {
     		} else {
     			throw new IllegalArgumentException("Unsupported parameterized type: " + rawType.getName());
     		}
-		}  else if (toConvert instanceof Class) {
+		} else if (toConvert instanceof GenericArrayType) {
+			return TLType.fromJavaType(((GenericArrayType)toConvert).getGenericComponentType());
+		}else if (toConvert instanceof Class) {
 			// non-generic parameter (possibly parameterized)
 			Class<?> rawType = (Class<?>)toConvert;
 			if (rawType.isArray()) {
