@@ -145,6 +145,7 @@ import org.w3c.dom.Element;
 public class DBJoin extends Node {
 
     public static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
+    public static final String XML_URL_ATTRIBUTE = "url";
     public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
 	public static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	public static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
@@ -542,7 +543,12 @@ public class DBJoin extends Node {
 		//get necessary parameters
 		try{
 			connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
-			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
+			if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+				query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
+             		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
+			} else {
+				query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
+			}
 			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		
             dbjoin = new DBJoin(
