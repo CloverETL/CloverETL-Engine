@@ -180,7 +180,7 @@ public class ContainerLib extends TLFunctionLibrary {
 						"push - wrong type of literal(s)");
 			}
 			List<TLValue> mylist=((TLListValue)params[0]).getList();
-			mylist.add(params[1]);
+			mylist.add(params[1].duplicate());
 			return TLBooleanValue.TRUE;
 		}
 
