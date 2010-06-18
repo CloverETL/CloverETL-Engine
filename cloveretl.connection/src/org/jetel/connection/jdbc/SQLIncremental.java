@@ -28,11 +28,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -246,7 +244,7 @@ public class SQLIncremental {
 				String fullName = (String)keyDef[i][DB_NAME];
 				index = resultSet.findColumn(fullName.substring(fullName.lastIndexOf('.') + 1));
 			}
-			transMap[i] = CopySQLData.createCopyObject(dbTypes.get(index - 1), keyRecord.getField((String)keyDef[i][NAME]).getMetadata(), 
+			transMap[i] = jdbcSpecific.createCopyObject(dbTypes.get(index - 1), keyRecord.getField((String)keyDef[i][NAME]).getMetadata(), 
 					keyRecord, index - 1, i);
 		}
 		statement.close();
@@ -347,7 +345,7 @@ public class SQLIncremental {
 			//replace it with proper value for logging
 			keyValueMatcher1.appendReplacement(preparedQueryBuilder, field.toString());
 			//create trans map for setting proper values in prepared statement
-			tMap[index] = CopySQLData.createCopyObject(jdbcSpecific.jetelType2sql(field.getMetadata()), 
+			tMap[index] = jdbcSpecific.createCopyObject(jdbcSpecific.jetelType2sql(field.getMetadata()), 
 					field.getMetadata(), keyRecord, index, keyRecord.getMetadata().getFieldPosition(keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length())));
 			index++;
 		}

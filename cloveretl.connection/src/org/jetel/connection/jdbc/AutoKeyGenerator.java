@@ -146,11 +146,11 @@ public class AutoKeyGenerator{
 				RecordKey tmp = new RecordKey(fromDb.toArray(new String[fromDb.size()]), keyRecord.getMetadata());
 				tmp.init();
 				keyTransMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(tmp.generateKeyRecordMetadata(), connection.getJdbcSpecific()), 
-						keyRecord.getMetadata(), keyRecord, tmp.getKeyFieldNames());
+						keyRecord.getMetadata(), keyRecord, tmp.getKeyFieldNames(), connection.getJdbcSpecific());
 				fieldMap = fieldMap(inRecordMetadata, keyRecord, columns);
 			}else {
 				keyTransMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(keyRecord.getMetadata(), connection.getJdbcSpecific()), 
-						keyRecord.getMetadata(), keyRecord);
+						keyRecord.getMetadata(), keyRecord, connection.getJdbcSpecific());
 			}
 			break;
 		case SINGLE:

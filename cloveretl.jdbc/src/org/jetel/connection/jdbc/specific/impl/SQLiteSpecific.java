@@ -18,8 +18,10 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -30,10 +32,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.CopySQLData.CopyDecimal;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
+import org.jetel.data.DataRecord;
+import org.jetel.data.DecimalDataField;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -67,6 +73,24 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createCopyObject(int, org.jetel.metadata.DataFieldMetadata, org.jetel.data.DataRecord, int, int)
+	 */
+	@Override
+	public CopySQLData createCopyObject(int sqlType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex) {
+		CopySQLData copyObj = super.createCopyObject(sqlType, fieldMetadata, record, fromIndex, toIndex);
+
+		//if CopyDecimal was considered to be used we need to create slightly different copy object, since
+		//the SQLite JDBC driver does not support BigDecimal data type - PreparedStatement.getBigDecimal() method
+		//is not supported - decimal value has to be retrieved by getDouble() method
+		if (copyObj instanceof CopyDecimal) {
+			copyObj = new CopyDecimalAsDouble(record, fromIndex, toIndex);
+			copyObj.setSqlType(sqlType);
+		}
+		
+		return copyObj;
+	}
+	
 	@Override
 	public String getValidateQuery(String query, QueryType queryType)
 			throws SQLException {
@@ -169,86 +193,6 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		return metadata;
 	}
 	
-	public int jetelType2sql(DataFieldMetadata field){
-		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
-			return Types.INTEGER;
-		case DataFieldMetadata.NUMERIC_FIELD:
-        case DataFieldMetadata.DECIMAL_FIELD:
-			return Types.NUMERIC;
-		case DataFieldMetadata.STRING_FIELD:
-			return field.isFixed() ? Types.CHAR : Types.VARCHAR;
-		case DataFieldMetadata.DATE_FIELD:
-			boolean isDate = field.isDateFormat();
-			boolean isTime = field.isTimeFormat();
-			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
-				return Types.TIMESTAMP;
-			if (isDate)
-				return Types.DATE;
-			if (isTime)
-				return Types.TIME;
-			return Types.TIMESTAMP;
-        case DataFieldMetadata.LONG_FIELD:
-            return Types.BIGINT;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-        	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
-        		return Types.BLOB;
-        	}
-            return field.isFixed() ? Types.BINARY : Types.VARBINARY;
-        case DataFieldMetadata.BOOLEAN_FIELD:
-        	return Types.BOOLEAN;
-		default:
-			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
-		}
-	}
-	public char sqlType2jetel(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-			    return DataFieldMetadata.INTEGER_FIELD;
-			//-------------------
-			case Types.BIGINT:
-			    return DataFieldMetadata.LONG_FIELD;
-			//-------------------
-			case Types.DECIMAL:
-			case Types.NUMERIC:
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
-			//------------------
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-			case Types.CLOB:
-				return DataFieldMetadata.STRING_FIELD;
-			//------------------
-			case Types.DATE:
-			case Types.TIME:
-			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
-            //-----------------
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-			case Types.OTHER:
-                return DataFieldMetadata.BYTE_FIELD;
-			//-----------------
-			case Types.BOOLEAN:
-				return DataFieldMetadata.BOOLEAN_FIELD;
-			// proximity assignment
-			case Types.BIT:
-			case Types.NULL:
-				return DataFieldMetadata.STRING_FIELD;
-			default:
-				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
-		}
-	}
-
     class SQLiteRSMetaData implements  ResultSetMetaData {
     	private String tableName = null;
     	private ArrayList<String> columnNames = new ArrayList<String>();
@@ -466,7 +410,63 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
     	
     }
 	
+	@Override
 	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException {
 		return SQLUtil.getFieldTypes(cloverMetadata, this);
 	}	
+	
+	/**
+	 * This implementation of copy object is very similar to {@link CopyDecimal} class.
+	 * However, data from database are retrieved as double data type - not BigDecimal. 
+	 */
+	private static class CopyDecimalAsDouble extends CopySQLData {
+
+		public CopyDecimalAsDouble(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+		@Override
+		public void setJetel(ResultSet resultSet) throws SQLException {
+			double d = resultSet.getDouble(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DecimalDataField) field).setNull(true);
+			} else {
+				((DecimalDataField) field).setValue(d);
+			}
+		}
+
+		@Override
+		public void setJetel(CallableStatement statement) throws SQLException {
+			double d = statement.getDouble(fieldSQL);
+			if (statement.wasNull()) {
+				((DecimalDataField) field).setNull(true);
+			} else {
+				((DecimalDataField) field).setValue(d);
+			}
+		}
+
+		@Override
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+				pStatement.setDouble(fieldSQL, ((DecimalDataField) field).getDouble());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DECIMAL);
+			}
+
+		}
+		
+		@Override
+		public Object getDbValue(ResultSet resultSet) throws SQLException {
+			double d = resultSet.getDouble(fieldSQL);
+			return resultSet.wasNull() ? null : d;
+		}
+
+		@Override
+		public Object getDbValue(CallableStatement statement) throws SQLException {
+			double d = statement.getDouble(fieldSQL);
+			return statement.wasNull() ? null : d;
+		}
+		
+	}
+	
 }

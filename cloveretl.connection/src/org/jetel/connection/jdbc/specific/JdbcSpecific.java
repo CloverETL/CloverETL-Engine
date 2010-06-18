@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -131,6 +133,11 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public String jetelType2sqlDDL(DataFieldMetadata field);
+	
+	/**
+	 * Creates copy object - bridge between JDBC data types and Clover data types.
+	 */
+	public CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex);
 	
 	/**
 	 * @return class name where are constants with sql types

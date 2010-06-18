@@ -24,8 +24,11 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.regex.Pattern;
 
+import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.CopySQLData.CopyOracleXml;
 import org.jetel.connection.jdbc.specific.conn.OracleConnection;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -64,6 +67,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
 	}
 	
+	@Override
 	public String quoteIdentifier(String identifier) {
         return ('"' + identifier + '"');
     }
@@ -71,6 +75,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#jetelType2sql(org.jetel.metadata.DataFieldMetadata)
 	 */
+	@Override
 	public int jetelType2sql(DataFieldMetadata field){
 		switch (field.getType()) {
 		case DataFieldMetadata.DATE_FIELD:
@@ -86,6 +91,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return super.jetelType2sql(field);
 	}
     
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BOOLEAN :
@@ -115,10 +121,29 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return super.jetelType2sqlDDL(field);
 	}
     
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createCopyObject(int, org.jetel.metadata.DataFieldMetadata, org.jetel.data.DataRecord, int, int)
+	 */
+	@Override
+	public CopySQLData createCopyObject(int sqlType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex) {
+		CopySQLData obj = null;
+
+		switch (sqlType) {
+	    case CopyOracleXml.XML_TYPE:
+	        obj = new CopyOracleXml(record, fromIndex, toIndex);
+	        break;
+		default:
+			return super.createCopyObject(sqlType, fieldMetadata, record, fromIndex, toIndex);
+		}
+	
+		obj.setSqlType(sqlType);
+		return obj;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getResultSetParameterTypeField()
 	 */
+	@Override
 	public String getResultSetParameterTypeField() {
 		return ORACLE_RESULT_SET_PARAMETER_TYPE_FIELD;
 	}
@@ -126,6 +151,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#getTypesClassName()
 	 */
+	@Override
 	public String getTypesClassName() {
 		return ORACLE_TYPES_CLASS_NAME;
 	}
@@ -145,6 +171,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return true;
 	}
 
+	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
 		switch (field.getType()) {
 		case DataFieldMetadata.BOOLEAN_FIELD:
