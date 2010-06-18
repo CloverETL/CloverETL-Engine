@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.logging.Log;
@@ -17,13 +16,14 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
 /*
  * Copyright (c) 2004-2005 Javlin Consulting s.r.o. All rights reserved.
  * 
  */
-public class ResetTest extends TestCase {
+public class ResetTest extends CloverTestCase {
 
 	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios";
 	private final static String[] EXAMPLE_PATH = {
@@ -134,11 +134,16 @@ public class ResetTest extends TestCase {
 
 		}
 			
-		EngineInitializer.initEngine( "..", "test/org/jetel/graph/ResetTestDefault.properties", null);
-		
 		return suite;
 	 }
+
 	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		initEngine("test/org/jetel/graph/ResetTestDefault.properties");
+	}
+
 	protected static String getTestName(String basePath, File graphFile, boolean batchMode) {
 		final StringBuilder ret = new StringBuilder();
 		final String n = graphFile.getName();
@@ -180,22 +185,21 @@ public class ResetTest extends TestCase {
 		}
 
 		runtimeContext.setBatchMode(batchMode);
-		TransformationGraph graph = null;
-		Future<Result> futureResult = null;
+		final TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
 		logger.info("");
 		logger.info("Analyzing graph " + graphFile.getPath());
 		logger.info("Batch mode: " + batchMode);
 		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
+			
 			graph.setDebugMode(false);
 
 			EngineInitializer.initGraph(graph);
 
 			for (int i = 0; i < 3; i++) {
 
-				IThreadManager threadManager = new SimpleThreadManager();
-				WatchDog watchDog = new WatchDog(graph, runtimeContext);
-				futureResult = threadManager.executeWatchDog(watchDog);
+				final IThreadManager threadManager = new SimpleThreadManager();
+				final WatchDog watchDog = new WatchDog(graph, runtimeContext);
+				final Future<Result> futureResult = threadManager.executeWatchDog(watchDog);
 
 				Result result = Result.N_A;
 				result = futureResult.get();
