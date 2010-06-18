@@ -158,24 +158,44 @@ public class ContainerLib extends TLFunctionLibrary {
 		}
 	}
 	
-
 	// INSERT
-	@TLFunctionAnnotation("Inserts element at the specified index.")
-	public static final <E> List<E> insert(TLFunctionCallContext context, List<E> list, int position, E item) {
-		list.add(position,item);
+	@TLFunctionAnnotation("Inserts elements at the specified index.")
+	public static final <E> List<E> insert(TLFunctionCallContext context, List<E> list, int position, E... items) {
+		for (int i = 0; i < items.length; i++) {
+			list.add(position++, items[i]);
+		}
 		return list;
 	}
-	class InsertFunction implements TLFunctionPrototype{
-		
+	
+	@TLFunctionAnnotation("Inserts elements at the specified index.")
+	public static final <E> List<E> insert(TLFunctionCallContext context, List<E> list, int position, List<E> items) {
+		for (int i = 0; i < items.size(); i++) {
+			list.add(position++, items.get(i));
+		}
+		return list;
+	}
+	
+	class InsertFunction implements TLFunctionPrototype {
+
 		public void init(TLFunctionCallContext context) {
 		}
 
-
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final Object item = stack.pop();
-			final Integer pos = stack.popInt();
-			final List<Object> list = stack.popList();
-			stack.push(insert(context, list, pos, item));
+			if (context.getParams()[2].isList()) {
+				List<Object> items = stack.popList();
+				final Integer pos = stack.popInt();
+				final List<Object> list = stack.popList();
+				stack.push(insert(context, list, pos, items));
+			} else {
+				Object[] items = new Object[context.getParams().length - 2];
+				for (int i = items.length - 1; i >= 0; i--) {
+					items[i] = stack.pop();
+				}
+				final Integer pos = stack.popInt();
+				final List<Object> list = stack.popList();
+				stack.push(insert(context, list, pos, items));
+			}
+			
 		}
 	}
 	
