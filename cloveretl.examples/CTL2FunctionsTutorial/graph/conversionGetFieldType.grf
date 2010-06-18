@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Wed Jun 16 16:05:34 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.20">
+<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 10:11:48 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.24">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="getFieldTypeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="getFieldTypeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="booleanField" type="boolean"/>
 <Field name="byteField" type="byte"/>
 <Field name="dateField" type="date"/>
@@ -14,7 +14,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="getFieldTypeOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Record fieldDelimiter=";" name="getFieldTypeOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="booleanField" type="boolean"/>
 <Field name="byteField" type="byte"/>
 <Field name="dateField" type="date"/>
