@@ -30,12 +30,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class TrackingUtils {
 	/**
-	 * Converts time from the unit used to store it in tracking (nanoseconds) to the specified unit.
+	 * Converts time from the unit used to store it in tracking (milliseconds) to the specified unit.
 	 * @param time
 	 * @param unit
 	 * @return converted time.
 	 */
 	public static long converTime(long time, TimeUnit unit) {
-		return unit.convert(time, TimeUnit.NANOSECONDS);
+		return unit.convert(time, TimeUnit.MILLISECONDS);
 	}
 }

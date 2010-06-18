@@ -46,16 +46,19 @@ public interface PhaseTracking extends Serializable {
 	
 	/**
 	 * @return phase start time.
+	 * @see System#currentTimeMillis()
 	 */
 	long getStartTime();
 	
 	/**
 	 * @return phase end time.
+	 * @see System#currentTimeMillis()
 	 */
 	long getEndTime();
 	
 	/**
-	 * @return phase execution time.
+	 * @return phase execution time in milliseconds.
+	 * @see TrackingUtils#converTime(long, java.util.concurrent.TimeUnit) use this method for further time unit conversion
 	 */
 	long getExecutionTime();
 	

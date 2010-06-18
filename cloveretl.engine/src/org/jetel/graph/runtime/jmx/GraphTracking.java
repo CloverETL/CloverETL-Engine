@@ -37,18 +37,22 @@ import org.jetel.graph.Result;
  * @since May 14, 2009
  */
 public interface GraphTracking extends Serializable {
+
 	/**
-	 * @return graph start time.
+	 * @return graph start 
+	 * @see System#currentTimeMillis()
 	 */
 	long getStartTime();
 	
 	/**
 	 * @return graph end time.
+	 * @see System#currentTimeMillis()
 	 */
 	long getEndTime();
 	
 	/**
-	 * @return graph execution time.
+	 * @return graph execution time in milliseconds.
+	 * @see TrackingUtils#converTime(long, java.util.concurrent.TimeUnit) use this method for further time unit conversion
 	 */
 	long getExecutionTime();
 
