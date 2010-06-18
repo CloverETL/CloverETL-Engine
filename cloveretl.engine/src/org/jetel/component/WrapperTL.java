@@ -169,7 +169,7 @@ public class WrapperTL {
         }
         
         // log & report any parse exceptions
-        for(Iterator iter=parser.getParseExceptions().iterator();iter.hasNext();){
+        for(Iterator<?> iter=parser.getParseExceptions().iterator();iter.hasNext();){
             logger.error(iter.next());
         }
         
@@ -268,12 +268,28 @@ public class WrapperTL {
 		}		
 		function[functionCounter] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
 		if (function[functionCounter] == null) {//function with given name not found
-			throw new ComponentNotReadyException("Function " + functionName + 
-					" not found");
+			throw new ComponentNotReadyException("Function " + functionName + " not found");
 		}
 		return functionCounter++;
 	}
 	
+    /**
+     * Prepares an optional function for execution.
+     *
+     * @param functionName the name of the function to be prepared
+     *
+     * @return an integer identification of the function if declared, -1 otherwise
+     */
+	public int prepareOptionalFunctionExecution(String functionName) {
+		try {
+			return prepareFunctionExecution(functionName);
+		} catch (ComponentNotReadyException exception) {
+			// do nothing, optional function is not declared
+		}
+
+		return -1;
+	}
+
 	/**
 	 * This method exexutes function set before as default (see above)
 	 * 
