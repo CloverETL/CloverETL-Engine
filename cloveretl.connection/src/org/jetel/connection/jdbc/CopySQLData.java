@@ -52,7 +52,6 @@ import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -101,7 +100,7 @@ public abstract class CopySQLData {
 	 * @param  fieldJetel  index of the field in Clover record
 	 * @since              October 7, 2002
 	 */
-	CopySQLData(DataRecord record, int fieldSQL, int fieldJetel) {
+	protected CopySQLData(DataRecord record, int fieldSQL, int fieldJetel) {
 		this.fieldSQL = fieldSQL + 1;
 		// fields in ResultSet start with index 1
 		this.fieldJetel=fieldJetel;
@@ -142,7 +141,7 @@ public abstract class CopySQLData {
 		return sqlType;
 	}
 
-	void setSqlType(int sqlType) {
+	public void setSqlType(int sqlType) {
 		this.sqlType = sqlType;
 	}
 
@@ -220,9 +219,9 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
-	abstract void setJetel(ResultSet resultSet) throws SQLException;
+	public abstract void setJetel(ResultSet resultSet) throws SQLException;
 
-	abstract void setJetel(CallableStatement statement) throws SQLException;
+	public abstract void setJetel(CallableStatement statement) throws SQLException;
 
 	/**
 	 *  Sets the SQL attribute of the CopySQLData object
@@ -231,7 +230,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
-	abstract void setSQL(PreparedStatement pStatement) throws SQLException;
+	public abstract void setSQL(PreparedStatement pStatement) throws SQLException;
 
 
 	
@@ -274,7 +273,7 @@ public abstract class CopySQLData {
 	 *      data from DB into Jetel record
 	 * @since              September 26, 2002
 	 */
-	public static CopySQLData[] sql2JetelTransMap(List fieldTypes, DataRecordMetadata metadata, DataRecord record) {
+	public static CopySQLData[] sql2JetelTransMap(List fieldTypes, DataRecordMetadata metadata, DataRecord record, JdbcSpecific jdbcSpecific) {
 		/* test that both sides have at least the same number of fields, less
 		 * fields on DB side is O.K. (some of Clover fields won't get assigned value).
 		 */
@@ -293,7 +292,7 @@ public abstract class CopySQLData {
 			 * If target Clover type is string, we'll always use CopyString
 			 * else we use whatever is appropriate
 			 */
-			transMap[i] = createCopyObject(
+			transMap[i] = jdbcSpecific.createCopyObject(
 					(record.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD
 					        && type != CopyOracleXml.XML_TYPE && type != Types.ARRAY) ? Types.VARCHAR : type.shortValue(),
 					record.getField(i).getMetadata(),
@@ -316,7 +315,7 @@ public abstract class CopySQLData {
 	 *      data from DB into Jetel record
 	 */
 	public static CopySQLData[] sql2JetelTransMap(List fieldTypes, DataRecordMetadata metadata, DataRecord record,
-			String[] keyFields){
+			String[] keyFields, JdbcSpecific jdbcSpecific) {
 
 		if (fieldTypes.size() != keyFields.length){
 			throw new RuntimeException("Number of db fields (" + fieldTypes.size() + ") is different then " +
@@ -332,7 +331,7 @@ public abstract class CopySQLData {
 						StringUtils.quote(record.getMetadata().getName()));
 			}
 			type = (Integer) fieldTypes.get(i);
-			transMap[i] = createCopyObject(
+			transMap[i] = jdbcSpecific.createCopyObject(
 					(type != CopyOracleXml.XML_TYPE && record.getField(fieldIndex).getMetadata().getType()
 					        == DataFieldMetadata.STRING_FIELD) ? Types.VARCHAR : type.shortValue(),
 					record.getField(fieldIndex).getMetadata(),
@@ -353,7 +352,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 4, 2002
 	 */
-	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record) {
+	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record, JdbcSpecific jdbcSpecific) {
 		int i = 0;
 		/* test that both sides have at least the same number of fields, less
 		 * fields on DB side is O.K. (some of Clover fields won't be assigned to JDBC).
@@ -366,7 +365,7 @@ public abstract class CopySQLData {
 		ListIterator iterator = fieldTypes.listIterator();
 		
 		while (iterator.hasNext()) {
-			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
+			transMap[i] = jdbcSpecific.createCopyObject(((Integer) iterator.next()).shortValue(),
 					record.getField(i).getMetadata(),
 					record, i, i);
 			i++;
@@ -388,7 +387,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException    Description of the Exception
 	 * @exception  JetelException  Description of the Exception
 	 */
-	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record, String[] cloverFields)
+	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record, String[] cloverFields, JdbcSpecific jdbcSpecific)
 			 throws SQLException, JetelException {
 		int i = 0;
 		int fromIndex = 0;
@@ -409,7 +408,7 @@ public abstract class CopySQLData {
 				throw new JetelException(" Field \"" + cloverFields[i] + "\" does not exist in DataRecord !");
 			}
 			// we copy from Clover's field to JDBC - toIndex/fromIndex is switched here
-			transMap[i++] = createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
+			transMap[i++] = jdbcSpecific.createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
 					record, toIndex, fromIndex);
 			toIndex++;// we go one by one - order defined by insert/update statement
 
@@ -429,7 +428,7 @@ public abstract class CopySQLData {
 	 * @exception  JetelException  Description of the Exception
 	 */
 	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes,
-            DataRecord record, int[] cloverFields) throws SQLException,
+            DataRecord record, int[] cloverFields, JdbcSpecific jdbcSpecific) throws SQLException,
             JetelException {
         int i = 0;
         int fromIndex = 0;
@@ -449,7 +448,7 @@ public abstract class CopySQLData {
             }
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i++] = createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
+            transMap[i++] = jdbcSpecific.createCopyObject(jdbcType, record.getField(fromIndex).getMetadata(), 
             		record, toIndex, fromIndex);
             toIndex++;// we go one by one - order defined by insert/update statement
 
@@ -490,7 +489,7 @@ public abstract class CopySQLData {
             toIndex=i;
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i] = createCopyObject(jdbcType, jetelField, record,
+            transMap[i] = jdbcSpecific.createCopyObject(jdbcType, jetelField, record,
                     toIndex, fromIndex);
         }
         return transMap;
@@ -547,146 +546,14 @@ public abstract class CopySQLData {
 		return null;
 	}
 	
-	/**
-	 *  Creates copy object - bridge between JDBC data types and Clover data types
-	 *
-	 * @param  SQLType         Description of the Parameter
-	 * @param  fieldMetadata  Description of the Parameter
-	 * @param  record          Description of the Parameter
-	 * @param  fromIndex       Description of the Parameter
-	 * @param  toIndex         Description of the Parameter
-	 * @return                 Description of the Return Value
-	 */
-	public static CopySQLData createCopyObject(int SQLType, DataFieldMetadata fieldMetadata, 
-			DataRecord record, int fromIndex, int toIndex) {
-		String format = fieldMetadata.getFormatStr();
-		char jetelType = fieldMetadata.getType();
-		CopySQLData obj = null;
-		switch (SQLType) {
-			case Types.ARRAY:
-				obj = new CopyArray(record, fromIndex, toIndex);
-				break;
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-				obj = new CopyString(record, fromIndex, toIndex);
-				break;
-			case Types.INTEGER:
-			case Types.SMALLINT:
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
-					obj = new CopyBoolean(record, fromIndex, toIndex);
-				} else {
-					obj = new CopyInteger(record, fromIndex, toIndex);
-				}
-				break;
-			case Types.BIGINT:
-			    obj = new CopyLong(record,fromIndex,toIndex);
-			    break;
-			case Types.DECIMAL:
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.REAL:
-				// fix for copying when target is numeric and
-				// clover source is integer - no precision can be
-				// lost so we can use CopyInteger
-				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
-					obj = new CopyInteger(record, fromIndex, toIndex);
-				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
-					obj = new CopyLong(record, fromIndex, toIndex);
-				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
-				    obj = new CopyNumeric(record, fromIndex, toIndex);
-				} else {
-					obj = new CopyDecimal(record, fromIndex, toIndex);
-				}
-				break;
-			case Types.NUMERIC:
-				// Oracle doesn't have boolean type, data type SMALLINT is the same as NUMBER(38);
-				// see issue #3815
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
-					obj = new CopyBoolean(record, fromIndex, toIndex);
-				}else if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
-					obj = new CopyInteger(record, fromIndex, toIndex);
-				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
-					obj = new CopyLong(record, fromIndex, toIndex);
-				} else {
-					obj = new CopyNumeric(record, fromIndex, toIndex);
-				}
-				break;
-			case Types.DATE:
-				if (StringUtils.isEmpty(format)) {
-					obj = new CopyDate(record, fromIndex, toIndex);
-					break;
-				}				
-			case Types.TIME:
-				if (StringUtils.isEmpty(format)) {
-					obj = new CopyTime(record, fromIndex, toIndex);
-					break;
-				}				
-			case Types.TIMESTAMP:
-				if (StringUtils.isEmpty(format)) {
-					obj = new CopyTimestamp(record, fromIndex, toIndex);
-					break;
-				}
-				boolean isDate = fieldMetadata.isDateFormat();
-				boolean isTime = fieldMetadata.isTimeFormat();
-				if (isDate && isTime) {
-					obj = new CopyTimestamp(record, fromIndex, toIndex);
-				}else if (isDate) {
-					obj = new CopyDate(record, fromIndex, toIndex);
-				}else if (isTime){
-					obj = new CopyTime(record, fromIndex, toIndex);
-				}else {
-					obj = new CopyTimestamp(record, fromIndex, toIndex);
-				}
-				break;
-			case Types.BOOLEAN:
-			case Types.BIT:
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
-					obj = new CopyBoolean(record, fromIndex, toIndex);
-					break;
-				} 
-        		logger.warn("Metadata mismatch; type:" + jetelType + " SQLType:"+SQLType+" - using CopyString object.");
-        		obj = new CopyString(record, fromIndex, toIndex);
-        		break;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-            case Types.BLOB:
-            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
-                	obj = new CopyBlob(record, fromIndex, toIndex);
-                	break;
-            	}
-            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)){
-            		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
-            	}
-                obj = new CopyByte(record, fromIndex, toIndex);
-                break;
-            case CopyOracleXml.XML_TYPE:
-                obj = new CopyOracleXml(record, fromIndex, toIndex);
-                break;
-			// when Types.OTHER or unknown, try to copy it as STRING
-			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
-			default:
-			//case Types.OTHER:// When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
-				obj = new CopyString(record, fromIndex, toIndex);
-				break;
-			//default:
-			//	throw new RuntimeException("SQL data type not supported: " + SQLType);
-		}
-		
-		obj.setSqlType(SQLType);
-		return obj;
-		
-	}
-
-	static class CopyArray extends CopySQLData{
+	public static class CopyArray extends CopySQLData{
 
 		/**
 		 * @param record
 		 * @param fieldSQL
 		 * @param fieldJetel
 		 */
-		CopyArray(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyArray(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -697,7 +564,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			Array fieldVal = resultSet.getArray(fieldSQL);
 			Object obj = fieldVal.getArray();
 
@@ -717,7 +584,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			Array fieldVal = statement.getArray(fieldSQL);
 			Object obj = fieldVal.getArray();
 
@@ -744,7 +611,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 		    	pStatement.setString(fieldSQL, field.toString());
 		   	}else{
@@ -776,7 +643,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyNumeric extends CopySQLData {
+	public static class CopyNumeric extends CopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -785,7 +652,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyNumeric(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyNumeric(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -797,7 +664,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			double i = resultSet.getDouble(fieldSQL);
 			if (resultSet.wasNull()) {
 				((NumericDataField) field).setValue((Object)null);
@@ -806,7 +673,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException{
+		public void setJetel(CallableStatement statement) throws SQLException{
 			double i = statement.getDouble(fieldSQL);
 			if (statement.wasNull()) {
 				((NumericDataField) field).setValue((Object)null);
@@ -822,9 +689,9 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				pStatement.setDouble(fieldSQL, ((Numeric) field).getDouble());
+				pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.NUMERIC);
 			}
@@ -856,7 +723,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyDecimal extends CopySQLData {
+	public static class CopyDecimal extends CopySQLData {
 		/**
 		 *  Constructor for the CopyDecimal object
 		 *
@@ -865,7 +732,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyDecimal(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyDecimal(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -877,7 +744,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			BigDecimal i = resultSet.getBigDecimal(fieldSQL);
 			if (resultSet.wasNull()) {
 				((DecimalDataField) field).setValue((Object)null);
@@ -886,7 +753,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			BigDecimal i = statement.getBigDecimal(fieldSQL);
 			if (statement.wasNull()) {
 				((DecimalDataField) field).setValue((Object)null);
@@ -902,7 +769,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setBigDecimal(fieldSQL, ((Decimal) ((DecimalDataField) field).getValue()).getBigDecimalOutput());
 			} else {
@@ -935,7 +802,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyInteger extends CopySQLData {
+	public static class CopyInteger extends CopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -944,7 +811,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyInteger(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyInteger(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -956,7 +823,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			int i = resultSet.getInt(fieldSQL);
 			if (resultSet.wasNull()) {
 				((IntegerDataField) field).setValue((Object)null);
@@ -965,7 +832,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			int i = statement.getInt(fieldSQL);
 			if (statement.wasNull()) {
 				((IntegerDataField) field).setValue((Object)null);
@@ -981,7 +848,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setInt(fieldSQL, ((IntegerDataField) field).getInt());
 			} else {
@@ -1006,7 +873,7 @@ public abstract class CopySQLData {
 
 	}
 
-	static class CopyLong extends CopySQLData {
+	public static class CopyLong extends CopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -1015,7 +882,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyLong(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyLong(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -1027,7 +894,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			long i = resultSet.getLong(fieldSQL);
 			if (resultSet.wasNull()) {
 				((LongDataField) field).setValue((Object)null);
@@ -1036,7 +903,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			long i = statement.getLong(fieldSQL);
 			if (statement.wasNull()) {
 				((LongDataField) field).setValue((Object)null);
@@ -1052,7 +919,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setLong(fieldSQL, ((LongDataField) field).getLong());
 			} else {
@@ -1085,7 +952,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyString extends CopySQLData {
+	public static class CopyString extends CopySQLData {
 		/**
 		 *  Constructor for the CopyString object
 		 *
@@ -1094,7 +961,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyString(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyString(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -1106,7 +973,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			String fieldVal = resultSet.getString(fieldSQL);
 			if (resultSet.wasNull()) {
 				field.fromString(null);
@@ -1117,7 +984,7 @@ public abstract class CopySQLData {
 			}
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			String fieldVal = statement.getString(fieldSQL);
 			if (statement.wasNull()) {
 				field.fromString(null);
@@ -1135,7 +1002,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 		    	pStatement.setString(fieldSQL, field.toString());
 		   	}else{
@@ -1167,7 +1034,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyDate extends CopySQLData {
+	public static class CopyDate extends CopySQLData {
 
 		java.sql.Date dateValue;
 
@@ -1180,7 +1047,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyDate(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyDate(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 			dateValue = new java.sql.Date(0);
 		}
@@ -1193,7 +1060,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			Date date = resultSet.getDate(fieldSQL);
 			if (resultSet.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1203,7 +1070,7 @@ public abstract class CopySQLData {
 			
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			Date date = statement.getDate(fieldSQL);
 			if (statement.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1220,7 +1087,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
                     pStatement.setDate(fieldSQL, new java.sql.Date(((DateDataField) field).getDate().getTime()));
@@ -1258,7 +1125,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyTime extends CopySQLData {
+	public static class CopyTime extends CopySQLData {
 
 		java.sql.Time timeValue;
 
@@ -1271,7 +1138,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyTime(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyTime(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 			timeValue = new java.sql.Time(0);
 		}
@@ -1284,7 +1151,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			Date time = resultSet.getTime(fieldSQL);
 			if (resultSet.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1294,7 +1161,7 @@ public abstract class CopySQLData {
 			
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			Date time = statement.getTime(fieldSQL);
 			if (statement.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1311,7 +1178,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
                     pStatement.setTime(fieldSQL, new java.sql.Time(((DateDataField) field).getDate().getTime()));
@@ -1351,7 +1218,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	static class CopyTimestamp extends CopySQLData {
+	public static class CopyTimestamp extends CopySQLData {
 
 		Timestamp timeValue;
 
@@ -1364,7 +1231,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyTimestamp(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyTimestamp(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 			timeValue = new Timestamp(0);
 			timeValue.setNanos(0);// we don't count with nanos!
@@ -1378,7 +1245,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			Timestamp timestamp = resultSet.getTimestamp(fieldSQL);
 			if (resultSet.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1388,7 +1255,7 @@ public abstract class CopySQLData {
 			
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			Timestamp timestamp = statement.getTimestamp(fieldSQL);
 			if (statement.wasNull()) {
 				((DateDataField) field).setValue((Object)null);
@@ -1405,7 +1272,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
                     pStatement.setTimestamp(fieldSQL, new Timestamp(((DateDataField) field).getDate().getTime()));
@@ -1448,7 +1315,7 @@ public abstract class CopySQLData {
 	 * @since       November 27, 2003
 	 * @revision    $Revision$
 	 */
-	static class CopyBoolean extends CopySQLData {
+	public static class CopyBoolean extends CopySQLData {
 
 		/**
 		 *  Constructor for the CopyBoolean object
@@ -1458,7 +1325,7 @@ public abstract class CopySQLData {
 		 * @param  fieldJetel  Description of Parameter
 		 * @since              October 7, 2002
 		 */
-		CopyBoolean(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyBoolean(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
 		}
 
@@ -1470,7 +1337,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
 			boolean b = resultSet.getBoolean(fieldSQL);
 			if (resultSet.wasNull()) {
 				field.setValue((Object)null);
@@ -1480,7 +1347,7 @@ public abstract class CopySQLData {
 			
 		}
 
-		void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
 			boolean b = statement.getBoolean(fieldSQL);
 			if (statement.wasNull()) {
 				field.setValue((Object)null);
@@ -1497,7 +1364,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				boolean value = ((BooleanDataField) field).getBoolean();
 				pStatement.setBoolean(fieldSQL,	value);
@@ -1522,7 +1389,7 @@ public abstract class CopySQLData {
 
 	}
     
-    static class CopyByte extends CopySQLData {
+	public static class CopyByte extends CopySQLData {
         /**
          *  Constructor for the CopyByte object
          *
@@ -1531,7 +1398,7 @@ public abstract class CopySQLData {
          * @param  fieldJetel  Description of Parameter
          * @since              October 7, 2002
          */
-        CopyByte(DataRecord record, int fieldSQL, int fieldJetel) {
+		public CopyByte(DataRecord record, int fieldSQL, int fieldJetel) {
             super(record, fieldSQL, fieldJetel);
         }
 
@@ -1543,7 +1410,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-        void setJetel(ResultSet resultSet) throws SQLException {
+		public void setJetel(ResultSet resultSet) throws SQLException {
             byte[] i = resultSet.getBytes(fieldSQL);
             if (resultSet.wasNull()) {
                 ((ByteDataField) field).setValue((Object)null);
@@ -1552,7 +1419,7 @@ public abstract class CopySQLData {
             }
         }
 
-        void setJetel(CallableStatement statement) throws SQLException {
+		public void setJetel(CallableStatement statement) throws SQLException {
             byte[] i = statement.getBytes(fieldSQL);
             if (statement.wasNull()) {
                 ((ByteDataField) field).setValue((Object)null);
@@ -1568,7 +1435,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-        void setSQL(PreparedStatement pStatement) throws SQLException {
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
             if (!field.isNull()) {
                 pStatement.setBytes(fieldSQL, ((ByteDataField) field).getByteArray());
             } else {
@@ -1593,7 +1460,7 @@ public abstract class CopySQLData {
 
     }
 
-    static class CopyBlob extends CopySQLData {
+	public static class CopyBlob extends CopySQLData {
     	    	
     	Blob blob;
     	
@@ -1605,7 +1472,7 @@ public abstract class CopySQLData {
          * @param  fieldJetel  Description of Parameter
          * @since              October 7, 2002
          */
-        CopyBlob(DataRecord record, int fieldSQL, int fieldJetel) {
+    	public CopyBlob(DataRecord record, int fieldSQL, int fieldJetel) {
             super(record, fieldSQL, fieldJetel);
         }
 
@@ -1617,7 +1484,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-        void setJetel(ResultSet resultSet) throws SQLException {
+    	public void setJetel(ResultSet resultSet) throws SQLException {
         	blob = resultSet.getBlob(fieldSQL);
 			if (blob != null) {
 				blob = new SerialBlob(blob);
@@ -1632,7 +1499,7 @@ public abstract class CopySQLData {
             }
         }
 
-        void setJetel(CallableStatement statement) throws SQLException {
+    	public void setJetel(CallableStatement statement) throws SQLException {
         	blob = statement.getBlob(fieldSQL);
 			if (blob != null) {
 				blob = new SerialBlob(blob);
@@ -1654,7 +1521,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-        void setSQL(PreparedStatement pStatement) throws SQLException {
+    	public void setSQL(PreparedStatement pStatement) throws SQLException {
             if (!field.isNull()) {
                 pStatement.setBlob(fieldSQL, new SerialBlob(((ByteDataField) field).getByteArray()));
             } else {
@@ -1707,7 +1574,7 @@ public abstract class CopySQLData {
      * @version 19th August 2009
      * @since 19th August 2009
      */
-    static class CopyOracleXml extends CopySQLData {
+	public static class CopyOracleXml extends CopySQLData {
 
         // TODO: We cannot access the oracle.jdbc.OracleTypes class from this place, don't know why. The XML_TYPE
         // constant is therefore set statically to the correct value. However, this might be a problem. If there
@@ -1719,12 +1586,12 @@ public abstract class CopySQLData {
         /** the name of the method declared in the oracle.xdb.XMLType class used to get XML documents as strings */
         private static final String GET_STRING_VAL_METHOD_NAME = "getStringVal";
 
-        CopyOracleXml(DataRecord record, int fieldSQL, int fieldJetel) {
+        public CopyOracleXml(DataRecord record, int fieldSQL, int fieldJetel) {
             super(record, fieldSQL, fieldJetel);
         }
 
         @Override
-        void setJetel(ResultSet resultSet) throws SQLException {
+        public void setJetel(ResultSet resultSet) throws SQLException {
             try {
                 setJetel(resultSet.getObject(fieldSQL), resultSet.wasNull());
             } catch (Exception ex) {
@@ -1733,7 +1600,7 @@ public abstract class CopySQLData {
         }
 
         @Override
-        void setJetel(CallableStatement statement) throws SQLException {
+        public void setJetel(CallableStatement statement) throws SQLException {
             try {
                 setJetel(statement.getObject(fieldSQL), statement.wasNull());
             } catch (Exception ex) {
@@ -1766,7 +1633,7 @@ public abstract class CopySQLData {
         }
 
         @Override
-        void setSQL(PreparedStatement statement) throws SQLException {
+        public void setSQL(PreparedStatement statement) throws SQLException {
             throw new UnsupportedOperationException();
         }
 

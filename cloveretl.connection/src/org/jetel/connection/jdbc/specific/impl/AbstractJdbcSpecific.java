@@ -28,10 +28,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.CopySQLData.CopyArray;
+import org.jetel.connection.jdbc.CopySQLData.CopyBlob;
+import org.jetel.connection.jdbc.CopySQLData.CopyBoolean;
+import org.jetel.connection.jdbc.CopySQLData.CopyByte;
+import org.jetel.connection.jdbc.CopySQLData.CopyDate;
+import org.jetel.connection.jdbc.CopySQLData.CopyDecimal;
+import org.jetel.connection.jdbc.CopySQLData.CopyInteger;
+import org.jetel.connection.jdbc.CopySQLData.CopyLong;
+import org.jetel.connection.jdbc.CopySQLData.CopyNumeric;
+import org.jetel.connection.jdbc.CopySQLData.CopyString;
+import org.jetel.connection.jdbc.CopySQLData.CopyTime;
+import org.jetel.connection.jdbc.CopySQLData.CopyTimestamp;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -50,6 +66,8 @@ import org.jetel.util.string.StringUtils;
  * @created Jun 3, 2008
  */
 abstract public class AbstractJdbcSpecific implements JdbcSpecific {
+
+    private final static Log logger = LogFactory.getLog(AbstractJdbcSpecific.class);
 
 	/** the SQL comments pattern conforming to the SQL standard */
 	//&&[^-?=-] part added due to issue 3472
@@ -212,6 +230,129 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			default:
 				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.connection.jdbc.specific.JdbcSpecific#createCopyObject(int, org.jetel.metadata.DataFieldMetadata, org.jetel.data.DataRecord, int, int)
+	 */
+	public CopySQLData createCopyObject(int sqlType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex) {
+		String format = fieldMetadata.getFormatStr();
+		char jetelType = fieldMetadata.getType();
+		CopySQLData obj = null;
+		switch (sqlType) {
+			case Types.ARRAY:
+				obj = new CopyArray(record, fromIndex, toIndex);
+				break;
+			case Types.CHAR:
+			case Types.LONGVARCHAR:
+			case Types.VARCHAR:
+				obj = new CopyString(record, fromIndex, toIndex);
+				break;
+			case Types.INTEGER:
+			case Types.SMALLINT:
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+				} else {
+					obj = new CopyInteger(record, fromIndex, toIndex);
+				}
+				break;
+			case Types.BIGINT:
+			    obj = new CopyLong(record,fromIndex,toIndex);
+			    break;
+			case Types.DECIMAL:
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.REAL:
+				// fix for copying when target is numeric and
+				// clover source is integer - no precision can be
+				// lost so we can use CopyInteger
+				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
+					obj = new CopyInteger(record, fromIndex, toIndex);
+				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
+					obj = new CopyLong(record, fromIndex, toIndex);
+				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
+				    obj = new CopyNumeric(record, fromIndex, toIndex);
+				} else {
+					obj = new CopyDecimal(record, fromIndex, toIndex);
+				}
+				break;
+			case Types.NUMERIC:
+				// Oracle doesn't have boolean type, data type SMALLINT is the same as NUMBER(38);
+				// see issue #3815
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+				}else if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
+					obj = new CopyInteger(record, fromIndex, toIndex);
+				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
+					obj = new CopyLong(record, fromIndex, toIndex);
+				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
+				    obj = new CopyNumeric(record, fromIndex, toIndex);
+				} else {
+					obj = new CopyDecimal(record, fromIndex, toIndex);
+				}
+				break;
+			case Types.DATE:
+				if (StringUtils.isEmpty(format)) {
+					obj = new CopyDate(record, fromIndex, toIndex);
+					break;
+				}				
+			case Types.TIME:
+				if (StringUtils.isEmpty(format)) {
+					obj = new CopyTime(record, fromIndex, toIndex);
+					break;
+				}				
+			case Types.TIMESTAMP:
+				if (StringUtils.isEmpty(format)) {
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
+					break;
+				}
+				boolean isDate = fieldMetadata.isDateFormat();
+				boolean isTime = fieldMetadata.isTimeFormat();
+				if (isDate && isTime) {
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
+				}else if (isDate) {
+					obj = new CopyDate(record, fromIndex, toIndex);
+				}else if (isTime){
+					obj = new CopyTime(record, fromIndex, toIndex);
+				}else {
+					obj = new CopyTimestamp(record, fromIndex, toIndex);
+				}
+				break;
+			case Types.BOOLEAN:
+			case Types.BIT:
+				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+					obj = new CopyBoolean(record, fromIndex, toIndex);
+					break;
+				} 
+        		logger.warn("Metadata mismatch; type:" + jetelType + " SQLType:" + sqlType + " - using CopyString object.");
+        		obj = new CopyString(record, fromIndex, toIndex);
+        		break;
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+            case Types.BLOB:
+            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
+                	obj = new CopyBlob(record, fromIndex, toIndex);
+                	break;
+            	}
+            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)){
+            		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
+            	}
+                obj = new CopyByte(record, fromIndex, toIndex);
+                break;
+			// when Types.OTHER or unknown, try to copy it as STRING
+			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
+			default:
+			//case Types.OTHER:// When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
+				obj = new CopyString(record, fromIndex, toIndex);
+				break;
+			//default:
+			//	throw new RuntimeException("SQL data type not supported: " + SQLType);
+		}
+		
+		obj.setSqlType(sqlType);
+		return obj;
+		
 	}
 
 	/* (non-Javadoc)

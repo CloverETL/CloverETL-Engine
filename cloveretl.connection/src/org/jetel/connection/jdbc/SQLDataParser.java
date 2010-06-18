@@ -239,10 +239,10 @@ public class SQLDataParser implements Parser {
 				this.dbConnection.getJdbcSpecific().getFieldTypes(resultSet.getMetaData(), metadata):
 				SQLUtil.getFieldTypes(resultSet.getMetaData());	
 		if (sqlCloverStatement.getCloverOutputFields() == null) {
-			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record);
+			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, dbConnection.getJdbcSpecific());
 		}else{
 			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, 
-					sqlCloverStatement.getCloverOutputFields());
+					sqlCloverStatement.getCloverOutputFields(), dbConnection.getJdbcSpecific());
 		}
 	}
 

@@ -113,7 +113,7 @@ public class SQLCloverCallableStatement {
 					throw new ComponentNotReadyException("Field " + StringUtils.quote(entry.getValue()) + " doesn't exist in metadata " +
 							StringUtils.quote(inMetadata.getName()));
 				}
-				inTransMap[i++] = CopySQLData.createCopyObject(connection.getJdbcSpecific().jetelType2sql(inMetadata.getField(fieldNumber)), 
+				inTransMap[i++] = connection.getJdbcSpecific().createCopyObject(connection.getJdbcSpecific().jetelType2sql(inMetadata.getField(fieldNumber)), 
 						inMetadata.getField(fieldNumber), inRecord, parameterNumber - 1, fieldNumber);
 			}
 		}
@@ -130,7 +130,7 @@ public class SQLCloverCallableStatement {
 				sqlType = entry.getValue().equalsIgnoreCase(RESULT_SET_OUTPARAMETER_NAME) ? resultSetOutParameterType : 
 					connection.getJdbcSpecific().jetelType2sql(outMetadata.getField(fieldNumber));
 				if (sqlType != resultSetOutParameterType) {
-					outTransMap[i++] = CopySQLData.createCopyObject(sqlType, outMetadata.getField(fieldNumber),
+					outTransMap[i++] = connection.getJdbcSpecific().createCopyObject(sqlType, outMetadata.getField(fieldNumber),
 							outRecord, parameterNumber - 1, fieldNumber);
 				}else {
 					resultSetOutParameterNumber = parameterNumber;
@@ -213,8 +213,8 @@ public class SQLCloverCallableStatement {
 
 		// init transMap if null
 		if (resultOutMap == null){
-			resultOutMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),
-					outRecord.getMetadata(), outRecord, outputFields);
+			resultOutMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()),
+					outRecord.getMetadata(), outRecord, outputFields, connection.getJdbcSpecific());
 		}
 			
 		for (int i = 0; i < resultOutMap.length; i++) {

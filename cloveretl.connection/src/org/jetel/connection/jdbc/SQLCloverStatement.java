@@ -193,13 +193,13 @@ public class SQLCloverStatement {
 		if (cloverInputFields != null) {
 			try {
 				dbFieldTypes= SQLUtil.getFieldTypes(record.getMetadata(), cloverInputFields, connection.getJdbcSpecific());
-				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, record, cloverInputFields);
+				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, record, cloverInputFields, connection.getJdbcSpecific());
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
 			}
 		} else{
 			dbFieldTypes= SQLUtil.getFieldTypes(record.getMetadata(), connection.getJdbcSpecific());
-			transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, record);
+			transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, record, connection.getJdbcSpecific());
 		}		
 	}
 	
@@ -350,9 +350,9 @@ public class SQLCloverStatement {
 				status.add(problem);
 				return status;
 			}
-			tm = CopySQLData.sql2JetelTransMap(fieldTypes, outMetadata, outRecord, cloverOutputFields);
+			tm = CopySQLData.sql2JetelTransMap(fieldTypes, outMetadata, outRecord, cloverOutputFields, connection.getJdbcSpecific());
 		}else{
-			tm = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultMetadata), outMetadata, outRecord);
+			tm = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultMetadata), outMetadata, outRecord, connection.getJdbcSpecific());
 		}
 		String validateMap = CopySQLData.validateSql2JetelMap(tm, resultMetadata, outRecord.getMetadata(), 
 				connection.getJdbcSpecific());

@@ -411,7 +411,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		   DataRecord record = new DataRecord(dbMetadata);
 		   record.init();
 			CopySQLData[] transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, dbConnection.getJdbcSpecific()), 
-					dbMetadata, record);
+					dbMetadata, record, dbConnection.getJdbcSpecific());
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
 			while (resultSet.next()){
 				for (int i = 0; i < transMap.length; i++) {
@@ -668,7 +668,7 @@ class DBLookup implements Lookup{
 			currentResult = new DataRecord(dbMetadata);
 			currentResult.init();
 			transMap =  CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, lookupTable.dbConnection.getJdbcSpecific()), 
-					dbMetadata, currentResult);
+					dbMetadata, currentResult, lookupTable.dbConnection.getJdbcSpecific());
 		}
 		//get data from results
 		for (int i = 0; i < transMap.length; i++) {
