@@ -18,7 +18,12 @@ public abstract class CloverTestCase extends TestCase {
 
 	private static final String PLUGINS_DEFAULT_DIR = "..";
 
+
 	protected void initEngine() {
+		initEngine(null);
+	}
+	
+	protected void initEngine(String defaultPropertiesFile) {
 		final String pluginsDir;
 
 		final String pluginsProperty = System.getenv(PLUGINS_KEY);
@@ -29,7 +34,7 @@ public abstract class CloverTestCase extends TestCase {
 		}
 
 		System.out.println("Cloveretl plugins: " + pluginsDir);
-		EngineInitializer.initEngine(pluginsDir, null, null);
+		EngineInitializer.initEngine(pluginsDir, defaultPropertiesFile, null);
 		EngineInitializer.forceActivateAllPlugins();
 	}
 
