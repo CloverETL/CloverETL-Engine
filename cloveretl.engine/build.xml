@@ -843,7 +843,7 @@ public]]></replacevalue>
 		</junit>
 	</target>
 	
-	<target name="runtests-plugins" depends="compile-tests,build-plugins">
+	<target name="runtests-plugins" depends="compile-tests,build-plugins" unless="runtests-plugins-dontrun">
 		<mkdir dir="${dir.coverage.plugins}"/>
 		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
 	</target>
@@ -883,7 +883,7 @@ public]]></replacevalue>
 		</ant>
 	</target>
 	
-	<target name="runtests-scenario-after-commit" depends="build">
+	<target name="runtests-scenario-after-commit" depends="build" if="cte.environment.config">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
