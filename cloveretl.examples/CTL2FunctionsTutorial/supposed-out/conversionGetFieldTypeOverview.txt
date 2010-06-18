@@ -1,11 +1,11 @@
-false|vÆôÎ˜À¾\7sJ'h|2010-06-16|35.67|4|72|91.62469512617625|ocn|0|getFieldType(myInputRecords, Index)|boolean
-false|x'¼°óÁrß˜Áôó¯Ä|2010-06-17|81.47|37|85|29.894404424422348|vroy|2|getFieldType(myInputRecords, Index)|date
-false|d’œ¸oï‚¢§lÙ5$üÑ|2010-06-24|74.01|54|92|25.015798392490694|yifow|4|getFieldType(myInputRecords, Index)|integer
-true|HåVgñØ½=¿¸r²Óç<|2010-06-25|97.67|86|51|67.06667673202662|libtf|4|getFieldType(myInputRecords, Index)|integer
-false|Ë¨CëÃÒt¥×—Ê8WU|2010-07-06|5.37|38|35|9.724962683463922|xepe|0|getFieldType(myInputRecords, Index)|boolean
-true||›*).j6ô¦)Kô}C|2010-06-30|80.85|38|96|88.87943228026886|sfxwc|2|getFieldType(myInputRecords, Index)|date
-false|}Œ×…®¶†ò„¸Š/|2010-06-24|16.44|40|36|54.57367987051146|zehad|1|getFieldType(myInputRecords, Index)|byte
-true|›e÷¥	DÕ´Úi-¹"µÙ|2010-06-19|1.29|78|98|84.17665490986104|bkl|5|getFieldType(myInputRecords, Index)|long
-false|…Ì`5ÈX<Œ÷sj|2010-07-03|9.70|45|42|82.12089995244968|nlqe|4|getFieldType(myInputRecords, Index)|integer
-true|Q
-:9Õ»Ü[òşT,lol|2010-06-30|29.00|16|67|76.86741918046982|qmbzi|6|getFieldType(myInputRecords, Index)|number
+false;vÆôÎ˜À¾\7sJ'h;2010-06-18;35.67;4;72;91.62469512617625;ocn;0;getFieldType(myInputRecords, Index);boolean
+false;x'¼°óÁrß˜Áôó¯Ä;2010-06-19;81.47;37;85;29.894404424422348;vroy;2;getFieldType(myInputRecords, Index);date
+false;d’œ¸oï‚¢§lÙ5$üÑ;2010-06-26;74.01;54;92;25.015798392490694;yifow;4;getFieldType(myInputRecords, Index);integer
+true;HåVgñØ½=¿¸r²Óç<;2010-06-26;97.67;86;51;67.06667673202662;libtf;4;getFieldType(myInputRecords, Index);integer
+false;Ë¨CëÃÒt¥×—Ê8WU;2010-07-08;5.37;38;35;9.724962683463922;xepe;0;getFieldType(myInputRecords, Index);boolean
+true;|›*).j6ô¦)Kô}C;2010-07-02;80.85;38;96;88.87943228026886;sfxwc;2;getFieldType(myInputRecords, Index);date
+false;}Œ×…®¶†ò„¸Š/;2010-06-26;16.44;40;36;54.57367987051146;zehad;1;getFieldType(myInputRecords, Index);byte
+true;›e÷¥	DÕ´Úi-¹"µÙ;2010-06-21;1.29;78;98;84.17665490986104;bkl;5;getFieldType(myInputRecords, Index);long
+false;…Ì`5ÈX<Œ÷sj;2010-07-05;9.70;45;42;82.12089995244968;nlqe;4;getFieldType(myInputRecords, Index);integer
+true;Q
+:9Õ»Ü[òşT,lol;2010-07-02;29.00;16;67;76.86741918046982;qmbzi;6;getFieldType(myInputRecords, Index);number
