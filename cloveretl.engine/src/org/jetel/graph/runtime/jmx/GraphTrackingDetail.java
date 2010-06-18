@@ -151,7 +151,7 @@ public class GraphTrackingDetail implements GraphTracking {
 		if (startTime == -1) {
 			return -1;
 		} else if (endTime == -1) {
-			return System.nanoTime() - startTime;
+			return System.currentTimeMillis() - startTime;
 		} else {
 			return endTime - startTime;
 		}
@@ -203,7 +203,7 @@ public class GraphTrackingDetail implements GraphTracking {
 
 	//******************* EVENTS ********************/
 	void graphStarted() {
-		startTime = System.nanoTime();
+		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
 	}
@@ -230,7 +230,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	void graphFinished() {
 		result = lastPhaseResult;
 		
-		endTime = System.nanoTime();
+		endTime = System.currentTimeMillis();
 	}
 
 

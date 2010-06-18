@@ -141,7 +141,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 		if (startTime == -1) {
 			return -1;
 		} else if (endTime == -1) {
-			return System.nanoTime() - startTime;
+			return System.currentTimeMillis() - startTime;
 		} else {
 			return endTime - startTime;
 		}
@@ -195,7 +195,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	
 	//******************* EVENTS ********************/
 	void phaseStarted() {
-		startTime = System.nanoTime();
+		startTime = System.currentTimeMillis();
 	}
 
 	void gatherTrackingDetails() {
@@ -215,7 +215,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 		}
 		
 		result = phase.getResult();
-		endTime = System.nanoTime();
+		endTime = System.currentTimeMillis();
 	}
 
 
