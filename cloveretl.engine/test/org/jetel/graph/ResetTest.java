@@ -46,6 +46,8 @@ public class ResetTest extends CloverTestCase {
 	private final File graphFile;
 	private final boolean batchMode;
 	
+	private boolean cleanUp = true;
+	
 	private static Log logger = LogFactory.getLog(ResetTest.class);
 	
 	public static Test suite() {
@@ -130,9 +132,9 @@ public class ResetTest extends CloverTestCase {
 			
 			Arrays.sort(graphFiles);
 			
-			for( File graphFile:graphFiles){
-				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFile, false));
-				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFile, true));
+			for( int j = 0; j < graphFiles.length; j++){
+				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFiles[j], false, false));
+				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFiles[j], true, j == graphFiles.length - 1 ? true : false));
 			}
 
 		}
@@ -166,11 +168,12 @@ public class ResetTest extends CloverTestCase {
 		return ret.toString();
 	}
 	 
-	protected ResetTest(String basePath, File graphFile, boolean batchMode) {
+	protected ResetTest(String basePath, File graphFile, boolean batchMode, boolean cleanup) {
 		super(getTestName(basePath, graphFile, batchMode));
 		this.basePath = basePath;
 		this.graphFile = graphFile;
 		this.batchMode = batchMode;
+		this.cleanUp = cleanup;
 	}
 	 
 	@Override
@@ -229,7 +232,9 @@ public class ResetTest extends CloverTestCase {
 		} catch (Throwable e) {
 			throw new IllegalStateException("Error executing grap " + graphFile);
 		} finally {
-			cleanupData();
+			if (cleanUp) {
+				cleanupData();
+			}
 			logger.info("Transformation graph is freeing.\n");
 			graph.free();
 		}
