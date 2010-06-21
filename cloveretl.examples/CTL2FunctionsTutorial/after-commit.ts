@@ -84,16 +84,18 @@
 	 <FlatFile outputFile="data-out/conversionDecimal2doubleOverview.txt" supposedFile="supposed-out/conversionDecimal2doubleOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDecimal2integer" graphFile="graph/conversionDecimal2integer.grf">	 
-	 <FlatFile outputFile="data-out/conversionDecimal2integerOverview.txt" supposedFile="supposed-out/conversionDecimal2integerOverview.txt"/>
+<FunctionalTest ident="conversionDecimal2integer" graphFile="graph/conversionDecimal2integer.grf" assert="false">	 
+	 <FlatFile outputFile="data-out/conversionDecimal2integerAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2integerAllowedOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionDecimal2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionDecimal2long" graphFile="graph/conversionDecimal2long.grf">	 
 	 <FlatFile outputFile="data-out/conversionDecimal2longOverview.txt" supposedFile="supposed-out/conversionDecimal2longOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDouble2integer" graphFile="graph/conversionDouble2integer.grf">	 
-	 <FlatFile outputFile="data-out/conversionDouble2integerOverview.txt" supposedFile="supposed-out/conversionDouble2integerOverview.txt"/>
+<FunctionalTest ident="conversionDouble2integer" graphFile="graph/conversionDouble2integer.grf" assert="false">	 
+	 <FlatFile outputFile="data-out/conversionDouble2integerAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2integerAllowedOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionDouble2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionDouble2long" graphFile="graph/conversionDouble2long.grf">	 
@@ -116,8 +118,9 @@
 	 <FlatFile outputFile="data-out/conversionLong2dateOverview.txt" supposedFile="supposed-out/conversionLong2dateOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionLong2integer" graphFile="graph/conversionLong2integer.grf">
-	 <FlatFile outputFile="data-out/conversionLong2integerOverview.txt" supposedFile="supposed-out/conversionLong2integerOverview.txt"/>
+<FunctionalTest ident="conversionLong2integer" graphFile="graph/conversionLong2integer.grf" assert="false">
+	 <FlatFile outputFile="data-out/conversionLong2integerAllowedOverview.txt" supposedFile="supposed-out/conversionLong2integerAllowedOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionLong2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionLong2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionLong2packDecimal" graphFile="graph/conversionLong2packDecimal.grf">

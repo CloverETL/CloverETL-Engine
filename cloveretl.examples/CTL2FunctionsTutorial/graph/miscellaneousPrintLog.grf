@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Wed Jan 21 09:06:38 CET 2009" guiVersion="0.0.0.devel" id="1232534199144" licenseType="Evaluation Devel" modified="Wed Jun 09 15:43:38 CEST 2010" modifiedBy="cloveruser" name="miscellaneousPrint_stack" revision="1.25">
+<Graph author="milos_kovalcik" created="Wed Jan 21 09:06:38 CET 2009" guiVersion="0.0.0.devel" id="1232534199144" licenseType="Evaluation Devel" modified="Mon Jun 21 08:26:53 CEST 2010" modifiedBy="cloveruser" name="miscellaneousPrintLog" revision="1.28">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="messageForPrint_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229614456187" licenseType="Evaluation Devel" modified="Wed Jun 09 14:04:43 CEST 2010" modifiedBy="cloveruser" name="stringIs_ascii" revision="1.14">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229614456187" licenseType="Evaluation Devel" modified="Mon Jun 21 08:30:06 CEST 2010" modifiedBy="cloveruser" name="stringIsAscii" revision="1.17">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="is_asciiInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 10:30:50 CEST 2010" modifiedBy="cloveruser" name="getFieldName" revision="1.23">
+<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 18:05:21 CEST 2010" modifiedBy="cloveruser" name="conversionGetFieldName" revision="1.26">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="getFieldNameInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

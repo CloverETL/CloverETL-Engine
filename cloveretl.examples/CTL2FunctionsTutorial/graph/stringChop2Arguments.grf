@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jan 26 14:04:02 CET 2009" guiVersion="0.0.0.devel" id="1232976969504" licenseType="Evaluation Devel" modified="Wed Jun 09 13:32:42 CEST 2010" modifiedBy="cloveruser" name="stringChop" revision="1.18">
+<Graph author="cloveruser" created="Mon Jan 26 14:04:02 CET 2009" guiVersion="0.0.0.devel" id="1232976969504" licenseType="Evaluation Devel" modified="Mon Jun 21 08:27:30 CEST 2010" modifiedBy="cloveruser" name="stringChop2Arguments" revision="1.21">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="chop2ArgumentsOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Jun 09 15:40:10 CEST 2010" guiVersion="0.0.0.devel" id="1276092155114" licenseType="Evaluation Devel" modified="Wed Jun 09 16:17:22 CEST 2010" modifiedBy="cloveruser" name="matches" revision="1.6">
+<Graph author="cloveruser" created="Wed Jun 09 15:40:10 CEST 2010" guiVersion="0.0.0.devel" id="1276092155114" licenseType="Evaluation Devel" modified="Mon Jun 21 08:31:53 CEST 2010" modifiedBy="cloveruser" name="stringMatches" revision="1.9">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="matchesInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

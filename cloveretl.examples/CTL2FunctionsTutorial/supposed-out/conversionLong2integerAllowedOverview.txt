@@ -5,15 +5,9 @@
 60000;long2integer($0.Long);60000
 3600000;long2integer($0.Long);3600000
 3660000;long2integer($0.Long);3660000
-7200000;long2integer($0.Long);7200000
 -3600000;long2integer($0.Long);-3600000
 -3660000;long2integer($0.Long);-3660000
+7200000;long2integer($0.Long);7200000
 -7200000;long2integer($0.Long);-7200000
 2147483647;long2integer($0.Long);2147483647
-2147483648;long2integer($0.Long);
-2147483649;long2integer($0.Long);-2147483647
-9147483649;long2integer($0.Long);557549057
 -2147483647;long2integer($0.Long);-2147483647
--2147483648;long2integer($0.Long);
--2147483649;long2integer($0.Long);2147483647
--9147483649;long2integer($0.Long);-557549057

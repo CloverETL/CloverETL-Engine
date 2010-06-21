@@ -1,0 +1,15 @@
+1.27;double2integer($0.Double);1
+2.39;double2integer($0.Double);2
+1000.123;double2integer($0.Double);1000
+2000.972;double2integer($0.Double);2000
+60000.1293;double2integer($0.Double);60000
+3600000.287;double2integer($0.Double);3600000
+-3600000.98;double2integer($0.Double);-3600000
+3660000.25;double2integer($0.Double);3660000
+-3660000.12;double2integer($0.Double);-3660000
+7200000.12;double2integer($0.Double);7200000
+-7200000.23;double2integer($0.Double);-7200000
+2.14748364689E9;double2integer($0.Double);2147483646
+-2.14748364689E9;double2integer($0.Double);-2147483646
+2.147483647E9;double2integer($0.Double);2147483647
+-2.147483647E9;double2integer($0.Double);-2147483647
