@@ -710,7 +710,7 @@ public class StringUtils {
 		String message;
 		StringBuffer strBuff = new StringBuffer(100);
 		for (int i = 0; i < messages.length; i++) {
-			message = messages[i].toString();
+			message = messages[i] != null ? messages[i].toString() : "";
 			// left or right justified ?
 			if (sizes[i] < 0) {
 				formatSize = sizes[i] * (-1);
