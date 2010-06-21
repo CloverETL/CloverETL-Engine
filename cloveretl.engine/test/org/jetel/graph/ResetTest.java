@@ -25,7 +25,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class ResetTest extends CloverTestCase {
 
-	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios";
+	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios/";
 	private final static String[] EXAMPLE_PATH = {
 			"../cloveretl.examples/SimpleExamples/",
 			"../cloveretl.examples/AdvancedExamples/",
@@ -173,22 +173,25 @@ public class ResetTest extends CloverTestCase {
 	@Override
 	protected void runTest() throws Throwable {
 		
+		final String beseAbsolutePath = new File(basePath).getAbsolutePath();
+		logger.info("Project dir: " + beseAbsolutePath);
+		logger.info("Analyzing graph " + graphFile.getPath());
+		logger.info("Batch mode: " + batchMode);
+		
 		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setUseJMX(false);
 	
 		runtimeContext.setContextURL(FileUtils.getFileURL(basePath));
 		// absolute path in PROJECT parameter is required for graphs using Derby database
-		runtimeContext.addAdditionalProperty("PROJECT", new File(basePath).getAbsolutePath());
+		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
 		runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "/conn");
 		if (!graphFile.getName().contains("Jms")) {// set LIB_DIR to jdbc drivers directory
 			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "/lib");
 		}
 
 		runtimeContext.setBatchMode(batchMode);
+		
 		final TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
-		logger.info("");
-		logger.info("Analyzing graph " + graphFile.getPath());
-		logger.info("Batch mode: " + batchMode);
 		try {
 			
 			graph.setDebugMode(false);
@@ -223,19 +226,31 @@ public class ResetTest extends CloverTestCase {
 		} catch (Throwable e) {
 			throw new IllegalStateException("Error executing grap " + graphFile);
 		} finally {
+			cleanupData();
 			logger.info("Transformation graph is freeing.\n");
 			graph.free();
-			/*
-			for (int j = 0; j < EXAMPLE_PATH.length; j++) {
-				for (String outDir : OUT_DIRS) {
-					File outDirFile = new File(EXAMPLE_PATH[j] + outDir);
-					File[] file = outDirFile.listFiles();
-					for (int i = 0; i < file.length; i++) {
-						file[i].delete();
-					}
+		}
+	}
+
+
+	private void cleanupData() {
+		for (String outDir : OUT_DIRS) {
+			File outDirFile = new File(basePath, outDir);
+			File[] file = outDirFile.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File f) {
+					return f.isFile();
+				}
+			});
+			for (int i = 0; i < file.length; i++) {
+				final boolean drt = file[i].delete();
+				if (drt) {
+					logger.info("Cleanup: deleted file " + file[i].getAbsolutePath());
+				} else {
+					logger.info("Cleanup: error delete file " + file[i].getAbsolutePath());
 				}
 			}
-			*/
 		}
 	}
 	
