@@ -86,7 +86,8 @@ public abstract class CloverWorker implements Runnable {
 	
 	public Thread startWorker() {
 		thread = new Thread(this);
-		thread.setDaemon(true);
+		thread.setPriority(Thread.MIN_PRIORITY);
+		thread.setDaemon(false);
 		thread.start();
 		node.registerChildThread(thread); //register worker as a child thread of this component
 		return thread;
@@ -94,6 +95,10 @@ public abstract class CloverWorker implements Runnable {
 
 	public Thread getThread() {
 		return thread;
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 }
