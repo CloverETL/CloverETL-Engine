@@ -278,13 +278,14 @@ public class RunGraph extends Node{
 		// in-out mode
 		DataRecord inRecord = initInRecord();
 		boolean success = true;
+		String graphNameFromPort = null;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord == null) {
 				break;
 			}
 			
-			String graphNameFromPort = readGraphName(inRecord);
+			graphNameFromPort = readGraphName(inRecord);
 			if (graphNameFromPort == null) {
 				continue;
 			}
@@ -315,8 +316,12 @@ public class RunGraph extends Node{
 		
 		if (!success) {
 			logger.warn("Some graph(s) finished with error.");
+			if (!ignoreGraphFail) {
+				//if some graph failed and ignoreGraphFail parameter is false, throw an exception to fail whole graph
+				throw new JetelException("Graph '" + graphNameFromPort + "' failed!");
+			}
 		}
-		// return FINISHED_OK when some graphs finished with error too
+
 		return Result.FINISHED_OK;
 	}
 	
