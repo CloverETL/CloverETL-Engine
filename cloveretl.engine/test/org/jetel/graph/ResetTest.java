@@ -84,6 +84,9 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("FixedData.grf") // ok, is to fail
 							&& !pathname.getName().equals("xpathReaderStates.grf") // ok, is to fail
 							&& !pathname.getName().equals("graphDataPolicy.grf"); // ok, is to fail
+							&& !pathname.getName().equals("conversionDecimal2integer.grf"); // ok, is to fail
+							&& !pathname.getName().equals("conversionDouble2integer.grf"); // ok, is to fail							
+							&& !pathname.getName().equals("conversionLong2integer.grf"); // ok, is to fail
 							
 //TODO these graphs should work in the future:
 //								&& !pathname.getName().startsWith("graphLdap") //LDAP server is not configured properly yet
