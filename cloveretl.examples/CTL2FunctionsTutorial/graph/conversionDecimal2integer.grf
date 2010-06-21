@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 11 15:19:53 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.81">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jun 21 12:16:43 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2integer" revision="1.93">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="decimal2integerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -29,18 +29,19 @@ By default, decimal number has 8 significant digits, including 2 digits after th
 
 We can see how Clover truncates the non-integer fractions while preserving only the integer parts of decimal values.
 
-As regards decimal numbers that are greater than or equal to maximum integers, all non-integer fractions are removed, but, e.g., (2147483648) is converted to null automatically. 2147483647 is preserved, but, e.g., 2147483649 goes to negative value and also greater numbers than maximum integer are converted in an unpredictable way. Such conversions (of decimal greater than maximum positive integer or less than minimum negative integer) are meaningless. Graph should fail.
+Values greater than or equal to -2147483647.00 and values less than or equal to 2147483647.000 are converted to an integer. This is demonstrated in phase 0.
+
+All of the other values are out of the range of an integer and graph should fail (in phase 1). Such conversions (of decimal greater than maximum positive integer or less than minimum negative integer) are meaningless.
 
 On the other hand, any integer can be mapped to a decimal without any restriction and loss of information.
-
-The second Reformat is in the PassThrough mode. If you enable it, you can see how maximum integer is converted to null.]]></attr>
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2integer.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2integerOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="258" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="262" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2integerAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="53" guiY="217" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2integerAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="519" guiY="218" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="271" guiY="219" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -59,20 +60,23 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2integerNotAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="53" guiY="310" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2integerNotAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="518" guiY="313" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="271" guiY="312" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
 	$0.Decimal = $0.Decimal;
-	$0.Function = $0.Function;
-	$0.Result = isnull($0.Result);
+	$0.Function = "decimal2integer($0.Decimal)";
+	$0.Result = decimal2integer($0.Decimal);
 
 	return 0;
 }
-
-// Called to return a user-defined error message when an error occurs.
-// function getMessage() {}
 
 // Called during component initialization.
 // function init() {}
@@ -81,8 +85,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

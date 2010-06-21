@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Mon Jun 14 14:36:22 CEST 2010" modifiedBy="cloveruser" name="container_push" revision="1.71">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Fri Jun 18 17:59:41 CEST 2010" modifiedBy="cloveruser" name="containerTruncMap" revision="1.74">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">

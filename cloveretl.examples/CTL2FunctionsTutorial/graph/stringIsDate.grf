@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation Devel" modified="Wed Jun 16 10:10:15 CEST 2010" modifiedBy="cloveruser" name="stringIs_date" revision="1.84">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229616712953" licenseType="Evaluation Devel" modified="Mon Jun 21 08:30:23 CEST 2010" modifiedBy="cloveruser" name="stringIsDate" revision="1.87">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="isDateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

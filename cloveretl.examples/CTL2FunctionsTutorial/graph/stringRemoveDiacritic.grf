@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229622386500" licenseType="Evaluation Devel" modified="Wed Jun 09 14:36:33 CEST 2010" modifiedBy="cloveruser" name="stringRemove_diacritic" revision="1.33">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229622386500" licenseType="Evaluation Devel" modified="Mon Jun 21 08:32:44 CEST 2010" modifiedBy="cloveruser" name="stringRemoveDiacritic" revision="1.36">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="remove_diacriticInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

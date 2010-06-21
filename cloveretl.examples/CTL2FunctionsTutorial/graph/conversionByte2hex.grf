@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Wed Jun 09 16:44:44 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.35">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:01:38 CEST 2010" modifiedBy="cloveruser" name="conversionByte2hex" revision="1.38">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record name="byte2hexInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

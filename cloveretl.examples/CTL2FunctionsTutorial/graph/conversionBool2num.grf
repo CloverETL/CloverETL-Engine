@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jun 14 11:26:27 CEST 2010" modifiedBy="cloveruser" name="string2bits" revision="1.37">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:00:59 CEST 2010" modifiedBy="cloveruser" name="conversionBool2num" revision="1.40">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="bool2num1Argument" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">

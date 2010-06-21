@@ -9,11 +9,7 @@
 -3600000.980;decimal2integer($0.Decimal);-3600000
 -3660000.120;decimal2integer($0.Decimal);-3660000
 -7200000.230;decimal2integer($0.Decimal);-7200000
-2147483647.190;decimal2integer($0.Decimal);2147483647
-2147483648.230;decimal2integer($0.Decimal);
-2147483649.120;decimal2integer($0.Decimal);-2147483647
-9147483649.198;decimal2integer($0.Decimal);557549057
--2147483647.123;decimal2integer($0.Decimal);-2147483647
--2147483648.120;decimal2integer($0.Decimal);
--2147483649.180;decimal2integer($0.Decimal);2147483647
--9147483649.920;decimal2integer($0.Decimal);-557549057
+2147483646.890;decimal2integer($0.Decimal);2147483646
+-2147483646.890;decimal2integer($0.Decimal);-2147483646
+2147483647.000;decimal2integer($0.Decimal);2147483647
+-2147483647.000;decimal2integer($0.Decimal);-2147483647
