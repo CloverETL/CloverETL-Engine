@@ -39,6 +39,16 @@ import org.jetel.graph.TransformationGraph;
  */
 public class Dictionary extends GraphElement {
 
+	/**
+	 * This constant is used for distinguish between standard xml attributes and attributes,
+	 * which define dictionary value.
+	 * 
+	 * For instance: 
+	 * <Entry contentType="contentType" id="DictionaryEntry1" input="false" name="i1" 
+	 * output="false" dictval.value="Serra Angel" type="string"/>
+	 */
+	public static final String DICTIONARY_VALUE_NAMESPACE = "dictval.";
+	
 	private static final String DEFAULT_ID = "_DICTIONARY";
 
 	private static final String DEFAULT_DICTIONARY_TYPE_ID = ObjectDictionaryType.TYPE_ID;

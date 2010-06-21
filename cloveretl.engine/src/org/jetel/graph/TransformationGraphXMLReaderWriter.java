@@ -789,7 +789,7 @@ public class TransformationGraphXMLReaderWriter {
 			        	entryProperties.remove(DICTIONARY_ENTRY_OUTPUT);
 			        	entryProperties.remove(DICTIONARY_ENTRY_REQUIRED);
 			        	entryProperties.remove(DICTIONARY_ENTRY_CONTENT_TYPE);
-			        	String prefix = "ss.";
+			        	String prefix = Dictionary.DICTIONARY_VALUE_NAMESPACE;
 			        	for(Object key : entryProperties.keySet().toArray()){
 			        		if(key.toString().startsWith(prefix)){
 			        			Object value = entryProperties.get(key);
