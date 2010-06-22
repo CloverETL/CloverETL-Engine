@@ -32,8 +32,10 @@ import org.jetel.exception.TransformException;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 1st March 2005
+ *
+ * @see org.jetel.component.Partition
  */
 public interface PartitionFunction extends Transform {
 
@@ -60,9 +62,33 @@ public interface PartitionFunction extends Transform {
 	public int getOutputPort(DataRecord record) throws TransformException;
 
 	/**
+	 * Called only if {@link #getOutputPort(DataRecord)} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #getOutputPort(DataRecord)} to fail
+	 * @param record data record which should be used for determining partition??? number
+	 *
+	 * @return port number which should be used for sending data out.
+	 *
+	 * @throws TransformException
+	 */
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException;
+
+	/**
 	 * @param record data record which should be used for determining partition??? number
 	 * @return port number which should be used for sending data out.
 	 */
-	public int getOutputPort(ByteBuffer directRecord);
+	public int getOutputPort(ByteBuffer directRecord) throws TransformException;
+
+	/**
+	 * Called only if {@link #getOutputPort(ByteBuffer)} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #getOutputPort(ByteBuffer)} to fail
+	 * @param record data record which should be used for determining partition??? number
+	 *
+	 * @return port number which should be used for sending data out.
+	 *
+	 * @throws TransformException
+	 */
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException;
 
 }

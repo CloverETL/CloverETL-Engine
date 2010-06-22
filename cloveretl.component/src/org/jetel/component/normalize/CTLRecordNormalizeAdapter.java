@@ -30,6 +30,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * Implements normalization based on TransformLang source specified by user.
@@ -49,18 +50,19 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter implements RecordNormalize {
 
-	private static final String COUNT_FUNCTION_NAME = "count";
-	private static final String TRANSFORM_FUNCTION_NAME = "transform";
-	private static final String CLEAN_FUNCTION_NAME = "clean";
-
-	private CLVFFunctionDeclaration count;
-	private CLVFFunctionDeclaration transform;
-	private CLVFFunctionDeclaration clean;
-	
-	private final Integer[] counter = new Integer[1];
 	private final DataRecord[] sourceRec = new DataRecord[1];
 	private final DataRecord[] targetRec = new DataRecord[1];
-	
+
+	private final Object[] countOnErrorArguments = new Object[2];
+	private final Object[] transformArguments = new Object[1];
+	private final Object[] transformOnErrorArguments = new Object[3];
+
+	private CLVFFunctionDeclaration countFunction;
+	private CLVFFunctionDeclaration countOnErrorFunction;
+	private CLVFFunctionDeclaration transformFunction;
+	private CLVFFunctionDeclaration transformOnErrorFunction;
+	private CLVFFunctionDeclaration cleanFunction;
+
     /**
      * Constructs a <code>CTLRecordNormalizeAdapter</code> for a given CTL executor and logger.
      *
@@ -73,62 +75,102 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 		super(executor, logger);
 	}
 
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
 		super.init();
 
-		this.count = executor.getFunction(COUNT_FUNCTION_NAME);
-		this.transform = executor.getFunction(TRANSFORM_FUNCTION_NAME, TLTypePrimitive.INTEGER);
-		this.clean = executor.getFunction(CLEAN_FUNCTION_NAME);
-		
-		if (count == null) {
-			throw new ComponentNotReadyException(COUNT_FUNCTION_NAME + " function is not defined");
+		countFunction = executor.getFunction(RecordNormalizeTL.COUNT_FUNCTION_NAME);
+		countOnErrorFunction = executor.getFunction(RecordNormalizeTL.COUNT_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
+		transformFunction = executor.getFunction(RecordNormalizeTL.TRANSFORM_FUNCTION_NAME, TLTypePrimitive.INTEGER);
+		transformOnErrorFunction = executor.getFunction(RecordNormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLTypePrimitive.INTEGER);
+		cleanFunction = executor.getFunction(RecordNormalizeTL.CLEAN_FUNCTION_NAME);
+
+		if (countFunction == null) {
+			throw new ComponentNotReadyException(RecordNormalizeTL.COUNT_FUNCTION_NAME + " function is not defined");
 		}
 
-		if (transform  == null) {
-			throw new ComponentNotReadyException(TRANSFORM_FUNCTION_NAME + " function is not defined");
+		if (transformFunction  == null) {
+			throw new ComponentNotReadyException(RecordNormalizeTL.TRANSFORM_FUNCTION_NAME + " function is not defined");
 		}
 
 		return true;
  	}
 
+	@Override
 	public int count(DataRecord source) {
-		sourceRec[0] = source;
-
-		final Object retVal = executor.executeFunction(count, NO_ARGUMENTS, sourceRec, NO_DATA_RECORDS);
-
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException(COUNT_FUNCTION_NAME + "() function must return 'int'");
-		}
-
-		return (Integer)retVal;
+		return countImpl(countFunction, source, NO_ARGUMENTS);
 	}
 
+	@Override
+	public int countOnError(Exception exception, DataRecord source) throws TransformException {
+		if (countOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Partition failed!", exception);
+		}
+
+		countOnErrorArguments[0] = exception.getMessage();
+		countOnErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return countImpl(countOnErrorFunction, source, countOnErrorArguments);
+	}
+
+	private int countImpl(CLVFFunctionDeclaration function, DataRecord source, Object[] arguments) {
+		sourceRec[0] = source;
+
+		final Object retVal = executor.executeFunction(function, arguments, sourceRec, NO_DATA_RECORDS);
+
+		if (retVal == null || !(retVal instanceof Integer)) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
+		}
+
+		return (Integer) retVal;
+	}
+
+	@Override
 	public int transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
-		counter[0] = idx;
+		transformArguments[0] = idx;
+
+		return transformImpl(transformFunction, source, target, transformArguments);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord source, DataRecord target, int idx)
+			throws TransformException {
+		transformOnErrorArguments[0] = exception.getMessage();
+		transformOnErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+		transformOnErrorArguments[2] = idx;
+
+		return transformImpl(transformOnErrorFunction, source, target, transformOnErrorArguments);
+	}
+
+	private int transformImpl(CLVFFunctionDeclaration function, DataRecord source, DataRecord target, Object[] arguments) {
 		sourceRec[0] = source;
 		targetRec[0] = target;
 
-		final Object retVal = executor.executeFunction(transform, counter, sourceRec, targetRec);
+		Object result = executor.executeFunction(function, arguments, sourceRec, targetRec);
 
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException(TRANSFORM_FUNCTION_NAME + "() function must return 'int'");
+		if (result == null || !(result instanceof Integer)) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
 		}
 
-		return (Integer)retVal;
+		return (Integer) result;
 	}
 
+	@Override
 	public void clean() {
-		if (clean == null) {
+		if (cleanFunction == null) {
 			return;
 		}
 
 		try {
-			executor.executeFunction(clean, NO_ARGUMENTS);
-		} catch (TransformLangExecutorRuntimeException e) {
-			logger.warn("Failed to execute " + CLEAN_FUNCTION_NAME + "() function: " + e.getMessage());
+			executor.executeFunction(cleanFunction, NO_ARGUMENTS);
+		} catch (TransformLangExecutorRuntimeException exception) {
+			logger.warn("Failed to execute " + cleanFunction.getName() + "() function: " + exception.getMessage());
 		}
 	}
 

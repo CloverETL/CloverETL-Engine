@@ -116,6 +116,12 @@ public abstract class DataRecordGenerate extends AbstractDataTransform implement
 	 */
 	public abstract int generate(DataRecord[] outputRecords) throws TransformException;
 
+	@Override
+	public int generateOnError(Exception exception, DataRecord[] target) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Generate failed!", exception);
+	}
+
 	public void signal(Object signalObject) {
 		// do nothing by default
 	}

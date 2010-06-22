@@ -30,7 +30,7 @@ import org.jetel.interpreter.data.TLValue;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 17th June 2010
+ * @version 22nd June 2010
  * @created 11th June 2010
  */
 public abstract class AbstractTransformTL implements Transform {
@@ -48,6 +48,11 @@ public abstract class AbstractTransformTL implements Transform {
 	public static final String FINISHED_FUNCTION_NAME = "finished";
     /** the name of the reset() function in CTL */
 	public static final String RESET_FUNCTION_NAME = "reset";
+
+    /** the name of the errorMessage param used in CTL */
+    public static final String ERROR_MESSAGE_PARAM_NAME = "errorMessage";
+    /** the name of the stackTrace param used in CTL */
+    public static final String STACK_TRACE_PARAM_NAME = "stackTrace";
 
     /** A graph node associated with this CTL transform used to query graph, LUTs, sequences, etc.. */
 	private Node node;

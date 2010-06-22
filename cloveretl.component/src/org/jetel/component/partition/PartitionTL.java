@@ -27,10 +27,13 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.interpreter.data.TLNumericValue;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * Class for executing partition function written in CloverETL language
@@ -38,11 +41,18 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author avackova (agata.vackova@javlinconsulting.cz) ; (c) JavlinConsulting s.r.o. www.javlinconsulting.cz
  * 
  * @since Nov 30, 2006
- * 
  */
 public class PartitionTL extends AbstractTransformTL implements PartitionFunction {
 
-	public static final String GETOUTPUTPORT_FUNCTION_NAME = "getOutputPort";
+	public static final String GET_OUTPUT_PORT_FUNCTION_NAME = "getOutputPort";
+	public static final String GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME = "getOutputPortOnError";
+
+	public static final String PARTITION_COUNT_PARAM_NAME = "partitionCount";
+
+	private final TLValue[] onErrorArguments = new TLValue[] { new TLStringValue(), new TLStringValue() };
+
+	private int getOutputPortFunction;
+	private int getOutputPortOnErrorFunction;
 
 	/**
 	 * @param srcCode code written in CloverETL language
@@ -57,6 +67,7 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 		wrapper.setParameters(parameters);
 	}
 
+	@Override
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
         wrapper.setGraph(getGraph());
 		wrapper.init();
@@ -67,27 +78,54 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 		try {
 			wrapper.execute(INIT_FUNCTION_NAME, params);
 		} catch (JetelException e) {
-			// do nothing: function init is not necessary
+			// do nothing, optional function is not declared
 		}
 
-		wrapper.prepareFunctionExecution(GETOUTPUTPORT_FUNCTION_NAME);
+		getOutputPortFunction = wrapper.prepareFunctionExecution(GET_OUTPUT_PORT_FUNCTION_NAME);
+		getOutputPortOnErrorFunction = wrapper.prepareOptionalFunctionExecution(GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME);
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return false;
 	}
 
+	@Override
 	public int getOutputPort(DataRecord record) {
-		TLValue result = wrapper.executePreparedFunction(record, null);
+		return getOutputPortImpl(getOutputPortFunction, GET_OUTPUT_PORT_FUNCTION_NAME, record, null);
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		if (getOutputPortOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Partitioning failed!", exception);
+		}
+
+		onErrorArguments[0].setValue(exception.getMessage());
+		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+
+		return getOutputPortImpl(getOutputPortOnErrorFunction, GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,
+				record, onErrorArguments);
+	}
+
+	private int getOutputPortImpl(int function, String functionName, DataRecord record, TLValue[] arguments) {
+		TLValue result = wrapper.executePreparedFunction(function, record, arguments);
 
 		if (result.type.isNumeric()) {
 			return ((TLNumericValue<?>) result).getInt();
 		}
 
-		throw new RuntimeException("Partition - getOutputPort() functions does not return integer value !");
+		throw new RuntimeException(functionName + "() function does not return integer value!");
 	}
 
+	@Override
 	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 

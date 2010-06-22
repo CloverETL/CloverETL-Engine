@@ -25,10 +25,12 @@ import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * @author dpavlis
@@ -39,13 +41,10 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter implements RecordTransform {
 
-	public static final String TRANSFORM_FUNCTION_NAME = "transform";
-	public static final String GENERATE_FUNCTION_NAME = "generate";
-	public static final String FINISHED_FUNCTION_NAME = "finished";
-	public static final String INIT_FUNCTION_NAME = "init";
-	public static final String RESET_FUNCTION_NAME = "reset";
+	private final Object[] onErrorArguments = new Object[2];
 
-	private CLVFFunctionDeclaration transform;
+	private CLVFFunctionDeclaration transformFunction;
+	private CLVFFunctionDeclaration transformOnErrorFunction;
 
     /**
      * Constructs a <code>CTLRecordTransformAdapter</code> for a given CTL executor and logger.
@@ -68,34 +67,59 @@ public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter
 	 *            Array of metadata objects describing source data records
 	 * @return True if successful, otherwise False
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata,
 			DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
 		super.init();
 
-		this.transform = executor.getFunction(TRANSFORM_FUNCTION_NAME);
+		transformFunction = executor.getFunction(RecordTransformTL.TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = executor.getFunction(RecordTransformTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
-		if (transform == null) {
-			throw new ComponentNotReadyException(TRANSFORM_FUNCTION_NAME + " function must be defined");
+		if (transformFunction == null) {
+			throw new ComponentNotReadyException(RecordTransformTL.TRANSFORM_FUNCTION_NAME + " function must be defined");
 		}
 
 		return true;
 	}
 
+	@Override
 	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
-		final Object retVal = executor.executeFunction(transform, NO_ARGUMENTS, inputRecords, outputRecords);
-
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("transform() function must return 'int'");
-		}
-
-		return (Integer) retVal;
+		return transformImpl(transformFunction, inputRecords, outputRecords, NO_ARGUMENTS);
 	}
 
+	@Override
+	public int transformOnError(Exception exception, DataRecord[] inputRecords, DataRecord[] outputRecords)
+			throws TransformException {
+		if (transformOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Transform failed!", exception);
+		}
+
+		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);
+	}
+
+	private int transformImpl(CLVFFunctionDeclaration function, DataRecord[] inputRecords, DataRecord[] outputRecords,
+			Object[] arguments) {
+		Object result = executor.executeFunction(function, arguments, inputRecords, outputRecords);
+
+		if (result == null || result instanceof Integer == false) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
+		}
+
+		return (Integer) result;
+	}
+
+	@Override
 	public void signal(Object signalObject) {
 		// does nothing
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return null;
 	}

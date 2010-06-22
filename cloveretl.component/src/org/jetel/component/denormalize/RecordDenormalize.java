@@ -33,7 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava, Javlin a.s. &lt;jan.hadrava@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 21st November 2006
  *
  * @see org.jetel.component.Denormalizer
@@ -68,6 +68,18 @@ public interface RecordDenormalize extends Transform {
 	public int append(DataRecord inRecord) throws TransformException;
 
 	/**
+	 * Passes one input record to the composing class. Called only if {@link #append(DataRecord)} throws an exception.
+	 * 
+	 * @param exception an exception that caused {@link #append(DataRecord)} to fail
+	 * @param inRecord
+	 *
+	 * @return < -1 -- fatal error / user defined -1 -- error / skip record >= 0 -- OK
+	 *
+	 * @throws TransformException
+	 */
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException;
+
+	/**
 	 * Retrieves composed output record.
 	 * 
 	 * @param outRecord
@@ -75,6 +87,18 @@ public interface RecordDenormalize extends Transform {
 	 * @throws TransformException
 	 */
 	public int transform(DataRecord outRecord) throws TransformException;
+
+	/**
+	 * Retrieves composed output record. Called only if {@link #transform(DataRecord)} throws an exception.
+	 * 
+	 * @param exception an exception that caused {@link #transform(DataRecord)} to fail
+	 * @param outRecord
+	 *
+	 * @return < -1 -- fatal error / user defined -1 -- error / skip record >= 0 -- OK
+	 *
+	 * @throws TransformException
+	 */
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Finalize current round/clean after current round - called after the transform method was called for the input

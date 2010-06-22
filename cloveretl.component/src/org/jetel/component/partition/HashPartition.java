@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 
@@ -47,16 +48,10 @@ public class HashPartition implements PartitionFunction{
         this.numPorts=numPartitions;
         hashKey=new HashKey(partitionKey,null);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
+
 	public void preExecute() throws ComponentNotReadyException {
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
+
 	public void postExecute() throws ComponentNotReadyException {
 	}
 
@@ -67,6 +62,12 @@ public class HashPartition implements PartitionFunction{
         return Math.abs(hashKey.hashCode() % numPorts);
     }
     
+	@Override
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
+	}
+
     /**
 	 * Use setNode method.
 	 */
@@ -80,22 +81,21 @@ public class HashPartition implements PartitionFunction{
     	return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
-     */
     public void setNode(Node node) {
     	// not used here
     }
     
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#getNode()
-     */
     public Node getNode() {
     	// not used here
     	return null;
     }
     
     public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -18,16 +18,20 @@
  */
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.component.AbstractDataTransform;
+import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 
 /**
  * The base class for all partition functions.
  * 
  * @author Lukas Krejci, Javlin a.s. &lt;lukas.krejci@javlin.eu&gt;
  * 
- * @version 14th June 2010
+ * @version 17th June 2010
  * @since 7th January 2010
  */
 public abstract class DataPartitionFunction extends AbstractDataTransform implements PartitionFunction {
@@ -52,6 +56,18 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 	 */
 	protected void init() throws ComponentNotReadyException {
 		// don't do anything
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
 	}
 
 }

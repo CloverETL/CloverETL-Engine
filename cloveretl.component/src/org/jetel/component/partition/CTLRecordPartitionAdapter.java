@@ -25,9 +25,12 @@ import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
+import org.jetel.util.MiscUtils;
 
 /**
  * Class for executing partition function written in CloverETL language
@@ -40,11 +43,12 @@ import org.jetel.exception.ComponentNotReadyException;
  */
 public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter implements PartitionFunction {
 
-	public static final String GETOUTPUTPORT_FUNCTION_NAME = "getOutputPort";
-
-	private CLVFFunctionDeclaration getOuputPort;
-
 	private final DataRecord[] inputRecords = new DataRecord[1];
+
+	private final Object[] onErrorArguments = new Object[2];
+
+	private CLVFFunctionDeclaration getOuputPortFunction;
+	private CLVFFunctionDeclaration getOuputPortOnErrorFunction;
 
     /**
      * Constructs a <code>CTLRecordPartitionAdapter</code> for a given CTL executor and logger.
@@ -66,26 +70,49 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
         // initialize global scope and call user initialization function
 		super.init();
 
-		this.getOuputPort = executor.getFunction(GETOUTPUTPORT_FUNCTION_NAME);
+		getOuputPortFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
+		getOuputPortOnErrorFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
-		if (getOuputPort == null) {
-			throw new ComponentNotReadyException(GETOUTPUTPORT_FUNCTION_NAME + " is not defined");
+		if (getOuputPortFunction == null) {
+			throw new ComponentNotReadyException(PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME + " is not defined");
 		}
 	}
 
-	public int getOutputPort(DataRecord record) {
+	public int getOutputPort(DataRecord record) throws TransformException {
+		return getOutputPortImpl(getOuputPortFunction, record, NO_ARGUMENTS);
+	}
+
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		if (getOuputPortOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Partitioning failed!", exception);
+		}
+
+		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return getOutputPortImpl(getOuputPortOnErrorFunction, record, onErrorArguments);
+	}
+
+	private int getOutputPortImpl(CLVFFunctionDeclaration function, DataRecord record, Object[] arguments) {
 		inputRecords[0] = record;
 
-		final Object retVal = executor.executeFunction(getOuputPort, NO_ARGUMENTS, inputRecords, null);
+		Object result = executor.executeFunction(function, arguments, inputRecords, NO_DATA_RECORDS);
 
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("getOutputPort() function must return 'int'");
+		if (result == null || !(result instanceof Integer)) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
 		}
 
-		return (Integer) retVal;
+		return (Integer) result;
 	}
 
-	public int getOutputPort(ByteBuffer directRecord) {
+	public int getOutputPort(ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -124,6 +124,13 @@ public abstract class DataRecordTransform extends AbstractDataTransform implemen
 	 */
 	public abstract int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;
 
+	@Override
+	public int transformOnError(Exception exception, DataRecord[] sources, DataRecord[] target)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Transform failed!", exception);
+	}
+
 	/**
 	 * This default transformation only copies content of inputRecords into outputRecords field by field. See
 	 * DataRecord.copyFieldsByPosition() method.

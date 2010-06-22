@@ -1488,6 +1488,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return allOk ? ALL : SKIP;
 	}
 
+	@Override
+	public int transformOnError(Exception exception, DataRecord[] sources, DataRecord[] target)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Transform failed!", exception);
+	}
+
 	/**
 	 * Tries to set value due to given alternative rule
 	 * 

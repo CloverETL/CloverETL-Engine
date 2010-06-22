@@ -59,7 +59,7 @@ public class PartitionFunctionFactory {
 
 	private static final String PORT_NO_FIELD_NAME = "portNo"; 
 
-	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME);
+	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
 
 	private Node node;
 

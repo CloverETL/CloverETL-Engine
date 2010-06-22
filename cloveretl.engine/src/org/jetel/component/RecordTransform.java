@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 4th February 2003
  */
 public interface RecordTransform extends Transform {
@@ -83,6 +83,26 @@ public interface RecordTransform extends Transform {
 	 */
 	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException;
 
+	/**
+	 * Performs reformat of source records to target records. This method is called as one step in transforming flow of
+	 * records.<br>
+	 * For example in simple reformat situation, for one input record, one output record has to be generated. Thus for
+	 * each incoming record, this method is called by Reformat component.<br>
+	 * The number of source records (sources[]) and target records (target[]) depends on particular component
+	 * configuration. Can be 1:1 , N:1 or N:M.<br>
+	 * Called only if {@link #transform(DataRecord[], DataRecord[])} throws an exception.
+	 * 
+	 * @param exception an exception that caused {@link #transform(DataRecord[], DataRecord[])} to fail
+	 * @param sources Source DataRecords
+	 * @param target Target DataRecord
+	 * 
+	 * @return RecordTransform.ALL -- send the data record(s) to all the output ports<br>
+	 *         RecordTransform.SKIP -- skip the data record(s)<br>
+	 *         >= 0 -- send the data record(s) to a specified output port<br>
+	 *         < -1 -- fatal error / user defined
+	 */
+	public int transformOnError(Exception exception, DataRecord[] sources, DataRecord[] target) throws TransformException;
+	
 	/**
 	 * Method which can be used for signalling into transformation that something outside happened.<br>
 	 * For example in aggregation component key changed.

@@ -23,16 +23,17 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLNumericValue;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * Implements normalization based on TransformLang source specified by user. User defines following functions (asterisk
@@ -50,27 +51,34 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class RecordNormalizeTL extends AbstractTransformTL implements RecordNormalize {
 
-	private static final String LENGTH_FUNCTION_NAME = "count";
-	private static final String TRANSFORM_FUNCTION_NAME = "transform";
-	private static final String CLEAN_FUNCTION_NAME = "clean";
+	public static final String COUNT_FUNCTION_NAME = "count";
+	public static final String COUNT_ON_ERROR_FUNCTION_NAME = "countOnError";
+	public static final String TRANSFORM_FUNCTION_NAME = "transform";
+	public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+	public static final String CLEAN_FUNCTION_NAME = "clean";
 
-	private int lenghtFunctionIdentifier;
-	private int transformFunctionIdentifier;
-	private int cleanFunctionIdentifier;
+	public static final String IDX_PARAM_NAME = "idx";
 
-	private TLValue[] counterTL;
-	private DataRecord[] sourceRec;
-	private DataRecord[] targetRec;
+	private final DataRecord[] sourceRec = new DataRecord[1];
+	private final DataRecord[] targetRec = new DataRecord[1];
+
+	private final TLValue[] countOnErrorArguments = new TLValue[] { new TLStringValue(), new TLStringValue() };
+	private final TLValue[] transformArguments = new TLValue[] { TLValue.create(TLValueType.INTEGER) };
+	private final TLValue[] transformOnErrorArguments = new TLValue[] { countOnErrorArguments[0],
+			countOnErrorArguments[1],  transformArguments[0] };
+
+	private int countFunction;
+	private int countOnErrorFunction;
+	private int transformFunction;
+	private int transformOnErrorFunction;
+	private int cleanFunction;
 
 	/** Constructor for the DataRecordTransform object */
 	public RecordNormalizeTL(Log logger, String srcCode, TransformationGraph graph) {
 		super(srcCode, logger);
-
-		counterTL = new TLValue[] { new TLNumericValue<CloverInteger>(TLValueType.INTEGER, new CloverInteger(0)) };
-		sourceRec = new DataRecord[1];
-		targetRec = new DataRecord[1];
 	}
 
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		wrapper.setMetadata(new DataRecordMetadata[] { sourceMetadata }, new DataRecordMetadata[] { targetMetadata });
@@ -83,41 +91,76 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 		try {
 			result = wrapper.execute(INIT_FUNCTION_NAME, null);
 		} catch (JetelException e) {
-			// do nothing: function init is not necessary
+			// do nothing, optional function is not declared
 		}
 
-		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
-		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		countFunction = wrapper.prepareFunctionExecution(COUNT_FUNCTION_NAME);
+		countOnErrorFunction = wrapper.prepareOptionalFunctionExecution(COUNT_ON_ERROR_FUNCTION_NAME);
+		transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
+		cleanFunction = wrapper.prepareOptionalFunctionExecution(CLEAN_FUNCTION_NAME);
 
-		try {
-			cleanFunctionIdentifier = wrapper.prepareFunctionExecution(CLEAN_FUNCTION_NAME);
-		} catch (Exception ex) {
-			// do nothing
-			cleanFunctionIdentifier = -1;
-		}
-
-		return result == null ? true : result == TLBooleanValue.TRUE;
+		return (result == null || result == TLBooleanValue.TRUE);
 	}
 
+	@Override
 	public int count(DataRecord source) {
-		TLValue value = wrapper.executePreparedFunction(lenghtFunctionIdentifier, source, null);
+		return countImpl(countFunction, COUNT_FUNCTION_NAME, source, null);
+	}
+
+	@Override
+	public int countOnError(Exception exception, DataRecord source) throws TransformException {
+		if (countOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Normalization failed!", exception);
+		}
+
+		countOnErrorArguments[0].setValue(exception.getMessage());
+		countOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+
+		return countImpl(countOnErrorFunction, COUNT_ON_ERROR_FUNCTION_NAME, source, countOnErrorArguments);
+	}
+
+	private int countImpl(int function, String functionName, DataRecord source, TLValue[] arguments) {
+		TLValue value = wrapper.executePreparedFunction(function, source, arguments);
 
 		if (value.type.isNumeric()) {
 			return ((TLNumericValue<?>) value).getInt();
 		}
 
-		throw new RuntimeException("Normalizer - count() functions does not return integer value !");
+		throw new RuntimeException(functionName + "() function does not return integer value!");
 	}
 
+	@Override
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
+		transformArguments[0].getNumeric().setValue(idx);
+
+		return transformImpl(transformFunction, source, target, transformArguments);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord source, DataRecord target, int idx)
+			throws TransformException {
+		if (transformOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Normalization failed!", exception);
+		}
+
+		transformOnErrorArguments[0].setValue(exception.getMessage());
+		transformOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		transformOnErrorArguments[2].getNumeric().setValue(idx);
+
+		return transformImpl(transformOnErrorFunction, source, target, transformOnErrorArguments);
+	}
+
+	private int transformImpl(int function, DataRecord source, DataRecord target, TLValue[] arguments) {
 		// set the error message to null so that the getMessage() method works correctly if no error occurs
 		errorMessage = null;
 
-		counterTL[0].getNumeric().setValue(idx);
 		sourceRec[0] = source;
 		targetRec[0] = target;
 
-		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, sourceRec, targetRec, counterTL);
+		TLValue result = wrapper.executePreparedFunction(function, sourceRec, targetRec, arguments);
 
 		if (result == null || result == TLBooleanValue.TRUE) {
 			return 0;
@@ -132,9 +175,10 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 		return -1;
 	}
 
+	@Override
 	public void clean() {
-		if (cleanFunctionIdentifier != -1) {
-			wrapper.executePreparedFunction(cleanFunctionIdentifier);
+		if (cleanFunction != -1) {
+			wrapper.executePreparedFunction(cleanFunction);
 		}
 	}
 

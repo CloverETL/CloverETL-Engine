@@ -25,6 +25,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
@@ -92,6 +93,12 @@ public class RangePartition implements PartitionFunction{
     		rejectedPort;
     }
     
+	@Override
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
+	}
+
     /**
 	 * Use setNode method.
 	 */
@@ -105,22 +112,21 @@ public class RangePartition implements PartitionFunction{
     	return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
-     */
     public void setNode(Node node) {
     	// not used here
     }
     
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#getNode()
-     */
     public Node getNode() {
     	// not used here
     	return null;
     }
     
 	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}
 
