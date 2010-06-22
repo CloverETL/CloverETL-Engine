@@ -84,7 +84,7 @@
 	 <FlatFile outputFile="data-out/conversionDecimal2doubleOverview.txt" supposedFile="supposed-out/conversionDecimal2doubleOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDecimal2integer" graphFile="graph/conversionDecimal2integer.grf" assert="false">	 
+<FunctionalTest ident="conversionDecimal2integer" graphFile="graph/conversionDecimal2integer.grf" assertion="false">	 
 	 <FlatFile outputFile="data-out/conversionDecimal2integerAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2integerAllowedOverview.txt"/>
 	 <FlatFile outputFile="data-out/conversionDecimal2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
@@ -93,7 +93,7 @@
 	 <FlatFile outputFile="data-out/conversionDecimal2longOverview.txt" supposedFile="supposed-out/conversionDecimal2longOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDouble2integer" graphFile="graph/conversionDouble2integer.grf" assert="false">	 
+<FunctionalTest ident="conversionDouble2integer" graphFile="graph/conversionDouble2integer.grf" assertion="false">	 
 	 <FlatFile outputFile="data-out/conversionDouble2integerAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2integerAllowedOverview.txt"/>
 	 <FlatFile outputFile="data-out/conversionDouble2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
@@ -118,7 +118,7 @@
 	 <FlatFile outputFile="data-out/conversionLong2dateOverview.txt" supposedFile="supposed-out/conversionLong2dateOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionLong2integer" graphFile="graph/conversionLong2integer.grf" assert="false">
+<FunctionalTest ident="conversionLong2integer" graphFile="graph/conversionLong2integer.grf" assertion="false">
 	 <FlatFile outputFile="data-out/conversionLong2integerAllowedOverview.txt" supposedFile="supposed-out/conversionLong2integerAllowedOverview.txt"/>
 	 <FlatFile outputFile="data-out/conversionLong2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionLong2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
