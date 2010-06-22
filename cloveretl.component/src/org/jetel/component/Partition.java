@@ -254,15 +254,24 @@ public class Partition extends Node {
 			OutputPortDirect[] outPorts) throws Exception {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		ByteBuffer inRecordDirect = ByteBuffer
-				.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		ByteBuffer inRecordDirect = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 
 		while (runIt) {
-			if (!inPort.readRecordDirect(inRecordDirect))
+			if (!inPort.readRecordDirect(inRecordDirect)) {
 				break;
+			}
+
 			inRecord.deserialize(inRecordDirect);
 			inRecordDirect.rewind();
-			int portNo = partitionFce.getOutputPort(inRecord);
+
+			int portNo = -1;
+
+			try {
+				portNo = partitionFce.getOutputPort(inRecord);
+			} catch (Exception exception) {
+				portNo = partitionFce.getOutputPortOnError(exception, inRecord);
+			}
+
 			try {
 				outPorts[portNo].writeRecordDirect(inRecordDirect);
 			} catch (ArrayIndexOutOfBoundsException e) {
@@ -284,19 +293,29 @@ public class Partition extends Node {
 		ByteBuffer inRecord = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 
 		while (runIt) {
-			if (!inPort.readRecordDirect(inRecord))
+			if (!inPort.readRecordDirect(inRecord)) {
 				break;
-				int portNo = partitionFce.getOutputPort(inRecord);
-				try {
-					outPorts[portNo].writeRecordDirect(inRecord);
-				} catch (ArrayIndexOutOfBoundsException e) {
-					if (portNo == RangePartition.NONEXISTENT_REJECTED_PORT) {
-						throw new JetelException("Not found output port for record:\n" + inRecord);
-					}else{
-						throw new JetelException("Not found output port for record:\n" + inRecord + 
-								"Port number " + portNo + " not connected",e);
-					}
+			}
+
+			int portNo = -1;
+
+			try {
+				portNo = partitionFce.getOutputPort(inRecord);
+			} catch (Exception exception) {
+				portNo = partitionFce.getOutputPortOnError(exception, inRecord);
+			}
+
+			try {
+				outPorts[portNo].writeRecordDirect(inRecord);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				if (portNo == RangePartition.NONEXISTENT_REJECTED_PORT) {
+					throw new JetelException("Not found output port for record:\n" + inRecord);
+				} else {
+					throw new JetelException("Not found output port for record:\n" + inRecord + 
+							"Port number " + portNo + " not connected",e);
 				}
+			}
+
 			SynchronizeUtils.cloverYield();
 		}
 	}

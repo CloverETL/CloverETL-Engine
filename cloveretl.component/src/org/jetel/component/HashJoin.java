@@ -529,7 +529,14 @@ public class HashJoin extends Node {
 	private void transformAndWriteRecord(DataRecord record, int slaveIdx) throws TransformException, IOException,
 			InterruptedException {
 		inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
-		int transformResult = transformation.transform(inRecords, outRecords);
+		int transformResult = -1;
+
+		try {
+			transformResult = transformation.transform(inRecords, outRecords);
+		} catch (Exception exception) {
+			transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+		}
+
 		if (transformResult < 0) {
 			handleException(transformation, transformResult, masterCounter);
 		} else {
@@ -581,12 +588,21 @@ public class HashJoin extends Node {
 			if (slaveIdx < slaveCnt) { // missing slaves
 				continue; // read next driver
 			}
-			int transfrormResult = transformation.transform(inRecords, outRecords);
-			if (transfrormResult < 0) {
-				handleException(transformation, transfrormResult, masterCounter);
+
+			int transformResult = -1;
+
+			try {
+				transformResult = transformation.transform(inRecords, outRecords);
+			} catch (Exception exception) {
+				transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+			}
+
+			if (transformResult < 0) {
+				handleException(transformation, transformResult, masterCounter);
 			} else {
 				outPort.writeRecord(outRecords[0]);
 			}
+
 			outRecords[0].reset();
 
 			SynchronizeUtils.cloverYield();
@@ -650,9 +666,16 @@ public class HashJoin extends Node {
 	}
 
 	private void transform() throws TransformException, IOException, InterruptedException {
-		int transfrormResult = transformation.transform(inRecords, outRecords);
-		if (transfrormResult < 0) {
-			handleException(transformation, transfrormResult, masterCounter);
+		int transformResult = -1;
+
+		try {
+			transformResult = transformation.transform(inRecords, outRecords);
+		} catch (Exception exception) {
+			transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+		}
+
+		if (transformResult < 0) {
+			handleException(transformation, transformResult, masterCounter);
 		} else {
 			outPort.writeRecord(outRecords[0]);
 		}
