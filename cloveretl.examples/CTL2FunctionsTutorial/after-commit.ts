@@ -19,8 +19,12 @@
 	 <FlatFile outputFile="data-out/containerCopyOverview.txt" supposedFile="supposed-out/containerCopyOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="containerInsert" graphFile="graph/containerInsert.grf">
-	 <FlatFile outputFile="data-out/containerInsertOverview.txt" supposedFile="supposed-out/containerInsertOverview.txt"/>	                                                                    
+<FunctionalTest ident="containerInsertElements" graphFile="graph/containerInsertElements.grf">
+	 <FlatFile outputFile="data-out/containerInsertElementsOverview.txt" supposedFile="supposed-out/containerInsertElementsOverview.txt"/>	                                                                    
+</FunctionalTest>
+
+<FunctionalTest ident="containerInsertList" graphFile="graph/containerInsertList.grf">
+	 <FlatFile outputFile="data-out/containerInsertListOverview.txt" supposedFile="supposed-out/containerInsertListOverview.txt"/>	                                                                    
 </FunctionalTest>
 
 <FunctionalTest ident="containerPoll" graphFile="graph/containerPoll.grf">

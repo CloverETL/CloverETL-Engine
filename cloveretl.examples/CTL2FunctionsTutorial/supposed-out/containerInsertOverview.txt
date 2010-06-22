@@ -1,5 +1,0 @@
-[milk, butter, onion, apple];0;egg;insert(list1,$0.Index,$0.NewElement);[egg, milk, butter, onion, apple];[egg, milk, butter, onion, apple]
-[milk, butter, onion, apple];1;egg;insert(list1,$0.Index,$0.NewElement);[milk, egg, butter, onion, apple];[milk, egg, butter, onion, apple]
-[milk, butter, onion, apple];2;egg;insert(list1,$0.Index,$0.NewElement);[milk, butter, egg, onion, apple];[milk, butter, egg, onion, apple]
-[milk, butter, onion, apple];3;egg;insert(list1,$0.Index,$0.NewElement);[milk, butter, onion, egg, apple];[milk, butter, onion, egg, apple]
-[milk, butter, onion, apple];4;egg;insert(list1,$0.Index,$0.NewElement);[milk, butter, onion, apple, egg];[milk, butter, onion, apple, egg]
