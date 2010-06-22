@@ -368,6 +368,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     public Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
+        } else if (dbConnection == null) {
+        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
 
         try {
@@ -456,6 +458,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
+        } else if (dbConnection == null) {
+        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
 
         DataRecordMetadata dbMetadata = getMetadata();
