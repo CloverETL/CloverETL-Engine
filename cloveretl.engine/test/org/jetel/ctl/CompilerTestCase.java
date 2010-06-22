@@ -2449,6 +2449,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
 	}
 	
+	public void test_confitional_fail() {
+		doCompile("test_conditional_fail");
+		check("result", 3);
+	}
+	
 	
 	public void test_expression_statement(){
 		// test case for issue 4174
