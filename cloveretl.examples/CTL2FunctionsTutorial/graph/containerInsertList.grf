@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Tue Jun 22 15:25:32 CEST 2010" modifiedBy="cloveruser" name="containerInsert" revision="1.105">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="forInsertListInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListAElement0" type="string"/>
+<Field name="ListAElement1" type="string"/>
+<Field name="ListAElement2" type="string"/>
+<Field name="ListAElement3" type="string"/>
+<Field name="Index" type="integer"/>
+<Field name="ListBElement0" type="string"/>
+<Field name="ListBElement1" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="insertListOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ListA" type="string"/>
+<Field name="Index" type="integer"/>
+<Field name="ListB" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+<Field name="ListAAfter" type="string"/>
+<Field name="ListBAfter" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="78" y="230">
+<attr name="text"><![CDATA[
+Here we use one list consisting of 4 string elements and other list consisting of two elements.
+The resulting list has 6 elements. 
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="179" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="elementtype[] insert(elementtype[] ListA, integer Index, elementtype[] ListB)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="815" x="79" y="44">
+<attr name="text"><![CDATA[
+The insert(elementtype[], integer, elementtype[]) function accepts three arguments. 
+The first argument is a list of any data type, the second is integer and the third is the list of the same data type as the first list.
+The function inserts the elements of the second list into the first list into positions starting from that whose index is specified as the second argument.
+The first list changes to this new value and this list is also returned. The second list is unchanged.
+Positions in the list are indexed starting from 0.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerInsertList.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="79" guiY="388" id="DATA_READER0" type="DATA_READER" verbose="true"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerInsertListOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="388" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="281" guiY="388" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+//Declarations.
+string[] listA;
+string[] listB;
+string[] newlist;
+boolean bool;
+
+// Creates the original list1.
+push(listA,$0.ListAElement0);
+push(listA,$0.ListAElement1);
+push(listA,$0.ListAElement2);
+push(listA,$0.ListAElement3);
+
+push(listB,$0.ListBElement0);
+push(listB,$0.ListBElement1);
+
+//Prints the original list, the position starting from which the elements are inserted into the list, two elements that should be inserted, the return value of the function and the new value of the list. 
+$0.ListA = toString(listA);
+
+$0.ListB = toString(listB);
+
+//Inserts two new elements into the original list. list1 has been changed to its new value.
+newlist = insert(listA,$0.Index,listB);
+
+$0.Index = $0.Index;
+
+$0.Function = "insert(listA,$0.Index,listB)";
+$0.Result = toString(newlist);
+$0.ListAAfter = toString(listA);
+$0.ListBAfter = toString(listB);
+return 0;
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
