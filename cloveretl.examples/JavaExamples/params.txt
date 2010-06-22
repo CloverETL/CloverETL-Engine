@@ -1,5 +1,6 @@
 #Fri Mar 21 13:35:40 CET 2008
-connection = postgre.cfg
+#plugins = /home/user/cloverETL/plugins
+connection = derby.cfg
 query = select * from employee where department_id = ?
 key = 11
 dataFile = data/bonus.csv
