@@ -20,9 +20,12 @@ package org.jetel.data.tape;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.ContextProvider;
+import org.jetel.util.file.FileUtils;
 
 /**
  * @author david
@@ -62,7 +65,11 @@ public class TapeCarousel {
         if(tmpDirNames != null && tmpDirNames.length > 0) {
             tmpDirs=new File[tmpDirNames.length];
             for(int i=0;i<tmpDirNames.length;i++){
-                tmpDirs[i]=new File(tmpDirNames[i]);
+                try {
+					tmpDirs[i] = new File(FileUtils.getFile(ContextProvider.getGraph().getRuntimeContext().getContextURL(), tmpDirNames[i]));
+				} catch (MalformedURLException e) {
+					throw new RuntimeException("Temp directory '" + tmpDirNames[i] + "' does not exist.", e);
+				}
             }
         }
     }
