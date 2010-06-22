@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:02:52 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2double" revision="1.93">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Tue Jun 22 14:16:11 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2double" revision="1.109">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="decimal2doubleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -23,11 +23,11 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="233" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="number decimal2double(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="53" y="-6">
 <attr name="text"><![CDATA[
-The decimal2number(decimal) function takes one decimal argument and converts it to a double. 
+The decimal2double(decimal) function takes one decimal argument and converts it to a double. 
 
 By default, decimal number has 8 significant digits, including 2 digits after the decimal dot. For this reason, we have set Decimals to 32 significant digits (Length == number of significant digits) and 3 digits after the decimal dot (Scale == digits after the decimal dot).
 
-As regards decimal numbers that have greater number of significant digits than 16, all other digits are set to 0 in the resulting double. 
+As regards decimal numbers that have greater number of significant digits than 16, all other digits are set to 0 in the resulting double. Thus, loss of precision occurs.
 
 On the other hand, double number can be mapped to a decimal without any restriction and loss of information.
 
@@ -36,9 +36,9 @@ On the other hand, double number can be mapped to a decimal without any restrict
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2double.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2doubleOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="534" guiY="259" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="284" guiY="259" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2double.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="251" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2doubleOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="520" guiY="251" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="283" guiY="251" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
