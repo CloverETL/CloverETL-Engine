@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 
@@ -45,15 +46,9 @@ public class RoundRobinPartition implements PartitionFunction{
         this.last=-1;
     }
     
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#preExecute()
-	 */
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.partition.PartitionFunction#postExecute(org.jetel.graph.TransactionMethod)
-	 */
 	public void postExecute() throws ComponentNotReadyException {
 	}
 
@@ -62,6 +57,12 @@ public class RoundRobinPartition implements PartitionFunction{
         return last;
     }
     
+	@Override
+	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
+	}
+
     /**
 	 * Use setNode method.
 	 */
@@ -75,15 +76,9 @@ public class RoundRobinPartition implements PartitionFunction{
     	return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#setNode(org.jetel.graph.Node)
-     */
     public void setNode(Node node) {
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.component.partition.PartitionFunction#getNode()
-     */
     public Node getNode() {
     	return null;
     }
@@ -91,6 +86,12 @@ public class RoundRobinPartition implements PartitionFunction{
 	public int getOutputPort(ByteBuffer directRecord) {
 		 last=(last+1)%numPorts;
 	     return last;
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Partitioning failed!", exception);
 	}
 
 	public boolean supportsDirectRecord() {

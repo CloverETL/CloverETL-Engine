@@ -21,7 +21,9 @@ package org.jetel.component.denormalize;
 import java.util.Properties;
 
 import org.jetel.component.AbstractDataTransform;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -35,7 +37,8 @@ public abstract class DataRecordDenormalize extends AbstractDataTransform implem
 	protected Properties parameters;
 	protected DataRecordMetadata sourceMetadata;
 	protected DataRecordMetadata targetMetadata;
-		
+
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		this.parameters = parameters;
@@ -45,8 +48,21 @@ public abstract class DataRecordDenormalize extends AbstractDataTransform implem
 		return true;
 	}
 
+	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Denormalization failed!", exception);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Denormalization failed!", exception);
+	}
+
+	@Override
 	public void clean(){
 		// do nothing by default
 	}
-	
+
 }

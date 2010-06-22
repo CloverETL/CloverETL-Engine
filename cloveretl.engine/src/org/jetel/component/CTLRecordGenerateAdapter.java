@@ -25,10 +25,12 @@ import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * @created March 25, 2009
@@ -36,9 +38,10 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implements RecordGenerate {
 
-	private static final String GENERATE_FUNCTION_NAME = "generate";
+	private final Object[] onErrorArguments = new Object[2];
 
-	private CLVFFunctionDeclaration generate;
+	private CLVFFunctionDeclaration generateFunction;
+	private CLVFFunctionDeclaration generateOnErrorFunction;
 
     /**
      * Constructs a <code>CTLRecordGenerateAdapter</code> for a given CTL executor and logger.
@@ -64,10 +67,12 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
         // initialize global scope and call user initialization function
 		super.init();
 
-		this.generate = executor.getFunction(GENERATE_FUNCTION_NAME);
+		generateFunction = executor.getFunction(RecordGenerateTL.GENERATE_FUNCTION_NAME);
+		generateOnErrorFunction = executor.getFunction(RecordGenerateTL.GENERATE_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
-		if (generate  == null) {
-			throw new ComponentNotReadyException(GENERATE_FUNCTION_NAME + " function is not defined");
+		if (generateFunction  == null) {
+			throw new ComponentNotReadyException(RecordGenerateTL.GENERATE_FUNCTION_NAME + " function is not defined");
 		}
 
 		return true;
@@ -77,13 +82,30 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
 	 * Generate data for output records.
 	 */
 	public int generate(DataRecord[] outputRecords) throws TransformException {
-		final Object retVal = executor.executeFunction(generate, NO_ARGUMENTS, NO_DATA_RECORDS, outputRecords);
+		return generateImpl(generateFunction, outputRecords, NO_ARGUMENTS);
+	}
 
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException(GENERATE_FUNCTION_NAME + "() function must return 'int'");
+	@Override
+	public int generateOnError(Exception exception, DataRecord[] outputRecords) throws TransformException {
+		if (generateOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Generate failed!", exception);
 		}
 
-		return (Integer)retVal;
+		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return generateImpl(generateOnErrorFunction, outputRecords, onErrorArguments);
+	}
+
+	private int generateImpl(CLVFFunctionDeclaration function, DataRecord[] outputRecords, Object[] arguments) {
+		Object result = executor.executeFunction(function, arguments, NO_DATA_RECORDS, outputRecords);
+
+		if (result == null || result instanceof Integer == false) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
+		}
+
+		return (Integer) result;
 	}
 
 	public void signal(Object signalObject) {

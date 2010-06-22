@@ -21,7 +21,9 @@ package org.jetel.component.normalize;
 import java.util.Properties;
 
 import org.jetel.component.AbstractDataTransform;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -37,6 +39,7 @@ public abstract class DataRecordNormalize extends AbstractDataTransform implemen
 	protected DataRecordMetadata sourceMetadata;
 	protected DataRecordMetadata targetMetadata;
 
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		this.parameters = parameters;
@@ -46,8 +49,22 @@ public abstract class DataRecordNormalize extends AbstractDataTransform implemen
 		return true;
 	}
 
+	@Override
+	public int countOnError(Exception exception, DataRecord source) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Normalization failed!", exception);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord source, DataRecord target, int idx)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Normalization failed!", exception);
+	}
+
+	@Override
 	public void clean() {
-		// do nothing
+		// do nothing by default
 	}
 
 }

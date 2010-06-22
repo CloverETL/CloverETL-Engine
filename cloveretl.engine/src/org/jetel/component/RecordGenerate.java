@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Ausperger, Javlin a.s. &lt;jan.ausperger@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 4th February 2009
  */
 public interface RecordGenerate extends Transform {
@@ -67,10 +67,9 @@ public interface RecordGenerate extends Transform {
 	public boolean init(Properties parameters, DataRecordMetadata[] targetMetadata) throws ComponentNotReadyException;
 
 	/**
-	 * Performs generator of target records. This method is called as one step in generate flow of records.<br>
+	 * Performs generator of target records. This method is called as one step in generate flow of records.
 	 * 
-	 * @param target
-	 *            Target DataRecord
+	 * @param target Target DataRecord
 	 * 
 	 * @return RecordTransform.ALL -- send the data record(s) to all the output ports<br>
 	 *         RecordTransform.SKIP -- skip the data record(s)<br>
@@ -78,6 +77,20 @@ public interface RecordGenerate extends Transform {
 	 *         < -1 -- fatal error / user defined
 	 */
 	public int generate(DataRecord[] target) throws TransformException;
+
+	/**
+	 * Performs generator of target records. This method is called as one step in generate flow of records. Called
+	 * only if {@link #generate(DataRecord[])} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #generate(DataRecord[])} to fail
+	 * @param target Target DataRecord
+	 *
+	 * @return RecordTransform.ALL -- send the data record(s) to all the output ports<br>
+	 *         RecordTransform.SKIP -- skip the data record(s)<br>
+	 *         >= 0 -- send the data record(s) to a specified output port<br>
+	 *         < -1 -- fatal error / user defined
+	 */
+	public int generateOnError(Exception exception, DataRecord[] target) throws TransformException;
 
 	/**
 	 * Method which can be used for signaling into generator that something outside happened.<br>

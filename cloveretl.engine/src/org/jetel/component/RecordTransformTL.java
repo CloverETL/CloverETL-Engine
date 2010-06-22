@@ -26,7 +26,10 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.interpreter.data.TLStringValue;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  *  
@@ -40,7 +43,13 @@ import org.jetel.metadata.DataRecordMetadata;
 public class RecordTransformTL extends AbstractTransformTL implements RecordTransform {
 
     public static final String TRANSFORM_FUNCTION_NAME = "transform";
-    
+    public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+
+	private final TLValue[] onErrorArguments = new TLValue[] { new TLStringValue(), new TLStringValue() };
+
+    private int transformFunction;
+    private int transformOnErrorFunction;
+
     /**Constructor for the DataRecordTransform object */
     public RecordTransformTL(String srcCode, Log logger) {
     	super(srcCode, logger);
@@ -53,6 +62,7 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
 	 * @param  targetMetadata  Array of metadata objects describing source data records
 	 * @return                        True if successfull, otherwise False
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata)
 			throws ComponentNotReadyException{
 		wrapper.setMetadata(sourceRecordsMetadata, targetRecordsMetadata);
@@ -66,16 +76,36 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
 		
 		return semiResult == null ? true : (semiResult==TLBooleanValue.TRUE);
  	}
 
+	@Override
 	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
+		return transformImpl(transformFunction, inputRecords, outputRecords, null);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord[] inputRecords, DataRecord[] outputRecords)
+			throws TransformException {
+		if (transformOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Transform failed!", exception);
+		}
+
+		onErrorArguments[0].setValue(exception.getMessage());
+		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+
+		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);
+	}
+
+	private int transformImpl(int function, DataRecord[] inputRecords, DataRecord[] outputRecords, TLValue[] arguments) {
 		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
 		errorMessage = null;
 
-		semiResult = wrapper.executePreparedFunction(inputRecords, outputRecords, null);
+		semiResult = wrapper.executePreparedFunction(function, inputRecords, outputRecords, arguments);
 
 		if (semiResult == null || semiResult == TLBooleanValue.TRUE) {
 			return ALL;
@@ -90,13 +120,14 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
 		return SKIP;
 	}
 
+	@Override
 	public void signal(Object signalObject) {
 		// does nothing
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return semiResult;
 	}
 
 }
-

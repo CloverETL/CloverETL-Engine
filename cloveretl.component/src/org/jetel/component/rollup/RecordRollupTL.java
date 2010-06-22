@@ -28,9 +28,11 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLRecordValue;
+import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * An implementation of the {@link RecordRollup} interface for the transformation language. Serves as a wrapper
@@ -38,35 +40,74 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 14th June 2010
+ * @version 22nd June 2010
  * @since 28th April 2009
  */
 public class RecordRollupTL extends AbstractTransformTL implements RecordRollup {
 
     /** the name of the initGroup() function in CTL */
-    public static final String FUNCTION_INIT_GROUP_NAME = "initGroup";
+    public static final String INIT_GROUP_FUNCTION_NAME = "initGroup";
+    /** the name of the initGroupOnError() function in CTL */
+    public static final String INIT_GROUP_ON_ERROR_FUNCTION_NAME = "initGroupOnError";
     /** the name of the updateGroup() function in CTL */
-    public static final String FUNCTION_UPDATE_GROUP_NAME = "updateGroup";
+    public static final String UPDATE_GROUP_FUNCTION_NAME = "updateGroup";
+    /** the name of the updateGroupOnError() function in CTL */
+    public static final String UPDATE_GROUP_ON_ERROR_FUNCTION_NAME = "updateGroupOnError";
     /** the name of the finishGroup() function in CTL */
-    public static final String FUNCTION_FINISH_GROUP_NAME = "finishGroup";
+    public static final String FINISH_GROUP_FUNCTION_NAME = "finishGroup";
+    /** the name of the finishGroupOnError() function in CTL */
+    public static final String FINISH_GROUP_ON_ERROR_FUNCTION_NAME = "finishGroupOnError";
     /** the name of the updateTransform() function in CTL */
-    public static final String FUNCTION_UPDATE_TRANSFORM_NAME = "updateTransform";
+    public static final String UPDATE_TRANSFORM_FUNCTION_NAME = "updateTransform";
+    /** the name of the updateTransformOnError() function in CTL */
+    public static final String UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME = "updateTransformOnError";
     /** the name of the transform() function in CTL */
-    public static final String FUNCTION_TRANSFORM_NAME = "transform";
+    public static final String TRANSFORM_FUNCTION_NAME = "transform";
+    /** the name of the transformOnError() function in CTL */
+    public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+
+    /** the name of the counter param used in CTL */
+    public static final String COUNTER_PARAM_NAME = "counter";
+    /** the name of the groupAccumulator param used in CTL */
+    public static final String GROUP_ACCUMULATOR_PARAM_NAME = "groupAccumulator";
+
+    /** input records used when an array of input records is required */
+    private final DataRecord[] inputRecords = new DataRecord[1];
+    /** empty data record used instead of null group accumulator for better error reporting in scope of CTL */
+    private final DataRecord emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
+
+    /** group arguments */
+    private final TLValue[] groupArguments = new TLValue[] { new TLRecordValue((DataRecord) null) };
+    /** group onError arguments */
+    private final TLValue[] groupOnErrorArguments = new TLValue[] {
+    		new TLStringValue(), new TLStringValue(), groupArguments[0] };
+    /** update and updateTransform arguments */
+    private final TLValue[] transformArguments = new TLValue[] {
+    		TLValue.create(TLValueType.INTEGER), groupArguments[0] }; 
+    /** update and updateTransform onError arguments */
+    private final TLValue[] transformOnErrorArguments = new TLValue[] {
+    		groupOnErrorArguments[0], groupOnErrorArguments[1], transformArguments[0], groupArguments[0] }; 
 
     /** the ID of the prepared initGroup() function */
-    private int functionInitGroupId;
+    private int initGroupFunction;
+    /** the ID of the prepared initGroupOnError() function */
+    private int initGroupOnErrorFunction;
     /** the ID of the prepared updateGroup() function */
-    private int functionUpdateGroupId;
+    private int updateGroupFunction;
+    /** the ID of the prepared updateGroupOnError() function */
+    private int updateGroupOnErrorFunction;
     /** the ID of the prepared finishGroup() function */
-    private int functionFinishGroupId;
+    private int finishGroupFunction;
+    /** the ID of the prepared finishGroupOnError() function */
+    private int finishGroupOnErrorFunction;
     /** the ID of the prepared updateTransform() function */
-    private int functionUpdateTransformId;
+    private int updateTransformFunction;
+    /** the ID of the prepared updateTransformOnError() function */
+    private int updateTransformOnErrorFunction;
     /** the ID of the prepared transform() function */
-    private int functionTransformId;
-
-    /** temporary data record used instead of null group accumulator */
-    private DataRecord emptyRecord;
+    private int transformFunction;
+    /** the ID of the prepared transformOnError() function */
+    private int transformOnErrorFunction;
 
     /**
      * Creates an instance of the <code>RecordRollupTL</code> class.
@@ -78,6 +119,7 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     	super(sourceCode, logger);
     }
 
+    @Override
     public void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
         wrapper.setParameters(parameters);
@@ -91,48 +133,78 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
             // OK, don't do anything, function init() is not necessary
         }
 
-        functionInitGroupId = wrapper.prepareFunctionExecution(FUNCTION_INIT_GROUP_NAME);
-        functionUpdateGroupId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_GROUP_NAME);
-        functionFinishGroupId = wrapper.prepareFunctionExecution(FUNCTION_FINISH_GROUP_NAME);
-        functionUpdateTransformId = wrapper.prepareFunctionExecution(FUNCTION_UPDATE_TRANSFORM_NAME);
-        functionTransformId = wrapper.prepareFunctionExecution(FUNCTION_TRANSFORM_NAME);
+        initGroupFunction = wrapper.prepareFunctionExecution(INIT_GROUP_FUNCTION_NAME);
+        initGroupOnErrorFunction = wrapper.prepareFunctionExecution(INIT_GROUP_ON_ERROR_FUNCTION_NAME);
+        updateGroupFunction = wrapper.prepareFunctionExecution(UPDATE_GROUP_FUNCTION_NAME);
+        updateGroupOnErrorFunction = wrapper.prepareFunctionExecution(UPDATE_GROUP_ON_ERROR_FUNCTION_NAME);
+        finishGroupFunction = wrapper.prepareFunctionExecution(FINISH_GROUP_FUNCTION_NAME);
+        finishGroupOnErrorFunction = wrapper.prepareFunctionExecution(FINISH_GROUP_ON_ERROR_FUNCTION_NAME);
+        updateTransformFunction = wrapper.prepareFunctionExecution(UPDATE_TRANSFORM_FUNCTION_NAME);
+        updateTransformOnErrorFunction = wrapper.prepareFunctionExecution(UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME);
+        transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+        transformOnErrorFunction = wrapper.prepareFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
 
-        // prepare empty group accumulator - it is used in case no group accumulator is required
-        emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
+		// initialize an empty data record to be used instead of a null group accumulator
         emptyRecord.init();
         emptyRecord.reset();
     }
 
+    @Override
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
-        if (groupAccumulator == null) {
-        	groupAccumulator = emptyRecord;
-        }
-
-        wrapper.executePreparedFunction(functionInitGroupId, inputRecord,
-                new TLValue[] { new TLRecordValue(groupAccumulator) });
+        wrapper.executePreparedFunction(initGroupFunction, inputRecord, initGroupArguments(null, groupAccumulator));
     }
 
+    @Override
+    public void initGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException {
+		if (initGroupOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Rollup failed!", exception);
+		}
+
+        wrapper.executePreparedFunction(initGroupOnErrorFunction, inputRecord,
+        		initGroupArguments(exception, groupAccumulator));
+    }
+
+    @Override
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        return executeGroupFunction(functionUpdateGroupId, inputRecord, groupAccumulator, false);
+        return groupFunctionImpl(updateGroupFunction, null, inputRecord, groupAccumulator, false);
     }
 
+    @Override
+    public boolean updateGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException {
+		if (updateGroupOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Rollup failed!", exception);
+		}
+
+        return groupFunctionImpl(updateGroupOnErrorFunction, exception, inputRecord, groupAccumulator, false);
+    }
+
+    @Override
     public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException {
-        return executeGroupFunction(functionFinishGroupId, inputRecord, groupAccumulator, true);
+        return groupFunctionImpl(finishGroupFunction, null, inputRecord, groupAccumulator, true);
     }
 
-    private boolean executeGroupFunction(int functionId, DataRecord inputRecord, DataRecord groupAccumulator,
-            boolean defaultReturnValue) {
+    @Override
+    public boolean finishGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException {
+		if (finishGroupOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Rollup failed!", exception);
+		}
+
+        return groupFunctionImpl(finishGroupOnErrorFunction, exception, inputRecord, groupAccumulator, true);
+    }
+
+    private boolean groupFunctionImpl(int functionId, Exception exception, DataRecord inputRecord,
+    		DataRecord groupAccumulator, boolean defaultReturnValue) {
 		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
 		errorMessage = null;
 
-        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
-        if (groupAccumulator == null) {
-            groupAccumulator = emptyRecord;
-        }
-
         TLValue result = wrapper.executePreparedFunction(functionId, inputRecord,
-                new TLValue[] { new TLRecordValue(groupAccumulator) });
+        		initGroupArguments(exception, groupAccumulator));
 
         if (result != null) {
             if (result.getType() == TLValueType.BOOLEAN) {
@@ -145,31 +217,71 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
         return defaultReturnValue;
     }
 
-    public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
-            throws TransformException {
-        return executeTransformFunction(functionUpdateTransformId, counter, inputRecord, groupAccumulator, outputRecords);
+    private TLValue[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
+    	if (exception != null) {
+    		// provide exception message and stack trace
+	    	groupOnErrorArguments[0].setValue(exception.getMessage());
+	    	groupOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+
+	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+	    	groupOnErrorArguments[2].setValue((groupAccumulator != null) ? groupAccumulator : emptyRecord);
+
+	    	return groupOnErrorArguments;
+    	}
+
+        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+    	groupArguments[0].setValue((groupAccumulator != null) ? groupAccumulator : emptyRecord);
+
+    	return groupArguments;
     }
 
+    @Override
+    public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator,
+    		DataRecord[] outputRecords) throws TransformException {
+        return transformFunctionImpl(updateTransformFunction, null, counter, inputRecord,
+        		groupAccumulator, outputRecords);
+    }
+
+    @Override
+    public int updateTransformOnError(Exception exception, int counter, DataRecord inputRecord,
+    		DataRecord groupAccumulator, DataRecord[] outputRecords) throws TransformException {
+		if (updateTransformOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Rollup failed!", exception);
+		}
+
+        return transformFunctionImpl(updateTransformOnErrorFunction, exception, counter, inputRecord,
+        		groupAccumulator, outputRecords);
+    }
+
+    @Override
     public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException {
-        return executeTransformFunction(functionTransformId, counter, inputRecord, groupAccumulator, outputRecords);
+        return transformFunctionImpl(transformFunction, null, counter, inputRecord,
+        		groupAccumulator, outputRecords);
     }
 
-    private int executeTransformFunction(int functionId, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
-            DataRecord[] outputRecords) {
+    @Override
+    public int transformOnError(Exception exception, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
+    		DataRecord[] outputRecords) throws TransformException {
+		if (transformOnErrorFunction < 0) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Rollup failed!", exception);
+		}
+
+        return transformFunctionImpl(transformOnErrorFunction, exception, counter, inputRecord,
+        		groupAccumulator, outputRecords);
+    }
+
+    private int transformFunctionImpl(int functionId, Exception exception, int counter, DataRecord inputRecord,
+    		DataRecord groupAccumulator, DataRecord[] outputRecords) {
 		// set the error message to null so that the inherited getMessage() method works correctly if no error occurs
 		errorMessage = null;
 
-        TLValue counterTL = TLValue.create(TLValueType.INTEGER);
-        counterTL.setValue(counter);
+        inputRecords[0] = inputRecord;
 
-        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
-        if (groupAccumulator == null) {
-            groupAccumulator = emptyRecord;
-        }
-
-        TLValue result = wrapper.executePreparedFunction(functionId, new DataRecord[] { inputRecord },
-                outputRecords, new TLValue[] { counterTL, new TLRecordValue(groupAccumulator) });
+        TLValue result = wrapper.executePreparedFunction(functionId, inputRecords, outputRecords,
+        		initTransformArguments(exception, counter, groupAccumulator));
 
         if (result != null) {
             if (result.getType().isNumeric()) {
@@ -180,6 +292,26 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
         }
 
         return SKIP;
+    }
+
+    private TLValue[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
+    	if (exception != null) {
+    		// provide exception message, stack trace and call counter
+	    	transformOnErrorArguments[0].setValue(exception.getMessage());
+	    	transformOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+	    	transformOnErrorArguments[2].getNumeric().setValue(counter);
+
+	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+	    	transformOnErrorArguments[3].setValue((groupAccumulator != null) ? groupAccumulator : emptyRecord);
+
+	    	return transformOnErrorArguments;
+    	}
+
+        // if group accumulator is empty we use an empty record for better error reporting in scope of CTL
+        transformArguments[0].getNumeric().setValue(counter);
+    	transformArguments[1].setValue((groupAccumulator != null) ? groupAccumulator : emptyRecord);
+
+    	return transformArguments;
     }
 
 }

@@ -33,7 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava, Javlin a.s. &lt;jan.hadrava@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @created 21st November 2006
  *
  * @see org.jetel.component.Normalizer
@@ -66,7 +66,16 @@ public interface RecordNormalize extends Transform {
 	public int count(DataRecord source) throws TransformException;
 
 	/**
-	 * 
+	 * Called only if {@link #count(DataRecord)} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #count(DataRecord)} to fail
+	 * @param source Input record
+	 *
+	 * @return Number of output records which will be create from specified input record 
+	 */
+	public int countOnError(Exception exception, DataRecord source) throws TransformException;
+
+	/**
 	 * @param source Input record
 	 * @param target Output records
 	 * @param idx Sequential number of output record (starting from 0)
@@ -76,6 +85,23 @@ public interface RecordNormalize extends Transform {
 	 * @throws TransformException
 	 */
 	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException;
+
+	/**
+	 * Called only if {@link #transform(DataRecord, DataRecord, int)} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #transform(DataRecord, DataRecord, int)} to fail
+	 * @param source Input record
+	 * @param target Output records
+	 * @param idx Sequential number of output record (starting from 0)
+	 *
+	 * @return < -1 -- fatal error / user defined
+	 *           -1 -- error / skip record
+	 *         >= 0 -- OK
+	 *
+	 * @throws TransformException
+	 */
+	public int transformOnError(Exception exception, DataRecord source, DataRecord target, int idx)
+			throws TransformException;
 
 	/**
 	 * Finalize current round/clean after current round - called after the last transform method was called for the input record

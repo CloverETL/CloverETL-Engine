@@ -25,9 +25,12 @@ import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 
 /**
  * Implements denormalization based on TransformLang source specified by user. User defines following functions
@@ -46,18 +49,18 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter implements RecordDenormalize {
 
-	private static final String APPEND_FUNCTION_NAME = "append";
-	private static final String TRANSFORM_FUNCTION_NAME = "transform";
-	private static final String CLEAN_FUNCTION_NAME = "clean";
+	private final DataRecord[] inputRecords = new DataRecord[1];
+	private final DataRecord[] outputRecords = new DataRecord[1];
 
-	private CLVFFunctionDeclaration append;
-	private CLVFFunctionDeclaration transform;
-	private CLVFFunctionDeclaration clean;
+	private final Object[] onErrorArguments = new Object[2];
 
-	private DataRecord[] inputRecords = new DataRecord[1];
-	private DataRecord[] outputRecords = new DataRecord[1];
+	private CLVFFunctionDeclaration appendFunction;
+	private CLVFFunctionDeclaration appendOnErrorFunction;
+	private CLVFFunctionDeclaration transformFunction;
+	private CLVFFunctionDeclaration transformOnErrorFunction;
+	private CLVFFunctionDeclaration cleanFunction;
 
-    /**
+	/**
      * Constructs a <code>CTLRecordDenormalizeAdapter</code> for a given CTL executor and logger.
      *
      * @param executor the CTL executor to be used by this transform adapter, may not be <code>null</code>
@@ -69,58 +72,100 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 		super(executor, logger);
 	}
 
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
 		// initialize global scope and call user initialization function
 		super.init();
 
-		this.append = executor.getFunction(APPEND_FUNCTION_NAME);
-		this.transform = executor.getFunction(TRANSFORM_FUNCTION_NAME);
-		this.clean = executor.getFunction(CLEAN_FUNCTION_NAME);
+		appendFunction = executor.getFunction(RecordDenormalizeTL.APPEND_FUNCTION_NAME);
+		appendOnErrorFunction = executor.getFunction(RecordDenormalizeTL.APPEND_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
+		transformFunction = executor.getFunction(RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = executor.getFunction(RecordDenormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
+		cleanFunction = executor.getFunction(RecordDenormalizeTL.CLEAN_FUNCTION_NAME);
 
-		if (append == null) {
-			throw new ComponentNotReadyException(APPEND_FUNCTION_NAME + " function must be defined");
+		if (appendFunction == null) {
+			throw new ComponentNotReadyException(RecordDenormalizeTL.APPEND_FUNCTION_NAME + " function must be defined");
 		}
-		if (transform == null) {
-			throw new ComponentNotReadyException(TRANSFORM_FUNCTION_NAME + " function must be defined");
+		if (transformFunction == null) {
+			throw new ComponentNotReadyException(RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME + " function must be defined");
 		}
 
 		return true;
 	}
 
+	@Override
 	public int append(DataRecord inRecord) {
+		return appendImpl(appendFunction, inRecord, NO_ARGUMENTS);
+	}
+
+	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+		if (appendOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Denormalization failed!", exception);
+		}
+
+		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return appendImpl(appendOnErrorFunction, inRecord, onErrorArguments);
+	}
+
+	private int appendImpl(CLVFFunctionDeclaration function, DataRecord inRecord, Object[] arguments) {
 		inputRecords[0] = inRecord;
 
-		final Object retVal = executor.executeFunction(append, NO_ARGUMENTS, inputRecords, NO_DATA_RECORDS);
+		Object result = executor.executeFunction(function, arguments, inputRecords, NO_DATA_RECORDS);
 
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("append() function must return 'int'");
+		if (result == null || !(result instanceof Integer)) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
 		}
 
-		return (Integer) retVal;
+		return (Integer) result;
 	}
 
+	@Override
 	public int transform(DataRecord outRecord) {
+		return transformImpl(transformFunction, outRecord, NO_ARGUMENTS);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+		if (transformOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Denormalization failed!", exception);
+		}
+
+		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+
+		return transformImpl(transformOnErrorFunction, outRecord, onErrorArguments);
+	}
+
+	private int transformImpl(CLVFFunctionDeclaration function, DataRecord outRecord, Object[] arguments) {
 		outputRecords[0] = outRecord;
 
-		final Object retVal = executor.executeFunction(transform, NO_ARGUMENTS, NO_DATA_RECORDS, outputRecords);
+		Object result = executor.executeFunction(function, arguments, NO_DATA_RECORDS, outputRecords);
 
-		if (retVal == null || retVal instanceof Integer == false) {
-			throw new TransformLangExecutorRuntimeException("transform() function must return 'int'");
+		if (result == null || !(result instanceof Integer)) {
+			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
 		}
 
-		return (Integer) retVal;
+		return (Integer) result;
 	}
 
+	@Override
 	public void clean() {
-		if (clean == null) {
+		if (cleanFunction == null) {
 			return;
 		}
 
 		try {
-			executor.executeFunction(clean, NO_ARGUMENTS);
-		} catch (TransformLangExecutorRuntimeException e) {
-			logger.warn("Failed to execute " + CLEAN_FUNCTION_NAME + "() function: " + e.getMessage());
+			executor.executeFunction(cleanFunction, NO_ARGUMENTS);
+		} catch (TransformLangExecutorRuntimeException exception) {
+			logger.warn("Failed to execute " + cleanFunction.getName() + "() function: " + exception.getMessage());
 		}
 	}
 

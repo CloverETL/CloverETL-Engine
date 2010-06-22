@@ -21,7 +21,9 @@ package org.jetel.component.rollup;
 import java.util.Properties;
 
 import org.jetel.component.AbstractDataTransform;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -29,7 +31,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 14th June 2010
+ * @version 18th June 2010
  * @since 4th January 2010
  */
 public abstract class DataRecordRollup extends AbstractDataTransform implements RecordRollup {
@@ -62,5 +64,40 @@ public abstract class DataRecordRollup extends AbstractDataTransform implements 
     protected void init() throws ComponentNotReadyException {
     	// don't do anything
     }
+
+	@Override
+	public void initGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Rollup failed!", exception);
+	}
+
+	@Override
+	public boolean updateGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Rollup failed!", exception);
+	}
+
+	@Override
+	public boolean finishGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+			throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Rollup failed!", exception);
+	}
+
+	@Override
+	public int updateTransformOnError(Exception exception, int counter, DataRecord inputRecord,
+			DataRecord groupAccumulator, DataRecord[] outputRecords) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Rollup failed!", exception);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
+			DataRecord[] outputRecords) throws TransformException {
+		// by default just throw the exception that caused the error
+		throw new TransformException("Rollup failed!", exception);
+	}
 
 }

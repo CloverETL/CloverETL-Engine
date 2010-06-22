@@ -67,10 +67,10 @@ import org.jetel.metadata.DataRecordMetadata;
  *   two steps may be executed again.</li>
  * </ul>
  *
- * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+ * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
  *
- * @version 11th June 2010
+ * @version 17th June 2010
  * @since 24th February 2009
  */
 public interface RecordRollup extends Transform {
@@ -108,6 +108,20 @@ public interface RecordRollup extends Transform {
     public void initGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
 
     /**
+     * This method is called for the first data record in a group. Any initialization of the group "accumulator" should
+     * be placed here. Called only if {@link #initGroup(DataRecord, DataRecord)} throws an exception.
+     *
+	 * @param exception an exception that caused {@link #initGroup(DataRecord, DataRecord)} to fail
+     * @param inputRecord the first input data record in the group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
+     *
+     * @throws TransformException if any error occurred during initialization of the group
+     */
+    public void initGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException;
+
+    /**
      * This method is called for each data record (including the first one as well as the last one) in a group
      * in order to update the group "accumulator".
      *
@@ -115,12 +129,30 @@ public interface RecordRollup extends Transform {
      * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
      * was requested
      *
-     * @return <code>true</code> if the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} method should
-     * be called to generate output data record(s) and send them to the output, <code>false</code> otherwise
+     * @return <code>true</code> if the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} method
+     * should be called to generate output data record(s) and send them to the output, <code>false</code> otherwise
      *
      * @throws TransformException if any error occurred during update of the group
      */
     public boolean updateGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
+
+    /**
+     * This method is called for each data record (including the first one as well as the last one) in a group
+     * in order to update the group "accumulator". Called only if {@link #updateGroup(DataRecord, DataRecord)}
+     * throws an exception.
+     *
+	 * @param exception an exception that caused {@link #updateGroup(DataRecord, DataRecord)} to fail
+     * @param inputRecord the current input data record
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
+     *
+     * @return <code>true</code> if the {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} method
+     * should be called to generate output data record(s) and send them to the output, <code>false</code> otherwise
+     *
+     * @throws TransformException if any error occurred during update of the group
+     */
+    public boolean updateGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException;
 
     /**
      * This method is called for the last data record in a group in order to finish the group processing.
@@ -135,6 +167,23 @@ public interface RecordRollup extends Transform {
      * @throws TransformException if any error occurred during final processing of the group
      */
     public boolean finishGroup(DataRecord inputRecord, DataRecord groupAccumulator) throws TransformException;
+
+    /**
+     * This method is called for the last data record in a group in order to finish the group processing. Called only
+     * if {@link #finishGroup(DataRecord, DataRecord)} throws an exception.
+     *
+	 * @param exception an exception that caused {@link #finishGroup(DataRecord, DataRecord)} to fail
+     * @param inputRecord any input data record from the current group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
+     *
+     * @return <code>true</code> if the {@link #transform(int, DataRecord, DataRecord, DataRecord[])} method should
+     * be called to generate output data record(s) and send them to the output, <code>false</code> otherwise
+     *
+     * @throws TransformException if any error occurred during final processing of the group
+     */
+    public boolean finishGroupOnError(Exception exception, DataRecord inputRecord, DataRecord groupAccumulator)
+    		throws TransformException;
 
     /**
      * This method is used to generate output data records based on the input data record and the contents of the group
@@ -156,6 +205,30 @@ public interface RecordRollup extends Transform {
      */
     public int updateTransform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException;
+
+    /**
+     * This method is used to generate output data records based on the input data record and the contents of the group
+     * "accumulator" (if it was requested). The output data record will be sent to the output when this method finishes.
+     * This method is called whenever the {@link #updateGroup(DataRecord, DataRecord)} method returns true. Called only
+     * if {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])} throws an exception.
+     *
+	 * @param exception an exception that caused {@link #updateTransform(int, DataRecord, DataRecord, DataRecord[])}
+	 * to fail
+     * @param counter the number of previous calls to this method for the current group update
+     * @param inputRecord the current input data record
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
+     * @param outputRecords output data records to be filled with data
+     *
+     * @return RecordRollup.ALL -- send the data record(s) to all the output ports<br>
+     *         >= 0 -- send one data record to a specified output port<br>
+     *         RecordRollup.SKIP -- end processing of the current group<br>
+     *         < RecordRollup.SKIP -- fatal error, stop the execution
+     *
+     * @throws TransformException if any error occurred during the transformation
+     */
+    public int updateTransformOnError(Exception exception, int counter, DataRecord inputRecord,
+    		DataRecord groupAccumulator, DataRecord[] outputRecords) throws TransformException;
     
     /**
      * This method is used to generate output data records based on the input data record and the contents of the group
@@ -177,5 +250,28 @@ public interface RecordRollup extends Transform {
      */
     public int transform(int counter, DataRecord inputRecord, DataRecord groupAccumulator, DataRecord[] outputRecords)
             throws TransformException;
+
+    /**
+     * This method is used to generate output data records based on the input data record and the contents of the group
+     * "accumulator" (if it was requested). The output data record will be sent to the output when this method finishes.
+     * This method is called whenever the {@link #finishGroup(DataRecord, DataRecord)} method returns true. Called only
+     * if {@link #transform(int, DataRecord, DataRecord, DataRecord[])} throws an exception.
+     *
+	 * @param exception an exception that caused {@link #transform(int, DataRecord, DataRecord, DataRecord[])} to fail
+     * @param counter the number of previous calls to this method for the current group
+     * @param inputRecord any input data record from the current group
+     * @param groupAccumulator the data record used as an "accumulator" for the group or <code>null</code> if none
+     * was requested
+     * @param outputRecords output data records to be filled with data
+     *
+     * @return RecordRollup.ALL -- send the data record(s) to all the output ports<br>
+     *         >= 0 -- send one data record to a specified output port<br>
+     *         RecordRollup.SKIP -- end processing of the current group<br>
+     *         < RecordRollup.SKIP -- fatal error, stop the execution
+     *
+     * @throws TransformException if any error occurred during the transformation
+     */
+    public int transformOnError(Exception exception, int counter, DataRecord inputRecord, DataRecord groupAccumulator,
+    		DataRecord[] outputRecords) throws TransformException;
 
 }
