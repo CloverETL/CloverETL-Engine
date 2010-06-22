@@ -994,8 +994,8 @@ public class DBExecute extends Node {
             if (errorLog != null){
  				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
             }
-            if (outPort == null && procedureCall && (dbSQL != null || sqlQuery != null)) {
-            	status.add(new ConfigurationProblem("Output port must be defined when calling stored procedure.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            if (getOutputPort(WRITE_TO_PORT) == null && procedureCall && (dbSQL != null || sqlQuery != null) && outParams != null) {
+            	status.add(new ConfigurationProblem("Output port must be defined when output parameters are set.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
             }
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
