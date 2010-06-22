@@ -122,6 +122,13 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		
 		return dbList;
 	}
+	
+	public String getTablePrefix(String schema, String owner,
+			boolean quoteIdentifiers) {
+		int position = schema.indexOf('[');
+		schema = schema.substring(0, position - 1);
+		return quoteIdentifiers ? quoteIdentifier(schema) : schema;
+	}
 
 	@Override
 	public ResultSet getTables(java.sql.Connection connection, String dbName)
