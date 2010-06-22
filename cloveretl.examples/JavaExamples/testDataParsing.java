@@ -26,34 +26,52 @@ import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DataParser;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
+/**
+ * Usage: testDataParsing [-plugins pluginsDirectory] [-config propertiesFile]
+ * 
+ * This example illustrates usage of DataParser - the object for parsing plain text data.
+ * Data from data/bonus.csv is parsed and saved in output/bonus.out
+ * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
+ * When set in params.txt, the same directory is used for all examples and musn't be set 
+ * for each example separately.
+ *
+ */
 public class testDataParsing {
 	
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
+	private final static String PROPERTIES_FILE_PROPERTY = "config";
 
 	public static void main(String args[]){
 		
-	String plugins = args.length > 0 ? args[0] : null;
-	String propertiesFile = args.length > 1 ? args[1] : null;
-		
-	if (plugins == null && propertiesFile == null) {
-		Properties arguments = new Properties();
-		if ((new File(PARAMETER_FILE)).exists()) {
-			try {
-				arguments.load(new FileInputStream(PARAMETER_FILE));
-			} catch (FileNotFoundException e) {
-				//do nothing: we checked it
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+	String plugins = null;
+	String propertiesFile = null;
+	
+	//read parameters from parameter file
+	Properties arguments = new Properties();
+	if ((new File(PARAMETER_FILE)).exists()) {
+		try {
+			arguments.load(new FileInputStream(PARAMETER_FILE));
+		} catch (FileNotFoundException e) {
+			//do nothing: we checked it
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-		plugins = arguments.getProperty(PLUGINS_PROPERTY);
+	}
+	plugins = arguments.getProperty(PLUGINS_PROPERTY);
+	propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
+	//override parameters with program arguments
+	for (int i = 0; i < args.length; i++) {
+		if (args[i].startsWith("-" + PLUGINS_PROPERTY)) {
+			plugins = args[++i];
+		}else if (args[i].startsWith("-" + PROPERTIES_FILE_PROPERTY)) {
+			propertiesFile = args[++i];
+		}
 	}
 	
 	FileInputStream in=null;
@@ -64,34 +82,44 @@ public class testDataParsing {
 	System.out.println("Plugins directory: "+ plugins);
 	System.out.println("Default properties file: "+ propertiesFile);
 	System.out.println("***************************************************");
+	
+	//Initialization of CloverETL engine
 	EngineInitializer.initEngine(plugins, propertiesFile, null);
 	
+	//preparing input and output files
 	try{
 		in=new FileInputStream("data/bonus.csv");
 		out=new PrintStream(new FileOutputStream("output/bonus.out"));
 	}
 	catch(FileNotFoundException e){
 		e.printStackTrace();
+		System.exit(1);
 	}
 	
+	//Creating metadata
 	DataRecordMetadata metadata=new DataRecordMetadata("TestInput",DataRecordMetadata.DELIMITED_RECORD);
 	
 	metadata.addField(new DataFieldMetadata("Client_id",DataFieldMetadata.INTEGER_FIELD, ";"));
 	DataFieldMetadata numericField = new DataFieldMetadata("Revenue",DataFieldMetadata.NUMERIC_FIELD, ";");
+	//locale must be set to a location, that uses comma as decimal point
 	numericField.setLocaleStr("pl");
 	metadata.addField(numericField);
 	metadata.addField(new DataFieldMetadata("Contract_nr",DataFieldMetadata.INTEGER_FIELD, "\r\n"));
 	
+	//initialize parser
 	DataParser parser=new DataParser();
 	try{
 		parser.init(metadata);
 		parser.setDataSource(in);
-	}catch(ComponentNotReadyException ex){
+	}catch(Exception ex){
 		ex.printStackTrace();
+		System.exit(1);
 	}
+	//prepare data record for parsed data
 	record = new DataRecord(metadata);
 	record.init();
 	
+	//parse file in loop
 	try {
 		while((record=parser.getNext(record))!=null){
 			out.print("Client:"+record.getField(0).toString());
@@ -99,9 +127,9 @@ public class testDataParsing {
 			out.println(" Contract:"+record.getField(2).toString());
 		}
 		
-		System.out.println("Parsing succecsfull. See file ./output/bonus.out");
-	} catch (JetelException e1) {
-		// TODO Auto-generated catch block
+		System.out.println(parser.getRecordCount() + " records parsed. See file ./output/bonus.out");
+		parser.close();
+	} catch (Exception e1) {
 		e1.printStackTrace();
 	}
 	

@@ -31,13 +31,28 @@ import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.main.runGraph;
 
+/**
+ * Usage: testXMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile
+ * 
+ * This example illustrates how run from java code transformation graph stored in xml file.
+ * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
+ * in params.txt file as plugins parameter or required plugins have to be set on classpath when running the program. 
+ * When set in params.txt, the same directory is used for all examples and musn't be set 
+ * for each example separately.
+ *
+ */
 public class testXMLGraph{
 
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
+	private final static String PROPERTIES_FILE_PROPERTY = "config";
 
 	public static void main(String args[]){
 		
+		String plugins = null;
+		String propertiesFile = null;
+		
+		//read parameters from parameter file
 		Properties arguments = new Properties();
 		if ((new File(PARAMETER_FILE)).exists()) {
 			try {
@@ -48,44 +63,50 @@ public class testXMLGraph{
 				throw new RuntimeException(e);
 			}
 		}
+		plugins = arguments.getProperty(PLUGINS_PROPERTY);
+		propertiesFile = arguments.getProperty(PROPERTIES_FILE_PROPERTY);
+		//override parameters with program arguments
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].startsWith("-" + PLUGINS_PROPERTY)) {
+				plugins = args[++i];
+			}else if (args[i].startsWith("-" + PROPERTIES_FILE_PROPERTY)) {
+				propertiesFile = args[++i];
+			}
+		}
 
 		if (args.length<1){
-			System.out.println("Usage: testXMLGraph <graph file name> [<plug-ins directory> <default properties file>]");
+			System.out.println("Usage: testXMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile");
 			System.exit(1);
 		}
+					
+		String graphFile = args[args.length - 1];
 		
-		String plugins = null;
-		if (args.length > 1){
-			plugins = args[1];
-		}else {
-			plugins = arguments.getProperty(PLUGINS_PROPERTY);
-		}
-		
-		String propertiesFile = null;
-		if (args.length > 2) {
-			propertiesFile = args[2];
-		}
-			
+		System.out.println("**************** Input parameters: ****************");
+		System.out.println("Graph definition file: "+graphFile);
+		System.out.println("Plugins directory: "+ plugins);
+		System.out.println("Default properties file: "+ propertiesFile);
+		System.out.println("***************************************************");
+
 		FileInputStream in;
         
         //initialization; must be present
 		EngineInitializer.initEngine(plugins, propertiesFile, null);
 
-		System.out.println("Graph definition file: "+args[0]);
-		System.out.println("Plugins directory: "+ plugins);
-		System.out.println("Default properties file: "+ propertiesFile);
+		//prepare runtime parameters - JMX is turned off
+	    GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+	    runtimeContext.setUseJMX(false);
+		
+		//create transformation graph from xml file
+		TransformationGraph graph= new TransformationGraph();
+		TransformationGraphXMLReaderWriter graphReader=new TransformationGraphXMLReaderWriter(runtimeContext);
 		
 		try{
-			in=new FileInputStream(args[0]);
+			in=new FileInputStream(graphFile);
 		}
 		catch(FileNotFoundException e){
 			e.printStackTrace();
 			return;
 		}
-		
-		
-		TransformationGraph graph= new TransformationGraph();
-		TransformationGraphXMLReaderWriter graphReader=new TransformationGraphXMLReaderWriter(null);
 		
 		try{
 			graph = graphReader.read(in);
@@ -93,22 +114,12 @@ public class testXMLGraph{
 			ex.printStackTrace();
 		}
 				
-		try{
-			graph.init();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-
 		graph.dumpGraphConfiguration();
 		
-		//prepare runtime parameters - JMX is turned off
-	    GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-	    runtimeContext.setUseJMX(false);
-	    
+	    //execute graph
 		Future<Result> result;
 		try{
 			result = runGraph.executeGraph(graph, runtimeContext);
-			while (result.isDone()) {;}
 			if (!result.get().equals(Result.FINISHED_OK)){
 				System.out.println("Failed graph execution!\n");
 				return;		
