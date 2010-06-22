@@ -130,7 +130,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
         case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
         	return Types.LONGVARBINARY;
         case DataFieldMetadata.NUMERIC_FIELD:
-        	return Types.FLOAT;
+        	return Types.DOUBLE;
 		default: 
         	return super.jetelType2sql(field);
 		}
@@ -139,10 +139,13 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	@Override
 	public String jetelType2sqlDDL(DataFieldMetadata field) {
 		int type = jetelType2sql(field);
-		switch(type) {
-		case Types.BINARY :
-		case Types.VARBINARY :
+		switch (type) {
+		case Types.BINARY:
+		case Types.VARBINARY:
 			return sqlType2str(type);
+
+		case Types.DOUBLE:
+			return "FLOAT";
 		}
 		return super.jetelType2sqlDDL(field);
 	}

@@ -22,10 +22,12 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * Derby specific behaviour.
@@ -61,6 +63,44 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 	@Override
 	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
 		return true;
+	}
+	
+	public String sqlType2str(int sqlType) {
+		switch(sqlType) {
+		case Types.BOOLEAN :
+			return "SMALLINT";
+		case Types.NUMERIC :
+			return "DOUBLE";
+		}
+		return super.sqlType2str(sqlType);
+	}
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		int sqlType = jetelType2sql(field);
+		String ddlKeyword;
+		switch(sqlType) {
+		case Types.BINARY:
+			ddlKeyword = "CHAR";
+			break;
+		case Types.VARBINARY:
+			ddlKeyword = "VARCHAR";
+			break;
+		default: 
+			return super.jetelType2sqlDDL(field);
+		}
+		return  ddlKeyword + "(" + (field.isFixed() ? String.valueOf(field.getSize()) : "80") + ")" + " FOR BIT DATA";
+	}
+	
+	@Override
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getType()) {
+		case DataFieldMetadata.BOOLEAN_FIELD:
+			return Types.SMALLINT;
+        case DataFieldMetadata.NUMERIC_FIELD:
+        	return Types.DOUBLE;
+		default: 
+        	return super.jetelType2sql(field);
+		}
 	}
 	
 	public boolean isSchemaRequired() {
