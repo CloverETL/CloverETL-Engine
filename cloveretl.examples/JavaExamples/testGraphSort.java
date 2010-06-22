@@ -56,6 +56,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  * for each example separately.
  * This examples requires some additional parameters: data file, output file, sort key and metadata. 
  * All the properties are read from params.txt, if they are not set as program arguments.
+ * This example requires cloveretl.components.jar set on classpath.
  *
  */
 public class testGraphSort {
