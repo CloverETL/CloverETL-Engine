@@ -18,7 +18,7 @@
  */
 package org.jetel.ctl;
 
-import org.jetel.ctl.ASTnode.CLVFAddNode;
+import org.jetel.ctl.ASTnode.*;
 import org.jetel.ctl.ASTnode.CLVFAnd;
 import org.jetel.ctl.ASTnode.CLVFArguments;
 import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
@@ -29,6 +29,7 @@ import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
+import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
 import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
@@ -317,6 +318,11 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	public Object visit(CLVFConditionalExpression node, Object data) {
 		return visitNode(node,data);
 	}
+	
+	public Object visit(CLVFConditionalFailExpression node, Object data) {
+		return visitNode(node, data);
+	}
+
 
 	public Object visit(CLVFFieldAccessExpression node, Object data) {
 		return visitNode(node,data);
@@ -379,4 +385,5 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
+
 }

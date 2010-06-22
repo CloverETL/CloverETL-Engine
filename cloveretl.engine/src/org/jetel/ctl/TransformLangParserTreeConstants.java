@@ -12,53 +12,54 @@ public interface TransformLangParserTreeConstants
   public int JJTFUNCTIONDECLARATION = 6;
   public int JJTVARIABLEDECLARATION = 7;
   public int JJTASSIGNMENT = 8;
-  public int JJTCONDITIONALEXPRESSION = 9;
-  public int JJTOR = 10;
-  public int JJTAND = 11;
-  public int JJTCOMPARISON = 12;
-  public int JJTADDNODE = 13;
-  public int JJTSUBNODE = 14;
-  public int JJTMULNODE = 15;
-  public int JJTDIVNODE = 16;
-  public int JJTMODNODE = 17;
-  public int JJTUNARYSTATEMENT = 18;
-  public int JJTUNARYNONSTATEMENT = 19;
-  public int JJTPOSTFIXEXPRESSION = 20;
-  public int JJTMEMBERACCESSEXPRESSION = 21;
-  public int JJTARRAYACCESSEXPRESSION = 22;
-  public int JJTINFUNCTION = 23;
-  public int JJTFUNCTIONCALL = 24;
-  public int JJTISNULLNODE = 25;
-  public int JJTNVLNODE = 26;
-  public int JJTNVL2NODE = 27;
-  public int JJTIIFNODE = 28;
-  public int JJTPRINTERRNODE = 29;
-  public int JJTPRINTLOGNODE = 30;
-  public int JJTPRINTSTACKNODE = 31;
-  public int JJTRAISEERRORNODE = 32;
-  public int JJTREADDICTNODE = 33;
-  public int JJTWRITEDICTNODE = 34;
-  public int JJTDELETEDICTNODE = 35;
-  public int JJTFIELDACCESSEXPRESSION = 36;
-  public int JJTIDENTIFIER = 37;
-  public int JJTARGUMENTS = 38;
-  public int JJTDATEFIELD = 39;
-  public int JJTLOGLEVEL = 40;
-  public int JJTLITERAL = 41;
-  public int JJTLISTOFLITERALS = 42;
-  public int JJTBLOCK = 43;
-  public int JJTIFSTATEMENT = 44;
-  public int JJTSWITCHSTATEMENT = 45;
-  public int JJTCASESTATEMENT = 46;
-  public int JJTWHILESTATEMENT = 47;
-  public int JJTFORSTATEMENT = 48;
-  public int JJTFOREACHSTATEMENT = 49;
-  public int JJTDOSTATEMENT = 50;
-  public int JJTBREAKSTATEMENT = 51;
-  public int JJTCONTINUESTATEMENT = 52;
-  public int JJTRETURNSTATEMENT = 53;
-  public int JJTSEQUENCENODE = 54;
-  public int JJTLOOKUPNODE = 55;
+  public int JJTCONDITIONALFAILEXPRESSION = 9;
+  public int JJTCONDITIONALEXPRESSION = 10;
+  public int JJTOR = 11;
+  public int JJTAND = 12;
+  public int JJTCOMPARISON = 13;
+  public int JJTADDNODE = 14;
+  public int JJTSUBNODE = 15;
+  public int JJTMULNODE = 16;
+  public int JJTDIVNODE = 17;
+  public int JJTMODNODE = 18;
+  public int JJTUNARYSTATEMENT = 19;
+  public int JJTUNARYNONSTATEMENT = 20;
+  public int JJTPOSTFIXEXPRESSION = 21;
+  public int JJTMEMBERACCESSEXPRESSION = 22;
+  public int JJTARRAYACCESSEXPRESSION = 23;
+  public int JJTINFUNCTION = 24;
+  public int JJTFUNCTIONCALL = 25;
+  public int JJTISNULLNODE = 26;
+  public int JJTNVLNODE = 27;
+  public int JJTNVL2NODE = 28;
+  public int JJTIIFNODE = 29;
+  public int JJTPRINTERRNODE = 30;
+  public int JJTPRINTLOGNODE = 31;
+  public int JJTPRINTSTACKNODE = 32;
+  public int JJTRAISEERRORNODE = 33;
+  public int JJTREADDICTNODE = 34;
+  public int JJTWRITEDICTNODE = 35;
+  public int JJTDELETEDICTNODE = 36;
+  public int JJTFIELDACCESSEXPRESSION = 37;
+  public int JJTIDENTIFIER = 38;
+  public int JJTARGUMENTS = 39;
+  public int JJTDATEFIELD = 40;
+  public int JJTLOGLEVEL = 41;
+  public int JJTLITERAL = 42;
+  public int JJTLISTOFLITERALS = 43;
+  public int JJTBLOCK = 44;
+  public int JJTIFSTATEMENT = 45;
+  public int JJTSWITCHSTATEMENT = 46;
+  public int JJTCASESTATEMENT = 47;
+  public int JJTWHILESTATEMENT = 48;
+  public int JJTFORSTATEMENT = 49;
+  public int JJTFOREACHSTATEMENT = 50;
+  public int JJTDOSTATEMENT = 51;
+  public int JJTBREAKSTATEMENT = 52;
+  public int JJTCONTINUESTATEMENT = 53;
+  public int JJTRETURNSTATEMENT = 54;
+  public int JJTSEQUENCENODE = 55;
+  public int JJTLOOKUPNODE = 56;
 
 
   public String[] jjtNodeName = {
@@ -71,6 +72,7 @@ public interface TransformLangParserTreeConstants
     "FunctionDeclaration",
     "VariableDeclaration",
     "Assignment",
+    "ConditionalFailExpression",
     "ConditionalExpression",
     "Or",
     "And",
@@ -120,4 +122,4 @@ public interface TransformLangParserTreeConstants
     "LookupNode",
   };
 }
-/* JavaCC - OriginalChecksum=05bf5cdff9ca33d6a6a2a84645f6eea1 (do not edit this line) */
+/* JavaCC - OriginalChecksum=1c017091ed99186f894dfdce85b5af68 (do not edit this line) */

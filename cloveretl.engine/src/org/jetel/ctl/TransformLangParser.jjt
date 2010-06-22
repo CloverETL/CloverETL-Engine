@@ -722,7 +722,7 @@ CLVFStartExpression StartExpression() : {}{
 	}
 	
 	try {	
-  		ConditionalExpression()
+  		ConditionalFailExpression()
 	} catch (EndOfFileException e) { 
 		// Parsing deliberately terminated in unknownToken() due to EOF token
   	} catch (ParseException e) {
@@ -1164,7 +1164,7 @@ void Expression() #void :
 }
 
  // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
-{}{  	ConditionalExpression()
+{}{  	ConditionalFailExpression()
   	
 	[  	 ( 
   	  <ASSIGN>
@@ -1178,7 +1178,7 @@ void Expression() #void :
   	) 
   	{
   		// We check if the LHS is a variable reference
-  		// The check can't be done immediately after ConditionalExpression()
+  		// The check can't be done immediately after ConditionalFailExpression()
   		// because of the recursive call to AssignmentExpression() below
   		final SimpleNode result = (SimpleNode)jjtree.peekNode();
   		if (! checkAssignmentTarget(result)) {
@@ -1186,9 +1186,14 @@ void Expression() #void :
   		}
   	}
   	AssignmentExpression()
-   ]}
+   ]}
+
+void ConditionalFailExpression() #void :
+{}
+{
+  	ConditionalExpression()  ( LOOKAHEAD(2) ":" ConditionalExpression() #ConditionalFailExpression(2) )*}
 void ConditionalExpression() #ConditionalExpression(>2) : {}{	ConditionalOrExpression()
-	[ "?" ConditionalExpression() ":" ConditionalExpression() ]}void ConditionalOrExpression() #void : {}        {   ConditionalAndExpression()
+	[ LOOKAHEAD(2) "?" ConditionalExpression() ":" ConditionalExpression() ]}void ConditionalOrExpression() #void : {}        {   ConditionalAndExpression()
    ( <OR> ConditionalAndExpression() #Or(2)	)*}void ConditionalAndExpression() #void : {}{   EqualityExpression()
       ( <AND> EqualityExpression() #And(2)	) *}void EqualityExpression() #void :{}{  RelationalExpression()
     (     <EQUAL> RelationalExpression() { jjtThis.setOperator(EQUAL); } #Comparison(2)   |     <NON_EQUAL> RelationalExpression() { jjtThis.setOperator(NON_EQUAL); } #Comparison(2)  )*}void RelationalExpression() #void :{}{  AdditiveExpression()
@@ -1355,7 +1360,7 @@ void PrimarySuffix(Node prefix) #void:
 		 		jjtree.pushNode(prefix);
 		 	}
 		 
-		 	t = "["  ConditionalExpression() "]"
+		 	t = "["  ConditionalFailExpression() "]"
 		
 		 	{
 				jjtThis.begin(t.beginLine,t.beginColumn);
@@ -1516,14 +1521,14 @@ void Arguments(Node zeroArgument) #Arguments:
 	}
 		[ 
 		 ( 
-			ConditionalExpression()
+			ConditionalFailExpression()
 		  	|
 		  	TypeArgument()
 		 )
 		 ( 
 		   ","
 		  ( 
-		   ConditionalExpression()
+		   ConditionalFailExpression()
 		   |
 		   TypeArgument()
 		  ) 

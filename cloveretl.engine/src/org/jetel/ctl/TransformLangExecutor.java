@@ -43,6 +43,7 @@ import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
+import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
 import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
@@ -1325,6 +1326,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
+	
+	@Override
+	public Object visit(CLVFConditionalFailExpression node, Object data) {
+		try {
+			node.jjtGetChild(0).jjtAccept(this, data);
+		} catch (Exception e) {
+			node.jjtGetChild(1).jjtAccept(this, data);
+		}
+		return data;
+	}
+
 
 	public Object visit(CLVFDoStatement node, Object data) {
 		stack.enteredBlock(node.getScope());

@@ -38,6 +38,7 @@ import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
+import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
 import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
@@ -416,6 +417,28 @@ public class TypeChecker extends NavigatingVisitor {
 		} else {
 			castIfNeeded(node,1,ret);
 			castIfNeeded(node,2,ret);
+		}
+
+		node.setType(ret);
+		return data;
+	}
+	
+	public Object visit(CLVFConditionalFailExpression node, Object data) {
+		super.visit(node, data);
+		// if condition/expressions in error we propagate error
+		if (!checkChildren(node)) {
+			return data;
+		}
+
+		TLType tryType = ((SimpleNode) node.jjtGetChild(0)).getType();
+		TLType catchType = ((SimpleNode) node.jjtGetChild(1)).getType();
+
+		TLType ret = tryType.promoteWith(catchType);
+		if (ret.isError()) {
+			error(node, "Types of expressions mismatch: '" + tryType.name() + "' and '" + catchType.name() + "'");
+		} else {
+			castIfNeeded(node,0,ret);
+			castIfNeeded(node,1,ret);
 		}
 
 		node.setType(ret);
