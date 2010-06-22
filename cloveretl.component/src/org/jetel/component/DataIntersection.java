@@ -297,7 +297,13 @@ public class DataIntersection extends Node {
 		if (keyDuplicates) {
 			while ((inRecords[0] = driver.next()) != null) {
 				while ((inRecords[1] = slave.next()) != null) {
-					int transformResult = transformation.transform(inRecords, outRecords);
+					int transformResult = -1;
+
+					try {
+						transformResult = transformation.transform(inRecords, outRecords);
+					} catch (Exception exception) {
+						transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+					}
 
 					if (transformResult < 0) {
 						handleException(transformation, transformResult);
@@ -312,7 +318,13 @@ public class DataIntersection extends Node {
 			inRecords[0] = driver.next();
 			inRecords[1] = slave.next();
 
-			int transformResult = transformation.transform(inRecords, outRecords);
+			int transformResult = -1;
+
+			try {
+				transformResult = transformation.transform(inRecords, outRecords);
+			} catch (Exception exception) {
+				transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+			}
 
 			if (transformResult < 0) {
 				handleException(transformation, transformResult);

@@ -399,7 +399,15 @@ public class MergeJoin extends Node {
 		}
 		while (true) {
 			outRecords[0].reset();
-			int transformResult = transformation.transform(inRecords, outRecords);
+
+			int transformResult = -1;
+
+			try {
+				transformResult = transformation.transform(inRecords, outRecords);
+			} catch (Exception exception) {
+				transformResult = transformation.transformOnError(exception, inRecords, outRecords);
+			}
+
 			if (transformResult >= 0) {
 				outPort.writeRecord(outRecords[0]);
 			}else{

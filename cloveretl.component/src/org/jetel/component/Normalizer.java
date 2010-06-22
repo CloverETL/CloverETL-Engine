@@ -282,12 +282,28 @@ public class Normalizer extends Node {
 			if (inPort.readRecord(inRecord) == null) { // no more input data
 				return;
 			}
-			int count = norm.count(inRecord);
+
+			int count = -1;
+
+			try {
+				count = norm.count(inRecord);
+			} catch (Exception exception) {
+				count = norm.countOnError(exception, inRecord);
+			}
+
 			if (count < 0) {
 				handleException("count", count, src);
 			}
+
 			for (int idx = 0; idx < count; idx++) {
-				transformResult = norm.transform(inRecord, outRecord, idx);
+				transformResult = -1;
+
+				try {
+					transformResult = norm.transform(inRecord, outRecord, idx);
+				} catch (Exception exception) {
+					transformResult = norm.transformOnError(exception, inRecord, outRecord, idx);
+				}
+
 				if (transformResult >= 0) {
 					outPort.writeRecord(outRecord);
 					outRecord.reset();

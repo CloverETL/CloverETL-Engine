@@ -355,7 +355,14 @@ public class Denormalizer extends Node {
 			currentRecord = inPort.readRecord(srcRecord[src]);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
-				transformResult = denorm.transform(outRecord);
+				transformResult = -1;
+
+				try {
+					transformResult = denorm.transform(outRecord);
+				} catch (Exception exception) {
+					transformResult = denorm.transformOnError(exception, outRecord);
+				}
+
 				if (transformResult >= 0) {
 					outPort.writeRecord(outRecord);
 				}else{
@@ -369,7 +376,14 @@ public class Denormalizer extends Node {
 			counter++;
 			prevRecord = currentRecord;
 			src^=1;
-			transformResult = denorm.append(prevRecord);
+			transformResult = -1;
+
+			try {
+				transformResult = denorm.append(prevRecord);
+			} catch (Exception exception) {
+				transformResult = denorm.appendOnError(exception, prevRecord);
+			}
+
 			if (transformResult < 0) {
 				handleException("append", transformResult, counter);
 			}

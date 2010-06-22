@@ -160,7 +160,13 @@ public class ExtDataGenerator extends DataGenerator {
 		for (int i = 0; i < recordsNumber && runIt; i++) {
 			for (DataRecord oRecord : outRecord)
 				oRecord.reset();
-			int transformResult = generatorClass.generate(outRecord);
+			int transformResult = -1;
+
+			try {
+				transformResult = generatorClass.generate(outRecord);
+			} catch (Exception exception) {
+				transformResult = generatorClass.generateOnError(exception, outRecord);
+			}
 
 			if (transformResult == RecordTransform.ALL) {
 				for (int outPort = 0; outPort < outRecord.length; outPort++) {

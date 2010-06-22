@@ -352,7 +352,13 @@ public class LookupJoin extends Node {
                 do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
 						
-						int transformResult = transformation.transform(inRecords, outRecord);
+						int transformResult = -1;
+
+						try {
+							transformResult = transformation.transform(inRecords, outRecord);
+						} catch (Exception exception) {
+							transformResult = transformation.transformOnError(exception, inRecords, outRecord);
+						}
 
 						if (transformResult >= 0) {
 							writeRecord(WRITE_TO_PORT, outRecord[0]);

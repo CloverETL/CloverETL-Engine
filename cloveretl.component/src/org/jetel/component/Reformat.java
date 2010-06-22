@@ -266,7 +266,14 @@ public class Reformat extends Node {
 				for (int i=0;i<numOutputPorts;i++){
 				    outRecord[i].reset();
 				}
-				int transformResult = transformation.transform(inRecord, outRecord);
+
+				int transformResult = -1;
+
+				try {
+					transformResult = transformation.transform(inRecord, outRecord);
+				} catch (Exception exception) {
+					transformResult = transformation.transformOnError(exception, inRecord, outRecord);
+				}
 
 				if (transformResult == RecordTransform.ALL) {
 					for (int outPort = 0; outPort < numOutputPorts; outPort++) {
