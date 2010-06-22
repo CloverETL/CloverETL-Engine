@@ -436,7 +436,7 @@ public class Normalizer extends Node {
     			try {
     				RecordNormalize norm = createTransform(checkTransform);
     				norm.setNode(this);
-    				norm.init(transformationParameters, inMetadata, outMetadata);
+    				norm.init(transformationParameters, getInputPort(IN_PORT).getMetadata(), getOutputPort(OUT_PORT).getMetadata());
     			} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = xform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
