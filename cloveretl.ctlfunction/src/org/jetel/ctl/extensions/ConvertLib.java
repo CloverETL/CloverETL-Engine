@@ -662,7 +662,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	
 	public static final BigDecimal maxDoubleDecimal = new BigDecimal(Double.MAX_VALUE, TransformLangExecutor.MAX_PRECISION);
-	public static final BigDecimal minDoubleDecimal = new BigDecimal(Double.MIN_VALUE);
+	public static final BigDecimal minDoubleDecimal = new BigDecimal(-Double.MAX_VALUE, TransformLangExecutor.MAX_PRECISION);
 
 	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
 	public static final Double decimal2double(TLFunctionCallContext context, BigDecimal d) {
