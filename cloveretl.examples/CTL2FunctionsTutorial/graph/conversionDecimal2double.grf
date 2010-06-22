@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Tue Jun 22 14:16:11 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2double" revision="1.109">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Tue Jun 22 16:03:16 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2double" revision="1.111">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="decimal2doubleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -11,13 +11,6 @@
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 <Field name="Function" type="string"/>
 <Field name="Result" type="number"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="decimal2integerWhetherBoolean" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field length="32" name="Decimal" scale="3" type="decimal"/>
-<Field name="Function" type="string"/>
-<Field name="Result" type="boolean"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
