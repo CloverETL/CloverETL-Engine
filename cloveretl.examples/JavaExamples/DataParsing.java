@@ -31,7 +31,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Usage: testDataParsing [-plugins pluginsDirectory] [-config propertiesFile]
+ * Usage: DataParsing [-plugins pluginsDirectory] [-config propertiesFile]
  * 
  * This example illustrates usage of DataParser - the object for parsing plain text data.
  * Data from data/bonus.csv is parsed and saved in output/bonus.out
@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * for each example separately.
  *
  */
-public class testDataParsing {
+public class DataParsing {
 	
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";

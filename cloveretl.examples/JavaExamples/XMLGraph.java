@@ -32,7 +32,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.main.runGraph;
 
 /**
- * Usage: testXMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile
+ * Usage: XMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile
  * 
  * This example illustrates how run from java code transformation graph stored in xml file.
  * All examples require to provide CloverETL plugins. Plugins directory can be set as program argument or 
@@ -41,7 +41,7 @@ import org.jetel.main.runGraph;
  * for each example separately.
  *
  */
-public class testXMLGraph{
+public class XMLGraph{
 
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
@@ -75,7 +75,7 @@ public class testXMLGraph{
 		}
 
 		if (args.length<1){
-			System.out.println("Usage: testXMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile");
+			System.out.println("Usage: XMLGraph [-plugins pluginsDirectory] [-config propertiesFile] graphFile");
 			System.exit(1);
 		}
 					

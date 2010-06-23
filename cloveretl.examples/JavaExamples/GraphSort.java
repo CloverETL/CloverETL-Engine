@@ -59,7 +59,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  * This example requires cloveretl.components.jar set on classpath.
  *
  */
-public class testGraphSort {
+public class GraphSort {
 	
 	private final static String PARAMETER_FILE = "params.txt"; 
 	private final static String PLUGINS_PROPERTY = "plugins";
