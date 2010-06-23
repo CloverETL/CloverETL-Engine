@@ -25,7 +25,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class ResetTest extends CloverTestCase {
 
-	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios/";
+	private final static String SCENARIOS_RELATIVE_PATH = "../../cloveretl.test.scenarios/";
 	private final static String[] EXAMPLE_PATH = {
 			"../cloveretl.examples/SimpleExamples/",
 			"../cloveretl.examples/AdvancedExamples/",
@@ -33,7 +33,7 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/CTL2FunctionsTutorial/",
 			"../cloveretl.examples/DataProfiling/",
 			"../cloveretl.examples/ExtExamples/",
-			SCENARIOS_RELATIVE_PATH,
+			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/",
 			"../cloveretl.examples/CompanyTransactionsTutorial/"
 		};
