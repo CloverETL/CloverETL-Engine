@@ -121,7 +121,6 @@ public class ExtSort extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "EXT_SORT";
 
-	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
 	private ISortDataRecord sorter;
@@ -131,7 +130,7 @@ public class ExtSort extends Node {
 	/*
 	 * case sensitive sorting of string fields?
 	 */
-	boolean caseSensitive = false;
+	boolean caseSensitive = true;
 
 	
 	private InputPort inPort;
@@ -143,7 +142,6 @@ public class ExtSort extends Node {
 	private ByteBuffer recordBuffer;
 	private String localeStr;
 
-	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
 	private static final String KEY_FIELDS_ORDERING_1ST_DELIMETER = "(";
 	private static final String KEY_FIELDS_ORDERING_2ND_DELIMETER = ")";	
@@ -249,7 +247,8 @@ public class ExtSort extends Node {
 	 *                Description of the Exception
 	 * @since April 4, 2002
 	 */
-    public void init() throws ComponentNotReadyException {
+    @Override
+	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		try {
@@ -283,10 +282,6 @@ public class ExtSort extends Node {
         }
     }
     
-    public void reset() throws ComponentNotReadyException {
-    	super.reset();
-    }
-    
     /**
      * What is the capacity of internal buffer used for
      * in-memory sorting.
@@ -303,7 +298,8 @@ public class ExtSort extends Node {
      * @return    Description of the Returned Value
      * @since     May 21, 2002
      */
-    public void toXML(org.w3c.dom.Element xmlElement) {
+    @Override
+	public void toXML(org.w3c.dom.Element xmlElement) {
        super.toXML(xmlElement);
        
        // sortKey attribute
@@ -459,7 +455,8 @@ public class ExtSort extends Node {
     /* (non-Javadoc)
      * @see org.jetel.graph.Node#getType()
      */
-    public String getType() {
+    @Override
+	public String getType() {
         return COMPONENT_TYPE;
     }
 

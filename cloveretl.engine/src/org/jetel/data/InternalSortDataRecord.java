@@ -53,14 +53,12 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	private DataRecordCol currentRecordCol;
 	private int currentColSize;
 	private int currentColIndex;
-//	private ByteBuffer dataBuffer;
 	private RecordOrderedKey key;
 	private DataRecordMetadata metadata;
 	private int recCounter;
 	private int lastFound;
-	//private boolean sortOrderAscending;
 	private boolean[] sortOrderings; 
-	private List recordColList;
+	private List<DataRecordCol> recordColList;
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
     private boolean useCollator=false;
@@ -88,15 +86,12 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		this.metadata = metadata;
         this.numCollections = growingBuffer ? DEFAULT_NUM_COLLECTIONS : 1;
         this.sortOrderings = sortOrderings;
-		recordColList = new ArrayList(this.numCollections);
-		// allocate buffer for storing values
-		//dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		recordColList = new ArrayList<DataRecordCol>(this.numCollections);
 		key = new RecordOrderedKey(keyItems, sortOrderings, metadata);
 		key.setEqualNULLs(true);
 		key.init();
-//		sortOrderAscending = sortAscending;
 		recCounter=lastFound=currentColIndex= 0;
-		currentRecordCol=new DataRecordCol(oneColCapacity, metadata);
+		currentRecordCol=new DataRecordCol(oneColCapacity);
 		currentColSize=oneColCapacity;
 		recordColList.add(currentRecordCol);
 		updateUseCollatorIndicator(metadata, keyItems);
@@ -126,7 +121,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		currentColIndex=0;
 		if (recordColList.size()>0) {
 			currentRecordCol=(DataRecordCol)recordColList.get(0);
-			for(Iterator i=recordColList.iterator();i.hasNext();){
+			for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
 				((DataRecordCol)i.next()).reset();
 			}
 		}
@@ -136,7 +131,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 * @see org.jetel.data.ISortDataRecordsInternal#free()
 	 */
 	public void free(){
-	    for(Iterator i=recordColList.iterator();i.hasNext();){
+	    for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
 		    ((DataRecordCol)i.next()).free();
 		}
 	    recordColList.clear();
@@ -147,7 +142,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 */
 	public void rewind() {
 		lastFound = 0;
-		for(Iterator i=recordColList.iterator();i.hasNext();){
+		for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
 		    ((DataRecordCol)i.next()).rewind();
 		}
 	}
@@ -169,24 +164,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		return true;
 	}
 
-	/**
-	 * Stores additional record into internal buffer for sorting
-	 * 
-	 * @param record
-	 */
-//	public boolean put(ByteBuffer record){
-//		if (!currentRecordCol.put(record)){
-//		    if (!secureSpace()){
-//		        return false;
-//		    }
-//		    if (!currentRecordCol.put(record)){
-//		        throw new RuntimeException("Assertion problem: Can't store DataRecords in newly allocated DataRecordCol");
-//		    }
-//		}
-//		recCounter++;
-//		return true;
-//	}
-
 	private final boolean secureSpace(){
 	    if (currentColIndex+1 >= numCollections){
 	        return false;
@@ -199,7 +176,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	        // let's round it to 4B size (32bits)
 	        currentColSize=(((currentColSize*COLLECTION_GROW_FACTOR)/10)/32+1)*32;
             try{
-                currentRecordCol = new DataRecordCol(currentColSize, metadata);
+                currentRecordCol = new DataRecordCol(currentColSize);
             }catch(OutOfMemoryError ex){
                 currentRecordCol = null;
                 throw new RuntimeException("Out of memory in internal sorter algorithm. Please, set maximum Java heap size via -Xmx<size> JVM command line parameter or decrease sorter buffer capacity.");
@@ -224,7 +201,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
         }
         comparator.setEqualNULLs(true);
         DataRecordCol recordArray;
-	    for (Iterator iterator=recordColList.iterator();iterator.hasNext();){
+	    for (Iterator<DataRecordCol> iterator = recordColList.iterator(); iterator.hasNext();) {
 	        recordArray=((DataRecordCol)iterator.next());
 	        // sort it now
 	        java.util.Arrays.sort(recordArray.getRecordArray(), 0, recordArray.noItems,comparator);
@@ -311,7 +288,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		int noItems;
 		
 		
-		DataRecordCol(int capacity,DataRecordMetadata metadata){
+		DataRecordCol(int capacity) {
 			recordArray=new DataRecord[capacity];
 			noItems=0;
 			pointer=0;
@@ -335,20 +312,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 			}
 		}
 	
-//		boolean put(ByteBuffer serializedRecord){
-//			if (noItems<recordArray.length){
-//				if (recordArray[noItems]==null){
-//					recordArray[noItems]=new DataRecord(metadata);
-//					recordArray[noItems].init();
-//				}
-//				recordArray[noItems].deserialize(serializedRecord);
-//				noItems++;
-//				return true;
-//			}else{
-//				return false;
-//			}
-//		}
-		
 		DataRecord get(){
 	        if (pointer<noItems){
 	            return recordArray[pointer++];
@@ -381,13 +344,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		void free(){
 			reset();
 			Arrays.fill(recordArray,null);
-		}
-		
-		void dumpArray() {
-			for (int i = 0; i < noItems; i++) {
-				System.out.print("#" + i +":");
-				System.out.println(recordArray[i]);
-			}
 		}
 		
 	}
@@ -463,4 +419,9 @@ public class InternalSortDataRecord implements ISortDataRecord {
 			}
 		}
     }
+    
+    public RuleBasedCollator getCollator() {
+    	return collator;
+    }
+    
 }
