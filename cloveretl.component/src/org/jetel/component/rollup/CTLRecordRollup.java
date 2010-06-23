@@ -34,7 +34,7 @@ import org.jetel.util.MiscUtils;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 22nd June 2010
+ * @version 23rd June 2010
  * @created 22nd April 2010
  *
  * @see RecordRollup
@@ -382,7 +382,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 */
 	@CTLEntryPoint(name = RecordRollupTL.UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected int updateTransformOnErrorDelegate(String errorMessage, String stackTrace, int counter,
 			DataRecord groupAccumulator) throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
