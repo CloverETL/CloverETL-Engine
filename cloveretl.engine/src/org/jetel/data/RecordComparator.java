@@ -359,7 +359,8 @@ public class RecordComparator implements Comparator {
 		
 		if (collators == null) collators = new RuleBasedCollator[keyFields.length];
 		for (int i=0; i<keyFields.length; i++) {
-			if (metadataLocale[i] == null) continue;
+			//collator was prepared from outside the comparator and this collator has higher priority
+			if (collators[i] != null || metadataLocale[i] == null) continue;
 			collators[i] = (RuleBasedCollator)Collator.getInstance(metadataLocale[i]);
 			
 			if (iSensitivity != null && iSensitivity[i] != null) collators[i].setStrength(iSensitivity[i].intValue());
