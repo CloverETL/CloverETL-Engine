@@ -73,16 +73,21 @@ public class TLDateFormatLocaleCache extends TLCache {
 				// either both format and locale were literals (thus cached at init)
 				|| (cachedFormatter != null 
 						&& format.equals(cachedFormatter.getPattern()) 
-						&& locale.equals(previousLocaleString)
+						&& (locale == null || locale.equals(previousLocaleString))
 					)
 				// or format is already cached and previous inputs match the current ones
 				)
 			{
 				return cachedFormatter;
 			} else {
-				// otherwise we have to recompute cache and remember just in the case future input will be the same 
-				cachedFormatter = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
-				previousLocaleString = locale;
+				// otherwise we have to recompute cache and remember just in the case future input will be the same
+				if (locale == null) {
+					cachedFormatter = DateFormatterFactory.createFormatter(format);
+					previousLocaleString = locale;
+				} else {
+					cachedFormatter = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
+					previousLocaleString = locale;
+				}
 
 				return cachedFormatter;
 			}
