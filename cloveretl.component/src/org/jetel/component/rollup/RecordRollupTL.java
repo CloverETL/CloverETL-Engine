@@ -40,7 +40,7 @@ import org.jetel.util.MiscUtils;
  *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
- * @version 22nd June 2010
+ * @version 23rd June 2010
  * @since 28th April 2009
  */
 public class RecordRollupTL extends AbstractTransformTL implements RecordRollup {
@@ -134,15 +134,15 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
         }
 
         initGroupFunction = wrapper.prepareFunctionExecution(INIT_GROUP_FUNCTION_NAME);
-        initGroupOnErrorFunction = wrapper.prepareFunctionExecution(INIT_GROUP_ON_ERROR_FUNCTION_NAME);
+        initGroupOnErrorFunction = wrapper.prepareOptionalFunctionExecution(INIT_GROUP_ON_ERROR_FUNCTION_NAME);
         updateGroupFunction = wrapper.prepareFunctionExecution(UPDATE_GROUP_FUNCTION_NAME);
-        updateGroupOnErrorFunction = wrapper.prepareFunctionExecution(UPDATE_GROUP_ON_ERROR_FUNCTION_NAME);
+        updateGroupOnErrorFunction = wrapper.prepareOptionalFunctionExecution(UPDATE_GROUP_ON_ERROR_FUNCTION_NAME);
         finishGroupFunction = wrapper.prepareFunctionExecution(FINISH_GROUP_FUNCTION_NAME);
-        finishGroupOnErrorFunction = wrapper.prepareFunctionExecution(FINISH_GROUP_ON_ERROR_FUNCTION_NAME);
+        finishGroupOnErrorFunction = wrapper.prepareOptionalFunctionExecution(FINISH_GROUP_ON_ERROR_FUNCTION_NAME);
         updateTransformFunction = wrapper.prepareFunctionExecution(UPDATE_TRANSFORM_FUNCTION_NAME);
-        updateTransformOnErrorFunction = wrapper.prepareFunctionExecution(UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME);
+        updateTransformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME);
         transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
-        transformOnErrorFunction = wrapper.prepareFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
+        transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
 
 		// initialize an empty data record to be used instead of a null group accumulator
         emptyRecord.init();
