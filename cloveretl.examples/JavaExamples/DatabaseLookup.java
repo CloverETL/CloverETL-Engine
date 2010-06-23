@@ -52,7 +52,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  * All the properties are read from params.txt, if they are not set as program arguments.
  * This example requires cloveretl.connection.jar and cloveretl.lookup.jar set on classpath.
  */
-public class testDBLookup{
+public class DatabaseLookup{
 
 	//requested parameters
 	private final static String PARAMETER_FILE = "params.txt"; 
