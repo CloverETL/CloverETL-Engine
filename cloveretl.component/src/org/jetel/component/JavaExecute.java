@@ -407,6 +407,9 @@ public class JavaExecute extends Node {
 	@Override
 	public synchronized void free() {	
 		super.free();
-		codeToRun.free();
+		
+		if (codeToRun != null) {
+			codeToRun.free();
+		}
 	}
 }
