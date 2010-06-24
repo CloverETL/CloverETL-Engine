@@ -26,6 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -138,22 +140,30 @@ public class WcardPattern {
 	 * @param filePat Filename pattern. 
 	 * @return false for pattern without wildcards, true otherwise. 
 	 */
-	private boolean splitFilePattern(String pat, StringBuffer dir, StringBuffer filePat) {
+	private void splitFilePattern(String pat, StringBuffer dir, StringBuffer filePat) {
 		dir.setLength(0);
 		filePat.setLength(0);
 
 		File f = new File(pat);
 		dir.append(f.getParent());
 		filePat.append(f.getName());
-
+	}
+	
+	/**
+	 * Returns index of the first wildcard.
+	 * @param filePat
+	 * @return
+	 */
+	private int getWildCardIndex(String filePat) {
+		int resIdx = -1;
 		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-			if (filePat.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
-				return true;
+			int i;
+			if ((i = filePat.indexOf("" + WCARD_CHAR[wcardIdx])) >= 0) { // wildcard found
+				resIdx = resIdx == -1 || resIdx > i ? i : resIdx;
 			}
 		}
-
 		// no wildcard in pattern
-		return false;
+		return resIdx;
 	}
 	
 	/**
@@ -543,33 +553,82 @@ public class WcardPattern {
 		StringBuffer filePat = new StringBuffer();
 		
 		// if no wildcards, return original filename
-		if (!splitFilePattern(fileName, dirName, filePat)) {	// no wildcards
+		splitFilePattern(fileName, dirName, filePat);
+		int idxFileWildCard = getWildCardIndex(filePat.toString());
+		int idxPathWildCard = getWildCardIndex(dirName.toString());
+		if (idxFileWildCard < 0 && idxPathWildCard < 0) {	// no wildcards
 			mfiles.add(fileName);
 			return mfiles;
 		}
 
 		// check a directory
-		File dir;
+		List<File> lResolvedPaths = new LinkedList<File>();
 		try {
-			dir = new File(FileUtils.getFileURL(parent, dirName.toString()).getPath());
+			URL url = FileUtils.getFileURL(parent, dirName.toString());
+			lResolvedPaths.add(new File(url.getQuery() != null ? url.getPath() + "?" + url.getQuery() : url.getPath()));
 		} catch (Exception e) {
-			dir = new File(dirName.toString());
+			lResolvedPaths.add(new File(dirName.toString()));
 		} 
 		
+		// get all valid paths
+		if (idxPathWildCard >= 0) {
+			String wCardPath = lResolvedPaths.get(0).toString();
+			lResolvedPaths.clear();
+			lResolvedPaths.addAll(getResolvedPaths(wCardPath));
+		}
+		
 		// list the directory and return its files
-		if (dir.exists()) {
-			FilenameFilter filter = new WcardFilter(filePat.toString());
-			String[] curMatch = dir.list(filter);
-			Arrays.sort(curMatch);
-			for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
-				File f = new File(dir, curMatch[fnIdx]);
-				mfiles.add(f.getAbsolutePath());
+		for (File dir: lResolvedPaths) {
+			if (dir.exists()) {
+				FilenameFilter filter = new WcardFilter(filePat.toString());
+				String[] curMatch = dir.list(filter);
+				Arrays.sort(curMatch);
+				for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
+					File f = new File(dir, curMatch[fnIdx]);
+					mfiles.add(f.getAbsolutePath());
+				}
 			}
 		}
-
 		return mfiles;
 	}
 	
+	/**
+	 * @param string
+	 * @return
+	 */
+	private Collection<? extends File> getResolvedPaths(String sDir) {
+		List<File> lResolvedPaths = new LinkedList<File>();
+		int idxPathWildCard = getWildCardIndex(sDir);
+		if (idxPathWildCard == -1) {
+			lResolvedPaths.add(new File(sDir));
+			return lResolvedPaths;
+		}
+		
+		// get resolved path
+		File fTmp = new File(sDir.substring(0, idxPathWildCard));
+		File sResolvedPath = fTmp.getParentFile();
+		
+		// get wildcard dir name
+		File tmpFile = new File(sDir);
+		File parentFile;
+		do {
+			parentFile = tmpFile;
+			tmpFile = parentFile.getParentFile();
+		} while (!sResolvedPath.equals(tmpFile));
+		String sWCardPath = parentFile.getName();
+		
+		// list and add all suitable directories directories
+		FilenameFilter filter = new WcardFilter(sWCardPath);
+		File[] curMatch = sResolvedPath.listFiles(filter);
+		Arrays.sort(curMatch);
+		for (File f: curMatch) {
+			if (f.isDirectory()) {
+				lResolvedPaths.addAll(getResolvedPaths(f.toString() + sDir.substring(parentFile.toString().length())));
+			}
+		}
+		return lResolvedPaths;
+	}
+
 	/**
 	 * Checks if the name accepts the pattern
 	 * @param pattern
