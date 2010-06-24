@@ -103,7 +103,7 @@
 	 <FlatFile outputFile="data-out/conversionDouble2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDouble2long" graphFile="graph/conversionDouble2long.grf">	 
+<FunctionalTest ident="conversionDouble2long" graphFile="graph/conversionDouble2long.grf" assertion="false">	 
 	 <FlatFile outputFile="data-out/conversionDouble2longAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2longAllowedOverview.txt"/>
 	 <FlatFile outputFile="data-out/conversionDouble2longNotAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2longNotAllowedOverview.txt"/>
 </FunctionalTest>
