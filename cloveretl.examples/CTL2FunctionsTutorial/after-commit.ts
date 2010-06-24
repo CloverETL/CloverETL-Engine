@@ -93,8 +93,9 @@
 	 <FlatFile outputFile="data-out/conversionDecimal2integerNotAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2integerNotAllowedOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionDecimal2long" graphFile="graph/conversionDecimal2long.grf">	 
-	 <FlatFile outputFile="data-out/conversionDecimal2longOverview.txt" supposedFile="supposed-out/conversionDecimal2longOverview.txt"/>
+<FunctionalTest ident="conversionDecimal2long" graphFile="graph/conversionDecimal2long.grf" assertion="false">	 
+	 <FlatFile outputFile="data-out/conversionDecimal2longAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2longAllowedOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionDecimal2longNotAllowedOverview.txt" supposedFile="supposed-out/conversionDecimal2longNotAllowedOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionDouble2integer" graphFile="graph/conversionDouble2integer.grf" assertion="false">	 
@@ -103,7 +104,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="conversionDouble2long" graphFile="graph/conversionDouble2long.grf">	 
-	 <FlatFile outputFile="data-out/conversionDouble2longOverview.txt" supposedFile="supposed-out/conversionDouble2longOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionDouble2longAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2longAllowedOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionDouble2longNotAllowedOverview.txt" supposedFile="supposed-out/conversionDouble2longNotAllowedOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionGetFieldName" graphFile="graph/conversionGetFieldName.grf">
@@ -185,7 +187,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="conversionStr2integerWithFormatLocale" graphFile="graph/conversionStr2integerWithFormatLocale.grf">
-	 <FlatFile outputFile="data-out/conversionStr2integerWithFormatLocaleOverview.txt" supposedFile="supposed-out/conversionStr2integerWithFormatLocaleOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionStr2integerWithFormatLocale_OnlyDigitsOverview.txt" supposedFile="supposed-out/conversionStr2integerWithFormatLocale_OnlyDigitsOverview.txt"/>
+	 <FlatFile outputFile="data-out/conversionStr2integerWithFormatLocale_ScientificNotationOverview.txt" supposedFile="supposed-out/conversionStr2integerWithFormatLocale_ScientificNotationOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="conversionStr2integerWithRadix" graphFile="graph/conversionStr2integerWithRadix.grf">
