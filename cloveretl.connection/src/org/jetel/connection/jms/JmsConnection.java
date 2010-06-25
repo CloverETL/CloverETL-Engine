@@ -46,6 +46,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -443,12 +444,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 *
 	 * @param  nodeXML  Description of the Parameter
 	 * @return          Description of the Return Value
+	 * @throws XMLConfigurationException 
 	 */
-	public static JmsConnection fromXML(TransformationGraph graph, Element nodeXML) {
+	public static JmsConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		JmsConnection con;
 		try {
 			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
+				// TODO move readConfig() to init() method - fromXML shouldn't read anything from external files
 				Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
 						xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
@@ -473,9 +476,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 						xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
 						);
 			}
-		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
-			return null;
+		} catch (Exception e) {
+            throw new XMLConfigurationException("JmsConnection: " 
+            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
 		}
 
 		return con;
