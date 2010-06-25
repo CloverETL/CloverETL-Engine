@@ -107,7 +107,12 @@ public class FlowControl {
 			problemReporter.setErrorLocation((errorLocation != null)
 					? errorLocation : new ErrorLocation(node.getBegin(), node.getEnd()));
 
-			Object result = node.jjtGetChild(0).jjtAccept(this, data);
+			Object result;
+			if (node.jjtHasChildren() && node.jjtGetChild(0) != null) {
+				result = node.jjtGetChild(0).jjtAccept(this, data);
+			} else {
+				result = true; // this was duplicate import which was ignored 
+			}
 
 			// restore current "import context"
 			problemReporter.setImportFileUrl(importFileUrl);

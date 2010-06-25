@@ -41,6 +41,7 @@ import org.jetel.ctl.data.Scope;
 public class ParserHelper {
 
 	private Scope currentScope;
+
 	private TreeMap<String,List<CLVFFunctionDeclaration>> declaredFunctions = new TreeMap<String,List<CLVFFunctionDeclaration>>();
 	private int blockOffset = 0; 
 	private int variableOffset = 0;
@@ -91,8 +92,8 @@ public class ParserHelper {
 		// the global scope has no parent - so it is null
 		variableOffset = currentScope != null ? currentScope.size() : 0; 
 		blockOffset--;
-	}
 
+	}
 	public CLVFVariableDeclaration getVariable(String name) {
 		for (Scope scope = currentScope; scope != null; scope = scope.getParent()) {
 			CLVFVariableDeclaration decl = scope.get(name);
@@ -134,6 +135,12 @@ public class ParserHelper {
 		return blockOffset++;
 	}
 	
+	/**
+	 * @return the currentScope
+	 */
+	public Scope getCurrentScope() {
+		return currentScope;
+	}
 	
 	
 }

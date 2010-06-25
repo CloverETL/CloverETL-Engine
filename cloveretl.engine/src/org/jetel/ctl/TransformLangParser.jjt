@@ -100,6 +100,7 @@ public class TransformLangParser extends ExpParser {
 	   private TransformationGraph graph;
        private PropertyRefResolver propertyRefResolver;
        private String encoding;
+       private boolean isImported = false;
 
 	/**
 	 * Creates the main parser
@@ -123,6 +124,7 @@ public class TransformLangParser extends ExpParser {
 			  this.parserHelper=parent.parserHelper;
 			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;              this.encoding = parent.encoding;
+              this.isImported  = true;
       }
       
 	public void reset(java.io.InputStream stream) {
@@ -685,8 +687,14 @@ CLVFStart Start() :         // Start -> Exp
 {}
 {
 	{
-		// create global scope
-		jjtThis.setScope(enteredBlock());
+		if (!isImported)
+	  	{			// create global scope
+			jjtThis.setScope(enteredBlock());
+		} else		{
+		  	// for the imported source file reuse current scope
+			jjtn000.setScope( parserHelper.getCurrentScope());
+		}
+		
 		// check comments for execution mode indication
 		jjtThis.setCompiled(isCompiledMode(jj_nt));
 	}
@@ -705,7 +713,10 @@ CLVFStart Start() :         // Start -> Exp
 	} 
 	
 	{
-		exitedBlock();
+		if (!isImported)
+	  	{
+			exitedBlock();		
+		}
   		return jjtThis;
 	} 
 }
@@ -819,6 +830,7 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);				
 				parser.addParsedImports(getParsedImports());
 			 	parseTree = parser.Start();				jjtThis.jjtAddChild(parseTree,0);
+				jjtThis.jjtGetChild(0).jjtSetParent(jjtThis);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
 				this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;			} catch(IOException e){				error(jjtThis,"Unable to open import \""+filenameURL+"\": " + e.getMessage());
 			} finally {
@@ -826,7 +838,8 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
         		problemReporter.setImportFileUrl(importFileUrl);
         		problemReporter.setErrorLocation(errorLocation);
 			}
-		} 
+		} else {                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of mport of the same file");
+		}		  
 
 	}}
 

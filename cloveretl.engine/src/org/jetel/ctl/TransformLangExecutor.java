@@ -483,7 +483,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	public Object visit(CLVFStart node, Object data) {
 
-		stack.enteredBlock(node.getScope());
+		if (node.jjtGetParent() == null || (!(node.jjtGetParent() instanceof CLVFImportSource))) {
+			stack.enteredBlock(node.getScope());
+		}
 		
 		final int childCount = node.jjtGetNumChildren();
 		for (int i = 0; i < childCount; i++) {
@@ -502,7 +504,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			}
 		}
 
-		if (!keepGlobalScope) {
+		if (!keepGlobalScope && (node.jjtGetParent() == null || (!(node.jjtGetParent() instanceof CLVFImportSource)))) {
 			// debugging is off: throw away the global scope
 			stack.exitedBlock();
 		}
