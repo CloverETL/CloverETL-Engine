@@ -1795,30 +1795,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final int index = node.getLookupIndex();
 		
 		switch (node.getOperation()) {
-		case CLVFLookupNode.OP_INIT:
-			try {
-				// reinitialize a free-d lookup table
-				node.getLookupTable().init();
-				
-				/*
-				 * Use the DataRecord stored within this node.
-				 * The SAME record is shared among all nodes accessing the same lookup table.
-				 * That allows calling seek() method without argument and some performance speedup
-				 * 
-				 * We also use the information from old Lookup instance. That is why free() does not throw the
-				 * reference away.
-				 */
-				final DataRecord keyRecord = node.getLookupRecord();
-				lookups[index] = node.getLookupTable().createLookup(lookups[index].getKey(),keyRecord);
-			} catch (ComponentNotReadyException ex) {
-				throw new TransformLangExecutorRuntimeException(node,"Cannot initialize lookup table '"	+ node.getLookupName()+ "' :", ex);
-			}
-			return data;
-		case CLVFLookupNode.OP_FREE:
-			node.getLookupTable().free();
-			// we do NOT throw away the lookup[index] so that possible init() call can access it
-			// see above how the new lookup is recreated
-			return data;
 		case CLVFLookupNode.OP_COUNT:
 			// get parameters are stored as function parameters
 			final CLVFArguments a = (CLVFArguments)node.jjtGetChild(0);

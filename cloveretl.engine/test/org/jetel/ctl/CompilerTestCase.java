@@ -211,7 +211,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		lkpRecord.getField("City").setValue("Bruxelles");
 		lkp.put(lkpRecord);
 
-		// duplicate entry lkpRecord.getField("Name").setValue("Charlie"); lkpRecord.getField("Value").setValue(3);
+		// duplicate entry 
+		lkpRecord.getField("Name").setValue("Charlie");
+		lkpRecord.getField("Value").setValue(3);
 		lkpRecord.getField("City").setValue("Chamonix");
 		lkp.put(lkpRecord);
 		lkpRecord.getField("Name").setValue("Charlie");

@@ -763,7 +763,7 @@ CLVFStartExpression StartExpression() : {/*@bgen(jjtree) StartExpression */
 	}
 	
 	try {	
-  		ConditionalExpression()
+  		ConditionalFailExpression()
 	} catch (EndOfFileException e) { 
 		// Parsing deliberately terminated in unknownToken() due to EOF token
   	} catch (ParseException e) {
@@ -1602,7 +1602,7 @@ void Expression()       :
   jjtree.openNodeScope(jjtn000);
 /*@egen*/}{/*@bgen(jjtree) #Assignment(> 1) */
         try {
-/*@egen*/  	ConditionalExpression()
+/*@egen*/  	ConditionalFailExpression()
   	
 	[  	 ( 
   	  <ASSIGN>
@@ -1616,7 +1616,7 @@ void Expression()       :
   	) 
   	{
   		// We check if the LHS is a variable reference
-  		// The check can't be done immediately after ConditionalExpression()
+  		// The check can't be done immediately after ConditionalFailExpression()
   		// because of the recursive call to AssignmentExpression() below
   		final SimpleNode result = (SimpleNode)jjtree.peekNode();
   		if (! checkAssignmentTarget(result)) {
@@ -1644,7 +1644,39 @@ void Expression()       :
             jjtree.closeNodeScope(jjtn000, jjtree.nodeArity() > 1);
           }
         }
-/*@egen*/}
+/*@egen*/}
+
+void ConditionalFailExpression()       :
+{}
+{
+  	ConditionalExpression()  ( LOOKAHEAD(2) ":"/*@bgen(jjtree) #ConditionalFailExpression( 2) */
+                                                    {
+                                                      CLVFConditionalFailExpression jjtn001 = new CLVFConditionalFailExpression(this, JJTCONDITIONALFAILEXPRESSION);
+                                                      boolean jjtc001 = true;
+                                                      jjtree.openNodeScope(jjtn001);
+                                                    }
+                                                    try {
+/*@egen*/ ConditionalExpression()/*@bgen(jjtree)*/
+                                                    } catch (Throwable jjte001) {
+                                                      if (jjtc001) {
+                                                        jjtree.clearNodeScope(jjtn001);
+                                                        jjtc001 = false;
+                                                      } else {
+                                                        jjtree.popNode();
+                                                      }
+                                                      if (jjte001 instanceof RuntimeException) {
+                                                        throw (RuntimeException)jjte001;
+                                                      }
+                                                      if (jjte001 instanceof ParseException) {
+                                                        throw (ParseException)jjte001;
+                                                      }
+                                                      throw (Error)jjte001;
+                                                    } finally {
+                                                      if (jjtc001) {
+                                                        jjtree.closeNodeScope(jjtn001,  2);
+                                                      }
+                                                    }
+/*@egen*/                               )*}
 void ConditionalExpression()                            : {/*@bgen(jjtree) #ConditionalExpression(> 2) */
   CLVFConditionalExpression jjtn000 = new CLVFConditionalExpression(this, JJTCONDITIONALEXPRESSION);
   boolean jjtc000 = true;
@@ -1652,7 +1684,7 @@ void ConditionalExpression()                            : {/*@bgen(jjtree) #Con
 /*@egen*/}{/*@bgen(jjtree) #ConditionalExpression(> 2) */
         try {
 /*@egen*/	ConditionalOrExpression()
-	[ "?" ConditionalExpression() ":" ConditionalExpression() ]/*@bgen(jjtree)*/
+	[ LOOKAHEAD(2) "?" ConditionalExpression() ":" ConditionalExpression() ]/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -2286,7 +2318,7 @@ void PrimarySuffix(Node prefix)      :
 		 		jjtree.pushNode(prefix);
 		 	}
 		 
-		 	t = "["  ConditionalExpression() "]"/*@bgen(jjtree) #ArrayAccessExpression( 2) */
+		 	t = "["  ConditionalFailExpression() "]"/*@bgen(jjtree) #ArrayAccessExpression( 2) */
                         {
                           CLVFArrayAccessExpression jjtn003 = new CLVFArrayAccessExpression(this, JJTARRAYACCESSEXPRESSION);
                           boolean jjtc003 = true;
@@ -2739,14 +2771,14 @@ void Arguments(Node zeroArgument)           :
 	}
 		[ 
 		 ( 
-			ConditionalExpression()
+			ConditionalFailExpression()
 		  	|
 		  	TypeArgument()
 		 )
 		 ( 
 		   ","
 		  ( 
-		   ConditionalExpression()
+		   ConditionalFailExpression()
 		   |
 		   TypeArgument()
 		  ) 
@@ -3754,10 +3786,6 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
 				jjtn000.setOperation(CLVFLookupNode.OP_NEXT);
 			} else if ("count".equals(opFunc.getName())) {
 				jjtn000.setOperation(CLVFLookupNode.OP_COUNT);
-			} else if ("init".equals(opFunc.getName())) {
-				jjtn000.setOperation(CLVFLookupNode.OP_INIT);
-			} else if ("free".equals(opFunc.getName())) {
-				jjtn000.setOperation(CLVFLookupNode.OP_FREE);
 			} else {
 	   			error(opFunc,"Illegal lookup manipulator","Use one of get(), next(), init(), free() or count()");
 	   		}

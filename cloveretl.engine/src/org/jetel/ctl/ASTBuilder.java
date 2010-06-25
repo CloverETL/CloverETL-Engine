@@ -516,13 +516,6 @@ public class ASTBuilder extends NavigatingVisitor {
 			node.setType(TLType.forRecord(ret));
 			break;
 			
-		case CLVFLookupNode.OP_INIT:
-			node.setType(TLType.VOID);
-			break;
-			
-		case CLVFLookupNode.OP_FREE:
-			node.setType(TLType.VOID);
-			break;
 		}
 
 		return node;

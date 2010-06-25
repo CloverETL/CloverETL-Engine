@@ -7,16 +7,12 @@ integer idx;
 function integer transform() {
 	idx = 0;
 	for (integer i=0; i<2; i++) {
-		alphaResult[i] = lookup(TestLookup).get('Alpha',1).City; 
+		alphaResult[i] = lookup(TestLookup).get('Alpha',1).City;
 		bravoResult[i] = lookup(TestLookup).get('Bravo',2).City;
 		countResult[i] = lookup(TestLookup).count('Charlie',3);
 		for (integer count=0; count<countResult[i]; count++) {
 			charlieResult[idx++] = lookup(TestLookup).next().City;
 		}
-		printErr('Freeing lookup table');
-		lookup(TestLookup).free();
-		printErr('Initializing lookup table');
-		lookup(TestLookup).init();
 	}
 	return 0;
 }
