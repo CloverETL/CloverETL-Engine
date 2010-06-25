@@ -103,13 +103,25 @@ public final class TransformationGraph extends GraphElement {
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	/** Time stamp of instance creation time. */
-	private long created = System.currentTimeMillis();
+	private long instanceCreated = System.currentTimeMillis();
 	
 	private WatchDog watchDog;
 
 	private TypedProperties graphProperties;
 
 	private IAuthorityProxy authorityProxy;
+	
+	/**
+	 * Set of variables describing this graph instance. All information are retrieved from graph xml file.
+	 */
+	private String author;
+	private String revision;
+	private String created;
+	private String modified;
+	private String modifiedBy;
+	private String licenseType;
+	private String licenseCode;
+	private String guiVersion;
 	
 	/**
 	 * This runtime context is necessary to be given in the initialization time.
@@ -1119,8 +1131,11 @@ public final class TransformationGraph extends GraphElement {
 		return TransformationGraph.logger;
 	}
     
-	public long getCreated() {
-		return created;
+	/**
+	 * @return time when this class instance was created
+	 */
+	public long getInstanceCreated() {
+		return instanceCreated;
 	}
 	
 	public Dictionary getDictionary() {
@@ -1181,5 +1196,69 @@ public final class TransformationGraph extends GraphElement {
         } while (i != num);
         return null;
     }
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getRevision() {
+		return revision;
+	}
+
+	public void setRevision(String revision) {
+		this.revision = revision;
+	}
+
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(String modifiedBy) {
+		this.modifiedBy = modifiedBy;
+	}
+
+	public String getModified() {
+		return modified;
+	}
+
+	public void setModified(String modified) {
+		this.modified = modified;
+	}
+
+	public String getLicenseType() {
+		return licenseType;
+	}
+
+	public void setLicenseType(String licenseType) {
+		this.licenseType = licenseType;
+	}
+
+	public String getLicenseCode() {
+		return licenseCode;
+	}
+
+	public void setLicenseCode(String licenseCode) {
+		this.licenseCode = licenseCode;
+	}
+
+	public String getGuiVersion() {
+		return guiVersion;
+	}
+
+	public void setGuiVersion(String guiVersion) {
+		this.guiVersion = guiVersion;
+	}
 
 }
