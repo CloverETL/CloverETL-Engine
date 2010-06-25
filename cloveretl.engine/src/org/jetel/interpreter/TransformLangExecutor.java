@@ -2020,18 +2020,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		}
 		switch (node.opType) {
 		case CLVFLookupNode.OP_INIT:
-			try {
+			// The code is removed from CTL1 after discuession with Kokon, in CTL2 these functions do not exist anymore as they are not needed 
+			/*try {
 				node.lookupTable.init();
+				node.lookupTable.preExecute();
 			} catch (ComponentNotReadyException ex) {
 				throw new TransformLangExecutorRuntimeException(node,
 						"Error when initializing lookup table \""
 								+ node.lookupName + "\" :", ex);
-			}
+			}*/
 			return data;
 		case CLVFLookupNode.OP_FREE:
-			node.lookupTable.free();
+			// The code is removed from CTL1 after discuession with Kokon, in CTL2 these functions do not exist anymore as they are not needed
+			/*node.lookupTable.free();
 			node.lookup = null;
-			lookups.remove(node.lookupTable.getId());
+			lookups.remove(node.lookupTable.getId());*/
 			return data;
 		case CLVFLookupNode.OP_NUM_FOUND:
 			stack.push(new TLNumericValue(TLValueType.INTEGER, new CloverInteger(

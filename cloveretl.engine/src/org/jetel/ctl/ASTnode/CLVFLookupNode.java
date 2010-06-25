@@ -33,8 +33,6 @@ public class CLVFLookupNode extends SimpleNode {
 	public static final int OP_GET = 0;
 	public static final int OP_NEXT = 1;
 	public static final int OP_COUNT = 2;
-	public static final int OP_INIT = 3;
-	public static final int OP_FREE = 4;
 
 	private String lookupName;
 	private Integer opType = null; // default is get

@@ -1061,10 +1061,6 @@ public class TypeChecker extends NavigatingVisitor {
 		
 		case CLVFLookupNode.OP_NEXT:
 			opName = "next";
-		case CLVFLookupNode.OP_INIT:
-			opName = opName == null ? "init" : opName;  //can be flow from above
-		case CLVFLookupNode.OP_FREE:
-			opName = opName == null ? "free" : opName; // can be flow from above
 			args = (CLVFArguments)node.jjtGetChild(0);
 			if (args.jjtGetNumChildren()> 0) {
 				actual = new TLType[args.jjtGetNumChildren()];

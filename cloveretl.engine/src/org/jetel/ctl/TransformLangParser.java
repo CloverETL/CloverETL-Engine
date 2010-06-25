@@ -4123,10 +4123,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                                 jjtn000.setOperation(CLVFLookupNode.OP_NEXT);
                         } else if ("count".equals(opFunc.getName())) {
                                 jjtn000.setOperation(CLVFLookupNode.OP_COUNT);
-                        } else if ("init".equals(opFunc.getName())) {
-                                jjtn000.setOperation(CLVFLookupNode.OP_INIT);
-                        } else if ("free".equals(opFunc.getName())) {
-                                jjtn000.setOperation(CLVFLookupNode.OP_FREE);
                         } else {
                                 error(opFunc,"Illegal lookup manipulator","Use one of get(), next(), init(), free() or count()");
                         }
@@ -4307,12 +4303,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_155() {
-    if (jj_scan_token(LOOKUP_ADMIN)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
   private boolean jj_3R_37() {
     if (jj_scan_token(RECORD_VAR)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
@@ -4321,6 +4311,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_162() {
     if (jj_scan_token(129)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_155() {
+    if (jj_scan_token(LOOKUP_ADMIN)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
@@ -4346,12 +4342,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_154() {
-    if (jj_scan_token(LOOKUP_FOUND)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
   private boolean jj_3R_91() {
     if (jj_scan_token(BOOLEAN_VAR)) return true;
     return false;
@@ -4366,6 +4356,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_33() {
     if (jj_3R_56()) return true;
     if (jj_scan_token(SEMICOLON)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_154() {
+    if (jj_scan_token(LOOKUP_FOUND)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
@@ -4411,12 +4407,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_153() {
-    if (jj_scan_token(LOOKUP_NEXT)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
   private boolean jj_3_7() {
     if (jj_3R_22()) return true;
     return false;
@@ -4434,6 +4424,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_25() {
     if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_153() {
+    if (jj_scan_token(LOOKUP_NEXT)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
@@ -5579,7 +5575,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     jj_nt = token;
     token = oldToken;
     jj_kind = kind;
-   	tokenError(kind); // <- Inserted    
+	tokenError(kind); // <- Inserted    
     throw generateParseException();
   }
 
