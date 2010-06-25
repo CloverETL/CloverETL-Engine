@@ -39,6 +39,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
            private TransformationGraph graph;
        private PropertyRefResolver propertyRefResolver;
        private String encoding;
+       private boolean isImported = false;
 
         /**
 	 * Creates the main parser
@@ -66,6 +67,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;
               this.encoding = parent.encoding;
+              this.isImported  = true;
       }
 
         public void reset(java.io.InputStream stream) {
@@ -313,8 +315,16 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-                // create global scope
-                jjtn000.setScope(enteredBlock());
+                if (!isImported)
+                {
+                        // create global scope
+                        jjtn000.setScope(enteredBlock());
+                } else
+                {
+                        // for the imported source file reuse current scope
+                        jjtn000.setScope( parserHelper.getCurrentScope());
+                }
+
                 // check comments for execution mode indication
                 jjtn000.setCompiled(isCompiledMode(jj_nt));
       try {
@@ -333,7 +343,10 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
-                exitedBlock();
+                if (!isImported)
+                {
+                        exitedBlock();
+                }
                 {if (true) return jjtn000;}
     } catch (Throwable jjte000) {
           if (jjtc000) {
@@ -588,6 +601,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                                 parser.addParsedImports(getParsedImports());
                                 parseTree = parser.Start();
                                 jjtn000.jjtAddChild(parseTree,0);
+                                jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);
                                 addParsedImports(parser.getParsedImports()); // merge child's imports
                                 this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;
                         } catch(IOException e){
@@ -597,6 +611,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         problemReporter.setImportFileUrl(importFileUrl);
                         problemReporter.setErrorLocation(errorLocation);
                         }
+                } else {
+                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of mport of the same file");
                 }
     } finally {
           if (jjtc000) {
@@ -4298,28 +4314,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(9, xla); }
   }
 
-  private boolean jj_3R_38() {
-    if (jj_scan_token(LIST_VAR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_37() {
-    if (jj_scan_token(RECORD_VAR)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_162() {
-    if (jj_scan_token(129)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_155() {
-    if (jj_scan_token(LOOKUP_ADMIN)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
   private boolean jj_3R_36() {
     if (jj_scan_token(MAP_VAR)) return true;
     if (jj_scan_token(129)) return true;
@@ -5308,14 +5302,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_46() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
   private boolean jj_3R_24() {
     if (jj_3R_47()) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_46() {
+    if (jj_3R_61()) return true;
     return false;
   }
 
@@ -5327,6 +5321,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_49() {
     if (jj_scan_token(SWITCH)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_62() {
+    if (jj_3R_77()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_78()) jj_scanpos = xsp;
     return false;
   }
 
@@ -5342,14 +5344,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     jj_scanpos = xsp;
     if (jj_3R_46()) return true;
     }
-    return false;
-  }
-
-  private boolean jj_3R_62() {
-    if (jj_3R_77()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_78()) jj_scanpos = xsp;
     return false;
   }
 
@@ -5396,11 +5390,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3_1() {
-    if (jj_3R_17()) return true;
-    return false;
-  }
-
   private boolean jj_3R_42() {
     if (jj_3R_22()) return true;
     return false;
@@ -5408,6 +5397,11 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_39() {
     if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_3R_17()) return true;
     return false;
   }
 
@@ -5434,6 +5428,28 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_57() {
     if (jj_3R_64()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_38() {
+    if (jj_scan_token(LIST_VAR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_37() {
+    if (jj_scan_token(RECORD_VAR)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_162() {
+    if (jj_scan_token(129)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_155() {
+    if (jj_scan_token(LOOKUP_ADMIN)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
