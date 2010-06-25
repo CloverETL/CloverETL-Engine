@@ -605,8 +605,9 @@ public class WcardPattern {
 		}
 		
 		// get resolved path
-		File fTmp = new File(sDir.substring(0, idxPathWildCard));
-		File sResolvedPath = fTmp.getParentFile();
+		String sTmp = sDir.substring(0, idxPathWildCard);
+		File fTmp = new File(sTmp);
+		File sResolvedPath = sTmp.endsWith("/") || sTmp.endsWith("\\") ? fTmp : fTmp.getParentFile();
 		
 		// get wildcard dir name
 		File tmpFile = new File(sDir);
