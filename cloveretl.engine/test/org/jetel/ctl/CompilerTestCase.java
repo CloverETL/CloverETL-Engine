@@ -1518,8 +1518,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String expStr = "import '" + importLoc + "';\n";
 		expStr += "import '" + importLoc + "';\n";
 		
-		doCompileExpectError(expStr, "test_duplicate_import", Arrays.asList("TODO: Unknown error"));
+		doCompile(expStr, "test_duplicate_import");
 	}
+	
+	/*TODO:
+	 * public void test_invalid_import() {
+		URL importLoc = getClass().getResource("test_duplicate_import.ctl");
+		String expStr = "import '/a/b/c/d/e/f/g/h/i/j/k/l/m';\n";
+		expStr += expStr;
+		
+		doCompileExpectError(expStr, "test_invalid_import", Arrays.asList("TODO: Unknown error"));
+		//doCompileExpectError(expStr, "test_duplicate_import", Arrays.asList("TODO: Unknown error"));
+	}	 */
+
 	
 	public void test_built_in_functions(){
 		doCompile("test_built_in_functions");
