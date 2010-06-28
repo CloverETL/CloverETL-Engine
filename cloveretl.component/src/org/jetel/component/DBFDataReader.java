@@ -43,6 +43,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -267,6 +268,10 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		prepareMultiFileReader();
+	}
+
+	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		TransformationGraph graph = getGraph();
 
         // initialize multifile reader based on prepared parser
@@ -402,16 +407,25 @@ public class DBFDataReader extends Node {
         
         checkMetadata(status, getOutMetadata());
 
-        /* try { // because of stdin
-            init();
-            free();
+        try { 
+            // check inputs
+            prepareMultiFileReader();
+            DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+    		if (!metadata.hasFieldWithoutAutofilling()) {
+    			status.add(new ConfigurationProblem(
+                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
+                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+    		}
+            reader.checkConfig(metadata);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
-        }*/
+        } finally {
+        	free();
+        }
         
         return status;
     }
