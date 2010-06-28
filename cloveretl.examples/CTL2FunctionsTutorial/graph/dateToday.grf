@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Wed Jun 09 12:50:05 CEST 2010" modifiedBy="cloveruser" name="dateToday" revision="1.35">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Thu Jun 24 10:29:27 CEST 2010" modifiedBy="avackova" name="dateToday" revision="1.38">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="todayOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd, hh:mm:ss z" name="Function" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Today" type="date"/>
+<Record fieldDelimiter=";" name="todayOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n\\|\n" type="delimited">
+<Field name="Function" type="string"/>
+<Field auto_filling="source_timestamp" format="yyyy-MM-dd HH:mm:ss SSS z" name="Today" type="date"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -15,19 +15,39 @@ The today() function accepts no argument and returns current date and time.]]></
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#CTL2
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/hack.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="89" guiY="224" id="DATA_READER0" numRecords="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateTodayOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="469" guiY="224" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="224" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
 
-
-// Generates output record.
-function integer generate() {
+// Transforms input record into output record.
+function integer transform() {
 	$0.Function = 'today()';
 	$0.Today = today();
 	return 0;
 }
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+//function integer transformOnError(string errorMessage, string stackTrace) {
+//}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateTodayOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

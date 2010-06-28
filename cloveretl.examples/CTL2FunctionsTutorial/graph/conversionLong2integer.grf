@@ -47,8 +47,8 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionLong2integerNotAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="54" guiY="360" id="DATA_READER1" type="DATA_READER"/>
@@ -71,7 +71,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugLastRecords="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
+<Edge debugLastRecords="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

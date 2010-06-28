@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Mon Jun 21 08:25:12 CEST 2010" modifiedBy="cloveruser" name="mathRandomIntegerWithRange" revision="1.39">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Thu Jun 24 10:47:11 CEST 2010" modifiedBy="avackova" name="mathRandomIntegerWithRange" revision="1.41">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_intWithRangeInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -8,11 +8,11 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="random_intWithRangeOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="Minimum" type="integer"/>
-<Field name="Maximum" type="integer"/>
+<Record fieldDelimiter=";" name="random_intWithRangeOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n\\|\n" type="delimited">
+<Field auto_filling="default_value" default="0" name="Minimum" type="integer"/>
+<Field auto_filling="default_value" default="100" name="Maximum" type="integer"/>
+<Field auto_filling="graph_reader_row_count" name="Result" type="integer"/>
 <Field name="Function" type="string"/>
-<Field name="Result" type="integer"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -23,31 +23,43 @@ The randomInteger(integer, integer) function accepts two argument of integer dat
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="57" guiY="271" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#CTL2
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/hack.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="109" guiY="271" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRandomIntegerWithRangeOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="293" guiY="271" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
 
-function void preExecute() {
-     setRandomSeed(10);
-}
-
-// Generates output record.
-function integer generate() {
-	$0.Minimum = 0;
-	$0.Maximum = 100;
-	$0.Function = "randomInteger($0.MinimumValue,$0.MaximumValue)";
-	$0.Result = randomInteger(0,100);
-
+// Transforms input record into output record.
+function integer transform() {
+	$0.Minimum = $Minimum;
+	$0.Maximum = $Maximum;
+	$0.Function = "randomInteger($0.Minimum,$0.Maximum)";
+	$0.Result = randomInteger($Minimum,$Maximum);
 	return 0;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+function void preExecute() {
+     setRandomSeed(10);
+}
+
+// Called only if transform() throws an exception.
+//function integer transformOnError(string errorMessage, string stackTrace) {
+//}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRandomIntegerWithRangeOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
