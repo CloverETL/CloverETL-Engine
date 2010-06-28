@@ -108,14 +108,18 @@ public interface RecordTransform extends Transform {
 	 * For example in aggregation component key changed.
 	 * 
 	 * @param signalObject particular data object - depends on concrete implementation
+	 * @deprecated shouldn't be used at all; this method is never invoked and will be removed in short future
 	 */
+	@Deprecated
 	public void signal(Object signalObject);
 
 	/**
 	 * Method which can be used for getting intermediate results out of transformation. May or may not be implemented.
 	 * 
 	 * @return
+	 * @deprecated shouldn't be used at all and will be removed in short future  
 	 */
+	@Deprecated
 	public Object getSemiResult();
 
 }
