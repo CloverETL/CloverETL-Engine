@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Mon Jun 07 17:16:20 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.23">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Mon Jun 28 12:59:31 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.25">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="342" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="17" y="126">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="315" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="17" y="126">
 <attr name="text"><![CDATA[
 The graph demonstrates the use of Reformat. In this graph, transformation is defined using the Transform attribute and it is written in Clover transformation language directly in the graph. It can be seen in the Source tab.
 
@@ -16,7 +16,7 @@ Also a compiled Java class can be used: graphOrdersReformat.grf.
 
 All of these options are equivalent ways of defining the transformation. Most component allow to use the same 5 options. Only MultiLevelReader, JMSReader, JMSWriter, and JavaExecute do not allow the use of CTL.
 
-Another equivalent graph is graphSequence.grf which gives the same results. It uses an internal sequence.]]></attr>
+]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="226" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CTL1 vs. CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="518" y="124">
 <attr name="text"><![CDATA[
