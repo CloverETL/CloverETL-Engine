@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
@@ -68,6 +69,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
@@ -1496,15 +1498,22 @@ public class XMLExtract extends Node {
         
         // sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
         if (inputFile != null) {
-            this.readableChannelIterator = new ReadableChannelIterator(
-            		getInputPort(INPUT_PORT), 
-            		projectURL,
-            		inputFile);
-            this.readableChannelIterator.setCharset(charset);
-            this.readableChannelIterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
-            this.readableChannelIterator.setDictionary(graph.getDictionary());
-            this.readableChannelIterator.init();
+        	createReadableChannelIterator();
+        	this.readableChannelIterator.init();
         }
+    }
+	
+    private void createReadableChannelIterator() throws ComponentNotReadyException {
+    	TransformationGraph graph = getGraph();
+    	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+    	
+    	this.readableChannelIterator = new ReadableChannelIterator(
+    			getInputPort(INPUT_PORT), 
+    			projectURL,
+    			inputFile);
+    	this.readableChannelIterator.setCharset(charset);
+    	this.readableChannelIterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
+    	this.readableChannelIterator.setDictionary(graph.getDictionary());
     }
 	
 	/**
@@ -1582,6 +1591,52 @@ public class XMLExtract extends Node {
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
 		}
+		
+        try { 
+            // check inputs
+        	if (inputFile != null) {
+        		createReadableChannelIterator();
+        		this.readableChannelIterator.checkConfig();
+        		
+            	TransformationGraph graph = getGraph();
+            	URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+        		String fName = null; 
+        		Iterator<String> fit = readableChannelIterator.getFileIterator();
+        		while (fit.hasNext()) {
+        			try {
+        				fName = fit.next();
+        				if (fName.equals("-")) continue;
+        				if (fName.startsWith("dict:")) continue; //this test has to be here, since an involuntary warning is caused
+        				String mostInnerFile = FileURLParser.getMostInnerAddress(fName);
+        				URL url = FileUtils.getFileURL(contextURL, mostInnerFile);
+        				if (FileUtils.isServerURL(url)) {
+        					//FileUtils.checkServer(url); //this is very long operation
+        					continue;
+        				}
+        				if (FileURLParser.isArchiveURL(fName)) {
+        					// test if the archive file exists
+        					// getReadableChannel is too long for archives
+        					String path = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
+        					if (new File(path).exists()) continue;
+        					throw new ComponentNotReadyException("File is unreachable: " + fName);
+        				}
+        				FileUtils.getReadableChannel(contextURL, fName).close();
+        			} catch (IOException e) {
+        				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
+        			} catch (ComponentNotReadyException e) {
+        				throw new ComponentNotReadyException("File is unreachable: " + fName, e);
+        			}
+        		}
+        	}
+		} catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        } finally {
+        	free();
+        }
     	
         //TODO
         return status;
