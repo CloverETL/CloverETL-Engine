@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Fri Jun 18 18:05:21 CEST 2010" modifiedBy="cloveruser" name="conversionGetFieldName" revision="1.26">
+<Graph author="cloveruser" created="Mon Jun 14 08:30:01 CEST 2010" guiVersion="0.0.0.devel" id="1276513912702" licenseType="Evaluation Devel" modified="Thu Jun 24 10:25:31 CEST 2010" modifiedBy="avackova" name="conversionGetFieldName" revision="1.31">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="getFieldNameInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="booleanField" type="boolean"/>
-<Field name="byteField" type="byte"/>
-<Field name="dateField" type="date"/>
-<Field name="decimalField" type="decimal"/>
-<Field name="integerField" type="integer"/>
-<Field name="longField" type="long"/>
-<Field name="numberField" type="number"/>
+<Record fieldDelimiter=";" name="getFieldNameInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n\\|\n" type="delimited">
+<Field auto_filling="default_value" default="true" name="booleanField" type="boolean"/>
+<Field auto_filling="default_value" default="0" name="byteField" type="byte"/>
+<Field auto_filling="source_timestamp" name="dateField" type="date"/>
+<Field auto_filling="graph_reader_row_count" name="decimalField" type="decimal"/>
+<Field auto_filling="global_row_count" name="integerField" type="integer"/>
+<Field auto_filling="source_row_count" name="longField" type="long"/>
+<Field auto_filling="source_size" name="numberField" type="number"/>
 <Field name="stringField" type="string"/>
 </Record>
 </Metadata>
@@ -38,39 +38,9 @@ Remember that fields are indexed starting from 0.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="31" guiY="186" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#CTL2
-
-function void preExecute() {
-    setRandomSeed(10);	
-}	
-
-// Generates output record.
-function integer generate() {
-	$0.booleanField = randomBoolean();
-	$0.byteField = md5(randomString(1,10));
-	$0.dateField = randomDate("2010.01.01","2010.12.31","yyyy.MM.dd");
-	$0.decimalField = random() * 100;
-	$0.integerField = randomInteger(0,100);
-	$0.longField = randomLong(0,100);
-	$0.stringField = randomString(3,5);
-	$0.numberField = random() * 100;
-
-	return 0;
-}
-
-// Called to return a user-defined error message when an error occurs.
-// function getMessage() {}
-
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
-// function finished() {}
-]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionGetFieldNameOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="487" guiY="184" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="257" guiY="185" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/hack.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="53" guiY="195" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionGetFieldNameOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="487" guiY="195" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="257" guiY="195" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer Index;
 getFieldNameInput myInputRecords;
@@ -106,7 +76,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
