@@ -1291,6 +1291,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else {
                 value = new TLNumericValue(TLValueType.DECIMAL,DecimalFactory.getDecimal());
             }
+            ((TLNumericValue)value).getValue().setValue(0.0d);
         }
             break;
         case STRING_VAR:
