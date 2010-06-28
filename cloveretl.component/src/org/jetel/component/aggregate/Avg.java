@@ -92,8 +92,8 @@ public class Avg extends AggregateFunction {
 			outputField.setNull(true);
 			return;
 		}
-		sum.div(new CloverInteger(count));
 		outputField.setValue(sum);
+		((Numeric) outputField).div(new CloverInteger(count));
 	}
 
 	/* (non-Javadoc)
