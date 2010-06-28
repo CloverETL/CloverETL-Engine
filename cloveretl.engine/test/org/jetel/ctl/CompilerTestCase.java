@@ -180,7 +180,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		 * below, however this will most probably break down test_lookup() because free() will wipe away all data and
 		 * noone will restore them
 		 */
-		URL dataFile = getClass().getResource("TestLookup.dat");
+		URL dataFile = getClass().getSuperclass().getResource("TestLookup.dat");
 		if (dataFile == null) {
 			throw new RuntimeException("Unable to populate testing lookup table. File 'TestLookup.dat' not found by classloader");
 		}
@@ -568,7 +568,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// "	printErr(computeSomething(10));\n" +
 		// "   return 0;\n" +
 		// "}";
-		URL importLoc = getClass().getResource("samplecode.ctl");
+		URL importLoc = getClass().getSuperclass().getResource("samplecode.ctl");
 		String expStr = "import '" + importLoc + "';\n";
 
 		// "function int getIndexOfOffsetStart(string encodedDate) {\n" +
@@ -1514,7 +1514,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_duplicate_import() {
-		URL importLoc = getClass().getResource("test_duplicate_import.ctl");
+		URL importLoc = getClass().getSuperclass().getResource("test_duplicate_import.ctl");
 		String expStr = "import '" + importLoc + "';\n";
 		expStr += "import '" + importLoc + "';\n";
 		
