@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204549413620" licenseType="Evaluation Devel" modified="Fri Mar 12 13:22:37 CET 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.26">
+<Graph author="yanas" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204549413620" licenseType="Evaluation Devel" modified="Mon Jun 28 12:58:21 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="339" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="27" y="136">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="27" y="136">
 <attr name="text"><![CDATA[
 The graph demonstrates the use of Reformat. In this graph, transformation is defined using the Transform attribute and it is written in Java directly in the graph. It can be seen in the Source tab.
 
@@ -16,8 +16,9 @@ Also a compiled Java class can be used: graphOrdersReformat.grf.
 
 All of these options are equivalent ways of defining the transformation. Most component allow to use the same 5 options. Only MultiLevelReader, JMSReader, JMSWriter, and JavaExecute do not allow the use of CTL.
 
-Another equivalent graph is graphSequence.grf which gives the same results. It uses an internal sequence.]]></attr>
+]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
@@ -52,7 +53,7 @@ public class ReformatOrdersInline extends DataRecordTransform{
 			SetVal.setString(target[0],"CUSTOMERID",GetVal.getString(source[0],"CustomerID"));
 			SetVal.setString(target[0],"CUSTOMER",strBuf.toString());
 			SetVal.setInt(target[0], "SHIPTIME", (int)( (GetVal.getDate(
-					source[0]]]><![CDATA[, "RequiredDate").getTime() - GetVal.getDate(
+					source[0], "RequiredDate").getTime() - GetVal.getDate(
 					source[0], "ShippedDate").getTime())
 					/ 1000 / 60 / 60 / 24));
 		}catch(Exception ex){
@@ -66,7 +67,7 @@ public class ReformatOrdersInline extends DataRecordTransform{
 }
 ]]></attr>
 </Node>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REF:0"/>
-<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
+<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
