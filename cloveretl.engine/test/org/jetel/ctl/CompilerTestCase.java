@@ -538,9 +538,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_import() {
 		System.out.println("\nImport test:");
 
-		URL importLoc = getClass().getResource("import.ctl");
+		URL importLoc = getClass().getSuperclass().getResource("import.ctl");
 		String expStr = "import '" + importLoc + "';\n";
-		importLoc = getClass().getResource("other.ctl");
+		importLoc = getClass().getSuperclass().getResource("other.ctl");
 		expStr += "import '" + importLoc + "';\n" +
 				"integer sumInt;\n" +
 				"function integer transform() {\n" +
