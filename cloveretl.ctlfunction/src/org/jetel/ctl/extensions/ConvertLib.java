@@ -312,12 +312,22 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void date2numInit(TLFunctionCallContext context) {
-		context.setCache(new TLCalendarCache());
+		context.setCache(new TLCalendarCache(context, 2));
 	}
 	
 	@TLFunctionAnnotation("Returns numeric value of a date component (e.g. month)")
 	public static final Integer date2num(TLFunctionCallContext context, Date input, DateFieldEnum field) {
 		Calendar c = ((TLCalendarCache)context.getCache()).getCalendar();
+		return date2numInternal(input, field, c);
+	}
+	
+	@TLFunctionAnnotation("Returns numeric value of a date component (e.g. month)")
+	public static final Integer date2num(TLFunctionCallContext context, Date input, DateFieldEnum field, String locale) {
+		Calendar c = ((TLCalendarCache)context.getCache()).getCachedCalendar(context, locale, 2);
+		return date2numInternal(input, field, c);
+	}
+	
+	private static final Integer date2numInternal(Date input, DateFieldEnum field, Calendar c){
 		c.setTime(input);
 		switch (field) {
 		case YEAR:
