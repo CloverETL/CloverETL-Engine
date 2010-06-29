@@ -19,6 +19,7 @@
 package org.jetel.ctl.extensions;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * @author jakub (jakub.lehotsky@javlin.eu)
@@ -29,12 +30,41 @@ import java.util.Calendar;
 public class TLCalendarCache extends TLCache {
 	
 	Calendar cachedCalendar;
-	
+	private Object previousLocale;
+
 	public TLCalendarCache() {
-		cachedCalendar = Calendar.getInstance(); 
+		cachedCalendar = Calendar.getInstance();
 	}
+	
+	public TLCalendarCache(TLFunctionCallContext context, int position) {
+		createCachedCalendar(context, position);
+	}
+		
+		 
+	/**
+	 * @param context
+	 * @param position
+	 */
+	private void createCachedCalendar(TLFunctionCallContext context, int position) {
+		
+		if (context.getLiteralsSize() > position && context.isLiteral(position))
+			cachedCalendar = Calendar.getInstance(new Locale((String)context.getParamValue(position)));
+		else
+			cachedCalendar = Calendar.getInstance();
+	}
+
 	
 	public Calendar getCalendar() {
 		return cachedCalendar;
+	}
+	
+	public Calendar getCachedCalendar(TLFunctionCallContext context, String locale, int position) {
+		if (context.isLiteral(position) || (cachedCalendar != null && locale.equals(previousLocale))) {
+			return cachedCalendar;
+		} else {
+			cachedCalendar = Calendar.getInstance(new Locale(locale));
+			previousLocale = locale;
+			return cachedCalendar;
+		}
 	}
 }
