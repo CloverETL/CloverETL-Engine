@@ -344,7 +344,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getTLValue().getNumeric().getInt());
 		      assertEquals((Double)record.getField("Age").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getTLValue().getNumeric().getDouble());
 		      assertEquals(Double.valueOf(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getTLValue().getNumeric().getDouble());
-		      assertTrue(executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getTLValue().getNumeric().isNull());
+		      assertEquals(Double.valueOf(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getTLValue().getNumeric().getDouble());
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
