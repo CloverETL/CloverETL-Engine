@@ -1,0 +1,14 @@
+<plugin id="org.mypackage.ctl2functions"  version="1">
+ 
+   	<runtime>
+		<library path="my_lib_ctl2.jar"/>
+		<library path="lib/commons-codec-1.4.jar"/>
+	</runtime>
+ 
+ 
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="MyCTL2Functions"/>
+		<parameter id="className" value="org.mypackage.ctl2functions.MyFunctionsLib_ctl2"/>
+	</extension>
+ 
+</plugin>
