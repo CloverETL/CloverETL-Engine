@@ -1,4 +1,4 @@
-package org.mypackage.ctlfunctions;
+package org.mypackage.ctl1functions;
  
  
 import java.util.ArrayList;
@@ -15,9 +15,9 @@ import org.jetel.interpreter.extensions.TLContext;
 import org.jetel.interpreter.extensions.TLFunctionLibrary;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
  
-public class MyCTLFunctionsLib extends TLFunctionLibrary {
+public class MyFunctionsLib_ctl1 extends TLFunctionLibrary {
  
-	private static final String LIBRARY_NAME = "MyCTLFunctions";
+	private static final String LIBRARY_NAME = "MyCTL1Functions";
  
 	enum Function {
         MY_FUNCTION("my_function"),
@@ -39,7 +39,7 @@ public class MyCTLFunctionsLib extends TLFunctionLibrary {
         }
     }
  
-	public MyCTLFunctionsLib(){
+	public MyFunctionsLib_ctl1(){
 		super();
 	}
  

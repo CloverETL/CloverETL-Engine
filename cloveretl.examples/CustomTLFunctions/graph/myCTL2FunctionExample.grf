@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Fri May 21 11:51:02 CEST 2010" guiVersion="0.0.0.devel" id="1274438362526" licenseType="Evaluation Devel" modified="Wed Jun 30 14:08:34 CEST 2010" modifiedBy="avackova" name="myTlFunctionExample" revision="1.12">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="data" recordDelimiter="\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="28" guiY="28" id="DATA_GENERATOR0" recordsNumber="2" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#TL
+
+// Generates output record.
+function generate() {
+	$0.field1 := 'word';
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="220" guiY="28" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer counter = 0;
+// Transforms input record into output record.
+function integer transform() {
+	$0.field1 = iif(counter++ == 0, doubleMetaphone($field1), myFunction(1999-01-01,'some string'));
+	return ALL;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="412" guiY="28" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH0:0"/>
+</Phase>
+</Graph>

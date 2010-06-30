@@ -1,14 +1,14 @@
-<plugin id="org.mypackage.ctlfunctions"  version="1">
+<plugin id="org.mypackage.ctl1functions"  version="1">
  
    	<runtime>
-		<library path="my_lib.jar"/>
+		<library path="my_lib_ctl1.jar"/>
 		<library path="lib/commons-codec-1.4.jar"/>
 	</runtime>
  
  
 	<extension point-id="tlfunction">
-		<parameter id="libraryName" value="MyCTLFunctions"/>
-		<parameter id="className" value="org.mypackage.ctlfunctions.MyCTLFunctionsLib"/>
+		<parameter id="libraryName" value="MyCTL1Functions"/>
+		<parameter id="className" value="org.mypackage.ctl1functions.MyFunctionsLib_ctl1"/>
 		<parameter id="function">
 			<value>my_function</value>
 			<value>double_metaphone</value>
