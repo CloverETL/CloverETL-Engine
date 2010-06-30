@@ -233,7 +233,6 @@
 </FunctionalTest>
 
 <FunctionalTest ident="dateToday" graphFile="graph/dateToday.grf">
-	 <FlatFile outputFile="data-out/dateTodayOverview.txt" supposedFile="supposed-out/dateTodayOverview.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="dateTruncDate" graphFile="graph/dateTruncDate.grf">
