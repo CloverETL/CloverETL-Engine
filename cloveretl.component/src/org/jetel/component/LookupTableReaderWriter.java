@@ -18,18 +18,20 @@
  */
 package org.jetel.component;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -211,6 +213,16 @@ public class LookupTableReaderWriter extends Node {
         			"\" not found.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
              problem.setAttributeName(XML_LOOKUP_TABLE_ATTRIBUTE);
              status.add(problem);
+             
+        // check lookup metadata against in/out metadata
+		} else {
+			DataRecordMetadata lMetadata = lookupTable.getMetadata();
+			if (lMetadata != null) {
+				List<DataRecordMetadata> lookupMetadata = new LinkedList<DataRecordMetadata>();
+				lookupMetadata.add(lMetadata);
+				List<DataRecordMetadata> inOutMetadata = outPorts.size() > 0 ? getOutMetadata() : getInMetadata();
+				checkMetadata(status, lookupMetadata, inOutMetadata, false);
+			}
 		}
 
         return status;
