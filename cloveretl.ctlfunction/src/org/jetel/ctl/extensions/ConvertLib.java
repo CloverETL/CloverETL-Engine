@@ -304,9 +304,16 @@ public class ConvertLib extends TLFunctionLibrary {
 
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final DateFieldEnum field = (DateFieldEnum)stack.pop();
-			final Date input = stack.popDate();
-			stack.push(date2num(context, input,field));
+			if (context.getParams().length > 2 && context.getParams()[2].isString()) {
+				final String locale = stack.popString();
+				final DateFieldEnum field = (DateFieldEnum)stack.pop();
+				final Date input = stack.popDate();
+				stack.push(date2num(context, input, field, locale));
+			} else {
+				final DateFieldEnum field = (DateFieldEnum)stack.pop();
+				final Date input = stack.popDate();
+				stack.push(date2num(context, input,field));
+			}
 		}
 	}
 

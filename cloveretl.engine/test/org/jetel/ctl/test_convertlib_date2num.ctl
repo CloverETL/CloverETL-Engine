@@ -9,6 +9,7 @@ integer secondBorn;
 integer yearMin;
 integer monthMin;
 integer weekMin;
+integer weekMinCs;
 integer dayMin;
 integer hourMin;
 integer minuteMin;
@@ -27,6 +28,7 @@ function integer transform() {
 	yearMin = date2num(minDate, year);
 	monthMin = date2num(minDate, month);
 	weekMin = date2num(minDate, week);
+	weekMinCs = date2num(minDate, week, "cs");
 	dayMin = date2num(minDate, day);
 	hourMin = date2num(minDate, hour);
 	minuteMin = date2num(minDate, minute);
