@@ -2273,6 +2273,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("yearMin", 1970);
 		check("monthMin", 1);
 		check("weekMin", 1);
+		check("weekMinCs", 1);
 		check("dayMin", 1);
 		check("hourMin", 1); //TODO: check!
 		check("minuteMin", 0);
