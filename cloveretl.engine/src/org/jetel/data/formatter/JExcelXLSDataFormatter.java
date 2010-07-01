@@ -53,8 +53,8 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
-import org.jetel.util.date.DateUtils;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.formatter.DateUtils;
 import org.jetel.util.string.StringUtils;
 
 /**

@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
  */
 public class StringFormat {
 
+
 	Pattern regExpPattern = null;
 
 	public StringFormat(String regExp) {
@@ -105,5 +106,10 @@ public class StringFormat {
 	 */
 	public Pattern getPattern() {
 		return regExpPattern;
+	}
+
+	@Override
+	public String toString() {
+		return regExpPattern.pattern();
 	}
 }

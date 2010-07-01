@@ -27,7 +27,7 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.date.DateFormatterFactory;
+import org.jetel.util.formatter.DateFormatterFactory;
 
 /**
  * @author maciorowski

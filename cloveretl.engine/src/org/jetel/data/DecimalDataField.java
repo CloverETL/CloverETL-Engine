@@ -24,18 +24,15 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
-import org.jetel.data.primitive.NumericFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -52,7 +49,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	private Decimal value;
 	private int precision;
 	private int scale;
-	private NumericFormat numericFormat;
+	private final NumericFormatter numericFormatter;
 
     
     /**
@@ -76,26 +73,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 */
 	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale, boolean plain) {
 		super(_metadata);
-        if (!plain) {
-            Locale locale = null;
-            // handle locale
-            if (!StringUtils.isEmpty(_metadata.getLocaleStr())) {
-            	locale = MiscUtils.createLocale(_metadata.getLocaleStr());
-            }
-            // handle formatString
-            String formatString;
-            formatString = _metadata.getFormatStr();
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    numericFormat = new NumericFormat(formatString,
-                            new DecimalFormatSymbols(locale));
-                } else {
-                    numericFormat = new NumericFormat(formatString);
-                }
-            } else if (locale != null) {
-                numericFormat = new NumericFormat(locale);
-            }
-        }
+        if (plain) {
+        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        } else {
+        	numericFormatter = NumericFormatterFactory.createDecimalFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
+        } 
         //instantiate Decimal interface
         this.precision = precision;
         this.scale = scale;
@@ -123,10 +105,10 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 * @param value
 	 * @param numberFormat
 	 */
-	private DecimalDataField(DataFieldMetadata _metadata, Decimal value, NumericFormat numericFormat, int precision, int scale) {
+	private DecimalDataField(DataFieldMetadata _metadata, Decimal value, NumericFormatter numericFormatter, int precision, int scale) {
 	    super(_metadata);
 	    this.value = value.createCopy();
-	    this.numericFormat = numericFormat;
+	    this.numericFormatter = numericFormatter;
 	    this.precision = precision;
 	    this.scale = scale;
 	 }
@@ -136,7 +118,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate() {
-	    DecimalDataField newField = new DecimalDataField(metadata, value, numericFormat, precision, scale);
+	    DecimalDataField newField = new DecimalDataField(metadata, value, numericFormatter, precision, scale);
 	    newField.setNull(isNull());
 	    return newField;
 	}
@@ -383,7 +365,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		if(isNull) {
 			return metadata.getNullValue();
 		}
-		return value.toString(numericFormat);
+		return value.toString(numericFormatter);
 	}
 
 	public void fromString(CharSequence seq) {
@@ -392,24 +374,24 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 			return;
 		}
 		try {
-			value.fromString(seq, numericFormat);
+			value.fromString(seq, numericFormatter);
 			setNull(value.isNaN());
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormat != null ? numericFormat.toPattern() : "<default>"));
+							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.toString()));
 		}
 	}
 
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		value.fromString(decoder.decode(dataBuffer), numericFormat);
+		value.fromString(decoder.decode(dataBuffer), numericFormatter);
 	}
 
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		if (isNull) {
 			return;
 		}
-		value.toByteBuffer(dataBuffer, encoder, numericFormat);
+		value.toByteBuffer(dataBuffer, encoder, numericFormatter);
 	}
 	
     @Override

@@ -25,12 +25,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import javolution.text.TypeFormat;
 
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Decimal;
@@ -38,9 +32,9 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents decimal number field (double precision)
@@ -55,7 +49,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	private static final long serialVersionUID = -3824088924871267023L;
 	
 	private double value;
-	private NumberFormat numberFormat;
+	private final NumericFormatter numericFormatter;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
@@ -84,26 +78,11 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 */
 	public NumericDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
-        if (!plain) {
-            Locale locale = null;
-            // handle locale
-            if (!StringUtils.isEmpty(_metadata.getLocaleStr())) {
-            	locale = MiscUtils.createLocale(_metadata.getLocaleStr());
-            }
-            // handle formatString
-            String formatString;
-            formatString = _metadata.getFormatStr();
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    numberFormat = new DecimalFormat(formatString,
-                            new DecimalFormatSymbols(locale));
-                } else {
-                    numberFormat = new DecimalFormat(formatString);
-                }
-            } else if (locale != null) {
-                numberFormat = DecimalFormat.getInstance(locale);
-            }
-        }
+        if (plain) {
+        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        } else {
+        	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr(), false);
+        } 
 	}
 
 
@@ -127,16 +106,16 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 * @param value
 	 * @param numberFormat
 	 */
-	private NumericDataField(DataFieldMetadata _metadata,double value,NumberFormat numberFormat){
-	    super(_metadata);
-	    this.value=value;
-	    this.numberFormat=numberFormat;
-	 }
-	
-	public DataField duplicate(){
-	    NumericDataField newField=new NumericDataField(metadata,value,numberFormat);
-	    newField.setNull(isNull());
-	    return newField;
+	private NumericDataField(DataFieldMetadata _metadata, double value, NumericFormatter numericFormatter) {
+		super(_metadata);
+		this.value = value;
+		this.numericFormatter = numericFormatter;
+	}
+
+	public DataField duplicate() {
+		NumericDataField newField = new NumericDataField(metadata, value, numericFormatter);
+		newField.setNull(isNull());
+		return newField;
 	}
 	
 	public Numeric duplicateNumeric() {
@@ -407,32 +386,20 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 		if( isNull ) {
 			return metadata.getNullValue();
 		}
-		if (numberFormat != null) {
-			return numberFormat.format(value);
-		} else {
-			return Double.toString(value);
-		}
+		return numericFormatter.formatDouble(value);
 	}
 
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
-		    setNull(true);
+			setNull(true);
 			return;
 		}
 		try {
-			if (numberFormat != null) {
-				value = numberFormat.parse(seq.toString()).doubleValue();
-			} else {
-				value = TypeFormat.parseDouble(seq);
-			}
-            setNull(Double.isNaN(value));
+			value = numericFormatter.parseDouble(seq);
+			setNull(Double.isNaN(value));
 		} catch (Exception ex) {
-			if (numberFormat!=null)
-				throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-						getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq, getMetadata().getFormatStr()), seq.toString());
-			else
-				throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\"",
-						getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq), seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter));
 		}
 	}
 

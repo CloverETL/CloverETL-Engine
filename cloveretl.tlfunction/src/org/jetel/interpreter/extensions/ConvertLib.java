@@ -53,8 +53,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Digest;
-import org.jetel.util.date.DateFormatter;
-import org.jetel.util.date.DateFormatterFactory;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 
 
 public class ConvertLib extends TLFunctionLibrary {

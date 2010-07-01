@@ -32,6 +32,9 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.util.formatter.BooleanFormatter;
+import org.jetel.util.formatter.BooleanFormatterFactory;
+import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -1115,6 +1118,32 @@ public class DataFieldMetadata implements Serializable {
 			} catch (RuntimeException e) {
 				status.add(new ConfigurationProblem("Wrong default value '" + getDefaultValueStr() + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "'.",
 						Severity.ERROR, null, Priority.NORMAL));
+			}
+		}
+		
+		if (BOOLEAN_FIELD == type && !StringUtils.isEmpty(formatStr)) {
+			final BooleanFormatter bf = BooleanFormatterFactory.createFormatter(formatStr);
+
+			final String trueO = bf.formatBoolean(true);
+			try {
+				if (true != bf.parseBoolean(trueO)) {
+					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - output string '" + trueO + "' isn't valid true value.",
+							Severity.WARNING, null, Priority.NORMAL));
+				}
+			} catch (ParseBooleanException e) {
+				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - parse error for true output string '" + trueO + "' (" + e.getMessage() + ").",
+						Severity.WARNING, null, Priority.NORMAL));
+			}
+
+			final String falseO = bf.formatBoolean(false);
+			try {
+				if (false != bf.parseBoolean(falseO)) {
+					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - output string '" + falseO + "' isn't valid false value.",
+							Severity.WARNING, null, Priority.NORMAL));
+				}
+			} catch (ParseBooleanException e) {
+				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - parse error for false output string '" + falseO + "' (" + e.getMessage() + ").",
+						Severity.WARNING, null, Priority.NORMAL));
 			}
 		}
 	}

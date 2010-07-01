@@ -25,12 +25,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.Locale;
-
-import javolution.text.TypeFormat;
 
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Decimal;
@@ -38,9 +32,9 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents integer number field (32bit signed)
@@ -56,7 +50,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	private static final long serialVersionUID = 3959941332738498948L;
 	
 	private int value;
-	private NumberFormat numberFormat = null;
+	private final NumericFormatter numericFormatter;
 	private final static int FIELD_SIZE_BYTES = 4;// standard size of field
 
 	/**
@@ -77,30 +71,11 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
     public IntegerDataField(DataFieldMetadata _metadata, boolean plain) {
         super(_metadata);
         
-        if (!plain) {
-            Locale locale = null;
-            // handle locale
-            if (!StringUtils.isEmpty(_metadata.getLocaleStr())) {
-            	locale = MiscUtils.createLocale(_metadata.getLocaleStr());
-            }
-            // handle formatString
-            String formatString;
-            formatString = _metadata.getFormatStr();
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    numberFormat = new DecimalFormat(formatString,
-                            new DecimalFormatSymbols(locale));
-                } else {
-                    numberFormat = new DecimalFormat(formatString);
-                }
-            } else if (locale != null) {
-                numberFormat = DecimalFormat.getInstance(locale);
-            }
-            
-            if (numberFormat != null) {
-            	numberFormat.setParseIntegerOnly(true);
-            }
-        }
+        if (plain) {
+        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        } else {
+        	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr(), true);
+        } 
     }
 
 	/**
@@ -122,14 +97,14 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	 * @param value
 	 * @param numberFormat
 	 */
-	private IntegerDataField(DataFieldMetadata _metadata, int value, NumberFormat numberFormat){
+	private IntegerDataField(DataFieldMetadata _metadata, int value, NumericFormatter numericFormatter){
 	    super(_metadata);
 	    this.value = value;
-	    this.numberFormat = numberFormat;
+	    this.numericFormatter = numericFormatter;
 	 }
 
 	public DataField duplicate(){
-	    IntegerDataField newField = new IntegerDataField(metadata, value, numberFormat);
+	    IntegerDataField newField = new IntegerDataField(metadata, value, numericFormatter);
 	    newField.setNull(isNull());
 	    return newField;
 	}
@@ -385,30 +360,22 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	public String toString() {
 		if (isNull) {
 			return metadata.getNullValue();
-		}
-		if (numberFormat != null) {
-			return numberFormat.format(value);
 		} else {
-			return Integer.toString(value);
+			return numericFormatter.formatInt(value);
 		}
 	}
 
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
-		    setNull(true);
+			setNull(true);
 			return;
 		}
 		try {
-			if (numberFormat != null) {
-				value = numberFormat.parse(seq.toString()).intValue();
-			} else {
-				value = TypeFormat.parseInt(seq);
-			}
-            
-            setNull(this.value == Integer.MIN_VALUE);
+			value = numericFormatter.parseInt(seq);
+			setNull(this.value == Integer.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\"",
-					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq),seq.toString());
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter));
 		}
 	}
 
