@@ -32,6 +32,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 
 
 /**
@@ -513,12 +514,12 @@ public final class HugeDecimal implements Decimal {
 	@Override
 	public String toString(NumericFormatter numericFormatter) {
 		BigDecimal bd = getBigDecimalOutput();
-		return numericFormatter.format(bd);
+		return numericFormatter.formatBigDecimal(bd);
 	}
 
 	@Override
     public String toString() {
-        return toString(null);
+        return toString(NumericFormatterFactory.createPlainFormatter());
     }
     
 	@Override

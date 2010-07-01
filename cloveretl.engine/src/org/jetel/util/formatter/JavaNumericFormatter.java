@@ -76,7 +76,7 @@ public class JavaNumericFormatter implements NumericFormatter {
 	}
 
 	@Override
-	public String format(BigDecimal bd) {
+	public String formatBigDecimal(BigDecimal bd) {
 		if (bd == null) {
 			return "NaN";
 		} else {
