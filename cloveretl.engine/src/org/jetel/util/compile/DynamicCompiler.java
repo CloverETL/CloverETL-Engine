@@ -39,6 +39,9 @@ import javax.tools.ToolProvider;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject.Kind;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Java compiler for dynamic compilation of Java source code.
  *
@@ -50,6 +53,8 @@ import javax.tools.JavaFileObject.Kind;
  * @see JavaCompiler
  */
 public final class DynamicCompiler {
+
+	private static final Log logger = LogFactory.getLog(DynamicCompiler.class);
 
 	/** The class loader to be used during compilation and class loading. */
 	private final ClassLoader classLoader;
@@ -90,6 +95,9 @@ public final class DynamicCompiler {
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, classPathUrls);
+		
+		logger.debug("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());
+		
 		StringWriter compilerOutput = new StringWriter();
 
 		CompilationTask task = compiler.getTask(compilerOutput, fileManager, null,
