@@ -340,6 +340,10 @@ public class RecordTransformFactory {
         throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
     }
     
+    private static Pattern getPattern(String hashBang) {
+    	return Pattern.compile("^\\s*" + hashBang);
+    }
+    
     /**
      * Guesses type of transformation code based on
      * code itself - looks for certain patterns within the code
@@ -351,12 +355,14 @@ public class RecordTransformFactory {
     	
     	String commentsStripped = CommentsProcessor.stripComments(transform);
       
-        if (commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1 || commentsStripped.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID2) != -1){
-            // clover internal transformation language
-            return TRANSFORM_CLOVER_TL;
+    	// First, try to identify the starting string
+    	
+    	if (getPattern(WrapperTL.TL_TRANSFORM_CODE_ID).matcher(transform).find() ||
+    			getPattern(WrapperTL.TL_TRANSFORM_CODE_ID2).matcher(transform).find()) {
+    		return TRANSFORM_CLOVER_TL;
         }
         
-        if (commentsStripped.indexOf(TransformLangExecutor.CTL_TRANSFORM_CODE_ID) != -1) {
+        if (getPattern(TransformLangExecutor.CTL_TRANSFORM_CODE_ID).matcher(transform).find()) {
         	// new CTL implementation
         	return TRANSFORM_CTL;
         }
