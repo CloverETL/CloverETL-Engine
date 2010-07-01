@@ -40,7 +40,7 @@ public interface NumericFormatter {
 
 	double parseDouble(CharSequence seq) throws ParseException;
 
-	String format(BigDecimal galue);
+	String formatBigDecimal(BigDecimal galue);
 
 	BigDecimal parseBigDecimal(CharSequence seq);
 
