@@ -727,7 +727,7 @@ public class SystemExecute extends Node{
 	}
 
 	/**
-	 * When the background system process finish the producent/consument workers can still be running.
+	 * When the background system process finish the producer/consumer workers can still be running.
 	 * How long should we wait for these workers? Default is 0 (unlimited waiting).
 	 * @return waiting time limit for workers
 	 */
@@ -736,7 +736,7 @@ public class SystemExecute extends Node{
 	}
 
 	/**
-	 * When the background system process finish the producent/consument workers can still be running.
+	 * When the background system process finish the producer/consumer workers can still be running.
 	 * How long should we wait for these workers? Default is 0 (unlimited waiting).
 	 * @param waitTimeForWorkers waiting time limit for workers
 	 */
