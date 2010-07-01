@@ -68,8 +68,8 @@ public final class DynamicJavaClass {
 
 			return result;
 		} catch (CompilationException exception) {
-        	logger.debug(exception.getCompilerOutput());
-        	logger.debug(sourceCode);
+        	logger.error("Compiler output:\\n" + exception.getCompilerOutput());
+        	logger.debug("Source code:\\n" + sourceCode);
 
         	throw new ComponentNotReadyException("Cannot compile the dynamic class!", exception);
 		} catch (IllegalAccessException exception) {
