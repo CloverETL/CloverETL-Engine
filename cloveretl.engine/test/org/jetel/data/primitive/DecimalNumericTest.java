@@ -3,6 +3,7 @@ package org.jetel.data.primitive;
 import java.nio.ByteBuffer;
 
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.formatter.NumericFormatterFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -513,12 +514,12 @@ public class DecimalNumericTest extends CloverTestCase {
 	}
 
 	public void test_fromString(){
-		aDouble.fromString("123.45",null);
+		aDouble.fromString("123.45",NumericFormatterFactory.createPlainFormatter());
 		assertEquals(Double.valueOf(123),Double.valueOf(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,5);
-		aDouble.fromString(".12345",null);
+		aDouble.fromString(".12345",NumericFormatterFactory.createPlainFormatter());
 		assertEquals(Double.valueOf(0.12345),Double.valueOf(aDouble.getDouble()));
-		aDouble.fromString("12345",null);
+		aDouble.fromString("12345",NumericFormatterFactory.createPlainFormatter());
 		assertEquals(Double.valueOf(12345),Double.valueOf(aDouble.getDouble()));
 	}
 
