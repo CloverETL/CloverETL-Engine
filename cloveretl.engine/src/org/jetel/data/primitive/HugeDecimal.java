@@ -31,6 +31,7 @@ import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.util.formatter.NumericFormatter;
 
 
 /**
@@ -62,30 +63,22 @@ public final class HugeDecimal implements Decimal {
 		this.nan = nan;
 	}
 	
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getPrecision()
-	 */
+	@Override
 	public int getPrecision() {
 		return precision;
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getScale()
-	 */
+	@Override
 	public int getScale() {
 		return scale;
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#createCopy()
-	 */
+	@Override
 	public Decimal createCopy() {
 		return new HugeDecimal(value, precision, scale, nan);
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#setValue(double)
-	 */
+	@Override
 	public void setValue(double _value) {
 		if(Double.isNaN(_value)) {
 			setNaN(true);
@@ -99,9 +92,7 @@ public final class HugeDecimal implements Decimal {
         }
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#setValue(int)
-	 */
+	@Override
 	public void setValue(int _value) {
 		if(_value == Integer.MIN_VALUE) {
 			setNaN(true);
@@ -115,9 +106,7 @@ public final class HugeDecimal implements Decimal {
         }
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#setValue(long)
-	 */
+	@Override
 	public void setValue(long _value) {
 		if(_value == Long.MIN_VALUE) {
 			setNaN(true);
@@ -132,9 +121,7 @@ public final class HugeDecimal implements Decimal {
 		setNaN(false);
 	}
 
-    /**
-     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
-     */
+	@Override
     public void setValue(Numeric _value) {
         if(_value == null || _value.isNull()) {
             setNaN(true);
@@ -148,9 +135,7 @@ public final class HugeDecimal implements Decimal {
         }
     }
 
-    /**
-     * @see org.jetel.data.primitive.Decimal#setValue(java.math.BigDecimal)
-     */
+	@Override
     public void setValue(BigDecimal _value) {
         if(_value == null) {
             setNaN(true);
@@ -164,9 +149,7 @@ public final class HugeDecimal implements Decimal {
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
-     */
+	@Override
     public void setValue(Number value) {
        if (value instanceof Long){
            setValue(value.longValue());
@@ -179,9 +162,7 @@ public final class HugeDecimal implements Decimal {
        }
     }
     
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getDouble()
-	 */
+	@Override
 	public double getDouble() {
         if(isNaN()) {
             return Double.NaN;
@@ -189,9 +170,7 @@ public final class HugeDecimal implements Decimal {
 		return value.doubleValue();
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getInt()
-	 */
+	@Override
 	public int getInt() {
         if(isNaN()) {
             return Integer.MIN_VALUE;
@@ -199,9 +178,7 @@ public final class HugeDecimal implements Decimal {
 		return value.intValue();
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getLong()
-	 */
+	@Override
 	public long getLong() {
         if(isNaN()) {
             return Long.MIN_VALUE;
@@ -209,9 +186,7 @@ public final class HugeDecimal implements Decimal {
 		return value.longValue();
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getBigDecimal()
-	 */
+	@Override
 	public BigDecimal getBigDecimal() {
 		if(isNaN()) {
 			return null;
@@ -219,9 +194,7 @@ public final class HugeDecimal implements Decimal {
 		return value;
 	}
 
-    /**
-     * @see org.jetel.data.primitive.Decimal#getBigDecimalOutput()
-     */
+	@Override
     public BigDecimal getBigDecimalOutput() {
         if(isNaN()) {
             return null;
@@ -234,23 +207,17 @@ public final class HugeDecimal implements Decimal {
             return value.setScale(scale, BigDecimal.ROUND_DOWN);
     }
 
-    /**
-     * @see org.jetel.data.Numeric#getDecimal()
-     */
+	@Override
     public Decimal getDecimal() {
         return createCopy();
     }
 
-    /**
-     * @see org.jetel.data.Numeric#getDecimal(int, int)
-     */
+	@Override
     public Decimal getDecimal(int precision, int scale) {
         return DecimalFactory.getDecimal(this, precision, scale);
     }
 
-    /**
-     * @see org.jetel.data.Numeric#duplicateNumeric()
-     */
+	@Override
     public Numeric duplicateNumeric() {
         return createCopy();
     }
@@ -379,38 +346,27 @@ public final class HugeDecimal implements Decimal {
         return digits;
     }
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#setNaN(boolean)
-	 */
+	@Override
 	public void setNaN(boolean isNaN) {
 		nan = isNaN;
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#isNaN()
-	 */
+	@Override
 	public boolean isNaN() {
 		return nan;
 	}
 
-    /**
-     * @see org.jetel.data.Numeric#isNull()
-     */
+	@Override
     public boolean isNull() {
         return nan;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.primitive.Numeric#setNull()
-     */
+	@Override
     public void setNull(){
         setNaN(true);
     }
     
-    
-	/**
-	 * @see org.jetel.data.primitive.Decimal#add(org.jetel.data.Numeric)
-	 */
+	@Override
 	public void add(Numeric a) {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
@@ -429,9 +385,7 @@ public final class HugeDecimal implements Decimal {
 		}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#sub(org.jetel.data.Numeric)
-	 */
+	@Override
 	public void sub(Numeric a) {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
@@ -450,9 +404,7 @@ public final class HugeDecimal implements Decimal {
 		}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#mul(org.jetel.data.Numeric)
-	 */
+	@Override
 	public void mul(Numeric a) {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
@@ -471,9 +423,7 @@ public final class HugeDecimal implements Decimal {
 		}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#div(org.jetel.data.Numeric)
-	 */
+	@Override
 	public void div(Numeric a) {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
@@ -492,17 +442,13 @@ public final class HugeDecimal implements Decimal {
 		}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#abs()
-	 */
+	@Override
 	public void abs() {
         if(isNull()) return;
 		value = value.abs();
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#mod(org.jetel.data.Numeric)
-	 */
+	@Override
 	public void mod(Numeric a) {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
@@ -521,17 +467,13 @@ public final class HugeDecimal implements Decimal {
 		}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#neg()
-	 */
+	@Override
 	public void neg() {
         if(isNull()) return;
 		value = value.negate();
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#serialize(java.nio.ByteBuffer)
-	 */
+	@Override
 	public void serialize(ByteBuffer byteBuffer) {
 		try {
 			if(isNaN()) {
@@ -547,9 +489,7 @@ public final class HugeDecimal implements Decimal {
     	}
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#deserialize(java.nio.ByteBuffer)
-	 */
+	@Override
 	public void deserialize(ByteBuffer byteBuffer) {
 		byte size = byteBuffer.get();
 		if(size == 0) {
@@ -562,9 +502,7 @@ public final class HugeDecimal implements Decimal {
 		setNaN(false);
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#getSizeSerialized()
-	 */
+	@Override
 	public int getSizeSerialized() {
 		if(isNaN()) {
 			return 1;
@@ -572,41 +510,27 @@ public final class HugeDecimal implements Decimal {
 		return ((value.unscaledValue().bitLength() / 8) + 1) + 4 + 1; //BigInteger size + scale(4) + size of serialized form(1)
 	}
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#toString(java.text.NumberFormat)
-	 */
-	public String toString(NumericFormat numericFormat) {
+	@Override
+	public String toString(NumericFormatter numericFormatter) {
 		BigDecimal bd = getBigDecimalOutput();
-		if(bd == null)
-			return "";
-		else if(numericFormat != null) {
-            return numericFormat.format(bd);
-        } else {
-            return bd.toString();
-        }
+		return numericFormatter.format(bd);
 	}
 
-    /**
-     * @see java.lang.Object#toString()
-     */
+	@Override
     public String toString() {
         return toString(null);
     }
     
-	/**
-	 * @see org.jetel.data.primitive.Decimal#toCharBuffer(java.text.NumberFormat)
-	 */
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException {
+	@Override
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException {
     	try {
-    		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
+    		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormatter))));
     	} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     	}
 	}
 
-    /**
-     * @see org.jetel.data.primitive.Decimal#toByteBuffer(java.nio.ByteBuffer)
-     */
+	@Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNaN()) {
         	try {
@@ -618,21 +542,16 @@ public final class HugeDecimal implements Decimal {
         }
     }
     
-	/**
-	 * @see org.jetel.data.primitive.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
-	 */
-	public void fromString(CharSequence source, NumericFormat numericFormat) {
+	@Override
+	public void fromString(CharSequence source, NumericFormatter numericFormatter) {
 		if(source == null || source.length() == 0) {
 			setNaN(true);
             return;
 		}
-        if(numericFormat != null) {
-            setValue(numericFormat.parse(source));
-        } else {
-            setValue(new BigDecimal(source.toString()));
-        }
+		setValue(numericFormatter.parseBigDecimal(source));
 	}
 
+	@Override
     public int compareTo(Numeric value) {
         if (isNull()) {
             return -1;
@@ -643,9 +562,7 @@ public final class HugeDecimal implements Decimal {
         }
     }
 
-	/**
-	 * @see org.jetel.data.primitive.Decimal#compareTo(java.lang.Object)
-	 */
+	@Override
 	public int compareTo(Object obj) {
 		if (obj==null) return 1;
 		if (isNaN()) return -1;
@@ -680,12 +597,14 @@ public final class HugeDecimal implements Decimal {
         return !(HugeDecimal.precision(value.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue()) > precision);
     }
 
+	@Override
     public boolean equals(Object obj) {
         if(obj instanceof Numeric)
             return compareTo((Numeric) obj) == 0;
         else return false;
     }
     
+	@Override
     public int hashCode() {
         if(isNaN()) return Integer.MIN_VALUE; //FIXME ???
         return value.hashCode();

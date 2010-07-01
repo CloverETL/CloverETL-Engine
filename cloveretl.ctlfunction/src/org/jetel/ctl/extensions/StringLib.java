@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
-import org.jetel.util.date.DateFormatter;
+import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {

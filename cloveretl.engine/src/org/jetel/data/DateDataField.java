@@ -26,15 +26,12 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.MiscUtils;
-import org.jetel.util.date.DateFormatter;
-import org.jetel.util.date.DateFormatterFactory;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.Compare;
-import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -74,14 +71,8 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	public DateDataField(DataFieldMetadata metadata, boolean plain) {
         super(metadata);
         if (!plain) {
-            Locale locale = null;
-            // handle locale
-            if (!StringUtils.isEmpty(metadata.getLocaleStr())) {
-            	locale = MiscUtils.createLocale(metadata.getLocaleStr());
-            }
-
             // create a date formatter based on the format string and locale
-            dateFormatter = DateFormatterFactory.createFormatter(metadata.getFormatStr(), locale);
+            dateFormatter = DateFormatterFactory.createFormatter(metadata.getFormatStr(), metadata.getLocaleStr());
         }
         this.reset();
     }

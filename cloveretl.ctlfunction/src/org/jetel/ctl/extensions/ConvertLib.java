@@ -38,7 +38,7 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
-import org.jetel.util.date.DateFormatter;
+import org.jetel.util.formatter.DateFormatter;
 
 public class ConvertLib extends TLFunctionLibrary {
 

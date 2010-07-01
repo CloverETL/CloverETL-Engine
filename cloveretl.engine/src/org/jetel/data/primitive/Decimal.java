@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
 
+import org.jetel.util.formatter.NumericFormatter;
+
 
 /**
  *  Clover internal decimal value representation interface.
@@ -63,13 +65,13 @@ public interface Decimal extends Numeric {
 	
 	public int getSizeSerialized();
 	
-	public String toString(NumericFormat numericFormat);
+	public String toString(NumericFormatter numericFormatter);
 
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException;
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException;
 
     public void toByteBuffer(ByteBuffer dataBuffer);
 	
-	public void fromString(CharSequence seq, NumericFormat numericFormat);
+	public void fromString(CharSequence seq, NumericFormatter numericFormatter);
 
 	public int compareTo(Object value); //nas numeric interface, java.lang.number a tento decimal
 }

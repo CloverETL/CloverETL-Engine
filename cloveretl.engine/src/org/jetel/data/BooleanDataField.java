@@ -25,9 +25,11 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
-import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.formatter.BooleanFormatter;
+import org.jetel.util.formatter.BooleanFormatterFactory;
+import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.string.Compare;
 
 /**
@@ -47,8 +49,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	private static final long serialVersionUID = 7318127447273839212L;
 	
 	private boolean value;
-	private StringFormat trueStringFormat = null;
-	private StringFormat falseStringFormat = null;
+	private final BooleanFormatter booleanFormatter;
 	// standard size of field in serialized form
 	private final static int FIELD_SIZE_BYTES = 1;
 
@@ -70,14 +71,8 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	private BooleanDataField(DataFieldMetadata _metadata, boolean _value){
 	    super(_metadata);
 	    setValue(_value);
-        // handle format string
-        String regExpTrueString;
-        regExpTrueString = _metadata.getFormatStr();
-        if ((regExpTrueString == null) || (regExpTrueString.length() == 0)) {
-        	regExpTrueString = Defaults.DEFAULT_REGEXP_TRUE_STRING;
-        }
-    	trueStringFormat = StringFormat.create(regExpTrueString);
-    	falseStringFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
+	    
+	    booleanFormatter = BooleanFormatterFactory.createFormatter(_metadata.getFormatStr());
 	}
 	
 	public DataField duplicate(){
@@ -193,8 +188,9 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	public String toString() {
 		if (isNull()) {
 			return metadata.getNullValue();
+		} else {
+			return booleanFormatter.formatBoolean(value);
 		}
-		return Boolean.toString(value);
 	}
 
 	/**
@@ -239,17 +235,13 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		    setNull(true);
 			return;
 		}
-		if (trueStringFormat.matches(seq.toString())) {
-			value = true;
+		try{
+			value = booleanFormatter.parseBoolean(seq);
 			setNull(false);
-		}
-		else if (falseStringFormat.matches(seq.toString())){
-			value = false;
-			setNull(false);
-		}else{
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - - doesn't match defined True/False format \"%s\" / \"%s\"",
-					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,trueStringFormat.getPattern().toString(),falseStringFormat.getPattern().toString()),
-					seq.toString());
+		} catch (ParseBooleanException e) {
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - - doesn't match defined True/False format \"%s\" ",
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, booleanFormatter.toString()),
+					seq.toString(),e);
 		}
 	}
 
