@@ -156,6 +156,7 @@ public class SystemExecute extends Node{
 	private static final String XML_WORKING_DIRECTORY_ATTRIBUTE = "workingDirectory";
 	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
 	private static final String XML_DELETE_BATCH_ATTRIBUTE = "deleteBatch";
+	private static final String XML_WORKERS_TIMEOUT_ATTRIBUTE= "workersTimeout";
 	
 	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -181,6 +182,7 @@ public class SystemExecute extends Node{
 	private File workingDirectory = null;
 	private Properties environment = new Properties();
 	private ProcessBuilder processBuilder;
+	private long workersTimeout = 0;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -380,13 +382,13 @@ public class SystemExecute extends Node{
 		// wait for SendData and/or GetData threads to finish work
 		try{
 			exitValue=process.waitFor();
-			if (sendData!=null) sendData.join(KILL_PROCESS_WAIT_TIME);
-			if (getData!=null) getData.join(KILL_PROCESS_WAIT_TIME);
+			if (sendData!=null) sendData.join(workersTimeout);
+			if (getData!=null) getData.join(workersTimeout);
 			if (sendDataToFile!=null){
-				sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
+				sendDataToFile.join(workersTimeout);
 			}
 			if (sendDataToConsole!=null){
-				sendDataToConsole.join(KILL_PROCESS_WAIT_TIME);
+				sendDataToConsole.join(workersTimeout);
 			}
 			
 		}catch(InterruptedException ex){
@@ -633,6 +635,9 @@ public class SystemExecute extends Node{
 			if (xattribs.exists(XML_DELETE_BATCH_ATTRIBUTE)) {
 				sysExec.setDeleteBatch(xattribs.getBoolean(XML_DELETE_BATCH_ATTRIBUTE,true));
 			}
+			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
+				sysExec.setWorkersTimeout(xattribs.getLong(XML_WORKERS_TIMEOUT_ATTRIBUTE));
+			}
 			return sysExec;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -719,6 +724,24 @@ public class SystemExecute extends Node{
 	 */
 	public void setAppend(boolean append) {
 		this.append = append;
+	}
+
+	/**
+	 * When the background system process finish the producent/consument workers can still be running.
+	 * How long should we wait for these workers? Default is 0 (unlimited waiting).
+	 * @return waiting time limit for workers
+	 */
+	public long getWorkersTimeout() {
+		return workersTimeout;
+	}
+
+	/**
+	 * When the background system process finish the producent/consument workers can still be running.
+	 * How long should we wait for these workers? Default is 0 (unlimited waiting).
+	 * @param waitTimeForWorkers waiting time limit for workers
+	 */
+	public void setWorkersTimeout(long workersTimeout) {
+		this.workersTimeout = workersTimeout;
 	}
 
 	/**
