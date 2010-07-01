@@ -622,58 +622,10 @@ public]]>
 		<delete file="${dir.src}/org/jetel/ctl/Node.java"/>
 		<delete file="${dir.src}/org/jetel/ctl/SimpleNode.java"/>
 
-		<replace file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
-			<replacetoken>
-				<![CDATA[package org.jetel.ctl;
-
-public]]>
-			</replacetoken>
-			<replacevalue>
-				<![CDATA[package org.jetel.ctl;
-
-import org.jetel.ctl.ASTnode.*;
-
-public]]>
-			</replacevalue>
-		</replace>
-
-		<replace file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
-			<replacetoken>
-				<![CDATA[interface TransformLangParserVisitor
-{]]>
-			</replacetoken>
-			<replacevalue>
-				<![CDATA[interface TransformLangParserVisitor extends SyntheticNodeVisitor
-{]]>
-			</replacevalue>
-		</replace>
-
-		<replace file="${dir.src}/org/jetel/ctl/TransformLangParser.java" encoding="UTF-8" summary="true">
-			<replacetoken>
-				<![CDATA[jj_kind = kind;
-    throw generateParseException();]]>
-			</replacetoken>
-			<replacevalue>
-				<![CDATA[jj_kind = kind;
-	tokenError(kind); // <- Inserted
-    throw generateParseException();]]>
-			</replacevalue>
-		</replace>
-
-		<replace file="${dir.src}/org/jetel/ctl/JJTTransformLangParserState.java" encoding="UTF-8" summary="true">
-			<replacetoken>
-				<![CDATA[package org.jetel.ctl;
-
-public]]>
-			</replacetoken>
-			<replacevalue>
-				<![CDATA[package org.jetel.ctl;
-
-import org.jetel.ctl.ASTnode.*;
-
-public]]>
-			</replacevalue>
-		</replace>
+		<replaceR file="${dir.src}/org/jetel/ctl/TransformLangParserVisitor.java"/>
+		<replaceR file="${dir.src}/org/jetel/ctl/TransformLangParser.java"/>
+		<replaceR file="${dir.src}/org/jetel/ctl/JJTTransformLangParserState.java"/>
+			
 	</target>
 
 	<target name="generate-jaxb-dictionary">
@@ -1192,4 +1144,24 @@ public]]>
 		</if>
 	</sequential>
 </macrodef>
+	
+<macrodef name="replaceR">
+	<attribute name="file"/>
+	<sequential>
+		<var file="@{file}.replace.properties"/>
+		<echo message="Replacing regexp ${match} in file @{file}"/>
+		<!--
+		<echo>RRRRRR
+			file="@{file}.replace.properties"
+			match="${match}"
+			replace="${replace}"
+		RRRRRR</echo>-->
+		<replaceregexp file="@{file}" encoding="UTF-8"
+			match="${match}"
+			replace="${replace}"
+			flags="s"
+		>
+		</replaceregexp>
+</sequential>
+</macrodef>	
 </project>
