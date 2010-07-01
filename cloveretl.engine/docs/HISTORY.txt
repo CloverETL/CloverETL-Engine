@@ -12,6 +12,7 @@ REL 3-0-0
 + equalNulls attribute of Merge component was removed - value of this attribute was fixed on 'true' value 
 + list of components in tracking log (in console) are topologically sorted
 + new attribute 'quotedStrings' on DataWritter component - all written data can be quoted
++ new attribute for SystemExecute component - workersTimeout
 
 REL 2-9-2
 ---------
