@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:02:17 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.57">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jul 02 14:45:11 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.108">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS Z" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="MMMM/dd/yyyy HH:mm:ss SSS zzzz" locale="${Locale}" name="Date" type="date"/>
 <Field name="FunctionYear" type="string"/>
 <Field name="Year" type="integer"/>
 <Field name="FunctionMonth" type="string"/>
@@ -27,42 +27,82 @@
 <Field name="Millisec" type="integer"/>
 </Record>
 </Metadata>
+<Property id="GraphParameter10" name="Locale" value="en.US"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,unit timeunit)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="549" x="88" y="78">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="624" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,enum timeunit, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="830" x="-66" y="-404">
 <attr name="text"><![CDATA[
-The date2num(date, unit) function accepts two arguments: the first is date and the other is any time unit. 
+The date2num(date, enum-timeunit, string) function accepts three arguments: the first is date, the second is any time unit, and the third is locale. 
+
 The unit can be one of the following: year, month, week, day, hour, minute, second, millisec. The unit must be specified as a symbolic constant in the function. It can neither be received through an edge nor set as variable. 
-The function takes these two arguments and converts them to an integer. If the time unit is contained in the date, it is returned as an integer number. If it is not contained, the function returns 0. 
-Remember that months are numbered starting from 1 unlike in CTL1. Thus, date2num(2008-06-12, month) returns 6. 
-And date2num(2008-06-12, hour) returns 0.]]></attr>
+
+The function takes these three arguments and converts them to an integer. If the time unit is contained in the date, it is returned as an integer number. If it is not contained, the function returns 0. 
+
+Remember that months are numbered starting from 1 unlike in CTL1. Thus, date2num(2008-06-12, month, "en.US") returns 6. 
+And date2num(2008-06-12, hour, "en.US") returns 0.
+
+In this graph, dates are read from input file using the Format property of metadata on the first edge: 
+yyyy-MM-dd HH:mm:ss SSS Z. 
+
+Without this Format, units smaller than day would not be read at all. The result would correspond to: 
+yyyy-MM-dd
+
+All dates are received by Reformat and converted by serie of date2num(date, enum-timeunit, string) functions. 
+
+Here, all time units are used to count the number of years, months, weeks, days, etc. Units can be: 
+year, month, week, day, hour, minute, second, millisec.
+
+Third argument of the date2num() function is Locale. It is specified as an internal Parameter of this graph. Its name is "Locale" and its value is "en.US". 
+
+Value of any parameter can be get using dollar and braces. Thus, value of the "Locale" parameter is: ${Locale}. 
+
+If this value were to be used as a string, it should be single or double quoted.
+
+This parameter is used in two places: First, it is used in Locale property of the second edge. Second, it is used in date2num(date, enum-timeunit, string) functions. 
+E.g. date2num($0.Date,month,'${Locale}').
+
+Date format of the second edge has also been changed. It is:
+MMMM/dd/yyyy HH:mm:ss SSS zzzz
+
+The four "M" mean that month will be expressed textually as the whole word. The four "z" mean that time zone will also be expressed in words.
+
+You can change the value of Locale parameter to any other value and, for example, look how months changes from one locale to another.
+
+Output file uses UTF-8 as its charset since some locales use also some non-ascii characters in months.
+
+When no locale is specified in date2num(), system locale is used instead: 
+integer date2num(date arg, enum timeunit)
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="56" guiY="337" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="585" guiY="338" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="299" guiY="337" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="-60" guiY="276" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="456" guiY="276" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="204" guiY="276" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
 	$0.Date = $Date;
-	$0.FunctionYear = "date2num($0.Date,year)";
-	$0.Year = date2num($0.Date,year);
-	$0.FunctionMonth = "date2num($0.Date,month)";
-	$0.Month = date2num($0.Date,month);
-	$0.FunctionWeek = "date2num($0.Date,week)";
-	$0.Week = date2num($0.Date,week);
-	$0.FunctionDay = "date2num($0.Date,day)";
-	$0.Day = date2num($0.Date,day);
-	$0.FunctionHour = "date2num($0.Date,hour)";
-	$0.Hour = date2num($0.Date,hour);
-	$0.FunctionMinute = "date2num($0.Date,minute)";
-	$0.Minute = date2num($0.Date,minute);
-	$0.FunctionSecond = "date2num($0.Date,second)";
-	$0.Second = date2num($0.Date,second);
-	$0.FunctionMillisec = "date2num($0.Date,millisec)";
-	$0.Millisec = date2num($0.Date,millisec);
+printErr("${Locale}");
+	$0.FunctionYear = "date2num($0.Date,year,'${Locale}')";
+	$0.Year = date2num($0.Date,year,'${Locale}');
+	$0.FunctionMonth = "date2num($0.Date,month,'${Locale}')";
+	$0.Month = date2num($0.Date,month,'${Locale}');
+	$0.FunctionWeek = "date2num($0.Date,week,'${Locale}')";
+	$0.Week = date2num($0.Date,week,'${Locale}');
+	$0.FunctionDay = "date2num($0.Date,day,'${Locale}')";
+	$0.Day = date2num($0.Date,day,'${Locale}');
+	$0.FunctionHour = "date2num($0.Date,hour,'${Locale}')";
+	$0.Hour = date2num($0.Date,hour,'${Locale}');
+	$0.FunctionMinute = "date2num($0.Date,minute,'${Locale}')";
+	$0.Minute = date2num($0.Date,minute,'${Locale}');
+	$0.FunctionSecond = "date2num($0.Date,week,'${Locale}')";
+	$0.Second = date2num($0.Date,second,'${Locale}');
+	$0.FunctionMillisec = "date2num($0.Date,millisec,'${Locale}')";
+	$0.Millisec = date2num($0.Date,millisec,'${Locale}');
+
+
 	return 0;
 }
 
@@ -74,6 +114,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
