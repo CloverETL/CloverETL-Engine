@@ -96,7 +96,8 @@ public final class DynamicCompiler {
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, classPathUrls);
 		
-		logger.debug("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());
+		//this should be logged only on debug level - this is only for testing purpose for Mava and his websphere testing
+		logger.error("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());
 		
 		StringWriter compilerOutput = new StringWriter();
 
