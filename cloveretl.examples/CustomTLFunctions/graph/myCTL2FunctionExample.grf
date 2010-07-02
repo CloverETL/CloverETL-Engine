@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri May 21 11:51:02 CEST 2010" guiVersion="0.0.0.devel" id="1274438362526" licenseType="Evaluation Devel" modified="Wed Jun 30 14:08:34 CEST 2010" modifiedBy="avackova" name="myTlFunctionExample" revision="1.12">
+<Graph author="avackova" created="Fri May 21 11:51:02 CEST 2010" guiVersion="0.0.0.devel" id="1274438362526" licenseType="Evaluation Devel" modified="Fri Jul 02 13:20:37 CEST 2010" modifiedBy="avackova" name="myTlFunctionExample" revision="1.15">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="data" recordDelimiter="\n" type="delimited">
@@ -10,7 +10,7 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="28" guiY="28" id="DATA_GENERATOR0" recordsNumber="2" type="DATA_GENERATOR">
+<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="28" guiY="28" id="DATA_GENERATOR0" recordsNumber="3" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#TL
 
 // Generates output record.
@@ -31,9 +31,19 @@ function generate() {
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="220" guiY="28" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer counter = 0;
+
+function string value(integer rec_no){
+	switch (rec_no) {
+		case 0:return myFunction(1999-01-01,'some string');
+		case 1:return doubleMetaphone($field1);
+		case 2:return doubleMetaphone($field1,2);
+		default: return "Unknown function";
+	}
+}
+
 // Transforms input record into output record.
 function integer transform() {
-	$0.field1 = iif(counter++ == 0, doubleMetaphone($field1), myFunction(1999-01-01,'some string'));
+	$0.field1 = value(counter++);
 	return ALL;
 }
 

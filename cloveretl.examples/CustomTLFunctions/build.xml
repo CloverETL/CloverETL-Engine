@@ -10,6 +10,9 @@
 	<property name="package.name" value="org.mypackage.${ctl_version}functions"/> 
 	<property name="library.name" value="my_lib_${ctl_version}.jar"/>
 	
+	<property name="verbose" value="true"/>
+
+	
 	<fileset id="libs" dir="${dir.lib}">
 		<include name="**/*.jar"/>
 	</fileset>
@@ -24,7 +27,7 @@
 		<mkdir dir="${dir.bin}"/>
 		<echo>CloverETL Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
 		<!-- Compile sources -->
-		<javac debug="true" destdir="${dir.bin}" >
+		<javac debug="true" destdir="${dir.bin}" verbose="${verbose}">
 			<classpath>
 				<pathelement path="${dir.engine}/lib/cloveretl.engine.jar"/>
 				<fileset refid="libs"/>	
@@ -35,7 +38,7 @@
 
 	<target name="package" description="Creates jar file" depends="compile">
 		<jar destfile="${basedir}/${library.name}" basedir="${dir.bin}">
-			<include name="**/*${ctl_version}*.class"/>
+			<include name="**/${ctl_version}functions/**/*.class"/>
 		</jar>
 	</target>
 	
@@ -51,10 +54,8 @@
 	</target>
 	
 	<target name="clean" description="Removes all unneeded files created during building">
-		<delete dir="${basedir}/trans/bin"/>
-		<delete dir="${basedir}/trans">
-			<filename name="${library.name}"/>
-		</delete>
+		<delete dir="${dir.bin}"/>
+		<delete file="${library.name}"/>
 	</target>
 
 </project>
