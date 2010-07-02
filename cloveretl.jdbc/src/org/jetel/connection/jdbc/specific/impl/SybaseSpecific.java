@@ -121,20 +121,6 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		}
 	}
 	
-	/**
-	 * Returns false when a call of DatabaseMetaData.supportsGetGeneratedKeys() is not
-	 * supported by a driver. Exceptions of type SQLException are passed. 
-	 */
-	@Override
-	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
-		try {
-			boolean result = super.supportsGetGeneratedKeys(metadata);
-			return result;
-		}
-		catch (Exception e) {
-			if (e instanceof SQLException) throw (SQLException)e;  
-			return false;
-		}
-	}
+
 	
 }
