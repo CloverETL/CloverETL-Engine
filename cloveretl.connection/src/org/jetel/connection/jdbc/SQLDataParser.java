@@ -224,7 +224,7 @@ public class SQLDataParser implements Parser {
 			if(exceptionHandler != null ) {  //use handler only if configured
                 exceptionHandler.populateHandler(getErrorMessage(
                 		bdfe.getMessage(), recordCounter, fieldNum), record, -1, 
-                		fieldNum-1, bdfe.getOffendingValue().toString(), bdfe);
+                		fieldNum-1, "" + bdfe.getOffendingValue(), bdfe);
 			} else {
 				throw bdfe;
 			}
