@@ -573,7 +573,14 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	}
 	
 	public boolean supportsGetGeneratedKeys(DatabaseMetaData metadata) throws SQLException {
-		return metadata.supportsGetGeneratedKeys();
+		try {
+			boolean result = metadata.supportsGetGeneratedKeys();
+			return result;
+		}
+		catch (Exception e) {
+			if (e instanceof SQLException) throw (SQLException)e;  
+			return false;
+		}
 	}
 
 	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException {
