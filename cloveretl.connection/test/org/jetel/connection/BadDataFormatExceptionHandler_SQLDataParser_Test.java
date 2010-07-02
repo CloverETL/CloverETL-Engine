@@ -3,6 +3,8 @@ package org.jetel.connection;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
@@ -25,6 +27,9 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 	private SQLDataParser aParser2 = null;
 	private DataRecord record;
 	private DataRecordMetadata metadata = null;
+	
+	private static Log logger = LogFactory.getLog(BadDataFormatExceptionHandler_SQLDataParser_Test.class);
+
 
 	@SuppressWarnings("deprecation")
 	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
@@ -239,8 +244,8 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e) {
 		} catch (Exception ee) {
-			fail("Should not throw Exception");
-			ee.printStackTrace();
+			logger.error("Should not throw Exception",ee);
+			fail("Should not throw Exception" );
 		}
 		assertEquals(0, recCount);
 	}
