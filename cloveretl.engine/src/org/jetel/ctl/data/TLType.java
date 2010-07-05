@@ -507,7 +507,7 @@ public abstract class TLType {
 		
 		@Override
 		public String name() {
-			return symbol.name();
+			return "timeunit";
 		}
 		
 		@Override
@@ -569,7 +569,7 @@ public abstract class TLType {
 		
 		@Override
 		public String name() {
-			return symbol.name();
+			return "loglevel";
 		}
 		
 		public boolean isLogLevel() {
