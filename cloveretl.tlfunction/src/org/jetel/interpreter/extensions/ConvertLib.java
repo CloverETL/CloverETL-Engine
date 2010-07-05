@@ -228,7 +228,7 @@ public class ConvertLib extends TLFunctionLibrary {
                      locale = params[2].toString();
                  } else {
                 	 // locale not set - use system default
-                	 locale = Locale.getDefault().getDisplayName();
+                	 locale = MiscUtils.localeToString(Locale.getDefault());
                  }
             	 Num2StrContext c = (Num2StrContext)context.getContext();
             	 if (c.format == null || !c.locale.equals(locale) || !c.format.toPattern().equals(formatString)) {

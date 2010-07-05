@@ -19,10 +19,10 @@
 package org.jetel.util.formatter;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
-
-import org.jetel.data.primitive.NumericFormat;
+import java.text.ParsePosition;
 
 /**
  * @author csochor (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -32,6 +32,8 @@ import org.jetel.data.primitive.NumericFormat;
 public class JavaNumericFormatter implements NumericFormatter {
 
 	private final NumberFormat numberFormat;
+	
+	private final ParsePosition tempParsePosition;
 
 	@Override
 	public String toString() {
@@ -43,11 +45,30 @@ public class JavaNumericFormatter implements NumericFormatter {
 			throw new IllegalArgumentException("numberFormat is required");
 		}
 		this.numberFormat = numberFormat;
+		this.tempParsePosition = new ParsePosition(0);
 	}
 
 	@Override
 	public int parseInt(CharSequence seq) throws ParseException {
-		return numberFormat.parse(seq.toString()).intValue();
+		final ParsePosition parsePosition = getTempParsePostion();
+		
+		//try to parse the given string to number
+		Number resultNumber = numberFormat.parse(seq.toString(), parsePosition); //this toString() conversion is potential performance issue
+		if (resultNumber == null || parsePosition.getErrorIndex() != -1 || parsePosition.getIndex() != seq.length()) {
+			//parsing failed
+			throw new ParseException("Integer parsing error.", -1);
+		}
+		
+		if (resultNumber instanceof Long) { // result is long - seems to be ok
+			long resultLong = resultNumber.longValue();
+			if (resultLong <= Integer.MAX_VALUE && resultLong > Integer.MIN_VALUE) {
+				return (int) resultLong;
+			} else { // result is out of range
+				throw new ParseException("Out of integer range.", -1);
+			}
+		} else { // result is double or something like this
+			throw new ParseException("String does not represent an integer value.", -1);
+		}
 	}
 
 	@Override
@@ -62,7 +83,25 @@ public class JavaNumericFormatter implements NumericFormatter {
 
 	@Override
 	public long parseLong(CharSequence seq) throws ParseException {
-		return numberFormat.parse(seq.toString()).longValue();
+		final ParsePosition parsePosition = getTempParsePostion();
+		
+		//try to parse the given string to number
+		Number resultNumber = numberFormat.parse(seq.toString(), parsePosition); //this toString() conversion is potential performance issue
+		if (resultNumber == null || parsePosition.getErrorIndex() != -1 || parsePosition.getIndex() != seq.length()) {
+			//parsing failed
+			throw new ParseException("Long parsing error.", -1);
+		}
+		
+		if (resultNumber instanceof Long) { // result is long - seems to be ok
+			long resultLong = resultNumber.longValue();
+			if (resultLong != Long.MIN_VALUE) {
+				return resultLong;
+			} else { // result is out of range
+				throw new ParseException("Out of long range.", -1);
+			}
+		} else { // result is double or something like this
+			throw new ParseException("String does not represent a long value.", -1);
+		}
 	}
 
 	@Override
@@ -72,7 +111,16 @@ public class JavaNumericFormatter implements NumericFormatter {
 
 	@Override
 	public double parseDouble(CharSequence seq) throws ParseException {
-		return numberFormat.parse(seq.toString()).doubleValue();
+		final ParsePosition parsePosition = getTempParsePostion();
+		
+		//try to parse the given string to number
+		Number resultNumber = numberFormat.parse(seq.toString(), parsePosition); //this toString() conversion is potential performance issue
+		if (resultNumber == null || parsePosition.getErrorIndex() != -1 || parsePosition.getIndex() != seq.length()) {
+			//parsing failed
+			throw new ParseException("Long parsing error.", -1);
+		}
+
+		return resultNumber.doubleValue();
 	}
 
 	@Override
@@ -84,9 +132,23 @@ public class JavaNumericFormatter implements NumericFormatter {
 		}
 	}
 
+	/**
+	 * !!! Underlying NumberFormat has to be switched to ParseBigDecimal mode.
+	 * !!! {@link DecimalFormat#setParseBigDecimal(boolean)}
+	 */
 	@Override
-	public BigDecimal parseBigDecimal(CharSequence seq) {
-		return ((NumericFormat)numberFormat).parse(seq);
+	public BigDecimal parseBigDecimal(CharSequence seq) throws ParseException {
+		try {
+			return (BigDecimal) numberFormat.parse(seq.toString());
+		} catch (NumberFormatException e) {
+			throw new ParseException(e.getMessage(), -1);
+		}
 	}
 
+	private ParsePosition getTempParsePostion() {
+		tempParsePosition.setIndex(0);
+		tempParsePosition.setErrorIndex(-1);
+		return tempParsePosition;
+	}
+	
 }

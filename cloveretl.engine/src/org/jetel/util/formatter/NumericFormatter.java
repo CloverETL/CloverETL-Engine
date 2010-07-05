@@ -42,6 +42,6 @@ public interface NumericFormatter {
 
 	String formatBigDecimal(BigDecimal galue);
 
-	BigDecimal parseBigDecimal(CharSequence seq);
+	BigDecimal parseBigDecimal(CharSequence seq) throws ParseException;
 
 }

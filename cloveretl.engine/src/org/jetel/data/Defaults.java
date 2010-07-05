@@ -182,7 +182,6 @@ public final class Defaults {
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
 		DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
-		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
 		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
 		DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
@@ -239,8 +238,6 @@ public final class Defaults {
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
 	public static String DEFAULT_REGEXP_TRUE_STRING;// = "T|TRUE|YES|Y|t|true|1|yes|y"
 	public static String DEFAULT_REGEXP_FALSE_STRING;// = "F|FALSE|NO|N|f|false|0|no|n"
-
-	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
 
 	/**
 	 * List of directories, where plugins are located. Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX

@@ -60,21 +60,16 @@ class JavaDateFormatter implements DateFormatter {
 	}
 
 	public Date parseDate(String value) {
-			position.setIndex(0);
-			final Date date=dateFormat.parse(value,position);
-			if (position.getIndex()==0)
-				throw new IllegalArgumentException("Unparseable date: \"" + value + "\" at position "+
-		                position.getErrorIndex());
-			return date;
-	}
-
-	public long parseMillis(String value) {
 		position.setIndex(0);
 		final Date date=dateFormat.parse(value,position);
 		if (position.getIndex()==0)
 			throw new IllegalArgumentException("Unparseable date: \"" + value + "\" at position "+
 	                position.getErrorIndex());
-		return date.getTime();
+		return date;
+	}
+
+	public long parseMillis(String value) {
+		return parseDate(value).getTime();
 	}
 
 	public String getPattern() {
