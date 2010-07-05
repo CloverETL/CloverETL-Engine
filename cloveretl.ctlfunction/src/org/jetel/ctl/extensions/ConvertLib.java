@@ -40,6 +40,7 @@ import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 
 public class ConvertLib extends TLFunctionLibrary {
 
@@ -125,7 +126,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Returns string representation in decimal radix")
 	public static final String num2str(TLFunctionCallContext context, Integer num) {
-		return num2str(context, num,10);
+		return NumericFormatterFactory.getPlainFormatterInstance().formatInt(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
@@ -145,7 +146,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Long num) {
-		return num2str(context, num,10);
+		return NumericFormatterFactory.getPlainFormatterInstance().formatLong(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
@@ -172,7 +173,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Double num) {
-		return num2str(context, num,10);
+		return NumericFormatterFactory.getPlainFormatterInstance().formatDouble(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
@@ -188,7 +189,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num) {
-		return num.toString();
+		return NumericFormatterFactory.getPlainFormatterInstance().formatBigDecimal(num);
 	}
 	class Num2StrFunction implements TLFunctionPrototype {
 		
@@ -391,7 +392,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input) {
-		return Integer.valueOf(input,10);
+		try {
+			return NumericFormatterFactory.getPlainFormatterInstance().parseInt(input);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" - " + e.getMessage());
+		}
 	}
 	class Str2IntegerFunction implements TLFunctionPrototype {
 		
@@ -449,7 +454,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Parses string to long using specific numeral system.")
 	public static final Long str2long(TLFunctionCallContext context, String input) {
-		return Long.valueOf(input,10);
+		try {
+			return NumericFormatterFactory.getPlainFormatterInstance().parseLong(input);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\" - " + e.getMessage());
+		}
 	}
 	class Str2LongFunction implements TLFunctionPrototype {
 		
@@ -503,7 +512,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Parses string to double using specific numeral system.")
 	public static final Double str2double(TLFunctionCallContext context, String input) {
-		return Double.valueOf(input);
+		try {
+			return NumericFormatterFactory.getPlainFormatterInstance().parseDouble(input);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" - " + e.getMessage());
+		}
 	}
 	class Str2DoubleFunction implements TLFunctionPrototype {
 		
@@ -553,7 +566,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to decimal.")
 	public static final BigDecimal str2decimal(TLFunctionCallContext context, String input) {
-		return new BigDecimal(input,TransformLangExecutor.MAX_PRECISION);
+		try {
+			return NumericFormatterFactory.getPlainFormatterInstance().parseBigDecimal(input);
+		} catch (ParseException e) {
+			throw new TransformLangExecutorRuntimeException("str2decimal - can't convert \"" + input + "\" - " + e.getMessage());
+		}
 	}
 	class Str2DecimalFunction implements TLFunctionPrototype {
 		

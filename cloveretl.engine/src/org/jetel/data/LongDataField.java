@@ -74,7 +74,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
         super(_metadata);
         
         if (plain) {
-        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
         	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 

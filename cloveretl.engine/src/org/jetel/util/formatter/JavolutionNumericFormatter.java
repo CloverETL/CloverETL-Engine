@@ -23,6 +23,8 @@ import java.text.ParseException;
 
 import javolution.text.TypeFormat;
 
+import org.jetel.ctl.TransformLangExecutor;
+
 /**
  * @author csochor (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -77,6 +79,6 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public BigDecimal parseBigDecimal(CharSequence seq) {
-		return new BigDecimal(seq.toString());
+		return new BigDecimal(seq.toString(), TransformLangExecutor.MAX_PRECISION);
 	}
 }

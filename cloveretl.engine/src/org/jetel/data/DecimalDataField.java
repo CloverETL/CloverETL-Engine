@@ -74,7 +74,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale, boolean plain) {
 		super(_metadata);
         if (plain) {
-        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
         	numericFormatter = NumericFormatterFactory.createDecimalFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 

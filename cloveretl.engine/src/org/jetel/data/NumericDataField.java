@@ -79,7 +79,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	public NumericDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
         if (plain) {
-        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
         	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 
