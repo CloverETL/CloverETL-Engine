@@ -26,11 +26,13 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
+import java.text.ParseException;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 
@@ -549,7 +551,11 @@ public final class HugeDecimal implements Decimal {
 			setNaN(true);
             return;
 		}
-		setValue(numericFormatter.parseBigDecimal(source));
+		try {
+			setValue(numericFormatter.parseBigDecimal(source));
+		} catch (ParseException e) {
+			throw new BadDataFormatException("HugeDecimal cannot represent '" + source + "' value.", e);
+		}
 	}
 
 	@Override

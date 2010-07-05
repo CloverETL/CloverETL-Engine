@@ -23,7 +23,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import org.jetel.data.primitive.NumericFormat;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -36,8 +35,67 @@ public class NumericFormatterFactory {
 
 	private static final JavolutionNumericFormatter PLAIN_FORMATTER = new JavolutionNumericFormatter();
 
-	public static NumericFormatter createFormatter(String formatString, String localeString, boolean parseIntegerOnly) {
+	public static NumericFormatter createFormatter(String formatString, String localeString) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		
+		if (numberFormat != null) {
+			return new JavaNumericFormatter(numberFormat);
+		} else {
+			return createPlainFormatter();
+		}
+	}
 
+	public static NumericFormatter createDecimalFormatter(String formatString, String localeString) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		
+		if (numberFormat != null) {
+			((DecimalFormat) numberFormat).setParseBigDecimal(true);
+			return new JavaNumericFormatter(numberFormat);
+		} else {
+			return createPlainFormatter();
+		}
+		
+// This implementation exploit our NumericFormat, which is unfortunately pretty buggy 
+//		- its only advantage is that is able to parse CharSequence instead String what is faster in our case 
+		
+//		// handle locale
+//		final Locale locale;
+//		if (!StringUtils.isEmpty(localeString)) {
+//			locale = MiscUtils.createLocale(localeString);
+//		} else {
+//			locale = null;
+//		}
+//
+//		// handle formatString
+//		NumberFormat numericFormat = null;
+//		if (!StringUtils.isEmpty(formatString)) {
+//			if (locale != null) {
+//				numericFormat = new NumericFormat(formatString,
+//						new DecimalFormatSymbols(locale));
+//			} else {
+//				numericFormat = new NumericFormat(formatString);
+//			}
+//		} else if (locale != null) {
+//			numericFormat = new NumericFormat(locale);
+//		}
+//
+//		if (numericFormat != null) {
+//			return new JavaNumericFormatter(numericFormat);
+//		} else {
+//			return createPlainFormatter();
+//		}
+
+	}
+
+	public static NumericFormatter createPlainFormatter() {
+		return PLAIN_FORMATTER;
+	}
+
+	private NumericFormatterFactory() {
+		throw new UnsupportedOperationException();
+	}
+
+	private static NumberFormat createNumberFormatter(String formatString, String localeString) {
 		// handle locale
 		final Locale locale;
 		if (!StringUtils.isEmpty(localeString)) {
@@ -59,51 +117,7 @@ public class NumericFormatterFactory {
 			numberFormat = DecimalFormat.getInstance(locale);
 		}
 
-		if (numberFormat != null) {
-			numberFormat.setParseIntegerOnly(parseIntegerOnly);
-			return new JavaNumericFormatter(numberFormat);
-		} else {
-			return createPlainFormatter();
-		}
+		return numberFormat;
 	}
-
-	public static NumericFormatter createDecimalFormatter(String formatString, String localeString) {
-
-		// handle locale
-		final Locale locale;
-		if (!StringUtils.isEmpty(localeString)) {
-			locale = MiscUtils.createLocale(localeString);
-		} else {
-			locale = null;
-		}
-
-		// handle formatString
-		NumberFormat numericFormat = null;
-		if (!StringUtils.isEmpty(formatString)) {
-			if (locale != null) {
-				numericFormat = new NumericFormat(formatString,
-						new DecimalFormatSymbols(locale));
-			} else {
-				numericFormat = new NumericFormat(formatString);
-			}
-		} else if (locale != null) {
-			numericFormat = new NumericFormat(locale);
-		}
-
-		if (numericFormat != null) {
-			return new JavaNumericFormatter(numericFormat);
-		} else {
-			return createPlainFormatter();
-		}
-
-	}
-
-	public static NumericFormatter createPlainFormatter() {
-		return PLAIN_FORMATTER;
-	}
-
-	private NumericFormatterFactory() {
-		throw new UnsupportedOperationException();
-	}
-
+	
 }

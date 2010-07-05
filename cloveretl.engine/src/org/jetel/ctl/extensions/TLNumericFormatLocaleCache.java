@@ -18,11 +18,9 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.formatter.NumericFormatter;
+import org.jetel.util.formatter.NumericFormatterFactory;
 
 /**
  * @author javlin (info@cloveretl.com)
@@ -30,11 +28,22 @@ import org.jetel.util.MiscUtils;
  *
  * @created May 28, 2010
  */
-public class TLDecimalFormatLocaleCache extends TLCache {
+public class TLNumericFormatLocaleCache extends TLCache {
 	
-	private DecimalFormat cachedFormat;
+	private NumericFormatter cachedFormatter;
 	private String previousFormatString;
 	private String previousLocaleString;
+	private boolean isDecimal;
+	
+	/**
+	 * This cache can work in two modes.
+	 * 1) For isDecimal equal false 'NumericFormatterFactory.createFormatter()' is used to create formatter.
+	 * 2) For isDecimal equal true 'NumericFormatterFactory.createDecimalFormatter()' is used to create formatter.
+	 * @param isDecimal 
+	 */
+	public TLNumericFormatLocaleCache(boolean isDecimal) {
+		this.isDecimal = isDecimal;
+	}
 	
 	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
 
@@ -47,8 +56,7 @@ public class TLDecimalFormatLocaleCache extends TLCache {
 		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
 			String paramPattern = (String) context.getParamValue(pos1);
 			if (context.isLiteral(pos1)) {
-				final DecimalFormat format = new DecimalFormat(paramPattern);
-				cachedFormat = format;
+				prepareCachedFormatter(paramPattern, null);
 			}
 			return;
 		}
@@ -56,40 +64,48 @@ public class TLDecimalFormatLocaleCache extends TLCache {
 		String paramPattern = (String) context.getParamValue(pos1);
 		String paramLocale = (String) context.getParamValue(pos2);
 		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			final DecimalFormat format = new DecimalFormat(paramPattern, new DecimalFormatSymbols(MiscUtils.createLocale(paramLocale)));
-			cachedFormat = format;
+			prepareCachedFormatter(paramPattern, paramLocale);
 		}
 	}
 	
-	public DecimalFormat getCachedLocaleFormat(TLFunctionCallContext context, String format, String locale,	int pos1, int pos2) {
+	public NumericFormatter getCachedLocaleFormat(TLFunctionCallContext context, String format, String locale, int pos1, int pos2) {
 
 		if (context.getLiteralsSize() > Math.max(pos1, pos2)) {
 			// if we use the variant with both format and locale specified
 			if ((context.isLiteral(pos1) && context.isLiteral(pos2))
 			// either both format and locale were literals (thus cached at init)
-			|| (cachedFormat != null && format.equals(previousFormatString) && locale.equals(previousLocaleString))
+			|| (cachedFormatter != null && format.equals(previousFormatString) && locale.equals(previousLocaleString))
 			// or format is already cached and previous inputs match the current ones
 			) {
-				return cachedFormat;
+				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
-				cachedFormat = new DecimalFormat(format, new DecimalFormatSymbols(MiscUtils.createLocale(locale)));
+				prepareCachedFormatter(format, locale);
 				previousFormatString = format;
 				previousLocaleString = locale;
-				return cachedFormat;
+				return cachedFormatter;
 			}
 		}
 		if (context.getLiteralsSize() > pos1 && context.getLiteralsSize() <= pos2) {
 			// just format is specified, but not locale
-			if (context.isLiteral(pos1) || (cachedFormat != null && format.equals(previousFormatString))) {
-				return cachedFormat;
+			if (context.isLiteral(pos1) || (cachedFormatter != null && format.equals(previousFormatString))) {
+				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used)
-				cachedFormat = new DecimalFormat(format);
+				prepareCachedFormatter(format, null);
 				previousFormatString = format;
-				return cachedFormat;
+				return cachedFormatter;
 			}
 		}
 		throw new TransformLangExecutorRuntimeException("Format not correctly specified for the number.");
 	}
+	
+	private void prepareCachedFormatter(String format, String locale) {
+		if (!isDecimal) {
+			cachedFormatter = NumericFormatterFactory.createFormatter(format, locale); 
+		} else {
+			cachedFormatter = NumericFormatterFactory.createDecimalFormatter(format, locale); 
+		}
+	}
+	
 }

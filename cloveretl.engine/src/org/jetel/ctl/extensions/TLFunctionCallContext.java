@@ -129,12 +129,6 @@ public class TLFunctionCallContext {
 		return index;
 	}
 	/**
-	 * @return
-	 */
-	public int literalsCount() {
-		return isLiteral.length;
-	}
-	/**
 	 * @param hasInit
 	 */
 	public void setHasInit(boolean hasInit) {

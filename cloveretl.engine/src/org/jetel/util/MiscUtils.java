@@ -27,7 +27,6 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -55,7 +54,7 @@ public final class MiscUtils {
 		if (StringUtils.isEmpty(localeStr)) {
 			locale = Locale.getDefault();
 		} else {
-			String[] localeLC = localeStr.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+			String[] localeLC = localeStr.split("\\.");
 			if (localeLC.length > 1) {
 				locale = new Locale(localeLC[0], localeLC[1]);
 			} else {
@@ -66,6 +65,26 @@ public final class MiscUtils {
 		return locale;
 	}
 
+	/**
+	 * Converts given locale to clover standard format. This is symmetric method to {@link #createLocale(String)}. 
+	 * @param locale
+	 * @return
+	 */
+	public static String localeToString(Locale locale) {
+		if (locale == null) {
+			throw new NullPointerException("Locale cannot be null.");
+		}
+		
+		String language = locale.getLanguage();
+		String country = locale.getCountry();
+		
+		if (StringUtils.isEmpty(language)) {
+			throw new IllegalArgumentException("Given locale '" + locale.getDisplayName() + "' does not have language specified. Unexpected error.");
+		}
+		return language 
+			+ (!StringUtils.isEmpty(country) ? ("." + country) : "");
+	}
+	
 	/**
 	 * Creates Decimal/Date format depending on data field type
 	 * 

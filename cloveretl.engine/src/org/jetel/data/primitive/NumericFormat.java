@@ -181,15 +181,11 @@ public class NumericFormat extends NumberFormat {
 				throw new NumberFormatException("For input string: \"" + source + "\"");
 			}
 		}
-		try {
-			BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
-			if (exponentForm){
-				return bigDecimal.movePointRight(exponentPart);
-			}else{
-				return bigDecimal;
-			}
-		}catch(NumberFormatException e){
-			return null;
+		BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
+		if (exponentForm){
+			return bigDecimal.movePointRight(exponentPart);
+		}else{
+			return bigDecimal;
 		}
 	}
 	

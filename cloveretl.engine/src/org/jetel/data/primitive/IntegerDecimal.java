@@ -26,11 +26,13 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
+import java.text.ParseException;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 
@@ -492,7 +494,11 @@ public final class IntegerDecimal implements Decimal {
             return;
         }
 
-        setValue(numericFormatter.parseBigDecimal(seq));
+        try {
+			setValue(numericFormatter.parseBigDecimal(seq));
+		} catch (ParseException e) {
+			throw new BadDataFormatException("IntegerDecimal cannot represent '" + seq + "' value.", e);
+		}
     }
 
     public void fromCharBuffer(CharBuffer buffer, NumericFormatter numericFormatter) {
@@ -557,13 +563,15 @@ public final class IntegerDecimal implements Decimal {
         return !(precision < HugeDecimal.longLength(value)); 
     }
     
-    public boolean equals(Object obj) {
+    @Override
+	public boolean equals(Object obj) {
         if(obj instanceof Numeric)
             return compareTo((Numeric) obj) == 0;
         else return false;
     }
 
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         if(isNaN()) return Integer.MIN_VALUE;
         return (int)(value^value>>32);
     }
