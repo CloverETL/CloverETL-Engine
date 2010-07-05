@@ -72,7 +72,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
         super(_metadata);
         
         if (plain) {
-        	numericFormatter = NumericFormatterFactory.createPlainFormatter();
+        	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
         	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 

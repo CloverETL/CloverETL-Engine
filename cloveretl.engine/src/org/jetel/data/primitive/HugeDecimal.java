@@ -521,7 +521,7 @@ public final class HugeDecimal implements Decimal {
 
 	@Override
     public String toString() {
-        return toString(NumericFormatterFactory.createPlainFormatter());
+        return toString(NumericFormatterFactory.getPlainFormatterInstance());
     }
     
 	@Override

@@ -463,7 +463,7 @@ public final class IntegerDecimal implements Decimal {
 
     @Override
     public String toString() {
-        return toString(NumericFormatterFactory.createPlainFormatter());
+        return toString(NumericFormatterFactory.getPlainFormatterInstance());
     }
     
     @Override

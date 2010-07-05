@@ -514,12 +514,12 @@ public class DecimalNumericTest extends CloverTestCase {
 	}
 
 	public void test_fromString(){
-		aDouble.fromString("123.45",NumericFormatterFactory.createPlainFormatter());
+		aDouble.fromString("123.45",NumericFormatterFactory.getPlainFormatterInstance());
 		assertEquals(Double.valueOf(123),Double.valueOf(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,5);
-		aDouble.fromString(".12345",NumericFormatterFactory.createPlainFormatter());
+		aDouble.fromString(".12345",NumericFormatterFactory.getPlainFormatterInstance());
 		assertEquals(Double.valueOf(0.12345),Double.valueOf(aDouble.getDouble()));
-		aDouble.fromString("12345",NumericFormatterFactory.createPlainFormatter());
+		aDouble.fromString("12345",NumericFormatterFactory.getPlainFormatterInstance());
 		assertEquals(Double.valueOf(12345),Double.valueOf(aDouble.getDouble()));
 	}
 

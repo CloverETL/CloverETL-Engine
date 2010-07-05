@@ -41,7 +41,7 @@ public class NumericFormatterFactory {
 		if (numberFormat != null) {
 			return new JavaNumericFormatter(numberFormat);
 		} else {
-			return createPlainFormatter();
+			return getPlainFormatterInstance();
 		}
 	}
 
@@ -52,7 +52,7 @@ public class NumericFormatterFactory {
 			((DecimalFormat) numberFormat).setParseBigDecimal(true);
 			return new JavaNumericFormatter(numberFormat);
 		} else {
-			return createPlainFormatter();
+			return getPlainFormatterInstance();
 		}
 		
 // This implementation exploit our NumericFormat, which is unfortunately pretty buggy 
@@ -87,7 +87,7 @@ public class NumericFormatterFactory {
 
 	}
 
-	public static NumericFormatter createPlainFormatter() {
+	public static NumericFormatter getPlainFormatterInstance() {
 		return PLAIN_FORMATTER;
 	}
 
