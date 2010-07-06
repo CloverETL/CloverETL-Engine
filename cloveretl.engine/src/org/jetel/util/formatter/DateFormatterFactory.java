@@ -44,15 +44,15 @@ public final class DateFormatterFactory {
 		}
 
 		if (formatString == null) {
-			return new JavaDateFormatter(locale);
-		} else if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
-			return new JodaDateFormatter(formatString.substring(JODA_FORMAT_PREFIX.length()), locale);
+			return new JodaDateFormatter(locale);
+		} else if (formatString.startsWith(JAVA_FORMAT_PREFIX)) {
+			return new JavaDateFormatter(formatString.substring(JAVA_FORMAT_PREFIX.length()), locale);
 		} else {
-			if (formatString.startsWith(JAVA_FORMAT_PREFIX)) {
-				formatString = formatString.substring(JAVA_FORMAT_PREFIX.length());
+			if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
+				formatString = formatString.substring(JODA_FORMAT_PREFIX.length());
 			}
 
-			return new JavaDateFormatter(formatString, locale);
+			return new JodaDateFormatter(formatString, locale);
 		}
 	}
 
