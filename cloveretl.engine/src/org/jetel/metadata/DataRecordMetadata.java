@@ -109,6 +109,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String nullValue = DEFAULT_NULL_VALUE;
 
 	/**
+	 * Default collator sensitivity for string fields. Can be overridden by DataFieldMetadata.
+	 * See Collator.setStregth(String strength).
+	 */
+	private String collatorSensitivity = null;
+
+	/**
 	 * Constructs data record metadata with given name.
 	 *
 	 * @param name the name of the data record
@@ -797,7 +803,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 		dataRecordMetadata.setRecordProperties(recordProperties);
 		dataRecordMetadata.setLocaleStr(localeStr);
-
+		dataRecordMetadata.setCollatorSensitivity(collatorSensitivity);
+		
 		return dataRecordMetadata;
 	}
 
@@ -1155,6 +1162,23 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Set collator sensitivity string as a default value for all string data fields.	
+	 * @param collatorSensitivity
+	 */
+	public void setCollatorSensitivity(String collatorSensitivity) {
+		this.collatorSensitivity = collatorSensitivity;
+	}
+
+	/**
+	 * Returns collator sensitivity as string according to CollatorSensitivityType class.
+	 * Default value for all string data fields.
+	 * @return
+	 */
+	public String getCollatorSensitivity() {
+		return collatorSensitivity;
 	}
 
 }

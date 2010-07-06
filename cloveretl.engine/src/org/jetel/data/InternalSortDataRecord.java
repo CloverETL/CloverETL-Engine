@@ -63,7 +63,8 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	private int numCollections;
     private boolean useCollator=false;
     private RuleBasedCollator collator;
-    
+    private RecordOrderedComparator comparator;
+
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
 
 	/**
@@ -192,7 +193,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 * @see org.jetel.data.ISortDataRecordsInternal#sort()
 	 */
 	public void sort() {
-        RecordOrderedComparator comparator;
         if (useCollator){
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collator);
             comparator.updateCollators(metadata);
@@ -422,6 +422,10 @@ public class InternalSortDataRecord implements ISortDataRecord {
     
     public RuleBasedCollator getCollator() {
     	return collator;
+    }
+    
+    public RecordOrderedComparator getComparator() {
+    	return comparator;
     }
     
 }

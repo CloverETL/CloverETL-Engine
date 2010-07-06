@@ -115,7 +115,18 @@ public class RecordOrderedKey extends RecordKey {
 			useCollator = true;
 		}
 	}
-	
+
+	public RecordOrderedKey(String keyFieldNames[], boolean keyOrderings[], DataRecordMetadata metadata, RuleBasedCollator[] collators) {
+		super(keyFieldNames, metadata);
+		this.keyOrderings = keyOrderings;
+		
+		// if the collator could be used
+		if (collators != null) {
+			this.collators = collators;
+			useCollator = true;
+		}
+	}
+
 	/**
 	 * @param keyFields indices of fields composing the key
 	 * @param metadata metadata describing structure of DataRecord for which the key is built

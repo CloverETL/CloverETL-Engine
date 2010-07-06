@@ -442,6 +442,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String itemName;
 		String itemValue;
 		String skipSourceRows = null;
+		String collatorSensitivity = null;
 		Properties recordProperties = null;
 
 		/*
@@ -468,6 +469,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				sizeStr = itemValue;
 			} else if (itemName.equalsIgnoreCase(SKIP_SOURCE_ROW_ATTR)) {
 				skipSourceRows = itemValue;
+			} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
+				collatorSensitivity = itemValue;
 			} else {
 				if (recordProperties == null) {
 					recordProperties = new Properties();
@@ -519,6 +522,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			// ignore 
 		}
 
+		if (!StringUtils.isEmpty(collatorSensitivity)) {
+			recordMetadata.setCollatorSensitivity(collatorSensitivity);
+		}
+		
 		/*
 		 * parse metadata of FIELDs
 		 */
@@ -540,7 +547,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String nullable = null;
 			String nullValue = null;
 			String localeStr = null;
-			String collatorSensitivity = null;
+			/*String*/ collatorSensitivity = null;
 			String compressed = null;
 			String autoFilling = null;
 			String trim = null;
