@@ -896,7 +896,11 @@ public class DataFieldMetadata implements Serializable {
 	 * @return
 	 */
 	public String getCollatorSensitivity() {
-		return collatorSensitivity;
+		if (collatorSensitivity != null) {
+			return collatorSensitivity;
+		} else {
+			return dataRecordMetadata.getCollatorSensitivity();
+		}
 	}
 
 	/**

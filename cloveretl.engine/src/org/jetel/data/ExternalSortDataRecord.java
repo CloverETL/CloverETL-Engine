@@ -275,7 +275,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
         // initialize sort key which will be used when merging data
-        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, sorter.getCollator());
+        sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, sorter.getComparator().getCollators());
         sortKey.setEqualNULLs(true);
         sortKey.init();
 
