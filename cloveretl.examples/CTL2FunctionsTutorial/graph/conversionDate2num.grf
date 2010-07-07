@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jul 02 14:45:11 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.108">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Wed Jul 07 14:02:38 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.111">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS Z" name="Date" type="date"/>
+<Field format="java:yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -27,9 +27,9 @@
 <Field name="Millisec" type="integer"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter10" name="Locale" value="en.US"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="624" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,enum timeunit, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="830" x="-66" y="-404">
+<Property id="GraphParameter0" name="Locale" value="en.US"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="740" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,enum timeunit, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="830" x="-66" y="-494">
 <attr name="text"><![CDATA[
 The date2num(date, enum-timeunit, string) function accepts three arguments: the first is date, the second is any time unit, and the third is locale. 
 
@@ -41,9 +41,13 @@ Remember that months are numbered starting from 1 unlike in CTL1. Thus, date2num
 And date2num(2008-06-12, hour, "en.US") returns 0.
 
 In this graph, dates are read from input file using the Format property of metadata on the first edge: 
-yyyy-MM-dd HH:mm:ss SSS Z. 
+java:yyyy-MM-dd HH:mm:ss SSS z.
 
-Without this Format, units smaller than day would not be read at all. The result would correspond to: 
+Since the default time format is joda (since CloverETL version 3.0), we must specify the Format in the first edge as follows:
+java:yyyy-MM-dd HH:mm:ss SSS z
+(joda cannot parse dates with "UTC" time zone specification) 
+
+Without this Format (with hours, minutes, seconds, milliseconds included) , units smaller than day would not be read at all. The result would correspond to: 
 yyyy-MM-dd
 
 All dates are received by Reformat and converted by serie of date2num(date, enum-timeunit, string) functions. 
