@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Fri Jun 18 17:57:19 CEST 2010" modifiedBy="cloveruser" name="containerClearList" revision="1.73">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation Devel" modified="Wed Jul 07 09:57:56 CEST 2010" modifiedBy="cloveruser" name="containerClearList" revision="1.75">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="clearListInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -22,7 +22,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="40" y="192">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="129" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="41" y="186">
 <attr name="text"><![CDATA[
 Here we use lists consisting of string elements. 
 List consists of 4 elements. 
@@ -37,9 +37,9 @@ The resulting list is an empty list.
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerClearList.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="339" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerClearList.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="340" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerClearListOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="467" guiY="340" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="241" guiY="339" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="241" guiY="340" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -73,6 +73,6 @@ return 0;
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
