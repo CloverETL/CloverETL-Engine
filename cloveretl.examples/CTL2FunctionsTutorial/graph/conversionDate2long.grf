@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:01:56 CEST 2010" modifiedBy="cloveruser" name="conversionDate2long" revision="1.43">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Wed Jul 07 13:59:59 CEST 2010" modifiedBy="cloveruser" name="conversionDate2long" revision="1.46">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2longInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="java:yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -14,10 +14,14 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long date2long(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="474" x="128" y="43">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long date2long(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="474" x="123" y="-15">
 <attr name="text"><![CDATA[
 The date2long(date) function takes one date argument and converts it to a long type. Its value equals to the number of milliseconds elapsed from January 1, 1970, 00:00:00 000 UTC to the date specified as the argument. Neither 0 date nor 0 result exist.
-Its counterpart is the long2date(long) function.]]></attr>
+Its counterpart is the long2date(long) function.
+
+Since the default time format is joda (since CloverETL version 3.0), we must specify the Format in the first edge as follows:
+java:yyyy-MM-dd HH:mm:ss SSS z
+(joda cannot parse dates with "UTC" time zone specification)]]></attr>
 </Note>
 <Dictionary/>
 </Global>
@@ -43,6 +47,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

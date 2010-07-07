@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Fri Jun 18 18:32:27 CEST 2010" modifiedBy="cloveruser" name="dateTrunc" revision="1.27">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jul 07 13:58:53 CEST 2010" modifiedBy="cloveruser" name="dateTrunc" revision="1.34">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="truncInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="java:yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -14,9 +14,13 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date trunc(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="142" y="85">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="211" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date trunc(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="103" y="-8">
 <attr name="text"><![CDATA[
-The trunc(date) function takes one date argument and returns the date with the same year, month and day, but hour, minute, second and millisecond are set to 0.]]></attr>
+The trunc(date) function takes one date argument and returns the date with the same year, month and day, but hour, minute, second and millisecond are set to 0.
+
+Since the default time format is joda (since CloverETL version 3.0), we must specify the Format in the first edge as follows:
+java:yyyy-MM-dd HH:mm:ss SSS z
+(joda cannot parse dates with "UTC" time zone specification)]]></attr>
 </Note>
 <Dictionary/>
 </Global>
@@ -41,6 +45,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

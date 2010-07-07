@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:02:34 CEST 2010" modifiedBy="cloveruser" name="conversionDate2str" revision="1.55">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Wed Jul 07 14:03:21 CEST 2010" modifiedBy="cloveruser" name="conversionDate2str" revision="1.58">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2strInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="java:yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -16,11 +16,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="158" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string date2str(date arg, string pattern)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="451" x="180" y="111">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="229" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string date2str(date arg, string pattern)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="451" x="84" y="64">
 <attr name="text"><![CDATA[
 The date2str(date, string) function accepts two arguments: date and string. The function takes them and converts the date according to the pattern specified as the second argument. 
 Thus, date2str(2008-06-12, "dd.MM.yyyy") returns the following string: "12.6.2008". 
-Its counterpart is the str2date(string, string) function.]]></attr>
+Its counterpart is the str2date(string, string) function.
+
+Since the default time format is joda (since CloverETL version 3.0), we must specify the Format in the first edge as follows:
+java:yyyy-MM-dd HH:mm:ss SSS z
+(joda cannot parse dates with "UTC" time zone specification)]]></attr>
 </Note>
 <Dictionary/>
 </Global>
@@ -49,6 +53,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Fri Jun 11 15:18:25 CEST 2010" guiVersion="0.0.0.devel" id="1276271145104" licenseType="Evaluation Devel" modified="Mon Jun 14 09:17:23 CEST 2010" modifiedBy="cloveruser" name="conversionStr2datePatternLocale" revision="1.22">
+<Graph author="cloveruser" created="Fri Jun 11 15:18:25 CEST 2010" guiVersion="0.0.0.devel" id="1276271145104" licenseType="Evaluation Devel" modified="Wed Jul 07 14:05:53 CEST 2010" modifiedBy="cloveruser" name="conversionStr2datePatternLocale" revision="1.27">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="str2datePatternLocale0Input" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="String" type="string"/>
+<Field collator_sensitivity="base_letter_sensitivity" name="String" type="string"/>
 <Field name="Pattern" type="string"/>
 <Field name="Locale" type="string"/>
 </Record>
@@ -13,8 +13,6 @@
 <Field name="String" type="string"/>
 <Field name="Pattern" type="string"/>
 <Field name="Locale" type="string"/>
-<Field name="FunctionSystemLocale" type="string"/>
-<Field name="ResultSystemLocale" type="date"/>
 <Field name="FunctionLocale" type="string"/>
 <Field name="ResultLocale" type="date"/>
 </Record>
@@ -43,7 +41,7 @@ The str2date(string, string, string) function accepts three string arguments. Th
 <attr name="text"><![CDATA[
 Another version of the str2date() function:
 The str2date(string, string) function accepts two string arguments. The function takes them and compares the first string argument with the second one as a pattern using the value of system locale and returns date.
-In the phase 1 below, english system locale is used for the first record:
+In the phase 1 below, english system locale should be used to process the first record:
 May/09/1978;MMM/dd/yyyy
 If the phase fails, replace the name of the month by another one corresponding to your system locale.
 
@@ -79,7 +77,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2datePatternLocale1.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="40" guiY="372" id="DATA_READER0" type="DATA_READER"/>
@@ -93,6 +91,7 @@ function integer transform() {
 	$0.Pattern = $0.Pattern;
 	$0.FunctionSystemLocale = "str2date($0.String,$0.Pattern)";
 	$0.ResultSystemLocale = str2date($0.String,$0.Pattern);
+
 	return 0;
 }
 
@@ -107,6 +106,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
