@@ -425,10 +425,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             b = stack.pop();
             
             if (!a.type.isCompatible(b.type)) {
-            	// SPECIAL hanadling of EQUAL in case a is NULL
-            	if (a==TLNullValue.getInstance() && node.cmpType==EQUAL){
-            		stack.push(TLBooleanValue.FALSE);
-                    return data;
+            	// SPECIAL handling of EQUAL/NON_EQUAL in case a is NULL
+            	if (a==TLNullValue.getInstance()) {
+            		if (node.cmpType==EQUAL) {
+	            		stack.push(TLBooleanValue.FALSE);
+	                    return data;
+	            	}
+            		if (node.cmpType==NON_EQUAL) {
+	            		stack.push(TLBooleanValue.TRUE);
+	                    return data;
+	            	}
             	}
             	
                 Object arguments[] = { a, b };
