@@ -1294,15 +1294,15 @@ public class StringLib extends TLFunctionLibrary {
 		DateFormatter formatter;
 
 		public void init(String locale, String pattern) {
-			formatter = DateFormatterFactory.createFormatter(pattern, locale);
+			formatter = DateFormatterFactory.getFormatter(pattern, locale);
 		}
 
 		public void reset(String newLocale, String newPattern) {
-			formatter = DateFormatterFactory.createFormatter(newPattern, newLocale);
+			formatter = DateFormatterFactory.getFormatter(newPattern, newLocale);
 		}
 
 		public void resetPattern(String newPattern) {
-			formatter = DateFormatterFactory.createFormatter(newPattern);
+			formatter = DateFormatterFactory.getFormatter(newPattern);
 		}
 
 		public void setLenient(boolean lenient) {

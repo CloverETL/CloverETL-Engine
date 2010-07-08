@@ -74,7 +74,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
         if (plain) {
         	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
-        	numericFormatter = NumericFormatterFactory.createFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
+        	numericFormatter = NumericFormatterFactory.getFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 
     }
 
@@ -375,7 +375,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 			setNull(this.value == Integer.MIN_VALUE);
 		} catch (Exception ex) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter));
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()));
 		}
 	}
 

@@ -1281,15 +1281,15 @@ class Str2DateContext {
 	DateFormatter formatter;
 
 	public void init(String localePar, String pattern) {
-		formatter = DateFormatterFactory.createFormatter(pattern, localePar);
+		formatter = DateFormatterFactory.getFormatter(pattern, localePar);
 	}
 
 	public void reset(String newLocale, String newPattern) {
-		formatter = DateFormatterFactory.createFormatter(newPattern, newLocale);
+		formatter = DateFormatterFactory.getFormatter(newPattern, newLocale);
 	}
 
 	public void resetPattern(String newPattern) {
-		formatter = DateFormatterFactory.createFormatter(newPattern);
+		formatter = DateFormatterFactory.getFormatter(newPattern);
 	}
 
 	public void setLenient(boolean lenient) {

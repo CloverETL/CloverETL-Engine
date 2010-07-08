@@ -27,6 +27,8 @@ import java.text.ParseException;
  * @created Jun 29, 2010
  */
 public interface NumericFormatter {
+	
+	String getFormatPattern();
 
 	String formatInt(int value);
 

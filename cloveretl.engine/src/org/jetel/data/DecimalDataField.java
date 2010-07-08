@@ -76,7 +76,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
         if (plain) {
         	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
-        	numericFormatter = NumericFormatterFactory.createDecimalFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
+        	numericFormatter = NumericFormatterFactory.getDecimalFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
         } 
         //instantiate Decimal interface
         this.precision = precision;
@@ -379,7 +379,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.toString()));
+							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()));
 		}
 	}
 

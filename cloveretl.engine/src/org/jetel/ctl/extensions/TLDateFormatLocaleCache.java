@@ -51,7 +51,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
 			String paramPattern = (String)context.getParamValue(pos1);
 			if (context.isLiteral(pos1)) {
-				cachedFormatter = DateFormatterFactory.createFormatter(paramPattern);
+				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern);
 			}
 			return;
 		}
@@ -59,7 +59,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 		String paramPattern = (String)context.getParamValue(pos1);
 		String paramLocale = (String)context.getParamValue(pos2);
 		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			cachedFormatter = DateFormatterFactory.createFormatter(paramPattern, MiscUtils.createLocale(paramLocale));
+			cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, MiscUtils.createLocale(paramLocale));
 		}
 	}
 
@@ -82,10 +82,10 @@ public class TLDateFormatLocaleCache extends TLCache {
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
 				if (locale == null) {
-					cachedFormatter = DateFormatterFactory.createFormatter(format);
+					cachedFormatter = DateFormatterFactory.getFormatter(format);
 					previousLocaleString = locale;
 				} else {
-					cachedFormatter = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
+					cachedFormatter = DateFormatterFactory.getFormatter(format, MiscUtils.createLocale(locale));
 					previousLocaleString = locale;
 				}
 
@@ -101,7 +101,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used) 
-				cachedFormatter = DateFormatterFactory.createFormatter(format);
+				cachedFormatter = DateFormatterFactory.getFormatter(format);
 
 				return cachedFormatter;				
 			}

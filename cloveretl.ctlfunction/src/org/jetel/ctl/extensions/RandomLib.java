@@ -259,7 +259,7 @@ public class RandomLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
 	public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format,
 			String locale) {
-		DateFormatter df = DateFormatterFactory.createFormatter(format, MiscUtils.createLocale(locale));
+		DateFormatter df = DateFormatterFactory.getFormatter(format, MiscUtils.createLocale(locale));
 		return randomDate(context, from, to, df);
 	}
 
