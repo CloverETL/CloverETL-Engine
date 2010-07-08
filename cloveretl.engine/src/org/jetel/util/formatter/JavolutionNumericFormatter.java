@@ -35,7 +35,7 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public String toString() {
-		return "(JavolutionNumericFormatter)";
+		return "[JavolutionNumericFormatter]" + getFormatPattern();
 	}
 
 	@Override
@@ -80,5 +80,10 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 	@Override
 	public BigDecimal parseBigDecimal(CharSequence seq) {
 		return new BigDecimal(seq.toString(), TransformLangExecutor.MAX_PRECISION);
+	}
+
+	@Override
+	public String getFormatPattern() {
+		return "";
 	}
 }

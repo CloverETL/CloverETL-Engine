@@ -37,13 +37,13 @@ public class TLDateFormatCache extends TLCache {
 	
 	public void createCachedFormat(TLFunctionCallContext context, int position) {
 		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
-			cachedFormatter = DateFormatterFactory.createFormatter((String) context.getParamValue(position));
+			cachedFormatter = DateFormatterFactory.getFormatter((String) context.getParamValue(position));
 		}
 	}
 
 	public DateFormatter getCachedFormatter(TLFunctionCallContext context, String pattern, int position) {
 		if (!context.isLiteral(position) && (cachedFormatter == null || !pattern.equals(cachedFormatter.getPattern()))) {
-			cachedFormatter = DateFormatterFactory.createFormatter(pattern);
+			cachedFormatter = DateFormatterFactory.getFormatter(pattern);
 		}
 
 		return cachedFormatter;

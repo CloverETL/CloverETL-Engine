@@ -106,9 +106,9 @@ public class TLNumericFormatLocaleCache extends TLCache {
 	
 	private void prepareCachedFormatter(String format, String locale) {
 		if (!isDecimal) {
-			cachedFormatter = NumericFormatterFactory.createFormatter(format, locale); 
+			cachedFormatter = NumericFormatterFactory.getFormatter(format, locale); 
 		} else {
-			cachedFormatter = NumericFormatterFactory.createDecimalFormatter(format, locale); 
+			cachedFormatter = NumericFormatterFactory.getDecimalFormatter(format, locale); 
 		}
 	}
 	

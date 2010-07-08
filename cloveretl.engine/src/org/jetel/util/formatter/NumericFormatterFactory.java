@@ -35,22 +35,24 @@ public class NumericFormatterFactory {
 
 	private static final JavolutionNumericFormatter PLAIN_FORMATTER = new JavolutionNumericFormatter();
 
-	public static NumericFormatter createFormatter(String formatString, String localeString) {
+	public static NumericFormatter getFormatter(String formatString, String localeString) {
 		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
 		
 		if (numberFormat != null) {
-			return new JavaNumericFormatter(numberFormat);
+			return new JavaNumericFormatter(formatString, numberFormat);
 		} else {
 			return getPlainFormatterInstance();
 		}
 	}
 
-	public static NumericFormatter createDecimalFormatter(String formatString, String localeString) {
+	public static NumericFormatter getDecimalFormatter(String formatString, String localeString) {
 		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
 		
 		if (numberFormat != null) {
-			((DecimalFormat) numberFormat).setParseBigDecimal(true);
-			return new JavaNumericFormatter(numberFormat);
+			if( numberFormat instanceof DecimalFormat){
+				((DecimalFormat) numberFormat).setParseBigDecimal(true);
+			}
+			return new JavaNumericFormatter(formatString, numberFormat);
 		} else {
 			return getPlainFormatterInstance();
 		}

@@ -31,19 +31,22 @@ import java.text.ParsePosition;
  */
 public class JavaNumericFormatter implements NumericFormatter {
 
+	private final String formatPattern;
+	
 	private final NumberFormat numberFormat;
 	
 	private final ParsePosition tempParsePosition;
 
 	@Override
 	public String toString() {
-		return "(JavaNumericFormatter)" + numberFormat.toString();
+		return "[JavaNumericFormatter]" + getFormatPattern();
 	}
 
-	public JavaNumericFormatter(NumberFormat numberFormat) {
+	public JavaNumericFormatter(String formatPattern, NumberFormat numberFormat) {
 		if (numberFormat == null) {
 			throw new IllegalArgumentException("numberFormat is required");
 		}
+		this.formatPattern = formatPattern;
 		this.numberFormat = numberFormat;
 		this.tempParsePosition = new ParsePosition(0);
 	}
@@ -149,6 +152,11 @@ public class JavaNumericFormatter implements NumericFormatter {
 		tempParsePosition.setIndex(0);
 		tempParsePosition.setErrorIndex(-1);
 		return tempParsePosition;
+	}
+
+	@Override
+	public String getFormatPattern() {
+		return formatPattern;
 	}
 	
 }

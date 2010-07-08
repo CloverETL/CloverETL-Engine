@@ -38,7 +38,7 @@ public final class DateFormatterFactory {
 	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
 	public static final String JODA_FORMAT_PREFIX = "joda:";
 
-	public static DateFormatter createFormatter(String formatString, Locale locale) {
+	public static DateFormatter getFormatter(String formatString, Locale locale) {
 		if (locale == null) {
 			locale = Locale.getDefault();
 		}
@@ -56,19 +56,19 @@ public final class DateFormatterFactory {
 		}
 	}
 
-	public static DateFormatter createFormatter(String formatString, String localeString) {
-		return createFormatter(formatString, MiscUtils.createLocale(localeString));
+	public static DateFormatter getFormatter(String formatString, String localeString) {
+		return getFormatter(formatString, MiscUtils.createLocale(localeString));
 	}
 
-	public static DateFormatter createFormatter(String formatString) {
-		return createFormatter(formatString, Locale.getDefault());
+	public static DateFormatter getFormatter(String formatString) {
+		return getFormatter(formatString, Locale.getDefault());
 	}
 
-	public static DateFormatter createFormatter(Locale locale) {
+	public static DateFormatter getFormatter(Locale locale) {
 		return new JavaDateFormatter(locale);
 	}
 
-	public static DateFormatter createFormatter() {
+	public static DateFormatter getFormatter() {
 		return new JavaDateFormatter();
 	}
 
