@@ -160,10 +160,10 @@ public class EngineInitializer {
 			if(status.isError()) {
 				logger.error("Graph configuration is invalid.");
 				status.log();
-				for (ConfigurationProblem s : status){
+				for (ConfigurationProblem s : status) {
 					// throw exception with the first error in the list
 					if (s.getSeverity() == Severity.ERROR)
-						throw new ComponentNotReadyException(graph, "Graph configuration is invalid (" + s + ").");
+						throw new ComponentNotReadyException(graph, "Graph configuration is invalid.");
 				} // for
 			} else {
 				logger.info("Graph configuration is valid.");

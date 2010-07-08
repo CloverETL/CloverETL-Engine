@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.IGraphElement;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -138,7 +139,12 @@ public class ConfigurationProblem {
 
 	@Override
     public String toString() {
-    	return (getGraphElement() != null ? 
+    	String result = (getGraphElement() != null ? 
     			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+    	if (getCauseException() != null) {
+    		result += "\n" + MiscUtils.stackTraceToString(getCauseException());
+    	}
+    	
+    	return result;
     }
 }
