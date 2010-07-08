@@ -44,7 +44,11 @@ public class TLNumericFormatLocaleCache extends TLCache {
 	public TLNumericFormatLocaleCache(boolean isDecimal) {
 		this.isDecimal = isDecimal;
 	}
-	
+
+	public TLNumericFormatLocaleCache() {
+		this(false);
+	}
+
 	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
 
 		if (context.getLiteralsSize() <= pos1)
@@ -108,4 +112,10 @@ public class TLNumericFormatLocaleCache extends TLCache {
 		}
 	}
 	
+	public void setIsDecimal(boolean isDecimal) {
+		if (this.isDecimal != isDecimal) {
+			this.isDecimal = isDecimal;
+			cachedFormatter = null;
+		}
+	}
 }
