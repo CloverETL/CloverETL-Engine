@@ -33,7 +33,7 @@
 	    
 	    If not done, most of the syntactic errors will not be correctly reported by the parser
 	    and javacc does not provide token_error() method mentioned in documentation anymore.
-	    
+	    `
 	4. Before making a commit of production parser be sure to set the 
 		DEBUG_PARSER = false;
    		DEBUG_TOKEN_MANAGER = false;
@@ -352,6 +352,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 		switch (lhs.getId()) {
 		case TransformLangParserTreeConstants.JJTIDENTIFIER:
 		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+		case TransformLangParserTreeConstants.JJTDICTIONARYNODE:
 			// identifier and field are valid LHS of assignment
 			return true;
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
@@ -471,13 +472,6 @@ TOKEN:
  < PRINT_STACK: "printStack" >
 |
  < RAISE_ERROR: "raiseError" >
-|
- < READ_DICT: "readDict" >
-|
- < WRITE_DICT: "writeDict" >
-|
- < DELETE_DICT: "deleteDict" >
- 
 }
 
 TOKEN: 
@@ -618,6 +612,7 @@ TOKEN :
 | < LOOKUP_NEXT: "lookup_next" > // obsolete
 | < LOOKUP_FOUND: "lookup_found" > // obsolete
 | < LOOKUP_ADMIN: "lookup_admin" > // obsolete
+| < DICTIONARY: "dictionary" >
 | < SEQUENCE: "sequence" >
 | < LOGLEVEL_DEBUG: "debug" >
 | < LOGLEVEL_INFO: "info" >
@@ -670,6 +665,7 @@ TOKEN :
 |
   < #STRING_ID : <IDENTIFIER> >
 }
+
 
 TOKEN : 
 {
@@ -2225,6 +2221,8 @@ void PrimaryExpression()      :
 		|
 		( SequenceNode() )
 		|
+		( DictionaryNode() )
+		|
 		( "("	Expression() ")" )
 	 	|
 		( RecordOrFieldIdentifier() )
@@ -2588,63 +2586,6 @@ void BuiltInFunctionCall()      :
                                                } finally {
                                                  if (jjtc008) {
                                                    jjtree.closeNodeScope(jjtn008,  1);
-                                                 }
-                                               }
-/*@egen*/                    )
-	 | ( t = <READ_DICT> Arguments(null)/*@bgen(jjtree) #ReadDictNode( 1) */
-                                             {
-                                               CLVFReadDictNode jjtn009 = new CLVFReadDictNode(this, JJTREADDICTNODE);
-                                               boolean jjtc009 = true;
-                                               jjtree.openNodeScope(jjtn009);
-                                             }
-                                             try {
-/*@egen*//*@bgen(jjtree)*/
-                                             {
-                                               jjtree.closeNodeScope(jjtn009,  1);
-                                               jjtc009 = false;
-                                             }
-/*@egen*/ { jjtn009.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
-                                             } finally {
-                                               if (jjtc009) {
-                                                 jjtree.closeNodeScope(jjtn009,  1);
-                                               }
-                                             }
-/*@egen*/                  )
-	 | ( t = <WRITE_DICT> Arguments(null)/*@bgen(jjtree) #WriteDictNode( 1) */
-                                              {
-                                                CLVFWriteDictNode jjtn010 = new CLVFWriteDictNode(this, JJTWRITEDICTNODE);
-                                                boolean jjtc010 = true;
-                                                jjtree.openNodeScope(jjtn010);
-                                              }
-                                              try {
-/*@egen*//*@bgen(jjtree)*/
-                                              {
-                                                jjtree.closeNodeScope(jjtn010,  1);
-                                                jjtc010 = false;
-                                              }
-/*@egen*/ { jjtn010.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
-                                              } finally {
-                                                if (jjtc010) {
-                                                  jjtree.closeNodeScope(jjtn010,  1);
-                                                }
-                                              }
-/*@egen*/                   )
-	 | ( t = <DELETE_DICT> Arguments(null)/*@bgen(jjtree) #DeleteDictNode( 1) */
-                                               {
-                                                 CLVFDeleteDictNode jjtn011 = new CLVFDeleteDictNode(this, JJTDELETEDICTNODE);
-                                                 boolean jjtc011 = true;
-                                                 jjtree.openNodeScope(jjtn011);
-                                               }
-                                               try {
-/*@egen*//*@bgen(jjtree)*/
-                                               {
-                                                 jjtree.closeNodeScope(jjtn011,  1);
-                                                 jjtc011 = false;
-                                               }
-/*@egen*/ { jjtn011.begin(t.beginLine,t.beginColumn); }/*@bgen(jjtree)*/
-                                               } finally {
-                                                 if (jjtc011) {
-                                                   jjtree.closeNodeScope(jjtn011,  1);
                                                  }
                                                }
 /*@egen*/                    )
@@ -3892,6 +3833,47 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
           }
         }
 /*@egen*/}
+
+void DictionaryNode() :
+{/*@bgen(jjtree) DictionaryNode */
+  CLVFDictionaryNode jjtn000 = new CLVFDictionaryNode(this, JJTDICTIONARYNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) DictionaryNode */
+        try {
+/*@egen*/
+	(
+	 ( <DICTIONARY>/*@bgen(jjtree)*/
+           {
+             jjtree.closeNodeScope(jjtn000, true);
+             jjtc000 = false;
+           }
+/*@egen*/ 
+	   {
+	   		jjtn000.begin(token.beginLine,token.beginColumn);
+	   		jjtn000.end(token.endLine,token.endColumn);
+	   }
+	   
+	   /* . and identifier is parsed in PrimaryExpression
+	   "."
+			<IDENTIFIER> 
+			{ 
+				jjtThis.setKeyName(token.image); 
+			}
+	   {
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   */
+	 )
+	)/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
 
 JAVACODEvoid recover(int kind)       {	Token t;	do {		t = getNextToken();
 		if (t.kind == EOF) {

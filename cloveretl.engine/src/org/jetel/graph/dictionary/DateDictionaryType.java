@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -100,4 +102,9 @@ public class DateDictionaryType extends DictionaryType {
 				|| value instanceof Date;
 	}
 
+	@Override
+	public TLType getTLType() {
+		return TLTypePrimitive.DATETIME;
+	}
+	
 }

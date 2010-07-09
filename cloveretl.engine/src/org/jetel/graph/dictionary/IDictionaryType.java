@@ -20,6 +20,7 @@ package org.jetel.graph.dictionary;
 
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
@@ -84,5 +85,11 @@ public interface IDictionaryType {
 	 * Tests, whether the given value is acceptable for this dictionary entry type.
 	 */
 	public boolean isValidValue(Object value);
+
+	/**
+	 * Returns CTL type equivalent.
+	 * @return CTL type or null if this type is not supported in CTL 
+	 */
+	public TLType getTLType();
 	
 }

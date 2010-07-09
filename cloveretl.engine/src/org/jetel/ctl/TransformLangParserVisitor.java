@@ -3,7 +3,7 @@ package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.*;
 
-public interface TransformLangParserVisitor  extends SyntheticNodeVisitor
+public interface TransformLangParserVisitor extends SyntheticNodeVisitor
 {
   public Object visit(SimpleNode node, Object data);
   public Object visit(CLVFStart node, Object data);
@@ -39,9 +39,6 @@ public interface TransformLangParserVisitor  extends SyntheticNodeVisitor
   public Object visit(CLVFPrintLogNode node, Object data);
   public Object visit(CLVFPrintStackNode node, Object data);
   public Object visit(CLVFRaiseErrorNode node, Object data);
-  public Object visit(CLVFReadDictNode node, Object data);
-  public Object visit(CLVFWriteDictNode node, Object data);
-  public Object visit(CLVFDeleteDictNode node, Object data);
   public Object visit(CLVFFieldAccessExpression node, Object data);
   public Object visit(CLVFIdentifier node, Object data);
   public Object visit(CLVFArguments node, Object data);
@@ -62,5 +59,6 @@ public interface TransformLangParserVisitor  extends SyntheticNodeVisitor
   public Object visit(CLVFReturnStatement node, Object data);
   public Object visit(CLVFSequenceNode node, Object data);
   public Object visit(CLVFLookupNode node, Object data);
+  public Object visit(CLVFDictionaryNode node, Object data);
 }
-/* JavaCC - OriginalChecksum=561b8247651bb83fea30f5b84a43355e (do not edit this line) */
+/* JavaCC - OriginalChecksum=ed8676897cc488c551a138c2939031c0 (do not edit this line) */

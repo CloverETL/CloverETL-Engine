@@ -33,6 +33,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.DictionaryEntry;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -82,6 +83,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	protected DataRecord[] inputRecords;
 	protected DataRecord[] outputRecords;
+	
+	protected TransformationGraph graph;
 
 	public CompilerTestCase(boolean compileToJava) {
 		this.compileToJava = compileToJava;
@@ -141,8 +144,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
 		g.addLookupTable(createDefaultLookup(g, "TestLookup"));
-
+		initDefaultDictionary(g);
 		return g;
+	}
+
+	private void initDefaultDictionary(TransformationGraph g) {
+		try {
+			g.getDictionary().init();
+			g.getDictionary().setValue("s", "string", null);
+			g.getDictionary().setValue("i", "integer", null);
+			g.getDictionary().setValue("l", "long", null);
+			g.getDictionary().setValue("d", "decimal", null);
+			g.getDictionary().setValue("n", "number", null);
+			g.getDictionary().setValue("a", "date", null);
+			g.getDictionary().setValue("b", "boolean", null);
+			g.getDictionary().setValue("i211", "integer", new Integer(211));
+			g.getDictionary().setValue("sVerdon", "string", "Verdon");
+			g.getDictionary().setValue("l452", "long", new Long(452));
+			g.getDictionary().setValue("d621", "decimal", new BigDecimal(621));
+			g.getDictionary().setValue("n9342", "number", new Double(934.2));
+			g.getDictionary().setValue("a1992", "date", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
+			g.getDictionary().setValue("bTrue", "boolean", Boolean.TRUE);
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException("Error init default dictionary", e);
+		}
+		
 	}
 
 	protected Sequence createDefaultSequence(TransformationGraph graph, String name) {
@@ -300,7 +326,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	protected void doCompile(String expStr, String testIdentifier) {
-		TransformationGraph graph = createDefaultGraph();
+		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
 
@@ -325,7 +351,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
-		TransformationGraph graph = createDefaultGraph();
+		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
 
@@ -2474,4 +2500,34 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompileExpectErrors("test_expression_statement", Arrays.asList("Syntax error, statement expected","Syntax error, statement expected"));
 	}
 
+	public void test_dictionary_read() {
+		doCompile("test_dictionary_read");
+		check("s", "Verdon");
+		check("i", Integer.valueOf(211));
+		check("l", Long.valueOf(226));
+		check("d", BigDecimal.valueOf(239483061));
+		check("n", Double.valueOf(934.2));
+		check("a", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
+		check("b", true);
+	}
+
+	public void test_dictionary_write() {
+		doCompile("test_dictionary_write");
+		assertEquals(832, graph.getDictionary().getValue("i") );
+		assertEquals("Guil", graph.getDictionary().getValue("s"));
+		assertEquals(Long.valueOf(540), graph.getDictionary().getValue("l"));
+		assertEquals(BigDecimal.valueOf(621), graph.getDictionary().getValue("d"));
+		assertEquals(934.2, graph.getDictionary().getValue("n"));
+		assertEquals(new GregorianCalendar(1992, GregorianCalendar.DECEMBER, 2).getTime(), graph.getDictionary().getValue("a"));
+		assertEquals(true, graph.getDictionary().getValue("b"));
+	}
+
+	public void test_dictionary_invalid_key(){
+        doCompileExpectErrors("test_dictionary_invalid_key", Arrays.asList("Dictionary entry 'invalid' does not exist"));
+	}
+	
+	public void test_dictionary_string_to_int(){
+        doCompileExpectErrors("test_dictionary_string_to_int", Arrays.asList("Type mismatch: cannot convert from 'string' to 'integer'","Type mismatch: cannot convert from 'string' to 'integer'"));
+	}
+	
 }
