@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.Collator;
@@ -52,6 +51,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
@@ -754,21 +754,21 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
+			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader(), classPaths);
+					this.getClass().getClassLoader(), classPath);
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious != null) {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
-			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
+			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
 					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(),
-					classPaths);
+					classPath);
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {

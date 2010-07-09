@@ -229,7 +229,7 @@ public class Denormalizer extends Node {
 	 */
 	private RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
         Object transObject = DynamicJavaClass.instantiate(denormCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPathsUrls());
+        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
 
         if (transObject instanceof RecordDenormalize) {
 			return (RecordDenormalize) transObject;

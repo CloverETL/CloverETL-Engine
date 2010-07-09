@@ -96,7 +96,6 @@ import org.jetel.util.file.FileUtils;
  *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
  *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
  *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
- *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
  *  <tr><td nowrap>-skipcheckconfig</td><td>skip checking of graph configuration</td></tr>
  *  <tr><td nowrap>-noJMX</td><td>this switch turns off sending graph tracking information; this switch is recommended if the tracking information are not necessary</td></tr>
  *  <tr><td nowrap>-config <i>filename</i></td><td>load default engine properties from specified file</td></tr>
@@ -124,7 +123,6 @@ public class runGraph {
     public final static String PASSWORD_SWITCH = "-pass";
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
     public final static String LOG_HOST_SWITCH = "-loghost";
-    public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
     public final static String SKIP_CHECK_CONFIG_SWITCH = "-skipcheckconfig";
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
@@ -145,7 +143,6 @@ public class runGraph {
 	public static void main(String args[]) {
         boolean loadFromSTDIN = false;
         String pluginsRootDirectory = null;
-        boolean onlyCheckConfig = false;
         String logHost = null;
         String graphFileName = null;
         String configFileName = null;
@@ -161,7 +158,7 @@ public class runGraph {
         boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
         URL contextURL = null;
-        String classPathsString = null;
+        String classPathString = null;
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
@@ -200,7 +197,7 @@ public class runGraph {
                 
             } else if (args[i].startsWith(CLOVER_CLASS_PATH)){
                 i++;
-                classPathsString = args[i];
+                classPathString = args[i];
             } else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)) {
                 // String[]
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
@@ -229,8 +226,6 @@ public class runGraph {
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
                 i++;
                 logHost = args[i];
-            } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
-                onlyCheckConfig = true;
             } else if (args[i].startsWith(SKIP_CHECK_CONFIG_SWITCH)) {
                 skipCheckConfig = true;
             } else if (args[i].startsWith(WAIT_FOR_JMX_CLIENT_SWITCH)) {
@@ -300,11 +295,14 @@ public class runGraph {
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
-        
-    	String[] paths = null;
-    	if (classPathsString != null)
-            paths = classPathsString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        runtimeContext.setClassPaths(paths);
+    	if (classPathString != null) {
+    		try {
+				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
+			} catch (MalformedURLException e) {
+				logger.error("Given classpath is not valid URL. " + e.getMessage(), e);
+				System.exit(-1);
+			}
+    	}
         
         // prepare input stream with XML graph definition
         InputStream in = null;

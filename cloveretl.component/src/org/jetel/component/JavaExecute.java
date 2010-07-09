@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -36,6 +35,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -127,9 +127,9 @@ public class JavaExecute extends Node {
         }
 		
         if (runnableClass != null) {
-        	String[] classPaths = getGraph().getRuntimeContext().getClassPaths();
+        	CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
             //get runnable from link to the compiled class
-            codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPaths);
+            codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPath);
         } else if (runnable == null && runnableURL != null) {
         	runnable = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), runnableURL, charset);
         }
@@ -157,7 +157,7 @@ public class JavaExecute extends Node {
      * @throws ComponentNotReadyException
      */
     private static JavaRunnable loadClass(Log logger,
-            String runnableClassName, URL contextURL, String[] libraryPaths)
+            String runnableClassName, URL contextURL, CloverClassPath classPath)
             throws ComponentNotReadyException {
         JavaRunnable codeToRun = null;
         // try to load in runnable class & instantiate
@@ -169,29 +169,16 @@ public class JavaExecute extends Node {
             throw new ComponentNotReadyException("Can't instantiate runnable class: "+ex.getMessage());
         }catch (ClassNotFoundException ex) {
             // let's try to load in any additional .jar library (if specified)
-            if (libraryPaths == null) {
+            if (classPath.getRuntimeClassPath() == null) {
                 throw new ComponentNotReadyException(
                         "Can't find specified runnable class: "
                                 + runnableClassName);
             }
-            URL[] myURLs = new URL[libraryPaths.length];
-            // try to create URL directly, if failed probably the protocol is
-            // missing, so use File.toURL
-            for (int i = 0; i < libraryPaths.length; i++) {
-                try {
-                    // valid url
-                    myURLs[i] = FileUtils.getFileURL(contextURL, libraryPaths[i]);
-                } catch (MalformedURLException e) {
-                    throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
-                }
-            }
             try {
-                URLClassLoader classLoader = new URLClassLoader(myURLs, JavaExecute.class.getClassLoader());
-                codeToRun = (JavaRunnable) Class.forName(
-                        runnableClassName, true, classLoader).newInstance();
+                URLClassLoader classLoader = new URLClassLoader(classPath.getRuntimeClassPath(), JavaExecute.class.getClassLoader());
+                codeToRun = (JavaRunnable) Class.forName(runnableClassName, true, classLoader).newInstance();
             } catch (ClassNotFoundException ex1) {
-                throw new ComponentNotReadyException("Can not find class: "
-                        + ex1);
+                throw new ComponentNotReadyException("Can not find class: " + ex1);
             } catch (Exception ex3) {
                 throw new ComponentNotReadyException(ex3.getMessage());
             }
@@ -228,7 +215,7 @@ public class JavaExecute extends Node {
      */
     private JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader) throws ComponentNotReadyException {
         Object transObject = DynamicJavaClass.instantiate(runnable, classLoader,
-    			getGraph().getRuntimeContext().getClassPathsUrls());
+    			getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
 
         if (transObject instanceof JavaRunnable) {
 			return (JavaRunnable) transObject;
