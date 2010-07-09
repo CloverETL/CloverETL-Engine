@@ -20,6 +20,8 @@ package org.jetel.graph.dictionary;
 
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
@@ -104,4 +106,9 @@ public class StringDictionaryType extends DictionaryType {
 				|| value instanceof StringBuffer;
 	}
 
+	@Override
+	public TLType getTLType() {
+		return TLTypePrimitive.STRING;
+	}
+	
 }

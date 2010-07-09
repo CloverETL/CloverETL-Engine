@@ -19,66 +19,6 @@
 package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.*;
-import org.jetel.ctl.ASTnode.CLVFAnd;
-import org.jetel.ctl.ASTnode.CLVFArguments;
-import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
-import org.jetel.ctl.ASTnode.CLVFAssignment;
-import org.jetel.ctl.ASTnode.CLVFBlock;
-import org.jetel.ctl.ASTnode.CLVFBreakStatement;
-import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
-import org.jetel.ctl.ASTnode.CLVFCaseStatement;
-import org.jetel.ctl.ASTnode.CLVFComparison;
-import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
-import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
-import org.jetel.ctl.ASTnode.CLVFContinueStatement;
-import org.jetel.ctl.ASTnode.CLVFDateField;
-import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
-import org.jetel.ctl.ASTnode.CLVFDivNode;
-import org.jetel.ctl.ASTnode.CLVFDoStatement;
-import org.jetel.ctl.ASTnode.CLVFEvalNode;
-import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
-import org.jetel.ctl.ASTnode.CLVFForStatement;
-import org.jetel.ctl.ASTnode.CLVFForeachStatement;
-import org.jetel.ctl.ASTnode.CLVFFunctionCall;
-import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.ASTnode.CLVFIIfNode;
-import org.jetel.ctl.ASTnode.CLVFIdentifier;
-import org.jetel.ctl.ASTnode.CLVFIfStatement;
-import org.jetel.ctl.ASTnode.CLVFImportSource;
-import org.jetel.ctl.ASTnode.CLVFInFunction;
-import org.jetel.ctl.ASTnode.CLVFIsNullNode;
-import org.jetel.ctl.ASTnode.CLVFListOfLiterals;
-import org.jetel.ctl.ASTnode.CLVFLiteral;
-import org.jetel.ctl.ASTnode.CLVFLogLevel;
-import org.jetel.ctl.ASTnode.CLVFLookupNode;
-import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
-import org.jetel.ctl.ASTnode.CLVFModNode;
-import org.jetel.ctl.ASTnode.CLVFMulNode;
-import org.jetel.ctl.ASTnode.CLVFNVL2Node;
-import org.jetel.ctl.ASTnode.CLVFNVLNode;
-import org.jetel.ctl.ASTnode.CLVFOr;
-import org.jetel.ctl.ASTnode.CLVFParameters;
-import org.jetel.ctl.ASTnode.CLVFPostfixExpression;
-import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
-import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
-import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
-import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
-import org.jetel.ctl.ASTnode.CLVFReadDictNode;
-import org.jetel.ctl.ASTnode.CLVFReturnStatement;
-import org.jetel.ctl.ASTnode.CLVFSequenceNode;
-import org.jetel.ctl.ASTnode.CLVFStart;
-import org.jetel.ctl.ASTnode.CLVFStartExpression;
-import org.jetel.ctl.ASTnode.CLVFSubNode;
-import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
-import org.jetel.ctl.ASTnode.CLVFType;
-import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
-import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
-import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
-import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
-import org.jetel.ctl.ASTnode.CLVFWhileStatement;
-import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
-import org.jetel.ctl.ASTnode.CastNode;
-import org.jetel.ctl.ASTnode.SimpleNode;
 
 
 /**
@@ -311,6 +251,12 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 
+	@Override
+	public Object visit(CLVFDictionaryNode node, Object data) {
+		
+		return visitNode(node, data);
+	}
+	
 	public Object visit(SimpleNode node, Object data) {
 		throw new UnsupportedOperationException("Unreachable code");
 	}
@@ -368,22 +314,10 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node,data);
 	}
 	
-	public Object visit(CLVFReadDictNode node, Object data) {
-		return visitNode(node,data);
-	}
-
-	public Object visit(CLVFWriteDictNode node, Object data) {
-		return visitNode(node,data);
-	}
-
-	public Object visit(CLVFDeleteDictNode node, Object data) {
-		return visitNode(node,data);
-	}
-	
-	
 	/* ************************ Synthetic nodes ********************/
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
+
 
 }

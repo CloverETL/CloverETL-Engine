@@ -37,29 +37,27 @@ public interface TransformLangParserTreeConstants
   public int JJTPRINTLOGNODE = 31;
   public int JJTPRINTSTACKNODE = 32;
   public int JJTRAISEERRORNODE = 33;
-  public int JJTREADDICTNODE = 34;
-  public int JJTWRITEDICTNODE = 35;
-  public int JJTDELETEDICTNODE = 36;
-  public int JJTFIELDACCESSEXPRESSION = 37;
-  public int JJTIDENTIFIER = 38;
-  public int JJTARGUMENTS = 39;
-  public int JJTDATEFIELD = 40;
-  public int JJTLOGLEVEL = 41;
-  public int JJTLITERAL = 42;
-  public int JJTLISTOFLITERALS = 43;
-  public int JJTBLOCK = 44;
-  public int JJTIFSTATEMENT = 45;
-  public int JJTSWITCHSTATEMENT = 46;
-  public int JJTCASESTATEMENT = 47;
-  public int JJTWHILESTATEMENT = 48;
-  public int JJTFORSTATEMENT = 49;
-  public int JJTFOREACHSTATEMENT = 50;
-  public int JJTDOSTATEMENT = 51;
-  public int JJTBREAKSTATEMENT = 52;
-  public int JJTCONTINUESTATEMENT = 53;
-  public int JJTRETURNSTATEMENT = 54;
-  public int JJTSEQUENCENODE = 55;
-  public int JJTLOOKUPNODE = 56;
+  public int JJTFIELDACCESSEXPRESSION = 34;
+  public int JJTIDENTIFIER = 35;
+  public int JJTARGUMENTS = 36;
+  public int JJTDATEFIELD = 37;
+  public int JJTLOGLEVEL = 38;
+  public int JJTLITERAL = 39;
+  public int JJTLISTOFLITERALS = 40;
+  public int JJTBLOCK = 41;
+  public int JJTIFSTATEMENT = 42;
+  public int JJTSWITCHSTATEMENT = 43;
+  public int JJTCASESTATEMENT = 44;
+  public int JJTWHILESTATEMENT = 45;
+  public int JJTFORSTATEMENT = 46;
+  public int JJTFOREACHSTATEMENT = 47;
+  public int JJTDOSTATEMENT = 48;
+  public int JJTBREAKSTATEMENT = 49;
+  public int JJTCONTINUESTATEMENT = 50;
+  public int JJTRETURNSTATEMENT = 51;
+  public int JJTSEQUENCENODE = 52;
+  public int JJTLOOKUPNODE = 53;
+  public int JJTDICTIONARYNODE = 54;
 
 
   public String[] jjtNodeName = {
@@ -97,9 +95,6 @@ public interface TransformLangParserTreeConstants
     "PrintLogNode",
     "PrintStackNode",
     "RaiseErrorNode",
-    "ReadDictNode",
-    "WriteDictNode",
-    "DeleteDictNode",
     "FieldAccessExpression",
     "Identifier",
     "Arguments",
@@ -120,6 +115,7 @@ public interface TransformLangParserTreeConstants
     "ReturnStatement",
     "SequenceNode",
     "LookupNode",
+    "DictionaryNode",
   };
 }
-/* JavaCC - OriginalChecksum=1c017091ed99186f894dfdce85b5af68 (do not edit this line) */
+/* JavaCC - OriginalChecksum=451f64da4fee0c8b0a6e2845ed91c501 (do not edit this line) */

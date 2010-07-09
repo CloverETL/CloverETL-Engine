@@ -33,12 +33,14 @@ import java.util.TreeMap;
 import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
+import org.jetel.ctl.ASTnode.CLVFDictionaryNode;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFForeachStatement;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFLiteral;
 import org.jetel.ctl.ASTnode.CLVFLookupNode;
+import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFParameters;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -58,6 +60,8 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -93,6 +97,8 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Function declarations */
 	private final Map<String, List<CLVFFunctionDeclaration>> declaredFunctions;
 
+	private final Dictionary dictionary;
+	
 	/** Set of ambiguous input metadata names. */
 	private final Set<String> ambiguousInputMetadata = new HashSet<String>();
 	/** Set of ambiguous output metadata names. */
@@ -113,6 +119,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		this.outputMetadata = outputMetadata;
 		this.declaredFunctions = declaredFunctions;
 		this.problemReporter = problemReporter;
+		this.dictionary = graph.getDictionary();
 
 		if (graph != null) {
 			// populate name -> position mappings
@@ -523,6 +530,33 @@ public class ASTBuilder extends NavigatingVisitor {
 	}
 
 	
+	@Override
+	public Object visit(CLVFMemberAccessExpression node, Object data) {
+		super.visit(node, data);
+		
+		// access to dictionary
+		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
+		if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+			
+			IDictionaryType dictType = dictionary.getType(node.getName()) ; 
+			if (dictType == null) {
+				error(node, "Dictionary entry '" + node.getName() + "' does not exist");
+				node.setType(TLType.ERROR);
+				return data;
+			}
+			
+			final TLType tlType = dictType.getTLType();
+			if( tlType == null){
+				error(node, "Dictionary entry '" + node.getName() + " has type "+dictType.getTypeId()+" which is not supported in CTL");
+				node.setType(TLType.ERROR);
+				return node;
+			}
+			node.setType(dictType.getTLType());
+		}
+		
+		return data;
+	}
+	
 	/**
 	 * Resolves of identifier to the corresponding graph sequence.
 	 * Sequence return type is defined by user in syntax.
@@ -651,7 +685,18 @@ public class ASTBuilder extends NavigatingVisitor {
 		return node;
 	}
 
+	@Override
+	public Object visit(CLVFDictionaryNode node, Object data) {
+		super.visit(node, data);
+		// actual type of dictionary entry is set while visiting MemberAccessExpression.
+		// this is only a default value that is not used anywhere
+		node.setType(TLTypePrimitive.STRING);
+		
+		return node;
+		
+	}
 	
+
 	// ----------------------------- Utility methods -----------------------------
 
 	/**
@@ -865,7 +910,6 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTBREAKSTATEMENT:
 			case TransformLangParserTreeConstants.JJTCASESTATEMENT:
 			case TransformLangParserTreeConstants.JJTCONTINUESTATEMENT:
-			case TransformLangParserTreeConstants.JJTDELETEDICTNODE:
 			case TransformLangParserTreeConstants.JJTDOSTATEMENT:
 			case TransformLangParserTreeConstants.JJTFOREACHSTATEMENT:
 			case TransformLangParserTreeConstants.JJTFORSTATEMENT:
@@ -877,14 +921,12 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTPRINTLOGNODE:
 			case TransformLangParserTreeConstants.JJTPRINTSTACKNODE:
 			case TransformLangParserTreeConstants.JJTRAISEERRORNODE:
-			case TransformLangParserTreeConstants.JJTREADDICTNODE:
 			case TransformLangParserTreeConstants.JJTRETURNSTATEMENT:
 			case TransformLangParserTreeConstants.JJTSEQUENCENODE:
 			case TransformLangParserTreeConstants.JJTSWITCHSTATEMENT:
 			case TransformLangParserTreeConstants.JJTUNARYSTATEMENT:
 			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
 			case TransformLangParserTreeConstants.JJTWHILESTATEMENT:
-			case TransformLangParserTreeConstants.JJTWRITEDICTNODE:
 				// all expression statements that can occur within block
 				break;
 			case TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION:

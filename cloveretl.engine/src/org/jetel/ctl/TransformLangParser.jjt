@@ -32,7 +32,7 @@
 	    
 	    If not done, most of the syntactic errors will not be correctly reported by the parser
 	    and javacc does not provide token_error() method mentioned in documentation anymore.
-	    
+	    `
 	4. Before making a commit of production parser be sure to set the 
 		DEBUG_PARSER = false;
    		DEBUG_TOKEN_MANAGER = false;
@@ -348,6 +348,7 @@ public class TransformLangParser extends ExpParser {
 		switch (lhs.getId()) {
 		case TransformLangParserTreeConstants.JJTIDENTIFIER:
 		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+		case TransformLangParserTreeConstants.JJTDICTIONARYNODE:
 			// identifier and field are valid LHS of assignment
 			return true;
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
@@ -467,13 +468,6 @@ TOKEN:
  < PRINT_STACK: "printStack" >
 |
  < RAISE_ERROR: "raiseError" >
-|
- < READ_DICT: "readDict" >
-|
- < WRITE_DICT: "writeDict" >
-|
- < DELETE_DICT: "deleteDict" >
- 
 }
 
 TOKEN: 
@@ -614,6 +608,7 @@ TOKEN :
 | < LOOKUP_NEXT: "lookup_next" > // obsolete
 | < LOOKUP_FOUND: "lookup_found" > // obsolete
 | < LOOKUP_ADMIN: "lookup_admin" > // obsolete
+| < DICTIONARY: "dictionary" >
 | < SEQUENCE: "sequence" >
 | < LOGLEVEL_DEBUG: "debug" >
 | < LOGLEVEL_INFO: "info" >
@@ -666,6 +661,7 @@ TOKEN :
 |
   < #STRING_ID : <IDENTIFIER> >
 }
+
 
 TOKEN : 
 {
@@ -1303,6 +1299,8 @@ void PrimaryExpression() #void:
 		|
 		( SequenceNode() )
 		|
+		( DictionaryNode() )
+		|
 		( "("	Expression() ")" )
 	 	|
 		( RecordOrFieldIdentifier() )
@@ -1435,9 +1433,6 @@ void BuiltInFunctionCall() #void:
 	 | ( t = <PRINT_LOG> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintLogNode(1) )
 	 | ( t = <PRINT_STACK> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintStackNode(1) )
 	 | ( t = <RAISE_ERROR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #RaiseErrorNode(1) )
-	 | ( t = <READ_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #ReadDictNode(1) )
-	 | ( t = <WRITE_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #WriteDictNode(1) )
-	 | ( t = <DELETE_DICT> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #DeleteDictNode(1) )
 	)
 	
 }
@@ -1988,6 +1983,30 @@ void LookupNode() :{}{	(	 ( "lookup"
 	   		error(jjtThis,"Obsolete lookup syntax","Use 'lookup(<lookupName>).init()' or 'lookup(<lookupName>).free()' instead");
 	    }
 	 )	)}
+
+void DictionaryNode() :
+{}
+{
+	(
+	 ( <DICTIONARY> 
+	   {
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   
+	   /* . and identifier is parsed in PrimaryExpression
+	   "."
+			<IDENTIFIER> 
+			{ 
+				jjtThis.setKeyName(token.image); 
+			}
+	   {
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   */
+	 )
+	)
+}
 
 JAVACODEvoid recover(int kind) #void {	Token t;	do {		t = getNextToken();
 		if (t.kind == EOF) {

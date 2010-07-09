@@ -20,6 +20,7 @@ package org.jetel.graph.dictionary;
 
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
@@ -40,14 +41,17 @@ public abstract class DictionaryType implements IDictionaryType {
 		this.valueClass = valueClass;
 	}
 	
+	@Override
 	public String getTypeId() {
 		return typeId;
 	}
 	
+	@Override
 	public Class<?> getValueClass() {
 		return valueClass;
 	}
 	
+	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
 		if (value != null && !valueClass.isInstance(value)) {
 			throw new ComponentNotReadyException(dictionary, "Unknown source type for '" + getTypeId() + "' dictionary element (" + value + ").");
@@ -55,34 +59,31 @@ public abstract class DictionaryType implements IDictionaryType {
 		return value;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.dictionary.IDictionaryType#isParsePropertiesSupported()
-	 */
+	@Override
 	public boolean isParsePropertiesSupported() {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.dictionary.IDictionaryType#parseProperties(java.util.Properties)
-	 */
+	@Override
 	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
 		throw new UnsupportedOperationException();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.dictionary.IDictionaryType#isFormatPropertiesSupported()
-	 */
+	@Override
 	public boolean isFormatPropertiesSupported() {
 		return false;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.dictionary.IDictionaryType#formatteProperties(java.lang.Object)
-	 */
+	@Override
 	public Properties formatProperties(Object value) {
 		throw new UnsupportedOperationException();
 	}
-		
+
+	@Override
+	public TLType getTLType() {
+		return null;
+	}
+
 	@Override
 	public String toString() {
 		return "[" + getClass().getName() + "] " + typeId + ", " + valueClass.getName();

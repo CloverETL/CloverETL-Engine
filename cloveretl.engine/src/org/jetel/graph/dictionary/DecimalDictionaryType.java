@@ -21,6 +21,8 @@ package org.jetel.graph.dictionary;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 
@@ -90,4 +92,9 @@ public class DecimalDictionaryType extends DictionaryType {
 				|| value instanceof BigDecimal;
 	}
 
+	@Override
+	public TLType getTLType() {
+		return TLTypePrimitive.DECIMAL;
+	}
+	
 }

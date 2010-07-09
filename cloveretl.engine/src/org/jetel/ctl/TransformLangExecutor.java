@@ -46,7 +46,7 @@ import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
 import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
 import org.jetel.ctl.ASTnode.CLVFContinueStatement;
 import org.jetel.ctl.ASTnode.CLVFDateField;
-import org.jetel.ctl.ASTnode.CLVFDeleteDictNode;
+import org.jetel.ctl.ASTnode.CLVFDictionaryNode;
 import org.jetel.ctl.ASTnode.CLVFDivNode;
 import org.jetel.ctl.ASTnode.CLVFDoStatement;
 import org.jetel.ctl.ASTnode.CLVFEvalNode;
@@ -77,7 +77,6 @@ import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
 import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
 import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
 import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
-import org.jetel.ctl.ASTnode.CLVFReadDictNode;
 import org.jetel.ctl.ASTnode.CLVFReturnStatement;
 import org.jetel.ctl.ASTnode.CLVFSequenceNode;
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -90,7 +89,6 @@ import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
 import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.CLVFWhileStatement;
-import org.jetel.ctl.ASTnode.CLVFWriteDictNode;
 import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -254,6 +252,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			
 			return data;
 		}
+		
 		
 		@Override
 		/**
@@ -1073,43 +1072,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return data;
 	}
 	
-	public Object visit(CLVFReadDictNode node, Object data) {
-		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
-		stack.push(graph.getDictionary().getValue(stack.popString()));
-		return data;
-	}
-
-	public Object visit(CLVFWriteDictNode node, Object data) {
-		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
-		node.jjtGetChild(0).jjtGetChild(1).jjtAccept(this, data);
-		
-		final String value = stack.popString();
-		final String key = stack.popString();
-		try {
-			graph.getDictionary().setValue(key, value);
-			//stack.push(Boolean.TRUE);
-		} catch (ComponentNotReadyException e) {
-			//stack.push(Boolean.FALSE);
-			throw new TransformLangExecutorRuntimeException(node, e.getMessage());
-		}
-		return data;
-	}
-
-	public Object visit(CLVFDeleteDictNode node, Object data) {
-		node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data);
-		
-		final String key = stack.popString();
-		try {
-			graph.getDictionary().setValue(key, null);
-			//stack.push(Boolean.TRUE); if somebody changes his mind and 
-			//TODO 
-		} catch (ComponentNotReadyException e) {
-			//stack.push(Boolean.FALSE);
-			throw new TransformLangExecutorRuntimeException(node, e.getMessage()); 
-		}
-		return data;
-	}
-
 	public Object visit(CLVFPrintErrNode node, Object data) {
 		final Node args = node.jjtGetChild(0);
 		args.jjtGetChild(0).jjtAccept(this, data); 
@@ -1564,11 +1526,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		Object value = null;
 		switch (lhs.getId()) {
 		case TransformLangParserTreeConstants.JJTIDENTIFIER:
-			rhs.jjtAccept(this, data);
-			value = stack.pop();
-			if (! lhs.getType().equals(rhs.getType())) {
-				value = convertValue(rhs.getType(),lhs.getType(),value);
-			}
+			value = evaluateRHS(data, lhs, rhs);
 			setVariable(lhs, value);
 			break;
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
@@ -1581,11 +1539,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final int index = stack.popInt();
 
-				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (! lhs.getType().equals(rhs.getType())) {
-					value = convertValue(rhs.getType(),lhs.getType(),value);
-				}
+				value = evaluateRHS(data, lhs, rhs);
 
 				
 				if (index < list.size()) {
@@ -1601,11 +1555,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final Object index = stack.pop();
 				
-				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (! lhs.getType().equals(rhs.getType())) {
-					value = convertValue(rhs.getType(),lhs.getType(),value);
-				}
+				value = evaluateRHS(data, lhs, rhs);
 				
 				map.put(index,value);
 			}
@@ -1625,38 +1575,44 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					record.reset();
 				}
 			} else {
-				// otherwise we populate the target field
-				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (! lhs.getType().equals(rhs.getType())) {
-					value = convertValue(rhs.getType(),lhs.getType(),value);
-				}
+				value = evaluateRHS(data, lhs, rhs);
 				record.getField(accessNode.getFieldId()).setValue(value);
 			}
 			break;
 		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
 			lhs.jjtGetChild(0).jjtAccept(this,data);
-			final DataRecord varRecord = stack.popRecord();
+			
 			final CLVFMemberAccessExpression memberAccNode = (CLVFMemberAccessExpression)lhs;
-			if (memberAccNode.isWildcard()) {
-				// $myVar.* = $other.*   allows copying by position
-				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (value != null) {
-					// RHS must be a record -> copy fields by value
-					varRecord.copyFieldsByPosition((DataRecord)value);
-				} else {
-					// RHS is null -> set all fields to null
-					varRecord.reset();
+			final SimpleNode firstChild = (SimpleNode)lhs.jjtGetChild(0);
+			
+			// left hand of assignment is a dictionary
+			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+				rhs.jjtAccept(this,data);
+				try {
+					graph.getDictionary().setValue(memberAccNode.getName(), stack.pop() );
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
 				}
+				
+			// left hand of assignment is a record
 			} else {
-				// otherwise we populate the target fields
-				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (! lhs.getType().equals(rhs.getType())) {
-					value = convertValue(rhs.getType(),lhs.getType(),value);
+				final DataRecord varRecord = stack.popRecord();
+				if (memberAccNode.isWildcard()) {
+					// $myVar.* = $other.*   allows copying by position
+					
+					rhs.jjtAccept(this, data);
+					value = stack.pop();
+					if (value != null) {
+						// RHS must be a record -> copy fields by value
+						varRecord.copyFieldsByPosition((DataRecord)value);
+					} else {
+						// RHS is null -> set all fields to null
+						varRecord.reset();
+					}
+				} else {
+					value = evaluateRHS(data, lhs, rhs);
+					varRecord.getField(memberAccNode.getFieldId()).setValue(value);
 				}
-				varRecord.getField(memberAccNode.getFieldId()).setValue(value);
 			}
 			break;
 		default:
@@ -1667,6 +1623,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		stack.push(value);
 		
 		return data;
+	}
+
+	private Object evaluateRHS(Object data, SimpleNode lhs, SimpleNode rhs) {
+		rhs.jjtAccept(this, data);
+		
+		Object ret = stack.pop();
+		if (! lhs.getType().equals(rhs.getType())) {
+			ret = convertValue(rhs.getType(),lhs.getType(),ret);
+		}
+		return ret;
 	}
 
 	
@@ -1829,6 +1795,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	}
 
+	@Override
+	public Object visit(CLVFDictionaryNode node, Object data) {
+		// nothing to do
+		return data;
+	}
+	
 	public Object visit(CLVFPrintLogNode node, Object data) {
 		if (runtimeLogger == null) {
 			throw new TransformLangExecutorRuntimeException(node, "No runtime logger available");
@@ -2081,27 +2053,35 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
-		node.jjtGetChild(0).jjtAccept(this, data);
+		final SimpleNode firstChild = (SimpleNode) node.jjtGetChild(0);
+		firstChild.jjtAccept(this, data);
 
-		final DataRecord record = stack.popRecord();
-
-		// member access may occur when accessing lookup tables and thus record can be null
-		// in that case we return null as field value
-		// this is also result in case user accesses a record-type variable with null value
-		if (record == null) {
-			stack.push(null);
+		if( firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE){
+			final Object value = getGraph().getDictionary().getValue(node.getName());
+			stack.push(value);
+			return data;
+		} else {
+		
+			final DataRecord record = stack.popRecord();
+	
+			// member access may occur when accessing lookup tables and thus record can be null
+			// in that case we return null as field value
+			// this is also result in case user accesses a record-type variable with null value
+			if (record == null) {
+				stack.push(null);
+				return data;
+			}
+			
+			// if node is wildcard the whole record is the value
+			if (node.isWildcard()) {
+				stack.push(record);
+				return data;
+			}
+			
+			// else the value of a specific field is the value
+			stack.push(fieldValue(record.getField(node.getFieldId())));
 			return data;
 		}
-		
-		// if node is wildcard the whole record is the value
-		if (node.isWildcard()) {
-			stack.push(record);
-			return data;
-		}
-		
-		// else the value of a specific field is the value
-		stack.push(fieldValue(record.getField(node.getFieldId())));
-		return data;
 	}
 
 	public Object visit(CLVFArrayAccessExpression node, Object data) {
@@ -2498,5 +2478,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		return true;
 	}
+
+
 
 }

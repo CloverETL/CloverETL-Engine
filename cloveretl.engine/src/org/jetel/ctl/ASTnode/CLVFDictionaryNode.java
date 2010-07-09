@@ -21,16 +21,17 @@ package org.jetel.ctl.ASTnode;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 
-public class CLVFReadDictNode extends SimpleNode {
-	public CLVFReadDictNode(int id) {
+public class CLVFDictionaryNode extends SimpleNode {
+
+	public CLVFDictionaryNode(int id) {
 		super(id);
 	}
 
-	public CLVFReadDictNode(TransformLangParser p, int id) {
+	public CLVFDictionaryNode(TransformLangParser p, int id) {
 		super(p, id);
 	}
 
-	public CLVFReadDictNode(CLVFReadDictNode node) {
+	public CLVFDictionaryNode(CLVFDictionaryNode node) {
 		super(node);
 	}
 
@@ -41,6 +42,6 @@ public class CLVFReadDictNode extends SimpleNode {
 
 	@Override
 	public SimpleNode duplicate() {
-		return new CLVFReadDictNode(this);
+		return new CLVFDictionaryNode(this);
 	}
 }
