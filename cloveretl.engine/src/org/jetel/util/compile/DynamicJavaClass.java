@@ -55,9 +55,9 @@ public final class DynamicJavaClass {
 	 *
 	 * @throws ComponentNotReadyException if instantiation of the class failed for some reason
 	 */
-	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL... classPathUrls)
+	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL... compileClassPath)
 			throws ComponentNotReadyException {
-		DynamicCompiler compiler = new DynamicCompiler(classLoader, classPathUrls);
+		DynamicCompiler compiler = new DynamicCompiler(classLoader, compileClassPath);
 		String className = extractClassName(sourceCode);
 
 		logger.info("Compiling dynamic class " + className + "...");

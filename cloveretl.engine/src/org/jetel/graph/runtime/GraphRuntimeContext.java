@@ -18,14 +18,13 @@
  */
 package org.jetel.graph.runtime;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -60,7 +59,15 @@ public class GraphRuntimeContext {
 	private String password;
 	private boolean debugMode;
 	private String debugDirectory;
-	private String[] classPaths;
+	/**
+	 * This classpath is extension of 'current' classpath used for loading extra classes specified inside the graph.
+	 * External transformations for Reformat components, java classes for ExecuteJava components, ...
+	 */
+	private URL[] runtimeClassPath;
+	/**
+	 * This classpath is extension of 'current' classpath used in compile time of java code specified inside the graph.
+	 */
+	private URL[] compileClassPath;
 	private boolean synchronizedRun;
 	private boolean transactionMode;
 	private boolean batchMode;
@@ -96,9 +103,12 @@ public class GraphRuntimeContext {
 		ret.password = getPassword();
 		ret.debugMode = isDebugMode();
 		ret.debugDirectory = getDebugDirectory();
+		ret.runtimeClassPath = getRuntimeClassPath();
+		ret.compileClassPath = getCompileClassPath();
 		ret.synchronizedRun = isSynchronizedRun();
 		ret.transactionMode = isTransactionMode();
 		ret.batchMode = isBatchMode();
+		ret.contextURL = getContextURL();
 		
 		return ret;
 	}
@@ -315,37 +325,42 @@ public class GraphRuntimeContext {
 	}
 
 	/** 
-	 * Class-path of external classes. 
-	 * Array of jars and paths. 
+	 * This classpath is extension of 'current' classpath used for loading extra classes specified inside the graph.
 	 * Each component with transformation class specified (attribute transformClass or generatorClass etc.) will use this class-paths to find it.
-	 * */
-	public String[] getClassPaths() {
-		return classPaths;
+	 */
+	public URL[] getRuntimeClassPath() {
+		return Arrays.copyOf(runtimeClassPath, runtimeClassPath.length);
 	}
 
 	/**
-	 * @link {@link #getClassPaths()}
-	 * @param transformPath
+	 * @link {@link #getRuntimeClassPath()}
 	 */
-	public void setClassPaths(String[] classPaths) {
-		this.classPaths = classPaths;
+	public void setRuntimeClassPath(URL[] runtimeClassPath) {
+		this.runtimeClassPath = runtimeClassPath;
+	}
+
+	/** 
+	 * This classpath is extension of 'current' classpath used in compile time of java code specified inside the graph.
+	 */
+	public URL[] getCompileClassPath() {
+		return Arrays.copyOf(compileClassPath, compileClassPath.length);
 	}
 
 	/**
-	 * Classpath of external classes as URLs.
-	 *
-	 * @return classpath of external classes as URLs
-	 *
-	 * @see #getClassPaths()
+	 * @link {@link #getCompileClassPath()}
 	 */
-	public URL[] getClassPathsUrls() {
-		try {
-			return FileUtils.getFileUrls(contextURL, classPaths);
-		} catch (MalformedURLException exception) {
-			throw new IllegalStateException("Parsing of classpath URLs failed!", exception);
-		}
+	public void setCompileClassPath(URL[] compileClassPath) {
+		this.compileClassPath = compileClassPath;
 	}
 
+	/**
+	 * @return classpath container for both for runtime classpath and for compile classpath
+	 * @see CloverClassPath
+	 */
+	public CloverClassPath getClassPath() {
+		return new CloverClassPath(getRuntimeClassPath(), getCompileClassPath());
+	}
+	
 	/**
 	 * 'Synchronized' mode currently means that the watchdog 
 	 * between phases waits for an JMX event, which allows next graph processing.

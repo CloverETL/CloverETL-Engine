@@ -21,7 +21,6 @@ package org.jetel.util.compile;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 
@@ -29,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.classloader.GreedyURLClassLoader;
-import org.jetel.util.file.FileUtils;
 
 
 /**
@@ -142,12 +140,8 @@ public class ClassLoaderUtils {
      * @return
      * @throws ComponentNotReadyException
      */
-	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, String[] libraryPaths)	throws ComponentNotReadyException {
-	    try {
-			return new GreedyURLClassLoader(FileUtils.getFileUrls(contextURL, libraryPaths), parentCl);
-	    } catch (MalformedURLException e) {
-	        throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
-	    }
+	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)	throws ComponentNotReadyException {
+		return new GreedyURLClassLoader(libraryPaths, parentCl);
 	}
 
 }

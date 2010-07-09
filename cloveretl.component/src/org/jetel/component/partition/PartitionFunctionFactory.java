@@ -211,7 +211,7 @@ public class PartitionFunctionFactory {
 		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
 			//get partition function form java code
 	        Object transObject = DynamicJavaClass.instantiate(partitionSource, this.getClass().getClassLoader(),
-	        		node.getGraph().getRuntimeContext().getClassPathsUrls());
+	        		node.getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
 
 	        if (transObject instanceof PartitionFunction) {
 				return (PartitionFunction) transObject;

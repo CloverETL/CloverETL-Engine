@@ -59,18 +59,18 @@ public final class DynamicCompiler {
 	/** The class loader to be used during compilation and class loading. */
 	private final ClassLoader classLoader;
 	/** Additional class path URLs to be used during compilation and class loading. */
-	private final URL[] classPathUrls;
+	private final URL[] compileClassPath;
 
 	/**
 	 * Constructs a <code>DynamicCompiler</code> instance for a given class loader to be used during compilation.
 	 * Additional class path URLs may be provided if any external Java classes are required.
 	 *
 	 * @param classLoader the class loader to be used, may be <code>null</code>
-	 * @param classPathUrls the array of additional class path URLs, may be <code>null</code>
+	 * @param compileClassPath the array of additional class path URLs, may be <code>null</code>
 	 */
-	public DynamicCompiler(ClassLoader classLoader, URL... classPathUrls) {
+	public DynamicCompiler(ClassLoader classLoader, URL... compileClassPath) {
 		this.classLoader = classLoader;
-		this.classPathUrls = classPathUrls; // <- potential encapsulation problem, defensive copying would solve that
+		this.compileClassPath = compileClassPath; // <- potential encapsulation problem, defensive copying would solve that
 	}
 
 	/**
@@ -94,7 +94,7 @@ public final class DynamicCompiler {
 		}
 
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, classPathUrls);
+		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, compileClassPath);
 		
 		logger.debug("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());
 		

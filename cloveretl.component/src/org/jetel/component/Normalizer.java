@@ -195,7 +195,7 @@ public class Normalizer extends Node {
 	 */
 	private RecordNormalize createNormalizerDynamic(String normCode) throws ComponentNotReadyException {
         Object transObject = DynamicJavaClass.instantiate(normCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPathsUrls());
+        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
 
         if (transObject instanceof RecordNormalize) {
 			return (RecordNormalize) transObject;

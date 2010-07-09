@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -48,6 +47,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -565,10 +565,10 @@ public class DataIntersection extends Node {
         if (transformation != null){
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
-			URL[] classPaths = getGraph().getRuntimeContext().getClassPathsUrls();
+			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
 					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
-					this.getClass().getClassLoader(), classPaths);
+					this.getClass().getClassLoader(), classPath);
         }
         errorActions = ErrorAction.createMap(errorActionsString);
 		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);

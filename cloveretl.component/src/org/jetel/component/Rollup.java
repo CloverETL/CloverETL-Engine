@@ -546,7 +546,7 @@ public class Rollup extends Node {
     	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
             try {
             	return (RecordRollup) DynamicJavaClass.instantiate(sourceCode, getClass().getClassLoader(),
-            			getGraph().getRuntimeContext().getClassPathsUrls());
+            			getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
             } catch (ClassCastException exception) {
                 throw new ComponentNotReadyException(
                         "The transformation code does not implement the RecordRollup interface!", exception);
