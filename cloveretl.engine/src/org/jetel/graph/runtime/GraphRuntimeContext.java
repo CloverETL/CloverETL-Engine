@@ -85,6 +85,8 @@ public class GraphRuntimeContext {
 		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
 		transactionMode = DEFAULT_TRANSACTION_MODE;
 		batchMode = DEFAULT_BATCH_MODE;
+		runtimeClassPath = new URL[0];
+		compileClassPath = new URL[0];
 	}
 	
 	/* (non-Javadoc)
@@ -336,7 +338,11 @@ public class GraphRuntimeContext {
 	 * @link {@link #getRuntimeClassPath()}
 	 */
 	public void setRuntimeClassPath(URL[] runtimeClassPath) {
-		this.runtimeClassPath = runtimeClassPath;
+		if (runtimeClassPath != null) {
+			this.runtimeClassPath = runtimeClassPath;
+		} else {
+			this.runtimeClassPath = new URL[0];
+		}
 	}
 
 	/** 
@@ -350,7 +356,11 @@ public class GraphRuntimeContext {
 	 * @link {@link #getCompileClassPath()}
 	 */
 	public void setCompileClassPath(URL[] compileClassPath) {
-		this.compileClassPath = compileClassPath;
+		if (compileClassPath != null) {
+			this.compileClassPath = compileClassPath;
+		} else {
+			this.compileClassPath = new URL[0];
+		}
 	}
 
 	/**
