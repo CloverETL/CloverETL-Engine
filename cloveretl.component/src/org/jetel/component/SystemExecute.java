@@ -26,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.channels.Channels;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -37,7 +38,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.data.parser.FixLenByteDataParser;
+import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -108,6 +110,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>capturedErrorLines</b></td><td> number of lines that are print
  *    	 out if command finishes with errors</td></tr>
  *    <tr><td><b>outputFile</b></td><td>path to the output file</td></tr>
+ *    <tr><td><b>charset</b></td><td>encoding used for formating/parsing data for input/from output of system process</td></tr>
  *    <tr><td><b>append</b></td><td> whether to append data at the end if output 
  *    file exists or replace it (values: true/false)</td></tr>
  *    <tr><td><b>workingDirecory</b></td><td>this component's working directory.
@@ -157,6 +160,7 @@ public class SystemExecute extends Node{
 	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
 	private static final String XML_DELETE_BATCH_ATTRIBUTE = "deleteBatch";
 	private static final String XML_WORKERS_TIMEOUT_ATTRIBUTE= "workersTimeout";
+	private static final String XML_CHARSET_ATTRIBUTE= "charset";
 	
 	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -183,6 +187,7 @@ public class SystemExecute extends Node{
 	private Properties environment = new Properties();
 	private ProcessBuilder processBuilder;
 	private long workersTimeout = 0;
+	private String charset = null;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -266,10 +271,9 @@ public class SystemExecute extends Node{
 		FileWriter batchWriter = new FileWriter(batch);
 		batchWriter.write(command);
 		batchWriter.close();
-		//TODO uncomment following rows for java 1.6
-//		if (!batch.setExecutable(true)){
-//			logger.warn("Can't set executable to " + batch.getAbsolutePath());
-//		}
+		if (!batch.setExecutable(true)){
+			logger.warn("Can't set executable to " + batch.getAbsolutePath());
+		}
 		return batch.getCanonicalPath();
 	}
 
@@ -297,7 +301,7 @@ public class SystemExecute extends Node{
 			DataRecordMetadata meta=inPort.getMetadata();
 			in_record = new DataRecord(meta);
 			in_record.init();
-			formatter = new DataFormatter();
+			formatter = charset != null ? new DataFormatter(charset) : new DataFormatter();
 		}else{
 			formatter=null;
 		}
@@ -310,9 +314,10 @@ public class SystemExecute extends Node{
 			out_record= new DataRecord(meta);
 			out_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser=new DelimitedDataParser();
+				parser= charset != null ? new DelimitedDataParser(charset) : new DelimitedDataParser();
 			}else {
-				parser= FixLenDataParser.createParser(meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
+				parser= meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false) ?
+						new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
 			}
 		}else{
 			parser=null;
@@ -590,6 +595,11 @@ public class SystemExecute extends Node{
 			return status;
 		}
 		
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+            		"Charset "+charset+" not supported!", 
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
         	try {
 				if (interpreter != null) {
 					if (interpreter.contains("${}")) {
@@ -637,6 +647,9 @@ public class SystemExecute extends Node{
 			}
 			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
 				sysExec.setWorkersTimeout(xattribs.getLong(XML_WORKERS_TIMEOUT_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			return sysExec;
 		} catch (Exception ex) {
@@ -705,6 +718,9 @@ public class SystemExecute extends Node{
 		}
 		if (workingDirectory != null) {
 			xmlElement.setAttribute(XML_WORKING_DIRECTORY_ATTRIBUTE,workingDirectory.getPath());
+		}
+		if (charset != null) {
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE,charset);
 		}
 	}
 	
@@ -1105,6 +1121,20 @@ public class SystemExecute extends Node{
 		public Throwable getResultException() {
 			return resultException;
 		}
+	}
+
+	/**
+	 * @return the charset
+	 */
+	public String getCharset() {
+		return charset;
+	}
+
+	/**
+	 * @param charset the charset to set
+	 */
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 }
 
