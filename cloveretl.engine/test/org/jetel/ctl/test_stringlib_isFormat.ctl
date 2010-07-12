@@ -67,8 +67,8 @@ function integer transform() {
 	isLong2=isLong('LONG!');
 	isDate5=isDate('20Jul2000','ddMMMyyyy','en.US');
 	printErr(str2date('20Jul2000','ddMMMyyyy','en.GB'));
-	isDate6=isDate('20July    2000','ddMMMMMMMMyyyy','en.US');
-	printErr(str2date('20July    2000','ddMMMyyyy','en.GB'));
+	isDate6=isDate('20July     2000',"ddMMMM     yyyy",'en.US');
+	printErr(str2date('20July    2000','ddMMM    yyyy','en.GB'));
 	isDate3=isDate('4:42','HH:mm');
 	printErr(str2date('4:42','HH:mm'));
 	isDate=isDate('20.11.2007','dd.MM.yyyy');
@@ -81,8 +81,8 @@ function integer transform() {
 	isDate9=isDate('20-15-2007','dd-MM-yyyy');
 	isDate10=isDate('20-15-2007','dd-MM-yyyy'); 
 	isDate11=isDate('942-12-1996','dd-MM-yyyy','en.US');
-	isDate12=isDate('12-Prosinec-1996','dd-MMM-yyyy','cs.CZ');
-	isDate13=isDate('12-Prosinec-1996','dd-MMM-yyyy','en.US'); 
+	isDate12=isDate('12-prosinec-1996','dd-MMM-yyyy','cs.CZ');
+	isDate13=isDate('12-prosinec-1996','dd-MMM-yyyy','en.US'); 
 	isDate14=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
 	isDate15=isDate('','HH:mm dd.MM.yyyy');
 	return 0;
