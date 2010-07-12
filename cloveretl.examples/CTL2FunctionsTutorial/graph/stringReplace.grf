@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation Devel" modified="Mon Jun 21 08:33:29 CEST 2010" modifiedBy="cloveruser" name="stringReplace" revision="1.19">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229625408000" licenseType="Evaluation Devel" modified="Mon Jul 12 12:26:31 CEST 2010" modifiedBy="cloveruser" name="stringReplace" revision="1.20">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="replaceInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -18,7 +18,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string replace(string arg, string regex, string replaceSet)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="72" y="81">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string replace(string arg, string regex, string replaceSet)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="521" x="43" y="28">
 <attr name="text"><![CDATA[
 The replace(string, string, string) function accepts three string arguments. The second argument is a regular expression. If any character from the specified regex is found in the string specified as the first argument, it is replaced by the string specified as the third argument. 
 Thus, replace("heLlo", "[leo]", "pi") returns "hpiLpipi".]]></attr>
@@ -26,9 +26,9 @@ Thus, replace("heLlo", "[leo]", "pi") returns "hpiLpipi".]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringReplace.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="72" guiY="264" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringReplaceOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="477" guiY="264" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="277" guiY="264" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringReplace.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="45" guiY="198" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringReplaceOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="450" guiY="198" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="250" guiY="198" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -38,16 +38,30 @@ function integer transform() {
 	$0.ReplaceSet = $0.ReplaceSet;
 	$0.Function = "replace($0.Arg,$0.Regex,$0.ReplaceSet)";
 	$0.Result = replace($0.Arg,$0.Regex,$0.ReplaceSet);
+
 	return 0;
 }
-// Called during component initialization.
-// function init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

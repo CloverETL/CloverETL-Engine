@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation Devel" modified="Mon Jun 21 08:28:02 CEST 2010" modifiedBy="cloveruser" name="stringCut" revision="1.40">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation Devel" modified="Mon Jul 12 12:05:23 CEST 2010" modifiedBy="cloveruser" name="stringCut" revision="1.41">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="cutInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -19,7 +19,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="213" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string[] cut(string Arg, integer[] integerList)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="547" x="74" y="44">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="213" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string[] cut(string Arg, integer[] integerList)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="547" x="34" y="18">
 <attr name="text"><![CDATA[
 The cut(string, integer[]) function accepts two arguments: the first is string and the second is list of integers. The function returns a list of strings. 
 The number of elements of the list specified as the second argument must be even. The integers serve as index (each number in the odd position) and length (each number in the even position). Substrings of the specified length are taken from the string specified as the first argument starting from the specified index (string is indexed starting from 0). The resulting substrings are returned as list of strings. 
@@ -28,9 +28,9 @@ For example, cut("somestringasanexample",[2,3,1,5]) returns ["mes","omest"].]]><
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringCut.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="280" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringCutOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="452" guiY="280" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="244" guiY="280" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringCut.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="34" guiY="251" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringCutOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="438" guiY="251" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="230" guiY="251" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -62,13 +62,25 @@ return 0;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

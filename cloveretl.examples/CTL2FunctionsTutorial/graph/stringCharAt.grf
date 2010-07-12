@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229610254187" licenseType="Evaluation Devel" modified="Mon Jun 21 08:27:05 CEST 2010" modifiedBy="cloveruser" name="stringCharAt" revision="1.39">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229610254187" licenseType="Evaluation Devel" modified="Mon Jul 12 11:59:14 CEST 2010" modifiedBy="cloveruser" name="stringCharAt" revision="1.40">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="char_atInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,7 +16,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string charAt(string arg, integer index)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="112" y="70">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="143" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string charAt(string arg, integer index)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="478" x="49" y="21">
 <attr name="text"><![CDATA[
 The charAt(string, integer) function accepts two arguments: the first is string and the other is integer. 
 It takes the string and returns the character that is located at the position specified by the index.]]></attr>
@@ -24,9 +24,9 @@ It takes the string and returns the character that is located at the position sp
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringCharAt.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="88" guiY="247" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringCharAtOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="493" guiY="247" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="293" guiY="247" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringCharAt.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="48" guiY="193" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringCharAtOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="453" guiY="193" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="253" guiY="193" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -35,16 +35,30 @@ function integer transform() {
 	$0.Index = $0.Index;
 	$0.Function = "charAt($0.Arg,$0.Index)";
 	$0.Result = charAt($0.Arg,$0.Index);
+
 	return 0;
 }
-// Called during component initialization.
-// function init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

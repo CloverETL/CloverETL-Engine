@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Mon Jun 21 08:32:25 CEST 2010" modifiedBy="cloveruser" name="stringRandomString" revision="1.24">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229624844609" licenseType="Evaluation Devel" modified="Mon Jul 12 12:23:31 CEST 2010" modifiedBy="cloveruser" name="stringRandomString" revision="1.25">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_stringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,7 +16,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string randomString(integer minLength, integer maxLength)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="442" x="86" y="67">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string randomString(integer minLength, integer maxLength)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="442" x="53" y="24">
 <attr name="text"><![CDATA[
 The randomString(integer, integer) function takes two integer arguments and returns strings composed of lowercase letters whose length varies between minLength and maxLength.
 These resulting strings are generated at random for records and fields. They can be different for both different records and different fields. 
@@ -25,11 +25,14 @@ Their length can also be equal to minLength or maxLength, however, they can be n
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRandomString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="66" guiY="271" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRandomStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="471" guiY="271" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="272" guiY="271" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringRandomString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="54" guiY="224" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringRandomStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="459" guiY="224" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="260" guiY="224" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
 function void preExecute() {
      setRandomSeed(10);
 }
@@ -43,14 +46,22 @@ function integer transform() {
 
 	return 0;
 }
-// Called during component initialization.
-// function init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

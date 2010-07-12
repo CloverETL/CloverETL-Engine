@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation Devel" modified="Fri Jun 18 18:27:02 CEST 2010" modifiedBy="cloveruser" name="conversionNum2strNUMBER" revision="1.47">
+<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation Devel" modified="Mon Jul 12 11:15:20 CEST 2010" modifiedBy="cloveruser" name="conversionNum2strNUMBER" revision="1.48">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="num2strNUMBERInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -22,11 +22,11 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - number data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="571" x="66" y="195">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example - number data type" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="571" x="25" y="164">
 <attr name="text"><![CDATA[
 When working with number data type, 10 and 16 are the two radices that can be used.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string num2str(number Arg, integer Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="572" x="64" y="54">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string num2str(number Arg, integer Radix)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="572" x="25" y="14">
 <attr name="text"><![CDATA[
 The num2str(number, integer) function accepts two arguments.
 It takes these two arguments and converts the first to its string representation in the radix based numeric system. 
@@ -35,9 +35,9 @@ It takes these two arguments and converts the first to its string representation
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionNum2strNUMBER.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="58" guiY="341" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionNum2stringNUMBEROverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="556" guiY="341" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="297" guiY="341" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionNum2strNUMBER.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="28" guiY="293" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionNum2stringNUMBEROverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="465" guiY="293" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="240" guiY="293" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -51,13 +51,25 @@ function integer transform() {
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

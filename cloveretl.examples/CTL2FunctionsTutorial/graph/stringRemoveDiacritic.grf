@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229622386500" licenseType="Evaluation Devel" modified="Mon Jun 21 08:32:44 CEST 2010" modifiedBy="cloveruser" name="stringRemoveDiacritic" revision="1.36">
+<Graph author="milos_kovalcik" created="Thu Dec 18 12:51:41 CET 2008" guiVersion="0.0.0.devel" id="1229622386500" licenseType="Evaluation Devel" modified="Mon Jul 12 12:24:43 CEST 2010" modifiedBy="cloveruser" name="stringRemoveDiacritic" revision="1.37">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="remove_diacriticInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,16 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string removeDiacritic(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="439" x="128" y="118">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string removeDiacritic(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="439" x="36" y="28">
 <attr name="text"><![CDATA[
 The removeDiacritic(string) function takes one string argument and returns another string with diacritic signs removed.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/stringRemoveDiacritic.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="69" guiY="279" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/stringRemoveDiacriticOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="474" guiY="279" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="274" guiY="279" id="REFORMAT1" type="REFORMAT">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/stringRemoveDiacritic.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="38" guiY="182" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/stringRemoveDiacriticOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="443" guiY="182" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="243" guiY="182" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -31,16 +31,30 @@ function integer transform() {
 	$0.Arg = $0.Arg;
 	$0.Function = "removeDiacritic($0.Arg)";
 	$0.Result = removeDiacritic($0.Arg);
+
 	return 0;
 }
-// Called during component initialization.
-// function init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

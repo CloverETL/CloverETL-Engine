@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation Devel" modified="Fri Jun 18 18:31:35 CEST 2010" modifiedBy="cloveruser" name="dateRandomDate_DateArguments" revision="1.37">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229697305234" licenseType="Evaluation Devel" modified="Mon Jul 12 11:33:19 CEST 2010" modifiedBy="cloveruser" name="dateRandomDate_DateArguments" revision="1.38">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="random_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,7 +16,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date randomDate(date startDate, date endDate)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="393" x="128" y="12">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="223" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date randomDate(date startDate, date endDate)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="393" x="52" y="10">
 <attr name="text"><![CDATA[
 The randomDate(date, date) function accepts two date arguments and returns a random date between startDate and endDate. 
 These resulting dates are generated at random for different records and different fields. They can be different for both records and fields. The return value can also be startDate or endDate. However, it cannot be any date before startDate nor after endDate. 
@@ -26,11 +26,14 @@ Remember that 2009-05-15 means 2009-05-15 00:00:00 000. Thus, if you want that 2
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateRandomDate_DateArguments.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="123" guiY="255" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateRandomDate_DateArgumentsOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="528" guiY="255" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="328" guiY="255" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/dateRandomDate_DateArguments.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="61" guiY="256" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateRandomDate_DateArgumentsOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="466" guiY="256" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="251" guiY="256" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
 function void preExecute() {
      setRandomSeed(10);
 }
@@ -46,13 +49,20 @@ function integer transform() {
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
