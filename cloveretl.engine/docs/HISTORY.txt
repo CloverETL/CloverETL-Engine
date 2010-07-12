@@ -12,7 +12,7 @@ REL 3-0-0
 + equalNulls attribute of Merge component was removed - value of this attribute was fixed on 'true' value 
 + list of components in tracking log (in console) are topologically sorted
 + new attribute 'quotedStrings' on DataWritter component - all written data can be quoted
-+ new attribute for SystemExecute component - workersTimeout
++ new attributes for SystemExecute component - workersTimeout, charset
 + new attribute 'Collator sensitivity' on DataRecordMetadata
 + Joda date formatter is now default formatter (java formatter is still available with prefix "java:" in format string)
 
