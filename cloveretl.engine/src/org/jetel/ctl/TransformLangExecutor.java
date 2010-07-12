@@ -660,6 +660,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param operator
 	 */	
 	private void compare(Object lhsValue, Object rhsValue, TLType operationType, int operator) {
+		// NULL
+		if (lhsValue == null || rhsValue == null) {
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhsValue == rhsValue);
+				break;
+			case NON_EQUAL:
+				stack.push(lhsValue != rhsValue);
+				break;
+			default:
+				throw new TransformLangExecutorRuntimeException("compare: unsupported compare operation for null value");
+			}
+			return;
+		}
+
 			// Integer
 			if (operationType.isInteger()) {
 				final int lhs = (Integer)lhsValue;
