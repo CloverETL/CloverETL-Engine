@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Wed Jul 07 13:59:28 CEST 2010" modifiedBy="cloveruser" name="dateExtractTime" revision="1.34">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700983093" licenseType="Evaluation Devel" modified="Mon Jul 12 11:31:57 CEST 2010" modifiedBy="cloveruser" name="dateExtractTime" revision="1.36">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="trunc_dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,7 +14,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="195" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date extractTime(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="119" y="22">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="213" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date extractTime(date arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="64" y="18">
 <attr name="text"><![CDATA[
 The extractTime(date) function takes one date argument and returns the date with the same hour, minute, second and millisecond, but year, month and day are set to 0. 
 The 0 date is 1970-01-01.
@@ -39,11 +39,24 @@ function integer transform() {
 
 	return 0;
 }
-// Called during component initialization.
-// function init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>

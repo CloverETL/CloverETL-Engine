@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969590744" licenseType="Evaluation Devel" modified="Fri Jun 18 18:30:07 CEST 2010" modifiedBy="cloveruser" name="conversionToString" revision="1.13">
+<Graph author="cloveruser" created="Wed Mar 25 09:22:10 CET 2009" guiVersion="0.0.0.devel" id="1237969590744" licenseType="Evaluation Devel" modified="Mon Jul 12 11:28:21 CEST 2010" modifiedBy="cloveruser" name="conversionToString" revision="1.14">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="to_stringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,16 +14,16 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="116" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string toString(anytype Arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="456" x="79" y="133">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="116" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string toString(anytype Arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="456" x="44" y="31">
 <attr name="text"><![CDATA[
 The toString(anytype) function takes one argument of any data type and converts it to its string representation.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionToString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="50" guiY="293" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionToStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="523" guiY="289" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="279" guiY="290" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionToString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="44" guiY="187" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionToStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="450" guiY="187" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="248" guiY="187" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -31,17 +31,30 @@ function integer transform() {
 	$0.ArgDecimal = $0.ArgDecimal;
 	$0.FunctionArgDecimal = "toString($0.ArgDecimal)";
 	$0.ResultArgDecimalToString = toString($0.ArgDecimal);
+
 	return 0;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

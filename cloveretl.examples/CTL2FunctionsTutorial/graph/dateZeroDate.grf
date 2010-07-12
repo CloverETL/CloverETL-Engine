@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Wed Jun 30 14:23:48 CEST 2010" modifiedBy="cloveruser" name="dateZeroDate" revision="1.49">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Mon Jul 12 11:38:29 CEST 2010" modifiedBy="cloveruser" name="dateZeroDate" revision="1.50">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="zeroDateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -8,16 +8,15 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="127" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date zeroDate()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="392" x="148" y="75">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="127" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="date zeroDate()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="392" x="64" y="33">
 <attr name="text"><![CDATA[
 The zeroDate() function accepts no argument and returns zero date and time (1970-01-01 00:00:00 000).]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="81" guiY="240" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="67" guiY="194" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
-
 
 // Generates output record.
 function integer generate() {
@@ -26,9 +25,28 @@ function integer generate() {
 
 	return 0;
 }
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateZeroDateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="473" guiY="240" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dateZeroDateOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="329" guiY="194" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

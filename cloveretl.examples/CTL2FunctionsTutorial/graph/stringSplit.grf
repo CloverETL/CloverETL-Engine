@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation Devel" modified="Mon Jun 21 08:34:16 CEST 2010" modifiedBy="cloveruser" name="stringSplit" revision="1.66">
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229622309380" licenseType="Evaluation Devel" modified="Mon Jul 12 12:28:17 CEST 2010" modifiedBy="cloveruser" name="stringSplit" revision="1.67">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="splitInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -16,7 +16,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="162" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string[] split(string arg, string regex)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="438" x="88" y="88">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="162" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="string[] split(string arg, string regex)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="438" x="36" y="29">
 <attr name="text"><![CDATA[
 The split(string, string) function accepts two string arguments. The second is some regular expression. It is searched in the first string argument and if it is found, the string is split into the parts located between the characters or substrings of such a regular expression. The resulting parts of the string are returned as a list of substrings. 
 Thus, split("abcdefg", "[ce]") returns ["ab",d","fg"].]]></attr>
@@ -24,9 +24,9 @@ Thus, split("abcdefg", "[ce]") returns ["ab",d","fg"].]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringSplit.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="46" guiY="277" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringSplitOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="450" guiY="277" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="242" guiY="277" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/stringSplit.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="39" guiY="214" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/stringSplitOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="443" guiY="214" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="235" guiY="214" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -72,13 +72,25 @@ return 0;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
