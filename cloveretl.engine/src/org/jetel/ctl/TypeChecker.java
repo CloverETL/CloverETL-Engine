@@ -343,6 +343,8 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType lhs = ((SimpleNode) node.jjtGetChild(0)).getType();
 		TLType rhs = ((SimpleNode) node.jjtGetChild(1)).getType();
 
+		TLType ret = null;
+		
 		switch (node.getOperator()) {
 		case TransformLangParserConstants.REGEX_CONTAINS:
 		case TransformLangParserConstants.REGEX_EQUAL:
@@ -359,12 +361,13 @@ public class TypeChecker extends NavigatingVisitor {
 			break;
 		case TransformLangParserConstants.EQUAL:
 		case TransformLangParserConstants.NON_EQUAL:
+			ret = checkLogicalOperatorWithNullEquals(lhs, rhs);
 		case TransformLangParserConstants.GREATER_THAN:
 		case TransformLangParserConstants.GREATER_THAN_EQUAL:
 		case TransformLangParserConstants.LESS_THAN:
 		case TransformLangParserConstants.LESS_THAN_EQUAL:
 			// arithmetic operators
-			TLType ret = checkLogicalOperator(lhs, rhs);
+			ret = (ret == null) ? checkLogicalOperator(lhs, rhs) : ret;
 			if (ret.isError()) {
 				node.setType(ret);
 				error(node, "Incompatible types '" + lhs.name() + "' and '" + rhs.name() + "' for binary operator");
@@ -887,7 +890,7 @@ public class TypeChecker extends NavigatingVisitor {
 		}
 		
 		TLType elemType = actual[1].isList() ? ((TLTypeList)actual[1]).getElementType() : ((TLTypeMap)actual[1]).getKeyType();
-		TLType ret = checkLogicalOperator(actual[0], elemType);
+		TLType ret = checkLogicalOperatorWithNullEquals(actual[0], elemType);
 		if (ret.isError()) {
 			node.setType(ret);
 			error(node,functionErrorMessage("in", new TLType[]{TLType.OBJECT,TLType.createList(null)},actual));
@@ -1714,7 +1717,7 @@ public class TypeChecker extends NavigatingVisitor {
 		final SimpleNode child = (SimpleNode)parent.jjtGetChild(index);
 		
 		// do not generate type case for identical types or null literal 
-		if (child.getType().equals(toType) || child.getType().isNull()) {
+		if (child.getType().equals(toType) || child.getType().isNull() || toType.isNull()) {
 			return;
 		}
 		
@@ -1786,6 +1789,16 @@ public class TypeChecker extends NavigatingVisitor {
 
 		// the node type can still be null - can't use .isError()
 		return node.getType() != TLType.ERROR;
+	}
+
+	private TLType checkLogicalOperatorWithNullEquals(TLType lhs, TLType rhs) {
+		if (lhs.isNull()) {
+			return rhs;
+		}
+		if (rhs.isNull()) {
+			return lhs;
+		}
+		return checkLogicalOperator(lhs, rhs);
 	}
 
 	private TLType checkLogicalOperator(TLType lhs, TLType rhs) {

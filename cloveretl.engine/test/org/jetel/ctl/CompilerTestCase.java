@@ -1138,6 +1138,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		check("eq0", true);
 		check("eq1", true);
+		check("eq1a", true);
+		check("eq1b", true);
+		check("eq1c", false);
 		check("eq2", true);
 		check("eq3", true);
 		check("eq4", true);
@@ -1147,6 +1150,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq8", false);
 		check("eq9", true);
 		check("eq10", false);
+		check("eq11", true);
+		check("eq12", false);
+		check("eq13", true);
+		check("eq14", false);
+		check("eq15", false);
+		check("eq16", true);
+		check("eq17", false);
+		check("eq18", false);
 	}
 	
 	public void test_operator_non_equal(){

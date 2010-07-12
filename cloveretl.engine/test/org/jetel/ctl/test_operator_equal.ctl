@@ -1,7 +1,11 @@
 integer i;
 integer j;
+integer k;
 boolean eq0;
 boolean eq1;
+boolean eq1a;
+boolean eq1b;
+boolean eq1c;
 long l;
 boolean eq2;
 decimal d;
@@ -18,12 +22,26 @@ date anothermydate;
 boolean eq8;
 boolean eq9;
 boolean eq10;
+boolean eq11;
+boolean eq12;
+boolean eq13;
+boolean eq14;
+boolean eq15;
+boolean eq16;
+boolean eq17;
+boolean eq18;
+
+function integer getInt() {
+	return 1000;
+}
 
 function integer transform() {
-	i=10;
+
+	//integer
+	i=1000; // it is better to test it with higher value then 127, since the less Integer values are cached by JVM
 	printErr('i='+i);
 	
-	j=9;
+	j=999;
 	printErr('j='+j);
 	
 	eq0=(i.eq.(j+1));
@@ -31,8 +49,26 @@ function integer transform() {
 	
 	eq1=(i==j+1);
 	printErr('eq1: i==j+1 '+eq1);
+
+	eq1a = (getInt()==i);
+	printErr('eq1a: getInt()==i ' + eq1a);
+
+	eq1b = (getInt()==j+1);
+	printErr('eq1a: getInt()==j+1 ' + eq1b);
+
+	eq1c = (j==getInt());
+	printErr('eq1a: j==getInt() ' + eq1c);
+
+	k = null;
+	eq13 = k==null;
+	printErr('eq13: k==null ' + eq13);
 	
-	l=10;
+	eq14 = j==null;
+	printErr('eq14: j==null ' + eq14);
+	
+	
+	//long
+	l=1000;
 	printErr('l='+l);
 	
 	eq2=(l==j);
@@ -41,13 +77,17 @@ function integer transform() {
 	eq2=(l.eq.i);
 	printErr('eq2: l==i ' + eq2);
 	
-	d=10;
+	
+	//decimal
+	d=1000;
 	printErr('d='+d);
 	
 	eq3=d==i;
 	printErr('eq3: d==i '+eq3);
 	
-	n=10;
+	
+	//number
+	n=1000;
 	printErr('n='+n);
 	
 	eq4=n.eq.l;
@@ -56,6 +96,8 @@ function integer transform() {
 	eq5=n==d;
 	printErr('eq5: n==d '+eq5);
 	
+	
+	//string
 	s='hello';
 	printErr('s='+s);
 	
@@ -68,6 +110,14 @@ function integer transform() {
 	eq7=s==trim(s1);
 	printErr('eq7 s==trim(s1)'+eq7);
 	
+	eq15 = null==s;
+	printErr('eq15: null==s ' + eq15);
+	
+	s = null;
+	eq16 = null==s;
+	printErr('eq16: null==s ' + eq16);
+	
+	//date
 	mydate=2006-01-01;
 	printErr('mydate='+mydate);
 	printErr('anothermydate='+anothermydate);
@@ -80,9 +130,27 @@ function integer transform() {
 	
 	eq9=mydate==anothermydate;
 	printErr('eq9: mydate == anothermydate ='+eq9);
+
+	eq17 = mydate==null;
+	printErr('eq17: mydate==null ' + eq17);
+
+	mydate = null;
+	eq18 = mydate!=null;
+	printErr('eq18: mydate!=null ' + eq18);
 	
+
+	//boolean
 	eq10=eq9.eq.eq8;
 	printErr('eq10: eq9 == eq8 '+eq10);
+	
+	
+	//null
+	eq11 = null==null;	
+	printErr('eq11: null==null ' + eq11);
+
+	eq12 = null!=null;	
+	printErr('eq12: null!=null ' + eq12);
+	
 	
 	return 0;
 }
