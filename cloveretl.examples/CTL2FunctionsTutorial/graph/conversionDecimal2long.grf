@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Fri Jun 18 18:03:32 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2long" revision="1.89">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jul 12 10:02:19 CEST 2010" modifiedBy="cloveruser" name="conversionDecimal2long" revision="1.103">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="decimal2longInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -13,34 +13,28 @@
 <Field name="Result" type="long"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="decimal2longWhetherBoolean" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field length="32" name="Decimal" scale="3" type="decimal"/>
-<Field name="Function" type="string"/>
-<Field name="Result" type="boolean"/>
-</Record>
-</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="283" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long decimal2long(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="51" y="-82">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="283" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long decimal2long(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="61" y="-72">
 <attr name="text"><![CDATA[
-The decimal2long(decimal) function takes one decimal argument and converts it to a long value. 
+The decimal2long(decimal) function takes one decimal argument and converts it to a long. 
 
 By default, decimal number has 8 significant digits, including 2 digits after the decimal dot. For this reason, we have set Decimals to 32 significant digits (Length == number of significant digits) and 3 digits after the decimal dot (Scale == digits after the decimal dot).
 
 We can see how Clover truncates the non-integer fractions while preserving only the integer parts of decimal values.
 
-As regards decimal numbers that are greater than or equal to maximum nongs, all non-integer fractions are removed, but, e.g., (9223372036854775808) is converted to null automatically. 9223372036854775807 is preserved, but, e.g., 9239223372036854775809 goes to negative value and also other decimals greater than maximum long are converted in an unpredictable way. Such conversions (of decimal greater than maximum positive long or less than minimum negative long) are meaningless. Graph should fail.
+Values greater than or equal to -9223372036854775807.000 and values less than or equal to 9223372036854775807.000 are converted to a long. This is demonstrated in phase 0.
 
-On the other hand, any long can be mapped to a decimal without any restriction and loss of information.
+All of the other values are out of the range of a long and graph should fail (in phase 1). Such conversions (of decimal greater than maximum positive long or less than minimum negative long) are meaningless.
 
-The second Reformat is in the PassThrough mode. If you enable it, you can see how maximum long and minimum long are converted to null.]]></attr>
+On the other hand, any long can be mapped to a decimal without any restriction (if Length is set properly) and loss of precision.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2long.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="259" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2longOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="258" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="273" guiY="262" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2longAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="63" guiY="229" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2longAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="529" guiY="229" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="281" guiY="229" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -59,30 +53,45 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="passThrough" guiHeight="0" guiName="Whether is null" guiWidth="0" guiX="457" guiY="261" id="REFORMAT1" type="REFORMAT">
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDecimal2longNotAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="63" guiY="322" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDecimal2longNotAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="528" guiY="322" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="281" guiY="322" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
 	$0.Decimal = $0.Decimal;
-	$0.Function = $0.Function;
-	$0.Result = isnull($0.Result);
+	$0.Function = "decimal2long($0.Decimal)";
+	$0.Result = decimal2long($0.Decimal);
 
 	return 0;
 }
 
-// Called to return a user-defined error message when an error occurs.
-// function getMessage() {}
-
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugLastRecords="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
