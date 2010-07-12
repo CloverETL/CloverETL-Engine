@@ -76,11 +76,12 @@ public class TLNumericFormatLocaleCache extends TLCache {
 
 		if (context.getLiteralsSize() > Math.max(pos1, pos2)) {
 			// if we use the variant with both format and locale specified
-			if ((context.isLiteral(pos1) && context.isLiteral(pos2))
-			// either both format and locale were literals (thus cached at init)
-			|| (cachedFormatter != null && format.equals(previousFormatString) && locale.equals(previousLocaleString))
-			// or format is already cached and previous inputs match the current ones
-			) {
+			if (cachedFormatter != null && 
+					((context.isLiteral(pos1) && context.isLiteral(pos2))
+					// either both format and locale were literals (thus cached at init)
+					|| (cachedFormatter != null && format.equals(previousFormatString) && locale.equals(previousLocaleString))
+					// or format is already cached and previous inputs match the current ones
+			)) {
 				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
@@ -92,7 +93,8 @@ public class TLNumericFormatLocaleCache extends TLCache {
 		}
 		if (context.getLiteralsSize() > pos1 && context.getLiteralsSize() <= pos2) {
 			// just format is specified, but not locale
-			if (context.isLiteral(pos1) || (cachedFormatter != null && format.equals(previousFormatString))) {
+			if (cachedFormatter != null &&
+					(context.isLiteral(pos1) || (cachedFormatter != null && format.equals(previousFormatString)))) {
 				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used)
