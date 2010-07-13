@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jul 12 10:51:22 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.112">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Tue Jul 13 15:10:13 CEST 2010" modifiedBy="cloveruser" name="conversionDate2num" revision="1.116">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="java:yyyy-MM-dd HH:mm:ss SSS z" name="Date" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS" name="Date" type="date"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="date2numOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field format="MMMM/dd/yyyy HH:mm:ss SSS zzzz" locale="${Locale}" name="Date" type="date"/>
+<Field format="MMMM/dd/yyyy HH:mm:ss SSS" locale="${Locale}" name="Date" type="date"/>
 <Field name="FunctionYear" type="string"/>
 <Field name="Year" type="integer"/>
 <Field name="FunctionMonth" type="string"/>
@@ -29,7 +29,7 @@
 </Metadata>
 <Property id="GraphParameter0" name="Locale" value="en.US"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="740" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,enum timeunit, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="830" x="-66" y="-494">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="660" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer date2num(date arg,enum timeunit, string locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="830" x="-66" y="-494">
 <attr name="text"><![CDATA[
 The date2num(date, enum-timeunit, string) function accepts three arguments: the first is date, the second is any time unit, and the third is locale. 
 
@@ -41,11 +41,7 @@ Remember that months are numbered starting from 1 unlike in CTL1. Thus, date2num
 And date2num(2008-06-12, hour, "en.US") returns 0.
 
 In this graph, dates are read from input file using the Format property of metadata on the first edge: 
-java:yyyy-MM-dd HH:mm:ss SSS z.
-
-Since the default time format is joda (since CloverETL version 3.0), we must specify the Format in the first edge as follows:
-java:yyyy-MM-dd HH:mm:ss SSS z
-(joda cannot parse dates with "UTC" time zone specification) 
+yyyy-MM-dd HH:mm:ss SSS.
 
 Without this Format (with hours, minutes, seconds, milliseconds included) , units smaller than day would not be read at all. The result would correspond to: 
 yyyy-MM-dd
@@ -65,9 +61,9 @@ This parameter is used in two places: First, it is used in Locale property of th
 E.g. date2num($0.Date,month,'${Locale}').
 
 Date format of the second edge has also been changed. It is:
-MMMM/dd/yyyy HH:mm:ss SSS zzzz
+MMMM/dd/yyyy HH:mm:ss SSS
 
-The four "M" mean that month will be expressed textually as the whole word. The four "z" mean that time zone will also be expressed in words.
+The four "M" mean that month will be expressed textually as the whole word.
 
 You can change the value of Locale parameter to any other value and, for example, look how months changes from one locale to another.
 
@@ -80,9 +76,9 @@ integer date2num(date arg, enum timeunit)
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="-60" guiY="276" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="456" guiY="276" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="204" guiY="276" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDate2num.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="-64" guiY="202" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDate2numOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="417" guiY="202" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="181" guiY="202" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

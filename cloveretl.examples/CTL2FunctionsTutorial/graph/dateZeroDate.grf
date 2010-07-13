@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Mon Jul 12 11:38:29 CEST 2010" modifiedBy="cloveruser" name="dateZeroDate" revision="1.50">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Tue Jul 13 14:53:39 CEST 2010" modifiedBy="cloveruser" name="dateZeroDate" revision="1.52">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="zeroDateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="Function" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="ZeroDate" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS" name="ZeroDate" type="date"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
