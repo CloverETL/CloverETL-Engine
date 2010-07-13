@@ -130,7 +130,7 @@ public class FlowControl {
 			}
 
 			// none of statements returns ... report error
-			error(((SimpleNode) node.jjtGetChild(0)).getBegin(), ((SimpleNode) node.jjtGetChild(1)).getEnd(), "Function must return a result of type '" + returnType.name() + "'");
+			error(((SimpleNode) node.jjtGetChild(0)).getBegin(), ((SimpleNode) node.jjtGetChild(1)).getEnd(), "Missing 'return' statement (" + returnType.name() + ")");
 			return false;
 		}
 
