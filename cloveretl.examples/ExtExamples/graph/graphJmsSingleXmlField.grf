@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="2.9.1" id="1204546496818" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Mar 12 10:23:10 CET 2010" modifiedBy="cloveruser" name="graphSystemExecute" revision="1.60">
+<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation Devel" modified="Tue Jul 13 15:07:01 CEST 2010" modifiedBy="avackova" name="graphSystemExecute" revision="1.67">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata1"/>
-<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="#" name="Customer" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="OrderID" nullable="true" shift="0" type="number"/>
+<Field name="CustomerID" nullable="true" shift="0" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" type="integer"/>
+<Field format="dd.MM.yyyy " name="OrderDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy " name="RequiredDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy " name="ShippedDate" nullable="true" shift="0" type="date"/>
+<Field format="#" name="ShipVia" nullable="true" shift="0" type="integer"/>
+<Field format="#" name="Freight" nullable="true" shift="0" type="number"/>
+<Field name="ShipName" nullable="true" shift="0" type="string"/>
+<Field name="ShipAddress" nullable="true" shift="0" type="string"/>
+<Field name="ShipCity" nullable="true" shift="0" type="string"/>
+<Field name="ShipRegion" nullable="true" shift="0" type="string"/>
+<Field name="ShipPostalCode" nullable="true" shift="0" type="string"/>
+<Field name="ShipCountry" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
@@ -15,8 +32,6 @@
 <attr name="text"><![CDATA[
 - Clover data record -> JMS message
 (DataRecord2JmsMsg interface)
-
-
 
 
 
@@ -49,6 +64,8 @@ Reformat gets this record and processes its value as an XML file.
 
 XPath mapping is defined in the Transform attribute of Reformat.
 
+If xml message can't be parsed, the error is thrown or the record is skipped depending on the value of custom skip_on_error attribute (see transformOnError method).
+
 Information about the Customer is sent to the first output port and that about Order made by this Customer is sent to the second output port of Reformat.
 
 Two UniversalDataWriters are used to write the data to output files.]]></attr>
@@ -57,13 +74,14 @@ Two UniversalDataWriters are used to write the data to output files.]]></attr>
 <attr name="text"><![CDATA[
 Input XML file uses UTF-8 encoding. For this reason, we set the charset to UTF-8 and also specify this UTF-8 in the transformation definition in Reformat.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="25" guiName="XML (Customers with Orders)" guiWidth="50" guiX="12" guiY="-12" id="Input" type="DATA_READER"/>
 <Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="228" guiY="-12" id="JmsWriter" type="JMS_WRITER">
 <attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
 </Node>
-<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JmsWriter:0"/>
+<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
 </Phase>
 <Phase number="1">
 <Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="228" guiY="144" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
@@ -71,83 +89,11 @@ Input XML file uses UTF-8 encoding. For this reason, we set the charset to UTF-8
 </Node>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="customer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="customer/order" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="25" guiName="XPath Parser" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" type="REFORMAT">
-<attr name="transform"><![CDATA[
-import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-import java.io.StringReader;
-import org.jetel.component.XmlXPathReader;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.jetel.data.DataRecord;
-import org.jetel.data.parser.XPathParser;
-import org.jetel.exception.*;
-import org.jetel.graph.*;
-import org.jetel.util.string.*;
-import org.w3c.dom.*;
-import org.xml.sax.InputSource;
-import org.jetel.data.parser.*;
-import java.io.*;
-
-public class ReformatOrdersInline extends DataRecordTransform{
-
-	int counter=0;
-	private XPathParser parser;
-
-	public boolean init() throws ComponentNotReadyException {
-		String mapping = 
-	              " <Context xpath=\"/records/customer\" outPort=\"0\"> " + 
-	              " <Context xpath=\"/records/customer/order\" outPort=\"1\" /> " +
-	          	  " </Context> ";
-		
-		try {
-			Document doc = XmlXPathReader.createDocumentFromString(mapping);
-			parser = new XPathParser(doc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	    return true;
-	}
-
-	public int transform(DataRecord[] source, DataRecord[] target){
-   		System.out.println("============== XPath transform ==============");
-		try{
-			
-			parser.init(target[0].getMetadata());
-			for (int i=0; i<target.length; i++){
-		   		System.out.println("assign port:"+i);
-				parser.assignRecord(target[i], i);
-			}// for
-
-			String s = source[0].getField(0).toString();
-		    System.out.println("source XML:"+s);
-			parser.setDataSource( new ByteArrayInputStream(StringUtils.stringToSpecChar(s).getBytes("UTF-8")) );
-			
-			boolean[] flags = new boolean[target.length];
-			DataRecord dr = null;
-			while ((dr = parser.getNext()) != null){
-				int port = parser.getActualPort();
-				if (flags[port])
-					continue;
-				flags[port] = true;	
-				target[port] = dr.duplicate();
-			    System.out.println("OUTport:"+port+" data record:"+target[port]);
-			} // while
-		
-		}catch(Exception ex){
-			ex.printStackTrace();
-			errorMessage=ex.getMessage()+" -&gt;occured with record :"+counter;
-			return SKIP;
-		}
-		counter++;
-		return ALL;
-	}
-}
-
-]]></attr>
+<Node enabled="enabled" guiHeight="25" guiName="XPath Parser" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" transformURL="${TRANS_DIR}/ReformatOrders.java" type="REFORMAT">
+<attr name="skip_on_error"><![CDATA[true]]></attr>
 </Node>
-<Edge fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XPathTransform:0"/>
-<Edge debugMode="true" fromNode="XPathTransform:0" guiBendpoints="" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OutCustomer:0"/>
-<Edge debugMode="true" fromNode="XPathTransform:1" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="OutOrder:0"/>
+<Edge debugMode="true" fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="XPathTransform:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:0" guiBendpoints="" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OutCustomer:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:1" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="OutOrder:0"/>
 </Phase>
 </Graph>
