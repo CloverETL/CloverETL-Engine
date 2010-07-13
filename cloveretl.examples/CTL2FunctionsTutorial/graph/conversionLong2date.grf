@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jul 12 11:05:10 CEST 2010" modifiedBy="cloveruser" name="conversionLong2date" revision="1.44">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Tue Jul 13 14:55:16 CEST 2010" modifiedBy="cloveruser" name="conversionLong2date" revision="1.45">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="long2dateInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -10,7 +10,7 @@
 <Record fieldDelimiter=";" name="long2dateOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="Long" type="long"/>
 <Field name="Function" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="DateFormat1" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS" name="DateFormat1" type="date"/>
 <Field format="MM/dd/yyyy" name="DateFormat2" type="date"/>
 </Record>
 </Metadata>

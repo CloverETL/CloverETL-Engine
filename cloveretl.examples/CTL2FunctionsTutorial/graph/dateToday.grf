@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Mon Jul 12 11:36:27 CEST 2010" modifiedBy="cloveruser" name="dateToday" revision="1.41">
+<Graph author="milos_kovalcik" created="Fri Dec 19 12:59:32 CET 2008" guiVersion="0.0.0.devel" id="1229700397062" licenseType="Evaluation Devel" modified="Tue Jul 13 14:49:19 CEST 2010" modifiedBy="cloveruser" name="dateToday" revision="1.42">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="todayOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="Function" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss SSS z" name="Today" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss SSS" name="Today" type="date"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
