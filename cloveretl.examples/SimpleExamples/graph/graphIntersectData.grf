@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="0.0.0.devel" id="1204546108983" licenseType="Evaluation Devel" modified="Fri Mar 12 10:54:36 CET 2010" modifiedBy="cloveruser" name="Intersect Data" revision="1.34">
+<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" guiVersion="0.0.0.devel" id="1204546108983" licenseType="Evaluation Devel" modified="Tue Jul 13 10:54:54 CEST 2010" modifiedBy="avackova" name="Intersect Data" revision="1.35">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
@@ -26,6 +26,7 @@ By default, component has also Allow key duplicates set to true. In other words,
 Employees in both flows (A and B) are compared and intersection of both flows is performed.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="305" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Groups of Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="165" x="583" y="-58"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="DataIntersection" guiWidth="0" guiX="396" guiY="72" id="DATA_INTERSECTION0" joinKey="$EmployeeID=$EMP_NO" type="DATA_INTERSECTION">
@@ -64,12 +65,12 @@ function transform() {
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersect_2_data.out" guiHeight="25" guiName="Flow B &amp;&amp; Not A" guiWidth="50" guiX="600" guiY="168" id="WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="WRITER1:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="OUTEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" toNode="WRITER2:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="OUTEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="WRITER3:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge1" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="OUTEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" router="Manhattan" toNode="WRITER2:0"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="OUTEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" router="Manhattan" toNode="WRITER3:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_INTERSECTION0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge1" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_INTERSECTION0:1"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows some more functionality of EXT_FILTER component&#10;Filters all employees younger than 41  years. The current age is &#10;calculated as today's date minus date of birth.&#10;&#10;Notice that instead of classical comparison operators ==,!=, ...etc... one&#10;can use their textual abbreviations .eq. .ne. .lt. .gt. ...etc..." guiVersion="0.0.0.devel" id="1204545638664" licenseType="Evaluation Devel" modified="Fri Mar 12 10:46:56 CET 2010" modifiedBy="cloveruser" name="Testing Filter" revision="1.21">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows some more functionality of EXT_FILTER component&#10;Filters all employees younger than 41  years. The current age is &#10;calculated as today's date minus date of birth.&#10;&#10;Notice that instead of classical comparison operators ==,!=, ...etc... one&#10;can use their textual abbreviations .eq. .ne. .lt. .gt. ...etc..." guiVersion="0.0.0.devel" id="1204545638664" licenseType="Evaluation Devel" modified="Tue Jul 13 10:50:09 CEST 2010" modifiedBy="avackova" name="Testing Filter" revision="1.22">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property id="GraphParameter0" name="hireAge" value="35"/>
@@ -20,6 +20,7 @@ Filtering condition counts the time elapsed from the birth of an employee and th
 <attr name="text"><![CDATA[
 Employees who were hired before the age of 35 years.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="ExtFilter" guiWidth="50" guiX="195" guiY="20" id="FILTEREMPL1" type="EXT_FILTER">
@@ -27,7 +28,7 @@ Employees who were hired before the age of 35 years.]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.filtered.dat" guiHeight="25" guiName="Young Employees" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="FILTEREMPL1:0" guiBendpoints="" id="OUTEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="OUTPUT1:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="FILTEREMPL1:0"/>
+<Edge debugMode="false" fromNode="FILTEREMPL1:0" guiBendpoints="" id="OUTEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" router="Manhattan" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="FILTEREMPL1:0"/>
 </Phase>
 </Graph>
