@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Mon Jun 07 17:34:33 CEST 2010" modifiedBy="avackova" name="graphHTTPRequest" revision="1.298">
+<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Fri Jul 02 11:46:54 CEST 2010" modifiedBy="avackova" name="graphHTTPRequest" revision="1.299">
 <Global>
 <Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="city" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -108,7 +108,7 @@
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="659" guiY="464" id="TRASH0" type="TRASH"/>
 <Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="496" guiY="390" id="XML_EXTRACT0" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:discrete" type="XML_EXTRACT"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="false" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT0:0"/>
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT0:0"/>
 <Edge debugMode="true" fromNode="STRUCTURE_WRITER0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR3:0"/>
 <Edge fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 <Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
@@ -125,7 +125,7 @@
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="659" guiY="718" id="TRASH1" type="TRASH"/>
 <Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="489" guiY="643" id="XML_EXTRACT1" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:source" type="XML_EXTRACT"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER1:0"/>
-<Edge fromNode="HTTP_CONNECTOR2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT1:0"/>
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT1:0"/>
 <Edge debugMode="true" fromNode="STRUCTURE_WRITER1:0" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR2:0"/>
 <Edge fromNode="XML_EXTRACT1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="XML_EXTRACT1:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>

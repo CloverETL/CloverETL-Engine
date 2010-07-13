@@ -3,9 +3,9 @@
 <Field format="#" name="OrderID" nullable="true" shift="0" type="number"/>
 <Field name="CustomerID" nullable="true" shift="0" type="string"/>
 <Field name="EmployeeID" nullable="true" shift="0" type="integer"/>
-<Field format="dd.MM.yyyy HH:mm:ss" name="OrderDate" nullable="true" shift="0" type="date"/>
-<Field format="dd.MM.yyyy HH:mm:ss" name="RequiredDate" nullable="true" shift="0" type="date"/>
-<Field format="dd.MM.yyyy HH:mm:ss" name="ShippedDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="OrderDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="RequiredDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="ShippedDate" nullable="true" shift="0" type="date"/>
 <Field format="#" name="ShipVia" nullable="true" shift="0" type="integer"/>
 <Field format="#" name="Freight" nullable="true" shift="0" type="number"/>
 <Field name="ShipName" nullable="true" shift="0" type="string"/>

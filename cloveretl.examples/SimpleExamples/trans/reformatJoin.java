@@ -23,7 +23,7 @@ import org.jetel.data.NullRecord;
 import org.jetel.util.string.StringUtils;
 
 
-public class reformatJoinTest extends DataRecordTransform{
+public class reformatJoin extends DataRecordTransform{
 
 	int counter=0;
 		

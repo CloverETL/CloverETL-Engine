@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" guiVersion="0.0.0.devel" id="1204545485437" licenseType="Evaluation Devel" modified="Fri Mar 12 10:43:32 CET 2010" modifiedBy="cloveruser" name="Testing Filter" revision="1.32">
+<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" guiVersion="0.0.0.devel" id="1204545485437" licenseType="Evaluation Devel" modified="Tue Jul 13 09:30:36 CEST 2010" modifiedBy="avackova" name="Testing Filter" revision="1.33">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Metadata id="Metadata0">
@@ -28,6 +28,7 @@ This ExtFilter component filters incoming data records. Those employees who can 
 Employees who can speak a language fluently are joined with those who were hired before 31 December 1993.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="484" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Groups of Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="158" x="778" y="-94"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="92" guiName="Hash Join" guiWidth="96" guiX="628" guiY="108" id="EXT_HASH_JOIN0" joinKey="$LastName=$LastName;$FirstName=$FirstName" type="EXT_HASH_JOIN">
@@ -57,16 +58,16 @@ $0.Memo := $0.Memo;
 <Node enabled="enabled" guiHeight="65" guiName="Simple Copy" guiWidth="106" guiX="472" guiY="15" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="48" guiName="Simple Copy" guiWidth="104" guiX="472" guiY="232" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="187" guiY="154" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT3:0"/>
-<Edge debugMode="true" fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="SIMPLE_COPY1:0"/>
-<Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="OUTPUT11:0"/>
-<Edge debugMode="true" fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SIMPLE_COPY2:0"/>
-<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT2:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="OUTPUT1:0"/>
-<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="FILTEREMPL2:0"/>
-<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="FILTEREMPL1:0"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT3:0"/>
+<Edge debugMode="true" fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected)" router="Manhattan" toNode="OUTPUT11:0"/>
+<Edge debugMode="true" fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY2:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT2:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="OUTPUT1:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="FILTEREMPL2:0"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="FILTEREMPL1:0"/>
 </Phase>
 </Graph>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Fri Mar 12 12:47:52 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.50">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Tue Jul 13 10:01:56 CEST 2010" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.52">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="customers_count" type="integer">
@@ -26,6 +26,7 @@ After processing every group of records, before processing the next key value, t
 
 Transformation is defined in Java directly in the graph. It can be seen in the Source code and is compiled at runtime.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
@@ -66,8 +67,8 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="542" guiY="17" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DENORMALIZE:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>
