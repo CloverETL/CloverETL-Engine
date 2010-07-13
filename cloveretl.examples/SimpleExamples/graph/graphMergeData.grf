@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of MERGE component. It merges data based on specified key. " guiVersion="0.0.0.devel" id="1204548068026" licenseType="Evaluation Devel" modified="Fri Mar 12 12:05:09 CET 2010" modifiedBy="cloveruser" name="TestingMerge" revision="1.11">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of MERGE component. It merges data based on specified key. " guiVersion="0.0.0.devel" id="1204548068026" licenseType="Evaluation Devel" modified="Tue Jul 13 11:09:10 CEST 2010" modifiedBy="avackova" name="TestingMerge" revision="1.14">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0" previewAttachmentCharset="ISO-8859-1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="287" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Merge Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="451" x="235" y="146">
 <attr name="text"><![CDATA[
@@ -17,16 +17,17 @@ Also the output records are sorted according to the same Merge key and its hiera
 
 Here the same input file is read three times. Merge receives input data and sends out the same data sorted in the same way.  ]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="24" guiY="120" id="INPUT2" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="48" guiY="204" id="INPUT3" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="24" guiY="204" id="INPUT3" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="MERGE" guiWidth="50" guiX="216" guiY="24" id="MERGE" mergeKey="ShipName;ShipVia" type="MERGE"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.merged" guiHeight="25" guiName="3 Orders Sorted" guiWidth="50" guiX="408" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE:1"/>
-<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE:2"/>
-<Edge debugMode="true" fromNode="MERGE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="MERGE:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="MERGE:1"/>
+<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="MERGE:2"/>
+<Edge debugMode="false" fromNode="MERGE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="0.0.0.devel" id="1204550898178" licenseType="Evaluation Devel" modified="Fri Mar 12 11:31:04 CET 2010" modifiedBy="cloveruser" name="TestingSort" revision="1.27">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="0.0.0.devel" id="1204550898178" licenseType="Evaluation Devel" modified="Tue Jul 13 11:16:27 CEST 2010" modifiedBy="avackova" name="TestingSort" revision="1.28">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -40,14 +40,15 @@ Smith;Gabriel
 <attr name="text"><![CDATA[
 They can be written in different formats.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="ExtSort (Ship info)" guiWidth="50" guiX="195" guiY="20" id="EXT_SORT" sortKey="ShipName(a);ShipVia(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="The same output" guiWidth="0" guiX="370" guiY="112" id="TRASH0" type="TRASH"/>
-<Edge debugMode="true" fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT:0"/>
 </Phase>
 </Graph>
