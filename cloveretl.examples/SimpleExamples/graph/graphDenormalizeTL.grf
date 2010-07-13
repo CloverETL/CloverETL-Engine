@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Tue Jul 13 10:02:41 CEST 2010" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.53">
+<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Tue Jul 13 14:51:26 BST 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.55">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0" previewAttachmentCharset="ISO-8859-1"/>
+<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="customers_count" type="integer">
@@ -32,24 +32,27 @@ Transformation is defined in Clover transformation language directly in the grap
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="20" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
-<attr name="denormalize"><![CDATA[
-string customer = "";
-int employee = 0;
-int numRec = 0;
+<attr name="denormalize"><![CDATA[//#CTL2
 
-function append() {
+string customer = "";
+integer employee = 0;
+integer numRec = 0;
+
+function integer append() {
 	numRec++;
 	customer = customer + iif(length(customer) > 0 ," - ","") + $CustomerID;
 	employee = $EmployeeID;
+	return numRec;
 }
 
-function transform() {
-	$customers_count := numRec;
-	$customers := customer;
-	$EmployeeID := employee;
+function integer transform() {
+	$customers_count = numRec;
+	$customers = customer;
+	$EmployeeID = employee;
+	return 0;
 } 
 
-function clean(){
+function void clean(){
 	customer = "";
 	employee = 0;
 	numRec = 0;
@@ -67,24 +70,27 @@ function clean(){
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
-<attr name="denormalize"><![CDATA[
-string customer = "";
-int employee = 0;
-int numRec = 0;
+<attr name="denormalize"><![CDATA[//#CTL2
 
-function append() {
+string customer = "";
+integer employee = 0;
+integer numRec = 0;
+
+function integer append() {
 	numRec++;
 	customer = customer + iif(length(customer) > 0 ," - ","") + $CustomerID;
 	employee = $EmployeeID;
+	return numRec;
 }
 
-function transform() {
-	$customers_count := numRec;
-	$customers := customer;
-	$EmployeeID := employee;
+function integer transform() {
+	$customers_count = numRec;
+	$customers = customer;
+	$EmployeeID = employee;
+	return 0;
 } 
 
-function clean(){
+function void clean(){
 	customer = "";
 	employee = 0;
 	numRec = 0;
