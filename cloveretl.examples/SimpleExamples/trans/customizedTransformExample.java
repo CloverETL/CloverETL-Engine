@@ -19,7 +19,7 @@ public class customizedTransformExample extends DataRecordTransform {
 		transformation.addFieldToFieldRule("*.*", "*.*");
 		String seqName = arg0.containsKey("seq_name") ? arg0.getProperty("seq_name") : "Sequence0";
 		Sequence sequence = getGraph().getSequence(seqName);
-		sequence.reset();
+		sequence.resetValue();
 		transformation.addSequenceToFieldRule("0.no", sequence);
 		transformation.setGraph(this.getGraph());
 		return transformation.init(arg0, arg1, arg2);

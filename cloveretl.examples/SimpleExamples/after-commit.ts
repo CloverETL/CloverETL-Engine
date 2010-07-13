@@ -322,11 +322,11 @@
 </FunctionalTest>
 
 <FunctionalTest ident="Partition_Transform" graphFile="graph/graphPartition_Transform.grf">
-	 <FlatFile outputFile="data-out/smallIdOlder.txt" supposedFile="supposed-out//smallIdOlder.PartitionTransform.txt"/>
-	 <FlatFile outputFile="data-out/bigIdOlder.txt" supposedFile="supposed-out//bigIdOlder.PartitionTransform.txt"/>
-	 <FlatFile outputFile="data-out/smallIdYounger.txt" supposedFile="supposed-out//smallIdYounger.PartitionTransform.txt"/>
-	 <FlatFile outputFile="data-out/bigIdYounger.txt" supposedFile="supposed-out//bigIdYounger.PartitionTransform.txt"/>
-	 <FlatFile outputFile="data-out/rejectedId.txt" supposedFile="supposed-out//rejectedId.PartitionTransform.txt"/>
+	 <FlatFile outputFile="data-out/smallIdOlder.txt" supposedFile="supposed-out//smallIdOlder.Partition.txt"/>
+	 <FlatFile outputFile="data-out/bigIdOlder.txt" supposedFile="supposed-out//bigIdOlder.Partition.txt"/>
+	 <FlatFile outputFile="data-out/smallIdYounger.txt" supposedFile="supposed-out//smallIdYounger.Partition.txt"/>
+	 <FlatFile outputFile="data-out/bigIdYounger.txt" supposedFile="supposed-out//bigIdYounger.Partition.txt"/>
+	 <FlatFile outputFile="data-out/rejectedId.txt" supposedFile="supposed-out//rejectedId.Partition.txt"/>
      
 <DeleteFile file="data-out/smallIdOlder.txt"/>
 <DeleteFile file="data-out/bigIdOlder.txt"/>
