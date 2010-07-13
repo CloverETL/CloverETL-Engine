@@ -1,6 +1,6 @@
 31-Dec-2008;dd-MMM-yyyy;en.US;false;is_date($0.Arg,$0.Pattern);true;is_date($0.Arg,$0.Pattern,false);true;is_date($0.Arg,$0.Pattern,$0.Locale);true;is_date($0.Arg,$0.Pattern,$0.Locale,false);true
 310-Dec-2008;dd-MMM-yyyy;en.US;true;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
 31-Dec-2008;dd-MMM-yyyy;cs.CZ;true;is_date($0.Arg,$0.Pattern);true;is_date($0.Arg,$0.Pattern,false);true;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
-31-Prosinec-2008;dd-MMM-yyyy;en.US;true;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
-31-Prosinec-2008;dd-MMM-yyyy;cs.CZ;false;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);true;is_date($0.Arg,$0.Pattern,$0.Locale,false);true
-310-Prosinec-2008;dd-MMM-yyyy;cs.CZ;true;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
+31-prosinec-2008;dd-MMM-yyyy;en.US;true;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
+31-prosinec-2008;dd-MMM-yyyy;cs.CZ;false;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);true;is_date($0.Arg,$0.Pattern,$0.Locale,false);true
+310-prosinec-2008;dd-MMM-yyyy;cs.CZ;true;is_date($0.Arg,$0.Pattern);false;is_date($0.Arg,$0.Pattern,false);false;is_date($0.Arg,$0.Pattern,$0.Locale);false;is_date($0.Arg,$0.Pattern,$0.Locale,false);false
