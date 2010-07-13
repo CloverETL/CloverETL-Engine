@@ -68,7 +68,10 @@ public class ReformatOrders extends DataRecordTransform{
 	@Override
 	public int transformOnError(Exception exception, DataRecord[] sources,
 			DataRecord[] target) throws TransformException {
-		if (skipOnError) return SKIP;//ignore invalid records
+		if (skipOnError) {
+			System.err.println("Skipping invalid record. Error: " + exception.getCause().getMessage());
+			return SKIP;//ignore invalid records
+		}
 		return super.transformOnError(exception, sources, target);//throw exception
 	}
 }
