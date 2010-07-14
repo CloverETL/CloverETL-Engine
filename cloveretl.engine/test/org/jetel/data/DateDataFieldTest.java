@@ -188,15 +188,14 @@ public void test_1_DateDataField() {
 		String as400DateFormat = "yyyy-MM-dd-HH.mm.ss.SSS000";
 		String as400TestDate = "2002-07-10-22.36.15.129000";
 
-		DataFieldMetadata javaDateMetadataDefault = new DataFieldMetadata("date", ";");
-		javaDateMetadataDefault.setFormatStr(as400DateFormat);
-		DateDataField javaDateDataFieldDefault = new DateDataField(javaDateMetadataDefault);
+		DataFieldMetadata jodaDateMetadataDefault = new DataFieldMetadata("date", ";");
+		jodaDateMetadataDefault.setFormatStr(as400DateFormat);
+		DateDataField jodaDateDataFieldDefault = new DateDataField(jodaDateMetadataDefault);
 
 		try {
-			javaDateDataFieldDefault.fromString(as400TestDate);
-			fail("The BadDataFormatException should be thrown for no prefix specified.");
+			jodaDateDataFieldDefault.fromString(as400TestDate);
 		} catch (BadDataFormatException exception) {
-			// OK
+			fail("The BadDataFormatException has been thrown without prefix (joda should be used).");
 		}
 
 		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", ";");
