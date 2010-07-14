@@ -135,7 +135,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_FUNCTION_NAME, parameterNames = {
+	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			RecordDenormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordDenormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
 	protected int appendOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
