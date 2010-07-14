@@ -42,7 +42,7 @@ import org.jetel.util.file.FileUtils;
  * Provides support for incremental reading.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class IncrementalReading {
 	

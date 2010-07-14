@@ -29,7 +29,7 @@ import org.jetel.util.string.StringUtils;
  * Result of tokenization at {@link KeyTokenizer}.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5.10.2009
  */

@@ -24,7 +24,7 @@ package org.jetel.graph.dictionary;
  * which does not support initializing from properties.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 23.2.2010
  */

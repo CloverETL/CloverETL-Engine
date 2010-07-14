@@ -25,7 +25,7 @@ import org.jetel.util.string.StringUtils;
  * Collection of static methods for manipulating and creating tokens witch represent a record key.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5.10.2009
  */

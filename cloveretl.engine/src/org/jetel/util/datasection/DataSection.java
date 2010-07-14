@@ -20,7 +20,7 @@ package org.jetel.util.datasection;
 
 /**
  * @author admin (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5.11.2009
  */

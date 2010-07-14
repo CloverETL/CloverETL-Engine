@@ -25,7 +25,7 @@ package org.jetel.util;
  * for definition of an inner file interval, which will be processed by a cluster node.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 1.12.2009
  */

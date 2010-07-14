@@ -22,7 +22,7 @@ package org.jetel.enums;
  * Used for field reading.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public enum ProcessingType {
 	SOURCE("source"),

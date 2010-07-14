@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
  * <h3>Data Generator Component</h3> <!-- Generates new records. -->
  * 
  * 
- * @author Jan Ausperger (jan.ausperger@javlin.eu) (c) OpenSys (www.opensys.eu)
+ * @author Jan Ausperger (jan.ausperger@javlin.eu) (c) Javlin, a.s. (www.javlin.eu)
  * 
  */
 public class ExtDataGenerator extends DataGenerator {

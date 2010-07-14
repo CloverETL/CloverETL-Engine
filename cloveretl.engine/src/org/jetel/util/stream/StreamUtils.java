@@ -31,7 +31,7 @@ import java.nio.channels.WritableByteChannel;
  * Simple routines for streams manipulating.
  *
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 23.11.2009
  */

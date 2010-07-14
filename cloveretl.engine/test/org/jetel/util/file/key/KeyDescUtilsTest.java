@@ -1,6 +1,6 @@
 /*
  *    jETeL/Clover - Java based ETL application framework.
- *    Copyright (c) Opensys TM by Javlin, a.s. (www.opensys.com)
+ *    Copyright (c) (c) Javlin, a.s. (www.javlin.eu) (www.opensys.com)
  *   
  *    This library is free software; you can redistribute it and/or
  *    modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@ import org.jetel.util.string.Compare;
 
 /**
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 7.10.2009
  */

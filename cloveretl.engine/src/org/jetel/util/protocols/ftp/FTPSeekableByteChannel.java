@@ -42,7 +42,7 @@ import org.jetel.util.string.StringUtils;
  * In the future should be reimplemented by apache ftp client, which is more suitable for this task.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 2.12.2009
  */

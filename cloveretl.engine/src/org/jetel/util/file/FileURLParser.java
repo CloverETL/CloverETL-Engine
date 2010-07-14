@@ -31,7 +31,7 @@ import org.jetel.enums.ArchiveType;
  * Helper class with some useful methods regarding file string manipulation
  *
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class FileURLParser {
 
@@ -233,7 +233,7 @@ public class FileURLParser {
 	/**
 	 * Parses all protocols.
 	 * @author admin (info@cloveretl.com)
-	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
 	 *
 	 * @created 11.1.2010
 	 */

@@ -22,7 +22,7 @@ package org.jetel.enums;
  * Used for file utils.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public enum ArchiveType {
 	

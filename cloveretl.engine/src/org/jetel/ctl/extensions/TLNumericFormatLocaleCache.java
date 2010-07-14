@@ -24,7 +24,7 @@ import org.jetel.util.formatter.NumericFormatterFactory;
 
 /**
  * @author javlin (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created May 28, 2010
  */

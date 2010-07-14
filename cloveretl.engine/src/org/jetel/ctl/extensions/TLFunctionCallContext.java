@@ -22,7 +22,7 @@ import org.jetel.ctl.data.TLType;
 
 /**
  * @author jakub (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created May 19, 2010
  */

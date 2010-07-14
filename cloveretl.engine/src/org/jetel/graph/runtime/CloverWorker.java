@@ -28,7 +28,7 @@ import org.jetel.graph.Node;
  * 
  * @see ContextProvider
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 24.9.2009
  */

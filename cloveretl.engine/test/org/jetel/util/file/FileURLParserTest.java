@@ -25,7 +25,7 @@ import org.jetel.test.CloverTestCase;
 
 /**
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 
 public class FileURLParserTest extends CloverTestCase {

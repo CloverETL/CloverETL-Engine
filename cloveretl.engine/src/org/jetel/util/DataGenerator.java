@@ -26,7 +26,7 @@ import java.util.Random;
  * The class should support all random data in future.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class DataGenerator extends Random {
 
