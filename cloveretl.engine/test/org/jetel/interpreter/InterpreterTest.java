@@ -2003,7 +2003,7 @@ public class InterpreterTest extends CloverTestCase {
         		"boolean isInteger3=is_integer('-766542378');print_err(str2num('-766542378'));\n" +
         		"boolean isLong=is_long('7864232568822234');\n" +
         		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy','en.GB');print_err(str2date('20Jul2000','ddMMMyyyy','en.GB'));\n" +
-        		"boolean isDate6=is_date('20July    2000','ddMMMMMMMMyyyy','en.GB');print_err(str2date('20July    2000','ddMMMyyyy','en.GB'));\n" +
+        		"boolean isDate6=is_date('20July    2000','java:ddMMMMMMMMyyyy','en.GB');print_err(str2date('20July    2000','java:ddMMMMMMMMyyyy','en.GB'));\n" +
         		"boolean isDate3=is_date('4:42','HH:mm');print_err(str2date('4:42','HH:mm'));\n" +
         		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
         		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
