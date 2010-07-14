@@ -107,10 +107,11 @@ public interface ITLCompiler {
 	 * @param ctlCode the CTL source code to be converted
 	 * @param targetInterface a Java interface into which the code should be compiled
 	 *
-	 * @return the Java source code as a string, or <code>null</code> if an error occurred
+	 * @return the Java source code as a string
 	 *
 	 * @throws UnsupportedOperationException if the compiler does not support CTL-to-Java conversion
+	 * @throws ErrorMessageException if an error occurred
 	 */
-	public String convertToJava(String ctlCode, Class<?> targetInterface);
+	public String convertToJava(String ctlCode, Class<?> targetInterface) throws ErrorMessageException;
 
 }
