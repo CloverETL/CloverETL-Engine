@@ -238,18 +238,13 @@ public class Denormalizer extends Node {
         throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordDenormalize.");
     }
 		
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		
-		inPort = getInputPort(IN_PORT);
-		outPort = getOutputPort(OUT_PORT);	
-		inMetadata = inPort.getMetadata();
-		outMetadata = outPort.getMetadata();
-		recordKey = new RecordKey(key, inMetadata);
-		recordKey.setEqualNULLs(equalNULL);
-		recordKey.init();
-
+		sharedInit();
+		
 		if (denorm == null) {
 			if (xformClass != null) {
 				denorm = createDenormalizer(xformClass);
@@ -257,39 +252,7 @@ public class Denormalizer extends Node {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
-				switch (RecordTransformFactory.guessTransformType(xform)) {
-				case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
-					denorm = createDenormalizerDynamic(xform);
-					break;
-				case RecordTransformFactory.TRANSFORM_CLOVER_TL:
-					denorm = new RecordDenormalizeTL(logger, xform, getGraph());
-					break;
-					
-				case RecordTransformFactory.TRANSFORM_CTL:
-					ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata}, new DataRecordMetadata[]{outMetadata},"UTF-8");
-	            	List<ErrorMessage> msgs = compiler.compile(xform, CTLRecordDenormalize.class,getId());
-	            	if (compiler.errorCount() > 0) {
-	            		for (ErrorMessage msg : msgs) {
-	            			logger.error(msg.toString());
-	            		}
-	            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
-	            	}
-	            	Object ret = compiler.getCompiledCode();
-	            	if (ret instanceof TransformLangExecutor) {
-	            		// setup interpreted runtime
-	            		denorm = new CTLRecordDenormalizeAdapter((TransformLangExecutor)ret, logger);
-	            	} else if (ret instanceof CTLRecordDenormalize){
-	            		denorm = (CTLRecordDenormalize)ret;
-	            	} else {
-	            		// this should never happen as compiler always generates correct interface
-	            		throw new ComponentNotReadyException("Invalid type of record transformation");
-	            	}
-					break;
-				default:
-					throw new ComponentNotReadyException(
-							"Can't determine transformation code type at component ID :"
-									+ getId());
-				}
+				denorm = createRecordDenormalizer(xform);
 			}
 			// set graph to transformation (if CTL it can use lookups etc.)
 			denorm.setNode(this);
@@ -300,6 +263,46 @@ public class Denormalizer extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
+	private void sharedInit() {
+		inPort = getInputPort(IN_PORT);
+		outPort = getOutputPort(OUT_PORT);	
+		inMetadata = inPort.getMetadata();
+		outMetadata = outPort.getMetadata();
+		recordKey = new RecordKey(key, inMetadata);
+		recordKey.setEqualNULLs(equalNULL);
+		recordKey.init();
+	}
+	
+	private RecordDenormalize createRecordDenormalizer(String code) throws ComponentNotReadyException {
+		switch (RecordTransformFactory.guessTransformType(code)) {
+		case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
+			return createDenormalizerDynamic(code);
+		case RecordTransformFactory.TRANSFORM_CLOVER_TL:
+			return new RecordDenormalizeTL(logger, code, getGraph());
+		case RecordTransformFactory.TRANSFORM_CTL:
+			ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata}, new DataRecordMetadata[]{outMetadata},"UTF-8");
+        	List<ErrorMessage> msgs = compiler.compile(code, CTLRecordDenormalize.class, getId());
+        	if (compiler.errorCount() > 0) {
+        		for (ErrorMessage msg : msgs) {
+        			logger.error(msg.toString());
+        		}
+        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+        	}
+        	Object ret = compiler.getCompiledCode();
+        	if (ret instanceof TransformLangExecutor) {
+        		// setup interpreted runtime
+        		return new CTLRecordDenormalizeAdapter((TransformLangExecutor)ret, logger);
+        	} else if (ret instanceof CTLRecordDenormalize){
+        		return (CTLRecordDenormalize) ret;
+        	} else {
+        		// this should never happen as compiler always generates correct interface
+        		throw new ComponentNotReadyException("Invalid type of record transformation");
+        	}
+		default:
+			throw new ComponentNotReadyException("Can't determine transformation code type at component ID :" + getId());
+		}
+	}
+	
 	/**
 	 * Checks for end of run (ie sequence of keys with identical key fields values).
 	 * @param prevRecord
@@ -497,6 +500,8 @@ public class Denormalizer extends Node {
         	return status;
         }
 
+        sharedInit();
+        
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
@@ -519,17 +524,6 @@ public class Denormalizer extends Node {
 			}
         }
 
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
-        
         // transformation source for checkconfig
         String checkTransform = null;
         if (xform != null) {
@@ -541,15 +535,8 @@ public class Denormalizer extends Node {
         if (checkTransform != null) {
         	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
         	if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE ) {
-        		// only CTL is checked
-        		
-        		InputPort inPort = getInputPort(IN_PORT);
-        		OutputPort outPort = getOutputPort(OUT_PORT);	
-        		DataRecordMetadata inMetadata = inPort.getMetadata();
-        		DataRecordMetadata outMetadata = outPort.getMetadata();
-
     			try {
-    				RecordDenormalizeTL denorm = new RecordDenormalizeTL(logger, checkTransform, getGraph());
+    				RecordDenormalize denorm = createRecordDenormalizer(checkTransform);
     				denorm.setNode(this);
     				denorm.init(transformationParameters, inMetadata, outMetadata);
     			} catch (ComponentNotReadyException e) {
