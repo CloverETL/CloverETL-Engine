@@ -33,7 +33,7 @@ DataFormatter.FIELD_BUFFER_LENGTH = 4096
 #It has been tested that the performance improvement is negligible. 
 #However, if you increase the size of MAX_RECORD_SIZE , make sure this value is minimally 2*MAX_RECORD_SIZE.
 
-DEFAULT_INTERNAL_IO_BUFFER_SIZE = 49152
+DEFAULT_INTERNAL_IO_BUFFER_SIZE = 24576
 
 #when creating InputStream or OutputStream objects, what
 #is the size of their internal buffer. Used mainly in
