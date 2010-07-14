@@ -24,7 +24,7 @@ import org.jetel.exception.JetelException;
  * Enumeration representing various type of data ordering.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5.10.2009
  */

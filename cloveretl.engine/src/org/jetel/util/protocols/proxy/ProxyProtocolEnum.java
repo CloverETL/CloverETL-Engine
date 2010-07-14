@@ -25,7 +25,7 @@ import java.net.Proxy;
  * Proxy protocol enumerator.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public enum ProxyProtocolEnum {
     NO_PROXY("direct"),

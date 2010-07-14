@@ -138,7 +138,7 @@ The loglevel can be one of: "info", "error", "debug".<br>To run this component o
  *  <pre>&lt;Node agentPort="6666" dbConnection="JDBC2" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/&gt;</pre>
  * 
  * @author avackova (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 2 Nov 2009
  */
@@ -717,7 +717,7 @@ public class InfobrightDataWriter extends Node {
 	 * Wrapper for commons logger to pass it to Infobright components
 	 * 
 	 * @author avackova (info@cloveretl.com)
-	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
 	 *
 	 * @created 13 Nov 2009
 	 */
@@ -794,7 +794,7 @@ public class InfobrightDataWriter extends Node {
 	 * Thread for loading data to Infobright database
 	 * 
 	 * @author avackova (info@cloveretl.com)
-	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
 	 *
 	 * @created 13 Nov 2009
 	 */
@@ -895,7 +895,7 @@ public class InfobrightDataWriter extends Node {
 	 * Thread for sending data to output port
 	 * 
 	 * @author avackova (info@cloveretl.com)
-	 *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+	 *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
 	 *
 	 * @created 13 Nov 2009
 	 */

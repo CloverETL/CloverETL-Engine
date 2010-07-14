@@ -42,7 +42,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
  * - serialized record, in common clover serialization format 
  * 
  * @author mvarecha (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5 May 2010
  */

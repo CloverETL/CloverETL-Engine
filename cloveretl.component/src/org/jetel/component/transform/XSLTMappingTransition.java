@@ -206,7 +206,7 @@ public class XSLTMappingTransition {
 	 * Simple copy class.
 	 * 
 	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	private abstract static class CopyObject {
 		protected DataField targetDataField;
@@ -242,7 +242,7 @@ public class XSLTMappingTransition {
 	 * Simple copy class from clover field to clover field.
 	 * 
 	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	private static class CopyClover extends CopyObject {
 
@@ -264,7 +264,7 @@ public class XSLTMappingTransition {
 	 * Simple copy class from clover field to clover field.
 	 * 
 	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	private static class CopyXstl extends CopyObject {
 
@@ -321,7 +321,7 @@ public class XSLTMappingTransition {
 	 * Mapping iterator.
 	 * 
 	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	public static class MappingItarator implements Iterable<Mapping> {
 
@@ -373,7 +373,7 @@ public class XSLTMappingTransition {
 	 * Mapping class for the xslt mapping.
 	 * 
 	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	public static class Mapping {
 		

@@ -26,7 +26,7 @@ import org.jetel.data.Defaults;
  * Support for the port writing.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- * (c) OpenSys (www.opensys.eu)
+ * (c) Javlin, a.s. (www.javlin.eu)
  */
 public class RestrictedByteArrayOutputStream extends ByteArrayOutputStream {
 

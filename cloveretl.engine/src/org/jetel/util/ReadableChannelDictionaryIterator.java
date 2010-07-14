@@ -44,7 +44,7 @@ import org.jetel.graph.dictionary.Dictionary;
  * Supports dictionary reading.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class ReadableChannelDictionaryIterator {
 

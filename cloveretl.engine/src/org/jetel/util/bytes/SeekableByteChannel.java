@@ -26,7 +26,7 @@ import java.nio.channels.WritableByteChannel;
  * In future this class should be replaced by SeekableByteChannel from JDK 1.7.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 2.12.2009
  */

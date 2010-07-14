@@ -27,7 +27,7 @@ import java.nio.channels.FileChannel;
  * JDK1.7 already has this type of interface and so it could be removed in the future.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 2.12.2009
  */

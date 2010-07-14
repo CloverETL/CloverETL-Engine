@@ -40,7 +40,7 @@ import org.jetel.util.string.StringUtils;
  * Clover engine dictionary object can be built and serialize by this factory class.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 8.2.2010
  */

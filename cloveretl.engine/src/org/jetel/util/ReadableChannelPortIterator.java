@@ -42,7 +42,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * Supports a port reading.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class ReadableChannelPortIterator {
 	

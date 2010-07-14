@@ -35,7 +35,7 @@ import com.infobright.etl.model.ValueConverterException;
  * Converts clover data fields to various types
  * 
  * @author avackova (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 3 Nov 2009
  */

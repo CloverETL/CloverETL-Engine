@@ -45,7 +45,7 @@ import org.jetel.util.string.StringUtils;
  * The factory is used directly from Partition component and PartitionWriter component.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 1.10.2009
  */

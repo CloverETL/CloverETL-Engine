@@ -43,7 +43,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * Supports a field/dictionary reading and reading from urls.
  * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class ReadableChannelIterator {
 	

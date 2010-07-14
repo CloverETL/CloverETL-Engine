@@ -33,7 +33,7 @@ import org.jetel.data.Defaults;
  * Wrapper for WritableByteChannel, which is created above Log.
  * 
  * @author Jan Ausperger (info@cloveretl.com)
- * (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ * (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  */
 public class LogOutByteChannel implements WritableByteChannel {
 

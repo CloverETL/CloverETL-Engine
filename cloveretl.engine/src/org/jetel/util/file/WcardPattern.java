@@ -697,7 +697,7 @@ public class WcardPattern {
 	/**
 	 * Supports filename and their input stream.
 	 * @author Jan Ausperger (jan.ausperger@javlin.eu)
-	 *         (c) OpenSys (www.opensys.eu)
+	 *         (c) Javlin, a.s. (www.javlin.eu)
 	 */
 	private static class FileStreamName {
 		

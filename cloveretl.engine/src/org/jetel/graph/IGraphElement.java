@@ -31,7 +31,7 @@ import org.jetel.exception.ConfigurationStatus;
  * - ...
  * 
  * @author Martin Zatopek (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 21.10.2009
  */

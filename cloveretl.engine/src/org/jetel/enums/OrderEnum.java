@@ -23,7 +23,7 @@ package org.jetel.enums;
  * Order Enum.
  * 
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- * (c) OpenSys (www.opensys.eu)
+ * (c) Javlin, a.s. (www.javlin.eu)
  */
 public enum OrderEnum {
 	ASC("a", "ascending"),	// ascending order

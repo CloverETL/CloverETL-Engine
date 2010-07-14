@@ -29,7 +29,7 @@ import org.jetel.test.CloverTestCase;
  * Unit test for the data generator.
  *  
  * @author Jan Ausperger (jan.ausperger@javlin.eu)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class DataGeneratorTest extends CloverTestCase {
 

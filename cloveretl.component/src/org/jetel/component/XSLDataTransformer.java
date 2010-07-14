@@ -86,7 +86,7 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat.Defaults;
  *  <pre>&lt;Node id="SORT_CUSTOMER" type="SORT" sortKey="Name:Address" sortOrder="A" useI18N="true" locale="fr"/&gt;</pre>
  *
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) OpenSys (www.opensys.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  * @since       May 15, 2008
  */
 public class XSLDataTransformer extends Node {

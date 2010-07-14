@@ -33,7 +33,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
 /**
  * 
  * @author mvarecha (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 5 May 2010
  */

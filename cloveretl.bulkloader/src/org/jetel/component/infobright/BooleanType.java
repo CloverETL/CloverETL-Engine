@@ -29,7 +29,7 @@ import com.infobright.etl.model.datatype.AbstractColumnType;
 
 /**
  * @author avackova (info@cloveretl.com)
- *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
  * @created 4 Nov 2009
  */

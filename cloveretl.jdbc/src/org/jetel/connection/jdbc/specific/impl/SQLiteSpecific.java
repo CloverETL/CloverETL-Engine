@@ -48,8 +48,8 @@ import org.jetel.util.string.StringUtils;
 /**
  * A JdbcSpecific for SQLite serverless database
  *  
- * @author Pavel Najvar (pavel.najvar@opensys.com)
- *         (c) OpenSys (www.opensys.com)
+ * @author Pavel Najvar (pavel.najvar@javlin.eu)
+ *         (c) Javlin, a.s. (www.javlin.eu)
  *
  * @created Sep 2009
  */
