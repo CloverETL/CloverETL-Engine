@@ -90,45 +90,7 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionDecimal2long.grf") // ok, is to fail
 							&& !pathname.getName().equals("conversionDouble2integer.grf") // ok, is to fail							
 							&& !pathname.getName().equals("conversionDouble2long.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionLong2integer.grf"); // ok, is to fail
-							
-//TODO these graphs should work in the future:
-//								&& !pathname.getName().startsWith("graphLdap") //LDAP server is not configured properly yet
-//								&& !pathname.getName().equals("mountainsSybase.grf") //issue 2939
-//								&& !pathname.getName().equals("graphJms.grf") //issue 3250
-//								&& !pathname.getName().equals("graphGenerateData.grf") //issue 3220
-//								&& !pathname.getName().equals("graphJavaExecute.grf") //issue 3220
-//								&& !pathname.getName().equals("dateToday.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom_boolean.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom_gaussian.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom_intWithRange.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom_intWithoutRange.grf") //issue 3220
-//								&& !pathname.getName().equals("mathRandom_longWithoutRange.grf") //issue 3220
-//								&& !pathname.getName().equals("graphCheckForeignKey.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBExecuteMySql.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBExecuteMsSql.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBExecuteOracle.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBExecutePostgre.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBUnload.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBUnload2.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBLoad5.grf") //issue 3220
-//								&& !pathname.getName().equals("graphDBUnloadUniversal.grf") //issue 3220
-//								&& !pathname.getName().equals("bufferedEdge1.grf") //issue 3220
-//								&& !pathname.getName().equals("bufferedEdge2.grf") //issue 3220
-//								&& !pathname.getName().equals("incrementalReadingDB.grf") //issue 3220
-//								&& !pathname.getName().equals("informix.grf") //issue 3220
-//								&& !pathname.getName().equals("parallelReaderFunctionalTest.grf") //issue 3220
-//								&& !pathname.getName().equals("sort.grf") //issue 3220
-//								&& !pathname.getName().equals("transformations.grf") //issue 3220
-//								&& !pathname.getName().equals("mountainsPgsql.grf") //issue 3220
-//								&& !pathname.getName().equals("A12_XMLExtractTransactionsFamily.grf") //issue 3220
-//								&& !pathname.getName().equals("graphXMLExtract.grf") //issue 3220
-//								&& !pathname.getName().equals("graphXMLExtractXsd.grf") //issue 3220
-//								&& !pathname.getName().equals("mountainsInformix.grf") //issue 2550
-//								&& !pathname.getName().equals("graphRunGraph.grf") 
-//								&& !pathname.getName().equals("DBJoin.grf");//issue 3285
-							
+							&& !pathname.getName().equals("conversionLong2integer.grf"); // ok, is to fail							
 				}
 			});
 			
@@ -194,9 +156,11 @@ public class ResetTest extends CloverTestCase {
 		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
 		if (!basePath.equals("../cloveretl.test.scenarios/")) {
 			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "/conn");
+			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "/conn");
 		}
 		if (!graphFile.getName().contains("Jms")) {// set LIB_DIR to jdbc drivers directory
 			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "/lib");
+			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "/lib");
 		}
 
 		runtimeContext.setBatchMode(batchMode);
