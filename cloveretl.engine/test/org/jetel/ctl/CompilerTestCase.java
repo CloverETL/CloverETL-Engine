@@ -2530,6 +2530,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("n", Double.valueOf(934.2));
 		check("a", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
 		check("b", true);
+		
+		check("sNull", null);
+		check("iNull", null);
+		check("lNull", null);
+		check("dNull", null);
+		check("nNull", null);
+		check("aNull", null);
+		check("bNull", null);
 	}
 
 	public void test_dictionary_write() {
@@ -2543,6 +2551,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(true, graph.getDictionary().getValue("b"));
 	}
 
+	public void test_dictionary_write_null() {
+		doCompile("test_dictionary_write_null");
+		assertEquals(null, graph.getDictionary().getValue("s"));
+		assertEquals(null, graph.getDictionary().getValue("sVerdon"));
+		assertEquals(null, graph.getDictionary().getValue("i") );
+		assertEquals(null, graph.getDictionary().getValue("i211") );
+		assertEquals(null, graph.getDictionary().getValue("l"));
+		assertEquals(null, graph.getDictionary().getValue("l452"));
+		assertEquals(null, graph.getDictionary().getValue("d"));
+		assertEquals(null, graph.getDictionary().getValue("d621"));
+		assertEquals(null, graph.getDictionary().getValue("n"));
+		assertEquals(null, graph.getDictionary().getValue("n9342"));
+		assertEquals(null, graph.getDictionary().getValue("a"));
+		assertEquals(null, graph.getDictionary().getValue("a1992"));
+		assertEquals(null, graph.getDictionary().getValue("b"));
+		assertEquals(null, graph.getDictionary().getValue("bTrue"));
+	}
+	
 	public void test_dictionary_invalid_key(){
         doCompileExpectErrors("test_dictionary_invalid_key", Arrays.asList("Dictionary entry 'invalid' does not exist"));
 	}
