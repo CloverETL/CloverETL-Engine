@@ -33,7 +33,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.dictionary.DictionaryEntry;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -49,8 +48,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	// ---------- RECORD NAMES -----------
 	protected static final String INPUT_1 = "firstInput";
 	protected static final String INPUT_2 = "secondInput";
+	protected static final String INPUT_3 = "thirdInput";
 	protected static final String OUTPUT_1 = "firstOutput";
 	protected static final String OUTPUT_2 = "secondOutput";
+	protected static final String OUTPUT_3 = "thirdOutput";
 	protected static final String LOOKUP = "lookupMetadata";
 
 	protected static final String NAME_VALUE = "  HELLO  ";
@@ -138,8 +139,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		final HashMap<String, DataRecordMetadata> metadataMap = new HashMap<String, DataRecordMetadata>();
 		metadataMap.put(INPUT_1, createDefaultMetadata(INPUT_1));
 		metadataMap.put(INPUT_2, createDefaultMetadata(INPUT_2));
+		metadataMap.put(INPUT_3, createDefaultMetadata(INPUT_3));
 		metadataMap.put(OUTPUT_1, createDefaultMetadata(OUTPUT_1));
 		metadataMap.put(OUTPUT_2, createDefaultMetadata(OUTPUT_2));
+		metadataMap.put(OUTPUT_3, createDefaultMetadata(OUTPUT_3));
 		metadataMap.put(LOOKUP, createDefaultMetadata(LOOKUP));
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
@@ -327,8 +330,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void doCompile(String expStr, String testIdentifier) {
 		graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -352,8 +355,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
 		graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2) };
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -1158,6 +1161,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq16", true);
 		check("eq17", false);
 		check("eq18", false);
+		check("eq19", false);
 	}
 	
 	public void test_operator_non_equal(){
@@ -1595,7 +1599,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// * mapping
 		assertTrue(recordEquals(inputRecords[1], outputRecords[1]));
 	}
-	
+
+	public void test_mapping_null_values() {
+		doCompile("test_mapping_null_values");
+
+		assertTrue(recordEquals(inputRecords[2], outputRecords[0]));
+	}
+
 	public void test_sequence(){
 		doCompile("test_sequence");
 		check("intRes", Arrays.asList(1,2,3));
@@ -2500,7 +2510,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
 	}
 	
-	public void test_confitional_fail() {
+	public void test_conditional_fail() {
 		doCompile("test_conditional_fail");
 		check("result", 3);
 	}

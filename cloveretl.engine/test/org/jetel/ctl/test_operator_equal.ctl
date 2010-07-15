@@ -30,6 +30,7 @@ boolean eq15;
 boolean eq16;
 boolean eq17;
 boolean eq18;
+boolean eq19;
 
 function integer getInt() {
 	return 1000;
@@ -65,6 +66,9 @@ function integer transform() {
 	
 	eq14 = j==null;
 	printErr('eq14: j==null ' + eq14);
+
+	eq19 = j==k;
+	printErr('eq19: j==null ' + eq19);
 	
 	
 	//long
