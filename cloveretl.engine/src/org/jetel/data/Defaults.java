@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.zip.Deflater;
 
@@ -111,11 +110,6 @@ public final class Defaults {
 	private static void appendProperties(Properties prop) {
 		properties = new Properties(properties);
 		properties.putAll(prop);
-	    Enumeration e = prop.propertyNames();
-	    while (e.hasMoreElements()) {
-	      String key = (String) e.nextElement();
-		  logger.debug("Property " + key + " = " + prop.getProperty(key) + " loaded");
-	    }
 	}
 	
 	private static int getIntProperties(String key, int def) {
