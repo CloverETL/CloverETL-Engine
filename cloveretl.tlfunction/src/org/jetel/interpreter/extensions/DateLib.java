@@ -289,7 +289,7 @@ public class DateLib extends TLFunctionLibrary {
 
 			if (params[0].type==TLValueType.DATE ) {
 	            store.cal.setTime(((TLDateValue)params[0]).getDate());
-	            store.cal.set(Calendar.YEAR,0);
+	            store.cal.set(Calendar.YEAR,1970);
 	            store.cal.set(Calendar.MONTH,0);
 	            store.cal.set(Calendar.DAY_OF_MONTH,1);
 	            
