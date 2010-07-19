@@ -5,6 +5,7 @@ decimal d;
 number n;
 date a;
 boolean b;
+byte y;
 
 string sNull;
 integer iNull;
@@ -13,6 +14,7 @@ decimal dNull;
 number nNull;
 date aNull;
 boolean bNull;
+byte yNull;
 
 function integer transform() {
 
@@ -23,6 +25,7 @@ function integer transform() {
 	n = dictionary.n9342;
 	a = dictionary.a1992;
 	b = ( dictionary.bTrue == true);
+	y = dictionary.yFib;
 
 	sNull = dictionary.s;
 	iNull = dictionary.i;
@@ -31,6 +34,7 @@ function integer transform() {
 	nNull = dictionary.n;
 	aNull = dictionary.a;
 	bNull = dictionary.b;
+	yNull = dictionary.y;
 
 	return 0;
 }
