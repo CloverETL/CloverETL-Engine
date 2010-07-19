@@ -18,6 +18,7 @@ import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.StringUtils;
 
 /*
  * Copyright (c) 2004-2005 Javlin Consulting s.r.o. All rights reserved.
@@ -38,7 +39,23 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/CompanyTransactionsTutorial/"
 		};
 	
-
+	private final static String[] NEEDS_SCENARIOS_CONNECTION = {
+		"graphRevenues.grf",
+		"graphDBExecuteMsSql.grf",
+		"graphDBExecuteMySql.grf",
+		"graphDBExecuteOracle.grf",
+		"graphDBExecutePostgre.grf",
+		"graphDBExecuteSybase.grf",
+		"graphInfobrightDataWriterRemote.grf",
+		"graphLdapReaderWriter.grf"
+	};
+	
+	private final static String[] NEEDS_SCENARIOS_LIB = {
+		"graphDBExecuteOracle.grf",
+		"graphDBExecuteSybase.grf",
+		"graphLdapReaderWriter.grf"
+	};
+		
 	private final static String GRAPHS_DIR = "graph";
 	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
 	
@@ -154,14 +171,14 @@ public class ResetTest extends CloverTestCase {
 		runtimeContext.setContextURL(FileUtils.getFileURL(basePath));
 		// absolute path in PROJECT parameter is required for graphs using Derby database
 		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
-//		if (!basePath.equals("../cloveretl.test.scenarios/")) {
-//			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "/conn");
-//			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "/conn");
-//		}
-//		if (!graphFile.getName().contains("Jms")) {// set LIB_DIR to jdbc drivers directory
-//			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "/lib");
-//			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "/lib");
-//		}
+		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
+			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "/conn");
+			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "/conn");
+		}
+		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_LIB) != -1) {// set LIB_DIR to jdbc drivers directory
+			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "/lib");
+			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "/lib");
+		}
 
 		runtimeContext.setBatchMode(batchMode);
 		
