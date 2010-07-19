@@ -161,6 +161,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("n", "number", null);
 			g.getDictionary().setValue("a", "date", null);
 			g.getDictionary().setValue("b", "boolean", null);
+			g.getDictionary().setValue("y", "byte", null);
 			g.getDictionary().setValue("i211", "integer", new Integer(211));
 			g.getDictionary().setValue("sVerdon", "string", "Verdon");
 			g.getDictionary().setValue("l452", "long", new Long(452));
@@ -168,6 +169,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("n9342", "number", new Double(934.2));
 			g.getDictionary().setValue("a1992", "date", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
 			g.getDictionary().setValue("bTrue", "boolean", Boolean.TRUE);
+			g.getDictionary().setValue("yFib", "byte", new byte[]{1,2,3,5,8,13,21,34,55,89} );
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -2530,6 +2532,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("n", Double.valueOf(934.2));
 		check("a", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
 		check("b", true);
+		byte[] y = (byte[]) getVariable("y");
+		assertEquals(10, y.length);
+		assertEquals(89, y[9]);
 		
 		check("sNull", null);
 		check("iNull", null);
@@ -2538,6 +2543,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nNull", null);
 		check("aNull", null);
 		check("bNull", null);
+		check("yNull", null);
 	}
 
 	public void test_dictionary_write() {
@@ -2549,6 +2555,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(934.2, graph.getDictionary().getValue("n"));
 		assertEquals(new GregorianCalendar(1992, GregorianCalendar.DECEMBER, 2).getTime(), graph.getDictionary().getValue("a"));
 		assertEquals(true, graph.getDictionary().getValue("b"));
+		byte[] y = (byte[]) graph.getDictionary().getValue("y");
+		assertEquals(2, y.length);
+		assertEquals(18, y[0]);
+		assertEquals(-94, y[1]);
+		
 	}
 
 	public void test_dictionary_write_null() {
@@ -2567,6 +2578,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(null, graph.getDictionary().getValue("a1992"));
 		assertEquals(null, graph.getDictionary().getValue("b"));
 		assertEquals(null, graph.getDictionary().getValue("bTrue"));
+		assertEquals(null, graph.getDictionary().getValue("y"));
+		assertEquals(null, graph.getDictionary().getValue("yFib"));
 	}
 	
 	public void test_dictionary_invalid_key(){

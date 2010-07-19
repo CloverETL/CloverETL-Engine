@@ -8,6 +8,7 @@ function integer transform() {
 	dictionary.n9342 = null;
 	dictionary.a1992 = null;
 	dictionary.bTrue = null;
+	dictionary.yFib = null;
 
 	return 0;
 }

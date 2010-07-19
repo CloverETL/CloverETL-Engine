@@ -23,6 +23,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -101,5 +103,10 @@ public class ByteDictionaryType extends DictionaryType {
 		return value == null 
 		|| value instanceof byte[];
 	}
-	
+
+	@Override
+	public TLType getTLType() {
+		return TLTypePrimitive.BYTEARRAY;
+	}
+
 }
