@@ -21,7 +21,6 @@
  */
 package org.jetel.component;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +29,10 @@ import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 
+/**
+ * @deprecated ErrorActions toolkit will be re-factored soon
+ */
+@Deprecated 
 public enum ErrorAction {
 	STOP,
 	CONTINUE;
