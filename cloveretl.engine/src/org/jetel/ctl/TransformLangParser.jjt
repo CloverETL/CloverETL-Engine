@@ -638,6 +638,7 @@ TOKEN :
   < RETURN_OK: "OK" >
 | < RETURN_SKIP: "SKIP" >
 | < RETURN_ALL: "ALL" >
+| < RETURN_ERROR: "ERROR" >
 }
 
 /*
@@ -1858,11 +1859,13 @@ void ControlConstant() #Literal : {}
 {
 	{ jjtThis.begin(token.beginLine,token.beginColumn); }
 	(
-	"OK" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(0); }
+	"OK" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.OK); }
 	|
 	"SKIP" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.SKIP); }
 	|
 	"ALL" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ALL); }
+	|
+	"ERROR" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ERROR); }
 	)
 	{ jjtThis.end(token.endLine, token.endColumn); }
 }
