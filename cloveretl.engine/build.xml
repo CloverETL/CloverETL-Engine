@@ -590,21 +590,9 @@ defined.version.suffix=release
 
 		<delete file="${dir.src}/org/jetel/interpreter/Node.java"/>
 
-		<replace file="${dir.src}/org/jetel/interpreter/TransformLangParserVisitor.java" encoding="UTF-8" summary="true">
-			<replacetoken>
-				<![CDATA[package org.jetel.interpreter;
-
-public]]>
-			</replacetoken>
-			<replacevalue>
-				<![CDATA[package org.jetel.interpreter;
-
-import org.jetel.interpreter.ASTnode.*;
-
-public]]>
-			</replacevalue>
-		</replace>
-
+		<replaceR file="${dir.src}/org/jetel/interpreter/TransformLangParserVisitor.java"/>
+		<replaceR file="${dir.src}/org/jetel/interpreter/JJTTransformLangParserState.java"/>
+		
 		<javacc javacchome="${dir.tools}" 
 			target="${dir.src}/org/jetel/util/ddl2clover/DDL2Clover.jj"/>
 
