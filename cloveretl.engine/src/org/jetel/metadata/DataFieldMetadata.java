@@ -1131,22 +1131,22 @@ public class DataFieldMetadata implements Serializable {
 			final String trueO = bf.formatBoolean(true);
 			try {
 				if (true != bf.parseBoolean(trueO)) {
-					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - output string '" + trueO + "' isn't valid true value.",
+					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will return incorrect value.",
 							Severity.WARNING, null, Priority.NORMAL));
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - parse error for true output string '" + trueO + "' (" + e.getMessage() + ").",
+				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable (" + e.getMessage() + ").",
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 
 			final String falseO = bf.formatBoolean(false);
 			try {
 				if (false != bf.parseBoolean(falseO)) {
-					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - output string '" + falseO + "' isn't valid false value.",
+					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will return incorrect value.",
 							Severity.WARNING, null, Priority.NORMAL));
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - parse error for false output string '" + falseO + "' (" + e.getMessage() + ").",
+				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable (" + e.getMessage() + ").",
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 		}
