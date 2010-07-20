@@ -428,12 +428,13 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField
 	 */
+	@Override
 	public int getSizeSerialized() {
-		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
+		// length in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
 		// size of length indicator (basically int variable)
-	    final int length=value.length();
+	    final int length = value.length();
 	    
-		return length*SIZE_OF_CHAR+ByteBufferUtils.lengthEncoded(length);
+		return length * SIZE_OF_CHAR + ByteBufferUtils.lengthEncoded(length + 1); //this incrementation is necessary due 'null/empty string' encoding, see serialize/deserialize methods
 	}
 	
 	public char charAt(int position){
