@@ -18,8 +18,6 @@
  */
 package org.jetel.data.parser;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,23 +25,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.StringDataField;
-import org.jetel.data.formatter.BinaryDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
-import org.jetel.graph.runtime.EngineInitializer;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 
@@ -73,18 +63,6 @@ public class BinaryDataParser implements Parser {
 	 * Size of read buffer
 	 */
 	int bufferLimit = -1;
-	/*
-	 * Charset name of serialized string field
-	 */
-	String stringCharset;
-	/*
-	 * Decoder instance
-	 */
-	CharsetDecoder stringDecoder;
-	/*
-	 * temp char buffer
-	 */
-	CharBuffer charBuffer;
 	/*
 	 * Whether an attempt to delete file from the underlying should be made on close()
 	 */
@@ -184,11 +162,7 @@ public class BinaryDataParser implements Parser {
 				}
 			}
 
-			if (stringCharset == null) {
-				record.deserialize(buffer);
-			} else {
-				deserialize(record, buffer);
-			}
+			record.deserialize(buffer);
 			
 			return record;
 		} catch (IOException e) {
@@ -197,37 +171,6 @@ public class BinaryDataParser implements Parser {
 			throw new JetelException("Invalid end of stream.", e);
 		}
 
-	}
-
-	public void deserialize(DataRecord record, ByteBuffer buffer) {
-		DataField field;
-		for(int i = 0; i < record.getNumFields(); i++) {
-			field = record.getField(i);
-			if (field instanceof StringDataField) {
-				deserialize((StringDataField) field, buffer);
-			} else {
-				field.deserialize(buffer);
-			}
-		}
-	}
-	
-	public void deserialize(StringDataField field, ByteBuffer buffer) {
-        final int length=ByteBufferUtils.decodeLength(buffer);
-		StringBuilder value = (StringBuilder) field.getValue();
-        value.setLength(0);
-
-		if (length == 0) {
-			field.setNull(true);
-		} else {
-			field.setNull(false);
-			int curLimit = buffer.limit();
-			buffer.limit(buffer.position() + length);
-			charBuffer.clear();
-			stringDecoder.decode(buffer, charBuffer, true);
-			buffer.limit(curLimit);
-			charBuffer.flip();
-			value.append(charBuffer);
-		}
 	}
 	
 	private void reloadBuffer(int requiredSize) throws IOException {
@@ -272,11 +215,6 @@ public class BinaryDataParser implements Parser {
 		buffer.limit(0);
 
 		eofReached = false;
-	}
-
-	public void init(DataRecordMetadata _metadata, String charsetName) throws ComponentNotReadyException {
-		init(_metadata);
-		setStringCharset(charsetName);
 	}
 
 	public DataRecordMetadata getMetadata() {
@@ -324,22 +262,6 @@ public class BinaryDataParser implements Parser {
 	public int skip(int rec) throws JetelException {
 		// TODO Auto-generated method stub
 		return 0;
-	}
-
-	public String getStringCharset() {
-		return stringCharset;
-	}
-
-	public void setStringCharset(String stringCharset) {
-		if (stringCharset != null && (! Defaults.Record.USE_FIELDS_NULL_INDICATORS || ! getMetadata().isNullable())) {
-			this.stringCharset = stringCharset;
-			stringDecoder = Charset.forName(stringCharset).newDecoder();
-			charBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
-		} else {
-			this.stringCharset = null;
-			stringDecoder = null;
-			charBuffer = null;
-		}
 	}
 
 	public InputStream getBackendStream() {

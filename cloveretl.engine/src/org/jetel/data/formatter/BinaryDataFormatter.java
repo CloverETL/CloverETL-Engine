@@ -23,19 +23,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -55,23 +48,6 @@ public class BinaryDataFormatter implements Formatter {
 	WritableByteChannel writer;
 	ByteBuffer buffer;
 	DataRecordMetadata metaData;
-	/*
-	 * Charset name used for encoding/decoding string fields
-	 * If empty, no conversion is performed and strings are stored as 2-byte characters 
-	 */
-	String stringCharset;
-	/*
-	 * Instance of an encoder used for encoding strings into stringCharset
-	 */
-	CharsetEncoder stringEncoder;
-	/*
-	 * Instance of an decoder used for decoding string in stringCharset
-	 */
-	CharsetDecoder stringDecoder;	
-	/*
-	 * temporary buffer
-	 */
-	CharBuffer charBuffer;
 	private boolean useDirectBuffers = true;
 	
 	
@@ -85,22 +61,6 @@ public class BinaryDataFormatter implements Formatter {
 
 	public BinaryDataFormatter(WritableByteChannel writableByteChannel) {
 		setDataTarget(writableByteChannel);
-	}
-
-	public String getStringCharset() {
-		return stringCharset;
-	}
-
-	public void setStringCharset(String stringCharset) {
-		if (stringCharset != null && (! Defaults.Record.USE_FIELDS_NULL_INDICATORS || ! getMetadata().isNullable())) {
-			this.stringCharset = stringCharset;
-			stringEncoder = Charset.forName(stringCharset).newEncoder();
-			charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		} else {
-			this.stringCharset = null;
-			charBuffer = null;
-			stringEncoder = null;
-		}
 	}
 
 	public BinaryDataFormatter(File f) {
@@ -134,12 +94,6 @@ public class BinaryDataFormatter implements Formatter {
 		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) : ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
-	public void init(DataRecordMetadata _metadata, String charsetName) throws ComponentNotReadyException {
-		init(_metadata);
-		setStringCharset(charsetName);
-	}
-	
-	
 	public DataRecordMetadata getMetadata() {
 		return this.metaData;
 	}
@@ -174,76 +128,10 @@ public class BinaryDataFormatter implements Formatter {
 					", but record size is " + (recordSize + lengthSize) + ". Set appropriate parameter in defautProperties file.");
 		}
         ByteBufferUtils.encodeLength(buffer, recordSize);
-		if (stringCharset != null) {
-			serialize(record, buffer);
-		} else {
-			record.serialize(buffer);
-		}
+        record.serialize(buffer);
         
         return recordSize + lengthSize;
 	}
-
-
-	
-	public void serialize(DataRecord record, ByteBuffer buffer) {
-		int numFields = record.getNumFields();
-		DataField field;
-		for (int i = 0; i < numFields; i++) {
-			field = record.getField(i);
-			if (field instanceof StringDataField) {
-				serialize((StringDataField) field, buffer);
-			} else {
-				field.serialize(buffer);
-			}
-		}
-	}
-	
-	public void serialize(StringDataField field, ByteBuffer buffer) {
-		final int length = ((StringBuilder)field.getValue()).length();
-
-	    final int byteLength = (int) (stringEncoder.averageBytesPerChar() * (float)length);
-	    int realByteLength;
-		try {
-			int startingPos = buffer.position();
-			// lets be optimistic and encode the estimated
-			// length of encoded data
-			// and assume, that in most cases we at least guess the 1-byte or 2-byte encoded length
-			ByteBufferUtils.encodeLength(buffer, byteLength);
-
-			int textPos = buffer.position();
-//			synchronized(utfEncoder) {
-			charBuffer.clear();
-			charBuffer.append((StringBuilder)field.getValue());
-			charBuffer.flip();
-			stringEncoder.encode(charBuffer, buffer, true);
-			realByteLength = buffer.position() - textPos;
-
-			// bad case - but shouldn't happen often
-			// bad guess on the edge of 1-byte and 2-byte border
-			if ((byteLength <= 255 && realByteLength > 255) 
-				||
-				(byteLength > 255 && realByteLength <= 255)) {
-				// bad bad
-				// we have to move data one byte forward or backwards (which is not important)
-				byte[] bytes = new byte[realByteLength];
-				buffer.get(bytes, textPos, realByteLength);
-				buffer.position(startingPos);
-				ByteBufferUtils.encodeLength(buffer, realByteLength);
-				buffer.put(bytes);
-			} else if (byteLength != realByteLength){
-				// no need to move data
-				// just correct real bytes length
-				int currentPos = buffer.position();
-				buffer.position(startingPos);
-				ByteBufferUtils.encodeLength(buffer, realByteLength);
-				buffer.position(currentPos);
-			}
-			
-    	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-    	}
-	}
-
 	
 	public int writeFooter() throws IOException {
 		// no header
