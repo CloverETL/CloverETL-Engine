@@ -5,11 +5,12 @@
 </HEAD>
 <H1>Creating custom function for Transform Language</H1>
 <P><I>by Agata Vackova 05/26/10</I></P>
-<P>To create custom tl function you have to create java object, that
+<h2>Custom CTL1 functions</h2>
+<P>To create custom CTL1 function you have to create java object, that
 extends <i>org.jetel.interpreter.extensions.TLFunctionLibrary</i>. This is
 the library, where you define custom functions. Each function must
-extend <i>org.jetel.interpreter.extensions.TLFunctionPrototype</i>. <I>trans</I>
-directory contains example of such library (<A HREF="trans/src/org/mypackage/ctlfunctions/MyCTLFunctionsLib.java">MyCTLFunctionsLib.java</A>).
+extend <i>org.jetel.interpreter.extensions.TLFunctionPrototype</i>. <I>src</I>
+directory contains example of such library (<A HREF="src/org/mypackage/ctl1functions/MyFunctionsLib_ctl1.java">MyFunctionsLib_ctl1.java</A>).
 There are implemented two custom functions in the file: <I>my_function</I>
 and <I>double_metaphone</I>.
 <I>my_function</I> does
@@ -18,27 +19,62 @@ function. <I>double_metaphone</I>
 function encodes a given word using the Double Metaphone algorithm;
 it requires external library (<i>commons-codec-1.4.jar</i>), that is placed
 in <i>lib</i> directory.  <BR>Along with the custom functions code, you also
-need to define the custom functions plugin (<A HREF="trans/plugin.xml">trans/plugin.xml</A>).
- This file must contain plugin id (<I>org.mypackage.ctlfunctions</I>),
-paths needed during runtime and extension points. Each <I>exetension
+need to define the custom functions' plugin definition file <i>plugin.xml</i>(see <A HREF="ctl1_plugin.xml">ctl1_plugin.xml</A> - 
+it's name will be changed to <i>plugin.xml</i> during <a href="#Installation">installation</a>).
+ This file must contain plugin id (<I>org.mypackage.ctl1function</I>),
+paths needed during runtime and extension points. Each <I>extension
 point-id</I>
 must be equal to <I>tlfunction</I>
 and contains parameters:</P>
 <UL>
-	<LI>libraryName - name of your library (<I>MyCTLFunctions</I>)
+	<LI>libraryName - name of your library (<I>MyFunctionsLib_ctl1.java</I>)
 	<LI>className - qualified library name 
-	(<I>org.mypackage.ctlfunctions.MyCTLFunctionsLib</I>)
+	(<I>org.mypackage.ctl1functions.MyFunctionsLib_ctl1</I>)
 	<LI>function - list of implemented functions
 </UL>
+<h2>Custom CTL2 functions</h2>
+<P>To create custom CTL2 function you have to create java object, that
+extends <i>org.jetel.ctl.extensions.TLFunctionLibrary</i>. This is
+the library, where you define custom functions. Each function must
+extend <i>org.jetel.ctl.extensions.TLFunctionPrototype</i>. Also 
+public static final methods with <i>TLFunctionAnnotation</i> must be 
+implemented. Each such method defines function name (name of the method),
+return value (return value of the method) and input parameters (all parameters
+except the first one - <i>TLFunctionCallContext context</i>). <I>src</I>
+directory contains example of such library (<A HREF="src/org/mypackage/ctl2functions/MyFunctionsLib_ctl2.java">MyFunctionsLib_ctl2.java</A>).
+There are implemented two custom functions in the file: <I>myFunction</I>
+and <I>doubleMetaphone</I>.
+<I>myFunction</I> does
+nothing in principle - it just illustrates how to create simple
+function. <I>doubleMetaphone</I>
+function encodes a given word using the Double Metaphone algorithm;
+it requires external library (<i>commons-codec-1.4.jar</i>), that is placed
+in <i>lib</i> directory.  <BR>Along with the custom functions code, you also
+need to define the custom functions' plugin definition file <i>plugin.xml</i>(see <A HREF="ctl1_plugin.xml">ctl2_plugin.xml</A> - 
+it's name will be changed to <i>plugin.xml</i> during <a href="#Installation">installation</a>).
+ This file must contain plugin id (<I>org.mypackage.ctl2function</I>),
+paths needed during runtime and extension points. Each <I>extension
+point-id</I>
+must be equal to <I>ctlfunction</I>
+and contains parameters:</P>
+<UL>
+	<LI>libraryName - name of your library (<I>MyFunctionsLib_ctl2.java</I>)
+	<LI>className - qualified library name 
+	(<I>org.mypackage.ctl2functions.MyFunctionsLib_ctl2</I>)
+</UL>
+<h2><a name="Installation>Custom plugin installation</a></h2>
 <P>Now
 you can install the plugin to CloverETL Engine. Your library needs to
 be compiled, packed to jar file and placed with the <i>plugin.xml</i> file
 to CloverETL Engine's plugins directory. This task can be done by the
-<i>build.xml</i> file placed in project's root directory. All you need is to
-set proper CloverETL Engine's path in <I>build.properties</I>
-file and run the default task (<i>install</i>). The ant task compiles the example library, packs the class
-files to the  <I>my_lib.jar</I>
-and copies the jar and <i>plugin.xml</i> to the CloverETL Engine's plugins
+<i>build.xml</i> file placed in project's root directory.<br>In <I>build.properties</I>
+file, there is defined path to CloverETL Engine directory (<i>dir.engine</i>)
+and the ctl version, you want to build the plugin for (<i>ctl_version</i>). By 
+default the build is performed for CTL2; to change it for CTL1, just change  <i>ctl_version</i>
+parameter to <i>ctl1</i> (<i>ctl_version = ctl1</i>).<br>
+The ant task <i>install</i> compiles the example library, packs the class
+files to the  <I>my_lib_${ctl_version}.jar (my_lib_ctl1.jar or my_lib_ctl2.jar)</I> 
+and copies the jar and proper <i>plugin.xml</i> to the CloverETL Engine's plugins
 directory. 
 </P>
 </BODY>
