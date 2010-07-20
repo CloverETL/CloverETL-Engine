@@ -48,6 +48,8 @@ public interface RecordTransform extends Transform {
 
 	/** the return value of the transform() method specifying that the record will be sent to all the output ports */
 	public static final int ALL = Integer.MAX_VALUE;
+	/** the return value of the transform() method specifying that the record will be sent to the first output port */
+	public static final int OK = 0;
 	/** the return value of the transform() method specifying that the record will be skipped */
 	public static final int SKIP = -1;
 	/** the return value of the transform() method, all values lesser or equal this value are considered as errors */

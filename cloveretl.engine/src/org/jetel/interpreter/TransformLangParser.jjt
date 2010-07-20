@@ -53,6 +53,7 @@ import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
 import org.jetel.component.CustomizedRecordTransform;
+import org.jetel.component.RecordTransform;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -537,6 +538,7 @@ TOKEN :
 | < RETURN_RECORD_SKIP: "SKIP" >
 | < RETURN_RECORD_SEND_ALL: "ALL" >
 | < RETURN_RECORD_OK: "OK" >
+| < RETURN_RECORD_ERROR: "ERROR" >
 }
 
 TOKEN :  /* date parts */
@@ -946,11 +948,13 @@ void LitExp() #void :            //
  |t=<NULL_LITERAL>
  	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
  |t=<RETURN_RECORD_SEND_ALL>
- 	{ jjtThis.setConstant(Integer.MAX_VALUE); } #Literal
+ 	{ jjtThis.setConstant(RecordTransform.ALL); } #Literal
  |t=<RETURN_RECORD_SKIP>
- 	{ jjtThis.setConstant(-1); } #Literal
+ 	{ jjtThis.setConstant(RecordTransform.SKIP); } #Literal
  |t=<RETURN_RECORD_OK>
- 	{ jjtThis.setConstant(0); } #Literal
+ 	{ jjtThis.setConstant(RecordTransform.OK); } #Literal
+ |t=<RETURN_RECORD_ERROR>
+ 	{ jjtThis.setConstant(RecordTransform.ERROR); } #Literal
  | ListOfLiterals()
  |t = <UNTERMINATED_STRING_LITERAL>
   {

@@ -642,6 +642,7 @@ TOKEN :
   < RETURN_OK: "OK" >
 | < RETURN_SKIP: "SKIP" >
 | < RETURN_ALL: "ALL" >
+| < RETURN_ERROR: "ERROR" >
 }
 
 /*
@@ -3620,11 +3621,13 @@ void ControlConstant()          : {/*@bgen(jjtree) Literal */
 /*@egen*/
 	{ jjtn000.begin(token.beginLine,token.beginColumn); }
 	(
-	"OK" { jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(0); }
+	"OK" { jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.OK); }
 	|
 	"SKIP" { jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.SKIP); }
 	|
 	"ALL" { jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.ALL); }
+	|
+	"ERROR" { jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.ERROR); }
 	)/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
