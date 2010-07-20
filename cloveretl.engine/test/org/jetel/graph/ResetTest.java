@@ -172,12 +172,12 @@ public class ResetTest extends CloverTestCase {
 		// absolute path in PROJECT parameter is required for graphs using Derby database
 		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
-			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "/conn");
-			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "/conn");
+			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "conn");
+			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "conn");
 		}
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_LIB) != -1) {// set LIB_DIR to jdbc drivers directory
-			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "/lib");
-			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "/lib");
+			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "lib");
+			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "lib");
 		}
 
 		runtimeContext.setBatchMode(batchMode);
