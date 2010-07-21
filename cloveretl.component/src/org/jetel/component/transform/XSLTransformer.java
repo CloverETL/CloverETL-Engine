@@ -40,8 +40,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.sun.org.apache.xml.internal.serialize.OutputFormat.Defaults;
-
 /**
  * XSL transformer class can be used for transform input stream, where xml data are expected
  * and transforms them by xsl transformation and the result is sended in output stream.
@@ -53,6 +51,8 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat.Defaults;
  */
 public class XSLTransformer {
 
+	public static final String DEFAULT_CHARSET = "UTF-8";
+	
     private InputStream xslTransform;
     
     private Transformer transformer;
@@ -67,10 +67,10 @@ public class XSLTransformer {
 
 	/**
 	 * Constructor.
-	 * Sets default charset to Defaults.Encoding (UTF-8)
+	 * Sets default charset to UTF-8
 	 */
     public XSLTransformer() {
-    	charset = Defaults.Encoding;
+    	charset = DEFAULT_CHARSET;
     }
     
     /**

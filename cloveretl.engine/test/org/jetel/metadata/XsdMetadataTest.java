@@ -31,16 +31,16 @@ import org.jetel.test.CloverTestCase;
 public class XsdMetadataTest extends CloverTestCase  { 
 	private String xmlMetadata =
 		"<Record name=\"rec\" type=\"fixed\" recordDelimiter=\"\n\" recordSize=\"40\">"
-		+ "<Field name=\"00\" size=\"1\" shift=\"0\" type=\"decimal\"/>"
-		+ "<Field name=\"01\" size=\"2\" shift=\"0\" type=\"numeric\"/>"
-		+ "<Field name=\"02\" size=\"3\" shift=\"0\" type=\"byte\"/>"
-		+ "<Field name=\"03\" size=\"4\" shift=\"0\" type=\"cbyte\"/>"
-		+ "<Field name=\"04\" size=\"3\" shift=\"0\" type=\"date\"/>"
-		+ "<Field name=\"05\" size=\"1\" shift=\"0\" type=\"datetime\"/>"
-		+ "<Field name=\"06\" size=\"1\" shift=\"0\" type=\"integer\"/>"
-		+ "<Field name=\"07\" size=\"1\" shift=\"0\" type=\"long\"/>"
-		+ "<Field name=\"08\" size=\"1\" shift=\"0\" type=\"decimal\"/>"
-		+ "<Field name=\"09\" size=\"2\" shift=\"0\" type=\"decimal\"/>"
+		+ "<Field name=\"f00\" size=\"1\" shift=\"0\" type=\"decimal\"/>"
+		+ "<Field name=\"f01\" size=\"2\" shift=\"0\" type=\"numeric\"/>"
+		+ "<Field name=\"f02\" size=\"3\" shift=\"0\" type=\"byte\"/>"
+		+ "<Field name=\"f03\" size=\"4\" shift=\"0\" type=\"cbyte\"/>"
+		+ "<Field name=\"f04\" size=\"3\" shift=\"0\" type=\"date\"/>"
+		+ "<Field name=\"f05\" size=\"1\" shift=\"0\" type=\"datetime\"/>"
+		+ "<Field name=\"f06\" size=\"1\" shift=\"0\" type=\"integer\"/>"
+		+ "<Field name=\"f07\" size=\"1\" shift=\"0\" type=\"long\"/>"
+		+ "<Field name=\"f08\" size=\"1\" shift=\"0\" type=\"decimal\"/>"
+		+ "<Field name=\"f09\" size=\"2\" shift=\"0\" type=\"decimal\"/>"
 		+ "</Record>";
 
 	private DataRecordMetadata metadata;

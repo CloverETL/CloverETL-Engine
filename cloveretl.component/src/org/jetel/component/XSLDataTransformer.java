@@ -48,8 +48,6 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
-
-import com.sun.org.apache.xml.internal.serialize.OutputFormat.Defaults;
 /**
  *  <h3>Sort Component</h3>
  *
@@ -110,7 +108,6 @@ public class XSLDataTransformer extends Node {
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
-	private static final String DEFAULT_CHARSET = Defaults.Encoding;
 	
 	private String xmlInputFile;
 	private String xmlOutputFile;
@@ -138,7 +135,7 @@ public class XSLDataTransformer extends Node {
 		this.mapping = mapping;
 		this.xsltFile = xsltFile;
 		this.xslt = xslt;
-		charset = DEFAULT_CHARSET;
+		charset = XSLTransformer.DEFAULT_CHARSET;
 	}
 
 	/**
@@ -156,7 +153,7 @@ public class XSLDataTransformer extends Node {
 		this.xmlOutputFile = xmlOutputFile;
 		this.xsltFile = xsltFile;
 		this.xslt = xslt;
-		charset = DEFAULT_CHARSET;
+		charset = XSLTransformer.DEFAULT_CHARSET;
 	}
 
 	@Override
