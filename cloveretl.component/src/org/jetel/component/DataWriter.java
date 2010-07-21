@@ -85,6 +85,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
+ *  <tr><td><b>excludeFields</b></td><td>	 sequence of field names from incoming data flow (separated by semicolon) to exclude from writing </td>
  *  </tr>
  *  </table>  
  *
