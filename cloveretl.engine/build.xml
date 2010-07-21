@@ -1098,6 +1098,7 @@ defined.version.suffix=release
 		<fileset dir="${dir.src}">
 			<include name="**/*.java"/>
 			<exclude name="org/jetel/interpreter/TransformLangParser*"/>
+			<exclude name="org/jetel/interpreter/JJTTransformLangParserState.java"/>
 			<exclude name="org/jetel/ctl/TransformLangParser*"/>
 			<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
 			<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
