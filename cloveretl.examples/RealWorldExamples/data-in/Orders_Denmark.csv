@@ -1,0 +1,19 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10341|SIMOB|7|29.10.1996|26.11.1996|05.11.1996|3|26.78|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10367|VAFFE|7|28.11.1996|26.12.1996|02.12.1996|3|13.55|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10399|VAFFE|8|31.12.1996|14.01.1997|08.01.1997|3|27.36|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10417|SIMOB|4|16.01.1997|13.02.1997|28.01.1997|3|70.29|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10465|VAFFE|1|05.03.1997|02.04.1997|14.03.1997|3|145.04|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10556|SIMOB|2|03.06.1997|15.07.1997|13.06.1997|1|9.8|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10591|VAFFE|1|07.07.1997|21.07.1997|16.07.1997|1|55.92|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10602|VAFFE|8|17.07.1997|14.08.1997|22.07.1997|2|2.92|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10642|SIMOB|7|22.08.1997|19.09.1997|05.09.1997|3|41.89|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10669|SIMOB|2|15.09.1997|13.10.1997|22.09.1997|1|24.39|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10688|VAFFE|4|01.10.1997|15.10.1997|07.10.1997|2|299.09|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10744|VAFFE|6|17.11.1997|15.12.1997|24.11.1997|1|69.19|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10769|VAFFE|3|08.12.1997|05.01.1998|12.12.1997|1|65.06|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10802|SIMOB|4|29.12.1997|26.01.1998|02.01.1998|2|257.26|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark
+10921|VAFFE|1|03.03.1998|14.04.1998|09.03.1998|1|176.48|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10946|VAFFE|1|12.03.1998|09.04.1998|19.03.1998|2|27.2|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+10994|VAFFE|2|02.04.1998|16.04.1998|09.04.1998|3|65.53|Vaffeljernet|Smagsloget 45|Arhus||8200|Denmark
+11074|SIMOB|7|06.05.1998|03.06.1998||2|18.44|Simons bistro|Vinbaltet 34|Kobenhavn||1734|Denmark

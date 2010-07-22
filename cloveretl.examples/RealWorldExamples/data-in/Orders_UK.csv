@@ -1,0 +1,57 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10289|BSBEV|7|26.08.1996|23.09.1996|28.08.1996|3|22.77|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10315|ISLAT|4|26.09.1996|24.10.1996|03.10.1996|2|41.76|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10318|ISLAT|8|01.10.1996|29.10.1996|04.10.1996|2|4.73|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10321|ISLAT|3|03.10.1996|31.10.1996|11.10.1996|2|3.43|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10355|AROUT|6|15.11.1996|13.12.1996|20.11.1996|1|41.95|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10359|SEVES|5|21.11.1996|19.12.1996|26.11.1996|3|288.43|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10364|EASTC|1|26.11.1996|07.01.1997|04.12.1996|1|71.97|Eastern Connection|35 King George|London||WX3 6FW|UK
+10377|SEVES|1|09.12.1996|06.01.1997|13.12.1996|3|22.21|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10383|AROUT|8|16.12.1996|13.01.1997|18.12.1996|3|34.24|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10388|SEVES|2|19.12.1996|16.01.1997|20.12.1996|1|34.86|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10400|EASTC|1|01.01.1997|29.01.1997|16.01.1997|3|83.93|Eastern Connection|35 King George|London||WX3 6FW|UK
+10435|CONSH|8|04.02.1997|18.03.1997|07.02.1997|2|9.21|Consolidated Holdings|Berkeley Gardens12  Brewery|London||WX1 6LT|UK
+10453|AROUT|1|21.02.1997|21.03.1997|26.02.1997|2|25.36|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10462|CONSH|2|03.03.1997|31.03.1997|18.03.1997|1|6.17|Consolidated Holdings|Berkeley Gardens12  Brewery|London||WX1 6LT|UK
+10471|BSBEV|2|11.03.1997|08.04.1997|18.03.1997|3|45.59|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10472|SEVES|8|12.03.1997|09.04.1997|19.03.1997|1|4.2|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10473|ISLAT|1|13.03.1997|27.03.1997|21.03.1997|3|16.37|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10484|BSBEV|3|24.03.1997|21.04.1997|01.04.1997|3|6.88|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10517|NORTS|3|24.04.1997|22.05.1997|29.04.1997|3|32.07|North/South|South House300 Queensbridge|London||SW7 1RZ|UK
+10523|SEVES|7|01.05.1997|29.05.1997|30.05.1997|2|77.63|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10532|EASTC|7|09.05.1997|06.06.1997|12.05.1997|3|74.46|Eastern Connection|35 King George|London||WX3 6FW|UK
+10538|BSBEV|9|15.05.1997|12.06.1997|16.05.1997|3|4.87|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10539|BSBEV|6|16.05.1997|13.06.1997|23.05.1997|3|12.36|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10547|SEVES|3|23.05.1997|20.06.1997|02.06.1997|2|178.43|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10558|AROUT|1|04.06.1997|02.07.1997|10.06.1997|2|72.97|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10578|BSBEV|4|24.06.1997|22.07.1997|25.07.1997|3|29.6|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10599|BSBEV|6|15.07.1997|26.08.1997|21.07.1997|3|29.98|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10621|ISLAT|4|05.08.1997|02.09.1997|11.08.1997|2|23.73|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10674|ISLAT|4|18.09.1997|16.10.1997|30.09.1997|2|0.9|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10707|AROUT|4|16.10.1997|30.10.1997|23.10.1997|3|21.74|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10726|EASTC|4|03.11.1997|17.11.1997|05.12.1997|1|16.56|Eastern Connection|35 King George|London||WX3 6FW|UK
+10741|AROUT|4|14.11.1997|28.11.1997|18.11.1997|3|10.96|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10743|AROUT|1|17.11.1997|15.12.1997|21.11.1997|2|23.72|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10749|ISLAT|4|20.11.1997|18.12.1997|19.12.1997|2|61.53|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10752|NORTS|2|24.11.1997|22.12.1997|28.11.1997|3|1.39|North/South|South House300 Queensbridge|London||SW7 1RZ|UK
+10768|AROUT|3|08.12.1997|05.01.1998|15.12.1997|2|146.32|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10793|AROUT|3|24.12.1997|21.01.1998|08.01.1998|3|4.5200000000000005|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10798|ISLAT|2|26.12.1997|23.01.1998|05.01.1998|1|2.33|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10800|SEVES|1|26.12.1997|23.01.1998|05.01.1998|3|137.44|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10804|SEVES|6|30.12.1997|27.01.1998|07.01.1998|2|27.33|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10829|ISLAT|9|13.01.1998|10.02.1998|23.01.1998|1|154.72|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10848|CONSH|7|23.01.1998|20.02.1998|29.01.1998|2|38.24|Consolidated Holdings|Berkeley Gardens12  Brewery|London||WX1 6LT|UK
+10864|AROUT|4|02.02.1998|02.03.1998|09.02.1998|2|3.04|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10869|SEVES|5|04.02.1998|04.03.1998|09.02.1998|1|143.28|Seven Seas Imports|90 Wadhurst Rd.|London||OX15 4NB|UK
+10920|AROUT|4|03.03.1998|31.03.1998|09.03.1998|2|29.61|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10933|ISLAT|6|06.03.1998|03.04.1998|16.03.1998|3|54.15|Island Trading|Garden HouseCrowther Way|Cowes|Isle of Wight|PO31 7PJ|UK
+10943|BSBEV|4|11.03.1998|08.04.1998|19.03.1998|2|2.17|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10947|BSBEV|3|13.03.1998|10.04.1998|16.03.1998|2|3.26|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+10953|AROUT|9|16.03.1998|30.03.1998|25.03.1998|2|23.72|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+10987|EASTC|8|31.03.1998|28.04.1998|06.04.1998|1|185.48|Eastern Connection|35 King George|London||WX3 6FW|UK
+11016|AROUT|9|10.04.1998|08.05.1998|13.04.1998|2|33.8|Around the Horn|Brook FarmStratford St. Mary|Colchester|Essex|CO7 6JX|UK
+11023|BSBEV|1|14.04.1998|28.04.1998|24.04.1998|2|123.83|B's Beverages|Fauntleroy Circus|London||EC2 5NT|UK
+11024|EASTC|4|15.04.1998|13.05.1998|20.04.1998|1|74.36|Eastern Connection|35 King George|London||WX3 6FW|UK
+11047|EASTC|7|24.04.1998|22.05.1998|01.05.1998|3|46.62|Eastern Connection|35 King George|London||WX3 6FW|UK
+11056|EASTC|8|28.04.1998|12.05.1998|01.05.1998|2|278.96|Eastern Connection|35 King George|London||WX3 6FW|UK
+11057|NORTS|3|29.04.1998|27.05.1998|01.05.1998|3|4.13|North/South|South House300 Queensbridge|London||SW7 1RZ|UK

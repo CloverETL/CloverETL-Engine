@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Fri Jul 16 09:07:29 CEST 2010" guiVersion="2.9.3" id="1279289229812" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Jul 16 16:20:36 CEST 2010" modifiedBy="Petr" name="graphDatabaseAccess" revision="1.3">
+<Global>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="192" backgroundColorR="192" folded="false" height="147" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Navod" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="375" x="315" y="259">
+<attr name="text"><![CDATA[S Derby se distribuuje sample databaze ToursDB, tak bych pouzil tu. Precteni jedne tabulky třeba CITIES. Zapsat do tabulky CITIES další zaznamy, nektere se vlozi, nektere spadnou na violation of PK, jiné na violation of FK.
+
+S DBExecute to je horsi, derby neumi store procedure, takze zbyva parametrizovany SELECT/INSERT/UPDATE. Nebo mozna nejaky CREATE TABLE prikaz.]]></attr>
+</Note>
+</Global>
+</Graph>

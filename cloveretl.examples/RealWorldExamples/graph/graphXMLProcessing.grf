@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Evaluation Devel" modified="Thu Jul 22 15:17:56 CEST 2010" modifiedBy="lucie" name="graphXMLProcessing" revision="1.48">
+<Global>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="actor_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field name="movie_id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="movie" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="movie_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="description" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="release_year" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="language" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="length" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="rating" nullable="true" shift="0" size="0" type="string"/>
+<Field name="category" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="movie_short" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="movie_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="description" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="release_year" nullable="true" shift="0" size="0" type="integer"/>
+<Field name="category" type="string"/>
+<Field name="actor_id" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="104" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="XML data processing" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="493" x="210" y="36">
+<attr name="text"><![CDATA[Graph reads data about movies from one XML structure and writes them to the other XML structure and also generates HTML report with list of movies.
+
+The structure of input XML file is defined by XSD so you can use visual mapping editor for defining of mapping input fields to inner clover fields.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="28" y="22">
+<attr name="text"><![CDATA[It reads data from following XML structure.
+
+<movies>
+  <movie>
+     ...
+    <actor>...</actor>
+    <actor>...</actor>
+  </movie>
+  ...
+</movies>]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="757" y="65">
+<attr name="text"><![CDATA[It writes data to following XML structure.
+
+<actors>
+  <actor>
+    <movie>...</movie>
+    <movie>...</movie>
+  </actor>
+  ...
+</actors>]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="433" y="396">
+<attr name="text"><![CDATA[
+
+
+
+
+It generates HTML page with list of movies formatted in table structure.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dedupKey="actor_id(a)" enabled="enabled" guiHeight="0" guiName="only one record by actor" guiWidth="0" guiX="599" guiY="199" id="DEDUP0" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="join actor_id to movie" guiWidth="0" guiX="435" guiY="280" id="EXT_HASH_JOIN0" joinKey="$movie_id=$movie_id" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.actor_id := $0.actor_id;
+	$0.movie_id := $1.movie_id;
+	$0.title := $1.title;
+	$0.description := $1.description;
+	$0.release_year := $1.release_year;
+	$0.category := $1.category;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="actor_id" guiWidth="0" guiX="436" guiY="199" id="EXT_SORT0" sortKey="actor_id(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="271" guiY="285" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="272" guiY="200" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/Movies_list.html" footer="&#9;&#9;&#9;&lt;/tbody&gt;&#13;&#10;&#9;&#9;&lt;/table&gt;&#13;&#10;&#9;&lt;/body&gt;&#13;&#10;&lt;/html&gt;&#13;&#10;" guiHeight="0" guiName="Movies HTML list" guiWidth="0" guiX="442" guiY="405" header="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01//EN&quot;&#13;&#10;   &quot;http://www.w3.org/TR/html4/strict.dtd&quot;&gt;&#13;&#10;&lt;html&gt;&#13;&#10;   &lt;head&gt;&#13;&#10;      &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;&#13;&#10;      &lt;title&gt;List of movies&lt;/title&gt;&#13;&#10;   &lt;/head&gt;&#13;&#10;   &lt;body&gt;&#13;&#10;&#9;&#9;&lt;h1&gt;Movies&lt;/h1&gt;&#13;&#10;&#9;&#9;&lt;table style=&quot;border: 0px; border-collapse: collapse&quot; width=&quot;100%&quot; summary=&quot;Readers&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;colgroup&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;40%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;/colgroup&gt;&#13;&#10;&#9;&#9;&#9;&lt;thead&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;movie_id&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;title&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;description&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;language&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;release year&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;length (min)&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;&#9;&#9;&#9;&lt;/thead&gt;&#13;&#10;&#9;&#9;&#9;&lt;tbody&gt;&#13;&#10;" id="STRUCTURE_WRITER0" mask="&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$movie_id&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$title&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$description&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$language&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$release_year&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$length&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="Read Movies.xml" guiWidth="0" guiX="40" guiY="199" id="XML_EXTRACT0" schema="${DATAIN_DIR}/movies.xsd" sourceUri="${DATAIN_DIR}/Movies.xml" type="XML_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="movies">
+		<Mapping element="movie" outPort="1">
+			<Mapping element="actor" outPort="0" parentKey="movie_id" generatedKey="movie_id"
+					xmlFields="first_name;actor_id;last_name"
+					cloverFields="first_name;actor_id;last_name"/>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileUrl="${DATAOUT_DIR}/Actors.xml" guiHeight="0" guiName="Actors XML list" guiWidth="0" guiX="768" guiY="241" id="XML_WRITER0" rootElement="actors" rootInfoAttributes="false" type="XML_WRITER" useRootElement="true">
+<attr name="mapping"><![CDATA[<Mapping inPort="0" element="actor" fieldsAsExcept="actor_id" fieldsIgnore="movie_id">
+	<Mapping inPort="1" element="movie" parentKey="actor_id" key="actor_id" fieldsIgnore="movie_id;release_year;category;actor_id">
+    </Mapping>
+</Mapping>]]></attr>
+</Node>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="XML_WRITER0:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XML_WRITER0:1"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata5" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY0:0"/>
+</Phase>
+</Graph>
