@@ -1,0 +1,47 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10257|HILAA|4|16.07.1996|13.08.1996|22.07.1996|3|81.91|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10268|GROSR|8|30.07.1996|27.08.1996|02.08.1996|3|66.29|GROSELLA-Restaurante|5a Ave. Los Palos Grandes|Caracas|DF|1081|Venezuela
+10283|LILAS|3|16.08.1996|13.09.1996|23.08.1996|3|84.81|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10296|LILAS|6|03.09.1996|01.10.1996|11.09.1996|1|0.12000000000000001|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10330|LILAS|3|16.10.1996|13.11.1996|28.10.1996|1|12.75|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10357|LILAS|1|19.11.1996|17.12.1996|02.12.1996|3|34.88|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10381|LILAS|3|12.12.1996|09.01.1997|13.12.1996|3|7.99|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10395|HILAA|6|26.12.1996|23.01.1997|03.01.1997|1|184.41|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10405|LINOD|1|06.01.1997|03.02.1997|22.01.1997|1|34.82|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10461|LILAS|1|28.02.1997|28.03.1997|05.03.1997|3|148.61|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10476|HILAA|8|17.03.1997|14.04.1997|24.03.1997|3|4.41|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10485|LINOD|4|25.03.1997|08.04.1997|31.03.1997|2|64.45|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10486|HILAA|1|26.03.1997|23.04.1997|02.04.1997|2|30.53|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10490|HILAA|7|31.03.1997|28.04.1997|03.04.1997|2|210.19|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10498|HILAA|8|07.04.1997|05.05.1997|11.04.1997|2|29.75|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10499|LILAS|4|08.04.1997|06.05.1997|16.04.1997|2|102.02|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10543|LILAS|8|21.05.1997|18.06.1997|23.05.1997|2|48.17|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10552|HILAA|2|29.05.1997|26.06.1997|05.06.1997|1|83.22|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10601|HILAA|7|16.07.1997|27.08.1997|22.07.1997|1|58.3|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10613|HILAA|4|29.07.1997|26.08.1997|01.08.1997|2|8.11|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10638|LINOD|3|20.08.1997|17.09.1997|01.09.1997|1|158.44|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10641|HILAA|4|22.08.1997|19.09.1997|26.08.1997|2|179.61|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10697|LINOD|3|08.10.1997|05.11.1997|14.10.1997|1|45.52|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10705|HILAA|9|15.10.1997|12.11.1997|18.11.1997|2|3.52|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10729|LINOD|8|04.11.1997|16.12.1997|14.11.1997|3|141.06|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10780|LILAS|2|16.12.1997|30.12.1997|25.12.1997|1|42.13|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10785|GROSR|1|18.12.1997|15.01.1998|24.12.1997|3|1.51|GROSELLA-Restaurante|5a Ave. Los Palos Grandes|Caracas|DF|1081|Venezuela
+10796|HILAA|3|25.12.1997|22.01.1998|14.01.1998|1|26.52|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10811|LINOD|8|02.01.1998|30.01.1998|08.01.1998|1|31.22|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10823|LILAS|5|09.01.1998|06.02.1998|13.01.1998|2|163.97|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10838|LINOD|3|19.01.1998|16.02.1998|23.01.1998|3|59.28|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10840|LINOD|4|19.01.1998|02.03.1998|16.02.1998|2|2.71|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10863|HILAA|4|02.02.1998|02.03.1998|17.02.1998|2|30.26|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10899|LILAS|5|20.02.1998|20.03.1998|26.02.1998|3|1.21|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+10901|HILAA|4|23.02.1998|23.03.1998|26.02.1998|1|62.09|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10919|LINOD|2|02.03.1998|30.03.1998|04.03.1998|2|19.8|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10954|LINOD|5|17.03.1998|28.04.1998|20.03.1998|1|27.91|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+10957|HILAA|8|18.03.1998|15.04.1998|27.03.1998|3|105.36|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10960|HILAA|3|19.03.1998|02.04.1998|08.04.1998|1|2.08|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10976|HILAA|1|25.03.1998|06.05.1998|03.04.1998|1|37.97|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+10997|LILAS|8|03.04.1998|15.05.1998|13.04.1998|2|73.91|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+11014|LINOD|2|10.04.1998|08.05.1998|15.04.1998|3|23.6|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+11039|LINOD|1|21.04.1998|19.05.1998||2|65.0|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Nueva Esparta|4980|Venezuela
+11055|HILAA|7|28.04.1998|26.05.1998|05.05.1998|2|120.92|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Táchira|5022|Venezuela
+11065|LILAS|8|01.05.1998|29.05.1998||1|12.91|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela
+11071|LILAS|1|05.05.1998|02.06.1998||1|0.93|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Lara|3508|Venezuela

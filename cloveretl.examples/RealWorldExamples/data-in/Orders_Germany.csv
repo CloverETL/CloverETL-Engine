@@ -1,0 +1,123 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10249|TOMSP|6|05.07.1996|16.08.1996|10.07.1996|1|11.61|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10260|OTTIK|4|19.07.1996|16.08.1996|29.07.1996|1|55.09|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10267|FRANK|4|29.07.1996|26.08.1996|06.08.1996|1|208.58|Frankenversand|Berliner Platz 43|München||80805|Germany
+10273|QUICK|3|05.08.1996|02.09.1996|12.08.1996|3|76.07|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10277|MORGK|2|09.08.1996|06.09.1996|13.08.1996|3|125.77|Morgenstern Gesundkost|Heerstr. 22|Leipzig||04179|Germany
+10279|LEHMS|8|13.08.1996|10.09.1996|16.08.1996|2|25.83|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10284|LEHMS|4|19.08.1996|16.09.1996|27.08.1996|1|76.56|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10285|QUICK|1|20.08.1996|17.09.1996|26.08.1996|2|76.83|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10286|QUICK|8|21.08.1996|18.09.1996|30.08.1996|3|229.24|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10301|WANDK|8|09.09.1996|07.10.1996|17.09.1996|2|45.08|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10312|WANDK|2|23.09.1996|21.10.1996|03.10.1996|2|40.26|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10313|QUICK|2|24.09.1996|22.10.1996|04.10.1996|2|1.9600000000000002|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10323|KOENE|4|07.10.1996|04.11.1996|14.10.1996|1|4.88|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10325|KOENE|1|09.10.1996|23.10.1996|14.10.1996|3|64.86|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10337|FRANK|4|24.10.1996|21.11.1996|29.10.1996|3|108.26|Frankenversand|Berliner Platz 43|München||80805|Germany
+10342|FRANK|4|30.10.1996|13.11.1996|04.11.1996|2|54.83|Frankenversand|Berliner Platz 43|München||80805|Germany
+10343|LEHMS|4|31.10.1996|28.11.1996|06.11.1996|1|110.37|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10345|QUICK|2|04.11.1996|02.12.1996|11.11.1996|2|249.06|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10348|WANDK|4|07.11.1996|05.12.1996|15.11.1996|2|0.78|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10356|WANDK|6|18.11.1996|16.12.1996|27.11.1996|2|36.71|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10361|QUICK|1|22.11.1996|20.12.1996|03.12.1996|2|183.17|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10363|DRACD|4|26.11.1996|24.12.1996|04.12.1996|3|30.54|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+10391|DRACD|3|23.12.1996|20.01.1997|31.12.1996|3|5.45|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+10396|FRANK|1|27.12.1996|10.01.1997|06.01.1997|3|135.35|Frankenversand|Berliner Platz 43|München||80805|Germany
+10407|OTTIK|2|07.01.1997|04.02.1997|30.01.1997|2|91.48|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10418|QUICK|4|17.01.1997|14.02.1997|24.01.1997|1|17.55|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10438|TOMSP|3|06.02.1997|06.03.1997|14.02.1997|2|8.24|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10446|TOMSP|6|14.02.1997|14.03.1997|19.02.1997|1|14.68|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10451|QUICK|4|19.02.1997|05.03.1997|12.03.1997|3|189.09|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10456|KOENE|8|25.02.1997|08.04.1997|28.02.1997|2|8.12|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10457|KOENE|2|25.02.1997|25.03.1997|03.03.1997|1|11.57|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10468|KOENE|3|07.03.1997|04.04.1997|12.03.1997|3|44.12|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10488|FRANK|8|27.03.1997|24.04.1997|02.04.1997|2|4.93|Frankenversand|Berliner Platz 43|München||80805|Germany
+10497|LEHMS|7|04.04.1997|02.05.1997|07.04.1997|1|36.21|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10501|BLAUS|9|09.04.1997|07.05.1997|16.04.1997|3|8.85|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10506|KOENE|9|15.04.1997|13.05.1997|02.05.1997|2|21.19|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10508|OTTIK|1|16.04.1997|14.05.1997|13.05.1997|2|4.99|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10509|BLAUS|4|17.04.1997|15.05.1997|29.04.1997|1|0.15000000000000002|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10513|WANDK|7|22.04.1997|03.06.1997|28.04.1997|1|105.65|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10515|QUICK|2|23.04.1997|07.05.1997|23.05.1997|1|204.47|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10522|LEHMS|4|30.04.1997|28.05.1997|06.05.1997|1|45.33|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10527|QUICK|7|05.05.1997|02.06.1997|07.05.1997|1|41.9|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10534|LEHMS|8|12.05.1997|09.06.1997|14.05.1997|2|27.94|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10536|LEHMS|3|14.05.1997|11.06.1997|06.06.1997|2|58.88|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10540|QUICK|3|19.05.1997|16.06.1997|13.06.1997|3|1007.64|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10542|KOENE|1|20.05.1997|17.06.1997|26.05.1997|3|10.95|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10548|TOMSP|3|26.05.1997|23.06.1997|02.06.1997|2|1.43|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10549|QUICK|5|27.05.1997|10.06.1997|30.05.1997|1|171.24|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10554|OTTIK|4|30.05.1997|27.06.1997|05.06.1997|3|120.97|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10557|LEHMS|9|03.06.1997|17.06.1997|06.06.1997|2|96.72|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10560|FRANK|8|06.06.1997|04.07.1997|09.06.1997|1|36.65|Frankenversand|Berliner Platz 43|München||80805|Germany
+10575|MORGK|5|20.06.1997|04.07.1997|30.06.1997|1|127.34|Morgenstern Gesundkost|Heerstr. 22|Leipzig||04179|Germany
+10580|OTTIK|4|26.06.1997|24.07.1997|01.07.1997|3|75.89|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10582|BLAUS|3|27.06.1997|25.07.1997|14.07.1997|2|27.71|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10588|QUICK|2|03.07.1997|31.07.1997|10.07.1997|3|194.67|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10592|LEHMS|3|08.07.1997|05.08.1997|16.07.1997|1|32.1|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10593|LEHMS|7|09.07.1997|06.08.1997|13.08.1997|2|174.2|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10608|TOMSP|4|23.07.1997|20.08.1997|01.08.1997|2|27.79|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10614|BLAUS|8|29.07.1997|26.08.1997|01.08.1997|3|1.9300000000000002|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10623|FRANK|8|07.08.1997|04.09.1997|12.08.1997|2|97.18|Frankenversand|Berliner Platz 43|München||80805|Germany
+10630|KOENE|1|13.08.1997|10.09.1997|19.08.1997|2|32.35|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10632|WANDK|8|14.08.1997|11.09.1997|19.08.1997|1|41.38|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10640|WANDK|4|21.08.1997|18.09.1997|28.08.1997|1|23.55|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10643|ALFKI|6|25.08.1997|22.09.1997|02.09.1997|1|29.46|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+10651|WANDK|8|01.09.1997|29.09.1997|11.09.1997|2|20.6|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10653|FRANK|1|02.09.1997|30.09.1997|19.09.1997|1|93.25|Frankenversand|Berliner Platz 43|München||80805|Germany
+10658|QUICK|4|05.09.1997|03.10.1997|08.09.1997|1|364.15|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10668|WANDK|1|15.09.1997|13.10.1997|23.09.1997|2|47.22|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+10670|FRANK|4|16.09.1997|14.10.1997|18.09.1997|1|203.48|Frankenversand|Berliner Platz 43|München||80805|Germany
+10675|FRANK|5|19.09.1997|17.10.1997|23.09.1997|2|31.85|Frankenversand|Berliner Platz 43|München||80805|Germany
+10684|OTTIK|3|26.09.1997|24.10.1997|30.09.1997|1|145.63|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10691|QUICK|2|03.10.1997|14.11.1997|22.10.1997|2|810.05|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10692|ALFKI|4|03.10.1997|31.10.1997|13.10.1997|2|61.02|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+10694|QUICK|8|06.10.1997|03.11.1997|09.10.1997|3|398.36|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10699|MORGK|3|09.10.1997|06.11.1997|13.10.1997|3|0.5800000000000001|Morgenstern Gesundkost|Heerstr. 22|Leipzig||04179|Germany
+10702|ALFKI|4|13.10.1997|24.11.1997|21.10.1997|1|23.94|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+10717|FRANK|1|24.10.1997|21.11.1997|29.10.1997|2|59.25|Frankenversand|Berliner Platz 43|München||80805|Germany
+10718|KOENE|1|27.10.1997|24.11.1997|29.10.1997|3|170.88|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10721|QUICK|5|29.10.1997|26.11.1997|31.10.1997|3|48.92|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10745|QUICK|9|18.11.1997|16.12.1997|27.11.1997|1|3.52|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10765|QUICK|3|04.12.1997|01.01.1998|09.12.1997|3|42.74|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10766|OTTIK|4|05.12.1997|02.01.1998|09.12.1997|1|157.55|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10772|LEHMS|3|10.12.1997|07.01.1998|19.12.1997|2|91.28|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10779|MORGK|3|16.12.1997|13.01.1998|14.01.1998|2|58.13|Morgenstern Gesundkost|Heerstr. 22|Leipzig||04179|Germany
+10788|QUICK|1|22.12.1997|19.01.1998|19.01.1998|2|42.7|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10791|FRANK|6|23.12.1997|20.01.1998|01.01.1998|2|16.85|Frankenversand|Berliner Platz 43|München||80805|Germany
+10797|DRACD|7|25.12.1997|22.01.1998|05.01.1998|2|33.35|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+10799|KOENE|9|26.12.1997|06.02.1998|05.01.1998|3|30.76|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10817|KOENE|3|06.01.1998|20.01.1998|13.01.1998|2|306.07|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10825|DRACD|1|09.01.1998|06.02.1998|14.01.1998|1|79.25|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+10833|OTTIK|6|15.01.1998|12.02.1998|23.01.1998|2|71.49|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+10835|ALFKI|1|15.01.1998|12.02.1998|21.01.1998|3|69.53|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+10845|QUICK|8|21.01.1998|04.02.1998|30.01.1998|1|212.98|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10849|KOENE|9|23.01.1998|20.02.1998|30.01.1998|2|0.56|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10853|BLAUS|9|27.01.1998|24.02.1998|03.02.1998|2|53.83|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10859|FRANK|1|29.01.1998|26.02.1998|02.02.1998|2|76.1|Frankenversand|Berliner Platz 43|München||80805|Germany
+10862|LEHMS|8|30.01.1998|13.03.1998|02.02.1998|2|53.23|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10865|QUICK|2|02.02.1998|16.02.1998|12.02.1998|1|348.14|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10878|QUICK|4|10.02.1998|10.03.1998|12.02.1998|1|46.69|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10891|LEHMS|7|17.02.1998|17.03.1998|19.02.1998|2|20.37|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10893|KOENE|9|18.02.1998|18.03.1998|20.02.1998|2|77.78|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+10929|FRANK|6|05.03.1998|02.04.1998|12.03.1998|1|33.93|Frankenversand|Berliner Platz 43|München||80805|Germany
+10934|LEHMS|3|09.03.1998|06.04.1998|12.03.1998|3|32.01|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany
+10938|QUICK|3|10.03.1998|07.04.1998|16.03.1998|2|31.89|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10945|MORGK|4|12.03.1998|09.04.1998|18.03.1998|1|10.22|Morgenstern Gesundkost|Heerstr. 22|Leipzig||04179|Germany
+10952|ALFKI|1|16.03.1998|27.04.1998|24.03.1998|1|40.42|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+10956|BLAUS|6|17.03.1998|28.04.1998|20.03.1998|2|44.65|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+10962|QUICK|8|19.03.1998|16.04.1998|23.03.1998|2|275.79|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10967|TOMSP|2|23.03.1998|20.04.1998|02.04.1998|2|62.22|Toms Spezialitäten|Luisenstr. 48|Münster||44087|Germany
+10991|QUICK|1|01.04.1998|29.04.1998|07.04.1998|1|38.51|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10996|QUICK|4|02.04.1998|30.04.1998|10.04.1998|2|1.12|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+10999|OTTIK|6|03.04.1998|01.05.1998|10.04.1998|2|96.35|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+11011|ALFKI|3|09.04.1998|07.05.1998|13.04.1998|1|1.21|Alfreds Futterkiste|Obere Str. 57|Berlin||12209|Germany
+11012|FRANK|1|09.04.1998|23.04.1998|17.04.1998|3|242.95|Frankenversand|Berliner Platz 43|München||80805|Germany
+11020|OTTIK|2|14.04.1998|12.05.1998|16.04.1998|2|43.3|Ottilies Käseladen|Mehrheimerstr. 369|Köln||50739|Germany
+11021|QUICK|3|14.04.1998|12.05.1998|21.04.1998|1|297.18|QUICK-Stop|Taucherstraße 10|Cunewalde||01307|Germany
+11028|KOENE|2|16.04.1998|14.05.1998|22.04.1998|1|29.59|Königlich Essen|Maubelstr. 90|Brandenburg||14776|Germany
+11036|DRACD|8|20.04.1998|18.05.1998|22.04.1998|3|149.47|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+11046|WANDK|8|23.04.1998|21.05.1998|24.04.1998|2|71.64|Die Wandernde Kuh|Adenauerallee 900|Stuttgart||70563|Germany
+11058|BLAUS|9|29.04.1998|27.05.1998||3|31.14|Blauer See Delikatessen|Forsterstr. 57|Mannheim||68306|Germany
+11067|DRACD|1|04.05.1998|18.05.1998|06.05.1998|2|7.98|Drachenblut Delikatessen|Walserweg 21|Aachen||52066|Germany
+11070|LEHMS|2|05.05.1998|02.06.1998||1|136.0|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.||60528|Germany

@@ -1,0 +1,23 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10266|WARTH|3|26.07.1996|06.09.1996|31.07.1996|3|25.73|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10270|WARTH|1|01.08.1996|29.08.1996|02.08.1996|1|136.54|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10320|WARTH|5|03.10.1996|17.10.1996|18.10.1996|3|34.57|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10333|WARTH|5|18.10.1996|15.11.1996|25.10.1996|3|0.5900000000000001|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10412|WARTH|8|13.01.1997|10.02.1997|15.01.1997|2|3.77|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10416|WARTH|8|16.01.1997|13.02.1997|27.01.1997|3|22.72|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10437|WARTH|8|05.02.1997|05.03.1997|12.02.1997|1|19.97|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10455|WARTH|8|24.02.1997|07.04.1997|03.03.1997|2|180.45|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10526|WARTH|4|05.05.1997|02.06.1997|15.05.1997|2|58.59|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10553|WARTH|2|30.05.1997|27.06.1997|03.06.1997|2|149.49|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10583|WARTH|2|30.06.1997|28.07.1997|04.07.1997|2|7.28|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10615|WILMK|2|30.07.1997|27.08.1997|06.08.1997|3|0.7500000000000001|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+10636|WARTH|4|19.08.1997|16.09.1997|26.08.1997|1|1.15|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10673|WILMK|2|18.09.1997|16.10.1997|19.09.1997|1|22.76|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+10695|WILMK|7|07.10.1997|18.11.1997|14.10.1997|1|16.72|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+10750|WARTH|9|21.11.1997|19.12.1997|24.11.1997|1|79.3|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10781|WARTH|2|17.12.1997|14.01.1998|19.12.1997|3|73.16|Wartian Herkku|Torikatu 38|Oulu||90110|Finland
+10873|WILMK|4|06.02.1998|06.03.1998|09.02.1998|1|0.82|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+10879|WILMK|3|10.02.1998|10.03.1998|12.02.1998|3|8.5|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+10910|WILMK|1|26.02.1998|26.03.1998|04.03.1998|3|38.11|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+11005|WILMK|2|07.04.1998|05.05.1998|10.04.1998|1|0.7500000000000001|Wilman Kala|Keskuskatu 45|Helsinki||21240|Finland
+11025|WARTH|6|15.04.1998|13.05.1998|24.04.1998|3|29.17|Wartian Herkku|Torikatu 38|Oulu||90110|Finland

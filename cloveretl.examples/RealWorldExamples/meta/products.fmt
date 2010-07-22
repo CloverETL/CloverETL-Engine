@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="products" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="prod_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="category" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="actor" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" length="14" name="price" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="special" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="common_prod_id" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
