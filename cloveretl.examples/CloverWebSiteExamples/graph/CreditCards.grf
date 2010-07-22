@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Thu Jul 22 16:19:12 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.50">
+<Global>
+<Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
+<Field name="Id" type="integer"/>
+<Field name="LastName" type="string"/>
+<Field name="FirstName" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates_with_id" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+<Field name="id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_joined" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency_id" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record name="Transactions" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="TransactionId" size="10" type="integer"/>
+<Field name="CustomerId" size="7" type="integer"/>
+<Field name="Amount" scale="2" size="10" type="decimal"/>
+<Field name="CurrencyId" size="3" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="transactions_only" recordDelimiter="\n" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="amount" type="decimal"/>
+<Field name="currency_id" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="customer_id" enabled="enabled" guiHeight="0" guiName="SumByCustomer" guiWidth="0" guiX="241" guiY="488" id="AGGREGATE0" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency_id:=first($currency_id);" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiHeight="0" guiName="Transactions" guiWidth="0" guiX="27" guiY="17" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiHeight="0" guiName="Customers" guiWidth="0" guiX="27" guiY="110" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Amount&gt;400k" guiWidth="0" guiX="478" guiY="488" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.amount > 400000]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ConvertCurrency" guiWidth="0" guiX="837" guiY="138" id="EXT_HASH_JOIN0" joinKey="$currency_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.customer_id = $0.customer_id;
+	$0.customer_last_name = $0.customer_last_name;
+	$0.customer_first_name = $0.customer_first_name;
+	$0.transaction_id = $0.transaction_id;
+	$0.amount = $0.amount  / $1.rate : $amount;
+	$0.currency_id = iif (isnull($rates_with_id.id) , $rates_with_id.id, -1);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="MatchCustomer" guiWidth="0" guiX="534" guiY="73" id="EXT_MERGE_JOIN0" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.transaction_id = $0.TransactionId;
+	$0.customer_id = $1.Id;
+	$0.amount = $0.Amount;
+	$0.currency_id = $0.CurrencyId;
+	$0.customer_last_name = $1.LastName;
+	$0.customer_first_name = $1.FirstName;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="282" guiY="17" id="FAST_SORT0" sortKey="CustomerId(a)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="688" guiY="488" id="FAST_SORT1" sortKey="amount(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="27" guiY="386" id="PARTITION0" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
+// This transformation partitions input records into multiple output ports.
+
+// Returns the number of the output port where the input record will be sent.
+function integer getOutputPort() {
+	if (isnull($customer_id)) return 0;
+	if ($currency_id != -1) return 1;
+  return 2;
+}
+
+// Called during component initialization, partitionCount is the number of output ports.
+// function void init(integer partitionCount) {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources.
+// All resources allocated within this method should be released by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if getOutputPort() throws an exception.
+// function integer getOutputPortOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="534" guiY="211" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer counter = 1;
+// Transforms input record into output record.
+function integer transform() {
+	$0.currency = $0.currency;
+	$0.rate = $0.rate;
+	$0.id = counter++;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="356" guiY="286" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.* = $0.*;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/risky-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="risky-customers.html" guiWidth="0" guiX="859" guiY="483" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$FirstName $LastName&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-customer" guiWidth="0" guiX="864" guiY="282" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-currency.html" guiWidth="0" guiX="863" guiY="382" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="27" guiY="211" id="XML_EXTRACT0" sourceUri="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml" type="XML_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+  <Mapping element="gesmes:Envelope">
+    <Mapping element="Cube">
+     <Mapping element="Cube">
+        <Mapping element="Cube" outPort="0"/>
+      </Mapping>
+    </Mapping>
+  </Mapping>
+</Mappings>]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="FAST_SORT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="FAST_SORT1:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="true" fromNode="FAST_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER3:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER2:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+</Phase>
+</Graph>
