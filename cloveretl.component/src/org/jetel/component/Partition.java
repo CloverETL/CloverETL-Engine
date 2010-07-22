@@ -146,6 +146,11 @@ public class Partition extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "PARTITION";
 
+	/**
+	 * This delimiter is used to separate particular ranges i.e. <1,2>;<5,6>
+	 */
+	public final static String RANGES_DELIMITER = ";";
+	
 	private final static int READ_FROM_PORT=0;
 	
 	private String[] partitionKeyNames = null;
@@ -422,7 +427,7 @@ public class Partition extends Node {
 					StringUtils.split(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE)) :
 					null;		
 			String[] ranges = xattribs.exists(XML_RANGES_ATTRIBUTE) ?
-					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE)) :
+					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE), RANGES_DELIMITER) :
 						null;		
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE),
 		    		xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE, null, false),
