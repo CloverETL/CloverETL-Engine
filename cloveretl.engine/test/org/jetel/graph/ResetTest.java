@@ -107,7 +107,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionDecimal2long.grf") // ok, is to fail
 							&& !pathname.getName().equals("conversionDouble2integer.grf") // ok, is to fail							
 							&& !pathname.getName().equals("conversionDouble2long.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionLong2integer.grf"); // ok, is to fail							
+							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail							
+							&& !pathname.getName().equals("mountainsInformix.grf"); // see issue 2550							
 				}
 			});
 			
