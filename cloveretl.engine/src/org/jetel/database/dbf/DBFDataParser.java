@@ -178,7 +178,9 @@ public class DBFDataParser implements Parser {
         }
         try {
             if (!populateCharBuffer()) { throw new JetelException(
-                    "Data error - incomplete record read !"); }
+                    "Data error - incomplete record read!! " +
+                    "Possible problem with encoding - " + StringUtils.quote(charSet) + " used for parsing"); 
+            }
         } catch (IOException e) {
             throw new JetelException(e.getMessage());
         }
