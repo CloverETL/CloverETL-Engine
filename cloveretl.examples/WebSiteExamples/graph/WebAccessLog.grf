@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Fri Jul 23 11:52:40 CEST 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.108">
+<Global>
+<Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
+<Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
+<Field delimiter=" " name="ip_address" type="string"/>
+<Field delimiter=" " name="client_identity" type="string"/>
+<Field delimiter=" [" name="userid" type="string"/>
+<Field delimiter="] &quot;" name="time" type="string"/>
+<Field delimiter=" " name="method" type="string"/>
+<Field delimiter=" " name="request" type="string"/>
+<Field delimiter="&quot; " name="http_version" type="string"/>
+<Field delimiter=" " name="status_code" type="integer"/>
+<Field delimiter=" " name="size" type="string"/>
+<Field name="rest" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record name="ip_address" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ip_address" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="ip_address_count" recordDelimiter="\n" type="delimited">
+<Field name="ip_address" type="string"/>
+<Field name="access_count" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ip_address_hostname_count" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="ip_address" type="string"/>
+<Field name="hostname" type="string"/>
+<Field name="access_count" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="request_count" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="request" type="string"/>
+<Field name="count" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="ip_address" metadata="Metadata4" name="irrelevant_ip_addresses" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="99" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="576" x="328" y="-49">
+<attr name="text"><![CDATA[Phase 0 (see '0' in upper left of the top 2 components) will run before all Phase 1 components and loads a list of IP addresses that should be ignored into special high speed Clover Lookups Tables. 
+
+This allows the remaing graph components to process each log entry rapidly against the "ignore" list.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="62" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="26" y="189">
+<attr name="text"><![CDATA[Read in the web
+ site access log]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="62" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="183" y="189">
+<attr name="text"><![CDATA[We should ignore image type files]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="62" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Lookup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="240" x="346" y="189">
+<attr name="text"><![CDATA[Perform lookup into 'ignore ip' table we loaded in Phase 0]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="62" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Trash" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="774" y="185">
+<attr name="text"><![CDATA[Discard IP addresses on the ignore list]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="62" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Copy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="159" x="26" y="468">
+<attr name="text"><![CDATA[Split all log entries into 2 identical data streams]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="210" y="363">
+<attr name="text"><![CDATA[Sort log by IP address (for faster Aggregate that follows)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="208" y="541">
+<attr name="text"><![CDATA[Sort log by page accessed]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="385" y="363">
+<attr name="text"><![CDATA[Aggregate access by performing a 'Count' so we can see how many access made by each visitor]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="394" y="541">
+<attr name="text"><![CDATA[Aggregate component counts total accesses to each page]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="558" y="363">
+<attr name="text"><![CDATA[Sort this aggregated list by number of accesses]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="568" y="541">
+<attr name="text"><![CDATA[Sort aggregated list in order to number of page accesses]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Lookup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="758" y="363">
+<attr name="text"><![CDATA[Perform a Domain Lookup from IP addresses]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="949" y="363">
+<attr name="text"><![CDATA[Write results to an Excel worksheet]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="98" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="749" y="541">
+<attr name="text"><![CDATA[Write results to an Excel worksheet]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="295" id="Note15" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Web Site Access Log" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="296" x="929" y="-49">
+<attr name="text"><![CDATA[ 
+Web analytics software struggles to deal with massive amounts of data generated by very high traffic web sites. Clover allows you to pre-process and prep your data in unlimited ways.
+
+In this example we need to produce 2 sorted lists from our web site log files.
+
+    *      Total number of accesses by each unique visitor
+    *      Total times each web page is accessed in total by all visitors
+
+These lists should be sorted in order of accesses and then written to an Excel Worksheet.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="0" guiName="Irrelevant IP addresses" guiWidth="0" guiX="28" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="186" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node aggregateKey="ip_address" enabled="enabled" guiHeight="0" guiName="Count IP Accesses" guiWidth="0" guiX="404" guiY="297" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE"/>
+<Node aggregateKey="request" enabled="enabled" guiHeight="0" guiName="Count page requests" guiWidth="0" guiX="404" guiY="468" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="0" guiName="ReadAccessLog" guiWidth="0" guiX="28" guiY="115" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Filter Out Images" guiWidth="0" guiX="186" guiY="115" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[NOT($0.request ~= '^.*\.(png|gif|css|zip|jpg|txt|ico|xml|tdp|swf)$')]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by IP" guiWidth="0" guiX="235" guiY="297" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by page" guiWidth="0" guiX="233" guiY="468" id="EXT_SORT1" sortKey="request(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by count" guiWidth="0" guiX="570" guiY="297" id="EXT_SORT2" sortKey="access_count(d)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort by count" guiWidth="0" guiX="569" guiY="468" id="EXT_SORT3" sortKey="count(d)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Split discard IDs" guiWidth="0" guiX="346" guiY="115" id="LOOKUP_JOIN0" joinKey="ip_address" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ip_address := $0.ip_address;
+	$0.client_identity := $0.client_identity;
+	$0.userid := $0.userid;
+	$0.time := $0.time;
+	$0.request := $0.request;
+	$0.status_code := $0.status_code;
+	$0.size := $0.size;
+	$0.rest := $0.rest;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="IP-&gt;Domain Lookup" guiWidth="0" guiX="777" guiY="297" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[// automatically generated on Thu Mar 12 11:28:31 CET 2009
+import java.util.*;
+import org.jetel.data.*;
+import org.jetel.graph.*;
+import org.jetel.metadata.*;
+import org.jetel.component.*;
+import org.jetel.exception.*;
+import org.jetel.data.sequence.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+public class GetHostName extends DataRecordTransform { 
+
+
+	/**
+	 * Initializes reformat class/function. This method is called only once at then
+	 * beginning of transformation process. Any object allocation/initialization should
+	 * happen here.
+	 */
+	public boolean init() throws ComponentNotReadyException {
+		return true;
+	}
+
+	/**
+	 * Performs reformat of source records to target records.
+	 * This method is called as one step in transforming flow of
+	 * records.
+	 */
+	public int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException {
+		try {
+			// user's code STARTs from here !
+
+			String hostname = "";	
+
+			InetAddress addr = InetAddress.getByName(inputRecords[0].getField(0).toString());
+			// Get the host name
+        	hostname = addr.getHostName();
+
+			(outputRecords[0].getField(0)).setValue(inputRecords[0].getField(0).toString());
+			(outputRecords[0].getField(1)).setValue(hostname);
+			((IntegerDataField)outputRecords[0].getField(2)).setValue((((IntegerDataField)inputRecords[0].getField(1)).getInt()));
+			
+
+
+
+			// user's code ENDs here !
+		} catch(Exception e) {
+			throw new TransformException("Error in extern transformation class " + GetHostName.class.getName() + ": " + e.getMessage());
+		}
+		return ALL;
+	}
+
+	/**
+	 * Method called at the end of transformation process. No more
+	 * records will be processed. The implementing class should release
+	 * any resource reserved during init() or runtime at this point.
+	 */
+	public void finished() {
+		
+	}
+}
+//end of transform class 
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="26" guiY="388" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="Discard Unreq. IPs" guiWidth="0" guiX="776" guiY="115" id="TRASH1" type="TRASH"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="0" guiName="IP addresses" guiWidth="0" guiX="967" guiY="297" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER"/>
+<Edge debugMode="false" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" router="Manhattan" toNode="LOOKUP_JOIN0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" router="Manhattan" toNode="TRASH1:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+</Phase>
+<Phase number="2">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="0" guiName="Requests" guiWidth="0" guiX="775" guiY="468" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER"/>
+</Phase>
+</Graph>
