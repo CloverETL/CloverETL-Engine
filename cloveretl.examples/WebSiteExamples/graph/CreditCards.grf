@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Fri Jul 23 10:48:32 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.68">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Fri Jul 23 13:34:52 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.70">
 <Global>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
@@ -57,46 +57,46 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="93" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="116" x="163" y="33">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="93" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="116" x="163" y="33">
 <attr name="text"><![CDATA[1 million customer transactions loaded]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="66" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Customers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="119" x="162" y="125">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="66" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Customers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="119" x="162" y="125">
 <attr name="text"><![CDATA[50'000 customers loaded]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="78" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Rates" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="118" x="164" y="202">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="78" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Rates" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="118" x="164" y="202">
 <attr name="text"><![CDATA[Load exchange rates from web as xml]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="346" y="82">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="100" x="346" y="82">
 <attr name="text"><![CDATA[Sort transactions by customer ID]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="68" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Matching" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="125" x="674" y="18">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Matching" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="125" x="674" y="18">
 <attr name="text"><![CDATA[Merge transactions with customers]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="72" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Convert currency" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="188" x="814" y="63">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Convert currency" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="188" x="814" y="63">
 <attr name="text"><![CDATA[Rebase curriencies to one base currency]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="84" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="30" y="290">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="84" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="30" y="290">
 <attr name="text"><![CDATA[Here, we split the transactions into 3 separate streams]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="72" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="495" y="311">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="495" y="311">
 <attr name="text"><![CDATA[This stream is for transactions with bad customer IDs]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="70" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="199" x="519" y="403">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="70" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="199" x="519" y="403">
 <attr name="text"><![CDATA[This stream is where we do not support the currency]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="100" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="129" x="241" y="561">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="129" x="241" y="561">
 <attr name="text"><![CDATA[This function aggregates by summing all transactions for each customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="100" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="477" y="563">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="477" y="563">
 <attr name="text"><![CDATA[We filter out customers whose total transactions are more then 400k]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="100" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="128" x="688" y="559">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="128" x="688" y="559">
 <attr name="text"><![CDATA[Sort those customers in order of transaction totals]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="94" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="127" x="861" y="563">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="94" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="127" x="861" y="563">
 <attr name="text"><![CDATA[Write out to html file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="325" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Credit Card Fraud Detection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="303" x="1022" y="29">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="325" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Credit Card Fraud Detection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="303" x="1022" y="29">
 <attr name="text"><![CDATA[
  This graph shows how credit card transactions are checked to detect suspicious transactions. The following steps are performed
 
@@ -109,7 +109,7 @@
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="170" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="1026" y="384">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="170" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="1026" y="384">
 <attr name="text"><![CDATA[    *      HTML data written using the "Structured Data Writer" component
     *      Will process 1 million transactions merged with 50,000 customers in 12 seconds (on a MacBook Pro laptop)
     *      CTL used to perform small customized coding within the data transformation in one component
