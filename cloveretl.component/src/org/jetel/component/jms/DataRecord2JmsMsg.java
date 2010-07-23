@@ -50,11 +50,13 @@ public interface DataRecord2JmsMsg {
      * This is also initialization method, which is invoked before each separate graph run.
      * Contrary the init() procedure here should be allocated only resources for this graph run.
      * All here allocated resources should be released in #postExecute() method.
+	 * @param session JMS session (may be used for creation of JMS messages). Each graph execution has its own session opened. 
+	 * 		So the session set in init() method is usable only during the first execution of graph instance.
      * 
      * @throws ComponentNotReadyException some of the required resource is not available or other
      * precondition is not accomplish
      */
-    public void preExecute() throws ComponentNotReadyException; 
+    public void preExecute(Session session) throws ComponentNotReadyException; 
 
 	/**
 	 * Releases resources. 

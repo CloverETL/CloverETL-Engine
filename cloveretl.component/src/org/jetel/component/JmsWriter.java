@@ -28,6 +28,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
+import javax.jms.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -168,13 +169,14 @@ public class JmsWriter extends Node {
     @Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		psor.preExecute();
 		
+		Session session  = connection.getSession();
 		if (firstRun()) {//a phase-dependent part of initialization
-			psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
+			psor.init(inPort.getMetadata(), session, psorProperties);
 		} else {
 			psor.reset();
 		}
+		psor.preExecute(session);
 		try {
 			producer = connection.createProducer();
 		} catch (Exception e) {
@@ -279,7 +281,7 @@ public class JmsWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("JmxWriter execute", e);
+			logger.error("JmsWriter execute", e);
 			throw e;
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
