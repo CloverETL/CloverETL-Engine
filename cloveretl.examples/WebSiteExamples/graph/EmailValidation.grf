@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Pavel" created="Fri Nov 28 16:55:03 CET 2008" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Fri Jul 23 10:03:51 CEST 2010" modifiedBy="avackova" name="SimpleEmailFilterExample" revision="1.33">
+<Graph author="Pavel" created="Fri Nov 28 16:55:03 CET 2008" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Fri Jul 23 13:35:16 CEST 2010" modifiedBy="avackova" name="SimpleEmailFilterExample" revision="1.34">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -14,22 +14,22 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="75" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="126" x="22" y="9">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="75" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="126" x="22" y="9">
 <attr name="text"><![CDATA[Read in our email file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Copy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="124" x="108" y="347">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Copy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="124" x="108" y="347">
 <attr name="text"><![CDATA[Duplicates the incoming data and outputs all rows on the 3 output ports]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="78" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Syntax checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="322" y="108">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="78" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Syntax checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="322" y="108">
 <attr name="text"><![CDATA[Check basic email syntax is OK]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="74" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Domain checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="324" y="281">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="74" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Domain checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="324" y="281">
 <attr name="text"><![CDATA[Perform email Domain lookup on web]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="74" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="SMTP checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="327" y="467">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="74" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="SMTP checker" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="327" y="467">
 <attr name="text"><![CDATA[Check with SMTP server that email address exists]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="202" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Email Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="681" y="12">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="202" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Email Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="681" y="12">
 <attr name="text"><![CDATA[ 
 In this example, we are loading in a file where we want to check the validity of the email address contained within it. The results are written to Accepted and Rejected type output files. Clover offers three types of email validation
 
@@ -38,7 +38,7 @@ In this example, we are loading in a file where we want to check the validity of
     *      check that the email address itself exists within the domain name referenced by the email address
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="145" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="683" y="228">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="145" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="683" y="228">
 <attr name="text"><![CDATA[
 The three email checks take very different amounts of time. The syntax check is very fast, but the other two are very slow as they need to perform lookups on the web and the responsiveness of the domains is beyond our control.]]></attr>
 </Note>
