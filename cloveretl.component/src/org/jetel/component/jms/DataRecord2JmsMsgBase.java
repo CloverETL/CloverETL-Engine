@@ -50,9 +50,10 @@ public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#preExecute()
+	 * @see org.jetel.component.jms.DataRecord2JmsMsg#preExecute(javax.jms.Session)
 	 */
-	public void preExecute() throws ComponentNotReadyException {
+	public void preExecute(Session session) throws ComponentNotReadyException {
+		this.session = session;
 	}
 	
 	/* (non-Javadoc)
