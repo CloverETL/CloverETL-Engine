@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Fri Jul 23 13:35:53 CEST 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.109">
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Fri Jul 23 14:30:00 CEST 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.110">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -42,48 +42,62 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="ip_address" metadata="Metadata4" name="irrelevant_ip_addresses" type="simpleLookup"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="99" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="576" x="328" y="-49">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Phase 0 (see '0' in upper left of the top 2 components) will run before all Phase 1 components and loads a list of IP addresses that should be ignored into special high speed Clover Lookups Tables. 
 
 This allows the remaing graph components to process each log entry rapidly against the "ignore" list.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="62" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="26" y="189">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Read in the web
  site access log]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="62" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="130" x="183" y="189">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[We should ignore image type files]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="62" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Lookup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="240" x="346" y="189">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Perform lookup into 'ignore ip' table we loaded in Phase 0]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="62" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Trash" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="774" y="185">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Discard IP addresses on the ignore list]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="62" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Copy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="159" x="26" y="468">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Split all log entries into 2 identical data streams]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="210" y="363">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Sort log by IP address (for faster Aggregate that follows)]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="208" y="541">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Sort log by page accessed]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="385" y="363">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Aggregate access by performing a 'Count' so we can see how many access made by each visitor]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="394" y="541">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Aggregate component counts total accesses to each page]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="558" y="363">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Sort this aggregated list by number of accesses]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="568" y="541">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Sort aggregated list in order to number of page accesses]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Lookup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="758" y="363">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Perform a Domain Lookup from IP addresses]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="949" y="363">
+<attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[Write results to an Excel worksheet]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="749" y="541">
