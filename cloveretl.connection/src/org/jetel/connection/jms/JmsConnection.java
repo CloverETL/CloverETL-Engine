@@ -377,8 +377,10 @@ public class JmsConnection extends GraphElement implements IConnection {
 			if (getGraph().getRuntimeContext().isBatchMode()) {
 				connection.close();
 				connection = null;
+				session = null;
 			} else {
 				session.close();
+				session = null;
 			}
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
