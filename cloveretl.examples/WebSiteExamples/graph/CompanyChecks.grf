@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Václav" created="Thu Oct 16 08:49:16 CEST 2008" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Fri Jul 23 12:46:11 CEST 2010" modifiedBy="avackova" name="firmy" revision="1.118">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
+<Field name="ic" nullable="true" type="string"/>
+<Field name="company" nullable="true" type="string"/>
+<Field name="zip" nullable="true" type="string"/>
+<Field name="city" nullable="true" type="string"/>
+<Field name="district" nullable="true" type="string"/>
+<Field delimiter="\r\n" name="street" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="companyDataScore" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
+<Field name="ic" nullable="true" type="string"/>
+<Field name="company" nullable="true" type="string"/>
+<Field name="zip" nullable="true" type="string"/>
+<Field name="city" nullable="true" type="string"/>
+<Field name="district" nullable="true" type="string"/>
+<Field delimiter=";" name="street" nullable="true" type="string"/>
+<Field default="0" delimiter="\r\n" name="score" nullable="false" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record name="res" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="fixed">
+<Field name="ico" nullable="true" size="8" type="string"/>
+<Field name="likv" size="1" type="string"/>
+</Record>
+</Metadata>
+<Connection dbDriver="org.apache.derby.jdbc.ClientDriver" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" driverLibrary="file:/home/avackova/workspace/cloveretl.examples/ExtExamples/lib/derby/lib/derbyclient.jar" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="34" guiY="22" id="DB_EXECUTE0" sqlQuery="DELETE FROM checksumfailures;&#10;DELETE FROM validated;" type="DB_EXECUTE"/>
+</Phase>
+<Phase number="1">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiHeight="0" guiName="Companies" guiWidth="0" guiX="76" guiY="132" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiHeight="0" guiName="Company Status" guiWidth="0" guiX="62" guiY="348" id="DATA_READER1" type="DATA_READER"/>
+<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="Invalid Checksums" guiWidth="0" guiX="811" guiY="69" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" dbTable="unselectedic" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="Unknown Liq Status" guiWidth="0" guiX="811" guiY="216" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="In Liquidation" guiWidth="0" guiX="812" guiY="359" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" dbTable="validated" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="Operational" guiWidth="0" guiX="811" guiY="503" id="DB_OUTPUT_TABLE3" type="DB_OUTPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Filter bad Checksums" guiWidth="0" guiX="533" guiY="140" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.score > 0]]></attr>
+</Node>
+<Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Merge List" guiWidth="0" guiX="357" guiY="347" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	int i = 0;
+	
+	if(isnull($1.ico))
+		i = 1;
+	else
+	{
+		if($1.likv == 'A')
+			i = 3;
+	}
+	$0.ic := $0.ic;
+	$0.company := $0.company;
+	$0.zip := $0.zip;
+	$0.city := $0.city;
+	$0.district := $0.district;
+	$0.street := $0.street;
+	$0.score	 := i;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Partition Results" guiWidth="0" guiX="570" guiY="345" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION"/>
+<Node enabled="enabled" guiHeight="0" guiName="Calculate Checksum" guiWidth="0" guiX="292" guiY="141" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	
+	int count=0;
+	int i;
+	int mod;
+	int k;
+	string c;
+
+    // Calculate checksum
+	for(i=0; i<7; i++)
+		count = count + str2num(char_at($ic, i))*(8-i);
+
+	c = char_at($ic, 7);
+	mod = count%11;
+	if(mod == 0 || mod == 10)
+		i = 1;
+	else{
+		if(mod == 1)
+			i = 0;
+		else
+			i = 11 - mod;
+
+	if(i == str2num(c))
+		k = 0;
+	else
+		k = 2;
+	}
+	
+	// k now contains either 0 (error state) or 1 (valid checksum)
+	// Assign all input values to outputs and put k into the 'score' field
+	$0.ic := $0.ic;
+	$0.company := $0.company;
+	$0.zip := $0.zip;
+	$0.city := $0.city;
+	$0.district := $0.district;
+	$0.street := $0.street;
+	$0.score	 := k;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE0:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="DB_OUTPUT_TABLE3:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
+</Phase>
+</Graph>
