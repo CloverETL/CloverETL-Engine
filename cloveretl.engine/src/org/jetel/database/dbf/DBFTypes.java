@@ -48,7 +48,7 @@ public class DBFTypes  {
 	 */
 	public static String dbfCodepage2Java(byte codepage){
 		switch (codepage){
-			case 0x00: return "US-ASCII";
+			case 0x00: return "IBM850";
 			case 0x01: return "IBM437";
 			case 0x02:return "ISO-8859-1";
 			case 0x03: return "windows-1252";
@@ -67,7 +67,7 @@ public class DBFTypes  {
 			case (byte) 0xCB: return "windows-1253";
 			case (byte) 0xCA: return "windows-1254";
             default:
-                return "US-ASCII";
+                return "IBM850";
 		}
 	}
 	
