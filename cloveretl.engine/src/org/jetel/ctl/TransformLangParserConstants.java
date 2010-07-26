@@ -225,7 +225,7 @@ public interface TransformLangParserConstants {
   /** RegularExpression Id. */
   int RETURN_ALL = 118;
   /** RegularExpression Id. */
-  int RETURN_ERROR = 119;
+  int RETURN_STOP = 119;
   /** RegularExpression Id. */
   int FIELD_ACCESS_OPERATOR = 120;
   /** RegularExpression Id. */
@@ -373,7 +373,7 @@ public interface TransformLangParserConstants {
     "\"OK\"",
     "\"SKIP\"",
     "\"ALL\"",
-    "\"ERROR\"",
+    "\"STOP\"",
     "\"$\"",
     "<FIELD_IDENTIFIER>",
     "<NUMERIC_ID>",

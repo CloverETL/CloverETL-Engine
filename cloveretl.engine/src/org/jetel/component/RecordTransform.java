@@ -53,6 +53,12 @@ public interface RecordTransform extends Transform {
 	/** the return value of the transform() method specifying that the record will be skipped */
 	public static final int SKIP = -1;
 	/** the return value of the transform() method, all values lesser or equal this value are considered as errors */
+	public static final int STOP = -2;
+	/** 
+	 * the return value of the transform() method, all values lesser or equal this value are considered as errors 
+	 * @deprecated use STOP constant instead
+	 */
+	@Deprecated
 	public static final int ERROR = -2;
 
 	/**
