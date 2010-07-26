@@ -638,7 +638,7 @@ TOKEN :
   < RETURN_OK: "OK" >
 | < RETURN_SKIP: "SKIP" >
 | < RETURN_ALL: "ALL" >
-| < RETURN_ERROR: "ERROR" >
+| < RETURN_STOP: "STOP" >
 }
 
 /*
@@ -1865,7 +1865,7 @@ void ControlConstant() #Literal : {}
 	|
 	"ALL" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ALL); }
 	|
-	"ERROR" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ERROR); }
+	"STOP" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.STOP); }
 	)
 	{ jjtThis.end(token.endLine, token.endColumn); }
 }

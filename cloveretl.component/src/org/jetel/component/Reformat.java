@@ -283,7 +283,7 @@ public class Reformat extends Node {
 					writeRecord(transformResult, outRecord[transformResult]);
 				} else if (transformResult == RecordTransform.SKIP) {
 					// DO NOTHING - skip the record
-				} else if (transformResult <= RecordTransform.ERROR) {
+				} else if (transformResult <= RecordTransform.STOP) {
 					ErrorAction action = errorActions.get(transformResult);
 					if (action == null) {
 						action = errorActions.get(Integer.MIN_VALUE);

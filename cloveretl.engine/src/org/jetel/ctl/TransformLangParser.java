@@ -3845,7 +3845,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       case RETURN_OK:
       case RETURN_SKIP:
       case RETURN_ALL:
-      case RETURN_ERROR:
+      case RETURN_STOP:
       case FIELD_ACCESS_OPERATOR:
       case IDENTIFIER:
       case 128:
@@ -3887,7 +3887,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         case RETURN_OK:
         case RETURN_SKIP:
         case RETURN_ALL:
-        case RETURN_ERROR:
+        case RETURN_STOP:
           ControlConstant();
           break;
         default:
@@ -3944,9 +3944,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         jj_consume_token(RETURN_ALL);
                 jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.ALL);
         break;
-      case RETURN_ERROR:
-        jj_consume_token(RETURN_ERROR);
-                  jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.ERROR);
+      case RETURN_STOP:
+        jj_consume_token(RETURN_STOP);
+                 jjtn000.setType(TLTypePrimitive.INTEGER); jjtn000.setValueDirect(RecordTransform.STOP);
         break;
       default:
         jj_la1[60] = jj_gen;
@@ -4695,7 +4695,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   }
 
   private boolean jj_3R_96() {
-    if (jj_scan_token(RETURN_ERROR)) return true;
+    if (jj_scan_token(RETURN_STOP)) return true;
     return false;
   }
 
