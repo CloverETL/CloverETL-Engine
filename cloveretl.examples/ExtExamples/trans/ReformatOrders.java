@@ -34,6 +34,14 @@ public class ReformatOrders extends DataRecordTransform{
 		skipOnError = Boolean.parseBoolean(parameters.getProperty("skip_on_error", "false"));
 	    return true;
 	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		if (!getGraph().firstRun()){
+			parser.reset();
+		}
+		super.preExecute();
+	}
 
 	public int transform(DataRecord[] source, DataRecord[] target) throws TransformException{
    		System.out.println("============== XPath transform ==============");
