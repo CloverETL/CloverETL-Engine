@@ -109,7 +109,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 	public int countOnError(Exception exception, DataRecord source) throws TransformException {
 		if (countOnErrorFunction == null) {
 			// no custom error handling implemented, throw an exception so the transformation fails
-			throw new TransformException("Partition failed!", exception);
+			throw new TransformException("Normalizer failed!", exception);
 		}
 
 		countOnErrorArguments[0] = exception.getMessage();
@@ -141,6 +141,11 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 	@Override
 	public int transformOnError(Exception exception, DataRecord source, DataRecord target, int idx)
 			throws TransformException {
+		if (transformOnErrorFunction == null) {
+			// no custom error handling implemented, throw an exception so the transformation fails
+			throw new TransformException("Normalizer failed!", exception);
+		}
+
 		transformOnErrorArguments[0] = exception.getMessage();
 		transformOnErrorArguments[1] = MiscUtils.stackTraceToString(exception);
 		transformOnErrorArguments[2] = idx;
