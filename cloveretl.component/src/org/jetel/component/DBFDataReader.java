@@ -109,7 +109,7 @@ import org.w3c.dom.Element;
 public class DBFDataReader extends Node {
 
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
-	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
