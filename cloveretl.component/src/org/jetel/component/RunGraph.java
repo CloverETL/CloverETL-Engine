@@ -111,8 +111,8 @@ import org.w3c.dom.Element;
 * 2nd field - result; type=string
 * 3rd field - description; type=string
 * 4th field - message; type=string
-* 5th field - duration; type=decimal
-* 6th field - runId; type=decimal - optional
+* 5th field - duration; type=integer/long/decimal
+* 6th field - runId; type=long - optional
 *
 * Output metadata fields:
 * <ul>
@@ -600,7 +600,7 @@ public class RunGraph extends Node{
 				return false;
 			}
 		}        		
-		if (meta.getFieldType(4) != DataFieldMetadata.DECIMAL_FIELD) {
+		if (!meta.getField(4).isNumeric()) {
 			return false;
 		}
 		
