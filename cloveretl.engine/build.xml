@@ -292,6 +292,9 @@ defined.version.suffix=release
 
 	<target name="dist.examples" depends="init" description="Creates examples distribution">
 
+		<!-- cleanup old examples (there may be commercial examples when building community examples) -->
+		<delete dir="${dir.distprepare.exa}" />
+		
 		<!-- binary distribution -->
 		<mkdir dir="${dir.distprepare.exa}/${example.archive.dir}"/>
 
