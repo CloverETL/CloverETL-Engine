@@ -431,7 +431,7 @@ public class RecordKey {
 	public DataRecordMetadata generateKeyRecordMetadata(){
 		DataRecordMetadata metadata = new DataRecordMetadata(this.metadata.getName()+"key");
 		for (int i = 0; i < keyFields.length; i++) {
-			metadata.addField(this.metadata.getField(keyFields[i]));
+			metadata.addField(this.metadata.getField(keyFields[i]).duplicate());
 		}
 		return metadata;
 	}
