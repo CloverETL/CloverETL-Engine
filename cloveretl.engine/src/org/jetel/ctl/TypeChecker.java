@@ -1064,6 +1064,9 @@ public class TypeChecker extends NavigatingVisitor {
 			args = (CLVFArguments)node.jjtGetChild(0);
 			if (args.jjtGetNumChildren()> 0) {
 				actual = new TLType[args.jjtGetNumChildren()];
+				for (int i=0; i<actual.length; i++) {
+					actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
+				}
 				error(node,functionErrorMessage(opName, new TLType[0], actual));
 				node.setType(TLType.ERROR);
 				return data;
