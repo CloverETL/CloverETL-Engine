@@ -230,7 +230,7 @@ public abstract class GraphElement implements IGraphElement {
     
     @Override
     public String toString() {
-        return (getName() == null ? "" : getName()) + "[" + getId() + "]";
+        return "[" + (StringUtils.isEmpty(getName()) ? "" : (getName() + ":")) +  getId() + "]";
     }
     
 	/**
