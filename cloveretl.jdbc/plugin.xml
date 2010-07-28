@@ -97,6 +97,15 @@
 	</extension>
 	
 	<extension point-id="jdbcDriver">
+		<parameter id="database" value="ORACLE"/>
+		<parameter id="name" value="Oracle"/>
+		<parameter id="dbDriver" value="oracle.jdbc.driver.OracleDriver"/>
+		<parameter id="driverLibrary" value="lib/oracle/ojdbc14.jar"/>
+		<parameter id="urlHint" value="jdbc:oracle:thin:@hostname:1521:database"/>
+		<parameter id="jdbcSpecific" value="ORACLE"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
@@ -122,5 +131,23 @@
 		<parameter id="urlHint" value="jdbc:jtds:sybase://hostname:7100/database"/>
 		<parameter id="jdbcSpecific" value="SYBASE"/>
 	</extension>
-	
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="SQLITE"/>
+		<parameter id="name" value="SQLite"/>
+		<parameter id="dbDriver" value="org.sqlite.JDBC"/>
+		<parameter id="driverLibrary" value="lib/sqlite/sqlite-jdbc-3.6.20.1.jar"/>
+		<parameter id="urlHint" value="jdbc:sqlite:C:/database"/>
+		<parameter id="jdbcSpecific" value="SQLITE"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="DERBY"/>
+		<parameter id="name" value="Derby"/>
+		<parameter id="dbDriver" value="org.apache.derby.jdbc.ClientDriver"/>
+		<parameter id="driverLibrary" value="lib/derby/derbyclient.jar"/>
+		<parameter id="urlHint" value="jdbc:derby://hostname:1527/derby.db"/>
+		<parameter id="jdbcSpecific" value="DERBY"/>
+	</extension>
+
 </plugin>
