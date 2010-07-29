@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Oct 16 08:49:16 CEST 2008" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Fri Jul 23 14:33:31 CEST 2010" modifiedBy="avackova" name="firmy" revision="1.121">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Wed Jul 28 15:17:45 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.131">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -28,9 +28,9 @@
 <Field name="likv" size="1" type="string"/>
 </Record>
 </Metadata>
-<Connection dbDriver="org.apache.derby.jdbc.ClientDriver" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" driverLibrary="file:/home/avackova/workspace/cloveretl.examples/ExtExamples/lib/derby/lib/derbyclient.jar" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
+<Connection dbDriver="org.apache.derby.jdbc.ClientDriver" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" driverLibrary="file:${LIB_DIR}/derby/lib/derbyclient.jar" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="227" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="303" x="968" y="6">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="379" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="328" x="580" y="6">
 <attr name="text"><![CDATA[
  We have a customer database and every week we want to match our customers with a file we receive from a 3rd party that contains a list of all companies that are in liquidation. We validate our customer company IDs and then perform the match, finally writing the output to for database tables
 
@@ -40,53 +40,94 @@
     *      Customers where the liquidation status is unclear
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Calculate Checksum" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="286" y="222">
-<attr name="text"><![CDATA[Validate Company ID of customer]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Calculate Checksum" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="262" y="393">
+<attr name="text"><![CDATA[
+
+
+
+
+Validate Company ID of customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="94" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Pahse 0 (see '0' top left)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="207" x="166" y="19">
-<attr name="text"><![CDATA[This runs in Phase 0 and deletes tables in Derby DB. Rest of graph runs in Pahse 1 after Phase 0 completes]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="105" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="                            Pahse 0 (see '0' top left)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="64" y="280">
+<attr name="text"><![CDATA[                                              This runs in Phase 0 and deletes
+                                               tables in Derby DB. Rest of graph
+                                               runs in Pahse 1 after Phase 0
+                                               completes]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read companies" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="62" y="214">
-<attr name="text"><![CDATA[Load in Companies from our in-house database]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read companies" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="63" y="394">
+<attr name="text"><![CDATA[
+
+
+
+
+Load in Companies from our in-house database]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="510" y="217">
-<attr name="text"><![CDATA[Filter out any bad IDs]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="503" y="391">
+<attr name="text"><![CDATA[
+
+
+
+
+Filter out any bad IDs]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read status'" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="43" y="422">
-<attr name="text"><![CDATA[Read 'Companies in Liquidation' file]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="64" y="570">
+<attr name="text"><![CDATA[
+
+
+
+
+
+Read 'Companies in Liquidation' file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="340" y="426">
-<attr name="text"><![CDATA[Merge it with our customer data]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="327" y="570">
+<attr name="text"><![CDATA[
+
+
+
+
+
+Merge it with our customer data]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="113" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partition Results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="552" y="435">
-<attr name="text"><![CDATA[Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="538" y="570">
+<attr name="text"><![CDATA[
+
+
+
+
+
+Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="68" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Write to DB" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="171" x="788" y="140">
-<attr name="text"><![CDATA[Write bad IDs to DB table]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="758" y="391">
+<attr name="text"><![CDATA[
+
+
+
+
+Write bad IDs to DB table]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="123" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="426" x="379" y="6">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="263" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="481" x="65" y="6">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully you need to start Derby database system:
 - go to lib/derby/bin
 - on Windows, open Command Prompt and run "startNetworkServer.bat"
-- on Linux, run "startNetworkServer"
-- this will start Derby server instance bound to standard port        1527]]></attr>
+- on Linux, set DERBY_HOME environment variable to point to lib/derby/bin directory and run "startNetworkServer" script
+- this will start Derby server instance bound to standard port 1527]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="34" guiY="22" id="DB_EXECUTE0" sqlQuery="DELETE FROM checksumfailures;&#10;DELETE FROM validated;" type="DB_EXECUTE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="76" guiY="297" id="DB_EXECUTE0" sqlQuery="DELETE FROM checksumfailures;&#10;DELETE FROM validated;" type="DB_EXECUTE"/>
 </Phase>
 <Phase number="1">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiHeight="0" guiName="Companies" guiWidth="0" guiX="76" guiY="132" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiHeight="0" guiName="Company Status" guiWidth="0" guiX="62" guiY="348" id="DATA_READER1" type="DATA_READER"/>
-<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiHeight="0" guiName="Invalid Checksums" guiWidth="0" guiX="811" guiY="69" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Unknown Liq Status" guiWidth="0" guiX="811" guiY="216" id="DB_OUTPUT_TABLE1" sqlQuery="INSERT INTO UNSELECTEDIC (IC, COMPANY, ZIP, CITY, DISTRICT, STREET, SCORE)&#10;VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="In Liquidation" guiWidth="0" guiX="812" guiY="359" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Operational" guiWidth="0" guiX="811" guiY="503" id="DB_OUTPUT_TABLE3" sqlQuery="INSERT INTO VALIDATED VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="0" guiName="Filter bad Checksums" guiWidth="0" guiX="533" guiY="140" id="EXT_FILTER0" type="EXT_FILTER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiHeight="0" guiName="Companies" guiWidth="0" guiX="75" guiY="405" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiHeight="0" guiName="Company Status" guiWidth="0" guiX="75" guiY="583" id="DATA_READER1" type="DATA_READER"/>
+<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiHeight="0" guiName="Invalid Checksums" guiWidth="0" guiX="770" guiY="405" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Unknown Liq Status" guiWidth="0" guiX="770" guiY="582" id="DB_OUTPUT_TABLE1" sqlQuery="INSERT INTO UNSELECTEDIC (IC, COMPANY, ZIP, CITY, DISTRICT, STREET, SCORE)&#10;VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="0" guiName="In Liquidation" guiWidth="0" guiX="770" guiY="671" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Operational" guiWidth="0" guiX="770" guiY="762" id="DB_OUTPUT_TABLE3" sqlQuery="INSERT INTO VALIDATED VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Filter bad Checksums" guiWidth="0" guiX="515" guiY="405" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.score > 0]]></attr>
 </Node>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Merge List" guiWidth="0" guiX="357" guiY="347" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="Merge List" guiWidth="0" guiX="336" guiY="585" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -116,8 +157,8 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Partition Results" guiWidth="0" guiX="570" guiY="345" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION"/>
-<Node enabled="enabled" guiHeight="0" guiName="Calculate Checksum" guiWidth="0" guiX="292" guiY="141" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Partition Results" guiWidth="0" guiX="547" guiY="584" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION"/>
+<Node enabled="enabled" guiHeight="0" guiName="Calculate Checksum" guiWidth="0" guiX="274" guiY="405" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -167,13 +208,13 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
 <Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE0:0"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="32:0:339:-158:0.5|32:99:339:-59:0.5|-329:99:-22:-59:0.5|-329:158:-22:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="false" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="66:0:-29:-2:0.5|66:2:-29:0:0.5" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="61:0:-34:-75:0.5|61:75:-34:0:0.5" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
 <Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="DB_OUTPUT_TABLE3:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
