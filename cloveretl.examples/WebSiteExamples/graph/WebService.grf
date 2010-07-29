@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="fmay" created="Sat Sep 19 06:36:29 BST 2009" guiVersion="0.0.0.devel" id="1253338896057" licenseType="Evaluation Devel" modified="Fri Jul 23 14:31:59 CEST 2010" modifiedBy="avackova" name="WebServiceCalls" revision="1.153">
+<Graph author="fmay" created="Sat Sep 19 06:36:29 BST 2009" guiVersion="0.0.0.devel" id="1253338896057" licenseType="Evaluation Devel" modified="Thu Jul 29 11:51:07 CEST 2010" modifiedBy="avackova" name="WebServiceCalls" revision="1.157">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -23,22 +23,47 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="80" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="44" y="100">
-<attr name="text"><![CDATA[XML SOAP request is passed into the graph]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="28" y="16">
+<attr name="text"><![CDATA[
+
+
+
+XML SOAP request is passed into the graph]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="67" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Connect to the Web " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="221" y="6">
-<attr name="text"><![CDATA[A Web Service is called and the XML SOAP request is passed to it]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Connect to the Web " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="239" y="70">
+<attr name="text"><![CDATA[
+
+
+
+A Web Service is called and the XML SOAP request is passed to it]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="106" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transform response" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="438" y="24">
-<attr name="text"><![CDATA[XML data is returned in SOAP format. Complex data can be parsed using XPath and passed to multiply output ports]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="176" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transform response" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="423" y="133">
+<attr name="text"><![CDATA[
+
+
+
+
+XML data is returned in SOAP format. Complex data can be parsed using XPath and passed to multiply output ports]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="106" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple GET" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="202" x="9" y="327">
-<attr name="text"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="215" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple GET" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="28" y="227">
+<attr name="text"><![CDATA[
+
+
+
+
+
+A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="106" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple POST" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="202" x="227" y="326">
-<attr name="text"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="215" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple POST" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="236" y="227">
+<attr name="text"><![CDATA[
+
+
+
+
+
+A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="280" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Web Service Call" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="265" x="793" y="23">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="280" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Web Service Call" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="368" x="793" y="23">
 <attr name="text"><![CDATA[ 
 This graph shows a Weather Forecast web service being called.
 
@@ -49,7 +74,7 @@ This graph shows a Weather Forecast web service being called.
     *      Seven days of forecast data is returned as 7 records of data on the second output port
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="112" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="404" x="653" y="316">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="128" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="468" x="415" y="314">
 <attr name="text"><![CDATA[    *      Any GET, POST or SOAP call can be made
     *      Simple or Complex data can be parsed either using the XPathReader component or more simple XML can be parsed directly
     *      Full parameter support
@@ -62,16 +87,16 @@ This graph shows a Weather Forecast web service being called.
 <Node enabled="enabled" guiHeight="0" guiName="Make SOAP Call" guiWidth="0" guiX="252" guiY="81" headerProperties="Content-Type=application/soap+xml&#10;" id="HTTP_CONNECTOR0" inputField="XMLString" outputField="XMLString" requestMethod="POST" responseAsFileName="false" type="HTTP_CONNECTOR">
 <attr name="url"><![CDATA[http://ws.cdyne.com/WeatherWS/Weather.asmx]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="GET " guiWidth="0" guiX="42" guiY="254" id="HTTP_CONNECTOR1" outFileUrl="${DATAOUT_DIR}/GetResult.xml" requestMethod="GET" type="HTTP_CONNECTOR">
+<Node enabled="enabled" guiHeight="0" guiName="GET " guiWidth="0" guiX="39" guiY="257" id="HTTP_CONNECTOR1" outFileUrl="${DATAOUT_DIR}/GetResult.xml" requestMethod="GET" type="HTTP_CONNECTOR">
 <attr name="url"><![CDATA[http://ws.cdyne.com/WeatherWS/Weather.asmx/GetCityForecastByZIP?ZIP=94028]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="POST" guiWidth="0" guiX="251" guiY="253" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" requestMethod="POST" type="HTTP_CONNECTOR">
+<Node enabled="enabled" guiHeight="0" guiName="POST" guiWidth="0" guiX="251" guiY="257" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" requestMethod="POST" type="HTTP_CONNECTOR">
 <attr name="requestContent"><![CDATA[ZIP=94028]]></attr>
 <attr name="url"><![CDATA[http://ws.cdyne.com/WeatherWS/Weather.asmx/GetCityForecastByZIP]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="650" guiY="73" id="TRASH0" type="TRASH"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="652" guiY="242" id="TRASH1" type="TRASH"/>
-<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiHeight="0" guiName="XMLXPathReader" guiWidth="0" guiX="437" guiY="146" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="650" guiY="239" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiHeight="0" guiName="XMLXPathReader" guiWidth="0" guiX="437" guiY="142" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[<Context xpath="soap:Envelope/soap:Body/GetCityForecastByZIPResponse/GetCityForecastByZIPResult" 
      outPort="0" sequenceField="HdrIndexKey" 
      namespacePaths='"http://ws.cdyne.com/WeatherWS/";soap="http://www.w3.org/2003/05/soap-envelope"'>
@@ -83,9 +108,9 @@ This graph shows a Weather Forecast web service being called.
 </Context>
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="HTTP_CONNECTOR0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="HTTP_CONNECTOR0:0"/>
 <Edge debugMode="true" fromNode="HTTP_CONNECTOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XML_XPATH_READER0:0"/>
 <Edge debugMode="true" fromNode="XML_XPATH_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="XML_XPATH_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="TRASH1:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="TRASH1:0"/>
 </Phase>
 </Graph>

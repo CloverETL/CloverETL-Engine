@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Wed Jul 28 15:17:45 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.131">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Thu Jul 29 11:34:52 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.132">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -28,7 +28,7 @@
 <Field name="likv" size="1" type="string"/>
 </Record>
 </Metadata>
-<Connection dbDriver="org.apache.derby.jdbc.ClientDriver" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" driverLibrary="file:${LIB_DIR}/derby/lib/derbyclient.jar" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
+<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="379" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="328" x="580" y="6">
 <attr name="text"><![CDATA[
