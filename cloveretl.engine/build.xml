@@ -372,6 +372,8 @@ defined.version.suffix=release
 
 		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
 
+		<!-- TODO - cloveretl.component not compilable if cloveretl.engine is obfuscated - see issue 4726 -->
+		<fail message="Obfuscated engine not available - for now"/>
 		<proguard 
 			shrink="false" 
 			verbose="true"
@@ -395,108 +397,123 @@ defined.version.suffix=release
 			<libraryjar location="${java.home}/lib/jce.jar" />
 			<libraryjar path="${tools}"/>
 			<libraryjar path="${engine-libs.classpath}"/>
-
-			<keepclassmembernames implements="org.jetel.graph.IGraphElement">
-				<method name="fromXML" />
-			</keepclassmembernames>
-			<keep name="org.jetel.data.Defaults">
-			</keep>
-			<keep name="org.jetel.plugin.PluginDescriptor">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.Result">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.GraphElement">
-				<field name="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.Node">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-
-			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean">
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.CloverJMX">
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.GraphTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.PhaseTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.NodeTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.PortTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.InputPortTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.jmx.OutputPortTrackingDetail">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.WatchDog">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.IThreadManager">
-				<field access="protected public"/>
-				<method access="protected public"/>
-			</keep>
-			<keep name="org.jetel.graph.dictionary.StringDictionaryEntryProvider">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.data.parser.TypeSelector">
-				<field access="protected public"/>
-				<method access="protected public"/>
-			</keep>
-			<keep name="org.jetel.graph.runtime.GraphRuntimeContext">
-				<field access="protected public"/>
-				<method access="protected public"/>
-			</keep>
-
+			
+			<keepattributes filter="Exceptions,InnerClasses" />
+			
+			<keepclassmembernames implements="org.jetel.graph.IGraphElement"><method name="fromXML" /></keepclassmembernames>
+			
+			<keep name="org.jetel.data.Defaults"></keep>
+			<keep name="org.jetel.plugin.PluginDescriptor"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.plugin.PluginActivator"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.plugin.Plugins"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.plugin.ExtensionParameter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.plugin.Extension"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.Result"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.GraphElement"><field name="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.Node"><field access="public"/><method access="public"/></keep>
+			
+			
+			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.runtime.GraphRuntimeContext"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.runtime.EngineInitializer"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.runtime.CloverClassPath"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean"></keep>
+			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"></keep>
+			<keep name="org.jetel.graph.runtime.jmx.GraphTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.PhaseTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.NodeTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.PortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.InputPortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.OutputPortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.PluginableItemDescription"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.data.parser.*Parser"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.reader.DriverReader"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.reader.InputReader"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.reader.SlaveReader"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.reader.SlaveReaderDup"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.sequence.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.primitive.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.formatter.CloverDataFormatter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.formatter.StructureFormatter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.formatter.Formatter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.formatter.provider.XLSFormatterProvider"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
+						
 			<!-- keep classes usualy used in trasformation -->
-			<keep name="java.util.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.data.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.metadata.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.exception.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.data.sequence.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
-			<keep name="org.jetel.graph.dictionary.*">
-				<field access="public"/>
-				<method access="public"/>
-			</keep>
+			<keep name="java.util.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.metadata.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.exception.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.AutoFilling"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.DataRecordGenerator"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.MiscUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.MultiFileReader"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.MultiFileWriter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.ReadableChannelIterator"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.SynchronizeUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.primitive.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.property.ComponentXMLAttributes"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.property.PropertyRefResolver"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.property.RefResFlag"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.compile.ClassLoaderUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.classloader.GreedyURLClassLoader"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.exec.ProcBox"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.exec.DataConsumer"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.string.StringUtils"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.util.string.StringAproxComparator"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.util.string.Concatenate"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.util.stream.StreamUtils"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.util.file.FileUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.file.FileURLParser"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.file.WcardPattern"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.joinKey.AproximativeJoinKey"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.joinKey.JoinKeyUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.joinKey.OrderedKey"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.compile.DynamicJavaClass"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.bytes.SystemOutByteChannel"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.bytes.WritableByteChannelIterator"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.component.RecordTransform"><field access="public"/><method access="public"/></keep>
 
+			<keep name="org.jetel.enums.PartitionFileTagType"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.enums.OrderEnum"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.component.*"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.graph.dictionary.*"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.interpreter.ParseException"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.interpreter.TransformLangParser"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.interpreter.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.interpreter.data.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.interpreter.ASTnode.CLVFStartExpression"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.ctl.CTLAbstractTransform"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.CTLAbstractTransformAdapter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.CTLEntryPoint"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ErrorMessage"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ITLCompiler"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.TLCompilerFactory"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.TransformLangExecutor"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.TransformLangExecutorRuntimeException"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ASTnode.CLVFFunctionDeclaration"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.data.TLType"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.data.TLTypePrimitive"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="org.jetel.database.IConnection"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.database.dbf.DBFDataParser"><field access="public"/><method access="public"/></keep>
+
+			<keep name="org.jetel.data.lookup.Lookup"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.data.lookup.LookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.util.crypto.Enigma"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.crypto.Base64"><field access="public"/><method access="public"/></keep>
+			
+			
 		</proguard>
 	</target>
 
@@ -514,7 +531,7 @@ defined.version.suffix=release
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 
-		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.bin}">
+		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
@@ -525,7 +542,7 @@ defined.version.suffix=release
 		</copy>
 
 		<!-- copy engine's plugin.xml to the plugins directory -->
-		<copy file="${dir.manifest}/plugin.xml" todir="${dir.package}/plugins/org.jetel.engine" encoding="UTF-8"/>
+		<copy file="${dir.package.manifest}/plugin.xml" todir="${dir.package}/plugins/org.jetel.engine" encoding="UTF-8"/>
 
 		<!-- copy all documents from docs directory -->
 		<copy todir="${dir.package}/docs">
@@ -776,6 +793,7 @@ defined.version.suffix=release
 			build.number=${build.number}
 			build.time=${build.time}
 			build.year=${build.year}
+			engine.obfuscate.run=${engine.obfuscate.run}
 		</echo>
 
 	<echo message="Using directory for classes: ${dir.bin}"/>
