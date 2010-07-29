@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Thu Jul 29 08:33:25 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu Jul 29 11:49:46 CEST 2010" modifiedBy="lucie" name="graphParsingTextData" revision="1.1">
+<Global>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="139" guiY="149" id="MULTI_LEVEL_READER0" type="MULTI_LEVEL_READER"/>
+</Phase>
+</Graph>
