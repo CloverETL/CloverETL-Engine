@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Thu Jul 29 14:52:05 CEST 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.127">
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Thu Jul 29 15:17:23 CEST 2010" modifiedBy="avackova" name="AccessLogParsing" revision="1.129">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -42,7 +42,7 @@
 <Property id="GraphParameter0" name="GET_HOSTNAME" value="1"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="ip_address" metadata="Metadata4" name="irrelevant_ip_addresses" type="simpleLookup"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="118" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="15" y="-56">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="118" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="692" x="16" y="-56">
 <attr name="ackgroundColorB"><![CDATA[255]]></attr>
 <attr name="text"><![CDATA[                                                                                                     Phase 0 (see '0' in upper left of the top 2 components) will run                                                                                                                 before all Phase 1 components and loads a list of IP addresses that
                                                                                                      should be ignored into special high speed Clover Lookups Tables. 
@@ -173,14 +173,14 @@ In this example we need to produce 2 sorted lists from our web site log files.
 
 These lists should be sorted in order of accesses and then written to an Excel Worksheet.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="85" id="Note16" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="619" x="16" y="-152">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="85" id="Note16" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="692" x="16" y="-152">
 <attr name="text"><![CDATA[Domain lookup is performed on the internet and lasts long time. To disable finding a host name from IP address, set GET_HOSTNAME parameter to 0]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="0" guiName="Irrelevant IP addresses" guiWidth="0" guiX="28" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="186" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="0" guiName="Irrelevant IP addresses" guiWidth="0" guiX="29" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="187" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
 <Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
