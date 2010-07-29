@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Thu Jul 29 11:34:52 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.132">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Thu Jul 29 12:53:38 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.133">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -40,7 +40,7 @@
     *      Customers where the liquidation status is unclear
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Calculate Checksum" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="262" y="393">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="262" y="393">
 <attr name="text"><![CDATA[
 
 
@@ -54,7 +54,7 @@ Validate Company ID of customer]]></attr>
                                                runs in Pahse 1 after Phase 0
                                                completes]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read companies" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="63" y="394">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="63" y="394">
 <attr name="text"><![CDATA[
 
 
@@ -62,7 +62,7 @@ Validate Company ID of customer]]></attr>
 
 Load in Companies from our in-house database]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="503" y="391">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="503" y="391">
 <attr name="text"><![CDATA[
 
 
@@ -70,7 +70,7 @@ Load in Companies from our in-house database]]></attr>
 
 Filter out any bad IDs]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="64" y="570">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="64" y="570">
 <attr name="text"><![CDATA[
 
 
@@ -79,7 +79,7 @@ Filter out any bad IDs]]></attr>
 
 Read 'Companies in Liquidation' file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="327" y="570">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="327" y="570">
 <attr name="text"><![CDATA[
 
 
@@ -88,7 +88,7 @@ Read 'Companies in Liquidation' file]]></attr>
 
 Merge it with our customer data]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="538" y="570">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="538" y="570">
 <attr name="text"><![CDATA[
 
 
@@ -97,7 +97,7 @@ Merge it with our customer data]]></attr>
 
 Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="758" y="391">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="758" y="391">
 <attr name="text"><![CDATA[
 
 
