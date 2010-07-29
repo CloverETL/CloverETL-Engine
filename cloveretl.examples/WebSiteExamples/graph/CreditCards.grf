@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Thu Jul 29 10:06:26 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.80">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Thu Jul 29 10:46:52 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.81">
 <Global>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
@@ -56,8 +56,8 @@
 <Field name="currency_id" type="integer"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter11" name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property id="GraphParameter0" name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="17" y="7">
 <attr name="text"><![CDATA[
 
@@ -361,7 +361,7 @@ function integer transform() {
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="risky-customers.html" guiWidth="0" guiX="880" guiY="673" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-customer" guiWidth="0" guiX="880" guiY="448" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-currency.html" guiWidth="0" guiX="880" guiY="555" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="27" guiY="279" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="28" guiY="280" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
   <Mapping element="gesmes:Envelope">
     <Mapping element="Cube">
@@ -385,6 +385,6 @@ function integer transform() {
 <Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="AGGREGATE0:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
 <Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER2:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="365:0:-14:68:0.5|365:-68:-14:0:0.5" guiRouter="Manual" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="17:0:-361:69:0.5|17:-104:-361:-35:0.5|363:-104:-15:-35:0.5|363:-69:-15:0:0.5" guiRouter="Manual" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 </Graph>
