@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="2.9.3" id="1253101461188" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Jul 02 15:27:53 CEST 2010" modifiedBy="Petr" name="g" revision="1.354">
+<Global>
+<Metadata id="Metadata10">
+<Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
+<Field name="ArrayOfForecastId" type="string"/>
+<Field name="ForecastReturnId" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastId" type="string"/>
+<Field name="ArrayOfForecastId" type="string"/>
+<Field format="yyy-MM-dd'T'HH:mm:ss" name="Date" type="date"/>
+<Field name="WeatherID" type="string"/>
+<Field name="Desciption" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastId" type="string"/>
+<Field name="ArrayOfForecastId" type="string"/>
+<Field name="Date" type="date"/>
+<Field name="WeatherID" type="string"/>
+<Field name="Desciption" type="string"/>
+<Field name="MorningLow" type="string"/>
+<Field name="DaytimeHigh" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ForecastResult" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Date" type="date"/>
+<Field name="City" type="string"/>
+<Field name="State" type="string"/>
+<Field name="Desciption" type="string"/>
+<Field name="MorningLowF" type="string"/>
+<Field name="DaytimeHighF" type="string"/>
+<Field name="MorningLowC" type="string"/>
+<Field name="DaytimeHighC" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ForecastReturn" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastReturnId" type="string"/>
+<Field name="Success" type="string"/>
+<Field name="ResponseText" type="string"/>
+<Field name="State" type="string"/>
+<Field name="City" type="string"/>
+<Field name="WeatherStationCity" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ForecastReturn1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastReturnId" type="string"/>
+<Field name="Success" type="string"/>
+<Field name="ResponseText" type="string"/>
+<Field name="State" type="string"/>
+<Field name="City" type="string"/>
+<Field name="WeatherStationCity" type="string"/>
+<Field name="ArrayOfForecastId" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata8" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Temperature" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastId" type="string"/>
+<Field name="MorningLow" type="string"/>
+<Field name="DaytimeHigh" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ZIP" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ZIP" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="102" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Process weather forecast from public web service running on http://ws.cdyne.com/WeatherWS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="806" x="150" y="20">
+<attr name="text"><![CDATA[The graph calls web service that provides weather forecast for location indentified by ZIP code. The returned results in XML format are parsed, consolidated and written to Excel file.
+
+WebServiceClient component is used. For step-by-step tutorial for this component see CloverETL's blog.
+http://blog.cloveretl.com/2010/03/08/how-to-set-up-a-webserviceclient-component-in-3-steps/]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="ZIP code generator" guiWidth="0" guiX="37" guiY="189" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#TL
+
+// Generates output record.
+function generate() {
+	$0.ZIP := "30310";
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Only success" guiWidth="0" guiX="459" guiY="130" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.Success == 'true']]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Prepare header" guiWidth="0" guiX="627" guiY="174" id="EXT_MERGE_JOIN0" joinKey="$ForecastReturnId#$ForecastReturnId;" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ForecastReturnId := $0.ForecastReturnId;
+	$0.Success := $0.Success;
+	$0.ResponseText := $0.ResponseText;
+	$0.State := $0.State;
+	$0.City := $0.City;
+	$0.WeatherStationCity := $0.WeatherStationCity;
+	$0.ArrayOfForecastId := $1.ArrayOfForecastId;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Prepare details" guiWidth="0" guiX="459" guiY="262" id="EXT_MERGE_JOIN1" joinKey="$ForecastId#$ForecastId;" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ForecastId := $0.ForecastId;
+	$0.ArrayOfForecastId := $0.ArrayOfForecastId;
+	$0.Date := $0.Date;
+	$0.WeatherID := $0.WeatherID;
+	$0.Desciption := $0.Desciption;
+	$0.MorningLow := $1.MorningLow;
+	$0.DaytimeHigh := $1.DaytimeHigh;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Merge header and details" guiWidth="0" guiX="779" guiY="220" id="EXT_MERGE_JOIN2" joinKey="$ArrayOfForecastId#$ArrayOfForecastId;" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.State := $0.State;
+	$0.City := $0.City;
+	$0.Date := $1.Date;
+	$0.Desciption := $1.Desciption;
+	$0.MorningLowF := $1.MorningLow;
+	$0.DaytimeHighF := $1.DaytimeHigh;
+	$0.MorningLowC := num2str((str2num($1.MorningLow)-32)*5/9);
+	$0.DaytimeHighC := num2str((str2num($1.DaytimeHigh)-32)*5/9);
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Weather Forecast" guiWidth="0" guiX="218" guiY="181" id="WEB_SERVICE_CLIENT1" operationName="{http://ws.cdyne.com/WeatherWS/}Weather#WeatherSoap12#GetCityForecastByZIP" requestStructure="&lt;GetCityForecastByZIP xmlns=&quot;http://ws.cdyne.com/WeatherWS/&quot;&gt;&#10;&#9;&lt;ZIP&gt;$ZIP&lt;/ZIP&gt;&#10;&lt;/GetCityForecastByZIP&gt;" responseMapping="&lt;Mappings&gt;&#13;&#10;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResponse&quot;&gt;&#13;&#10;&#9;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResult&quot; outPort=&quot;0&quot; sequenceField=&quot;ForecastReturnId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;Mapping element=&quot;ForecastResult&quot; outPort=&quot;1&quot; parentKey=&quot;ForecastReturnId&quot; generatedKey=&quot;ForecastReturnId&quot; sequenceField=&quot;ArrayOfForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Forecast&quot; outPort=&quot;2&quot; parentKey=&quot;ArrayOfForecastId&quot; generatedKey=&quot;ArrayOfForecastId&quot; sequenceField=&quot;ForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Temperatures&quot; outPort=&quot;3&quot; parentKey=&quot;ForecastId&quot; generatedKey=&quot;ForecastId&quot;/&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" type="WEB_SERVICE_CLIENT" wsdlURL="http://ws.cdyne.com/WeatherWS/Weather.asmx?wsdl"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/WeatherForecast.xls" guiHeight="0" guiName="Forecast in XLS" guiWidth="0" guiX="949" guiY="215" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (out)" toNode="WEB_SERVICE_CLIENT1:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:1"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN2:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (response)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:1" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata10" outPort="Port 1 (response)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:2" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 2 (response)" toNode="EXT_MERGE_JOIN1:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:3" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 3 (response)" toNode="EXT_MERGE_JOIN1:1"/>
+</Phase>
+</Graph>

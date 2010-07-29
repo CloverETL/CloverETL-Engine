@@ -1,11 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Fri Jul 16 09:07:29 CEST 2010" guiVersion="2.9.3" id="1279289229812" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Jul 16 16:20:36 CEST 2010" modifiedBy="Petr" name="graphDatabaseAccess" revision="1.3">
+<Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="0.0.0.devel" id="1280360243915" licenseType="Evaluation Devel" modified="Thu Jul 29 10:05:00 CEST 2010" modifiedBy="lucie" name="graphDatabaseAccess" revision="1.30">
 <Global>
+<Metadata fileURL="C:/Users/lucie/workspace-desktop-offline/RealWorldExamples/meta/customers.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="customers_OK" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="customerid" type="integer"/>
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+<Field name="id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="rejected" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field auto_filling="ErrCode" name="Error_code" type="integer"/>
+<Field auto_filling="ErrText" name="Error_message" type="string"/>
+<Field name="customerid" type="integer"/>
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+</Record>
+</Metadata>
+<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/customers.db" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="192" backgroundColorR="192" folded="false" height="147" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Navod" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="375" x="315" y="259">
-<attr name="text"><![CDATA[S Derby se distribuuje sample databaze ToursDB, tak bych pouzil tu. Precteni jedne tabulky třeba CITIES. Zapsat do tabulky CITIES další zaznamy, nektere se vlozi, nektere spadnou na violation of PK, jiné na violation of FK.
-
-S DBExecute to je horsi, derby neumi store procedure, takze zbyva parametrizovany SELECT/INSERT/UPDATE. Nebo mozna nejaky CREATE TABLE prikaz.]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="419" x="25" y="286">
+<attr name="text"><![CDATA[A database table CREDIT_CARDS is created. 
+Error actions attribute is set to CONTINUE - ignoring errors prevents from graph failure if the table has already been created.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
+<Phase number="0">
+<Node dbConnection="Connection0" enabled="disabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="create table" guiWidth="0" guiX="34" guiY="30" id="DB_EXECUTE0" sqlQuery="create table CUSTOMERS (&#13;&#10;&#9;CUSTOMER_ID INTEGER,&#13;&#10;    FIRST_NAME VARCHAR(80),&#13;&#10;    LAST_NAME VARCHAR(80),&#13;&#10;    GENDER VARCHAR(80),&#13;&#10;    COUNTRY VARCHAR(80), &#13;&#10;&#9;CREDIT_CARD_NUMBER VARCHAR(80), AGE INTEGER&#13;&#10;)" type="DB_EXECUTE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="delete data" guiWidth="0" guiX="275" guiY="29" id="DB_EXECUTE1" sqlQuery="DELETE FROM customers" type="DB_EXECUTE"/>
+</Phase>
+<Phase number="1">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="C:/Users/lucie/workspace.svn.galileo_trunk/cloveretl.examples/RealWorldExamples/data-in/customers_region_BAD.csv" guiHeight="0" guiName="read data" guiWidth="0" guiX="38" guiY="143" id="DATA_READER0" type="DATA_READER"/>
+<Node append="true" enabled="enabled" fileURL="C:/Users/lucie/workspace-desktop-offline/RealWorldExamples/data-out/rejected.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="691" guiY="138" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node cloverFields="customerid;firstname;lastname;gender;country;creditcard;age" commit="10" dbConnection="Connection0" enabled="enabled" errorAction="ROLLBACK" guiHeight="0" guiName="DBOutputTable" guiWidth="0" guiX="263" guiY="144" id="DB_OUTPUT_TABLE0" maxErrors="10" sqlQuery="INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)&#13;&#10;VALUES (?,?,?,?,?,?,?)&#13;&#10;RETURNING $id:=AUTO_GENERATED,$customerid:=$customerid, $firstname:=$firstname, $lastname:=$lastname;" type="DB_OUTPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="478" guiY="142" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Error_code = $0.Error_code;
+	$0.Error_message = $0.Error_message;
+	$0.customerid = $0.customerid;
+	$0.firstname = $0.firstname;
+	$0.lastname = $0.lastname;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugFilename="C:/Users/lucie/workspace-runtime_trunk/WebSiteExamples/data-tmp/derby_OK.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="538" guiY="262" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB_OUTPUT_TABLE0:0"/>
+<Edge fromNode="DB_OUTPUT_TABLE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (rejected)" toNode="REFORMAT0:0"/>
+<Edge fromNode="DB_OUTPUT_TABLE0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (autogenerated)" toNode="TRASH0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
 </Graph>
