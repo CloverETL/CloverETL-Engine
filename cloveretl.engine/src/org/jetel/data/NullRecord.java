@@ -226,6 +226,10 @@ final class NullField extends DataField{
 	}
 
 	@Override
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	}
+
+	@Override
 	public void fromString(CharSequence seq) {
 	}
 
@@ -260,14 +264,6 @@ final class NullField extends DataField{
 
 	@Override
 	public void setValue(Object _value) {
-	}
-
-	@Override
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-	}
-
-	@Override
-	public void toByteBuffer(ByteBuffer dataBuffer) {
 	}
 
 	@Override

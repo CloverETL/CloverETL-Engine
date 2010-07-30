@@ -21,6 +21,8 @@ package org.jetel.data;
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
@@ -334,32 +336,23 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		setNull(false);
     }
 
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		prepareBuf();
 		dataBuffer.get(value);
-		setNull(false);
+		setNull(Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset())));
 	}
 
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
-        if(!isNull) {
-    		try {
-    			dataBuffer.put(value);
-    		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-    		}
-        }
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		try {
+			if (!isNull()) {
+				dataBuffer.put(getByteArray());
+			} else {
+				dataBuffer.put(encoder.encode(CharBuffer.wrap(metadata.getNullValue())));
+			}
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
 	}
-
-    @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-        if(!isNull) {
-    		try {
-    			dataBuffer.put(value);
-    		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-    		}
-        }
-    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when
