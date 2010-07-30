@@ -1088,11 +1088,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	public Object visit(CLVFPrintErrNode node, Object data) {
+		boolean printLine = false;
 		final Node args = node.jjtGetChild(0);
 		args.jjtGetChild(0).jjtAccept(this, data); 
-		
+		if (args.jjtGetNumChildren() == 2) {
+			args.jjtGetChild(1).jjtAccept(this, data); 
+			printLine = stack.popBoolean();
+		}
 		Object argument = stack.pop();
-		if (node.printLine) {
+
+		if (printLine) {
 			StringBuilder buf = new StringBuilder((argument != null ? argument.toString() : "<null>"));
 			buf.append(" (on line: ").append(node.getBegin().getLine());
 			buf.append(" col: ").append(node.getBegin().getColumn()).append(")");
@@ -1100,7 +1105,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else {
 			System.err.println(argument != null ? argument : "<null>");
 		}
-
+		
 		return data;
 	}
 
