@@ -161,7 +161,7 @@ public class JmsWriter extends Node {
 			URL[] runtimeClassPath = getGraph().getRuntimeContext().getRuntimeClassPath();
 			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass, runtimeClassPath);
 		}
-		psor.setGraph(this.getGraph());
+		psor.setNode(this);
 	}
 	
 	

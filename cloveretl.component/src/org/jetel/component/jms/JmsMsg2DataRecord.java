@@ -23,9 +23,9 @@ import java.util.Properties;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -35,7 +35,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see org.jetel.component.JmsReader
  *
  */
-public interface JmsMsg2DataRecord {
+public interface JmsMsg2DataRecord extends Transform {
+
 	/**
 	 * Initialize the processor.
 	 * @param metadata Metadata for the records which will be processed by other methods.
@@ -44,23 +45,6 @@ public interface JmsMsg2DataRecord {
 	 */
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException;
 	
-    /**
-     * This is also initialization method, which is invoked before each separate graph run.
-     * Contrary the init() procedure here should be allocated only resources for this graph run.
-     * All here allocated resources should be released in #postExecute() method.
-     * 
-     * @throws ComponentNotReadyException some of the required resource is not available or other
-     * precondition is not accomplish
-     */
-    public void preExecute() throws ComponentNotReadyException; 
-
-	/**
-	 * Releases resources. 
-     * 
-     * @throws ComponentNotReadyException
-     */
-    public void postExecute() throws ComponentNotReadyException;
-
 	/**
 	 * May be used to end processing of input JMS messages
 	 * @return
@@ -76,29 +60,9 @@ public interface JmsMsg2DataRecord {
 	public DataRecord extractRecord(Message msg) throws JMSException;
 	
 	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished();
-	
-	/**
 	 * Nomen omen.
 	 * @return
 	 */
 	public String getErrorMsg();
 
-    /**
-     * Method which passes graph instance into processor implementation. 
-     * It's called just before {@link #init(DataRecordMetadata, Properties)} 
-     * @param graph
-     */
-    public void setGraph(TransformationGraph graph);
-	
-    public TransformationGraph getGraph();
-
-    /**
-     * Use preExecute method.
-     */
-    @Deprecated
-	public void reset();
 }
