@@ -24,9 +24,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -36,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see org.jetel.component.JmsWriter
  *
  */
-public interface DataRecord2JmsMsg {
+public interface DataRecord2JmsMsg extends Transform {
 	/**
 	 * Initialize the processor.
 	 * @param metadata Metadata for the records which will be processed by other methods.
@@ -58,13 +58,6 @@ public interface DataRecord2JmsMsg {
      */
     public void preExecute(Session session) throws ComponentNotReadyException; 
 
-	/**
-	 * Releases resources. 
-     * 
-     * @throws ComponentNotReadyException
-     */
-    public void postExecute() throws ComponentNotReadyException;
-	
 	/**
 	 * Transforms data record to JMS message. Is called for all data records. 
 	 * @param record Data record to be transformed to JMS message
@@ -93,29 +86,9 @@ public interface DataRecord2JmsMsg {
 	public Message createLastMsg() throws JMSException;
 
 	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished();
-	
-	/**
 	 * Nomen omen.
 	 * @return
 	 */
 	public String getErrorMsg();
 
-    /**
-     * Method which passes graph instance into processor implementation. 
-     * It's called just before {@link #init(DataRecordMetadata, Properties)} 
-     * @param graph
-     */
-    public void setGraph(TransformationGraph graph);
-	
-    public TransformationGraph getGraph();
-	
-	/**
-	 * Use preExecute method. 
-	 */
-    @Deprecated
-	public void reset() throws ComponentNotReadyException;
 }

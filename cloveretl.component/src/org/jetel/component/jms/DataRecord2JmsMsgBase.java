@@ -24,104 +24,58 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+import org.jetel.component.AbstractDataTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Simple partial implementation of DataRecord2JmsMsg interface. Supposed to be extended by full implementations.
+ * 
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
- * @since 11/28/06  
+ * @since 11/28/06
  */
-public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
+public abstract class DataRecord2JmsMsgBase extends AbstractDataTransform implements DataRecord2JmsMsg {
+
 	protected String errMsg;
-	protected DataRecordMetadata metadata; 
+	protected DataRecordMetadata metadata;
 	protected Session session;
-	protected TransformationGraph graph;
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsg#init(org.jetel.metadata.DataRecordMetadata, javax.jms.Session, java.util.Properties)
-	 */
+
 	public void init(DataRecordMetadata metadata, Session session, Properties props) throws ComponentNotReadyException {
 		errMsg = null;
 		this.metadata = metadata;
 		this.session = session;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#preExecute(javax.jms.Session)
-	 */
 	public void preExecute(Session session) throws ComponentNotReadyException {
+		super.preExecute();
 		this.session = session;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished() {
-	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsg#createLastMsg(org.jetel.data.DataRecord)
-	 */
 	@Deprecated
 	public Message createLastMsg(DataRecord record) throws JMSException {
 		return createLastMsg();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#createLastMsg()
-	 */
 	public Message createLastMsg() throws JMSException {
 		return null;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsg#getErrorMsg()
-	 */
+
 	public String getErrorMsg() {
 		return errMsg;
 	}
 
-	/**
-	 * Sets error message. Supposed to be used in subclasses.
-	 * @param errMsg
-	 */
 	protected void setErrorMsg(String errMsg) {
 		this.errMsg = errMsg;
 	}
 
 	/**
-	 * Use preExecute method. 
+	 * @deprecated Use {@link #preExecute()} method.
 	 */
-    @Deprecated
-	public void reset() throws ComponentNotReadyException {
+	@Deprecated
+	@Override
+	public void reset() {
 		setErrorMsg(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#getGraph()
-	 */
-	public TransformationGraph getGraph() {
-		return graph;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.DataRecord2JmsMsg#setGraph(org.jetel.graph.TransformationGraph)
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-		
 }

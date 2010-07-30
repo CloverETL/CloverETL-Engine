@@ -187,7 +187,7 @@ public class JmsReader extends Node {
 			psor = psorClass == null ? createProcessorDynamic(psorCode)
 					: createProcessor(psorClass, runtimeClassPath);
 		}		
-		psor.setGraph(this.getGraph());
+		psor.setNode(this);
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 		
 		List<DataRecordMetadata> lDataRecordMetadata;

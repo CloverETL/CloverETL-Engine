@@ -64,9 +64,6 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 	protected CharsetDecoder decoder = null;
 	protected Charset usedByteMsgCharset = null;
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecordBase#init(org.jetel.metadata.DataRecordMetadata, java.util.Properties)
-	 */
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {
 		super.init(metadata, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
@@ -95,12 +92,9 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		record.init();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#extractRecord(javax.jms.Message)
-	 */
 	public DataRecord extractRecord(Message msg) throws JMSException {
 		record.reset();
-		for (Enumeration names = msg.getPropertyNames(); names.hasMoreElements();) {
+		for (Enumeration<?> names = msg.getPropertyNames(); names.hasMoreElements();) {
 			String name = (String)names.nextElement();
 			try {
 				String value = msg.getStringProperty(name);
@@ -136,15 +130,6 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 
 		}
 		return record;
-	}
-
-    /**
-     * Use preExecute method.
-     */
-    @Deprecated
-	public void reset() {
-		super.reset();
-		// no operations needed
 	}
 
 }

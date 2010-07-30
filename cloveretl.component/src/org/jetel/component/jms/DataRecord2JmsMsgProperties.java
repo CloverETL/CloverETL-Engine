@@ -47,9 +47,6 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 	// index of field to be represented by message body.
 	protected int bodyField;
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsgBase#init(org.jetel.metadata.DataRecordMetadata, javax.jms.Session, java.util.Properties)
-	 */
 	public void init(DataRecordMetadata metadata, Session session, Properties props)  throws ComponentNotReadyException {
 		super.init(metadata, session, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
@@ -68,9 +65,6 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.DataRecord2JmsMsg#createMsg(org.jetel.data.DataRecord)
-	 */
 	public Message createMsg(DataRecord record) throws JMSException {
 		TextMessage msg = session.createTextMessage();
 		int fieldCnt = record.getNumFields();
@@ -86,14 +80,6 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		}
 		msg.setJMSPriority(Message.DEFAULT_PRIORITY);
 		return msg;
-	}
-
-	/**
-	 * Use preExecute method. 
-	 */
-    @Deprecated
-	public void reset() throws ComponentNotReadyException {
-		super.reset();
 	}
 
 }

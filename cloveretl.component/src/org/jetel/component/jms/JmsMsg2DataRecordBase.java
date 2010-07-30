@@ -20,6 +20,7 @@ package org.jetel.component.jms;
 
 import java.util.Properties;
 
+import org.jetel.component.AbstractDataTransform;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -29,79 +30,34 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 11/28/06  
  */
-public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
+public abstract class JmsMsg2DataRecordBase extends AbstractDataTransform implements JmsMsg2DataRecord {
+
 	protected String errMsg;
 	protected TransformationGraph graph;
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#init(org.jetel.metadata.DataRecordMetadata, java.util.Properties)
-	 */
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {
 		errMsg = null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#preExecute()
-	 */
-	public void preExecute() throws ComponentNotReadyException {
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#postExecute(org.jetel.graph.TransactionMethod)
-	 */
-	public void postExecute() throws ComponentNotReadyException {
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#endOfInput()
-	 */
 	public boolean endOfInput() {
 		return false;
 	}
 
-	/**
-	 * Use postExecute method.
-	 */
-	@Deprecated
-	public void finished() {
+	protected void setErrorMsg(String errMsg) {
+		this.errMsg = errMsg;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#getErrorMsg()
-	 */
 	public String getErrorMsg() {
 		return errMsg;
 	}
 
 	/**
-	 * @param errMsg
+	 * @deprecated Use {@link #preExecute()} method.
 	 */
-	protected void setErrorMsg(String errMsg) {
-		this.errMsg = errMsg;
-	}
-
-    /**
-     * Use preExecute method.
-     */
-    @Deprecated
+	@Deprecated
+	@Override
 	public void reset() {
 		setErrorMsg(null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#getGraph()
-	 */
-	public TransformationGraph getGraph() {
-		return graph;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.component.jms.JmsMsg2DataRecord#setGraph(org.jetel.graph.TransformationGraph)
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-	
 }
