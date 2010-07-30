@@ -21,9 +21,6 @@ package org.jetel.data;
 import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
@@ -382,25 +379,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()));
 		}
 	}
-
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		value.fromString(decoder.decode(dataBuffer), numericFormatter);
-	}
-
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		if (isNull) {
-			return;
-		}
-		value.toByteBuffer(dataBuffer, encoder, numericFormatter);
-	}
-	
-    @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-    	if (isNull) {
-			return;
-		}
-        value.toByteBuffer(dataBuffer);
-    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when

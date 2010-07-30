@@ -19,7 +19,9 @@
 package org.jetel.data;
 
 import java.io.Serializable;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -259,8 +261,9 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public abstract void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
-
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+		fromString(decoder.decode(dataBuffer));
+	}
 
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
@@ -270,16 +273,13 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public abstract void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
-
-    /**
-     *  Encode the field's value into ByteBuffer. The numeric value is encoded as a bit array not as a string representation.
-     *
-     * @param  dataBuffer                    Description of the Parameter
-     * @exception  CharacterCodingException  Description of the Exception
-     * @since                                October 31, 2002
-     */
-    public abstract void toByteBuffer(ByteBuffer dataBuffer);
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		try {
+			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
+	}
 
 	/**
 	 *  Serializes data field into provided byte buffer

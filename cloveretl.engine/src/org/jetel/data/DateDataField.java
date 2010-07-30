@@ -20,10 +20,6 @@ package org.jetel.data;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -288,29 +284,6 @@ public class DateDataField extends DataField implements Comparable<Object> {
 
 		return dateFormatter.format(value);
 	}
-
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer));
-	}
-
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		try {
-			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-		}
-	}
-
-    @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-        if(!isNull) {
-        	try {
-        		dataBuffer.putLong(value.getTime());
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        }
-    }
 
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {

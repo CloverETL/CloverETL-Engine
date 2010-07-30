@@ -21,10 +21,6 @@ package org.jetel.data;
 import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Decimal;
@@ -403,46 +399,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 					numericFormatter.getFormatPattern() != null ? numericFormatter.getFormatPattern() : "none"));
 		}
 	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer                    Description of Parameter
-	 *@param  decoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
-	 */
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer));
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  dataBuffer                    Description of Parameter
-	 *@param  encoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
-	 */
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		try {
-			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-		}
-	}
-
-    @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-        if(!isNull) {
-        	try {
-        		dataBuffer.putDouble(value);
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        }
-    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when

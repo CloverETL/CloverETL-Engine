@@ -700,7 +700,11 @@ public class DataFieldMetadata implements Serializable {
 			return nullValue;
 		}
 
-		return "";
+		if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValue();
+		}
+
+		return DataRecordMetadata.DEFAULT_NULL_VALUE;
 	}
 
 	/**

@@ -20,11 +20,6 @@ package org.jetel.data;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.text.RuleBasedCollator;
 
 import org.jetel.data.primitive.StringFormat;
@@ -253,29 +248,6 @@ public class StringDataField extends DataField implements CharSequence{
 	public char getType() {
 		return DataFieldMetadata.STRING_FIELD;
 	}
-
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer));
-	}
-
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		try {
-			dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-		}
-	}
-
-    @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-        if(!isNull) {
-    		try {
-    			dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
-    		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-    		}
-        }
-    }
 
 	public String toString() {
 		if (isNull) {

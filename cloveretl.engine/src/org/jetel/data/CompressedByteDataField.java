@@ -22,7 +22,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
@@ -167,29 +166,14 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 		byte[] buf = new byte[dataLen];
 		dataBuffer.get(buf);
-		setValue(buf);
-		setNull(false);
-	}
 
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
-        if(!isNull) {
-        	try {
-        		dataBuffer.put(getByteArray());
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        }
+		if (!Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset()))) {
+			setValue(buf);
+			setNull(false);
+		} else {
+			setNull(true);
+		}
 	}
-
-    public void toByteBuffer(ByteBuffer dataBuffer) {
-        if(!isNull) {
-        	try {
-        		dataBuffer.put(getByteArray());
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        }
-    }
 
 	public void serialize(ByteBuffer buffer) {
         try {
