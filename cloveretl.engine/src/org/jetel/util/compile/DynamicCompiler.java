@@ -27,7 +27,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -41,6 +44,11 @@ import javax.tools.JavaFileObject.Kind;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.TLCompilerDescription;
+import org.jetel.ctl.extensions.TLFunctionLibraryDescription;
+import org.jetel.plugin.Extension;
+import org.jetel.plugin.PluginDescriptor;
+import org.jetel.plugin.Plugins;
 
 /**
  * Java compiler for dynamic compilation of Java source code.
@@ -93,8 +101,11 @@ public final class DynamicCompiler {
 			throw new NullPointerException("className");
 		}
 
+		final Set<URL> extraLibraries = getExtraLibraries();
+		extraLibraries.addAll(Arrays.asList(compileClassPath));
+		
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, compileClassPath);
+		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, extraLibraries.toArray(new URL[extraLibraries.size()]));
 		
 		logger.debug("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());
 		
@@ -114,6 +125,30 @@ public final class DynamicCompiler {
 		} catch (ClassNotFoundException exception) {
 			throw new CompilationException("Loading of class " + className + " failed!", exception);
 		}
+	}
+
+	/**
+	 * This method returns in lazy way generated list of important libraries -
+	 * - all referenced libraries in plugins which contains a 'ctlfunction', 'tlfunction' or 'tlCompiler'
+	 * extension.
+	 * @return set of libraries which should be part of compile time classpath
+	 */
+	private Set<URL> getExtraLibraries() {
+		List<Extension> importantExtensions = Plugins.getExtensions(TLFunctionLibraryDescription.EXTENSION_POINT_ID);
+		importantExtensions.addAll(Plugins.getExtensions(org.jetel.interpreter.extensions.TLFunctionLibraryDescription.EXTENSION_POINT_ID));
+		importantExtensions.addAll(Plugins.getExtensions(TLCompilerDescription.EXTENSION_POINT_ID));
+		
+		final Set<PluginDescriptor> importantPlugins = new HashSet<PluginDescriptor>();
+		for (Extension extension : importantExtensions) {
+			importantPlugins.add(extension.getPlugin());
+		}
+
+		final Set<URL> libraries = new HashSet<URL>();
+		for (PluginDescriptor p : importantPlugins) {
+			libraries.addAll(Arrays.asList(p.getLibraryURLs()));
+		}
+		
+		return libraries;
 	}
 
 	/**
