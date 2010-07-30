@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Pavel" created="Fri Nov 28 16:55:03 CET 2008" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Thu Jul 29 10:20:22 CEST 2010" modifiedBy="avackova" name="SimpleEmailFilterExample" revision="1.39">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Fri Jul 30 09:37:27 CEST 2010" modifiedBy="avackova" name="EmailValidation" revision="1.41">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
