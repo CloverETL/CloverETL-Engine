@@ -243,11 +243,9 @@ public class Normalizer extends Node {
 						new DataRecordMetadata[] { getOutputPort(OUT_PORT).getMetadata() }, "UTF-8");
 				List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordNormalize.class, getId());
 				if (compiler.errorCount() > 0) {
-					for (ErrorMessage msg : msgs) {
-						logger.error(msg.toString());
-					}
+					String report = ErrorMessage.listToString(msgs, logger);
 					throw new ComponentNotReadyException("CTL code compilation finished with "
-							+ compiler.errorCount() + " errors");
+							+ compiler.errorCount() + " errors" + report);
 				}
 				Object ret = compiler.getCompiledCode();
 				if (ret instanceof TransformLangExecutor) {

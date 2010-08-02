@@ -225,10 +225,8 @@ public class RecordTransformFactory {
             		TLCompilerFactory.createCompiler(node.getGraph(),inMetadata,outMetadata,"UTF-8");
             	List<ErrorMessage> msgs = compiler.compile(transform, CTLRecordTransform.class, node.getId());
             	if (compiler.errorCount() > 0) {
-            		for (ErrorMessage msg : msgs) {
-            			logger.error(msg.toString());
-            		}
-            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+            		String report = ErrorMessage.listToString(msgs, logger);
+            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors" + report);
             	}
             	Object ret = compiler.getCompiledCode();
             	if (ret instanceof TransformLangExecutor) {

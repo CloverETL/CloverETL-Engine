@@ -188,10 +188,8 @@ public class PartitionFunctionFactory {
         	List<ErrorMessage> msgs = compiler.compile(partitionSource, CTLRecordPartition.class, node.getId());
         	
         	if (compiler.errorCount() > 0) {
-        		for (ErrorMessage msg : msgs) {
-        			logger.error(msg.toString());
-        		}
-        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors.");
+				String report = ErrorMessage.listToString(msgs, logger);
+        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors" + report);
         	}
         	
         	Object ret = compiler.getCompiledCode();
