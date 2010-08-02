@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.jetel.ctl.ExpParser;
 import org.jetel.ctl.TransformLangExecutor;
@@ -147,10 +148,11 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			break;
 		case DATE_LITERAL:
 			final ParsePosition p1 = new ParsePosition(0);
-			calendar.setTime(DATE_FORMATTER.parse(valueImage,p1));
-			if (p1.getIndex() < valueImage.length() - 1) {
+			final Date date = DATE_FORMATTER.parse(valueImage, p1);
+			if (date == null || p1.getIndex() < valueImage.length() - 1) {
 			   throw new ParseException("Date literal '" + valueImage + "' could not be parsed",p1.getErrorIndex());
 			}
+			calendar.setTime(date);
 			// set all time fields to zero
 			calendar.set(Calendar.HOUR, 0);
 			calendar.set(Calendar.MINUTE, 0);
@@ -162,7 +164,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		case DATETIME_LITERAL:
 			final ParsePosition p2 = new ParsePosition(0);
 			valueObj = DATE_TIME_FORMATTER.parse(valueImage,p2);
-			if (p2.getIndex() < valueImage.length() - 1) {
+			if (valueObj == null || p2.getIndex() < valueImage.length() - 1) {
 				   throw new ParseException("Date-time literal '" + valueImage + "' could not be parsed",p2.getErrorIndex());
 			}
 			setType(TLTypePrimitive.DATETIME);

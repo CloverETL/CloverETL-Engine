@@ -774,11 +774,11 @@ public class ASTBuilder extends NavigatingVisitor {
 		} catch (ParseException e) {
 			switch (lit.getTokenKind()) {
 			case TransformLangParserConstants.DATE_LITERAL:
-				errorMessage = "Literal '" + lit.getValueImage() + "has invalid format for type 'date'";
+				errorMessage = "Literal '" + lit.getValueImage() + "' has invalid format for type 'date'";
 				hint = "Date literal must match format pattern 'YYYY-MM-dd'";
 				break;
 			case TransformLangParserConstants.DATETIME_LITERAL:
-				errorMessage = "Literal '" + lit.getValueImage() + "has invalid format for type 'date'";
+				errorMessage = "Literal '" + lit.getValueImage() + "' has invalid format for type 'date'";
 				hint = "Date-time literal must match format pattern 'YYYY-MM-DD HH:MM:SS'";
 				break;
 			default:
