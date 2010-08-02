@@ -1,7 +1,0 @@
-OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
-10387|SANTG|1|18.12.1996|15.01.1997|20.12.1996|2|93.63|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway
-10520|SANTG|7|29.04.1997|27.05.1997|01.05.1997|1|13.37|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway
-10639|SANTG|7|20.08.1997|17.09.1997|27.08.1997|3|38.64|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway
-10831|SANTG|3|14.01.1998|11.02.1998|23.01.1998|2|72.19|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway
-10909|SANTG|1|26.02.1998|26.03.1998|10.03.1998|2|53.05|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway
-11015|SANTG|2|10.04.1998|24.04.1998|20.04.1998|2|4.62|Santé Gourmet|Erling Skakkes gate 78|Stavern||4110|Norway

@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Wed Jul 28 18:01:04 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.83">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Thu Jul 29 18:46:37 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.85">
 <Global>
-<Metadata id="Metadata1">
-<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
-<Field name="field1" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field locale="en.US" name="Field1" nullable="true" shift="0" type="string"/>
@@ -32,7 +27,7 @@ Standard input is redirected to input port and standard output to output port.]]
 <attr name="finalRecord"><![CDATA[30]]></attr>
 <attr name="startRecord"><![CDATA[0]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/command_win.out" guiHeight="0" guiName="command_win.out" guiWidth="0" guiX="368" guiY="327" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/command_win.out" guiHeight="0" guiName="command_win.out" guiWidth="0" guiX="368" guiY="327" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="save file list" guiWidth="0" guiX="498" guiY="70" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="0" guiName="save files with pattern" guiWidth="0" guiX="498" guiY="166" id="DATA_WRITER2" type="DATA_WRITER"/>
 <Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat file" guiWidth="0" guiX="254" guiY="-22" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE" workersTimeout="10">
@@ -47,12 +42,12 @@ Standard input is redirected to input port and standard output to output port.]]
   find -name "$in" 
 done]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="WINDOWS" guiWidth="0" guiX="133" guiY="323" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="disabled" guiHeight="0" guiName="WINDOWS" guiWidth="0" guiX="133" guiY="323" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[dir]]></attr>
 </Node>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>
 <Edge fromNode="SYS_EXECUTE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="SYS_EXECUTE2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER2:0"/>
-<Edge fromNode="SYS_EXECUTE3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="SYS_EXECUTE3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

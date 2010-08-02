@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record fieldDelimiter=";" name="orders" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="orderid" nullable="true" shift="0" size="0" type="integer"/>
 <Field eofAsDelimiter="false" format="yyyy-MM-dd" name="orderdate" nullable="true" shift="0" size="0" type="date"/>
 <Field eofAsDelimiter="false" name="customerid" nullable="true" shift="0" size="0" type="integer"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record fieldDelimiter=";" name="products" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="products" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="prod_id" nullable="true" shift="0" size="0" type="integer"/>
 <Field eofAsDelimiter="false" name="category" nullable="true" shift="0" size="0" type="integer"/>
 <Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>

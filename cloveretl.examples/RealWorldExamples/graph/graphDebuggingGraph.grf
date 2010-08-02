@@ -1,39 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Thu Jul 29 11:36:27 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.83">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Thu Jul 29 18:31:56 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.84">
 <Global>
-<Metadata fileURL="${META_DIR}/customers_fixed_not_nullable_default.fmt" id="Metadata3"/>
-<Metadata fileURL="${META_DIR}/customers_fixed_not_nullable.fmt" id="Metadata5"/>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record name="EMPLOYEE" previewAttachmentCharset="ISO-8859-1" recordSize="-1" type="delimited">
-<Field delimiter=",\\|;\\|#" format="#" name="EMP_NO" nullable="true" shift="0" type="integer"/>
-<Field delimiter=",\\|;\\|#" name="FIRST_NAME" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" name="LAST_NAME" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" name="PHONE_EXT" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" format="dd/MM/yyyy" name="HIRE_DATE" nullable="true" shift="0" type="date"/>
-<Field delimiter=",\\|;\\|#" name="DEPT_NO" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" name="JOB_CODE" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" name="JOB_GRADE" nullable="true" shift="0" type="decimal"/>
-<Field delimiter=",\\|;\\|#" name="JOB_COUNTRY" nullable="true" shift="0" type="string"/>
-<Field delimiter=",\\|;\\|#" length="10" name="SALARY" nullable="true" scale="2" shift="0" type="decimal"/>
-<Field delimiter="\n" name="FULL_NAME" nullable="true" shift="0" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata4">
-<Record fieldDelimiter="|" name="error_message" recordDelimiter="\r\n" type="delimited">
-<Field name="recordNo" type="integer"/>
-<Field name="fieldNo" type="integer"/>
-<Field name="wrong_data" type="string"/>
-<Field name="error_message" type="string"/>
-</Record>
-</Metadata>
 <Property id="GraphParameter0" name="sample" value="0.1"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="25" guiY="23" id="DATA_READER0" numRecords="100" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="25" guiY="23" id="DATA_READER0" numRecords="100" skipFirstLine="true" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="0" guiName="random records" guiWidth="0" guiX="541" guiY="23" id="DATA_WRITER0" outputFieldNames="false" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="367" guiY="22" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
@@ -82,7 +57,7 @@ function integer transform() {
 <Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="C:/Users/lucie/workspace.svn.galileo_trunk/cloveretl.examples/RealWorldExamples/data-in/customers_region_BAD.csv" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="21" guiY="291" id="DATA_READER1" trim="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region_BAD.csv" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="21" guiY="291" id="DATA_READER1" trim="false" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedMax10.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="482" guiY="291" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="243" guiY="292" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2

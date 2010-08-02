@@ -1,8 +1,9 @@
-PROJECT= .
-# (Please use slash '/' character as a path delimiter in all path specifications, e.g. C:/Users/username/workspace/project)
-#Project properties
-#Thu Jul 01 15:38:05 CEST 2010
-CONN_DIR=${PROJECT}/conn
+##Project path
+#Thu Jul 29 15:56:46 CEST 2010
+PROJECT=.
+
+
+#Thu Jul 29 15:56:46 CEST 2010
 SEQ_DIR=${PROJECT}/seq
 DATAOUT_DIR=${PROJECT}/data-out
 GRAPH_DIR=${PROJECT}/graph

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="2.9.3" id="1279197992165" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Jul 16 16:38:45 CEST 2010" modifiedBy="Petr" name="graphJoining_Aggregating" revision="1.43">
+<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseType="Evaluation Devel" modified="Thu Jul 29 18:41:01 CEST 2010" modifiedBy="lucie" name="graphJoining_Aggregating" revision="1.45">
 <Global>
 <Metadata fileURL="${META_DIR}/categories.fmt" id="Metadata5"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -74,6 +74,7 @@ The records with the data joined from two input ports are sent to second output 
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="74" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining and aggregating" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="767" x="124" y="28">
 <attr name="text"><![CDATA[This graph processes operational data from online DVD store. It identifies registered customers without any order and for the rest of customers computes some fact like min amount of order, max amount of order etc. It also produces a report with all products that the store provides.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node aggregateKey="customerid" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="699" guiY="553" id="AGGREGATE0" mapping="$customerid:=$customerid;$firstname:=first($firstname);$lastname:=first($lastname);$email:=first($email);$phone:=first($phone);$country:=first($country);$income:=first($income);$minamount:=min($totalamount);$maxamount:=max($totalamount);$avgamount:=avg($totalamount);$noorders:=count();$totalamount:=sum($totalamount);" type="AGGREGATE"/>
@@ -104,13 +105,13 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="customers_region1" guiWidth="0" guiX="31" guiY="196" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiHeight="0" guiName="customers_region2" guiWidth="0" guiX="32" guiY="275" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/orders.csv" guiHeight="0" guiName="orders" guiWidth="0" guiX="35" guiY="406" id="DATA_READER2" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/products.csv" guiHeight="0" guiName="products" guiWidth="0" guiX="38" guiY="572" id="DATA_READER3" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/categories.csv" guiHeight="0" guiName="categories" guiWidth="0" guiX="41" guiY="661" id="DATA_READER4" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers_without_order_region1.csv" guiHeight="0" guiName="customers without order region1" guiWidth="0" guiX="868" guiY="268" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers_without_order_region2.csv" guiHeight="0" guiName="customers without order region2" guiWidth="0" guiX="867" guiY="356" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="customers_region1" guiWidth="0" guiX="31" guiY="196" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="customers_region2" guiWidth="0" guiX="32" guiY="275" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/orders.csv" guiHeight="0" guiName="orders" guiWidth="0" guiX="35" guiY="406" id="DATA_READER2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/products.csv" guiHeight="0" guiName="products" guiWidth="0" guiX="38" guiY="572" id="DATA_READER3" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/categories.csv" guiHeight="0" guiName="categories" guiWidth="0" guiX="41" guiY="661" id="DATA_READER4" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/customers_without_order_region1.csv" guiHeight="0" guiName="customers without order region1" guiWidth="0" guiX="868" guiY="268" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/customers_without_order_region2.csv" guiHeight="0" guiName="customers without order region2" guiWidth="0" guiX="867" guiY="356" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node dedupKey="customerid(a)" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="368" guiY="238" id="DEDUP0" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="0" guiName="Replace categoryid by category name" guiWidth="0" guiX="244" guiY="619" id="EXT_HASH_JOIN0" joinKey="$category=$category" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#TL
@@ -156,24 +157,24 @@ function getOutputPort() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="681" guiY="651" id="TRASH2" type="TRASH"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/Report.xls" guiHeight="0" guiName="Customers report" guiWidth="0" guiX="870" guiY="552" id="XLS_WRITER0" namesRow="1" sheetName="Customers" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="AGGREGATE0:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (only in B)" toNode="TRASH2:0"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:0"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:1"/>
-<Edge fromNode="DATA_READER2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="DATA_READER3:0" guiBendpoints="" id="Edge12" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge fromNode="DATA_READER4:0" guiBendpoints="" id="Edge13" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="DEDUP0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="DATA_INTERSECTION0:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge5" inPort="Port 1 (set B)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
-<Edge debugMode="true" fromNode="MERGE0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/Report.xls" guiHeight="0" guiName="Customers report" guiWidth="0" guiX="870" guiY="552" id="XLS_WRITER0" namesRow="1" sheetName="Customers" type="XLS_WRITER"/>
+<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (only in B)" toNode="TRASH2:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:1"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="DATA_READER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="DATA_READER4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="DATA_INTERSECTION0:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge debugMode="true" fromNode="MERGE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/Report.xls" guiHeight="0" guiName="Products report" guiWidth="0" guiX="424" guiY="622" id="XLS_WRITER1" namesRow="1" sheetName="Products" type="XLS_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/Report.xls" guiHeight="0" guiName="Products report" guiWidth="0" guiX="424" guiY="622" id="XLS_WRITER1" namesRow="1" sheetName="Products" type="XLS_WRITER"/>
 </Phase>
 </Graph>
