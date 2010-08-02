@@ -397,7 +397,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	@Deprecated
 	public void setCaseSensitive(boolean caseSensitive) {
 		if (collator == null) {
-			collator =  (RuleBasedCollator) Collator.getInstance(Locale.getDefault());
+			collator =  (RuleBasedCollator) Collator.getInstance(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE));
 		}
 		collator.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 	}

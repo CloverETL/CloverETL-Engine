@@ -22,11 +22,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -180,6 +182,7 @@ public final class Defaults {
 		DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
 		DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
+		DEFAULT_LOCALE = getStringProperties("DEFAULT_LOCALE", MiscUtils.localeToString(Locale.getDefault()));
 		DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
 		DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
@@ -236,6 +239,7 @@ public final class Defaults {
 	public static String DEFAULT_DATE_FORMAT;// = "yyyy-MM-dd";
 	public static String DEFAULT_TIME_FORMAT;// = "HH:mm:ss";
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
+	public static String DEFAULT_LOCALE;// = MiscUtils.localeToString(Locale.getDefault());
 	public static String DEFAULT_REGEXP_TRUE_STRING;// = "T|TRUE|YES|Y|t|true|1|yes|y"
 	public static String DEFAULT_REGEXP_FALSE_STRING;// = "F|FALSE|NO|N|f|false|0|no|n"
 

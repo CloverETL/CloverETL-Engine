@@ -24,6 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.data.Defaults;
+import org.jetel.util.MiscUtils;
+
 /**
  * Represents the Java based date formatters.
  *
@@ -39,15 +42,11 @@ class JavaDateFormatter implements DateFormatter {
 	private ParsePosition position=new ParsePosition(0);
 
 	public JavaDateFormatter() {
-		this.dateFormat = SimpleDateFormat.getDateInstance();
-		// TODO: I guess that the setLenient(false) method should be called here as well.
-		// Is there any reason why the method is not called?
-		// this.dateFormat.setLenient(false);
+		this(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE));
 	}
 
 	public JavaDateFormatter(Locale locale) {
-		this.dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
-		this.dateFormat.setLenient(false);
+		this(Defaults.DEFAULT_DATE_FORMAT, locale);
 	}
 
 	public JavaDateFormatter(String pattern, Locale locale) {
