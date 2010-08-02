@@ -302,7 +302,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		if (metadata != null) {
 			node.setMetadata(metadata);
 		} else {
-			error(node, "No metadata found for " + (isLHS ? "output" : "input") + " port '" + id + "'", "Connect the port and assign metadata on the edge");
+			error(node, "Cannot " + (isLHS ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
 			node.setType(TLType.ERROR);
 			return node;
 		}
