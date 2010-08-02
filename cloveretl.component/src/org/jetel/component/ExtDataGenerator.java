@@ -27,7 +27,6 @@ import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
-import org.jetel.ctl.ErrorMessage.ErrorLevel;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -299,16 +298,10 @@ public class ExtDataGenerator extends DataGenerator {
 						ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),null,outMetadata,"UTF-8");
 						List<ErrorMessage> msgs = compiler.compile(generatorSource,CTLRecordGenerate.class, getId());
 						if (compiler.errorCount() > 0) {
-							StringBuilder sb = new StringBuilder();
-							for (ErrorMessage msg : msgs) {
-								logger.error(msg.toString());
-								if (msg.getErrorLevel() == ErrorLevel.ERROR) {
-									sb.append("\n  Line ").append(msg.getLocation().getBeginLine()).append(": ").append(msg.toString());
-								}
-							}
+							String report = ErrorMessage.listToString(msgs, logger);
 							throw new ComponentNotReadyException(
 									"CTL code compilation finished with "
-											+ compiler.errorCount() + " errors" + sb);
+											+ compiler.errorCount() + " errors" + report);
 						}
 						Object ret = compiler.getCompiledCode();
 						if (ret instanceof TransformLangExecutor) {

@@ -19,6 +19,9 @@
 package org.jetel.ctl;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
 
 /**
  * An error message within CTL code.
@@ -153,4 +156,24 @@ public class ErrorMessage implements Serializable {
 
 	}
 
+	
+	/**
+	 * Converts given list of error messages to a string report and log all errors via commons logging.
+	 * @param errors
+	 * @param logger
+	 * @return
+	 */
+	public static String listToString(List<ErrorMessage> errors, Log logger) {
+		StringBuilder sb = new StringBuilder();
+		for (ErrorMessage msg : errors) {
+			if (logger != null) {
+				logger.error(msg.toString());
+			}
+			if (msg.getErrorLevel() == ErrorLevel.ERROR) {
+				sb.append("\n").append(msg.toString());
+			}
+		}
+		return sb.toString();
+	}
+	
 }

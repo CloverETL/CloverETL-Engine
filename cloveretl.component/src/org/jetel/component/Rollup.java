@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -510,21 +511,13 @@ public class Rollup extends Node {
         	ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
         			getInMetadata().toArray(new DataRecordMetadata[getInPorts().size()]),
         			getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]), CTL_COMPILER_ENCODING);
-        	compiler.compile(sourceCode, CTLRecordRollup.class, getId());
+        	List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordRollup.class, getId());
 
         	if (compiler.errorCount() > 0) {
         		Log logger = LogFactory.getLog(getClass());
-
-        		for (ErrorMessage errorMessage : compiler.getDiagnosticMessages()) {
-    				if (errorMessage.getErrorLevel() == ErrorMessage.ErrorLevel.ERROR) {
-    					logger.error(errorMessage);
-    				} else {
-    					logger.warn(errorMessage);
-    				}
-    			}
-
+        		String report = ErrorMessage.listToString(msgs, logger);
         		throw new ComponentNotReadyException("Compilation of CTL rollup transform finished with "
-        				+ compiler.errorCount() + " errors!");
+        				+ compiler.errorCount() + " errors!" + report);
         	}
 
         	Object compiledTransform = compiler.getCompiledCode();
