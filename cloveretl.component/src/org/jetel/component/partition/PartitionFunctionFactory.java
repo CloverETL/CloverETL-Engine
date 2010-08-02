@@ -183,7 +183,7 @@ public class PartitionFunctionFactory {
 			ITLCompiler compiler = TLCompilerFactory.createCompiler(
 					node.getGraph(),
 					new DataRecordMetadata[] { metadata },
-					new DataRecordMetadata[] { metadata },
+					null,
 					"UTF-8");
         	List<ErrorMessage> msgs = compiler.compile(partitionSource, CTLRecordPartition.class, node.getId());
         	
