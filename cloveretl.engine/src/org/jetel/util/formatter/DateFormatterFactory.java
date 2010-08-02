@@ -20,7 +20,9 @@ package org.jetel.util.formatter;
 
 import java.util.Locale;
 
+import org.jetel.data.Defaults;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Factory for internally used date formatters.
@@ -40,10 +42,10 @@ public final class DateFormatterFactory {
 
 	public static DateFormatter getFormatter(String formatString, Locale locale) {
 		if (locale == null) {
-			locale = Locale.getDefault();
+			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
 		}
 
-		if (formatString == null) {
+		if (StringUtils.isEmpty(formatString)) {
 			return new JavaDateFormatter(locale);
 		} else if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
 			return new JodaDateFormatter(formatString.substring(JODA_FORMAT_PREFIX.length()), locale);
@@ -61,7 +63,7 @@ public final class DateFormatterFactory {
 	}
 
 	public static DateFormatter getFormatter(String formatString) {
-		return getFormatter(formatString, Locale.getDefault());
+		return getFormatter(formatString, (Locale) null);
 	}
 
 	public static DateFormatter getFormatter(Locale locale) {

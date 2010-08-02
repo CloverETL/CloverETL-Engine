@@ -27,6 +27,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -52,7 +53,7 @@ public final class MiscUtils {
 		Locale locale = null;
 
 		if (StringUtils.isEmpty(localeStr)) {
-			locale = Locale.getDefault();
+			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
 		} else {
 			String[] localeLC = localeStr.split("\\.");
 			if (localeLC.length > 1) {

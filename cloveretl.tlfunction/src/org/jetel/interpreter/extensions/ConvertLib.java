@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -228,7 +227,7 @@ public class ConvertLib extends TLFunctionLibrary {
                      locale = params[2].toString();
                  } else {
                 	 // locale not set - use system default
-                	 locale = MiscUtils.localeToString(Locale.getDefault());
+                	 locale = Defaults.DEFAULT_LOCALE;
                  }
             	 Num2StrContext c = (Num2StrContext)context.getContext();
             	 if (c.format == null || !c.locale.equals(locale) || !c.format.toPattern().equals(formatString)) {

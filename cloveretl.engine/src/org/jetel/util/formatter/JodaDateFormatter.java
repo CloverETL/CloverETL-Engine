@@ -21,6 +21,8 @@ package org.jetel.util.formatter;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.data.Defaults;
+import org.jetel.util.MiscUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -39,11 +41,11 @@ class JodaDateFormatter implements DateFormatter {
 	private String pattern;
 
 	public JodaDateFormatter() {
-		this.dateTimeFormatter = DateTimeFormat.mediumDate();
+		this(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE));
 	}
 
 	public JodaDateFormatter(Locale locale) {
-		this.dateTimeFormatter = DateTimeFormat.mediumDate().withLocale(locale);
+		this(Defaults.DEFAULT_DATE_FORMAT, locale);
 	}
 
 	public JodaDateFormatter(String pattern, Locale locale) {

@@ -44,6 +44,8 @@ DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = 2048
 
 DEFAULT_DATE_FORMAT = yyyy-MM-dd
 DEFAULT_TIME_FORMAT = HH:mm:ss
+#uncomment this property when locale should be independent on underlaying platform otherwise system default locale is used
+# DEFAULT_LOCALE = en.US
 DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH:mm:ss
 DEFAULT_REGEXP_TRUE_STRING = true|T|TRUE|YES|Y|t|1|yes|y
 DEFAULT_REGEXP_FALSE_STRING = false|F|FALSE|NO|N|f|0|no|n
