@@ -1,0 +1,18 @@
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,41,,ABLVWOOWSX
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,106,,ADNWUZKIDP
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,240,,AHSJRAGAKN
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,379,,AMSFEQATKE
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,541,,ASIJVXDVZR
+-1,Exeption thrown by: INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+. Message: Sloupec 'FIRST_NAME' nemůže přijímat hodnotu 'null'.,,697,,AXPFXOPSWW

@@ -1,8 +1,0 @@
-OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
-10374|WOLZA|1|05.12.1996|02.01.1997|09.12.1996|3|3.94|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-10611|WOLZA|6|25.07.1997|22.08.1997|01.08.1997|2|80.65|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-10792|WOLZA|1|23.12.1997|20.01.1998|31.12.1997|3|23.79|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-10870|WOLZA|5|04.02.1998|04.03.1998|13.02.1998|3|12.04|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-10906|WOLZA|4|25.02.1998|11.03.1998|03.03.1998|3|26.29|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-10998|WOLZA|8|03.04.1998|17.04.1998|17.04.1998|2|20.31|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland
-11044|WOLZA|4|23.04.1998|21.05.1998|01.05.1998|1|8.72|Wolski Zajazd|ul. Filtrowa 68|Warszawa||01-012|Poland

@@ -1,4 +1,0 @@
-${DATAIN_DIR}/Orders_Switzerland.csv
-${DATAIN_DIR}/Orders_Belgium.csv
-${DATAIN_DIR}/Orders_USA.csv
-${DATAIN_DIR}/Orders_Ireland.csv

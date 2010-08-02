@@ -1,30 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Evaluation Devel" modified="Thu Jul 29 06:08:27 CEST 2010" modifiedBy="lucie" name="graphWritingTextData" revision="1.30">
+<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Evaluation Devel" modified="Thu Jul 29 16:50:51 CEST 2010" modifiedBy="lucie" name="graphWritingTextData" revision="1.35">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
-<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="num_rec" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="number" type="integer"/>
-</Record>
-</Metadata>
+<Property id="GraphParameter9" name="FULL_FILE" value="5555"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="78" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="685" x="48" y="7">
+<attr name="text"><![CDATA[We want to gather all customers from a certain state into one file. Instead of two big files with customer data create smaller ones with the given number of records each. ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="85" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="225" x="256" y="348">
+<attr name="text"><![CDATA[Note the difference how SimpleGather and Concatenate component put data from various inputs together]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="73" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="201" x="604" y="348">
+<attr name="text"><![CDATA[The number of records per file is stored in FULL_FILE parameter.]]></attr>
+</Note>
 <Dictionary>
 <Entry dictval.key="value" id="DictionaryEntry0" input="true" name="num_files" output="true" type="integer"/>
 <Entry id="DictionaryEntry1" input="true" name="num_rec" output="true" type="integer"/>
 </Dictionary>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="190" guiY="363" id="CONCATENATE0" type="CONCATENATE"/>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="12" guiY="309" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="18" guiY="419" id="DATA_READER1" type="DATA_READER"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="130" id="DATA_READER2" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="22" guiY="230" id="DATA_READER3" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="ISO-8859-1" guiWidth="0" guiX="25" guiY="26" id="DATA_READER4" type="DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/customers/#.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="626" guiY="28" id="DATA_WRITER0" makeDirs="true" outputFieldNames="true" partitionFileTag="keyNameFileTag" partitionKey="state" type="DATA_WRITER"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/customers$.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="612" guiY="169" id="DATA_WRITER1" partitionFileTag="numberFileTag" recordsPerFile="${FULL_FILE}" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="352" guiY="360" id="EXT_SORT0" sortKey="lastname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="519" guiY="385" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="192" guiY="444" id="CONCATENATE0" type="CONCATENATE"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="384" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="468" id="DATA_READER1" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="216" id="DATA_READER2" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="300" id="DATA_READER3" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="ISO-8859-1" guiWidth="0" guiX="24" guiY="108" id="DATA_READER4" type="DATA_READER"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/customers/#.txt" guiHeight="0" guiName="division by state" guiWidth="0" guiX="624" guiY="108" id="DATA_WRITER0" makeDirs="true" outputFieldNames="true" partitionFileTag="keyNameFileTag" partitionKey="state" type="DATA_WRITER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/customers$.txt" guiHeight="0" guiName="by records per file" guiWidth="0" guiX="624" guiY="240" id="DATA_WRITER1" partitionFileTag="numberFileTag" recordsPerFile="${FULL_FILE}" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="354" guiY="452" id="EXT_SORT0" sortKey="lastname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="521" guiY="452" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer fileNumber = 1;
 integer counter = 0;
@@ -82,7 +87,7 @@ function void postExecute() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="255" guiY="28" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="252" guiY="108" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -121,9 +126,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="247" guiY="178" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers$.xml" footer="&lt;/dataset&gt;" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="688" guiY="359" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;dataset&gt;" id="STRUCTURE_WRITER0" mask="&lt; customers&gt;&#10;&#9;&lt;customerID&gt;$customerID&lt;/customerID&gt;&#10;&#9;&lt;firstname&gt;$firstname&lt;/firstname&gt;&#10;&#9;&lt;lastname&gt;$lastname&lt;/lastname&gt;&#10;&#9;&lt;address1&gt;$address1&lt;/address1&gt;&#10;&#9;&lt;address2&gt;$address2&lt;/address2&gt;&#10;&#9;&lt;city&gt;$city&lt;/city&gt;&#10;&#9;&lt;state&gt;$state&lt;/state&gt;&#10;&#9;&lt;zip&gt;$zip&lt;/zip&gt;&#10;&#9;&lt;country&gt;$country&lt;/country&gt;&#10;&#9;&lt;region&gt;$region&lt;/region&gt;&#10;&#9;&lt;email&gt;$email&lt;/email&gt;&#10;&#9;&lt;phone&gt;$phone&lt;/phone&gt;&#10;&#9;&lt;creditcardtype&gt;$creditcardtype&lt;/creditcardtype&gt;&#10;&#9;&lt;creditcard&gt;$creditcard&lt;/creditcard&gt;&#10;&#9;&lt;creditcardexpiration&gt;$creditcardexpiration&lt;/creditcardexpiration&gt;&#10;&#9;&lt;username&gt;$username&lt;/username&gt;&#10;&#9;&lt;password&gt;$password&lt;/password&gt;&#10;&#9;&lt;age&gt;$age&lt;/age&gt;&#10;&#9;&lt;income&gt;$income&lt;/income&gt;&#10;&#9;&lt;gender&gt;$gender&lt;/gender&gt;&#10;&lt;/customers&gt;&#10;" recordsPerFile="${FULL_FILE}" type="STRUCTURE_WRITER"/>
-<Edge fromNode="CONCATENATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="252" guiY="252" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/others/customers$.xml" footer="&lt;/dataset&gt;" guiHeight="0" guiName="by records per file" guiWidth="0" guiX="690" guiY="444" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;dataset&gt;" id="STRUCTURE_WRITER0" mask="&lt; customers&gt;&#10;&#9;&lt;customerID&gt;$customerID&lt;/customerID&gt;&#10;&#9;&lt;firstname&gt;$firstname&lt;/firstname&gt;&#10;&#9;&lt;lastname&gt;$lastname&lt;/lastname&gt;&#10;&#9;&lt;address1&gt;$address1&lt;/address1&gt;&#10;&#9;&lt;address2&gt;$address2&lt;/address2&gt;&#10;&#9;&lt;city&gt;$city&lt;/city&gt;&#10;&#9;&lt;state&gt;$state&lt;/state&gt;&#10;&#9;&lt;zip&gt;$zip&lt;/zip&gt;&#10;&#9;&lt;country&gt;$country&lt;/country&gt;&#10;&#9;&lt;region&gt;$region&lt;/region&gt;&#10;&#9;&lt;email&gt;$email&lt;/email&gt;&#10;&#9;&lt;phone&gt;$phone&lt;/phone&gt;&#10;&#9;&lt;creditcardtype&gt;$creditcardtype&lt;/creditcardtype&gt;&#10;&#9;&lt;creditcard&gt;$creditcard&lt;/creditcard&gt;&#10;&#9;&lt;creditcardexpiration&gt;$creditcardexpiration&lt;/creditcardexpiration&gt;&#10;&#9;&lt;username&gt;$username&lt;/username&gt;&#10;&#9;&lt;password&gt;$password&lt;/password&gt;&#10;&#9;&lt;age&gt;$age&lt;/age&gt;&#10;&#9;&lt;income&gt;$income&lt;/income&gt;&#10;&#9;&lt;gender&gt;$gender&lt;/gender&gt;&#10;&lt;/customers&gt;&#10;" recordsPerFile="${FULL_FILE}" type="STRUCTURE_WRITER"/>
+<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:1"/>
 <Edge fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="2.9.3" id="1253101461188" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Fri Jul 02 15:27:53 CEST 2010" modifiedBy="Petr" name="g" revision="1.354">
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Evaluation Devel" modified="Thu Jul 29 18:34:39 CEST 2010" modifiedBy="lucie" name="g" revision="1.355">
 <Global>
 <Metadata id="Metadata10">
 <Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
@@ -79,6 +79,7 @@
 WebServiceClient component is used. For step-by-step tutorial for this component see CloverETL's blog.
 http://blog.cloveretl.com/2010/03/08/how-to-set-up-a-webserviceclient-component-in-3-steps/]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="ZIP code generator" guiWidth="0" guiX="37" guiY="189" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
@@ -176,15 +177,15 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Weather Forecast" guiWidth="0" guiX="218" guiY="181" id="WEB_SERVICE_CLIENT1" operationName="{http://ws.cdyne.com/WeatherWS/}Weather#WeatherSoap12#GetCityForecastByZIP" requestStructure="&lt;GetCityForecastByZIP xmlns=&quot;http://ws.cdyne.com/WeatherWS/&quot;&gt;&#10;&#9;&lt;ZIP&gt;$ZIP&lt;/ZIP&gt;&#10;&lt;/GetCityForecastByZIP&gt;" responseMapping="&lt;Mappings&gt;&#13;&#10;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResponse&quot;&gt;&#13;&#10;&#9;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResult&quot; outPort=&quot;0&quot; sequenceField=&quot;ForecastReturnId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;Mapping element=&quot;ForecastResult&quot; outPort=&quot;1&quot; parentKey=&quot;ForecastReturnId&quot; generatedKey=&quot;ForecastReturnId&quot; sequenceField=&quot;ArrayOfForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Forecast&quot; outPort=&quot;2&quot; parentKey=&quot;ArrayOfForecastId&quot; generatedKey=&quot;ArrayOfForecastId&quot; sequenceField=&quot;ForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Temperatures&quot; outPort=&quot;3&quot; parentKey=&quot;ForecastId&quot; generatedKey=&quot;ForecastId&quot;/&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" type="WEB_SERVICE_CLIENT" wsdlURL="http://ws.cdyne.com/WeatherWS/Weather.asmx?wsdl"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/WeatherForecast.xls" guiHeight="0" guiName="Forecast in XLS" guiWidth="0" guiX="949" guiY="215" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
-<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (out)" toNode="WEB_SERVICE_CLIENT1:0"/>
-<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="EXT_MERGE_JOIN0:0"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:0"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:1"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN2:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (response)" toNode="EXT_FILTER0:0"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:1" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata10" outPort="Port 1 (response)" toNode="EXT_MERGE_JOIN0:1"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:2" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 2 (response)" toNode="EXT_MERGE_JOIN1:0"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:3" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 3 (response)" toNode="EXT_MERGE_JOIN1:1"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/WeatherForecast.xls" guiHeight="0" guiName="Forecast in XLS" guiWidth="0" guiX="949" guiY="215" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (out)" toNode="WEB_SERVICE_CLIENT1:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:1"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (response)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata10" outPort="Port 1 (response)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:2" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 2 (response)" toNode="EXT_MERGE_JOIN1:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:3" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 3 (response)" toNode="EXT_MERGE_JOIN1:1"/>
 </Phase>
 </Graph>

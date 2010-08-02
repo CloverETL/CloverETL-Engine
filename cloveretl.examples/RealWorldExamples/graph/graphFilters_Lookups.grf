@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Wed Jul 28 17:03:16 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.14">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Thu Jul 29 18:44:52 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.15">
 <Global>
-<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0" previewAttachmentCharset="ISO-8859-1"/>
-<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1" previewAttachmentCharset="ISO-8859-1"/>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="," name="customers_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
 <Field name="orderid" size="10" type="integer"/>
@@ -19,8 +19,8 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiHeight="0" guiName="customers_region1" guiWidth="0" guiX="29" guiY="104" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiHeight="0" guiName="customers_region2" guiWidth="0" guiX="33" guiY="193" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="customers_region1" guiWidth="0" guiX="29" guiY="104" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="customers_region2" guiWidth="0" guiX="33" guiY="193" id="DATA_READER1" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="393" guiY="151" id="EXT_SORT0" sortKey="customerid(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="551" guiY="217" id="REFORMAT1" transformURL="${TRANS_DIR}/LookupFill.java" type="REFORMAT"/>
 <Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="229" guiY="149" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
@@ -32,7 +32,7 @@
 <Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="655" guiY="379" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="655" guiY="379" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="shipped late" guiWidth="0" guiX="262" guiY="375" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.RequiredDate < $0.ShippedDate]]></attr>
 </Node>
@@ -72,7 +72,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Orders.xlsx" guiHeight="0" guiName="orders.xlsx" guiWidth="0" guiX="68" guiY="371" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/Orders.xlsx" guiHeight="0" guiName="orders.xlsx" guiWidth="0" guiX="68" guiY="371" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
 <Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
 <Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="XLS_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>

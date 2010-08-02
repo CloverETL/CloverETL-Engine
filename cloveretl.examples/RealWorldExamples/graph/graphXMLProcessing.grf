@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Evaluation Devel" modified="Thu Jul 22 15:17:56 CEST 2010" modifiedBy="lucie" name="graphXMLProcessing" revision="1.48">
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Evaluation Devel" modified="Thu Jul 29 16:19:40 CEST 2010" modifiedBy="lucie" name="graphXMLProcessing" revision="1.50">
 <Global>
 <Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -32,12 +32,10 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="104" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="XML data processing" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="493" x="210" y="36">
-<attr name="text"><![CDATA[Graph reads data about movies from one XML structure and writes them to the other XML structure and also generates HTML report with list of movies.
-
-The structure of input XML file is defined by XSD so you can use visual mapping editor for defining of mapping input fields to inner clover fields.]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="73" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="XML data processing" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="493" x="216" y="108">
+<attr name="text"><![CDATA[The structure of input XML file is defined by XSD so you can use visual mapping editor for defining of mapping input fields to inner clover fields.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="28" y="22">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read XML file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="26" y="126">
 <attr name="text"><![CDATA[It reads data from following XML structure.
 
 <movies>
@@ -49,7 +47,7 @@ The structure of input XML file is defined by XSD so you can use visual mapping 
   ...
 </movies>]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="757" y="65">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="263" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Write XML file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="151" x="756" y="96">
 <attr name="text"><![CDATA[It writes data to following XML structure.
 
 <actors>
@@ -60,7 +58,7 @@ The structure of input XML file is defined by XSD so you can use visual mapping 
   ...
 </actors>]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="433" y="396">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="612" y="360">
 <attr name="text"><![CDATA[
 
 
@@ -68,11 +66,14 @@ The structure of input XML file is defined by XSD so you can use visual mapping 
 
 It generates HTML page with list of movies formatted in table structure.]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="73" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="721" x="72" y="12">
+<attr name="text"><![CDATA[We have a list of movies with actors, etc. We want to get a reversed list of actors and their  movies. A HTML table with a list of movies is also required.]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dedupKey="actor_id(a)" enabled="enabled" guiHeight="0" guiName="only one record by actor" guiWidth="0" guiX="599" guiY="199" id="DEDUP0" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="join actor_id to movie" guiWidth="0" guiX="435" guiY="280" id="EXT_HASH_JOIN0" joinKey="$movie_id=$movie_id" type="EXT_HASH_JOIN">
+<Node dedupKey="actor_id(a)" enabled="enabled" guiHeight="0" guiName="1 record per actor" guiWidth="0" guiX="600" guiY="204" id="DEDUP0" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="join actor_id to movie" guiWidth="0" guiX="432" guiY="288" id="EXT_HASH_JOIN0" joinKey="$movie_id=$movie_id" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -95,11 +96,11 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="actor_id" guiWidth="0" guiX="436" guiY="199" id="EXT_SORT0" sortKey="actor_id(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="271" guiY="285" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="272" guiY="200" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/Movies_list.html" footer="&#9;&#9;&#9;&lt;/tbody&gt;&#13;&#10;&#9;&#9;&lt;/table&gt;&#13;&#10;&#9;&lt;/body&gt;&#13;&#10;&lt;/html&gt;&#13;&#10;" guiHeight="0" guiName="Movies HTML list" guiWidth="0" guiX="442" guiY="405" header="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01//EN&quot;&#13;&#10;   &quot;http://www.w3.org/TR/html4/strict.dtd&quot;&gt;&#13;&#10;&lt;html&gt;&#13;&#10;   &lt;head&gt;&#13;&#10;      &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;&#13;&#10;      &lt;title&gt;List of movies&lt;/title&gt;&#13;&#10;   &lt;/head&gt;&#13;&#10;   &lt;body&gt;&#13;&#10;&#9;&#9;&lt;h1&gt;Movies&lt;/h1&gt;&#13;&#10;&#9;&#9;&lt;table style=&quot;border: 0px; border-collapse: collapse&quot; width=&quot;100%&quot; summary=&quot;Readers&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;colgroup&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;40%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;/colgroup&gt;&#13;&#10;&#9;&#9;&#9;&lt;thead&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;movie_id&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;title&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;description&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;language&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;release year&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;length (min)&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;&#9;&#9;&#9;&lt;/thead&gt;&#13;&#10;&#9;&#9;&#9;&lt;tbody&gt;&#13;&#10;" id="STRUCTURE_WRITER0" mask="&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$movie_id&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$title&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$description&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$language&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$release_year&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$length&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;" type="STRUCTURE_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="Read Movies.xml" guiWidth="0" guiX="40" guiY="199" id="XML_EXTRACT0" schema="${DATAIN_DIR}/movies.xsd" sourceUri="${DATAIN_DIR}/Movies.xml" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="0" guiName="actor_id" guiWidth="0" guiX="420" guiY="204" id="EXT_SORT0" sortKey="actor_id(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="240" guiY="348" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="240" guiY="204" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/others/Movies_list.html" footer="&#9;&#9;&#9;&lt;/tbody&gt;&#13;&#10;&#9;&#9;&lt;/table&gt;&#13;&#10;&#9;&lt;/body&gt;&#13;&#10;&lt;/html&gt;&#13;&#10;" guiHeight="0" guiName="Movies HTML list" guiWidth="0" guiX="620" guiY="370" header="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01//EN&quot;&#13;&#10;   &quot;http://www.w3.org/TR/html4/strict.dtd&quot;&gt;&#13;&#10;&lt;html&gt;&#13;&#10;   &lt;head&gt;&#13;&#10;      &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;&#13;&#10;      &lt;title&gt;List of movies&lt;/title&gt;&#13;&#10;   &lt;/head&gt;&#13;&#10;   &lt;body&gt;&#13;&#10;&#9;&#9;&lt;h1&gt;Movies&lt;/h1&gt;&#13;&#10;&#9;&#9;&lt;table style=&quot;border: 0px; border-collapse: collapse&quot; width=&quot;100%&quot; summary=&quot;Readers&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;colgroup&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;40%&quot; /&gt;&lt;col width=&quot;15%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;col width=&quot;10%&quot; /&gt;&lt;/colgroup&gt;&#13;&#10;&#9;&#9;&#9;&lt;thead&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;movie_id&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;title&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;description&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;language&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;release year&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;th style=&quot;border: 1px solid black; background: #e5e5e5 repeat-x 50% bottom; padding: 2px&quot;&gt;length (min)&lt;/th&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;&#9;&#9;&#9;&lt;/thead&gt;&#13;&#10;&#9;&#9;&#9;&lt;tbody&gt;&#13;&#10;" id="STRUCTURE_WRITER0" mask="&#9;&#9;&#9;&#9;&lt;tr&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$movie_id&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$title&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$description&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$language&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$release_year&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;td style=&quot;border: 1px solid black; padding: 3px&quot;&gt;$length&lt;/td&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/tr&gt;&#13;&#10;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" guiHeight="0" guiName="Read Movies.xml" guiWidth="0" guiX="38" guiY="303" id="XML_EXTRACT0" schema="${DATAIN_DIR}/others/movies.xsd" sourceUri="${DATAIN_DIR}/others/Movies.xml" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="movies">
 		<Mapping element="movie" outPort="1">
@@ -111,7 +112,7 @@ function transform() {
 </Mappings>
 ]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileUrl="${DATAOUT_DIR}/Actors.xml" guiHeight="0" guiName="Actors XML list" guiWidth="0" guiX="768" guiY="241" id="XML_WRITER0" rootElement="actors" rootInfoAttributes="false" type="XML_WRITER" useRootElement="true">
+<Node charset="UTF-8" enabled="enabled" fileUrl="${DATAOUT_DIR}/others/Actors.xml" guiHeight="0" guiName="Actors XML list" guiWidth="0" guiX="767" guiY="272" id="XML_WRITER0" rootElement="actors" rootInfoAttributes="false" type="XML_WRITER" useRootElement="true">
 <attr name="mapping"><![CDATA[<Mapping inPort="0" element="actor" fieldsAsExcept="actor_id" fieldsIgnore="movie_id">
 	<Mapping inPort="1" element="movie" parentKey="actor_id" key="actor_id" fieldsIgnore="movie_id;release_year;category;actor_id">
     </Mapping>
