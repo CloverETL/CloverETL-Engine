@@ -650,13 +650,11 @@ public class RunGraph extends Node{
         
         if (inPort != null) { 
         	DataRecordMetadata inMetadata = inPort.getMetadata();
-        	if (pipelineMode) { // output is redirect to input -> input == output
-        		if (!checkOutMetadata(inMetadata)) {
-        			ConfigurationProblem problem = new ConfigurationProblem("Wrong input metadata", 
-        					Severity.ERROR, this, Priority.NORMAL);
-                	status.add(problem);
-                	return false;
-        		}	        	
+        	if (pipelineMode) { 
+            	ConfigurationProblem warning = new ConfigurationProblem("If graph name is specified as an attribute (pipeline mode), " +
+            			"the input port does not need to be connected.", Severity.WARNING, this, Priority.NORMAL);
+            	warning.setAttributeName(XML_GRAPH_NAME_ATTRIBUTE);
+            	status.add(warning);
         	} else { // in/out mode
         		if (!checkInMetadata(inMetadata)) {
 	            	ConfigurationProblem problem = new ConfigurationProblem("Wrong input metadata" +
