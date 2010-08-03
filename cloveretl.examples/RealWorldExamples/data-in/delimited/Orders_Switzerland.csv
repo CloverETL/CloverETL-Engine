@@ -1,0 +1,19 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10254|CHOPS|5|11.07.1996|08.08.1996|23.07.1996|2|22.98|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+10255|RICSU|9|12.07.1996|09.08.1996|15.07.1996|3|148.33|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10370|CHOPS|6|03.12.1996|31.12.1996|27.12.1996|2|1.17|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+10419|RICSU|4|20.01.1997|17.02.1997|30.01.1997|2|137.35|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10519|CHOPS|6|28.04.1997|26.05.1997|01.05.1997|3|91.76|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+10537|RICSU|1|14.05.1997|28.05.1997|19.05.1997|1|78.85|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10666|RICSU|7|12.09.1997|10.10.1997|22.09.1997|2|232.42|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10731|CHOPS|7|06.11.1997|04.12.1997|14.11.1997|1|96.65|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+10746|CHOPS|1|19.11.1997|17.12.1997|21.11.1997|3|31.43|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+10751|RICSU|3|24.11.1997|22.12.1997|03.12.1997|3|130.79|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10758|RICSU|3|28.11.1997|26.12.1997|04.12.1997|3|138.17|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10931|RICSU|4|06.03.1998|20.03.1998|19.03.1998|2|13.6|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10951|RICSU|9|16.03.1998|27.04.1998|07.04.1998|2|30.85|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+10966|CHOPS|4|20.03.1998|17.04.1998|08.04.1998|1|27.19|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+11029|CHOPS|4|16.04.1998|14.05.1998|27.04.1998|1|47.84|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+11033|RICSU|7|17.04.1998|15.05.1998|23.04.1998|3|84.74|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland
+11041|CHOPS|3|22.04.1998|20.05.1998|28.04.1998|2|48.22|Chop-suey Chinese|Hauptstr. 31|Bern||3012|Switzerland
+11075|RICSU|8|06.05.1998|03.06.1998||2|6.19|Richter Supermarkt|Starenweg 5|Gencve||1204|Switzerland

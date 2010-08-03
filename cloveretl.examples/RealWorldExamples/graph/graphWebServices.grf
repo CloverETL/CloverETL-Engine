@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Evaluation Devel" modified="Thu Jul 29 18:34:39 CEST 2010" modifiedBy="lucie" name="g" revision="1.355">
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Evaluation Devel" modified="Tue Aug 03 11:54:45 CEST 2010" modifiedBy="lucie" name="g" revision="1.357">
 <Global>
 <Metadata id="Metadata10">
 <Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
@@ -73,16 +73,34 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="102" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Process weather forecast from public web service running on http://ws.cdyne.com/WeatherWS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="806" x="150" y="20">
-<attr name="text"><![CDATA[The graph calls web service that provides weather forecast for location indentified by ZIP code. The returned results in XML format are parsed, consolidated and written to Excel file.
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="102" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: How to use Web Service tools?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="806" x="69" y="10">
+<attr name="text"><![CDATA[SOLUTION: Web service providing a city forecast over the next 7 days (location indentified by ZIP code) is called by the WebServiceClient component.
+The returned results in XML format are parsed, consolidated and written to Excel file
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="340" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="WebServiceClient" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="215" x="157" y="210">
+<attr name="text"><![CDATA[
+WSDL URL - defines the location of the web service description
 
-WebServiceClient component is used. For step-by-step tutorial for this component see CloverETL's blog.
+OPERATION NAME - - allows to select operation to be performed
+HERE: GetCityWeatherByZIP operation (Port:WeatherSoap)
+
+REQUEST STRUCTURE-  request serves to passing parametres to a webservice
+
+RESPONSE MAPPING - indicates how the response is processed]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="182" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="F° -&gt; C°  conversion" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="773" y="374">
+<attr name="text"><![CDATA[
+- num2str / str2num CTL1 functions applied in the transformation fuction]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="73" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="step-by-step tutorial " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="510" x="335" y="120">
+<attr name="text"><![CDATA[
 http://blog.cloveretl.com/2010/03/08/how-to-set-up-a-webserviceclient-component-in-3-steps/]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="ZIP code generator" guiWidth="0" guiX="37" guiY="189" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<Node enabled="enabled" guiHeight="0" guiName="ZIP code generator" guiWidth="0" guiX="-6" guiY="508" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#TL
 
 // Generates output record.
@@ -100,10 +118,10 @@ function generate() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Only success" guiWidth="0" guiX="459" guiY="130" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="0" guiName="Only success" guiWidth="0" guiX="432" guiY="317" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.Success == 'true']]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Prepare header" guiWidth="0" guiX="627" guiY="174" id="EXT_MERGE_JOIN0" joinKey="$ForecastReturnId#$ForecastReturnId;" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="Prepare header" guiWidth="0" guiX="598" guiY="402" id="EXT_MERGE_JOIN0" joinKey="$ForecastReturnId#$ForecastReturnId;" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -127,7 +145,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Prepare details" guiWidth="0" guiX="459" guiY="262" id="EXT_MERGE_JOIN1" joinKey="$ForecastId#$ForecastId;" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="Prepare details" guiWidth="0" guiX="440" guiY="501" id="EXT_MERGE_JOIN1" joinKey="$ForecastId#$ForecastId;" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -151,7 +169,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Merge header and details" guiWidth="0" guiX="779" guiY="220" id="EXT_MERGE_JOIN2" joinKey="$ArrayOfForecastId#$ArrayOfForecastId;" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="Merge header and details" guiWidth="0" guiX="787" guiY="470" id="EXT_MERGE_JOIN2" joinKey="$ArrayOfForecastId#$ArrayOfForecastId;" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -176,8 +194,8 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Weather Forecast" guiWidth="0" guiX="218" guiY="181" id="WEB_SERVICE_CLIENT1" operationName="{http://ws.cdyne.com/WeatherWS/}Weather#WeatherSoap12#GetCityForecastByZIP" requestStructure="&lt;GetCityForecastByZIP xmlns=&quot;http://ws.cdyne.com/WeatherWS/&quot;&gt;&#10;&#9;&lt;ZIP&gt;$ZIP&lt;/ZIP&gt;&#10;&lt;/GetCityForecastByZIP&gt;" responseMapping="&lt;Mappings&gt;&#13;&#10;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResponse&quot;&gt;&#13;&#10;&#9;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResult&quot; outPort=&quot;0&quot; sequenceField=&quot;ForecastReturnId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;Mapping element=&quot;ForecastResult&quot; outPort=&quot;1&quot; parentKey=&quot;ForecastReturnId&quot; generatedKey=&quot;ForecastReturnId&quot; sequenceField=&quot;ArrayOfForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Forecast&quot; outPort=&quot;2&quot; parentKey=&quot;ArrayOfForecastId&quot; generatedKey=&quot;ArrayOfForecastId&quot; sequenceField=&quot;ForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Temperatures&quot; outPort=&quot;3&quot; parentKey=&quot;ForecastId&quot; generatedKey=&quot;ForecastId&quot;/&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" type="WEB_SERVICE_CLIENT" wsdlURL="http://ws.cdyne.com/WeatherWS/Weather.asmx?wsdl"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/others/WeatherForecast.xls" guiHeight="0" guiName="Forecast in XLS" guiWidth="0" guiX="949" guiY="215" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Weather Forecast" guiWidth="0" guiX="206" guiY="445" id="WEB_SERVICE_CLIENT1" operationName="{http://ws.cdyne.com/WeatherWS/}Weather#WeatherSoap12#GetCityForecastByZIP" requestStructure="&lt;GetCityForecastByZIP xmlns=&quot;http://ws.cdyne.com/WeatherWS/&quot;&gt;&#10;&#9;&lt;ZIP&gt;$ZIP&lt;/ZIP&gt;&#10;&lt;/GetCityForecastByZIP&gt;" responseMapping="&lt;Mappings&gt;&#13;&#10;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResponse&quot;&gt;&#13;&#10;&#9;&#9;&lt;Mapping element=&quot;GetCityForecastByZIPResult&quot; outPort=&quot;0&quot; sequenceField=&quot;ForecastReturnId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&lt;Mapping element=&quot;ForecastResult&quot; outPort=&quot;1&quot; parentKey=&quot;ForecastReturnId&quot; generatedKey=&quot;ForecastReturnId&quot; sequenceField=&quot;ArrayOfForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Forecast&quot; outPort=&quot;2&quot; parentKey=&quot;ArrayOfForecastId&quot; generatedKey=&quot;ArrayOfForecastId&quot; sequenceField=&quot;ForecastId&quot;&gt;&#13;&#10;&#9;&#9;&#9;&#9;&#9;&lt;Mapping element=&quot;Temperatures&quot; outPort=&quot;3&quot; parentKey=&quot;ForecastId&quot; generatedKey=&quot;ForecastId&quot;/&gt;&#13;&#10;&#9;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&#9;&lt;/Mapping&gt;&#13;&#10;&#9;&lt;/Mapping&gt;&#13;&#10;&lt;/Mappings&gt;&#13;&#10;" type="WEB_SERVICE_CLIENT" wsdlURL="http://ws.cdyne.com/WeatherWS/Weather.asmx?wsdl"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/WeatherForecast.xls" guiHeight="0" guiName="Forecast in XLS" guiWidth="0" guiX="963" guiY="393" id="XLS_WRITER0" namesRow="1" type="XLS_WRITER"/>
 <Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (out)" toNode="WEB_SERVICE_CLIENT1:0"/>
 <Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:0"/>

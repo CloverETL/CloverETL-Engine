@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Evaluation Devel" modified="Thu Jul 29 16:50:51 CEST 2010" modifiedBy="lucie" name="graphWritingTextData" revision="1.35">
+<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Evaluation Devel" modified="Tue Aug 03 11:53:18 CEST 2010" modifiedBy="lucie" name="graphWritingTextData" revision="1.37">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
-<Property id="GraphParameter9" name="FULL_FILE" value="5555"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="78" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="685" x="48" y="7">
-<attr name="text"><![CDATA[We want to gather all customers from a certain state into one file. Instead of two big files with customer data create smaller ones with the given number of records each. ]]></attr>
+<Property id="GraphParameter0" name="FULL_FILE" value="5555"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="78" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="1" width="685" x="48" y="7">
+<attr name="text"><![CDATA[We want to gather all customers from the same state into one file. Instead of two big files with customer data create smaller ones with the given number of records each. ]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="85" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="225" x="256" y="348">
 <attr name="text"><![CDATA[Note the difference how SimpleGather and Concatenate component put data from various inputs together]]></attr>
@@ -21,11 +21,11 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="192" guiY="444" id="CONCATENATE0" type="CONCATENATE"/>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="384" id="DATA_READER0" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="468" id="DATA_READER1" type="DATA_READER"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="216" id="DATA_READER2" type="DATA_READER"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="300" id="DATA_READER3" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="ISO-8859-1" guiWidth="0" guiX="24" guiY="108" id="DATA_READER4" type="DATA_READER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="384" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiHeight="0" guiName="UTF-8" guiWidth="0" guiX="24" guiY="468" id="DATA_READER1" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="216" id="DATA_READER2" type="DATA_READER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiHeight="0" guiName="windows-1250" guiWidth="0" guiX="24" guiY="300" id="DATA_READER3" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="ISO-8859-1" guiWidth="0" guiX="24" guiY="108" id="DATA_READER4" type="DATA_READER"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/customers/#.txt" guiHeight="0" guiName="division by state" guiWidth="0" guiX="624" guiY="108" id="DATA_WRITER0" makeDirs="true" outputFieldNames="true" partitionFileTag="keyNameFileTag" partitionKey="state" type="DATA_WRITER"/>
 <Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/customers$.txt" guiHeight="0" guiName="by records per file" guiWidth="0" guiX="624" guiY="240" id="DATA_WRITER1" partitionFileTag="numberFileTag" recordsPerFile="${FULL_FILE}" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="354" guiY="452" id="EXT_SORT0" sortKey="lastname(a)" type="EXT_SORT"/>

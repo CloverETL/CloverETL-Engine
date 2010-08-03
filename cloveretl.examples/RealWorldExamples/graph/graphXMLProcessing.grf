@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Evaluation Devel" modified="Thu Jul 29 16:19:40 CEST 2010" modifiedBy="lucie" name="graphXMLProcessing" revision="1.50">
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Evaluation Devel" modified="Mon Aug 02 03:00:48 CEST 2010" modifiedBy="lucie" name="graphXMLProcessing" revision="1.51">
 <Global>
 <Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -66,7 +66,7 @@
 
 It generates HTML page with list of movies formatted in table structure.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="73" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="721" x="72" y="12">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="90" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="721" x="17" y="1">
 <attr name="text"><![CDATA[We have a list of movies with actors, etc. We want to get a reversed list of actors and their  movies. A HTML table with a list of movies is also required.]]></attr>
 </Note>
 <Dictionary/>
