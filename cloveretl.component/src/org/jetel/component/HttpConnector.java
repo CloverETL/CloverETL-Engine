@@ -22,11 +22,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -50,6 +50,7 @@ import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.params.HttpMethodParams;
@@ -213,7 +214,9 @@ public class HttpConnector extends Node {
 		public void writeResponse(String response) throws IOException {
 			// write response to a temporary file
 			final File tempFile = File.createTempFile(this.prefix, ".tmp", this.directory);
-			final BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+			//final BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempFile),charset));
+			
 			writer.write(response);
 			writer.flush();
 			writer.close();
@@ -272,8 +275,6 @@ public class HttpConnector extends Node {
 
 	private UsernamePasswordCredentials creds;
 	
-	private HttpConnection httpConnection = null;
-
 	public HttpConnector(String id) {
 		super(id);
 	}
@@ -283,7 +284,11 @@ public class HttpConnector extends Node {
 		if (isInitialized())
 			return;
 		super.init();
-
+        //If charset isnt filled, we used default systems
+		if(StringUtils.isEmpty(this.charset)) {
+		    this.charset = Charset.defaultCharset().name();	
+		}
+		
 		// input port initialization
 		inPort = getInputPortDirect(IN_PORT);
 		if (inPort != null) {
@@ -373,10 +378,9 @@ public class HttpConnector extends Node {
 				// initialize HTTP connection
 				initHTTPConnection();
 				if (inField != null) {
-					// send the input field content to the HTTP connection
-					httpConnection = new HttpConnection((new URL(rawUrl)).getHost(), (new URL(rawUrl)).getPort());
-					httpConnection.open();
-					sendInput(inField.toString());
+				    sendInput(inField.toString());
+				} else if(this.requestContent != null) {
+				    sendInput(this.requestContent);
 				} else {
 					// execute selected method
 					int statusCode = 0;
@@ -396,11 +400,7 @@ public class HttpConnector extends Node {
 					outPort.writeRecord(outRecord);
 				}
 
-				//close connection
-				if (!StringUtils.isEmpty(requestContent) || !StringUtils.isEmpty(inputFileUrl)) {
-					httpConnection.releaseConnection();
-				}
-				else if (requestMethod.equals(POST)) {
+		        if (requestMethod.equals(POST)) {
 					postMethod.releaseConnection();
 				} else if (requestMethod.equals(GET)) {
 					getMethod.releaseConnection();
@@ -418,25 +418,16 @@ public class HttpConnector extends Node {
 			
 			if (!StringUtils.isEmpty(requestContent)) {
 				//some http request is entered
-				httpConnection = new HttpConnection((new URL(rawUrl)).getHost(), (new URL(rawUrl)).getPort());
-				httpConnection.open();
 				sendInput(requestContent);
 			} else if (!StringUtils.isEmpty(inputFileUrl)) {
 				//input file with http request is entered
-				httpConnection = new HttpConnection((new URL(rawUrl)).getHost(), (new URL(rawUrl)).getPort());
-				ReadableByteChannel inputFile = FileUtils.getReadableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, inputFileUrl);
-				httpConnection.open();
-				WritableByteChannel outputConnection = Channels.newChannel(httpConnection.getRequestOutputStream());
-				
-				StreamUtils.copy(inputFile, outputConnection);
-
-				inputFile.close();
-				outputConnection.close();
+		        String contentToSend = FileUtils.getStringFromURL(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, inputFileUrl, null);
+				sendInput(contentToSend);
 			} else {
 				//http request is defined by parameters (method, url, query, ...)
 				int statusCode = 0;
 				if (requestMethod.equals(POST)) {
-					statusCode = httpClient.executeMethod(postMethod);
+				    statusCode = httpClient.executeMethod(postMethod);
 				} else if (requestMethod.equals(GET)) {
 					statusCode = httpClient.executeMethod(getMethod);
 				}
@@ -454,16 +445,8 @@ public class HttpConnector extends Node {
 
 			ReadableByteChannel inputConnection = null;
 		
-			//retrieve response
-			if (!StringUtils.isEmpty(requestContent) || !StringUtils.isEmpty(inputFileUrl)) {
-				InputStream is = httpConnection.getLastResponseInputStream();
-				if (is != null) {
-					inputConnection = Channels.newChannel(is);
-				} else {
-					logger.warn("Can't read http response. Connection was terminated.");
-				}
-			} else if (requestMethod.equals(POST)) {
-				inputConnection = Channels.newChannel(postMethod.getResponseBodyAsStream());
+			if (requestMethod.equals(POST)) {
+			    inputConnection = Channels.newChannel(postMethod.getResponseBodyAsStream());
 			} else if (requestMethod.equals(GET)) {
 				inputConnection = Channels.newChannel(getMethod.getResponseBodyAsStream());
 			}
@@ -472,10 +455,7 @@ public class HttpConnector extends Node {
 				StreamUtils.copy(inputConnection, outputFile);
 			}
 			
-			//close connection
-			if (!StringUtils.isEmpty(requestContent) || !StringUtils.isEmpty(inputFileUrl)) {
-				httpConnection.releaseConnection();
-			} else if (requestMethod.equals(POST)) {
+	       if (requestMethod.equals(POST)) {
 				postMethod.releaseConnection();
 			} else if (requestMethod.equals(GET)) {
 				getMethod.releaseConnection();
@@ -485,7 +465,7 @@ public class HttpConnector extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	public static HttpConnector fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static HttpConnector fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
@@ -765,6 +745,7 @@ public class HttpConnector extends Node {
 			//set request body if any
 			if (body != null) {
 				postMethod.setRequestBody(body);
+			
 			}
 		} else if (requestMethod.equals(GET)) {
 			//request method is post
@@ -805,7 +786,16 @@ public class HttpConnector extends Node {
 					getMethod.getParams().setParameter((String) entry.getKey(), (String) entry.getValue());
 				}
 			}
+			
+			for(Entry<Object, Object> entry : requestProperties.entrySet()) {
+				if (requestMethod.equals(POST)) {
+					postMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
+				} else if (requestMethod.equals(GET)) {
+					getMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
+				}
+			}
 		}
+		
 
 	}
 
@@ -952,9 +942,8 @@ public class HttpConnector extends Node {
 	 */
 	private String getRequestResult() throws IOException {
 		InputStream result = null;
-		if (inField != null) {
-			result = httpConnection.getResponseInputStream();
-		}else if (requestMethod.equals(POST)) {
+		
+	    if (requestMethod.equals(POST)) {
 			result = postMethod.getResponseBodyAsStream();
 		} else if (requestMethod.equals(GET)) {
 			result = getMethod.getResponseBodyAsStream();
@@ -973,7 +962,7 @@ public class HttpConnector extends Node {
 				sb.append(line + "\n");
 			}
 		} catch (IOException e) {
-			logger.error("Unable to read request result. Caused by: "+e.getMessage());
+		    logger.error("Unable to read request result. Caused by: "+e.getMessage());
 			throw e;
 		} finally {
 			try {
@@ -992,19 +981,25 @@ public class HttpConnector extends Node {
 	 * @throws IOException
 	 */
 	private void sendInput(String input) throws IOException {
+	
 		byte[] bytes;
 		if (charset == null) {
 			bytes = input.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 		} else {
 			bytes = input.getBytes(charset);
 		}
-		ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-		OutputStream os = httpConnection.getRequestOutputStream();
-
-		StreamUtils.copy(is, os);
 		
-		is.close();
-		os.close();
+		StringRequestEntity entity = new StringRequestEntity(input);
+		if(requestMethod.equals(POST))  {
+		   this.postMethod.setRequestEntity(entity);
+		   int resultCode = this.httpClient.executeMethod(postMethod);
+		   if(resultCode != 200) {
+			   logger.warn("Returned code for http request "+rawUrlToProceed+" is " + resultCode);
+		   }
+		}
+		
+	
+
 	}
 
 	public void setUrl(String rawUrl) {
