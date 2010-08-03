@@ -149,8 +149,11 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		case DATE_LITERAL:
 			final ParsePosition p1 = new ParsePosition(0);
 			final Date date = DATE_FORMATTER.parse(valueImage, p1);
-			if (date == null || p1.getIndex() < valueImage.length() - 1) {
-			   throw new ParseException("Date literal '" + valueImage + "' could not be parsed",p1.getErrorIndex());
+			if (date == null) {
+				throw new ParseException("Date literal '" + valueImage + "' could not be parsed.", 0);
+			}
+			if (p1.getIndex() < valueImage.length() - 1) {
+				throw new ParseException("Date literal '" + valueImage + "' has invalid format.", p1.getErrorIndex()); 
 			}
 			calendar.setTime(date);
 			// set all time fields to zero
@@ -164,8 +167,11 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		case DATETIME_LITERAL:
 			final ParsePosition p2 = new ParsePosition(0);
 			valueObj = DATE_TIME_FORMATTER.parse(valueImage,p2);
-			if (valueObj == null || p2.getIndex() < valueImage.length() - 1) {
-				   throw new ParseException("Date-time literal '" + valueImage + "' could not be parsed",p2.getErrorIndex());
+			if (valueObj == null) {
+				throw new ParseException("Date-time literal '" + valueImage + "' could not be parsed.", 0);
+			}
+			if (p2.getIndex() < valueImage.length() - 1) {
+				throw new ParseException("Date-time literal '" + valueImage + "' has invalid format.", p2.getErrorIndex());
 			}
 			setType(TLTypePrimitive.DATETIME);
 			break;
