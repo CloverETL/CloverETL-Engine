@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Thu Jul 29 18:44:52 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.15">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Tue Aug 03 11:41:50 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.21">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
-<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="," name="customers_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
@@ -15,33 +14,56 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata0" name="customers" type="simpleLookup"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata0" name="customers_look" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Who of the customers got the delivery belatedly because WE did ship it late?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="840" x="18" y="-102">
+<attr name="text"><![CDATA[SOLUTION: To get the answer, data from files with different metadata must be put together and compared using lookup table
+- file with orders answers which orders were sent late and the respective customerID
+- files with customers can identify who is behind the selected customerID]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="191" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How to fill in a lookup table with data?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="431" y="91">
+<attr name="text"><![CDATA[
+1. before the graph runs
+- selecting file to be the data source
+- typing the values
+2. during the graph run
+- using Java class
+- using LookupTableReaderWriter (commercial component)
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="195" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="filtering" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="211" y="385">
+<attr name="text"><![CDATA[
+Only those orders where the ShipDate occured after the RequiredDate are sent to the output port.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="212" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="reading from the lookup tbl" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="421" y="363">
+<attr name="text"><![CDATA[
+For each record:
+- lookup tbl is searched for the OrderID value
+- if found, selected field values (see customers_out metadata) are mapped to output fields]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="customers_region1" guiWidth="0" guiX="29" guiY="104" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region2.csv" guiHeight="0" guiName="customers_region2" guiWidth="0" guiX="33" guiY="193" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="393" guiY="151" id="EXT_SORT0" sortKey="customerid(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="551" guiY="217" id="REFORMAT1" transformURL="${TRANS_DIR}/LookupFill.java" type="REFORMAT"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="229" guiY="149" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="713" guiY="119" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="reads customers 1" guiWidth="0" guiX="32" guiY="167" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiHeight="0" guiName="reads customers 2" guiWidth="0" guiX="33" guiY="257" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="fills in lookup tbl" guiWidth="0" guiX="514" guiY="213" id="REFORMAT1" transformURL="${TRANS_DIR}/LookupFill.java" type="REFORMAT"/>
+<Node enabled="enabled" guiHeight="0" guiName="gathers into 1 file" guiWidth="0" guiX="284" guiY="224" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="0" guiName="discards all" guiWidth="0" guiX="710" guiY="329" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="655" guiY="379" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="shipped late" guiWidth="0" guiX="262" guiY="375" id="EXT_FILTER0" type="EXT_FILTER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="writes info in file" guiWidth="0" guiX="670" guiY="440" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="shipped late" guiWidth="0" guiX="223" guiY="495" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.RequiredDate < $0.ShippedDate]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="461" guiY="376" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="orders + lookup tbl" guiWidth="0" guiX="459" guiY="499" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 customers matched_record;
 // Transforms input record into output record.
 function integer transform() {
-	matched_record = lookup(customers).get($OrderID);
+	matched_record = lookup(customers_look).get($OrderID);
 		$0.orderid = $0.OrderID;
 	    $0.required_date = $0.RequiredDate;
 		$0.shipped_date = $0.ShippedDate;
@@ -72,9 +94,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/Orders.xlsx" guiHeight="0" guiName="orders.xlsx" guiWidth="0" guiX="68" guiY="371" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
-<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiHeight="0" guiName="reads orders" guiWidth="0" guiX="37" guiY="496" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="XLS_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>

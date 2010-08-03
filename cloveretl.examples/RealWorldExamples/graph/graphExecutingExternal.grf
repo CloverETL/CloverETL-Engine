@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Thu Jul 29 18:46:37 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.85">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Tue Aug 03 11:41:13 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.89">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -8,41 +8,73 @@
 </Metadata>
 <Property id="GraphParameter0" name="MY_DIR" value="${GRAPH_DIR}"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="117" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="System Execute" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="207" x="8" y="-24">
-<attr name="text"><![CDATA[SystemExecute reads data from input port and uses it as an input to system command. Output from the process can be sent to output port or printed to console.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="168" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Processing composed system command" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="263" x="634" y="164">
-<attr name="text"><![CDATA[To execute more than one command, the batch file must be created and interpreter for executing the batch file must be provided.
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="224" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="composed system command   " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="462" x="140" y="510">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+To execute more than one command, the batch file must be created and interpreter for executing the batch file must be provided.
 Content of the batch is specified by the command attribute and the component itself saves it to temporary batch file. 
 Standard input is redirected to input port and standard output to output port.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="155" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Executing simple system command" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="633" y="-22">
-<attr name="text"><![CDATA[* cat - Concatenate FILE(s), or standard input, to standard output. In this example prints out graph file (graph/ExecutingSystemCommand.grf) to console
-* ls - List information about the FILEs (the current directory by default). In this example sends information about the files in ${GRAPH_DIR} directory to output port.]]></attr>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="111" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Run a system command." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="785" x="2" y="9">
+<attr name="text"><![CDATA[SOLUTION:  use the SystemExecute component that runs a separate process:
+- records are read in from the input edge,    serialized and sent to stdin of the command
+- stdout of the command is read, parsed and sent to the output edge or printed to console]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Command interpreter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="218" x="494" y="130">
+<attr name="text"><![CDATA[
+If specified ( sh ), the system command is saved in a temp file as a script which is executed by the interpreter.
+
+${} is replaced by the temp file name when the interpreter is called]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="189" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="cat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="194" x="21" y="142">
+<attr name="text"><![CDATA[
+- concatenates file(s), or standard input, to standard output
+
+HERE: the graph file is printed to              console]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="269" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="245" y="173">
+<attr name="text"><![CDATA[
+- lists information about the files (the current directory by default). 
+
+HERE: sends information about the files in ${GRAPH_DIR} directory to output port.
+
+- after each run of the graph, new output does not overwrite the previous one; it is appended instead - see "Apend" attribute ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="169" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="WINDOWS users" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="728" x="3" y="758">
+<attr name="text"><![CDATA[Enable these two components while disabling all the others.
+
+- dir command returns a list of files in the current directory ]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/pattern.txt" guiHeight="0" guiName="read pattern" guiWidth="0" guiX="11" guiY="166" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiHeight="0" guiName="reads pattern" guiWidth="0" guiX="-4" guiY="465" id="DATA_READER1" type="DATA_READER">
 <attr name="finalRecord"><![CDATA[30]]></attr>
 <attr name="startRecord"><![CDATA[0]]></attr>
 </Node>
-<Node enabled="disabled" fileURL="${DATAOUT_DIR}/command_win.out" guiHeight="0" guiName="command_win.out" guiWidth="0" guiX="368" guiY="327" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="save file list" guiWidth="0" guiX="498" guiY="70" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="0" guiName="save files with pattern" guiWidth="0" guiX="498" guiY="166" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat file" guiWidth="0" guiX="254" guiY="-22" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/command_win.out" guiHeight="0" guiName="saves files list" guiWidth="0" guiX="336" guiY="852" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="saves file list" guiWidth="0" guiX="531" guiY="368" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="0" guiName="saves file list" guiWidth="0" guiX="629" guiY="457" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat " guiWidth="0" guiX="58" guiY="257" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE" workersTimeout="10">
 <attr name="command"><![CDATA[cat -n graph/graphExecutingExternal.grf]]></attr>
 </Node>
-<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="list files" guiWidth="0" guiX="254" guiY="70" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="list" guiWidth="0" guiX="278" guiY="368" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
 <attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="execute batch" guiWidth="0" guiX="254" guiY="166" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="executes batch" guiWidth="0" guiX="303" guiY="579" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
 <attr name="command"><![CDATA[while read in; do
   echo $in
   find -name "$in" 
 done]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="disabled" guiHeight="0" guiName="WINDOWS" guiWidth="0" guiX="133" guiY="323" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="disabled" guiHeight="0" guiName="WINDOWS _ dir" guiWidth="0" guiX="89" guiY="852" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[dir]]></attr>
 </Node>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>

@@ -1,16 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Thu Jul 29 18:31:56 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.84">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Tue Aug 03 11:41:04 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.98">
 <Global>
-<Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
 <Property id="GraphParameter0" name="sample" value="0.1"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="63" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="This graph is to fail as it demonstrates raising an error !" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="736" x="8" y="20">
+<attr name="text"><![CDATA[When trying to find a fault in your graph, you can use various debugging tools.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="201" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="100 records only" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="148" x="10" y="121">
+<attr name="text"><![CDATA[To avoid printing hundreds of useless messages, we are parsing just the first 100 records.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="255" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="SimpleCopy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="182" y="132">
+<attr name="text"><![CDATA[component can - apart from making an identical copy - slightly change the input records.
+
+
+
+
+
+
+
+The structure of I/O metadata remains the same except for a field/record property (a record type here)
+  ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="186" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="596" y="136">
+<attr name="text"><![CDATA[A random number of fixed length records selected from the input file randomly.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="176" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="printErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="373" y="125">
+<attr name="text"><![CDATA[function prints out on error output a user defined message,  optionaly incl. the location of error message]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="147" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="printLog()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="183" x="373" y="300">
+<attr name="text"><![CDATA[after executing a part of the code you may wish to see a message in logger.
+Moroover, you can specify in which log level (debug, info, warn, error, fatal) the message appears.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="108" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="506" y="532">
+<attr name="text"><![CDATA[Correct records are written in a file till a bad record appears and the raised error stops the graph executing]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="File with incorrect records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="12" y="535">
+<attr name="text"><![CDATA[
+is read, all the records are send out to the next component]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="raiseErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="240" y="536">
+<attr name="text"><![CDATA[throws an error that causes the graph failure]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region1.csv" guiHeight="0" guiName="CustomersDelimited" guiWidth="0" guiX="25" guiY="23" id="DATA_READER0" numRecords="100" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="0" guiName="random records" guiWidth="0" guiX="541" guiY="23" id="DATA_WRITER0" outputFieldNames="false" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="367" guiY="22" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="reads delimited f." guiWidth="0" guiX="18" guiY="230" id="DATA_READER0" numRecords="100" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="0" guiName="random records" guiWidth="0" guiX="616" guiY="235" id="DATA_WRITER0" outputFieldNames="false" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="prints messages" guiWidth="0" guiX="396" guiY="237" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
  integer counter =0;
 // Transforms input record into output record.
@@ -19,15 +57,16 @@ function integer transform() {
 	counter++;
 	boolean location = false;
 	double random_number = random();
-	printErr("random_number = " + random_number + "  : ", location);
+	printErr(counter + ": random() function returns random_number = " + random_number + " representing customerID = " + $customerID, location);
 	if (random_number < ${sample}) {
 	printLog(info,"You get record number " + counter);
 		$0.* =$0.*;
 		return 0;
-	//$0.address2 = randomString(1,6);
+// random records are sent to output port 0
 	}
 	else $1.*=$0.*;
 	return 1;
+// the other records are sent to output port 1	
 }
 
 // Called during component initialization.
@@ -49,22 +88,23 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="DelimitedToFixed" guiWidth="0" guiX="194" guiY="21" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="the others" guiWidth="0" guiX="546" guiY="156" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="0" guiName="converts to fixed" guiWidth="0" guiX="202" guiY="232" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="the other records" guiWidth="0" guiX="610" guiY="350" id="TRASH0" type="TRASH"/>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="true" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugLastRecords="true" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="false" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugFilterExpression="$0.income &lt; 5000 OR $0.gender=='F'" debugLastRecords="true" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH0:0"/>
+<Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/customers_region_BAD.csv" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="21" guiY="291" id="DATA_READER1" trim="false" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedMax10.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="482" guiY="291" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="243" guiY="292" id="REFORMAT1" type="REFORMAT">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiHeight="0" guiName="reads bad records" guiWidth="0" guiX="29" guiY="612" id="DATA_READER1" trim="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiHeight="0" guiName="incomplete file" guiWidth="0" guiX="490" guiY="616" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="prints message" guiWidth="0" guiX="257" guiY="614" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer count=0;
 // Transforms input record into output record.
 function integer transform() {
 	count++;
+	$0.customerID = $0.customerid;
 	$0.firstname = $0.firstname;
 	$0.lastname = $0.lastname;
 	$0.address1 = $0.address1;
@@ -110,6 +150,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
