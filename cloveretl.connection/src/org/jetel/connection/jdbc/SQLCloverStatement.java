@@ -110,6 +110,8 @@ public class SQLCloverStatement {
 	private final static Pattern TABLE_NAME_PATTERN = Pattern.compile(
 			"(?:from|into|update)\\s+" + SQLUtil.DB_FIELD_PATTERN, Pattern.CASE_INSENSITIVE);
 	
+	private static final String INVALID_QUERY_MESSAGE = "Query string is invalid. It has to start with keyword Select or Update or Insert or Delete";
+	
 	public enum QueryType {
 
 		INSERT,
@@ -527,6 +529,10 @@ public class SQLCloverStatement {
         			statement.executeUpdate(q);
         		}
         	}
+        }
+        
+        if(QueryType.UNKNOWN.equals(this.queryType)) {
+           throw new SQLException(INVALID_QUERY_MESSAGE);
         }
         
 	}
