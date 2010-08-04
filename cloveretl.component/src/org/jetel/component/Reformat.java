@@ -259,69 +259,65 @@ public class Reformat extends Node {
 
 		int counter = 0;
 		// MAIN PROCESSING LOOP
-		while (inRecord[0] != null && runIt) {
-			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
-
-			if (inRecord[0] != null) {
-				for (int i=0;i<numOutputPorts;i++){
-				    outRecord[i].reset();
-				}
-
-				int transformResult = -1;
-
-				try {
-					transformResult = transformation.transform(inRecord, outRecord);
-				} catch (Exception exception) {
-					transformResult = transformation.transformOnError(exception, inRecord, outRecord);
-				}
-
-				if (transformResult == RecordTransform.ALL) {
-					for (int outPort = 0; outPort < numOutputPorts; outPort++) {
-						writeRecord(outPort, outRecord[outPort]);
-					}
-				} else if (transformResult >= 0) {
-					writeRecord(transformResult, outRecord[transformResult]);
-				} else if (transformResult == RecordTransform.SKIP) {
-					// DO NOTHING - skip the record
-				} else if (transformResult <= RecordTransform.STOP) {
-					ErrorAction action = errorActions.get(transformResult);
-					if (action == null) {
-						action = errorActions.get(Integer.MIN_VALUE);
-						if (action == null) {
-							action = ErrorAction.DEFAULT_ERROR_ACTION;
-						}
-					}
-					String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
-						transformation.getMessage();
-					if (action == ErrorAction.CONTINUE) {
-						if (errorLog != null){
-							errorLog.write(String.valueOf(counter));
-							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-							errorLog.write(String.valueOf(transformResult));
-							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-							message = transformation.getMessage();
-							if (message != null) {
-								errorLog.write(message);
-							}
-							errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-							Object semiResult = transformation.getSemiResult();
-							if (semiResult != null) {
-								errorLog.write(semiResult.toString());
-							}
-							errorLog.write("\n");
-						}else{
-							logger.warn(message);
-						}
-					}else{
-						if (errorLog != null){
-							errorLog.flush();
-							errorLog.close();
-						}
-						throw new TransformException(message);
-						
-					}
-                }
+		while ((inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0])) != null && runIt) {
+			for (int i=0;i<numOutputPorts;i++){
+			    outRecord[i].reset();
 			}
+
+			int transformResult = -1;
+
+			try {
+				transformResult = transformation.transform(inRecord, outRecord);
+			} catch (Exception exception) {
+				transformResult = transformation.transformOnError(exception, inRecord, outRecord);
+			}
+
+			if (transformResult == RecordTransform.ALL) {
+				for (int outPort = 0; outPort < numOutputPorts; outPort++) {
+					writeRecord(outPort, outRecord[outPort]);
+				}
+			} else if (transformResult >= 0) {
+				writeRecord(transformResult, outRecord[transformResult]);
+			} else if (transformResult == RecordTransform.SKIP) {
+				// DO NOTHING - skip the record
+			} else if (transformResult <= RecordTransform.STOP) {
+				ErrorAction action = errorActions.get(transformResult);
+				if (action == null) {
+					action = errorActions.get(Integer.MIN_VALUE);
+					if (action == null) {
+						action = ErrorAction.DEFAULT_ERROR_ACTION;
+					}
+				}
+				String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+					transformation.getMessage();
+				if (action == ErrorAction.CONTINUE) {
+					if (errorLog != null){
+						errorLog.write(String.valueOf(counter));
+						errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+						errorLog.write(String.valueOf(transformResult));
+						errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+						message = transformation.getMessage();
+						if (message != null) {
+							errorLog.write(message);
+						}
+						errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
+						Object semiResult = transformation.getSemiResult();
+						if (semiResult != null) {
+							errorLog.write(semiResult.toString());
+						}
+						errorLog.write("\n");
+					}else{
+						logger.warn(message);
+					}
+				}else{
+					if (errorLog != null){
+						errorLog.flush();
+						errorLog.close();
+					}
+					throw new TransformException(message);
+					
+				}
+            }
 			counter++;
 			SynchronizeUtils.cloverYield();
 		}
