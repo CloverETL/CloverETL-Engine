@@ -98,15 +98,12 @@ public class SimpleCopy extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
-		boolean isData = true;
-		while (isData && runIt) {
-			isData = inPort.readRecordDirect(recordBuffer);
-			if (isData) {
-				writeRecordBroadcastDirect(recordBuffer);
-			}
+		
+		while (inPort.readRecordDirect(recordBuffer) && runIt) {
+			writeRecordBroadcastDirect(recordBuffer);
 			SynchronizeUtils.cloverYield();
 		}
-		broadcastEOF();
+		
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
