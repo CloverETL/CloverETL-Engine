@@ -232,7 +232,7 @@ public class XmlWriter extends Node {
 	/**
 	 * Charset of output XML.
 	 */
-	private String charset = null;
+	private String charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 
 	private int recordsSkip = 0;
 	private int recordsCount = 0;
@@ -592,9 +592,6 @@ public class XmlWriter extends Node {
         if (portsCnt < 1) {
             throw new ComponentNotReadyException(getId() + ": At least one output port has to be defined!");
         }
-
-        if (charset == null)
-        	charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 
         if (namespaces == null)
         	namespaces = XmlWriter.getNamespaces(this.namespacesString);
