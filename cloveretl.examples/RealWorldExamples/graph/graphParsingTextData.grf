@@ -1,10 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Thu Jul 29 08:33:25 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu Jul 29 11:49:46 CEST 2010" modifiedBy="lucie" name="graphParsingTextData" revision="1.1">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Wed Aug 04 09:37:16 CEST 2010" modifiedBy="avackova" name="graphParsingTextData" revision="1.55">
 <Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="true" name="id" type="integer"/>
+<Field name="last_name" type="string"/>
+<Field name="first_name" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=":" name="person" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="true" name="id" type="integer"/>
+<Field name="relationship" type="string"/>
+<Field name="name" trim="true" type="string"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="316" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="172" x="22" y="30">
+<attr name="text"><![CDATA[
+
+
+
+
+
+Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), there is added a unique id, that idetifies the person, his/her spouse and children. This id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="146" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="218" y="92">
+<attr name="text"><![CDATA[
+
+
+
+Cuts record that contains all children of one person to one record for one children.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="0" backgroundColorR="255" folded="false" height="121" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="TO DO" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="213" x="208" y="246">
+<attr name="text"><![CDATA[Fix count() function when http://bug.cloveretl.org/view.php?id=4768 is fixed]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="207" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="399" y="32">
+<attr name="text"><![CDATA[
+
+
+
+
+Joins person with her/his spouse and children and formats the data into xml file]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="139" guiY="149" id="MULTI_LEVEL_READER0" type="MULTI_LEVEL_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="41" guiY="41" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" selectorURL="${TRANS_DIR}/SelectPerson.java" type="MULTI_LEVEL_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="228" guiY="102" id="NORMALIZER0" type="NORMALIZER">
+<attr name="normalize"><![CDATA[//#CTL2
+// This transformation defines the way in which a single input record is normalized
+// into multiple output records.
+string[] children;
+integer id;
+boolean is_empty;
+// This function is called for all input records.
+// It parses each single input record and returns the number of records
+// that should be created from such input record.
+function integer count() {
+	id = $id;
+	children = nvl2($name, split($name,','), children);
+	foreach (string child : children) {
+		is_empty = isnull(child);
+		break;
+	}
+	return is_empty ? 0 : length(children);
+}
+
+// This function creates new records for the output, based on single input record
+// that has been parsed by the count() function.
+// It is called count() times for each input record.
+// The idx argument specifies which output record is being created,
+// its values range is from 0 to count() - 1.
+function integer transform(integer idx) {
+	$id = id;
+	$name = children[idx];
+  return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if count() throws an exception.
+// function integer countOnError(string errorMessage, string stackTrace) {
+//}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace, integer idx) {
+// }
+
+// Called after transform(count-1) to return the resources that have been used to their initial state
+// so that next input record may be parsed.
+function void clean() {
+	clear(children);
+}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="0" guiName="XMLWriter" guiWidth="0" guiX="409" guiY="41" id="XML_WRITER0" omitNewLines="false" rootElement="persons" type="XML_WRITER">
+<attr name="mapping"><![CDATA[<Mapping element="person" inPort="0" fieldsIgnore="id">
+   <Mapping element="spouse" fieldsAs="attributes" inPort="1" key="id" fieldsIgnore="id;relationship" parentKey="id" />
+   <Mapping element="child" fieldsAs="attributes" inPort="2" key="id" fieldsIgnore="id;relationship" parentKey="id" />
+</Mapping> ]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="MULTI_LEVEL_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XML_WRITER0:0"/>
+<Edge debugMode="false" fromNode="MULTI_LEVEL_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="XML_WRITER0:1"/>
+<Edge debugMode="true" fromNode="MULTI_LEVEL_READER0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (out)" toNode="NORMALIZER0:0"/>
+<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XML_WRITER0:2"/>
 </Phase>
 </Graph>
