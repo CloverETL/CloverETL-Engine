@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Wed Aug 04 09:37:16 CEST 2010" modifiedBy="avackova" name="graphParsingTextData" revision="1.55">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Wed Aug 04 09:51:34 CEST 2010" modifiedBy="avackova" name="graphParsingTextData" revision="1.58">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -32,9 +32,6 @@ Parses text file with various kinds of records. Two of them are identified by pr
 
 Cuts record that contains all children of one person to one record for one children.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="0" backgroundColorR="255" folded="false" height="121" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="TO DO" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="213" x="208" y="246">
-<attr name="text"><![CDATA[Fix count() function when http://bug.cloveretl.org/view.php?id=4768 is fixed]]></attr>
-</Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="207" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="399" y="32">
 <attr name="text"><![CDATA[
 
@@ -53,18 +50,13 @@ Joins person with her/his spouse and children and formats the data into xml file
 // into multiple output records.
 string[] children;
 integer id;
-boolean is_empty;
 // This function is called for all input records.
 // It parses each single input record and returns the number of records
 // that should be created from such input record.
 function integer count() {
 	id = $id;
 	children = nvl2($name, split($name,','), children);
-	foreach (string child : children) {
-		is_empty = isnull(child);
-		break;
-	}
-	return is_empty ? 0 : length(children);
+	return length(children);
 }
 
 // This function creates new records for the output, based on single input record
