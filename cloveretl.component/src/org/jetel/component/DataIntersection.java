@@ -447,7 +447,6 @@ public class DataIntersection extends Node {
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
-		outRecord.reset();
 		driverReader.loadNextRun();
 		slaveReader.loadNextRun();
 
@@ -462,8 +461,8 @@ public class DataIntersection extends Node {
 				break;
 			case 0:
 				// match - perform transformation
-				flushCombinations(driverReader, slaveReader, outRecord,
-						outPortAB);
+				outRecord.reset();
+				flushCombinations(driverReader, slaveReader, outRecord, outPortAB);
 				driverReader.loadNextRun();
 				slaveReader.loadNextRun();
 				break;
