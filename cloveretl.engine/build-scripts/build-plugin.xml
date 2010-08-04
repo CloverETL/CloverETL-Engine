@@ -336,6 +336,8 @@
 			<keep name="com.opensys.cloveretl.ctl.CTLUtils"><field access="protected public"/><method access="protected public"/></keep>
 	
 			<keep name="com.opensys.cloveretl.ctl.extensions.*Lib"><field access="public"/><method access="public"/></keep>
+
+			<keep name="com.opensys.cloveretl.ctl.BytecodeCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
