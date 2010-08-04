@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Tue Aug 03 13:06:40 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.100">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Evaluation Devel" modified="Wed Aug 04 14:22:37 CEST 2010" modifiedBy="lucie" name="CreatingFixedMixedCust" revision="1.101">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
@@ -33,18 +33,18 @@ The structure of I/O metadata remains the same except for a field/record propert
 <attr name="text"><![CDATA[after executing a part of the code you may wish to see a message in logger.
 Moroover, you can specify in which log level (debug, info, warn, error, fatal) the message appears.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="108" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="507" y="605">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="108" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="505" y="464">
 <attr name="text"><![CDATA[Correct records are written in a file till a bad record appears and the raised error stops the graph executing]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="File with incorrect records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="13" y="608">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="File with incorrect records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="11" y="467">
 <attr name="text"><![CDATA[
 is read, all the records are send out to the next component]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="raiseErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="241" y="609">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="raiseErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="239" y="468">
 <attr name="text"><![CDATA[throws an error that causes the graph failure]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="114" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Debug properties" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="88" y="368">
-<attr name="text"><![CDATA[To]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="82" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Debug properties" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="88" y="368">
+<attr name="text"><![CDATA[You can set a filtering condition for records to view before the graph runs in debug properties]]></attr>
 </Note>
 <Dictionary/>
 </Global>
@@ -99,9 +99,9 @@ function integer transform() {
 <Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiHeight="0" guiName="reads bad records" guiWidth="0" guiX="30" guiY="689" id="DATA_READER1" trim="false" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiHeight="0" guiName="incomplete file" guiWidth="0" guiX="491" guiY="689" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="prints message" guiWidth="0" guiX="258" guiY="689" id="REFORMAT1" type="REFORMAT">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiHeight="0" guiName="reads bad records" guiWidth="0" guiX="28" guiY="548" id="DATA_READER1" trim="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiHeight="0" guiName="incomplete file" guiWidth="0" guiX="489" guiY="548" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="prints message" guiWidth="0" guiX="256" guiY="548" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer count=0;
 // Transforms input record into output record.
