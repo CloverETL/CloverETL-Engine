@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Tue Aug 03 13:16:08 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.91">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Wed Aug 04 14:25:07 CEST 2010" modifiedBy="lucie" name="graphSystemExecute" revision="1.92">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -62,13 +62,13 @@ HERE: sends information about the files in ${GRAPH_DIR} directory to output port
 <Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiHeight="0" guiName="saves files list" guiWidth="0" guiX="336" guiY="852" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="saves file list" guiWidth="0" guiX="531" guiY="368" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="0" guiName="saves file list" guiWidth="0" guiX="629" guiY="457" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat " guiWidth="0" guiX="58" guiY="257" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat " guiWidth="0" guiX="58" guiY="257" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[cat -n graph/graphExecutingExternal.grf]]></attr>
 </Node>
-<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="list" guiWidth="0" guiX="278" guiY="368" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="list" guiWidth="0" guiX="278" guiY="368" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="executes batch" guiWidth="0" guiX="303" guiY="579" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE" workersTimeout="10">
+<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="executes batch" guiWidth="0" guiX="303" guiY="579" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[while read in; do
   echo $in
   find -name "$in" 
