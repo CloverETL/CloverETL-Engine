@@ -530,12 +530,7 @@ public class SQLCloverStatement {
         		}
         	}
         }
-        
-        if(QueryType.UNKNOWN.equals(this.queryType)) {
-           throw new SQLException(INVALID_QUERY_MESSAGE);
-        }
-        
-	}
+    }
 	
 	void setObjectValue(int paramIndex, PreparedStatement ps) {
 		try {
