@@ -68,7 +68,7 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
-		super.init();
+		super.init(numPartitions);
 
 		getOuputPortFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
 		getOuputPortOnErrorFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,

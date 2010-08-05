@@ -496,10 +496,6 @@ public class Partition extends Node {
     						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
     			}
     		}
-        	
-        	
-//                init();
-//                free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -532,7 +528,6 @@ public class Partition extends Node {
 					partitionFceFactory.setUseI18N(useI18N);
 					partitionFceFactory.setLogger(logger);
 					partitionFce = partitionFceFactory.createPartitionDynamic(checkTransform);
-					partitionFce.init(outPorts.size(), partitionKey);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = partitionSource != null ? XML_PARTIONSOURCE_ATTRIBUTE : XML_PARTITIONURL_ATTRIBUTE;
