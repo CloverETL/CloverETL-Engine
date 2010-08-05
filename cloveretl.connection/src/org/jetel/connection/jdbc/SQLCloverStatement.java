@@ -493,6 +493,9 @@ public class SQLCloverStatement {
 	public void executeValidate() throws SQLException, ComponentNotReadyException {
 
         String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType());
+        if(q == null) {
+           throw new SQLException("Inserted query can not be validated.");	
+        }
         
         if (q != null) {
         	this.isInitialized = false;
@@ -523,6 +526,7 @@ public class SQLCloverStatement {
         		}
         		
         	} else {
+        		
         		if (statement instanceof PreparedStatement) {
         			executeUpdate(record);
         		} else {
