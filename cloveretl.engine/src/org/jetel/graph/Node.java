@@ -990,7 +990,7 @@ public abstract class Node extends GraphElement implements Runnable {
                 retValue = false;
 			}
 			if (inputPort.getInputPortNumber() != index){
-                status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.WARNING, this, Priority.NORMAL));
+                status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
                 retValue = false;
 			}
 			index++;
@@ -1024,7 +1024,7 @@ public abstract class Node extends GraphElement implements Runnable {
                 return false;
 			}
 			if (outputPort.getOutputPortNumber() != index){
-                status.add(new ConfigurationProblem("Output port " + index + " is not defined!", Severity.WARNING, this, Priority.NORMAL));
+                status.add(new ConfigurationProblem("Output port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
                 return false;
 			}
 			index++;
