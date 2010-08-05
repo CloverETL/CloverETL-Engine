@@ -873,7 +873,14 @@ public abstract class TLType {
 		return ret;
 	}
 
-
+	public static TLType[] fromJavaObjects(Object[] objects) {
+		final TLType[] ret = new TLType[objects.length];
+		for (int i = 0; i < objects.length; i++) {
+			ret[i] = fromJavaType(objects[i].getClass());
+		}
+		
+		return ret;
+	}
 	
 	public static int distance(TLType from, TLType to) {
 		if (from.isInteger()) {

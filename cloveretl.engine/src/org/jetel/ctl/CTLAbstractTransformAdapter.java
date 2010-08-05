@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import org.apache.commons.logging.Log;
 import org.jetel.component.Transform;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
@@ -117,7 +118,7 @@ public class CTLAbstractTransformAdapter implements Transform {
     	return null;
     }
 
-    protected void init() throws ComponentNotReadyException {
+    protected void init(Object... arguments) throws ComponentNotReadyException {
 		// we will be calling one function at a time so we need global scope active
 		executor.keepGlobalScope();
 		executor.init();
@@ -128,11 +129,11 @@ public class CTLAbstractTransformAdapter implements Transform {
 			throw new ComponentNotReadyException("Failed to initialize global scope!", exception);
 		}
 
-		CLVFFunctionDeclaration functionInit = executor.getFunction(FUNCTION_INIT_NAME);
+		CLVFFunctionDeclaration functionInit = executor.getFunction(FUNCTION_INIT_NAME, TLType.fromJavaObjects(arguments));
 
 		if (functionInit != null) {
 			try {
-				executor.executeFunction(functionInit, NO_ARGUMENTS);
+				executor.executeFunction(functionInit, arguments);
 			} catch (TransformLangExecutorRuntimeException exception) {
 				throw new ComponentNotReadyException("Execution of " + functionInit.getName()
 						+ "() function failed!", exception);
