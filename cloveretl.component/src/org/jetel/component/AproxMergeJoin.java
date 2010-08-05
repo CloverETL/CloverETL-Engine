@@ -751,25 +751,27 @@ public class AproxMergeJoin extends Node {
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
 				.getMetadata() };
-		if (transformation != null) {
-			transformation.init(transformationParameters, inMetadata, outMetadata);
-		} else {
+		if (transformation == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					transformURL, charset, this, inMetadata, outMetadata,
 					this.getClass().getClassLoader(), classPath);
 		}
+		// init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
-		if (transformationForSuspicious != null) {
-			transformationForSuspicious.init(transformationParametersForSuspicious, 
-					inMetadata,	outMetadata);
-		} else {
+		if (transformationForSuspicious == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
-					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader(),
-					classPath);
+					inMetadata, outMetadata, this.getClass().getClassLoader(), classPath);
 		}
+		// init transformation
+        if (!transformationForSuspicious.init(transformationParametersForSuspicious, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformationForSuspicious function.");
+        }
         errorActions = ErrorAction.createMap(errorActionsString);
          if (errorLogURL != null) {
         	try {
@@ -1224,7 +1226,7 @@ public class AproxMergeJoin extends Node {
 
     			try {
     				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata, transformationParameters, 
+    						charset, this, inMetadata, outMetadata,
     						null, null);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used

@@ -561,14 +561,17 @@ public class DataIntersection extends Node {
         DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
                 WRITE_TO_PORT_A_B).getMetadata() };
 		//create instance of record transformation
-        if (transformation != null){
-        	transformation.init(transformationParameters, inMetadata, outMetadata);
-        }else{
+        if (transformation == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					transformURL, charset, this, inMetadata, outMetadata,
 					this.getClass().getClassLoader(), classPath);
         }
+		// init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
+
         errorActions = ErrorAction.createMap(errorActionsString);
 		driverReader = new DriverReader(driverPort, recordKeys[DRIVER_ON_PORT]);
 		slaveReader = keyDuplicates ? new SlaveReaderDup(slavePort, recordKeys[SLAVE_ON_PORT]) :
@@ -780,7 +783,7 @@ public class DataIntersection extends Node {
 
     			try {
     				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata, transformationParameters, 
+    						charset, this, inMetadata, outMetadata,
     						null, null);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
