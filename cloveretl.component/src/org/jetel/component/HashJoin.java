@@ -414,14 +414,16 @@ public class HashJoin extends Node {
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
 		}
-		if (transformation != null) {
-			transformation.init(transformationParameters, inMetadata, outMetadata);
-		} else {
+		if (transformation == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL,
-					charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader(),
+					charset, this, inMetadata, outMetadata, this.getClass().getClassLoader(),
 					classPath);
 		}
+		// init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
 		errorActions = ErrorAction.createMap(errorActionsString);
 		if (errorLogURL != null) {
 			try {
@@ -1030,7 +1032,7 @@ public class HashJoin extends Node {
 				}
 
 				try {
-					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata, transformationParameters, null, null);
+					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata, null, null);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;

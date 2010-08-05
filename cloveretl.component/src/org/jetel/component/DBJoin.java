@@ -409,7 +409,7 @@ public class DBJoin extends Node {
 						CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 	    				transformation = RecordTransformFactory.createTransform(
 	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-	    						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPath);
+	    						outMetadata, this.getClass().getClassLoader(), classPath);
 					} catch (ComponentNotReadyException e) {
 						// find which component attribute was used
 						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
@@ -453,15 +453,16 @@ public class DBJoin extends Node {
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
-			if (transformation != null){
-				transformation.init(transformationParameters, inMetadata, outMetadata);
-			}
 			if (transformSource != null || transformClassName != null) {
 				CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata, transformationParameters, this.getClass().getClassLoader(), classPath);
+						outMetadata, this.getClass().getClassLoader(), classPath);
 			}			
+			// init transformation
+	        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {
+	            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+	        }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}

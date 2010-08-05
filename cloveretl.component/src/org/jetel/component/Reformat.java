@@ -369,15 +369,18 @@ public class Reformat extends Node {
         }
 
 		//create instance of record transformation
-        if (transformation != null) {
-			transformation.init(transformationParameters, inMetadata,
-					outMetadata);
-		} else {
+        if (transformation == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
-					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					transformURL, charset, this, inMetadata, outMetadata,
 					this.getClass().getClassLoader(), classPath);
 		}
+        
+		// init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
+
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
@@ -536,8 +539,7 @@ public class Reformat extends Node {
 
         			try {
 						RecordTransformFactory.createTransform(checkTransform, null, null, 
-								charset, this, inMetadata, outMetadata, transformationParameters, 
-								null, null);
+								charset, this, inMetadata, outMetadata, null, null);
 					} catch (ComponentNotReadyException e) {
 						// find which component attribute was used
 						String attribute = transform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;

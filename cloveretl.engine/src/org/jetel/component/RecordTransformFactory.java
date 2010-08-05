@@ -27,7 +27,6 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -176,8 +175,7 @@ public class RecordTransformFactory {
      */
     public static RecordTransform createTransform(String transform, String transformClass, String transformURL,
     		String charset, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata,
-    		Properties transformationParameters, ClassLoader classLoader, CloverClassPath classPath)
-    		throws ComponentNotReadyException {
+    		ClassLoader classLoader, CloverClassPath classPath) throws ComponentNotReadyException {
     	
     	//if classpath wasn't passed, empty one is automatically prepared
     	if (classPath == null) {
@@ -253,11 +251,6 @@ public class RecordTransformFactory {
         }
         transformation.setNode(node);
     	
-        // init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {//TODO
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");
-        }
-        
         return transformation;
     }
 
