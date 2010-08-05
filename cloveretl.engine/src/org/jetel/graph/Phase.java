@@ -342,7 +342,7 @@ public class Phase extends GraphElement implements Comparable {
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
-        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, node, Priority.HIGH);
+        		ConfigurationProblem problem = new ConfigurationProblem("Unexpected error: " + e.getMessage(), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);
         		status.add(problem);
         	}
