@@ -52,6 +52,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected static final String OUTPUT_1 = "firstOutput";
 	protected static final String OUTPUT_2 = "secondOutput";
 	protected static final String OUTPUT_3 = "thirdOutput";
+	protected static final String OUTPUT_4 = "fourthOutput";
 	protected static final String LOOKUP = "lookupMetadata";
 
 	protected static final String NAME_VALUE = "  HELLO  ";
@@ -143,6 +144,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		metadataMap.put(OUTPUT_1, createDefaultMetadata(OUTPUT_1));
 		metadataMap.put(OUTPUT_2, createDefaultMetadata(OUTPUT_2));
 		metadataMap.put(OUTPUT_3, createDefaultMetadata(OUTPUT_3));
+		metadataMap.put(OUTPUT_4, createDefault1Metadata(OUTPUT_4));
 		metadataMap.put(LOOKUP, createDefaultMetadata(LOOKUP));
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
@@ -288,6 +290,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	/**
+	 * Creates records with default structure
+	 * 
+	 * @param name
+	 *            name for the record to use
+	 * @return metadata with default structure
+	 */
+	protected DataRecordMetadata createDefault1Metadata(String name) {
+		DataRecordMetadata ret = new DataRecordMetadata(name);
+		ret.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("Age", DataFieldMetadata.NUMERIC_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("City", DataFieldMetadata.STRING_FIELD, "|"));
+
+		return ret;
+	}
+
+	/**
 	 * Creates new record with specified metadata and sets its field to default values. The record structure will be
 	 * created by {@link #createDefaultMetadata(String)}
 	 * 
@@ -333,7 +351,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected void doCompile(String expStr, String testIdentifier) {
 		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -358,7 +376,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
 		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -1608,6 +1626,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(recordEquals(inputRecords[2], outputRecords[0]));
 	}
 
+	public void test_copyByName() {
+		doCompile("test_copyByName");
+		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
+		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
+		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+	}
+
+	public void test_copyByName_assignment() {
+		doCompile("test_copyByName_assignment");
+		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
+		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
+		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+	}
+	
 	public void test_sequence(){
 		doCompile("test_sequence");
 		check("intRes", Arrays.asList(1,2,3));
