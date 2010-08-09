@@ -848,6 +848,7 @@ public class DB2DataWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		System.out.println("*trace : db2 writer init called");
         if(isInitialized()) return;
 		super.init();
 		
@@ -1527,10 +1528,16 @@ public class DB2DataWriter extends Node {
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
 		proc = Runtime.getRuntime().exec(command);
 		box = new ProcBox(proc, null, consumer, errConsumer);
+		
 		new Thread(){
 			public void run() {
+				FileOutputStream fos = null;
 				try {
-					formatter.setDataTarget(new FileOutputStream(dataFile));
+					
+					fos = new FileOutputStream(dataFile);
+				
+					formatter.setDataTarget(fos);
+					int i = 0;
 					while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
 						if (skipped >= recordSkip) {
 							formatter.write(inRecord);
@@ -1541,6 +1548,15 @@ public class DB2DataWriter extends Node {
 					formatter.finish();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
+				} finally {
+					try {
+						if (fos != null) {
+							fos.close();
+						}
+					} catch (IOException e2) {
+						throw new RuntimeException(e2);
+						// TODO: probably better thread-specific error handling should be used
+					}
 				}
 			}
 		}.start();
@@ -1575,9 +1591,11 @@ public class DB2DataWriter extends Node {
 		//create named pipe
 		if (!getInPorts().isEmpty() && usePipe) {
 			try {
+				System.out.println("*trace : creating named pipe");
 				proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
 				box = new ProcBox(proc, null, consumer, errConsumer);
 				exitValue = box.join();
+				System.out.println("*trace : created pipe");
 			} catch (Exception e) {
 				cleanup();
 				throw e;
@@ -1587,6 +1605,7 @@ public class DB2DataWriter extends Node {
 		try {
 			if (!getInPorts().isEmpty() && usePipe) {
 				exitValue = runWithPipe();
+				System.out.println("*trace: finished runWithPipe(), inside main exec");
 			}else {
 				if (!getInPorts().isEmpty()) {
 					//save data in temporary file

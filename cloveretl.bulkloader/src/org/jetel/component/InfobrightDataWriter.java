@@ -353,6 +353,36 @@ public class InfobrightDataWriter extends Node {
 		converter = new CloverValueConverter();
 	}
 
+	@Override
+	public synchronized void reset() throws ComponentNotReadyException {
+		try {
+			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		try {
+			if (logFile != null) {
+				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
+			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
+				dataParser = new DataParser(charset);
+				dataParser.setQuotedStrings(true);
+				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+				PipedInputStream parserInput = new PipedInputStream();
+				PipedOutputStream loaderOutput = new PipedOutputStream(	parserInput);
+				dataParser.setDataSource(parserInput);
+				loader.setDebugOutputStream(loaderOutput);
+			}
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+		if (pipeNamePrefix != null) {//has no effect - infobright-core bug
+			loader.setPipeNamePrefix(pipeNamePrefix);
+		}
+		if (timeout > -1) {
+			loader.setTimeout(timeout);
+		}
+		super.reset();
+	}
 	/**
 	 * Creates brighthouse record from input metadata
 	 * 
