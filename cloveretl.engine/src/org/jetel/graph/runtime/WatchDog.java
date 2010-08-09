@@ -603,9 +603,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	            		if (t == null) {
 	            			continue;
 	            		}
-	            		t.setName("exNode_"+runId+"_"+node.getId());
+        				String newThreadName = "exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId();
+						if (logger.isTraceEnabled())
+								logger.trace("rename thread "+t.getName()+" to " + newThreadName);
+      			  		t.setName(newThreadName);
 	            		// explicit interruption of threads of failed graph; (some nodes may be still running)
 	            		if (node.getResultCode() == Result.RUNNING) {
+		    				if (logger.isTraceEnabled())
+    								logger.trace("try to abort node "+node);
 	            			node.abort();
 	            		}
             		}
