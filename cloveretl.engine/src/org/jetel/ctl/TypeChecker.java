@@ -277,6 +277,26 @@ public class TypeChecker extends NavigatingVisitor {
 		if (lhs.canAssign(rhs)) {
 			castIfNeeded(node, 1, lhs);
 			node.setType(lhs);
+		} else if ((lhs.isRecord() && !((TLTypeRecord) lhs).isReference() 
+					&& rhs.isRecord() && !((TLTypeRecord) rhs).isReference())) {
+			//this branch is intended only for 'record1.* = record2.*' assignment expression type
+			//with different metadata - then the records are copied based on field names
+			//integral function copyByName is used for this copying 
+			
+			//this function context has to be prepared and correctly registered in list of all function calls
+			//due correct COMPILE mode java code generation and is used in further stages of processing
+			TLFunctionCallContext context = new TLFunctionCallContext(transformationID);		
+			context.setParams(new TLType[] { TLType.RECORD, TLType.RECORD });
+			context.setLiterals(new boolean[] { false, false });
+			context.setParamValues(new Object[] { null, null });
+			context.setIndex(functionCallIndex++);
+			context.setHasInit(true);
+			context.setInitMethodName("copyByNameInit");
+			context.setLibClassName("org.jetel.ctl.extensions.IntegralLib");
+
+			getFunctionCalls().add(context);
+			node.setCopyByNameCallContext(context);
+			node.setType(lhs);
 		} else {
 			error(node, "Type mismatch: cannot convert from " + "'" + rhs.name() + "' to '" + lhs.name() + "'");
 			node.setType(TLType.ERROR);

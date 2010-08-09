@@ -63,4 +63,9 @@
 		<parameter id="className" value="org.jetel.ctl.TLCompiler"/>
 	</extension>
 	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="integral"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.IntegralLib"/>
+	</extension>
+	
 </plugin>

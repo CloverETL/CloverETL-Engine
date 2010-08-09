@@ -20,10 +20,17 @@ package org.jetel.ctl.ASTnode;
 
 import org.jetel.ctl.ExpParser;
 import org.jetel.ctl.TransformLangParserVisitor;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 
 
 
 public class CLVFAssignment extends SimpleNode {
+	
+	//this function contexted is exploited only for 'record1.* = record2.*' assignment expression type
+	//with different metadata - then the records are copied based on field names
+	//integral function copyByName is used for this copying 
+	private TLFunctionCallContext copyByNameCallContext;
+	
 	public CLVFAssignment(int id) {
 		super(id);
 	}
@@ -34,6 +41,7 @@ public class CLVFAssignment extends SimpleNode {
 
 	public CLVFAssignment(CLVFAssignment node) {
 		super(node);
+		copyByNameCallContext = node.getCopyByNameCallContext();
 	}
 
 	/** Accept the visitor. * */
@@ -45,4 +53,13 @@ public class CLVFAssignment extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFAssignment(this);
 	}
+
+	public void setCopyByNameCallContext(TLFunctionCallContext context) {
+		copyByNameCallContext = context;
+	}
+
+	public TLFunctionCallContext getCopyByNameCallContext() {
+		return copyByNameCallContext;
+	}
+
 }
