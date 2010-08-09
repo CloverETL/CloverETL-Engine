@@ -95,10 +95,10 @@ import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.LogLevelEnum;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
-import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.TLType.TLDateField;
 import org.jetel.ctl.data.TLType.TLLogLevel;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataField;
@@ -1547,6 +1547,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
 			final DataRecord record = new DataRecord(metaData);
 			record.init();
+			record.reset();
 			setVariable(node, record);
 		} 
 		
