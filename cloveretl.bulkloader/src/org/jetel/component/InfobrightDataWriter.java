@@ -47,10 +47,10 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -362,7 +362,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		try {
 			if (logFile != null) {
-				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
+				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), logFile, append, -1));
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				dataParser = new DataParser(charset);
 				dataParser.setQuotedStrings(true);

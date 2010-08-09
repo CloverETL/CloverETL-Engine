@@ -28,8 +28,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,10 +43,10 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -848,7 +848,6 @@ public class DB2DataWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
-		System.out.println("*trace : db2 writer init called");
         if(isInitialized()) return;
 		super.init();
 		
@@ -1591,11 +1590,9 @@ public class DB2DataWriter extends Node {
 		//create named pipe
 		if (!getInPorts().isEmpty() && usePipe) {
 			try {
-				System.out.println("*trace : creating named pipe");
 				proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
 				box = new ProcBox(proc, null, consumer, errConsumer);
 				exitValue = box.join();
-				System.out.println("*trace : created pipe");
 			} catch (Exception e) {
 				cleanup();
 				throw e;
@@ -1605,7 +1602,6 @@ public class DB2DataWriter extends Node {
 		try {
 			if (!getInPorts().isEmpty() && usePipe) {
 				exitValue = runWithPipe();
-				System.out.println("*trace: finished runWithPipe(), inside main exec");
 			}else {
 				if (!getInPorts().isEmpty()) {
 					//save data in temporary file
