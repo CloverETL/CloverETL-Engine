@@ -38,6 +38,7 @@ import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
@@ -145,7 +146,8 @@ public class RecordTransformFactory {
     			if (child.getId() != JJTRETURNSTATEMENT) {
 	    			// check if direct mapping
 	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
-	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
+	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION
+	    					|| ((CLVFFieldAccessExpression) lhs).isWildcard()) { //'$0.* = ...' is also prohibited
 	    				// not a mapping
 	    				return false;
 	    			}
