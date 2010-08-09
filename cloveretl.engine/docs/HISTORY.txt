@@ -16,6 +16,14 @@ REL 3-0-0
 + new attribute 'Collator sensitivity' on DataRecordMetadata
 + Joda date formatter is now default formatter (java formatter is still available with prefix "java:" in format string)
 
+
+REL 2-9-3
+---------
++ fix of #4252 RunGraph component - GraphNotFound on the server
++ Fixed incorrect resolving of special characters in transforms specified by URL
++ Reset fix in InfobrightDataWriter
+
+
 REL 2-9-2
 ---------
 + Example projects using DB migrated to Derby - easy setup for newbies

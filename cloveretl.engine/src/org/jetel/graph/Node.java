@@ -505,6 +505,8 @@ public abstract class Node extends GraphElement implements Runnable {
 		int attempts = 30;
 		runIt = false;
 		while (runResult == Result.RUNNING && attempts-- > 0){
+			if (logger.isTraceEnabled())
+				logger.trace("try to interrupt thread "+getNodeThread());
 			getNodeThread().interrupt();
 			try {
 				Thread.sleep(10);
@@ -532,13 +534,25 @@ public abstract class Node extends GraphElement implements Runnable {
     private synchronized void setNodeThread(Thread nodeThread) {
 		if(nodeThread != null) {
     		this.nodeThread = nodeThread;
-
+			String oldName = nodeThread.getName();
     		ContextProvider.registerNode(this);
+    		long runId = getGraph().getRuntimeContext().getRunId();
+    		nodeThread.setName(getId()+"_"+runId);
 			MDC.put("runId", getGraph().getRuntimeContext().getRunId());
-			nodeThread.setName(getId());
+//			nodeThread.setName(getId());
+			
+			if (logger.isTraceEnabled()) {
+				logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
+				logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+			}
+			
 		} else {
 			ContextProvider.unregister();
 			MDC.remove("runId");
+			long runId = getGraph().getRuntimeContext().getRunId();
+			if (logger.isTraceEnabled()) 
+				logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+			
 			this.nodeThread.setName("<unnamed>");
 			this.nodeThread = null;
 		}
