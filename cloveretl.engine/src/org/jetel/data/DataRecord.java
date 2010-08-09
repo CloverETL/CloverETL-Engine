@@ -156,7 +156,7 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
 			sourceField = sourceRecord.getField(i);
 			targetField = this.getField(i);
 			if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
-				targetField.copyFrom(sourceField);
+				targetField.setValue(sourceField);
 			} else {
 				targetField.setToDefaultValue();
 			}

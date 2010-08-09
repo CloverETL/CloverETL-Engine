@@ -99,6 +99,7 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.TLType.TLDateField;
 import org.jetel.ctl.data.TLType.TLLogLevel;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
+import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -275,6 +276,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return data;
 		}
 		
+		@Override
+		public Object visit(CLVFAssignment node, Object data) {
+			super.visit(node, data);
+			
+			//this context is prepared only for 'record1.* = record2.*' assignment expression
+			//when the metadata are different - then the records are copied based on field names
+			//integral function copyByName is used for this copying 
+			if (node.getCopyByNameCallContext() != null) {
+				IntegralLib.copyByNameInit(node.getCopyByNameCallContext());
+			}
+			
+			return data;
+		}
 		
 	}
 	
@@ -1589,7 +1603,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				value = stack.pop();
 				if (value != null) {
 					// RHS must be a record -> copy fields
-					record.copyFieldsByPosition((DataRecord)value);
+					//this context is prepared only for 'record1.* = record2.*' assignment expression
+					//when the metadata are different - then the records are copied based on field names
+					//integral function copyByName is used for this copying 
+					if (node.getCopyByNameCallContext() == null) {
+						record.copyFieldsByPosition((DataRecord) value);
+					} else {
+						IntegralLib.copyByName(node.getCopyByNameCallContext(), record, (DataRecord) value);
+					}
 				} else {
 					// value is null -> set all fields to null
 					record.reset();
@@ -1624,7 +1645,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					value = stack.pop();
 					if (value != null) {
 						// RHS must be a record -> copy fields by value
-						varRecord.copyFieldsByPosition((DataRecord)value);
+						//this context is prepared only for 'record1.* = record2.*' assignment expression
+						//when the metadata are different - then the records are copied based on field names
+						//integral function copyByName is used for this copying 
+						if (node.getCopyByNameCallContext() == null) {
+							varRecord.copyFieldsByPosition((DataRecord) value);
+						} else {
+							IntegralLib.copyByName(node.getCopyByNameCallContext(), varRecord, (DataRecord) value);
+						}
 					} else {
 						// RHS is null -> set all fields to null
 						varRecord.reset();
