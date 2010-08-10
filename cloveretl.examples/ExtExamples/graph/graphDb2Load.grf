@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="0.0.0.devel" id="1204537468815" licenseType="Evaluation Devel" modified="Wed Oct 21 11:15:13 GMT+01:00 2009" modifiedBy="avackova" name="test" revision="1.514">
+<Graph author="avackova" created="Tue Jul 31 09:29:05 CEST 2007" description="This graph illustrates usage of Db2DataWriterComponent.&#10;This component can be used in two ways:&#10;* data read from input port, are properly formated and saved in temporary file or named pipe (on Linux/Unix) and then load to database (phase 0)&#10;* data from existing file are lodaed to database (phase 1)&#10;Information about rejected records can be sent to output port." guiVersion="0.0.0.devel" id="1204537468815" licenseType="Evaluation Devel" modified="Tue Aug 10 11:12:28 CEST 2010" modifiedBy="avackova" name="test" revision="1.515">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="errors" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -35,9 +35,10 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node database="test" enabled="enabled" fileMetadata="Metadata1" fileURL="${DATAIN_DIR}/fixlen/db2fix.dat" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="27" id="DB2_DATA_WRITER1" loadMode="insert" parameters="reclen=97" password="semafor" rejectedURL="/home/db2inst/rejected_fix.txt" table="mytab" type="DB2_DATA_WRITER" userName="db2inst">
+<Node database="test" enabled="enabled" fileMetadata="Metadata1" fileURL="${DATAIN_DIR}/fixlen/db2fix.dat" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="208" guiY="27" id="DB2_DATA_WRITER1" loadMode="terminate" parameters="reclen=97" password="semafor" rejectedURL="/home/db2inst/rejected_fix.txt" table="mytab" type="DB2_DATA_WRITER" userName="db2inst">
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
 </Phase>
@@ -47,7 +48,7 @@
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
 <Node debugFilename="${DATAOUT_DIR}/rejected_delimited.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="394" guiY="140" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB2_DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB2_DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
