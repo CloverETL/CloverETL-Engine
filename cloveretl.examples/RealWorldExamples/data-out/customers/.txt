@@ -1,3 +1,0 @@
-customerid;firstname;lastname;city;state;country;username;password;age;income;gender
-2811;XULFYF;DUOUQARIXM;BIONSCT;;Chile;user19907;password;66;80000;M
-8088;HXSXJL;KQVEMHRQQD;SECZAPA;;South Africa;user17422;password;80;80000;F
