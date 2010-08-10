@@ -31,8 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.ConnectionAction;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement;
-import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
@@ -1421,6 +1421,10 @@ public class DBOutputTable extends Node {
 		this.errorAction = ConnectionAction.valueOf(errorAction);
 	}
 
+	public void setDBConnection(String dbConnection) {
+		this.dbConnectionName = dbConnection;
+	}
+	
 	static class ComponentAlmostNotReadyException extends ComponentNotReadyException {
 
 		public ComponentAlmostNotReadyException(IGraphElement element,
