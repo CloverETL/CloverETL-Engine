@@ -2086,14 +2086,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return ((StringDataField)field).getValue().toString();
 
 		case DataFieldMetadata.BOOLEAN_FIELD:
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-		case DataFieldMetadata.DATE_FIELD:
 		case DataFieldMetadata.INTEGER_FIELD:
 		case DataFieldMetadata.LONG_FIELD:
 		case DataFieldMetadata.NUMERIC_FIELD:
 			// relevant numeric object
 			return field.getValue();
+
+		case DataFieldMetadata.DATE_FIELD:
+		case DataFieldMetadata.BYTE_FIELD:
+		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+			return field.getValueDuplicate();
 
 		default:
 			throw new IllegalArgumentException("Unknown field type: '" + field.getType() + "'" );	
