@@ -278,7 +278,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
-            edgeDebuger = new EdgeDebuger(debugFileName, false, debugMaxRecords, debugLastRecords,
+            edgeDebuger = new EdgeDebuger(this, debugFileName, false, debugMaxRecords, debugLastRecords,
             				debugFilterExpression, metadata, debugSampleData);
             try {
                 edgeDebuger.init();

@@ -24,17 +24,16 @@ import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.RecordFilter;
+import org.jetel.component.RecordFilterFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangExecutor;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLBooleanValue;
+import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class perform buffering data flowing through the edge.
@@ -60,20 +59,24 @@ public class EdgeDebuger {
     private DataRecord recordOrdinal;
     private DataRecordTape dataTape;
     private RingRecordBuffer recordBuffer;
-    private Filter filter;
+    private RecordFilter filter;
+    private DataRecord filterTmpRecord;
     private Sampler sampler;
 
+    private Edge parentEdge; //can be null
+    
     /** the number of data records processed so far */
     private int recordsCounter = 0;
     /** the number of debugged (stored) records */
     private int debuggedRecords = 0; 
 
-    public EdgeDebuger(String debugFile, boolean readMode) {
-    	this(debugFile, readMode, 0, true, null, null, false);
+    public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode) {
+    	this(parentEdge, debugFile, readMode, 0, true, null, null, false);
     }
 
-    public EdgeDebuger(String debugFile, boolean readMode, int debugMaxRecords, boolean debugLastRecords, 
+    public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode, int debugMaxRecords, boolean debugLastRecords, 
     		String filterExpression, DataRecordMetadata metadata, boolean sampleData) {
+    	this.parentEdge = parentEdge;
         this.debugFile = debugFile;
         this.readMode = readMode;
         this.debugMaxRecords = debugMaxRecords;
@@ -90,6 +93,11 @@ public class EdgeDebuger {
     	recordOrdinal = new DataRecord(recordOrdinalMetadata);
     	recordOrdinal.init();
 
+    	if (!StringUtils.isEmpty(filterExpression)) {
+	    	filterTmpRecord = new DataRecord(metadata);
+	    	filterTmpRecord.init();
+    	}
+
     	dataTape = new DataRecordTape(debugFile, !readMode, false);
         dataTape.open();
         dataTape.addDataChunk();
@@ -105,7 +113,7 @@ public class EdgeDebuger {
         }
 
         if (filterExpression != null) {
-        	filter = new Filter(metadata, filterExpression);
+        	filter = RecordFilterFactory.createFilter(filterExpression, metadata, getGraph(), getId(), logger);
         }
 
         if (sampleData) {
@@ -134,10 +142,6 @@ public class EdgeDebuger {
 
         if (recordBuffer != null) {
         	recordBuffer.reset();
-        }
-
-        if (filter != null) {
-        	filter.reset();
         }
 
         if (sampler != null) {
@@ -170,7 +174,21 @@ public class EdgeDebuger {
     }
 
     private boolean checkRecordToWrite(DataRecord record) {
-    	return ((filter == null || filter.check(record)) && (sampler == null || sampler.sample()));
+    	return ((filter == null || isValid(record)) && (sampler == null || sampler.sample()));
+    }
+    
+    private boolean isValid(DataRecord record) {
+    	try {
+			return filter.isValid(record);
+		} catch (TransformException e) {
+			throw new RuntimeException("Edge (" + getId() + ") debugging failed in filter expression. " + e.getMessage() , e); 
+		}
+    }
+    
+    private boolean isValid(ByteBuffer record) {
+    	filterTmpRecord.deserialize(record);
+		record.rewind();
+		return isValid(filterTmpRecord);
     }
     
     public void writeRecord(ByteBuffer byteBuffer) throws IOException, InterruptedException {
@@ -195,7 +213,7 @@ public class EdgeDebuger {
     }
     
     private boolean checkRecordToWrite(ByteBuffer byteBuffer) {
-    	return ((filter == null || filter.check(byteBuffer)) && (sampler == null || sampler.sample()));
+    	return ((filter == null || isValid(byteBuffer)) && (sampler == null || sampler.sample()));
     }
 
     private boolean checkNoOfDebuggedRecords() {
@@ -248,62 +266,12 @@ public class EdgeDebuger {
 		}
 	}
     
-    /**
-	 * Class for filtering data record.
-	 * 
-	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
-	 *				(c) Javlin Consulting (www.javlinconsulting.cz)
-	 * @since 20.12.2007
-	 */
-    private static class Filter {
-    	private CLVFStartExpression recordFilter;
-    	private TransformLangExecutor executor;
-    	private DataRecord tmpRecord;
-
-    	public Filter(DataRecordMetadata metadata, String filterExpression) throws ComponentNotReadyException {
-    		TransformLangParser parser = new TransformLangParser(metadata, filterExpression);
-    		if (parser != null) {
-    			try {
-    				recordFilter = parser.StartExpression();
-    			} catch (ParseException pe) {
-                    throw new ComponentNotReadyException("Parser error when parsing expression: " + pe.getMessage());
-                } catch (Exception e) {
-    				throw new ComponentNotReadyException("Error when parsing expression: " + e.getMessage());
-    			}
-                try{
-                    recordFilter.init();
-                } catch (Exception e) {
-                    throw new ComponentNotReadyException("Error when initializing expression executor: " + e.getMessage());
-                }
-    		} else {
-    			throw new ComponentNotReadyException("Can't create filter expression parser !"); 
-    		}
-    		
-            executor = new TransformLangExecutor();
-            
-            tmpRecord = new DataRecord(metadata);
-            tmpRecord.init();
-    	}
-	
-    	public void reset() {
-    		//DO NOTHING
-    	}
-    	
-		public boolean check(DataRecord record) {
-			executor.setInputRecords(new DataRecord[] {record});
-			executor.visit(recordFilter, null);
-			if (executor.getResult() == TLBooleanValue.TRUE) {
-				return true;
-			}
-			
-			return false;
-		}
-		
-		public boolean check(ByteBuffer record) {
-			tmpRecord.deserialize(record);
-			record.rewind();
-			return check(tmpRecord);
-		}
+    private String getId() {
+    	return parentEdge != null ? parentEdge.getId() : "";
+    }
+    
+    private TransformationGraph getGraph() {
+    	return parentEdge != null ? parentEdge.getGraph() : null;
     }
     
     /**
