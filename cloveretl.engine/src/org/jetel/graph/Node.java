@@ -1001,7 +1001,7 @@ public abstract class Node extends GraphElement implements Runnable {
         for (InputPort inputPort : inPorts) {
 			if (inputPort.getMetadata() == null){ //TODO interface for matadata
                 status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
-                		" are not defined!", Severity.ERROR, this, Priority.NORMAL));
+                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
                 retValue = false;
 			}
 			if (checkNonAssignedPorts && inputPort.getInputPortNumber() != index){
@@ -1040,7 +1040,7 @@ public abstract class Node extends GraphElement implements Runnable {
         for (OutputPort outputPort : outPorts) {
 			if (outputPort.getMetadata() == null){
                 status.add(new ConfigurationProblem("Metadata on output port " + outputPort.getOutputPortNumber() + 
-                		" are not defined!", Severity.ERROR, this, Priority.NORMAL));
+                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
                 return false;
 			}
 			if (checkNonAssignedPorts && outputPort.getOutputPortNumber() != index){
