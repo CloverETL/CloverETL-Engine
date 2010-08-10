@@ -119,9 +119,10 @@ public class ASTBuilder extends NavigatingVisitor {
 		this.outputMetadata = outputMetadata;
 		this.declaredFunctions = declaredFunctions;
 		this.problemReporter = problemReporter;
-		this.dictionary = graph.getDictionary();
+		this.dictionary = graph != null ? graph.getDictionary() : null;
 
 		if (graph != null) {
+			
 			// populate name -> position mappings
 
 			// input metadata names can clash
@@ -351,11 +352,17 @@ public class ASTBuilder extends NavigatingVisitor {
 	 */
 	private boolean isGlobal(SimpleNode node) {
 		Node actualNode = node;
+		boolean isLastNodeCLVFStartExpression = false;
 		while ((actualNode = actualNode.jjtGetParent()) != null) {
+			isLastNodeCLVFStartExpression = (actualNode instanceof CLVFStartExpression);
 			if (actualNode instanceof CLVFFunctionDeclaration)
 				return false;
 		}
-		return true;
+		
+		// if root node of SimpleNode hierarchy is CLVFStartExpression
+		// then only simple expression is compiled (for instance for ExtFilter component 
+		// see TLCompiler.validateExpression()) and record field access in global scope is allowed
+		return !isLastNodeCLVFStartExpression;
 	}
 
 
@@ -533,6 +540,13 @@ public class ASTBuilder extends NavigatingVisitor {
 	@Override
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
 		super.visit(node, data);
+		
+		//dictionary is not available, the ctl code is compiled without graph (graph == null)
+		if (dictionary == null) {
+			error(node, "Dictionary is not available");
+			node.setType(TLType.ERROR);
+			return data;
+		}
 		
 		// access to dictionary
 		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
