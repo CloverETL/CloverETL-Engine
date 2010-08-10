@@ -372,6 +372,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
 
+        
+        ResultSet resultSet = null;
         try {
         	//remove WHERE condidion from sql query
         	StringBuilder query = new StringBuilder(sqlQuery);
@@ -387,7 +389,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         	}
         	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query.toString(), null);
         	st.init();
-			ResultSet resultSet = st.executeQuery();
+			resultSet = st.executeQuery();
 			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		   if (dbMetadata == null) {
 	            if (st.getCloverOutputFields() == null) {
@@ -424,6 +426,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			return records.iterator();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			try {
+				if (resultSet != null && !resultSet.isClosed())
+					resultSet.close();
+			} catch (SQLException e) {
+				// we ignore this, as we are only trying to close the stream after exception was thrown before 
+				// - the orignal exception is the one the user is interested in, not this unsuccessful attempt
+				// to clean up
+			}
 		}
    }
     
@@ -606,6 +617,10 @@ class DBLookup implements Lookup{
 
 	private void seekInDB() throws SQLException {
 		//execute query
+		if (resultSet != null && !resultSet.isClosed()) {
+			// close the previous result set before creating new one
+			resultSet.close();
+		}
 	   resultSet = statement.executeQuery();
 	   
 	   if (dbMetadata == null) {
@@ -666,6 +681,7 @@ class DBLookup implements Lookup{
 	
 	private boolean fetch() throws SQLException {
 		if (!resultSet.next()) {
+			resultSet.close();
 			return false;
 		}
 		if (transMap == null) {
