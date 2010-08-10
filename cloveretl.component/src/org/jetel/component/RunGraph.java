@@ -40,10 +40,10 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -696,7 +696,7 @@ public class RunGraph extends Node{
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
    		super.checkConfig(status);
 		if(!checkInputPorts(status, 0, 1)
-				|| !checkOutputPorts(status, 0, 2)) {
+				|| !checkOutputPorts(status, 0, 2, false)) {
 			return status;
 		}
 

@@ -36,10 +36,10 @@ import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.distribution.NodeAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.ErrorMsgBody;
@@ -982,9 +982,10 @@ public abstract class Node extends GraphElement implements Runnable {
      * @param status
      * @param min
      * @param max
+     * @param checkNonAssignedPorts should be checked non-assigned ports (for example first port without edge and second port with edge) 
      * @return true if the number of input ports is in the given interval; else false
      */
-    protected boolean checkInputPorts(ConfigurationStatus status, int min, int max) {
+    protected boolean checkInputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	boolean retValue = true;
     	Collection<InputPort> inPorts = getInPorts();
         if(inPorts.size() < min) {
@@ -1000,10 +1001,10 @@ public abstract class Node extends GraphElement implements Runnable {
         for (InputPort inputPort : inPorts) {
 			if (inputPort.getMetadata() == null){ //TODO interface for matadata
                 status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
-                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
+                		" are not defined!", Severity.ERROR, this, Priority.NORMAL));
                 retValue = false;
 			}
-			if (inputPort.getInputPortNumber() != index){
+			if (checkNonAssignedPorts && inputPort.getInputPortNumber() != index){
                 status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
                 retValue = false;
 			}
@@ -1013,14 +1014,19 @@ public abstract class Node extends GraphElement implements Runnable {
         return retValue;
     }
 
+    protected boolean checkInputPorts(ConfigurationStatus status, int min, int max) {
+    	return checkInputPorts(status, min, max, true);
+    }
+
     /**
      * Checks number of output ports, whether is in the given interval.
      * @param status
      * @param min
      * @param max
+     * @param checkNonAssignedPorts should be checked non-assigned ports (for example first port without edge and second port with edge) 
      * @return true if the number of output ports is in the given interval; else false
      */
-    protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max) {
+    protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	Collection<OutputPort> outPorts = getOutPorts();
         if(outPorts.size() < min) {
             status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
@@ -1034,10 +1040,10 @@ public abstract class Node extends GraphElement implements Runnable {
         for (OutputPort outputPort : outPorts) {
 			if (outputPort.getMetadata() == null){
                 status.add(new ConfigurationProblem("Metadata on output port " + outputPort.getOutputPortNumber() + 
-                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
+                		" are not defined!", Severity.ERROR, this, Priority.NORMAL));
                 return false;
 			}
-			if (outputPort.getOutputPortNumber() != index){
+			if (checkNonAssignedPorts && outputPort.getOutputPortNumber() != index){
                 status.add(new ConfigurationProblem("Output port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
                 return false;
 			}
@@ -1046,7 +1052,11 @@ public abstract class Node extends GraphElement implements Runnable {
 
         return true;
     }
-    
+
+    protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max) {
+    	return checkOutputPorts(status, min, max, true);
+    }
+
     /**
      * Checks if metadatas in given list are all equal 
      * 
