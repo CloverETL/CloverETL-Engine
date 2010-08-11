@@ -42,6 +42,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.distribution.NodeAllocation;
 import org.jetel.graph.runtime.CloverPost;
+import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.jetel.metadata.DataRecordMetadata;
@@ -58,7 +59,7 @@ import org.w3c.dom.Element;
  *@see         org.jetel.component
  *@revision    $Revision$
  */
-public abstract class Node extends GraphElement implements Runnable {
+public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 
     private static final Log logger = LogFactory.getLog(Node.class);
 
@@ -470,6 +471,13 @@ public abstract class Node extends GraphElement implements Runnable {
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
+        } catch (OutOfMemoryError ex) {
+            runResult=Result.ERROR;
+            resultException = ex;
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
+            getCloverPost().sendMessage(msg);
+            return;
         } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
@@ -501,9 +509,14 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@since    April 4, 2002
 	 */
-	synchronized public void abort() {
+	public void abort() {
+		abort(null);
+	}
+	
+	synchronized public void abort(Throwable cause ) {
 		int attempts = 30;
 		runIt = false;
+		
 		while (runResult == Result.RUNNING && attempts-- > 0){
 			if (logger.isTraceEnabled())
 				logger.trace("try to interrupt thread "+getNodeThread());
@@ -513,8 +526,15 @@ public abstract class Node extends GraphElement implements Runnable {
 			} catch (InterruptedException e) {
 			}
 		}
-		if (runResult == Result.RUNNING) {
-			logger.warn("Node '" + getId() + "' was not interrupted in legal way.");
+		if (cause != null) {
+            runResult=Result.ERROR;
+            resultException = cause;
+            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+                    new ErrorMsgBody(runResult.code(), runResult.message(), cause));
+            getCloverPost().sendMessage(msg);
+            sendFinishMessage();
+		} else if (runResult == Result.RUNNING) {
+			logger.debug("Node '" + getId() + "' was not interrupted in legal way.");
 			runResult = Result.ABORTED;
 			sendFinishMessage();
 		}
@@ -1241,5 +1261,18 @@ public abstract class Node extends GraphElement implements Runnable {
 	public boolean runIt() {
 		return runIt;
 	}
+
+	@Override
+	public void workerFinished(Event e) {
+		// ignore by default
+	}
+
+	@Override
+	public void workerCrashed(Event e) {
+		//e.getException().printStackTrace();
+		resultException = e.getException();
+		abort(e.getException());
+	}
+	
 	
 }

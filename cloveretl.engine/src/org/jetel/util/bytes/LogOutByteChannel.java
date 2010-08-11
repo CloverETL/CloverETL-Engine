@@ -91,7 +91,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 	public void close() throws IOException {
         // write unwritten line
         if (unwrittenLine != null && unwrittenLine.length() > 0) {
-	        logger.debug(unwrittenLine);
+	        logger.info(unwrittenLine);
         }
 	}
 
@@ -128,7 +128,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 					sRes = unwrittenLine + sRes;
 					unwrittenLine = null;
 				}
-		        logger.debug(sRes);
+		        logger.info(sRes);
 			}
 			
 	        // set begin index
