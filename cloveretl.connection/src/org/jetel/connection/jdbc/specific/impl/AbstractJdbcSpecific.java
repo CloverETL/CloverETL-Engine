@@ -124,7 +124,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		case DataFieldMetadata.INTEGER_FIELD:
 			return Types.INTEGER;
 		case DataFieldMetadata.NUMERIC_FIELD:
-			return Types.NUMERIC;
+			return Types.FLOAT;
 		case DataFieldMetadata.STRING_FIELD:
 			return field.isFixed() ? Types.CHAR : Types.VARCHAR;
 		case DataFieldMetadata.DATE_FIELD:
