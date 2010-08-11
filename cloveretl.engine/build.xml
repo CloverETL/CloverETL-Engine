@@ -411,6 +411,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.Result"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.GraphElement"><field name="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.Node"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.EdgeDebuger"><field access="public"/><method access="public"/></keep>
 			
 			
 			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
