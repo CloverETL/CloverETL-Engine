@@ -35,8 +35,8 @@ public class TransformException extends JetelException {
      */
     private static final long serialVersionUID = 1L;
     
-    private int recNo;
-    private int fieldNo;
+    private int recNo = -1;
+    private int fieldNo = -1;
 
     /**
 	 * @param message
@@ -83,11 +83,16 @@ public class TransformException extends JetelException {
 	@Override
 	public String getMessage() {
 		StringBuilder msg = new StringBuilder();
-		msg.append("Record number: ");
-		msg.append(recNo);
-		msg.append(", field number: ");
-		msg.append(fieldNo);
-		msg.append(". Message: ");
+		if (recNo > -1) {
+			msg.append("Record number: ");
+			msg.append(recNo);
+			if (fieldNo > -1) {
+				msg.append(", field number: ");
+				msg.append(fieldNo);
+			}
+			msg.append(". ");
+		} 
+		msg.append("Message: ");
 		msg.append(super.getMessage());
 		return msg.toString();
 	}
