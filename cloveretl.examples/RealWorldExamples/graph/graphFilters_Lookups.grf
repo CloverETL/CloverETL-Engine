@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Wed Aug 04 14:24:13 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.22">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Thu Aug 12 14:20:28 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.26">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
@@ -27,7 +27,7 @@
 - typing the values
 2. during the graph run
 - using Java class
-- using LookupTableReaderWriter (commercial component)
+- using LookupTableReaderWriter component
 ]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="195" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="filtering" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="211" y="307">
@@ -45,13 +45,11 @@ For each record:
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="reads customers 1" guiWidth="0" guiX="33" guiY="118" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiHeight="0" guiName="reads customers 2" guiWidth="0" guiX="34" guiY="208" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="fills in lookup tbl" guiWidth="0" guiX="515" guiY="164" id="REFORMAT1" transformURL="${TRANS_DIR}/LookupFill.java" type="REFORMAT"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="521" guiY="164" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="gathers into 1 file" guiWidth="0" guiX="285" guiY="175" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="0" guiName="discards all" guiWidth="0" guiX="710" guiY="241" id="TRASH0" type="TRASH"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="writes info in file" guiWidth="0" guiX="670" guiY="362" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
