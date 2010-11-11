@@ -73,6 +73,10 @@ import org.w3c.dom.Node;
 
 public class ComponentXMLAttributes {
 
+/**
+	 * 
+	 */
+	private static final String BOOLEAN_STRING_MATCH_PATTERN = "^[tTyY].*";
 //    unused private static final String STR_MAX_SHORT="MAX_SHORT";
 //    unused private static final String STR_MIN_SHORT="MIN_SHORT";
     public static final String STR_MAX_INT="MAX_INT";
@@ -292,7 +296,11 @@ public class ComponentXMLAttributes {
         }else if (value.equalsIgnoreCase(STR_MAX_INT)){
             return Integer.MAX_VALUE;
         }
-		return Integer.parseInt(value);
+        try{
+        	return Integer.parseInt(value);
+        }catch(NumberFormatException ex){
+        	throw new NumberFormatException(String.format("Parse error when converting value \"%s\" of property \"%s\" to integer.",value,key)); 
+        }
 	}
 
 	/**
@@ -325,7 +333,11 @@ public class ComponentXMLAttributes {
         }else if (value.equalsIgnoreCase(STR_MAX_INT)){
             return Short.MAX_VALUE;
         }
-		return Short.parseShort(value);
+        try{
+        	return Short.parseShort(value);
+        }catch (NumberFormatException ex){
+        	throw new NumberFormatException(String.format("Parse error when converting value \"%s\" of property \"%s\" to short.",value,key)); 
+        }
 	}
 
 	public short getShort(String key, short defaultValue) {
@@ -371,7 +383,11 @@ public class ComponentXMLAttributes {
         }else if (value.equalsIgnoreCase(STR_MAX_LONG)){
             return Long.MAX_VALUE;
         }
-		return Long.parseLong(value);
+        try{
+        	return Long.parseLong(value);
+        }catch(NumberFormatException ex){
+        	throw new NumberFormatException(String.format("Parse error when converting value \"%s\" of property \"%s\" to long.",value,key)); 
+        }
 	}
 
 
@@ -419,7 +435,7 @@ public class ComponentXMLAttributes {
 	 */
     public boolean getBoolean(String key) throws AttributeNotFoundException {
         String value = getString(key);
-        return value.matches("^[tTyY].*");
+        return value.matches(BOOLEAN_STRING_MATCH_PATTERN);
 	}
 
 
@@ -433,7 +449,7 @@ public class ComponentXMLAttributes {
 	public boolean getBoolean(String key, boolean defaultValue) {
 		try {
 	        String value = getString(key);
-			return value.matches("^[tTyY].*");
+			return value.matches(BOOLEAN_STRING_MATCH_PATTERN);
 		} catch (AttributeNotFoundException ex) {
 			return defaultValue;
 		}
@@ -466,7 +482,11 @@ public class ComponentXMLAttributes {
 	    }else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
 	        return Double.MAX_VALUE;
 	    }
-	    return Double.parseDouble(value);
+	    try{
+	    	return Double.parseDouble(value);
+	    }catch(NumberFormatException ex){
+	    	throw new NumberFormatException(String.format("Parse error when converting value \"%s\" of property \"%s\" to double.",value,key)); 
+	    }
 	}
 
 
