@@ -30,12 +30,12 @@ import java.nio.channels.FileChannel;
  *  size<br>
  *  Implements FIFO: push & shift operations can be interleaved, however it
  *  deteriorates performance.<br>
- *  It uses int pointers to datafile which means that the maximum size of the
- *  buffer is cca 4GB.
+ *  
  *
- *@author     dpavlis
- *@created    21. kv???ten 2003
+ *@author     dpavlis <david.pavlis@javlin.eu>
+ *@created    May 21, 2003
  *@since      December 09, 2002
+ *@updated	  November 15, 2010 - removed size limitation/changed position pointers to long
  */
 public class FileRecordBuffer {
 
@@ -45,9 +45,9 @@ public class FileRecordBuffer {
 
 	private ByteBuffer dataBuffer;
 
-	private int readPosition;
-	private int writePosition;
-	private int mapPosition;
+	private long readPosition;
+	private long writePosition;
+	private long mapPosition;
 
 	private boolean hasFile;
 	private boolean isDirty;
@@ -183,7 +183,7 @@ public class FileRecordBuffer {
 
 		secureBuffer(writePosition, recordSize + LEN_SIZE_SPECIFIER);
 		try {
-			dataBuffer.position(writePosition - mapPosition);
+			dataBuffer.position((int)(writePosition - mapPosition));
 			dataBuffer.putInt(recordSize);
 			dataBuffer.put(data);
 			writePosition += (recordSize + LEN_SIZE_SPECIFIER);
@@ -201,7 +201,7 @@ public class FileRecordBuffer {
 	 *@param  requestedSize  Description of the Parameter
 	 *@return                Description of the Return Value
 	 */
-	private final boolean needRemap(int position, int requestedSize) {
+	private final boolean needRemap(long position, int requestedSize) {
         final int remaining=dataBuffer.remaining();
 		if (position < mapPosition || position > (mapPosition + remaining) ||
                 (position - mapPosition + requestedSize > remaining)) {
@@ -220,7 +220,7 @@ public class FileRecordBuffer {
 	 *@param  requestedSize    Description of the Parameter
 	 *@exception  IOException  Description of the Exception
 	 */
-	private final void secureBuffer(int position, int requestedSize) throws IOException {
+	private final void secureBuffer(long position, int requestedSize) throws IOException {
 		if (needRemap(position, requestedSize)) {
 			flushBuffer();
 			boolean reloadNeed = position < writePosition ? true : false;
@@ -247,7 +247,7 @@ public class FileRecordBuffer {
 			return null;
 		}
 		secureBuffer(readPosition, LEN_SIZE_SPECIFIER);
-		dataBuffer.position(readPosition - mapPosition);
+		dataBuffer.position((int)(readPosition - mapPosition));
 		recordSize = dataBuffer.getInt();
 		readPosition += LEN_SIZE_SPECIFIER;
 		secureBuffer(readPosition, recordSize);
@@ -279,7 +279,7 @@ public class FileRecordBuffer {
 		}
 		secureBuffer(readPosition, LEN_SIZE_SPECIFIER);
 		dataBuffer.mark();
-		dataBuffer.position(readPosition - mapPosition);
+		dataBuffer.position((int)(readPosition - mapPosition));
 		recordSize = dataBuffer.getInt();
 		readPosition += LEN_SIZE_SPECIFIER;
 		secureBuffer(readPosition, recordSize);
@@ -322,7 +322,7 @@ public class FileRecordBuffer {
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
-	private void mapBuffer(int fromPosition, boolean reload) throws IOException {
+	private void mapBuffer(long fromPosition, boolean reload) throws IOException {
 		dataBuffer.clear();
 		mapPosition = fromPosition;
 		if (reload) {
