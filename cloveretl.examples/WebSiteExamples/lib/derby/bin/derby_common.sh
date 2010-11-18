@@ -28,10 +28,19 @@ case "`uname`" in
   CYGWIN*) cygwin=true ;;
   Darwin*) darwin=true
            if [ -z "$JAVA_HOME" ] ; then
-             JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Home
+              if [ -d "/System/Library/Frameworks/JavaVM.framework/Versions/Current/Home" ]; then
+                 JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/Current/Home
+              else
+                if [ -d "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home" ]; then
+                 JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home
+                else
+                 JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Home
+                fi
+              fi
            fi
            ;;
 esac
+
 
 if [ -z "$DERBY_HOME" -o ! -d "$DERBY_HOME" ] ; then
   ## resolve links - $0 may be a link to derby's home

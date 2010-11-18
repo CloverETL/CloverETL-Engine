@@ -431,7 +431,12 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType thenType = ((SimpleNode) node.jjtGetChild(1)).getType();
 		TLType elseType = ((SimpleNode) node.jjtGetChild(2)).getType();
 
+		//what is super type of both branches?
 		TLType ret = thenType.promoteWith(elseType);
+		if (ret.isError()) {
+			ret = elseType.promoteWith(thenType);
+		}
+		
 		if (ret.isError()) {
 			error(node, "Types of expressions mismatch: '" + thenType.name() + "' and '" + elseType.name() + "'");
 		} else {
@@ -453,7 +458,12 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType tryType = ((SimpleNode) node.jjtGetChild(0)).getType();
 		TLType catchType = ((SimpleNode) node.jjtGetChild(1)).getType();
 
+		//what is super type of both branches?
 		TLType ret = tryType.promoteWith(catchType);
+		if (ret.isError()) {
+			ret = catchType.promoteWith(tryType);
+		}
+		
 		if (ret.isError()) {
 			error(node, "Types of expressions mismatch: '" + tryType.name() + "' and '" + catchType.name() + "'");
 		} else {
@@ -827,7 +837,12 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType thenType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(1)).getType();
 		TLType elseType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(2)).getType();
 
+		//what is super type of both branches?
 		TLType ret = thenType.promoteWith(elseType);
+		if (ret.isError()) {
+			ret = elseType.promoteWith(thenType);
+		}
+
 		if (ret.isError()) {
 			error(node, "Types of expressions mismatch: '" + thenType.name() + "' and '" + elseType.name() + "'");
 			node.setType(TLType.ERROR);
@@ -1053,26 +1068,32 @@ public class TypeChecker extends NavigatingVisitor {
 		case CLVFLookupNode.OP_GET:
 			opName = opName == null ? "get" : opName;
 			TLType[] formal = node.getFormalParameters();
-			args = (CLVFArguments)node.jjtGetChild(0);
 			
-			actual = new TLType[args.jjtGetNumChildren()];
-			for (int i=0; i<actual.length; i++) {
-				actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
-			}
-
-			if (formal.length != actual.length) {
-				error(node,functionErrorMessage(opName, formal, actual));
-				node.setType(TLType.ERROR);
-				return data;
-			}
-			
-			for (int i=0; i<formal.length; i++) {
-				if (! formal[i].canAssign(actual[i])) {
+			// formal parameters do not have to be available
+			// for example DBLookupTable does not support getKeyMetadata()
+			// so we cannot validate key attributes for these types of lookup tables
+			if (formal != null) { 
+				args = (CLVFArguments)node.jjtGetChild(0);
+				
+				actual = new TLType[args.jjtGetNumChildren()];
+				for (int i=0; i<actual.length; i++) {
+					actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
+				}
+	
+				if (formal.length != actual.length) {
 					error(node,functionErrorMessage(opName, formal, actual));
 					node.setType(TLType.ERROR);
 					return data;
-				} else {
-					castIfNeeded(args, i, formal[i]);
+				}
+				
+				for (int i=0; i<formal.length; i++) {
+					if (! formal[i].canAssign(actual[i])) {
+						error(node,functionErrorMessage(opName, formal, actual));
+						node.setType(TLType.ERROR);
+						return data;
+					} else {
+						castIfNeeded(args, i, formal[i]);
+					}
 				}
 			}
 			
@@ -1219,7 +1240,12 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType thenType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(0)).getType();
 		TLType elseType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(1)).getType();
 
+		//what is super type of both branches?
 		TLType ret = thenType.promoteWith(elseType);
+		if (ret.isError()) {
+			ret = elseType.promoteWith(thenType);
+		}
+		
 		if (ret.isError()) {
 			error(node, "Types of expressions mismatch: '" + thenType.name() + "' and '" + elseType.name() + "'");
 			node.setType(TLType.ERROR);
@@ -1254,7 +1280,12 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType thenType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(1)).getType();
 		TLType elseType = ((SimpleNode) node.jjtGetChild(0).jjtGetChild(2)).getType();
 
+		//what is super type of both branches?
 		TLType ret = thenType.promoteWith(elseType);
+		if (ret.isError()) {
+			ret = elseType.promoteWith(thenType);
+		}
+
 		if (ret.isError()) {
 			error(node, "Types of expressions mismatch: '" + thenType.name() + "' and '" + elseType.name() + "'");
 			node.setType(TLType.ERROR);

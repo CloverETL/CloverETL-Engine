@@ -94,7 +94,6 @@
 
 	<patternset id="example.files">
 		<exclude name="**/*.ts"/>
-		<exclude name="**/data-out/*"/>
 		<exclude name="**/data-tmp/*"/>
 		<exclude name="**/supposed-out"/>
 		<exclude name="**/supposed-out/**"/>
@@ -325,7 +324,7 @@ defined.version.suffix=release
 		<basename property="example.project.basename" file="${dir.example.project}" />
 		<customproperty name="example.project.name" value="${example.project.basename}" prefix="example.project." suffix=".name"/>
 		<echo>Copying example project ${example.project.name} from ${dir.example.project}</echo>
-		<copy todir="${dir.distprepare.exa}/${example.archive.dir}/${example.project.name}">
+		<copy todir="${dir.distprepare.exa}/${example.archive.dir}/${example.project.name}" includeemptydirs="true">
 			<fileset dir="${dir.example.project}" >
 				<patternset refid="example.files"/>
 			</fileset>
@@ -843,6 +842,9 @@ defined.version.suffix=release
 			<include name="**/*.class" />
 		</fileset>
 	</cobertura-instrument>
+	<copy todir="${dir.coverage.plugins}/plugins/org.jetel.engine">
+		<fileset dir="${dir.package}/plugins/org.jetel.engine"/>
+	</copy>
 </target>
 
 <target name="coverage-instrument-plugins" depends="init">
@@ -1105,12 +1107,26 @@ defined.version.suffix=release
 	</ant>
 </target>
 
-<target name="coverage-html" depends="runtests">
-	<cobertura-report datafile="${cobertura.ser}" format="html" destdir="${dir.coverage.html}" srcdir="${dir.src}" />
+<target name="coverage-html" depends="runtests,collect-javadoc-src">
+	<cobertura-report 
+			datafile="${cobertura.ser}" 
+			format="html" 
+			destdir="${dir.coverage.html}" >
+		<fileset dir="${dir.src.javadoc}">
+			<include name="**/*.java"/>
+		</fileset>
+	</cobertura-report>
 </target>
 
-<target name="coverage-xml" depends="runtests">
-	<cobertura-report datafile="${cobertura.ser}" format="xml" destdir="${dir.coverage.xml}" srcdir="${dir.src}" />
+<target name="coverage-xml" depends="runtests,collect-javadoc-src">
+	<cobertura-report 
+			datafile="${cobertura.ser}"
+			format="xml"
+			destdir="${dir.coverage.xml}">
+		<fileset dir="${dir.src.javadoc}">
+			<include name="**/*.java"/>
+		</fileset>
+	</cobertura-report>
 </target>
 
 <target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>

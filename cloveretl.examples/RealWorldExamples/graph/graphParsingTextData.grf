@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Wed Aug 04 14:30:10 CEST 2010" modifiedBy="lucie" name="graphParsingTextData" revision="1.60">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Tue Aug 17 15:36:28 CEST 2010" modifiedBy="Pavel" name="graphParsingTextData" revision="1.64">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -16,35 +16,68 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="316" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="172" x="66" y="81">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="362" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="13" y="81">
 <attr name="text"><![CDATA[
 
 
 
 
 
-Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), there is added a unique id, that idetifies the person, his/her spouse and children. This id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
+Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), we add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="146" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="262" y="143">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="301" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="262" y="143">
 <attr name="text"><![CDATA[
 
 
 
 Cuts record that contains all children of one person to one record for one children.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="207" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="443" y="83">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="362" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="443" y="81">
 <attr name="text"><![CDATA[
+
 
 
 
 
 Joins person with her/his spouse and children and formats the data into xml file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="763" x="45" y="19"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="578" x="13" y="16"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="85" guiY="92" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" selectorURL="${TRANS_DIR}/SelectPerson.java" type="MULTI_LEVEL_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="88" guiY="92" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" type="MULTI_LEVEL_READER">
+<attr name="selectorCode"><![CDATA[import java.nio.CharBuffer;
+
+import org.jetel.data.DataRecord;
+
+import com.opensys.cloveretl.data.parser.MultiLevelSelector;
+import com.opensys.cloveretl.data.parser.PrefixMultiLevelSelector;
+
+
+public class SelectPerson extends PrefixMultiLevelSelector {
+	
+	/**
+	 * This counter identify each person; person, his/her spouse and children have the same number
+	 */
+	int counter = 0;
+	
+	@Override
+	public int choose(CharBuffer data, DataRecord[] lastRecords) {
+		int port =  super.choose(data, lastRecords);
+		if (port == MultiLevelSelector.UNKNOWN_DATA) {//person record has no prefix, so parent selector returns MultiLevelSelector.UNKNOWN_DATA
+			port = 0;
+			counter++;//next person
+		}
+		return port;
+	}
+	
+	@Override
+	public void postProcess(int metadataIndex, DataRecord[] records) {
+		//set person id for downstream joining
+		records[metadataIndex].getField("id").setValue(counter);
+	}
+}]]></attr>
+</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="272" guiY="153" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
@@ -103,7 +136,7 @@ function void clean() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="0" guiName="XMLWriter" guiWidth="0" guiX="453" guiY="92" id="XML_WRITER0" omitNewLines="false" rootElement="persons" type="XML_WRITER">
+<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="0" guiName="XMLWriter" guiWidth="0" guiX="453" guiY="90" id="XML_WRITER0" omitNewLines="false" rootElement="persons" type="XML_WRITER">
 <attr name="mapping"><![CDATA[<Mapping element="person" inPort="0" fieldsIgnore="id">
    <Mapping element="spouse" fieldsAs="attributes" inPort="1" key="id" fieldsIgnore="id;relationship" parentKey="id" />
    <Mapping element="child" fieldsAs="attributes" inPort="2" key="id" fieldsIgnore="id;relationship" parentKey="id" />

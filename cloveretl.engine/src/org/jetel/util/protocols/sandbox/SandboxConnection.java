@@ -27,6 +27,7 @@ import java.net.URLConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 public class SandboxConnection extends URLConnection {
 	
@@ -52,9 +53,12 @@ public class SandboxConnection extends URLConnection {
 	public InputStream getInputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		long runId = graph.getRuntimeContext().getRunId();
-		InputStream is = graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path);
-		return is;
+		if (graph != null) {
+			long runId = graph.getRuntimeContext().getRunId();
+			return graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path);
+		} else {
+			return IAuthorityProxy.getDefaultProxy().getSandboxResourceInput(0, storageCode, path);
+		}
 	}
 
 	/*
@@ -65,9 +69,12 @@ public class SandboxConnection extends URLConnection {
 	public OutputStream getOutputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		long runId = graph.getRuntimeContext().getRunId();
-		OutputStream os = graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path);
-		return os;
+		if (graph != null) {
+			long runId = graph.getRuntimeContext().getRunId();
+			return graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path);
+		} else {
+			return IAuthorityProxy.getDefaultProxy().getSandboxResourceOutput(0, storageCode, path);
+		}
 	}
 
 	/*

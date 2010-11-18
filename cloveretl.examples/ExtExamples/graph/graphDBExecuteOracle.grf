@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Tue Mar 30 09:22:02 CEST 2010" modifiedBy="avackova" name="TestingDB2" revision="1.242">
+<Graph autFhor="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Tue Mar 30 09:22:02 CEST 2010" modifiedBy="avackova" name="TestingDBExecuteOracle" revision="1.242">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">

@@ -709,54 +709,10 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateLookupTables(NodeList lookupElements) throws XMLConfigurationException {
         LookupTable lookup = null;
-        String lookupTableType;
         
         for (int i = 0; i < lookupElements.getLength(); i++) {
             Element lookupElement = (Element) lookupElements.item(i);
-            ComponentXMLAttributes attributes = new ComponentXMLAttributes(lookupElement, graph);
-
-            if (attributes.exists("lookupConfig")) {
-            	String fileURL = null;
-				try {
-					fileURL = attributes.getString("lookupConfig");
-				} catch (AttributeNotFoundException e) {
-					// can't happen: we've checked it
-				}
-            	TypedProperties lookupProperties = new TypedProperties(null,graph);
-            	try {
-                	lookupProperties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, attributes.getString(IGraphElement.XML_ID_ATTRIBUTE));
-					lookupProperties.load(FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), fileURL));
-					String metadata = lookupProperties.getStringProperty("metadata");
-					if (metadata != null && ! metadata.trim().equals("")) {
-						DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getStringProperty("metadata"));
-						lookupProperties.setProperty(LookupTable.XML_METADATA_ID, 
-								graph.addDataRecordMetadata(TransformationGraph.DEFAULT_METADATA_ID, lookupMetadata));
-					}
-					if (lookupProperties.containsKey(LookupTable.XML_DBCONNECTION)) {
-						IConnection connection = ConnectionFactory.createConnection(graph, "JDBC", 
-								new Object[]{graph.getUniqueConnectionId() , lookupProperties.getStringProperty("dbConnection")},
-								new Class[]{String.class, String.class});
-						graph.addConnection(connection);
-						lookupProperties.setProperty(LookupTable.XML_DBCONNECTION, connection.getId());
-					}
-					if (!lookupProperties.containsKey(IGraphElement.XML_TYPE_ATTRIBUTE)) {
-						throw new XMLConfigurationException("Attribute type at Lookup table is missing");
-					}
-				} catch (Exception e) {
-	                throw new XMLConfigurationException("Lokkup table is not configured properly: " + e.getMessage());
-				}
-	            lookup = LookupTableFactory.createLookupTable(lookupProperties);
-            }else{
-	            // process Lookup table element attributes "id" & "type"
-	            try {
-	                lookupTableType = attributes.getString(IGraphElement.XML_TYPE_ATTRIBUTE);
-	            } catch (AttributeNotFoundException ex) {
-	                throw new XMLConfigurationException("Attribute type at Lookup table is missing - " + ex.getMessage());
-	            }
-	
-	            //create lookup table
-	            lookup = LookupTableFactory.createLookupTable(graph, lookupTableType, lookupElement);
-            }
+            lookup = LookupTableFactory.createLookupTable(graph, lookupElement);
             if(lookup != null) {
                 //register lookup table in transformation graph
                 graph.addLookupTable(lookup);

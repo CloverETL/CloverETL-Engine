@@ -33,7 +33,21 @@ import org.jetel.util.bytes.SeekableByteChannel;
  *
  * @created Jul 11, 2008
  */
-public interface IAuthorityProxy {
+public abstract class IAuthorityProxy {
+
+	/* This authority proxy is available all the time. */
+	private static IAuthorityProxy defaultProxy;
+	
+	public static IAuthorityProxy getDefaultProxy() {
+		if (defaultProxy == null) {
+			defaultProxy = new PrimitiveAuthorityProxy();
+		}
+		return defaultProxy;
+	}
+
+	public static void setDefaultProxy(IAuthorityProxy defaultProxy) {
+		IAuthorityProxy.defaultProxy = defaultProxy;
+	}
 
 	public static class RunResult {
 		public Result result;
@@ -42,9 +56,9 @@ public interface IAuthorityProxy {
 		public long runId;
 	}
 		
-	public Sequence getSharedSequence(Sequence sequence);
+	public abstract Sequence getSharedSequence(Sequence sequence);
 
-	public void freeSharedSequence(Sequence sequence);
+	public abstract void freeSharedSequence(Sequence sequence);
 
 	/**
 	 * Executes specified graph. 
@@ -56,7 +70,7 @@ public interface IAuthorityProxy {
 	 * @param logFile - path to file where log output of graph will be saved;
 	 * @return
 	 */
-	public RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
+	public abstract RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
 
 	/**
 	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.
@@ -67,7 +81,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
+	public abstract InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Returns output stream for updating of specified sandbox resource.
@@ -80,7 +94,7 @@ public interface IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+	public abstract OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Returns true, if this worker instance is "primary" in curretn phase. 
@@ -90,7 +104,7 @@ public interface IAuthorityProxy {
 	 * @param runId
 	 * @return 
 	 */
-	public boolean isPrimaryWorker(long runId);
+	public abstract boolean isPrimaryWorker(long runId);
 	
 	/**
 	 * Called by Cluster Partitioner component on "primary" worker.
@@ -103,7 +117,7 @@ public interface IAuthorityProxy {
 	 * @return streams array of size workersCount-1
 	 * @throws IOException
 	 */
-	public OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException;
+	public abstract OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException;
 	
 	/**
 	 * Called by Cluster Partitioner component on "slave" worker.
@@ -116,7 +130,7 @@ public interface IAuthorityProxy {
 	 * @return 
 	 * @throws IOException
 	 */
-	public InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException;
+	public abstract InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException;
 	
 	/**
 	 * Called by ClusterGather component on "primary" worker.
@@ -129,7 +143,7 @@ public interface IAuthorityProxy {
 	 * @return streams array of size workersCount-1
 	 * @throws IOException
 	 */
-	public InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException;
+	public abstract InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException;
 	
 	/**
 	 * Called by Cluster Gather component on "slave" worker. 
@@ -142,7 +156,7 @@ public interface IAuthorityProxy {
 	 * @return
 	 * @throws IOException
 	 */
-	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException;
+	public abstract OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException;
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
@@ -158,6 +172,6 @@ public interface IAuthorityProxy {
 	 * @see {@link FileConstrains}
 	 * @see {@link ParallelReader}
 	 */
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
+	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
 	
 }

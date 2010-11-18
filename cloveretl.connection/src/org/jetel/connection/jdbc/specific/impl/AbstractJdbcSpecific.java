@@ -227,6 +227,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.BIT:
 			case Types.NULL:
 				return DataFieldMetadata.STRING_FIELD;
+			case Types.STRUCT:
+				throw new IllegalArgumentException("Can't handle JDBC type STRUCT");
 			default:
 				throw new IllegalArgumentException("Can't handle JDBC.Type :"+sqlType);
 		}

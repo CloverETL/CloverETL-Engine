@@ -64,13 +64,13 @@ public class StringUtilsTest extends CloverTestCase {
 	protected void setUp() {
 		initEngine();
 	    
-		controlString1 = "ala\n\rr\t\n";
+		controlString1 = "a\u0007la\n\rr\t\n";
 
-		resultString1 = "ala\\n\\rr\\t\\n";
+		resultString1 = "a\\u0007la\\n\\rr\\t\\n";
 
-		controlString2 = "\\\nn\\nn\\nn\\\\r";
+		controlString2 = "\\\nn\\nn\\nn\\\\r\u0007";
 
-		resultString2 = "\\\\\\nn\\\\nn\\\\nn\\\\\\\\r";
+		resultString2 = "\\\\\\nn\\\\nn\\\\nn\\\\\\\\r\\u0007";
 
 		// for test_formatString test1
 

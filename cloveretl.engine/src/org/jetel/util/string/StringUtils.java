@@ -18,6 +18,7 @@
  */
 package org.jetel.util.string;
 
+import java.awt.event.KeyEvent;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -623,7 +624,17 @@ public class StringUtils {
 				copy.append("\\\\");
 				break;
 			default:
-				copy.append(character);
+				if (!StringUtils.isPrintableChar(character)) {
+					// if the character is not printable - for instance 'Ctrl+B' - string representation '\u0000' will be used
+					copy.append("\\u");
+					String hex = Integer.toHexString(character & 0xFFFF);	// Get hex value of the char. 
+					for (int j = 0; j < 4 - hex.length(); j++) {	// Prepend zeros because unicode requires 4 digits
+						copy.append("0");
+					}
+					copy.append(hex.toLowerCase());		// standard unicode format.
+				} else {
+					copy.append(character);
+				}
 			}
 		}
 		return copy.toString();
@@ -676,6 +687,20 @@ public class StringUtils {
 					break;
 				case 'b':
 					copy.append('\b');
+					break;
+				case 'u':	// '\u003B' will be converted to ';'
+					if (i + 5 > controlString.length()) {
+						throw new IllegalArgumentException("Invalid unicode character");
+					}
+					String hex = controlString.subSequence(i + 1, i + 5).toString();
+					char[] chars;
+					try {
+						chars = Character.toChars(Integer.parseInt(hex, 16));
+						copy.append(chars);
+						i += 4;
+					} catch (NumberFormatException e) {
+						throw new IllegalArgumentException("Invalid unicode character \\u" + hex);
+					}
 					break;
 				default:
 					copy.append('\\');
@@ -1785,6 +1810,18 @@ public class StringUtils {
 		}
 		return (h & 0x7FFFFFFF);
 	}
+	
+	/**
+	 * @param c tested character
+	 * @return is the given character printable?
+	 */
+	public static boolean isPrintableChar(char c) {
+        Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
+        return (!Character.isISOControl(c)) &&
+                c != KeyEvent.CHAR_UNDEFINED &&
+                block != null &&
+                block != Character.UnicodeBlock.SPECIALS;
+    }
 	
 	/*
 	 * End class StringUtils

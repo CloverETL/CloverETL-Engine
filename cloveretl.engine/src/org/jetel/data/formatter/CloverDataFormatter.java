@@ -163,7 +163,9 @@ public class CloverDataFormatter implements Formatter {
 	}
 	
     public void finish() throws IOException{
-			flush();
+    	if (!isOpen) return;
+    	
+    	flush();
 			if (out instanceof ZipOutputStream) {
 				((ZipOutputStream)out).closeEntry();
 			}

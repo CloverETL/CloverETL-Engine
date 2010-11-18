@@ -59,7 +59,7 @@ public class ContextProvider {
 	    	if (graph != null) {
 	    		return graph; 
 	    	} else {
-				logger.warn("ContextProvider was not able to provide requested graph. Current thread is not registered.");
+				logger.debug("ContextProvider was not able to provide requested graph. Current thread is not registered.");
 				return null;
 	    	}
     	}

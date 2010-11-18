@@ -369,8 +369,12 @@ public class DBConnection extends GraphElement implements IConnection {
 		
 		ret.putAll(getExtraProperties());
 		
-		ret.setProperty(XML_USER_ATTRIBUTE, getUser());
-		ret.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+		if (getUser() != null) {
+			ret.setProperty(XML_USER_ATTRIBUTE, getUser());
+		}
+		if (getPassword() != null) {
+			ret.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+		}
 		
 		return ret;
 	}
@@ -569,8 +573,9 @@ public class DBConnection extends GraphElement implements IConnection {
     public synchronized void closeConnection(String elementId, OperationType operationType) {
     	if (isThreadSafeConnections()) {
         	CacheKey key = new CacheKey(elementId, operationType);
-        	DBConnectionInstance connection = connectionsCache.remove(key); 
-        	closeConnection(connection.getSqlConnection());
+        	DBConnectionInstance connection = connectionsCache.remove(key);
+        	if (connection != null)
+        		closeConnection(connection.getSqlConnection());
         }
     }
     

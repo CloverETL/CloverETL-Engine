@@ -172,8 +172,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	protected TransformLangParser parser;
 	
-	/** Array of lookups shared by all lookup operations */
-	private Lookup[] lookups;
+	/** These variables are used for lazy initialization of lookup tables.
+	 *  @see #initializeLookupNode(CLVFLookupNode) */
+	private int lookupCounter;
+	private Map<String, CLVFLookupNode> lookupCache = new HashMap<String, CLVFLookupNode>();
 
 	static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
@@ -188,9 +190,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 */
 	private class InterpretedRuntimeInitializer extends NavigatingVisitor {
 		
-		private final ArrayList<Lookup> collectedLookups = new ArrayList<Lookup>();
-		private final ArrayList<DataRecord> collectedRecord = new ArrayList<DataRecord>();
-		private int lookupCounter = 0;
 		private HashMap<String,Integer> lkpNameToIndex = new HashMap<String,Integer>();
 		
 		
@@ -201,59 +200,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		 */
 		public void initialize(SimpleNode tree) throws TransformLangExecutorRuntimeException  {
 			tree.jjtAccept(this, null);
-			
-			// save collected lookups to executor field
-			lookups = collectedLookups.toArray(new Lookup[collectedLookups.size()]);
 		}
-		
-		
-		/**
-		 * Compute fast-access indexes for LookupNodes to quickly access their lookups.
-		 * Single lookup is shared among all LookupNodes with the same index (i.e. accessing the same lookup table).
-		 * Also allocates lookup record. Again the same instance of record is used for all nodes having the same lookup (i.e. the same lookup table).
-		 * The records however may be replaced during runtime in case user uses lookup(LKP).init() call.
-		 */
-		@Override
-		public Object visit(CLVFLookupNode node, Object data) {
-			super.visit(node, data);
-			
-			int index = -1;
-			DataRecord keyRecord = null;
-			
-			if (lkpNameToIndex.containsKey(node.getLookupName())) {
-				// we already know this table -> we have index and lookup record allocated
-				index = lkpNameToIndex.get(node.getLookupName());
-				keyRecord = collectedRecord.get(index);
-			} else {
-				index = lookupCounter;
-				lkpNameToIndex.put(node.getLookupName(),index);	
-				lookupCounter += 1;
-				
-				// unknown lookup table -> let's compute the lookup record
-				Object[] ret = createLookupRecord((CLVFArguments)node.jjtGetChild(0),
-						"_lookupRecord_" + node.getLookupName() + "_" + index, node.getDecimalPrecisions());
-				final int[] keyFields = (int[])ret[0];
-				final DataRecordMetadata keyRecordMetadata = (DataRecordMetadata)ret[1];
-				try {
-					// no need to call LookupTable.init() as it was already called in AST building
-					// phase to receive information about key fields
-					keyRecord = new DataRecord(keyRecordMetadata);
-					keyRecord.init();
-					
-					collectedLookups.add(node.getLookupTable().createLookup(new RecordKey(keyFields,keyRecordMetadata),keyRecord));
-					collectedRecord.add(keyRecord);
-					// create a reusable record that will be used in all queries
-				} catch (ComponentNotReadyException e) {
-					throw new TransformLangExecutorRuntimeException("Unable to initialize lookup table for execution", e);
-				}
-			}
-			
-			node.setLookupIndex(index);
-			node.setLookupRecord(keyRecord);
-			
-			return data;
-		}
-		
 		
 		@Override
 		/**
@@ -1809,7 +1756,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
     }
 
 	public Object visit(CLVFLookupNode node, Object data) {
-		final int index = node.getLookupIndex();
+		Lookup lookup = node.getLookup();
+		
+		if (lookup == null) { //is this lookup node already initialized?
+			initializeLookupNode(node); //so initialize it first and continue
+			lookup = node.getLookup();
+		}
 		
 		switch (node.getOperation()) {
 		case CLVFLookupNode.OP_COUNT:
@@ -1820,8 +1772,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				a.jjtGetChild(i).jjtAccept(this, data);
 				lkpRec.getField(i).setValue(stack.pop());
 			}
-			lookups[index].seek(lkpRec);
-			stack.push(lookups[index].getNumFound());
+			lookup.seek(lkpRec);
+			stack.push(lookup.getNumFound());
 			return data;
 		case CLVFLookupNode.OP_GET:
 			// get parameters are stored as function parameters
@@ -1831,11 +1783,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				args.jjtGetChild(i).jjtAccept(this, data);
 				lookupRecord.getField(i).setValue(stack.pop());
 			}
-			lookups[index].seek(lookupRecord);
-			stack.push(lookups[index].hasNext() ? lookups[index].next() : null);
+			lookup.seek(lookupRecord);
+			stack.push(lookup.hasNext() ? lookup.next() : null);
 			return data;
 		case CLVFLookupNode.OP_NEXT: 
-			final Lookup l = lookups[node.getLookupIndex()];
+			final Lookup l = lookup;
 			stack.push(l.hasNext() ? l.next() : null);
 			return data;
 		default:
@@ -2115,14 +2067,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 			final DataRecord record = stack.popRecord();
 	
-			// member access may occur when accessing lookup tables and thus record can be null
-			// in that case we return null as field value
-			// this is also result in case user accesses a record-type variable with null value
-			if (record == null) {
-				stack.push(null);
-				return data;
-			}
-			
 			// if node is wildcard the whole record is the value
 			if (node.isWildcard()) {
 				stack.push(record);
@@ -2472,6 +2416,45 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 
 	/**
+	 * Initialized lookup node. Key record and lookup has to be prepared before first usage.
+	 * @param node
+	 */
+	private void initializeLookupNode(CLVFLookupNode node) {
+		CLVFLookupNode relatedNode;
+		//did we already initialize a node with the same lookup table name?
+		if ((relatedNode = lookupCache.get(node.getLookupName())) != null) {
+			//just copy already prepared lookup stuff from a node with the same lookup table
+			node.setLookupIndex(relatedNode.getLookupIndex());
+			node.setLookup(relatedNode.getLookup());
+			node.setLookupRecord(relatedNode.getLookupRecord());
+		} else {
+			//otherwise let initialize lookup and record
+			node.setLookupIndex(lookupCounter++);
+			
+			// unknown lookup table -> let's compute the lookup record
+			Object[] ret = createLookupRecord((CLVFArguments)node.jjtGetChild(0),
+					"_lookupRecord_" + node.getLookupName() + "_" + node.getLookupIndex(), node.getDecimalPrecisions());
+			final int[] keyFields = (int[])ret[0];
+			final DataRecordMetadata keyRecordMetadata = (DataRecordMetadata)ret[1];
+			try {
+				// no need to call LookupTable.init() as it was already called in AST building
+				// phase to receive information about key fields
+				DataRecord keyRecord = null;
+				keyRecord = new DataRecord(keyRecordMetadata);
+				keyRecord.init();
+				
+				node.setLookup(node.getLookupTable().createLookup(new RecordKey(keyFields,keyRecordMetadata),keyRecord));
+				node.setLookupRecord(keyRecord);
+				// create a reusable record that will be used in all queries
+				
+				lookupCache.put(node.getLookupName(), node);
+			} catch (ComponentNotReadyException e) {
+				throw new TransformLangExecutorRuntimeException("Unable to initialize lookup table for execution", e);
+			}
+		}
+	}
+	
+	/**
 	 * Returns keyFields and corresponding metadata created to match lookup arguments
 	 * @param arguments		lookup table arguments
 	 * @param recordName	name of metadata record to use
@@ -2482,14 +2465,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final int numArgs = arguments.jjtGetNumChildren();
 		final DataRecordMetadata keyRecordMetadata = new DataRecordMetadata(recordName);
 		final int[] keyFields = new int[numArgs];
-		Iterator<Integer> decimalIter = decimalPrecisions.iterator();
+		Iterator<Integer> decimalIter = null;
+
+		// decimal precisions does not have to be available
+		// for example DBLookupTable does not support getKeyMetadata()
+		// so we cannot preset correct precision - default is used
+		if (decimalPrecisions != null) {
+			decimalIter = decimalPrecisions.iterator();
+		}
 		for (int i=0; i<arguments.jjtGetNumChildren(); i++) {
 			SimpleNode arg = (SimpleNode)arguments.jjtGetChild(i);
 			final TLType argType = arg.getType();
 			final DataFieldMetadata field = new DataFieldMetadata("_field" + i, TLTypePrimitive.toCloverType(argType),"|"); 
 			keyRecordMetadata.addField(field);
 			keyFields[i] = i;
-			if (argType.isDecimal()) {
+			if (argType.isDecimal() && decimalIter != null) {
 				field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
 				field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
 			}

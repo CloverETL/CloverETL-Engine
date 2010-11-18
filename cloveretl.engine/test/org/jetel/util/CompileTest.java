@@ -28,6 +28,8 @@ import org.jetel.util.compile.CompilationException;
 import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author Wes Maciorowski; refactor Martin Varecha
  * @version 1.0
@@ -39,6 +41,8 @@ public class CompileTest extends CloverTestCase {
 	private String src1;
 	private String src2;
 
+	@Override
+	@SuppressWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE")
 	protected void setUp() {
 		URL[] urls = null;
 		ClassLoaderUtils.getClasspath(null, urls);

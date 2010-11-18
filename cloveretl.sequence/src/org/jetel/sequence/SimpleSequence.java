@@ -142,11 +142,12 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 tempProperties.load(stream);
         		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
 
+        		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
         		this.filename = typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null);
         		start = typedProperties.getIntProperty(XML_START_ATTRIBUTE, 0);
         		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
         		cached = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
-                
+        		
                 stream.close();
             } catch (Exception ex) {
                 this.filename = null;

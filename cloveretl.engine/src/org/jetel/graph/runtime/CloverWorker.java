@@ -60,6 +60,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		addCloverWorkerListener(node);
 		this.name = name;
 		this.isRunning = false;
+		runIt = true;
 	}
 	
 	public void run() {

@@ -50,7 +50,7 @@ import org.jetel.util.file.FileUtils;
  *
  * @created Jul 11, 2008
  */
-public class PrimitiveAuthorityProxy implements IAuthorityProxy {
+public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/*
 	 * (non-Javadoc)

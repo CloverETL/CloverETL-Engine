@@ -492,12 +492,13 @@ public class ASTBuilder extends NavigatingVisitor {
 				
 			} catch (UnsupportedOperationException e) {
 				// can happen in case the JDBC driver does not provide info about SQL params
-				warn(node,"Unable to validate lookup keys");
+				warn(node, "Validation of lookup keys is not supported for this lookup table");
 				
 			} catch (NotInitializedException e) {
 				// should never happen
 				error(node,"Lookup not initialized");
-				throw e;
+				node.setType(TLType.ERROR);
+				return node;
 			} catch (ComponentNotReadyException e) {
 				// underlying lookup is misconfigured
 				error(node,"Lookup table has configuration errors: " + e.getMessage());
@@ -931,6 +932,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			case TransformLangParserTreeConstants.JJTIFSTATEMENT:
 			case TransformLangParserTreeConstants.JJTLOOKUPNODE:
 			case TransformLangParserTreeConstants.JJTPOSTFIXEXPRESSION:
+			case TransformLangParserTreeConstants.JJTISNULLNODE:
+			case TransformLangParserTreeConstants.JJTNVLNODE:
+			case TransformLangParserTreeConstants.JJTNVL2NODE:
+			case TransformLangParserTreeConstants.JJTIIFNODE:
 			case TransformLangParserTreeConstants.JJTPRINTERRNODE:
 			case TransformLangParserTreeConstants.JJTPRINTLOGNODE:
 			case TransformLangParserTreeConstants.JJTPRINTSTACKNODE:

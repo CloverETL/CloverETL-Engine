@@ -261,7 +261,7 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  record2    Second record
 	 * @return            -1 ; 0 ; 1
 	 */
-	public int compare(RecordOrderedKey secondKey, DataRecord record1, DataRecord record2) {
+	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return 0;
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
