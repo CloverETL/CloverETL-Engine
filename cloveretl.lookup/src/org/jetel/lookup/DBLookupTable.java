@@ -371,27 +371,30 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         } else if (dbConnection == null) {
         	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
-
         
-        ResultSet resultSet = null;
-        try {
-        	//remove WHERE condidion from sql query
-        	StringBuilder query = new StringBuilder(sqlQuery);
-        	int whereIndex = query.toString().toLowerCase().indexOf("where");
-        	int groupIndex = query.toString().toLowerCase().indexOf("group");
-        	int orderIndex = query.toString().toLowerCase().indexOf("order");
-        	if (whereIndex > -1){
-        		if (groupIndex > -1 || orderIndex > -1){
-        			query.delete(whereIndex, groupIndex);
-        		}else{
-        			query.setLength(whereIndex);
-        		}
-        	}
+    	//remove WHERE condidion from sql query
+    	StringBuilder query = new StringBuilder(sqlQuery);
+    	int whereIndex = query.toString().toLowerCase().indexOf("where");
+    	int groupIndex = query.toString().toLowerCase().indexOf("group");
+    	int orderIndex = query.toString().toLowerCase().indexOf("order");
+    	if (whereIndex > -1){
+    		if (groupIndex > -1 || orderIndex > -1){
+    			query.delete(whereIndex, groupIndex);
+    		}else{
+    			query.setLength(whereIndex);
+    		}
+    	}
+
+    	ResultSet resultSet = null;
+        
+       	try {
         	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query.toString(), null);
         	st.init();
-			resultSet = st.executeQuery();
+
+        	resultSet = st.executeQuery();
 			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
-		   if (dbMetadata == null) {
+		   
+			if (dbMetadata == null) {
 	            if (st.getCloverOutputFields() == null) {
 					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet	.getMetaData(), dbConnection.getJdbcSpecific());
 				}else{
@@ -428,7 +431,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			throw new RuntimeException(e);
 		} finally {
 			try {
-				if (resultSet != null && !resultSet.isClosed())
+				if (resultSet != null)
 					resultSet.close();
 			} catch (SQLException e) {
 				// we ignore this, as we are only trying to close the stream after exception was thrown before 
@@ -617,9 +620,10 @@ class DBLookup implements Lookup{
 
 	private void seekInDB() throws SQLException {
 		//execute query
-		if (resultSet != null && !resultSet.isClosed()) {
+		if (resultSet != null) {
 			// close the previous result set before creating new one
 			resultSet.close();
+			// note: according to documentation, resultSet that is already closed is a no-op, please test
 		}
 	   resultSet = statement.executeQuery();
 	   
