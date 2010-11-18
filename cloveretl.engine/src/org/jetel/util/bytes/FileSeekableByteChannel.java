@@ -20,7 +20,14 @@ package org.jetel.util.bytes;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+
+import org.jetel.data.Defaults;
+import org.jetel.data.parser.AhoCorasick;
 
 /**
  * Simple wrapper around FileChannel, so now implements our SeekableByteChannel interface.
@@ -95,6 +102,66 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	 */
 	public int write(ByteBuffer src) throws IOException {
 		return fileChannel.write(src);
+	}
+	
+	/**
+	 * Find next delimiter in a seekable channel 
+	 * @param channel Input channel, current position may be changed after return from the method
+	 * @param recordDelimiter An array of delimiters
+	 * @return position of the first character after first delimiter, returned position
+     * is relative to the original position in the channel
+	 * @throws IOException
+	 */ 
+	public static long findNextRecord(SeekableByteChannel channel, Charset channelCharset, String[] delimiters) throws IOException
+	{
+		boolean endOfInput = false;
+		
+    	long shift = 0;
+		
+		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		CharBuffer charBuffer = CharBuffer.allocate(1);	// small buffer, so that byte channel position can be determined for each character
+		
+		CharsetDecoder charsetDecoder = channelCharset.newDecoder();
+		charsetDecoder.onMalformedInput(CodingErrorAction.IGNORE); 
+
+		AhoCorasick delimiterSearcher = new AhoCorasick(delimiters);
+
+		tmpByteBuffer.clear();
+    	while (!endOfInput) { // one iteration for each byte buffer filling
+        	if (shift > Defaults.Record.MAX_RECORD_SIZE) {
+        		throw new IOException("No record delimiter was found during file partitioning.");
+        	}
+        	
+        	if (channel.read(tmpByteBuffer) == -1) { // no more records
+        		endOfInput = true;
+        	}
+        	
+        	tmpByteBuffer.flip();
+
+    		while (true) {	// one iteration for each character
+    			charBuffer.clear();
+    			charsetDecoder.decode(tmpByteBuffer, charBuffer, endOfInput);
+    			charBuffer.flip();
+    			if (charBuffer.remaining() == 0) { // need to read more bytes into byte buffer
+    				break;
+    			}
+
+    			delimiterSearcher.update(charBuffer.get());
+    			assert charBuffer.remaining() == 0 : "Buffer seems to contain more characters than expected";
+    			
+    			for (int i = 0; i < delimiters.length; i++) {
+    				if (delimiterSearcher.isPattern(i)) {
+    					return shift + tmpByteBuffer.position(); 
+    				}
+    			}
+    		}
+    		
+			shift += tmpByteBuffer.position();
+       		tmpByteBuffer.compact();	// preserve un-decoded bytes (possibly start of next character)
+    	}    	
+    	assert endOfInput : "Unexpected execution flow";
+    	// we have reached end of the input. let's consider it as a special case of delimiter
+    	return shift;
 	}
 	
 }

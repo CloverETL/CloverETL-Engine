@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.charset.Charset;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -284,11 +285,23 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		throw new UnsupportedOperationException("Primary worker does has sense only in CloverETL Server environment!");
 	}
 
+	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL,
+			SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException {
+		return null;
+	}
+
+	@Override
+	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL,
+			SeekableByteChannel channel, int recordLength) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(long, java.lang.String, java.lang.String)
 	 */
 	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
 		return null;
 	}
-	
+
 }
