@@ -448,8 +448,8 @@ public class ASTBuilder extends NavigatingVisitor {
 			if (! node.getLookupTable().isInitialized()) {
 				node.getLookupTable().init();
 			}
-		} catch (ComponentNotReadyException e) {
-			// underlying lookup cannot initialize
+		} catch (Exception e) {
+			// underlying lookup cannot be initialized
 			error(node,"Lookup table has configuration error: " + e.getMessage());
 			node.setType(TLType.ERROR);
 			return node;
@@ -866,8 +866,6 @@ public class ASTBuilder extends NavigatingVisitor {
 			return TLTypePrimitive.DATETIME;
 		case TransformLangParserConstants.BYTE_VAR:
 			return TLTypePrimitive.BYTEARRAY;
-		case TransformLangParserConstants.CBYTE_VAR:
-			return TLTypePrimitive.CBYTEARRAY;
 		case TransformLangParserConstants.BOOLEAN_VAR:
 			return TLTypePrimitive.BOOLEAN;
 		case TransformLangParserConstants.IDENTIFIER:

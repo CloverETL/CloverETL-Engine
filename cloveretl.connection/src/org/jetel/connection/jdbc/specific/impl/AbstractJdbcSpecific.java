@@ -25,14 +25,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.CopySQLData.CopyArray;
 import org.jetel.connection.jdbc.CopySQLData.CopyBlob;
 import org.jetel.connection.jdbc.CopySQLData.CopyBoolean;
@@ -45,7 +45,9 @@ import org.jetel.connection.jdbc.CopySQLData.CopyNumeric;
 import org.jetel.connection.jdbc.CopySQLData.CopyString;
 import org.jetel.connection.jdbc.CopySQLData.CopyTime;
 import org.jetel.connection.jdbc.CopySQLData.CopyTimestamp;
+import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
@@ -540,16 +542,13 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
     }
     
 	
-	public ArrayList<String> getColumns(java.sql.Connection connection) throws SQLException {
-		ArrayList<String> columns = new ArrayList<String>();
+	public Set<ResultSet> getColumns(java.sql.Connection connection) throws SQLException {
+		Set<ResultSet> resultSets = new HashSet<ResultSet>();
 		try {
-			ResultSet result = connection.getMetaData().getColumns(null, null, null, "%");
-			while (result.next()) {
-				columns.add(result.getString(4));
-			}
+			resultSets.add(connection.getMetaData().getColumns(null, null, null, "%"));
 		} catch (SQLException e) {
 		}
-		return columns;
+		return resultSets;
 	}
 	
 	
@@ -562,10 +561,6 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return quoteIdentifiers ? quoteIdentifier(schema) : schema;
 	}
 	
-	public ResultSetMetaData getColumnsMetadata(java.sql.Connection connection, String targetName) throws SQLException {
-		return null;
-	}
-
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
 		return sqlType == jetelType2sql(field);
 	}

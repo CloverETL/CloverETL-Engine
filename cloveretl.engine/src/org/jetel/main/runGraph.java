@@ -425,6 +425,7 @@ public class runGraph {
 
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
+        threadManager.initWatchDog(watchDog);
 		return threadManager.executeWatchDog(watchDog);
 	}
     

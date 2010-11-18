@@ -92,7 +92,7 @@ public class TrackingLogger implements NotificationListener {
         	logger.info("Node                   ID         Port      #Records         #KB  Rec/s    KB/s");
         }
         logger.info("---------------------------------------------------------------------------------");
-        long executionTime = TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS);
+        long executionTime = TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS);
         for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
             Object nodeInfo[] = {nodeDetail.getNodeName(), nodeDetail.getNodeID(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -41, 15};
@@ -163,7 +163,7 @@ public class TrackingLogger implements NotificationListener {
 			if(phaseDetail != null) {
     			Object nodeInfo[] = { Integer.valueOf(phaseDetail.getPhaseNum()), 
     					phaseDetail.getResult().message(),
-    					TrackingUtils.converTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
+    					TrackingUtils.convertTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
                         phaseDetail.getMemoryUtilization() >> 10};
     			int nodeSizes[] = {-18, -24, 12, 18};
     			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
@@ -181,15 +181,15 @@ public class TrackingLogger implements NotificationListener {
 			printProcessingStatus(true);
 			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 					+ "] successfully finished - elapsed time(sec): "
-					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+					+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
 			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 					+ "] was aborted - elapsed time(sec): "
-					+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+					+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.PHASE_ERROR)) {
 				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
 						+ "] finished with error - elapsed time(sec): "
-						+ TrackingUtils.converTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
+						+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
 				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {

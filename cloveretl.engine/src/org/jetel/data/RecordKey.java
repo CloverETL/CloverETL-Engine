@@ -72,6 +72,8 @@ public class RecordKey {
 
 	private boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
 
+	private boolean comparedNulls = false; // XXX Temporary workaround until compareTo() will throw exception
+	
 	/**
 	 *  Constructor for the RecordKey object
 	 *
@@ -225,6 +227,7 @@ public class RecordKey {
 		if (!record1.getMetadata().equals(record2.getMetadata())) {
 			throw new RuntimeException("Can't compare - records have different metadata associated.");
 		}
+    	comparedNulls = false;
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
@@ -248,6 +251,9 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
 		        if (compResult != 0) {
+		            if (record1.getField(keyFields[i]).isNull && record2.getField(keyFields[i]).isNull) {
+		            	comparedNulls = true;
+		            }
 		            return compResult;
 		        }
 		    }
@@ -275,6 +281,7 @@ public class RecordKey {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
 
+		comparedNulls = false;
 		if (equalNULLs){
 		    for (int i = 0; i < keyFields.length; i++) {
 		    	DataField field = record1.getField(keyFields[i]);
@@ -298,12 +305,24 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
 		        if (compResult != 0) {
+		            if (record1.getField(keyFields[i]).isNull && record2.getField(record2KeyFields[i]).isNull) {
+		            	comparedNulls = true;
+		            }
 		            return compResult;
 		        }
 		    }
 		}
 		return 0;
 		// seem to be the same
+	}
+	
+	/**
+	 * @deprecated Temporary workaround until compareTo() will throw exception.
+	 * @return true if equalNULLs == false and last call to {@link #compare(DataRecord, DataRecord)}
+	 * returned -1 because of comparison of two null valued fields.
+	 */
+	public boolean isComparedNulls() {
+		return comparedNulls;
 	}
 	
 	/**

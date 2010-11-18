@@ -19,6 +19,7 @@
 package org.jetel.ctl.ASTnode;
 
 import org.jetel.ctl.ExpParser;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.TLType;
@@ -45,7 +46,16 @@ public class CLVFComparison extends SimpleNode {
 
 	/** Accept the visitor. * */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-		return visitor.visit(this, data);
+		try {
+			return visitor.visit(this, data);
+		} catch (TransformLangExecutorRuntimeException e) {
+			if (e.getNode() == null) {
+				e.setNode(this);
+			}
+			throw e;
+		} catch (RuntimeException e) {
+			throw new TransformLangExecutorRuntimeException(this, null, e);
+		}
 	}
 
 	public String toString() {

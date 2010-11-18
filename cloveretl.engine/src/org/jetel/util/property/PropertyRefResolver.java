@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
@@ -49,7 +50,9 @@ import org.jetel.util.string.StringUtils;
  * and <code>Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX</code> configuration properties. Expression evaluation
  * might be disabled by setting the <code>Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED</code> configuration
  * property to <code>false</code>.
- *
+ * 
+ * NOTE: this class is not thread safe
+ * 
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * @author Martin Zatopek, Javlin a.s. &lt;martin.zatopek@javlin.eu&gt;
@@ -80,6 +83,9 @@ public class PropertyRefResolver {
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
 
+	/** counter for recursion depth - it is necessary to avoid infinite loop of recursion (see #4854) */
+	private int recursionDepth;
+	
 	/** the flag specifying whether the CTL expressions should be evaluated and the property references resolved */
 	private boolean resolve = true;
 
@@ -139,6 +145,14 @@ public class PropertyRefResolver {
      */
     public void addProperties(Map<Object, Object> properties){
         this.properties.putAll(properties);
+    }
+    
+    public void addProperty(String propertyName, String propertyValue) {
+    	String valueTmp = this.properties.getProperty(propertyName);
+    	if(valueTmp == null) {
+    		this.properties.setProperty(propertyName, propertyValue);
+    	}
+    	
     }
 
 	/**
@@ -209,8 +223,13 @@ public class PropertyRefResolver {
 		}
 
 		StringBuffer valueBuffer = new StringBuffer(value);
-		resolveRef(valueBuffer, flag);
-
+		try {
+			resolveRef(valueBuffer, flag);
+		} catch (JetelRuntimeException e) {
+			errorMessages.add(e.getMessage() + " " + value);
+			logger.warn(e.getMessage() + " " + value);
+		}
+		
 		return valueBuffer.toString();
 	}
 	
@@ -229,7 +248,9 @@ public class PropertyRefResolver {
 	private boolean resolveRef(StringBuffer value, RefResFlag flag) {
 		// clear error messages before doing anything else
 		errorMessages.clear();
-
+		// let's start the recursion depth measuring
+		recursionDepth = 0;
+		
 		if (value == null || !resolve) {
 			return false;
 		}
@@ -281,6 +302,11 @@ public class PropertyRefResolver {
 		Matcher expressionMatcher = expressionPattern.matcher(value);
 
 		while (expressionMatcher.find()) {
+			//aren't we too deep in recursion?
+			if (isRecursionOverflowed()) {
+				throw new JetelRuntimeException("Graph property cannot be resolved. Infinite recursion is detected. See Defaults.GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH for more details.");
+			}
+
 			String expression = expressionMatcher.group(1);
 
 			if (StringUtils.isEmpty(expression)) {
@@ -327,6 +353,11 @@ public class PropertyRefResolver {
 		Matcher propertyMatcher = propertyPattern.matcher(value);
 
 		while (propertyMatcher.find()) {
+			//aren't we too deep in recursion?
+			if (isRecursionOverflowed()) {
+				throw new JetelRuntimeException("Graph property cannot be resolved. Infinite recursion is detected. See Defaults.GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH for more details.");
+			}
+
 			// resolve the property reference
 			String reference = propertyMatcher.group(1);
 			String resolvedReference = properties.getProperty(reference);
@@ -356,6 +387,13 @@ public class PropertyRefResolver {
 		}
 
 		return anyReferenceResolved;
+	}
+
+	/**
+	 * Test whether the resolving recursion is not too deep.
+	 */
+	private boolean isRecursionOverflowed() {
+		return recursionDepth++ > Defaults.GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH;
 	}
 
 	/**

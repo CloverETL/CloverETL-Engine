@@ -249,23 +249,34 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			String locale = null;
+			
+			if (context.getParams().length > 2) {
+				locale = stack.popString();
+			}
+
 			final String pattern = stack.popString();
 			final Date date = stack.popDate();
-			stack.push(date2str(context, date,pattern));
+			stack.push(date2str(context, date, pattern, locale));
 		}
 	}
 
 	@TLFunctionInitAnnotation
 	public static final void date2strInit(TLFunctionCallContext context) {
-		context.setCache(new TLDateFormatCache(context, 1));
+		context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
 	}
 	
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern) {
-		final DateFormatter formatter = ((TLDateFormatCache)context.getCache()).getCachedFormatter(context, pattern, 1);
+		return date2str(context, date, pattern, null);
+	}
+
+	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
+	public static final String date2str(TLFunctionCallContext context, Date date, String pattern, String locale) {
+		final DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
 		return formatter.format(date);
 	}
-	
+
 	
 	// STR2DATE
 	class Str2DateFunction implements TLFunctionPrototype {

@@ -89,7 +89,7 @@ public class StdDev extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		if (count > 1) {
+		if (count > 0) {
 			outputField.setValue(new CloverDouble(calculateStdDev(mean, sumSquared, count)));
 		} else {
 			outputField.setNull(true);

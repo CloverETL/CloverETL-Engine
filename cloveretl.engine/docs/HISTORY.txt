@@ -2,6 +2,17 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-0-1
+---------
++ error ports of UniversalDataReader and LDAP Reader can now have also byte/cbyte fields instead of just strings
++ fixed XMLExtract failing on opening input files in multiple phases
++ recursive parameter definition is now properly detected and warned in the log
++ CTL2 "for" cycle consuming memory fixed in CTL2 interpreted mode
++ byte and cbyte types in CTL2 are now fully compatible
++ ByteBufferUtils.encodeLength(ByteBuffer, int) fixed for 5-byte lengths
++ Default locale can be specified in defaultProperties
+
+
 REL 3-0-0
 ---------
 + new format for boolean data field - e.g. /man|m/female|f/

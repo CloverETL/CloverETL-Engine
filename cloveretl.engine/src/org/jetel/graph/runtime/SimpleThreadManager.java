@@ -32,12 +32,17 @@ import org.jetel.graph.Result;
 public class SimpleThreadManager implements IThreadManager {
 
 	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#initWatchDog(org.jetel.graph.runtime.WatchDog)
+	 */
+	public void initWatchDog(WatchDog watchDog) {
+		watchDog.setThreadManager(this);
+		watchDog.init();
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#executeWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
 	public Future<Result> executeWatchDog(WatchDog watchDog) {
-		watchDog.setThreadManager(this);
-		watchDog.init();
-		
 		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
 		Thread watchdogThread = new Thread(futureTask, "WatchDog");
 		watchdogThread.start();

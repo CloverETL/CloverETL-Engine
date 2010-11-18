@@ -28,15 +28,17 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.CopySQLData.CopyDecimal;
+import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DecimalDataField;
@@ -161,9 +163,9 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public ArrayList<String> getColumns(Connection connection)
+	public Set<ResultSet> getColumns(Connection connection)
 			throws SQLException {
-		ArrayList<String> columns = new ArrayList<String>();
+		Set<ResultSet> resultSets = new HashSet<ResultSet>();
 	    DatabaseMetaData md = connection.getMetaData();
 	    
 	    ResultSet rs = md.getTables(null, null, null, null);
@@ -174,28 +176,22 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	    rs.close();
 	    
 	    for (String table : tables) {
-			rs = md.getColumns(null, null, table, null);
-			while(rs.next()) {
-				columns.add(rs.getString(4));
-			}
+			resultSets.add(md.getColumns(null, null, table, null));
 		}
-	    return columns;
+	    return resultSets;
 	}
 
 	@Override
-	public ResultSetMetaData getColumnsMetadata(java.sql.Connection connection, String targetName) throws SQLException {
-		if(connection==null) {
-			return null;
-		}
-		if(targetName==null) {
+	public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
+		if (connection == null || StringUtils.isEmpty(table)) {
 			return null;
 		}
 		
 		Statement stat = connection.createStatement();
-	    ResultSet rs = stat.executeQuery("PRAGMA table_info("+targetName+");");
+	    ResultSet rs = stat.executeQuery("PRAGMA table_info(" + table + ");");
 	    
-	    SQLiteRSMetaData metadata = new SQLiteRSMetaData(targetName);
-	    while(rs.next()) {
+	    SQLiteRSMetaData metadata = new SQLiteRSMetaData(table);
+	    while (rs.next()) {
 	    	String columnName = rs.getString(2);
 	    	String columnType = rs.getString(3);
 	    	metadata.addColumn(columnName, columnType);
@@ -356,7 +352,6 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		}
 
 		public String getSchemaName(int column) throws SQLException {
-			// TODO Auto-generated method stub
 			return this.tableName;
 		}
 

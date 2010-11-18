@@ -239,8 +239,13 @@ public class ExtSort extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
 
+    @Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		sorter.postExecute();
+	}
 
-    /**
+	/**
 	 * Description of the Method
 	 * 
 	 * @exception ComponentNotReadyException

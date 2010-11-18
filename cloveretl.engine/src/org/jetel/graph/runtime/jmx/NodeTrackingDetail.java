@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -296,20 +298,32 @@ public class NodeTrackingDetail implements NodeTracking {
 				Thread nodeThread = node.getNodeThread();
 				if (nodeThread != null) {
 					//totalCPUTime
-					long tempTotalCPUTime = CloverJMX.THREAD_MXBEAN.getThreadCpuTime(node.getNodeThread().getId());
+					long tempTotalCPUTime = TrackingUtils.convertTime(
+							CloverJMX.THREAD_MXBEAN.getThreadCpuTime(node.getNodeThread().getId()), 
+							TimeUnit.NANOSECONDS,
+							TrackingUtils.DEFAULT_TIME_UNIT);
 					//totalCPUTime for child threads
 					for (Thread childThread : node.getChildThreads()) {
-						tempTotalCPUTime += CloverJMX.THREAD_MXBEAN.getThreadCpuTime(childThread.getId());
+						tempTotalCPUTime += TrackingUtils.convertTime(
+								CloverJMX.THREAD_MXBEAN.getThreadCpuTime(childThread.getId()),
+								TimeUnit.NANOSECONDS,
+								TrackingUtils.DEFAULT_TIME_UNIT);
 					}
 					if (tempTotalCPUTime > totalCPUTime) {
 						totalCPUTime = tempTotalCPUTime;
 					}
 					
 					//totalUserTime
-					long tempTotalUserTime = CloverJMX.THREAD_MXBEAN.getThreadUserTime(node.getNodeThread().getId());
+					long tempTotalUserTime = TrackingUtils.convertTime(
+							CloverJMX.THREAD_MXBEAN.getThreadUserTime(node.getNodeThread().getId()),
+							TimeUnit.NANOSECONDS,
+							TrackingUtils.DEFAULT_TIME_UNIT);
 					//totalUserTime for child threads
 					for (Thread childThread : node.getChildThreads()) {
-						tempTotalUserTime += CloverJMX.THREAD_MXBEAN.getThreadUserTime(childThread.getId());
+						tempTotalUserTime += TrackingUtils.convertTime(
+								CloverJMX.THREAD_MXBEAN.getThreadUserTime(childThread.getId()),
+								TimeUnit.NANOSECONDS,
+								TrackingUtils.DEFAULT_TIME_UNIT);
 					}
 					if(tempTotalUserTime > totalUserTime) {
 						totalUserTime = tempTotalUserTime;

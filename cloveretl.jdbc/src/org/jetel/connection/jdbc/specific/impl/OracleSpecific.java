@@ -176,6 +176,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		switch (field.getType()) {
 		case DataFieldMetadata.BOOLEAN_FIELD:
 		case DataFieldMetadata.DECIMAL_FIELD:
+		case DataFieldMetadata.NUMERIC_FIELD:
 		case DataFieldMetadata.LONG_FIELD:
 		case DataFieldMetadata.INTEGER_FIELD:
 			switch (sqlType) {

@@ -29,13 +29,28 @@ import java.util.concurrent.TimeUnit;
  * @since May 19, 2009
  */
 public class TrackingUtils {
+	
+	public static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
+	
 	/**
 	 * Converts time from the unit used to store it in tracking (milliseconds) to the specified unit.
 	 * @param time
 	 * @param unit
 	 * @return converted time.
 	 */
-	public static long converTime(long time, TimeUnit unit) {
-		return unit.convert(time, TimeUnit.MILLISECONDS);
+	public static long convertTime(long time, TimeUnit targetUnit) {
+		return convertTime(time, DEFAULT_TIME_UNIT, targetUnit);
 	}
+	
+	/**
+	 * Converts time from the sourceUnit to the targetUnit.
+	 * @param time
+	 * @param sourceUnit
+	 * @param targetUnit
+	 * @return converted time.
+	 */
+	public static long convertTime(long time, TimeUnit sourceUnit, TimeUnit targetUnit) {
+		return targetUnit.convert(time, sourceUnit);
+	}
+
 }

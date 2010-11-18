@@ -57,7 +57,6 @@ public class DirectEdge extends EdgeBase {
 	
 
 	private final static int EOF=Integer.MAX_VALUE;
-	private	final static int SIZEOF_INT=4;	
 
 	/**
 	 *Constructor for the Edge object
@@ -241,7 +240,7 @@ public class DirectEdge extends EdgeBase {
         tmpDataRecord.flip();
         int length = tmpDataRecord.remaining();
 
-        if ((length + SIZEOF_INT) > writeBuffer.remaining()) {
+        if ((length + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining()) {
             flushWriteBuffer();
         }
         try {
@@ -272,7 +271,7 @@ public class DirectEdge extends EdgeBase {
             InterruptedException {
         int dataLength = record.remaining();
 
-        if ((dataLength + SIZEOF_INT) > writeBuffer.remaining()) {
+        if ((dataLength + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining()) {
             flushWriteBuffer();
         }
 
@@ -337,7 +336,7 @@ public class DirectEdge extends EdgeBase {
 	 * @since    April 2, 2002
 	 */
 	public void eof() throws InterruptedException {
-        if (writeBuffer.remaining()<SIZEOF_INT){
+		if (writeBuffer.remaining() < ByteBufferUtils.SIZEOF_INT) {
             flushWriteBuffer();
         }
         ByteBufferUtils.encodeLength(writeBuffer, EOF); // send EOF

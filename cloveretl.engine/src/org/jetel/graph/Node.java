@@ -471,14 +471,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
-        } catch (OutOfMemoryError ex) {
+        } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverPost().sendMessage(msg);
             return;
-        } catch (Exception ex) { // may be handled differently later
+        } catch (Throwable ex) {
+        	logger.fatal(ex); 
             runResult=Result.ERROR;
             resultException = ex;
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,

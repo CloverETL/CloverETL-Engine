@@ -20,6 +20,8 @@
  */
 package org.jetel.util;
 
+import java.util.Properties;
+
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.string.CommentsProcessor;
 import org.jetel.util.string.StringUtils;
@@ -490,7 +492,28 @@ public class StringUtilsTest extends CloverTestCase {
 			+ "}\n";
 		System.out.println(CommentsProcessor.stripComments(transform));
 	}
-	
+
+	public void testReplaceVariables(){
+		final Properties vars = getVariablesPropertiesDefault();
+		assertEquals("", StringUtils.replaceVariables("", vars, "${", "}"));
+		assertEquals("skldfja f  fj", StringUtils.replaceVariables("skldfja f  fj", vars, "${", "}"));
+		assertEquals("skldfja ikarus  fj", StringUtils.replaceVariables("skldfja ${bus}  fj", vars, "${", "}"));
+		assertEquals("skldfja ikaruspinguin  fj", StringUtils.replaceVariables("skldfja ${bus}${animal}  fj", vars, "${", "}"));
+		assertEquals("skldfja ikarusjjjjpinguin  fj", StringUtils.replaceVariables("skldfja ${bus}jjjj${animal}  fj", vars, "${", "}"));
+		assertEquals("skldfja   fj", StringUtils.replaceVariables("skldfja ${empty}  fj", vars, "${", "}"));
+		assertEquals("", StringUtils.replaceVariables("${empty}", vars, "${", "}"));
+		assertEquals("ikarus", StringUtils.replaceVariables("${bus}", vars, "${", "}"));
+		assertEquals("pinguinikarus", StringUtils.replaceVariables("${animal}${bus}", vars, "${", "}"));
+		assertEquals("", StringUtils.replaceVariables("${empty}", vars, "${", "}"));
+	}
+
+	private Properties getVariablesPropertiesDefault() {
+		final Properties ret = new Properties();
+		ret.put("bus","ikarus");
+		ret.put("animal","pinguin");
+		ret.put("empty", "");
+		return ret;
+	}
 }
 
 /*

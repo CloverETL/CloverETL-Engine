@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1390,6 +1391,9 @@ public class StringUtils {
 			}
 			length++;
 		}
+		if (length <= 0) {
+			return -1;
+		}
 		if (length <= 4) {
 			return 0;
 		}
@@ -1874,5 +1878,114 @@ public class StringUtils {
 	 * !t1.toString().equals(t4.toString())) throw new RuntimeException(); }
 	 */
 
+	/*
+	public static String replaceVariables(String temlate, Properties properties, String startString, String endString) {
+		return replaceVariables(properties, temlate);
+	}
+	*/
+	
+	public static String replaceVariables(String template, Map<String, String> variables) {
+		return replaceVariables(template, new MapVariableResolver(variables), "${", "}");
+	}
+	
+	public static String replaceVariables(String template, Properties variables) {
+		return replaceVariables(template, new PropertiesVariableResolver(variables), "${", "}");
+	}
+	
+	public static String replaceVariables(String template, Map<String, String> variables, String variableStart, String variableEnd) {
+		return replaceVariables(template, new MapVariableResolver(variables), variableStart, variableEnd);
+	}
+	
+	public static String replaceVariables(String template, Properties variables, String variableStart, String variableEnd) {
+		return replaceVariables(template, new PropertiesVariableResolver(variables), variableStart, variableEnd);
+	}
+	
+	public static String replaceVariables(String template, VariableResolver resolver, String variableStart, String variableEnd) {
+		final StringBuilder ret = new StringBuilder();
+		ret.append(template);
+		int index = 0;
+		while (index < ret.length()) {
+			index = ret.indexOf(variableStart, index);
+			if (index == -1) {
+				break;
+			}
+			int end = ret.indexOf(variableEnd, index + 1);
+			if (end == -1) {
+				throw new IllegalArgumentException("Closing "+variableEnd+" not found " + ret.substring(index, index + 10 < ret.length() ? index + 10 : ret.length()));
+			}
+			final String foundKey = ret.substring(index + variableStart.length(), end);
+			final String value = resolver.get(foundKey);
+			if (value == null) {
+				throw new IllegalArgumentException("Unknown variable " + foundKey);
+			}
+			ret.replace(index, end + 1, value);
+			index += value.length();
+		}
+		return ret.toString();
+	}
+
+/*
+ *  3x slower then	replaceVariables(String template, VariableResolver resolver, String variableStart, String variableEnd) 
+	private static final Pattern DAFAULT_PROPERTY_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
+	
+	public static String replaceVariables(Properties properties, String valueTemplate) {
+		final StringBuilder ret = new StringBuilder(valueTemplate);
+		replaceVariables(properties, ret);
+		return ret.toString();
+	}
+
+	public static void replaceVariables(Properties properties, StringBuilder value) {
+		replaceVariables(properties, value, DAFAULT_PROPERTY_PATTERN);
+	}
+	
+	public static void replaceVariables(Properties properties, StringBuilder value, Pattern pattern) {
+		final Matcher propertyMatcher = pattern.matcher(value);
+
+		while (propertyMatcher.find()) {
+			// resolve the property reference
+			final String reference = propertyMatcher.group(1);
+			final String resolvedReference = properties.getProperty(reference);
+
+			if (resolvedReference == null) {
+				throw new JetelRuntimeException("Cannot resolve reference to property: " + reference);
+			} else {
+				StringBuffer evaluatedReference = new StringBuffer(resolvedReference);
+
+				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
+				propertyMatcher.reset(value);
+			}
+		}
+	}
+*/
+	
+	private static interface VariableResolver{
+		String get(String key);
+	}
+	
+	private static class MapVariableResolver implements VariableResolver {
+		private final Map<String,String> variables;
+		
+		public MapVariableResolver(Map<String, String> variables) {
+			this.variables = variables;
+		}
+
+		@Override
+		public String get(String key) {
+			return variables.get(key);
+		}
+	}
+	
+	private static class PropertiesVariableResolver implements VariableResolver {
+		private final Properties variables;
+		
+		public PropertiesVariableResolver(Properties variables) {
+			this.variables = variables;
+		}
+
+		@Override
+		public String get(String key) {
+			return variables.getProperty(key);
+		}
+	}
 }
 

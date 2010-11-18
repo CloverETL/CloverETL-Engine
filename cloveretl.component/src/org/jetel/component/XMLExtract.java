@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
@@ -56,10 +56,10 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -1319,7 +1319,7 @@ public class XMLExtract extends Node {
 		super.preExecute();
 
 		if (firstRun()) {
-			//all necessary for the first run has been done in init()
+        	this.readableChannelIterator.init();
 		}
 		else {
 			autoFilling.reset();
@@ -1499,7 +1499,6 @@ public class XMLExtract extends Node {
         // sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
         if (inputFile != null) {
         	createReadableChannelIterator();
-        	this.readableChannelIterator.init();
         }
     }
 	

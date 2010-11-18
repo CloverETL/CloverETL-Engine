@@ -273,9 +273,26 @@ public class XLSXDataParser extends XLSParser {
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 
-		Row namesRow = (metadataRow > -1) ? sheet.getRow(metadataRow) : sheet.getRow(firstRow);
-		Row dataRow = sheet.getRow(firstRow);
-		int maxNumberOfColumns = Math.max(namesRow.getLastCellNum(), dataRow.getLastCellNum());
+		Row namesRow = null;
+		if((metadataRow > -1)) {
+			namesRow = sheet.getRow(metadataRow);
+		} else {
+			namesRow = sheet.getRow(firstRow);
+		}
+		
+		
+		
+        Row dataRow = sheet.getRow(firstRow);
+          
+        if(dataRow == null) {
+        	for(int i = 0 ; i < 100; i++) {
+        		dataRow =  sheet.getRow(i);
+        		if(dataRow != null) break;
+        	}
+        }
+        
+        
+        int maxNumberOfColumns = Math.max(namesRow.getLastCellNum(), dataRow.getLastCellNum());
 
 		for (int i = 0; i < maxNumberOfColumns; i++) {
 			Cell nameCell = (i < namesRow.getLastCellNum()) ? namesRow.getCell(i) : null;
@@ -316,7 +333,7 @@ public class XLSXDataParser extends XLSParser {
 	}
 
 	public String[][] getPreview(int startRow, int length) {
-		if (sheet == null) {
+	    if (sheet == null) {
 			return null;
 		}
 
@@ -325,21 +342,27 @@ public class XLSXDataParser extends XLSParser {
 
 		for (int i = 0; i < resultLength; i++) {
 			Row row = sheet.getRow(startRow + i);
-			result[i] = new String[row.getLastCellNum()];
+		    if(row != null) {
+		       result[i] = new String[row.getLastCellNum()];
 
-			for (int j = 0; j < row.getLastCellNum(); j++) {
-				Cell cell = row.getCell(j);
+			   for (int j = 0; j < row.getLastCellNum(); j++) {
+					Cell cell = row.getCell(j);
 
-				if (cell != null) {
-					String cellValue = row.getCell(j).toString();
+					if (cell != null) {
+						String cellValue = row.getCell(j).toString();
 
-					if (cellValue.length() > MAX_NAME_LENGTH) {
-						cellValue = cellValue.substring(0, MAX_NAME_LENGTH) + "...";
+						if (cellValue.length() > MAX_NAME_LENGTH) {
+							cellValue = cellValue.substring(0, MAX_NAME_LENGTH) + "...";
+						}
+
+						result[i][j] = cellValue;
 					}
-
-					result[i][j] = cellValue;
 				}
-			}
+		    }  else {
+		       result[i] = new String[]{"", ""};	
+		    }
+		  
+			
 		}
 
 		return result;
@@ -400,67 +423,73 @@ public class XLSXDataParser extends XLSParser {
 		if (currentRow >= lastRow) {
 			return null;
 		}
+         
+	    Row row = sheet.getRow(currentRow);
+        if(row != null) {
+        	for (short i = 0; i < fieldNumber.length; i++) {
+    			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
+    			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
+    			// skip fields that are internally filled 
+    			// skip fields with no metadata attached
+    			if (cloverFieldIndex == -1 || isAutoFilling[cloverFieldIndex]) {
+    				continue;
+    			}
 
-		Row row = sheet.getRow(currentRow);
+    			Cell cell = row.getCell(xlsFieldIndex);
 
-		for (short i = 0; i < fieldNumber.length; i++) {
-			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
-			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
-			// skip fields that are internally filled 
-			// skip fields with no metadata attached
-			if (cloverFieldIndex == -1 || isAutoFilling[cloverFieldIndex]) {
-				continue;
-			}
+    			if (cell == null) {
+    				record.getField(cloverFieldIndex).setNull(true);
+    				continue;
+    			}
 
-			Cell cell = row.getCell(xlsFieldIndex);
+    			char type = metadata.getField(cloverFieldIndex).getType();
 
-			if (cell == null) {
-				record.getField(cloverFieldIndex).setNull(true);
-				continue;
-			}
+    			try {
+    				switch (type) {
+    					case DataFieldMetadata.DATE_FIELD:
+    					case DataFieldMetadata.DATETIME_FIELD:
+    						record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
+    						break;
+    					case DataFieldMetadata.BYTE_FIELD:
+    					case DataFieldMetadata.STRING_FIELD:
+    						record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
+    						break;
+    					case DataFieldMetadata.DECIMAL_FIELD:
+    					case DataFieldMetadata.INTEGER_FIELD:
+    					case DataFieldMetadata.LONG_FIELD:
+    					case DataFieldMetadata.NUMERIC_FIELD:
+    						record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
+    						break;
+    					case DataFieldMetadata.BOOLEAN_FIELD:
+    						record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
+    						break;
+    				}
+    			} catch (RuntimeException exception) {// exception when trying get date or number from a different cell type
+    				try {
+    					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
+    				} catch (Exception ex) {
+    					BadDataFormatException bdfe = new BadDataFormatException(exception.getMessage());
+    					bdfe.setRecordNumber(currentRow + 1);
+    					bdfe.setFieldNumber(cloverFieldIndex);
 
-			char type = metadata.getField(cloverFieldIndex).getType();
+    					if (exceptionHandler != null) { // use handler only if configured
+    						exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
+    								cloverFieldIndex), record, currentRow + 1, cloverFieldIndex,
+    								cell.getStringCellValue(), bdfe);
+    					} else {
+    						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1,
+    								cloverFieldIndex));
+    					}
+    				}
+    			}
+    		}
 
-			try {
-				switch (type) {
-					case DataFieldMetadata.DATE_FIELD:
-					case DataFieldMetadata.DATETIME_FIELD:
-						record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
-						break;
-					case DataFieldMetadata.BYTE_FIELD:
-					case DataFieldMetadata.STRING_FIELD:
-						record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
-						break;
-					case DataFieldMetadata.DECIMAL_FIELD:
-					case DataFieldMetadata.INTEGER_FIELD:
-					case DataFieldMetadata.LONG_FIELD:
-					case DataFieldMetadata.NUMERIC_FIELD:
-						record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
-						break;
-					case DataFieldMetadata.BOOLEAN_FIELD:
-						record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
-						break;
-				}
-			} catch (RuntimeException exception) {// exception when trying get date or number from a different cell type
-				try {
-					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
-				} catch (Exception ex) {
-					BadDataFormatException bdfe = new BadDataFormatException(exception.getMessage());
-					bdfe.setRecordNumber(currentRow + 1);
-					bdfe.setFieldNumber(cloverFieldIndex);
-
-					if (exceptionHandler != null) { // use handler only if configured
-						exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-								cloverFieldIndex), record, currentRow + 1, cloverFieldIndex,
-								cell.getStringCellValue(), bdfe);
-					} else {
-						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-								cloverFieldIndex));
-					}
-				}
-			}
-		}
-
+        }  else  {
+           for(int i = 0; i < record.getNumFields(); i++) {
+        	   record.getField(i).setNull(true);
+           }
+        }
+		
 		currentRow++;
 		recordCounter++;
 

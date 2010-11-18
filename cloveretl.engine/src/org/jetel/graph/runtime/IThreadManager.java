@@ -31,7 +31,14 @@ import org.jetel.graph.Result;
 public interface IThreadManager {
 
 	/**
+	 * Inits specified Watchdog. Must be called before {@link #executeWatchDog(WatchDog)}
+	 * @param watchDog
+	 */
+	public void initWatchDog(WatchDog watchDog);
+	
+	/**
 	 * Executes given WatchDog.
+	 * Call {@link #initWatchDog(WatchDog)} first.
 	 * @param watchDog
 	 * @return
 	 */

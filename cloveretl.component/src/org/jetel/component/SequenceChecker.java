@@ -33,6 +33,7 @@ import org.jetel.data.RecordComparator;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -198,8 +199,7 @@ public class SequenceChecker extends Node {
 		
 		Result result = null;
 		if (error) {
-			result = Result.ERROR;
-			logger.error("The sequence checker fails at row '" + row + "'.");
+			throw new JetelException("The sequence checker fails at row '" + row + "'.");
 		} else {
 			result = Result.FINISHED_OK;
 		}

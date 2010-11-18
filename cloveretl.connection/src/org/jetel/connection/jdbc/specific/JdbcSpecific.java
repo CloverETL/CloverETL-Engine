@@ -25,6 +25,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.CopySQLData;
@@ -234,12 +235,13 @@ public interface JdbcSpecific {
     public String compileSelectQuery4Table(String schema, String table);
 
 	/**
-	 * Returns list of column names from DB
+	 * Returns a Set of ResultSets representing columns in whole database, 
+	 * It has to extract it from dbMeta objects
 	 * @param connection
 	 * @return
 	 * @throws SQLException
 	 */
-	public ArrayList<String> getColumns(java.sql.Connection connection) throws SQLException;
+	public Set<ResultSet> getColumns(java.sql.Connection connection) throws SQLException;
 	
 	/**
 	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
@@ -257,14 +259,6 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public String getTablePrefix(String schema, String owner, boolean quoteIdentifiers);
-	
-	/**
-	 * Returns ResultSetMetaData for table to obtain info about columns. This method should be
-	 * overriden when getting columns info has to be done some special way.
-	 * @param targetName
-	 * @return
-	 */
-	public ResultSetMetaData getColumnsMetadata(java.sql.Connection connection, String targetName) throws SQLException;
 	
 	/**
 	 * Created as a substitute for DatabaseMetaData.supportsGetGeneratedKeys called from

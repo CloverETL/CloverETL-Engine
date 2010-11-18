@@ -31,6 +31,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents integer number field (32bit signed)
@@ -370,8 +371,9 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 			value = numericFormatter.parseInt(seq);
 			setNull(this.value == Integer.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()));
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"" 
+					+ (!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\"" : ""),
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()));
 		}
 	}
 

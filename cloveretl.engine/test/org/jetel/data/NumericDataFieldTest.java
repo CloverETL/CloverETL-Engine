@@ -39,6 +39,7 @@ public class NumericDataFieldTest  extends CloverTestCase {
 	
 
 protected void setUp() { 
+	initEngine();
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'i',(short)3);
 	aNumericDataField1 = new NumericDataField(fixedFieldMeta1,65.5);
 	

@@ -47,14 +47,14 @@ public interface ISortDataRecord {
 	 *
 	 *@param  record  DataRecord to be stored
 	 */
-	public abstract boolean put(DataRecord record) throws IOException, InterruptedException;
+	public boolean put(DataRecord record) throws IOException, InterruptedException;
 
 	/**
 	 *  Sorts internal array and flush it to disk, thus reading can start
 	 *  Note: in the case of external sorting, when merge is necessary, other name would be suitable,
 	 *  		it is named sort() to maintain consistency with InternalSortDataRecord
 	 */
-	public abstract void sort() throws IOException, InterruptedException;
+	public void sort() throws IOException, InterruptedException;
 
 	/**
 	 *  Gets the next data record in sorted order
@@ -62,7 +62,7 @@ public interface ISortDataRecord {
 	 *@param  recordData  ByteBuffer into which copy next record's data
 	 *@return             True if there was next record or False
 	 */
-	public abstract DataRecord get() throws IOException, InterruptedException;
+	public DataRecord get() throws IOException, InterruptedException;
 
 	/**
 	 *  Gets the next data record in sorted order
@@ -70,17 +70,22 @@ public interface ISortDataRecord {
 	 *@param  recordData  ByteBuffer into which copy next record's data
 	 *@return             True if there was next record or False
 	 */
-	public abstract boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException;
+	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException;
 
 	/**
 	 * Resets all resources (buffers, collections of internal sorter, etc), so component can
 	 * be used in next run again
 	 */
-	public abstract void reset();
+	public void reset();
+	
+	/**
+	 * Frees all resources required for previous single run of component. 
+	 */
+	public void postExecute();
 	
 	/**
 	 * Frees all resources (buffers, collections of internal sorter, etc) 
 	 */
-	public abstract void free() throws InterruptedException;
+	public void free() throws InterruptedException;
 
 }

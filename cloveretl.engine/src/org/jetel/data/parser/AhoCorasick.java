@@ -20,7 +20,6 @@ package org.jetel.data.parser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -72,15 +71,15 @@ public class AhoCorasick {
 		rootTrie.fail = rootTrie;
 		
 		//level 1
-		List currentNodes = rootTrie.getChildren();
-		for(Iterator i = currentNodes.iterator(); i.hasNext(); ) {
-			((NodeTrie) i.next()).fail = rootTrie;
+		List<NodeTrie> currentNodes = rootTrie.getChildren();
+		for(NodeTrie nt : currentNodes) {
+			nt.fail = rootTrie;
 		}
 		
 		//other levels
 		while(!(currentNodes = getNextLevelNode(currentNodes)).isEmpty()) {
-			for(Iterator i = currentNodes.iterator(); i.hasNext(); ) {
-				qa = ((NodeTrie) i.next());
+			for(NodeTrie nt : currentNodes) {
+				qa = nt;
 				q = qa.parent;
 				c = qa.transition;
 				r = q.fail;
@@ -89,19 +88,18 @@ public class AhoCorasick {
 				}
 				qa.fail = r.children[c];
 				if(qa.fail == null) qa.fail = rootTrie;
-				q.patterns.addAll(r.patterns);
+				qa.patterns.addAll(qa.fail.patterns);
 			}
 		}
         
         //create patternsFinal (bit array) from patterns set - for fast isPattern() method
-        currentNodes = new ArrayList();
+        currentNodes = new ArrayList<NodeTrie>();
         currentNodes.add(rootTrie);
         do {
-            for(Iterator i = currentNodes.iterator(); i.hasNext(); ) {
-                qa = ((NodeTrie) i.next());
+            for(NodeTrie nt : currentNodes) {
+                qa = nt;
                 qa.patternsFinal = new boolean[maxPattern - minPattern + 1];
-                for(Iterator it = qa.patterns.iterator(); it.hasNext();) {
-                    MyInt myInt = (MyInt) it.next();
+                for(MyInt myInt : qa.patterns) {
                     qa.patternsFinal[myInt.value - minPattern] = true;
                 }
             }
@@ -181,10 +179,10 @@ public class AhoCorasick {
 		return new int[]{-1, -1};
 	}
 
-	public static List getNextLevelNode(List level) {
-		List ch = new ArrayList();
-		for(Iterator i = level.iterator(); i.hasNext(); ) {
-			ch.addAll(((NodeTrie) i.next()).getChildren());
+	public static List<NodeTrie> getNextLevelNode(List<NodeTrie> level) {
+		List<NodeTrie> ch = new ArrayList<NodeTrie>();
+		for (NodeTrie nt : level) {
+			ch.addAll(nt.getChildren());
 		}
 		return ch;
 	}
@@ -197,7 +195,7 @@ public class AhoCorasick {
 		NodeTrie parent;
 		char transition;
 		NodeTrie[] children;
-		Set patterns;
+		Set<MyInt> patterns;
         boolean[] patternsFinal;
 		NodeTrie fail;
 		
@@ -208,7 +206,7 @@ public class AhoCorasick {
 		 */
 		public NodeTrie(NodeTrie parent, char transition) {
 			children = new NodeTrie[Character.MAX_VALUE];
-			patterns = new HashSet();
+			patterns = new HashSet<MyInt>();
 			this.parent = parent;
 			this.transition = transition;
 			if(this.parent == null) {
@@ -222,8 +220,8 @@ public class AhoCorasick {
 		 * Returns all children of this node.
 		 * @return all children of this node
 		 */
-		public List getChildren() {
-			List ch = new ArrayList();
+		public List<NodeTrie> getChildren() {
+			List<NodeTrie> ch = new ArrayList<NodeTrie>();
 			for(int i = 0; i < children.length; i++) {
 				if(children[i] != null) ch.add(children[i]);
 			}
@@ -272,8 +270,8 @@ public class AhoCorasick {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String[] p = { "aaab", "aa" };
-		String t = "aaaab";
+		String[] p = { "ab", "b" };
+		String t = "ab";
 		AhoCorasick ac = new AhoCorasick(p);
 		
 		for(int i = 0; i < t.length(); i++) {

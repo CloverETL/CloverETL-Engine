@@ -19,6 +19,7 @@
 package org.jetel.ctl.ASTnode;
 
 import org.jetel.ctl.ExpParser;
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.ctl.TransformLangParserVisitor;
 
@@ -41,9 +42,18 @@ public class CLVFVariableDeclaration extends SimpleNode implements TransformLang
 		this.name = node.name;
 	}
 
-	/** Accept the visitor. * */
+	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-		return visitor.visit(this, data);
+		try {
+			return visitor.visit(this, data);
+		} catch (TransformLangExecutorRuntimeException e) {
+			if (e.getNode() == null) {
+				e.setNode(this);
+			}
+			throw e;
+		} catch (RuntimeException e) {
+			throw new TransformLangExecutorRuntimeException(this, null, e);
+		}
 	}
 
 	public void setName(String name) {

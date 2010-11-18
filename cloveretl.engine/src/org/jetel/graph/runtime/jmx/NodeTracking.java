@@ -68,12 +68,14 @@ public interface NodeTracking extends Serializable {
 	float getPeakUsageUser();
 	
 	/**
-	 * @return total CPU time.
+	 * @return total CPU time in milliseconds
+	 * @see TrackingUtils#converTime(long, java.util.concurrent.TimeUnit) use this method for further time unit conversion
 	 */
 	long getTotalCPUTime();
 	
 	/**
-	 * @return total user CPU time.
+	 * @return total user CPU time in milliseconds
+	 * @see TrackingUtils#converTime(long, java.util.concurrent.TimeUnit) use this method for further time unit conversion
 	 */
 	long getTotalUserTime();
 	

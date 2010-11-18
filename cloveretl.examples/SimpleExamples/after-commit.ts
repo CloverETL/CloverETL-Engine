@@ -57,7 +57,7 @@
 <FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf" assertion="false">
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
 	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
-		<RegEx expression="org.jetel.exception.BadDataFormatException: account_num \(long\) cannot be set to &quot;8747577056D&quot; - doesn't match defined format &quot;&quot; in field # 2 of record # 3, value: '8747577056D'" occurences="1"/>
+		<RegEx expression="org.jetel.exception.BadDataFormatException: account_num \(long\) cannot be set to &quot;8747577056D&quot; - doesn't match defined format &quot;&quot; with reason &quot;Incomplete parsing&quot; in field # 2 of record # 3, value: '8747577056D'" occurences="1"/>
 </FunctionalTest>
 
 
@@ -418,7 +418,7 @@
 
 <FunctionalTest ident="SequenceChecker" graphFile="graph/graphSequenceChecker.grf" assertion="false">
 		<RegEx expression="SEQUENCE_CHECKER0\s+FINISHED_OK" occurences="1"/>
-		<RegEx expression="The sequence checker fails at row '6'." occurences="1"/>
+		<RegEx expression="The sequence checker fails at row '6'." occurences="2"/>
 </FunctionalTest>
 
 

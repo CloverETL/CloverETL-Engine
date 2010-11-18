@@ -536,7 +536,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	if (valType != TLValueType.DECIMAL) {
 				value.setValue(params[0]);
 			}else{
-				value = new TLNumericValue<Numeric>(TLValueType.DECIMAL, params[0].getNumeric());
+				value = new TLNumericValue<Numeric>(TLValueType.DECIMAL, params[0].getNumeric().getDecimal());
 			}
 			if (value.compareTo(params[0]) != 0 || params[0].compareTo(value) != 0) {
                 throw new TransformLangExecutorRuntimeException(params,

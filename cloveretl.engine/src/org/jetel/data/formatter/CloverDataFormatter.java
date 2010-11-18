@@ -120,7 +120,7 @@ public class CloverDataFormatter implements Formatter {
 		} catch (MalformedURLException e) {
 			// can't happen - used for obtaining output stream
 		}
-		if (fileURL.endsWith(".zip")) {
+		if (fileName.endsWith(".zip")) {
 			fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
 		}
 		writer = Channels.newChannel(this.out);

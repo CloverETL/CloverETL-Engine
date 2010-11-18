@@ -197,6 +197,7 @@ public class ResetTest extends CloverTestCase {
 
 				final IThreadManager threadManager = new SimpleThreadManager();
 				final WatchDog watchDog = new WatchDog(graph, runtimeContext);
+	            threadManager.initWatchDog(watchDog);
 				final Future<Result> futureResult = threadManager.executeWatchDog(watchDog);
 
 				Result result = Result.N_A;
