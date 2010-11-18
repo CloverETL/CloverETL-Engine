@@ -20,6 +20,7 @@ package org.jetel.ctl.ASTnode;
 
 import static org.jetel.ctl.TransformLangParserConstants.tokenImage;
 
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 
@@ -40,9 +41,18 @@ public class CLVFDateField extends SimpleNode {
 		this.type = node.type;
 	}
 
-	/** Accept the visitor. * */
+	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-		return visitor.visit(this, data);
+		try {
+			return visitor.visit(this, data);
+		} catch (TransformLangExecutorRuntimeException e) {
+			if (e.getNode() == null) {
+				e.setNode(this);
+			}
+			throw e;
+		} catch (RuntimeException e) {
+			throw new TransformLangExecutorRuntimeException(this, null, e);
+		}
 	}
 
 	public void setFieldType(int fieldType) {

@@ -37,7 +37,6 @@ public abstract class TLType {
 	public static final TLTypeNull NULL = new TLTypeNull();
 	public static final TLTypeError ERROR = new TLTypeError();
 	public static final TLTypeByteArray BYTEARRAY = new TLTypeByteArray();
-	public static final TLTypeCByteArray CBYTEARRAY = new TLTypeCByteArray();
 	public static final TLTypeRecord RECORD = new TLTypeRecord(null,true);
 	
 	
@@ -452,34 +451,6 @@ public abstract class TLType {
 		}
 	}
 	
-	public static final class TLTypeCByteArray extends TLType {
-		private TLTypeCByteArray() {
-
-		}
-
-		@Override
-		public String name() {
-			return "cbyte";
-		}
-
-		@Override
-		public boolean isNumeric() {
-			return false;
-		}
-		
-		@Override
-		public TLType promoteWith(TLType otherType) {
-			if (otherType == TLType.CBYTEARRAY) {
-				return this;
-			}
-			
-			return TLType.ERROR;
-		}
-	}
-
-	
-	
-
 	public abstract static class TLTypeSymbol extends TLType {
 		
 		@Override
@@ -707,10 +678,6 @@ public abstract class TLType {
 	
 	public boolean isByteArray() {
 		return (this instanceof TLTypeByteArray);
-	}
-	
-	public boolean isCByteArray() {
-		return (this instanceof TLTypeCByteArray);
 	}
 	
 	public boolean isPrimitive() {
@@ -988,15 +955,8 @@ public abstract class TLType {
 		}
 		
 		if (from.isByteArray()) {
-			return	to.isByteArray() ?	0 :
-				    to.isCByteArray() ? 1 : Integer.MAX_VALUE;
+			return	to.isByteArray() ?	0 : Integer.MAX_VALUE;
 		}
-
-		if (from.isCByteArray()) {
-			return	to.isCByteArray() ?	0 :
-				    to.isByteArray() ? 1 : Integer.MAX_VALUE;
-		}
-
 		
 		throw new IllegalArgumentException(" Unknown types for type-distance calculation: '" 
 				+ from.name() +  "' and '" + to.name() + "'");

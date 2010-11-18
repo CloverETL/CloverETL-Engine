@@ -145,6 +145,10 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
 	 */
 
 	public void copyFieldsByPosition(DataRecord sourceRecord) {
+		if (sourceRecord == null) {
+			reset();
+			return;
+		}
 		int copyLength;
         DataField sourceField;
         DataField targetField;

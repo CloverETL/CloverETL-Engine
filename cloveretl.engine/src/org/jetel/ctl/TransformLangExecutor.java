@@ -281,9 +281,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	@SuppressWarnings(value = "EI2")
 	public void setInputRecords(DataRecord[] inputRecords) {
 		this.inputRecords = inputRecords;
-		for (DataRecord record : this.inputRecords) {
-			if (record == null)
-				record = NullRecord.NULL_RECORD;
+		for (int i = 0; i < this.inputRecords.length; i++) {
+			if (this.inputRecords[i] == null) {
+				this.inputRecords[i] = NullRecord.NULL_RECORD;
+			}
 		}
 	}
 
@@ -1117,7 +1118,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			
 			// evaluate update clause
 			if (forUpdate != null) {
-				forUpdate.jjtAccept(this, data);
+				executeAndCleanup(forUpdate, data);
 			}
 			
 			// check final condition

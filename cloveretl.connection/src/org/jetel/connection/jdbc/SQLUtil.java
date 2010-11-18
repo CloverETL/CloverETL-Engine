@@ -158,7 +158,7 @@ public class SQLUtil {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
 			}
 			try {
-				length = scale + dbMetadata.getPrecision(sqlIndex);
+				length = dbMetadata.getPrecision(sqlIndex);
 				if (length <= scale) {
 					cloverType = DataFieldMetadata.NUMERIC_FIELD;
 				}else{

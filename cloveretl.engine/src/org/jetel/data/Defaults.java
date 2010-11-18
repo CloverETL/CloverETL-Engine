@@ -525,6 +525,8 @@ s    	 */
 					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "(?<!\\\\)`(.*?)(?<!\\\\)`");
 			PROPERTY_PLACEHOLDER_REGEX = getStringProperties(
 					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{(\\w+)\\}");
+			PROPERTY_ALLOWED_RECURSION_DEPTH = getIntProperties(
+					"GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH", 30);
 		}
 
 		/** determines whether the CTL expressions within properties should be evaluated or not */
@@ -534,6 +536,9 @@ s    	 */
 		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "(?<!\\\\)`(.*?)(?<!\\\\)`";
 		/** a regular expression describing the format of property references */
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
+
+		/** allowed depth of recursion by graph property resolving */
+		public static int PROPERTY_ALLOWED_RECURSION_DEPTH;// = 30;
 
 	}
 

@@ -85,7 +85,7 @@ public class TransformationGraphAnalyzer {
 
 		if (set1.isEmpty()) {
 			logger.error("No root Nodes detected! There must be at least one root node defined." +
-					" (Root node is	node with output ports defined only.)");
+					" (Root node is node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
 
@@ -406,7 +406,11 @@ public class TransformationGraphAnalyzer {
                             .getPassThroughInputPort());
                     final Edge outEdge = (Edge) node.getOutputPort(node
                             .getPassThroughOutputPort());
-                    if (inEdge == null || outEdge == null) {
+                    if (inEdge == null || outEdge == null
+                    		//if the component has an output edge which is directly connected into its input port
+                    		//whole component is removed even with the edge
+                    		//this is not normally possible however see issue #4960
+                    		|| inEdge == outEdge) { 
                         disconnectAllEdges(node);
                         continue;
                     }

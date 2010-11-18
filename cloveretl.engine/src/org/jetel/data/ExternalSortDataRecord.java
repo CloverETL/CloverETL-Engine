@@ -128,9 +128,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordInternal#put(org.jetel.data.DataRecord)
-	 */
 	public boolean put(DataRecord record) throws IOException, InterruptedException {
 		if (!sorter.put(record)) {
 			// we need to sort & flush buffer on to tape and merge it
@@ -147,9 +144,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		return true;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordInternal#sort()
-	 */
 	public void sort() throws IOException, InterruptedException {
 		if (doMerge) {
 			// sort whatever remains in sorter
@@ -162,9 +156,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordInternal#get()
-	 */
 	public DataRecord get() throws IOException, InterruptedException {		
 		
 		int index;
@@ -185,9 +176,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	            
 	            SynchronizeUtils.cloverYield();
 	            return sourceRecords[index];
-	        } else { 
-				tapeCarousel.free();
-				carouselInitialized = false;
+	        } else {
 				return null;
 			}
 		} else {			
@@ -195,9 +184,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordInternal#get(java.nio.ByteBuffer)
-	 */
 	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException {		
 		DataRecord record=get();
 		if (record!=null){
@@ -224,16 +210,21 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordInternal#free()
-	 */
-	public void free() throws InterruptedException {
+	public void postExecute(){
 		if (carouselInitialized && (tapeCarousel!=null)) {
-			tapeCarousel.free(); // this shouldn't happen if component exited in clean way
+			try {
+				tapeCarousel.free();
+				carouselInitialized = false;
+			} catch (InterruptedException e) {
+				// DO NOTHING
+			}
 		}
-		sorter.free();
-	}	
+		sorter.postExecute();
+	}
 	
+	public void free() {
+		sorter.free();
+	}
 	
 	private void flushToTapeSynchronously() throws IOException, InterruptedException {
         DataRecordTape tape;
@@ -441,4 +432,5 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         }
         return false;
     }
+
 }

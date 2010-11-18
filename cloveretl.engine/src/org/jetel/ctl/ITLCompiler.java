@@ -112,6 +112,6 @@ public interface ITLCompiler {
 	 * @throws UnsupportedOperationException if the compiler does not support CTL-to-Java conversion
 	 * @throws ErrorMessageException if an error occurred
 	 */
-	public String convertToJava(String ctlCode, Class<?> targetInterface) throws ErrorMessageException;
+	public String convertToJava(String ctlCode, Class<?> targetInterface, String componentId) throws ErrorMessageException;
 
 }

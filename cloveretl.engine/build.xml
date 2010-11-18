@@ -317,6 +317,8 @@ defined.version.suffix=release
 				<include name="**/*"/>
 			</fileset>
 		</zip>
+		
+		<delete dir="${dir.distprepare.exa}"/> <!-- remove *.launch -->
 
 	</target>
 
@@ -328,6 +330,9 @@ defined.version.suffix=release
 			<fileset dir="${dir.example.project}" >
 				<patternset refid="example.files"/>
 			</fileset>
+			<filtermapper>
+			  <replacestring from="launch_" to="launch"/>
+			</filtermapper>
 		</copy>
 	</target>
 

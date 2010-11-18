@@ -524,7 +524,7 @@ public class HashJoin extends Node {
 				}
 				transformAndWriteRecord(itor.next(), slaveIdx);
 			}
-			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
+			inRecords[FIRST_SLAVE_PORT + slaveIdx] = NullRecord.NULL_RECORD;
 		}
 	}
 

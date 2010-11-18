@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.TLType;
@@ -53,9 +54,18 @@ public class CLVFLookupNode extends SimpleNode {
 		this.lookupTable = node.lookupTable;
 	}
 
-	/** Accept the visitor. * */
+	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-		return visitor.visit(this, data);
+		try {
+			return visitor.visit(this, data);
+		} catch (TransformLangExecutorRuntimeException e) {
+			if (e.getNode() == null) {
+				e.setNode(this);
+			}
+			throw e;
+		} catch (RuntimeException e) {
+			throw new TransformLangExecutorRuntimeException(this, null, e);
+		}
 	}
 
 	public void setLookupName(String name) {

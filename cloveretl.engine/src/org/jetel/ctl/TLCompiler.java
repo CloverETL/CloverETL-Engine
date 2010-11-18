@@ -260,8 +260,8 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	public List<ErrorMessage> compileExpression(String code, Class<?> targetInterface, String componentId, String syntheticFunctionName, Class<?> syntheticReturnType) {
 		final String wrappedCode = wrapExpression(code,syntheticFunctionName, syntheticReturnType);
-		logger.info("Component '" + componentId + "' uses CTL expression. Creating synthetic function '" + syntheticFunctionName + "'");
-		logger.info(wrappedCode);
+		logger.trace("Component '" + componentId + "' uses CTL expression. Creating synthetic function '" + syntheticFunctionName + "'");
+		logger.trace(wrappedCode);
 		return compile(wrappedCode,targetInterface,componentId);
 	}
 	
@@ -281,7 +281,7 @@ public class TLCompiler implements ITLCompiler {
 				" }";
 	}
 
-	public String convertToJava(String ctlCode, Class<?> targetInterface) throws ErrorMessageException {
+	public String convertToJava(String ctlCode, Class<?> targetInterface, String componentId) throws ErrorMessageException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -301,7 +301,7 @@ public class TLCompiler implements ITLCompiler {
 		// compiler can be started standalone (i.e. from PropertyRefResolver without component reference)
 		// in that case do not report the execution mode
 		if (logger != null && getComponentId() != null) {
-			logger.info("Component '" + getComponentId() + "' runs in INTERPRETED mode"); 
+			logger.debug("Component '" + getComponentId() + "' runs in INTERPRETED mode"); 
 		}
 		
 		// perform initialization of the executor for runtime

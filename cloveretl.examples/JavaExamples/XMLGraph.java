@@ -112,6 +112,7 @@ public class XMLGraph{
 			graph = graphReader.read(in);
 		}catch(Exception ex){
 			ex.printStackTrace();
+			return;
 		}
 				
 		graph.dumpGraphConfiguration();

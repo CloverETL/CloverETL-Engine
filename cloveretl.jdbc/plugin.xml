@@ -99,8 +99,8 @@
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="ORACLE"/>
 		<parameter id="name" value="Oracle"/>
-		<parameter id="dbDriver" value="oracle.jdbc.driver.OracleDriver"/>
-		<parameter id="driverLibrary" value="lib/oracle/ojdbc14.jar"/>
+		<parameter id="dbDriver" value="oracle.jdbc.OracleDriver"/>
+		<parameter id="driverLibrary" value="lib/oracle/ojdbc6.jar"/>
 		<parameter id="urlHint" value="jdbc:oracle:thin:@hostname:1521:database"/>
 		<parameter id="jdbcSpecific" value="ORACLE"/>
 	</extension>

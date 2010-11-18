@@ -724,6 +724,9 @@ public class HttpConnector extends Node {
 
 		if (requestMethod.equals(POST)) {
 			//request method is post
+			if( logger.isDebugEnabled() ){
+				logger.debug("Creating POST request to " + rawUrlToProceed);
+			}
 			postMethod = new PostMethod(rawUrlToProceed);
 			postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
 			//do authentication
@@ -749,6 +752,9 @@ public class HttpConnector extends Node {
 			}
 		} else if (requestMethod.equals(GET)) {
 			//request method is post
+			if( logger.isDebugEnabled() ) {
+				logger.debug("Creating GET request to " + rawUrlToProceed);
+			}
 			getMethod = new GetMethod(rawUrlToProceed);
 			getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
 			//do authentication

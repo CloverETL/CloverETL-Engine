@@ -36,6 +36,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -574,6 +575,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_global_field_access", "Unable to access record field in global scope");
 	}
 
+	public void test_global_scope() {
+		// test case for issue 5006
+		doCompile("test_global_scope");
+		
+		check("len", "Kokon".length());
+	}
+	
 	//TODO Implement
 	/*public void test_new() {
 		doCompile("test_new");
@@ -1533,7 +1541,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// all conditions empty
 		check("res7", Arrays.asList(0,1,2));
 	}
-	
+
+	public void test_for1() {
+		//5125: CTL2: "for" cycle is EXTREMELY memory consuming
+		doCompile("test_for1");
+
+		checkEquals("counter", "COUNT");
+	}
+
 	public void test_foreach() {
 		doCompile("test_foreach");
 		check("intRes", Arrays.asList(VALUE_VALUE));
@@ -1639,7 +1654,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
 	}
-	
+
+	public void test_copyByName_assignment1() {
+		doCompile("test_copyByName_assignment1");
+		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
+		assertEquals("Age", null, outputRecords[3].getField("Age").getValue());
+		assertEquals("City", null, outputRecords[3].getField("City").getValue());
+	}
+
 	public void test_sequence(){
 		doCompile("test_sequence");
 		check("intRes", Arrays.asList(1,2,3));
@@ -2364,9 +2386,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_date2str() {
 		doCompile("test_convertlib_date2str");
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd");
 		check("inputDate", "1987:05:12");
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd");
 		check("bornDate", sdf.format(BORN_VALUE));
+
+		SimpleDateFormat sdfCZ = new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale("cs.CZ"));
+		check("czechBornDate", sdfCZ.format(BORN_VALUE));
+
+		SimpleDateFormat sdfEN = new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale("en"));
+		check("englishBornDate", sdfEN.format(BORN_VALUE));
 	}
 	
 	public void test_convertlib_decimal2double() {

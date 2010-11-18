@@ -101,6 +101,7 @@ public class FileCloseTest extends TestCase {
 		try {
 			IThreadManager threadManager = new SimpleThreadManager();
 			WatchDog watchDog = new WatchDog(graph, runtimeContext);
+            threadManager.initWatchDog(watchDog);
 			futureResult = threadManager.executeWatchDog(watchDog);
 		} catch (Exception e) {
 			fail("Error in graph execution: " + e);

@@ -40,7 +40,8 @@ public class DecimalFactory {
     private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = 18;
 	
     public static Decimal getDecimal(int value) {
-        Decimal d = getDecimal(10, 0);
+    	//length must be big enough to fit even the longest integer
+		Decimal d = getDecimal(10 + Defaults.DataFieldMetadata.DECIMAL_SCALE, Defaults.DataFieldMetadata.DECIMAL_SCALE);
 		d.setValue(value);
 		return d;
 	}
@@ -66,7 +67,8 @@ public class DecimalFactory {
 	}
 
 	public static Decimal getDecimal(long value) {
-		Decimal d = getDecimal(19, 0);
+		//length must be big enough to fit even the longest long
+		Decimal d = getDecimal(19 + Defaults.DataFieldMetadata.DECIMAL_SCALE, Defaults.DataFieldMetadata.DECIMAL_SCALE);
 		d.setValue(value);
 		return d;
 	}

@@ -123,18 +123,18 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		if (recordColList.size()>0) {
 			currentRecordCol=(DataRecordCol)recordColList.get(0);
 			for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
-				((DataRecordCol)i.next()).reset();
+			    ((DataRecordCol)i.next()).reset();
 			}
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordsInternal#free()
-	 */
-	public void free(){
-	    for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
+	public void postExecute() {
+		for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
 		    ((DataRecordCol)i.next()).free();
 		}
+	}
+
+	public void free() {
 	    recordColList.clear();
 	}
 
@@ -148,10 +148,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordsInternal#put(org.jetel.data.DataRecord)
-	 */
 	public boolean put(DataRecord record) {
 		if (!currentRecordCol.put(record)){
 		    if (!secureSpace()){
@@ -189,9 +185,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    return true;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordsInternal#sort()
-	 */
 	public void sort() {
         if (useCollator){
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collator);
@@ -211,10 +204,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    recordColArray=(DataRecordCol[])recordColList.toArray(new DataRecordCol[0]);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordsInternal#get()
-	 */
 	public DataRecord get() {
 	    // optimization - if only 1 sorted buffer, then no merge sorting
 	    if (recordColArray.length==1){
@@ -227,10 +216,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    }*/
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ISortDataRecordsInternal#get(java.nio.ByteBuffer)
-	 */
 	public boolean get(ByteBuffer recordDataBuffer) {
 		DataRecord record=get();
 		if (record!=null){

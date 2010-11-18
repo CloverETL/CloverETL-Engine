@@ -757,7 +757,7 @@ public class Dedup extends Node {
 
 		@Override
 		public void validateOrder() throws TransformException {
-			if (cmpResult == -1) throw new TransformException(getErrorMessage());
+			if (cmpResult == -1 && !recordKey.isComparedNulls()) throw new TransformException(getErrorMessage());
 		}
 	}
 

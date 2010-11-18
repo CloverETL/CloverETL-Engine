@@ -65,6 +65,10 @@ public class IntegralLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Copies data from the second parameter to the first parameter based on field names. Returns the first argument")
 	public static final DataRecord copyByName(TLFunctionCallContext context, DataRecord to, DataRecord from) {
+		if (from == null) {
+			to.reset();
+			return to;
+		}
 		TLCopyByNameTransformCache transformCache = (TLCopyByNameTransformCache) context.getCache();
 		try {
 			transformCache.init(from.getMetadata(), to.getMetadata());

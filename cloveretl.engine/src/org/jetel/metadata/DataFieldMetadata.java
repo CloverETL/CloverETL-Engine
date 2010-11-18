@@ -1156,4 +1156,7 @@ public class DataFieldMetadata implements Serializable {
 		}
 	}
 
+	public String toString(){
+		return "Field["+this.type+"|"+this.number+"|"+this.name+"]";
+	}
 }

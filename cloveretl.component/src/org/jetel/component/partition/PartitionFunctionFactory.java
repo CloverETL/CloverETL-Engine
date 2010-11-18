@@ -107,10 +107,12 @@ public class PartitionFunctionFactory {
 				for (int i = 0; i < partitionKeyNames.length; i++) {
 					keyField = metadata.getField(partitionKeyNames[i]);
 					startField = keyField.duplicate();
+					startField.setAutoFilling(null);
 					startField.setName(keyField.getName() + "_start");
 					startField.setDelimiter(String.valueOf(COMMA));
 					startFields[i] = startField.getName(); 
 					endField = keyField.duplicate();
+					endField.setAutoFilling(null);
 					endField.setName(keyField.getName() + "_end");
 					endField.setDelimiter(i == partitionKeyNames.length -1 ? 
 							Defaults.Component.KEY_FIELDS_DELIMITER : String.valueOf(COMMA));

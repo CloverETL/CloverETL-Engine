@@ -18,6 +18,8 @@
  */
 package com.linagora.ldap;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -150,12 +152,18 @@ public abstract class Ldap2JetelData {
 				} else {
 					if (value instanceof byte[]) {
 						df.setValue(value);
+					} else if (value instanceof String) {
+						try {
+							df.setValue(((String)value).getBytes("UTF-8"));
+						} catch (UnsupportedEncodingException e) {
+							throw new RuntimeException("Failed to set String into Byte field", e);
+						}
 					} else {
-						throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array.");
+						throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
 					}
 				}
 			} else {
-				throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array.");
+				throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
 			}
 		}
 

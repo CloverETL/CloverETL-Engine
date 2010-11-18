@@ -230,7 +230,7 @@ public class MathLib extends TLFunctionLibrary {
     // ROUND
     class RoundFunction extends TLFunctionPrototype { 
         public RoundFunction() {
-            super("math", "round", "Returns rounded value",  new TLValueType[] { TLValueType.DECIMAL }, TLValueType.NUMBER);
+            super("math", "round", "Returns rounded value",  new TLValueType[] { TLValueType.DECIMAL }, TLValueType.LONG);
         }
 
         @Override
@@ -251,7 +251,7 @@ public class MathLib extends TLFunctionLibrary {
         }
         @Override
         public TLContext createContext() {
-            return TLContext.createDoubleContext();
+            return TLContext.createLongContext();
         }
     }                        
     

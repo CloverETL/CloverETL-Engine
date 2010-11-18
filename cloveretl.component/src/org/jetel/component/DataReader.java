@@ -19,15 +19,16 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -271,10 +272,8 @@ public class DataReader extends Node {
 									.setValue(bdfe.getRecordNumber());
 							((IntegerDataField) logRecord.getField(1))
 									.setValue(bdfe.getFieldNumber() + 1);
-							((StringDataField) logRecord.getField(2)).setValue(bdfe
-									.getRawRecord());
-							((StringDataField) logRecord.getField(3)).setValue(bdfe
-									.getMessage());
+							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
+							setCharSequenceToField(bdfe.getMessage(), logRecord.getField(3));
 							writeRecord(LOG_PORT, logRecord);
 						} else {
 							logger.warn(bdfe.getMessage());
@@ -296,7 +295,32 @@ public class DataReader extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-	
+	private void setCharSequenceToField(CharSequence charSeq, DataField field) {
+		if (charSeq == null) {
+			field.setNull(true);
+		} else {
+			field.setNull(false);
+			
+			if (field.getType() == DataFieldMetadata.STRING_FIELD) {
+				field.setValue(charSeq);
+			} else if (field.getType() == DataFieldMetadata.BYTE_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				String cs;
+				if (charset != null) {
+					cs = charset;
+				} else {
+					cs = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+				}
+				try {
+					field.setValue(charSeq.toString().getBytes(cs));
+				} catch (UnsupportedEncodingException e) {
+					// if parameter charset set, encoding support was checked in checkConfig()
+					logger.error(getId() + ": failed to write log record", e);
+				}
+			} else {
+				throw new IllegalArgumentException("DataField type has to by string, byte or cbyte");
+			}
+		}
+	}
 
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
@@ -322,8 +346,8 @@ public class DataReader extends Node {
         boolean ret = logMetadata.getNumFields() == 4 
         	&& logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
         	&& logMetadata.getField(1).getType() == DataFieldMetadata.INTEGER_FIELD
-            && logMetadata.getField(2).getType() == DataFieldMetadata.STRING_FIELD
-            && logMetadata.getField(3).getType() == DataFieldMetadata.STRING_FIELD;
+            && isStringOrByte(logMetadata.getField(2))
+            && isStringOrByte(logMetadata.getField(3));
         
         if(!ret) {
             logger.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
@@ -331,6 +355,10 @@ public class DataReader extends Node {
         
         return ret;
     }
+	
+	private boolean isStringOrByte(DataFieldMetadata field) {
+		return field.getType() == DataFieldMetadata.STRING_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED;
+	}
 	
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser

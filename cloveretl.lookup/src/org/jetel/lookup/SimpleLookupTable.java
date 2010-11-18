@@ -25,10 +25,10 @@ import java.util.NoSuchElementException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordMap;
+import org.jetel.data.DataRecordMap.DataRecordIterator;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.DataRecordMap.DataRecordIterator;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
@@ -37,11 +37,11 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -194,6 +194,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			indexKey = new RecordKey(keys, metadata);
 		}
 		indexKey.init();
+		indexKey.setEqualNULLs(true);
 
 		DataRecord record = new DataRecord(metadata);
 		record.init();
@@ -218,7 +219,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		lookupTable.clear();
+		if (lookupTable != null) {
+			lookupTable.clear();
+		}
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package org.jetel.data.primitive;
 
 import java.nio.ByteBuffer;
 
+import org.jetel.data.Defaults;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.formatter.NumericFormatterFactory;
 
@@ -54,8 +55,8 @@ public class DecimalNumericTest extends CloverTestCase {
 			if (!anInt.isNaN()) assertEquals(DecimalFactory.getDecimal(value),anInt.getDecimal());
 			System.out.println("Test for getDecimal passed (isNaN="+anInt.isNaN()+")");
 			assertNotSame(DecimalFactory.getDecimal(value),anInt.getDecimal());
-			assertEquals(10,anInt.getPrecision());
-			assertEquals(0,anInt.getScale());
+			assertEquals(10 + Defaults.DataFieldMetadata.DECIMAL_SCALE,anInt.getPrecision());
+			assertEquals(Defaults.DataFieldMetadata.DECIMAL_SCALE,anInt.getScale());
 			if (anInt.getInt()==Integer.MAX_VALUE) anInt.setNaN(true);
 			if (!anInt.isNaN()) assertEquals(-1,anInt.compareTo(DecimalFactory.getDecimal(more)));
 			if (!anInt.isNaN()) assertEquals(-1,anInt.compareTo(Integer.valueOf(more)));
@@ -100,8 +101,8 @@ public class DecimalNumericTest extends CloverTestCase {
 			if (!aLong.isNaN()) assertEquals(DecimalFactory.getDecimal(value),aLong.getDecimal());
 			System.out.println("Test for getDecimal passed (isNaN="+anInt.isNaN()+")");
 			assertNotSame(DecimalFactory.getDecimal(value),aLong.getDecimal());
-			assertEquals(19,aLong.getPrecision());
-			assertEquals(0,aLong.getScale());
+			assertEquals(19 + Defaults.DataFieldMetadata.DECIMAL_SCALE,aLong.getPrecision());
+			assertEquals(Defaults.DataFieldMetadata.DECIMAL_SCALE,aLong.getScale());
 			if (!aLong.isNaN()&&!(value==Long.MAX_VALUE)) assertEquals(-1,aLong.compareTo(DecimalFactory.getDecimal(more)));
 			if (!aLong.isNaN()&&!(value==Long.MAX_VALUE)) assertEquals(-1,aLong.compareTo(Long.valueOf(more)));
 			if (!aLong.isNaN()) assertEquals(0,aLong.compareTo(DecimalFactory.getDecimal(value)));
@@ -515,7 +516,7 @@ public class DecimalNumericTest extends CloverTestCase {
 
 	public void test_fromString(){
 		aDouble.fromString("123.45",NumericFormatterFactory.getPlainFormatterInstance());
-		assertEquals(Double.valueOf(123),Double.valueOf(aDouble.getDouble()));
+		assertEquals(Double.valueOf(123.45),Double.valueOf(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,5);
 		aDouble.fromString(".12345",NumericFormatterFactory.getPlainFormatterInstance());
 		assertEquals(Double.valueOf(0.12345),Double.valueOf(aDouble.getDouble()));

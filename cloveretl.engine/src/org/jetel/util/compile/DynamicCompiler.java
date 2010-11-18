@@ -103,8 +103,10 @@ public final class DynamicCompiler {
 
 		final Set<URL> extraLibraries = getExtraLibraries();
 		extraLibraries.addAll(Arrays.asList(compileClassPath));
-		
+
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		if (compiler == null)
+			throw new IllegalStateException("Used Java Platform doesn't provide any java compiler! ");
 		JavaClassFileManager fileManager = new JavaClassFileManager(compiler, classLoader, extraLibraries.toArray(new URL[extraLibraries.size()]));
 		
 		logger.debug("Java compile time classpath (-cp) for class '" + className + "': " + fileManager.getClassPath());

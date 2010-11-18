@@ -492,8 +492,7 @@ public class TargetFile {
     	if (fieldOrDictOutput = (field != null || dictProcesstingType != null)) {
     		if (dictOutChannel != null) {
         		setDataTarget(dictOutChannel);
-    		}
-    		else {
+    		} else {
     			if (bbOutputStream != null) {
             		write2OutportOrDictionary(bbOutputStream.toByteArray());
                 	bbOutputStream.reset();
@@ -529,16 +528,16 @@ public class TargetFile {
     }
     
     private String addUnassignedName(String fName) throws IOException {
-    	int k = fName.lastIndexOf('#');
-    	String name; 
-    	if (k < 0) {
-    		k = 0;
+    	int hashIndex = fName.lastIndexOf('#');
+    	if (hashIndex >= 0) {
+    		String name = fName.substring(0, hashIndex) + fileName;
+    		if (fName.length() >= hashIndex + 1) {
+    			name += fName.substring(hashIndex + 1);
+    		}
+    		return name;
+    	} else {
+    		return fName + fileName;
     	}
-		name = fName.substring(k);
-    	int j = name.lastIndexOf('/');
-    	if (j < 0) j = name.lastIndexOf('\\');
-    	if (j > 0) k = j;
-    	return fName.substring(0, k+1) + fileName;
     }
     
     /**

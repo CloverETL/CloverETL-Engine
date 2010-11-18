@@ -449,7 +449,10 @@ public class MultiFileWriter {
     	} else if (currentTarget != null) {
     		currentTarget.close();
     	}
-    	if (unassignedTarget != null) unassignedTarget.close();
+    	if (unassignedTarget != null) {
+    		unassignedTarget.close();
+    		unassignedTarget = null;
+    	}
     	outputClosed = true;
     }
     
@@ -469,7 +472,12 @@ public class MultiFileWriter {
     	} else {
     		currentTarget.finish();
     	}
-    	if (unassignedTarget != null) unassignedTarget.finish();
+    	if (unassignedTarget != null) {
+    		unassignedTarget.finish();
+    		// well, unassignedTarget.finish() closes its formatter (who closes its output channel) which renders unassignedTarget unusable
+    		unassignedTarget.close();  // just to be sure
+    		unassignedTarget = null; 
+    	}
     }
 
     /**

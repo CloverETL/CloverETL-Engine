@@ -40,6 +40,9 @@ import org.jetel.data.Defaults;
  *
  */
 public final class ByteBufferUtils {
+
+	/** Max size of integer encoded via encodeLength in bytes. */
+	public static final int SIZEOF_INT = 5;
 	
 	/**
 	 * This method flushes the buffer (data from the begging of buffer to position) 

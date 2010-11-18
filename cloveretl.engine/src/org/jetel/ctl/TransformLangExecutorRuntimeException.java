@@ -104,18 +104,25 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
         }
-        strBuf.append(" : ");
-		strBuf.append(super.getMessage());
-        if (super.getCause()!=null) {
-            strBuf.append(" - '").append(super.getCause().getMessage()).append("' : ");
+        if (super.getMessage() != null) {
+            strBuf.append(" - ");
+        	strBuf.append(super.getMessage());
         }
-        strBuf.append("\n");
+        if (super.getCause()!=null) {
+        	if (getCause() instanceof NullPointerException) {
+                strBuf.append(" - ");
+        		strBuf.append("Unexpected null value.");
+        	}
+        	if (super.getCause().getMessage() != null) {
+        		strBuf.append(" - '").append(super.getCause().getMessage()).append("'");
+        	}
+        }
 		if (arguments !=null){
 			for(int i=0;i<arguments.length;i++){
+				strBuf.append("\n");
 				strBuf.append("arg[").append(i).append("] ");
 				strBuf.append(arguments[i] != null ? arguments[i].getClass().getName() : "null").append(" \"");
 				strBuf.append(arguments[i] != null ? arguments[i] : "!! NULL !!").append("\"");
-				strBuf.append("\n");
 			}
 		}
 		return strBuf.toString();

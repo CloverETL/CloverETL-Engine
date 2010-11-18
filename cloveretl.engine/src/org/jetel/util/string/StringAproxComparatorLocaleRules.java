@@ -383,6 +383,17 @@ public class StringAproxComparatorLocaleRules {
 		"s=ş=S=Ş"
 	};
 
+	private static final String[] RU_RULES={//Russian
+		"Е=е=Ё=ё=É=é",
+		"И=и=Й=й=И҆=и́",
+		"O=o=Ó=ó",
+		"А=а=Á=á",
+		"Ы=ы=Ы҆=ы҆",
+		"Я=я=Я҆=я́",
+		"Ю=ю=Ю҆=ю҆",
+		"У=у=У҆=у́",
+		"Э=э=Э҆=э́"
+	};
 	
 	/**
 	 * Static initalization for rules HashMap
@@ -417,6 +428,8 @@ public class StringAproxComparatorLocaleRules {
 		rules.put("CH",FR_RULES);
 		
 		rules.put("PL",PL_RULES);
+		
+		rules.put("RU",RU_RULES);
 		
 		rules.put("HU",HU_RULES);
 
