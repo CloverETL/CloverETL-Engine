@@ -21,6 +21,7 @@ package org.jetel.graph.runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
@@ -174,4 +175,31 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
 	
+	/**
+	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
+	 * Used for delimited data by ParallelReader in segment mode. 
+	 * @param runId
+	 * @param componentId
+	 * @param fileURL
+	 * @param channel The channel to be apportioned
+	 * @param charset Charset of the channel
+	 * @param recordDelimiters An array of delimiters
+	 * @return
+	 * @throws IOException
+	 */
+	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException;
+
+	/**
+	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
+	 * Used for fixed-length data by ParallelReader in segment mode. 
+	 * @param runId
+	 * @param componentId
+	 * @param fileURL
+	 * @param channel The channel to be apportioned
+	 * @param recordLength Record length in bytes
+	 * @return
+	 * @throws IOException
+	 */
+	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, int recordLength) throws IOException;
+
 }
