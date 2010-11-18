@@ -10,6 +10,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  * @author Agata Vackova (agata.vackova@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -31,9 +33,9 @@ public class DataParserTest extends CloverTestCase {
 	DataParser parserCp1250 = new DataParser("windows-1250");
 	DataParser parserISO88591 = new DataParser("ISO-8859-1");
 	
-	/* (non-Javadoc)
-	 * @see junit.framework.TestCase#setUp()
-	 */
+	private int oldBufferSize;
+	
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 		metadata.setFieldDelimiter("\n");
@@ -51,6 +53,7 @@ public class DataParserTest extends CloverTestCase {
 		parserUTF16.setTrim(true);
 		parserCp1250.setTrim(true);
 		parserISO88591.setTrim(true);
+		oldBufferSize = Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 	}
 
 	public void testParsers() throws Exception {
@@ -76,18 +79,21 @@ public class DataParserTest extends CloverTestCase {
 		parserUTF16.close();
 	}
 
+	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
 	public void testOddBufferSize() throws Exception {
 		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = 15;
 		testParsers();
 	}
 	
+	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
 	public void testEvenBufferSize() throws Exception {
 		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = 16;
 		testParsers();
 	}
 	
 	@Override
+	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
 	protected void tearDown() throws Exception {
-		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768;
+		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = oldBufferSize;
 	}
 }

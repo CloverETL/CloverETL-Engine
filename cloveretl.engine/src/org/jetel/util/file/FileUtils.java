@@ -67,6 +67,8 @@ import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -147,8 +149,6 @@ public class FileUtils {
         // sandbox url
 		if (fileURL.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)){
     		TransformationGraph graph = ContextProvider.getGraph();
-    		if (graph == null)
-    			throw new MalformedURLException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
         	try {
         		return new URL(contextURL, fileURL, new SandboxStreamHandler(graph));
             } catch(MalformedURLException e) {}
@@ -327,9 +327,6 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile());
         	} else if (archiveType == null && url.getProtocol().equals(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
-    			TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null)
-        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
             	return url.openConnection().getInputStream();
         	}
         	
@@ -753,6 +750,7 @@ public class FileUtils {
 	 * @return true if can write, false otherwise
 	 * @throws ComponentNotReadyException
 	 */
+	@SuppressWarnings(value = "RV_ABSOLUTE_VALUE_OF_HASHCODE")
 	public static boolean canWrite(URL contextURL, String fileURL, boolean mkDirs) throws ComponentNotReadyException {
 		// get inner source
 		Matcher matcher = getInnerInput(fileURL);

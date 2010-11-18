@@ -146,11 +146,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
 	public DataRecordMetadata getMetadata() {
 		if (dbMetadata == null){
-			metadataSearching:
 			for (DBLookup activeLookup : activeLookups) {
 				if (activeLookup.getMetadata() != null) {
 					dbMetadata = activeLookup.getMetadata();
-					break metadataSearching;
+					break;
 				}
 			}
 		}
@@ -470,36 +469,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	}
 	
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
-        if (!isInitialized()) {
-            throw new NotInitializedException(this);
-        } else if (dbConnection == null) {
-        	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
-        }
-
-        DataRecordMetadata dbMetadata = getMetadata();
-
-        if (dbMetadata != null) {
-            return dbMetadata;
-        }
-
-        DataRecord tmpRecord = new DataRecord(new DataRecordMetadata("_tmp_"));
-        tmpRecord.init();
-
-        SQLCloverStatement statement = new SQLCloverStatement(dbConnection, sqlQuery, tmpRecord);
-
-        try {
-            statement.init();
-        } catch (SQLException e) {
-            throw new ComponentNotReadyException(this, e);
-        }
-
-        try {
-            ParameterMetaData sqlMetadata = ((PreparedStatement) statement.getStatement()).getParameterMetaData();
-
-            return SQLUtil.dbMetadata2jetel(sqlMetadata, "_dbLookupTable_" + getName(), dbConnection.getJdbcSpecific());
-        } catch (SQLException e) {
-            throw new RuntimeException("Can't get metadata from database", e);
-        }
+		throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
 	}
 	
 	public boolean isPutSupported() {

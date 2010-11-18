@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -86,7 +87,7 @@ public final class TransformationGraph extends GraphElement {
 	final static String DEFAULT_CONNECTION_ID = "Connection0";
 	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
 	final static String DEFAULT_LOOKUP_ID = "LookupTable0";
-	final static String DEFAULT_METADATA_ID = "Metadata0";
+	final static public String DEFAULT_METADATA_ID = "Metadata0";
 
 	private Dictionary dictionary;
 	
@@ -322,6 +323,20 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public Iterator<String> getDataRecordMetadata(){
 	    return dataRecordMetadata.keySet().iterator();
+	}
+	
+	/**
+	 * Returns metadata with given name.
+	 * WARNING: DataRecordMetadataStub is ignored
+	 */
+	public String getDataRecordMetadataByName(String name) {
+		for (Entry<String, Object> metadataEntry : dataRecordMetadata.entrySet()) {
+			Object metadata = metadataEntry.getValue();
+			if (metadata instanceof DataRecordMetadata && ((DataRecordMetadata) metadata).getName().equals(name)) {
+				return metadataEntry.getKey();
+			}
+		}
+		return null;
 	}
 	
 	/**

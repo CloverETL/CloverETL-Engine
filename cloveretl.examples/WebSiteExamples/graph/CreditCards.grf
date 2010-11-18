@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Wed Aug 11 15:26:01 CEST 2010" modifiedBy="avackova" name="CreditCards" revision="1.91">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Tue Aug 17 12:30:22 CEST 2010" modifiedBy="Pavel" name="CreditCards" revision="1.94">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -51,35 +51,35 @@
 </Metadata>
 <Property id="GraphParameter0" name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="89">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Transactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="89">
 <attr name="text"><![CDATA[
 
 
 
 Customer transactions loaded]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="115" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Customers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="229">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Customers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="237">
 <attr name="text"><![CDATA[
 
 
 
 50'000 customers loaded]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="118" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Rates" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="352">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Rates" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="25" y="389">
 <attr name="text"><![CDATA[
 
 
 
 Load exchange rates from web as xml]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="130" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="281" y="89">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Sort" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="281" y="89">
 <attr name="text"><![CDATA[
 
 
 
 Sort transactions by customer ID]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Matching" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="150" x="533" y="142">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Matching" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="150" x="533" y="142">
 <attr name="text"><![CDATA[
 
 
@@ -87,7 +87,7 @@ Sort transactions by customer ID]]></attr>
 
 Merge transactions with customers]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Convert currency" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="790" y="260">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Convert currency" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="790" y="260">
 <attr name="text"><![CDATA[
 
 
@@ -95,7 +95,7 @@ Merge transactions with customers]]></attr>
 
 Rebase curriencies to one base currency]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="145" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="24" y="626">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="181" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="22" y="703">
 <attr name="text"><![CDATA[
 
 
@@ -103,34 +103,34 @@ Rebase curriencies to one base currency]]></attr>
 
 Here, we split the transactions into 3 separate streams]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="477" y="475">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Stream 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="475" y="552">
 <attr name="text"><![CDATA[This stream is for transactions with bad customer IDs]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="477" y="578">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Stream 2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="475" y="655">
 <attr name="text"><![CDATA[This stream is where we do not support the currency]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="151" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="238" y="758">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="192" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="236" y="835">
 <attr name="text"><![CDATA[
 
 
 
 This function aggregates by summing all transactions for each customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="151" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="475" y="758">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="192" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Filter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="473" y="835">
 <attr name="text"><![CDATA[
 
 
 
 We filter out customers whose total transactions are more then 400k]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="151" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="683" y="755">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="192" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Sorter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="681" y="832">
 <attr name="text"><![CDATA[
 
 
 
 Sort those customers in order of transaction totals]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="384" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="868" y="521">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="384" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Writers" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="161" x="866" y="598">
 <attr name="text"><![CDATA[
 
 
@@ -176,25 +176,25 @@ Write out to html file]]></attr>
     *      Demonstrates sorting, joining, filtering, mapping and data aggregation
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note15" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stream 3" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="477" y="681">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="72" id="Note15" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Stream 3" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="475" y="758">
 <attr name="text"><![CDATA[This stream to find risky customers]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="107" id="Note16" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Note 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="702" x="21" y="-151">
-<attr name="text"><![CDATA[Rates Reader reads data from internet. If you don't have your computer connected to internet, you can read eurofxref-daily.xml placed in data-in directory. To do that, set parameter  RATES_FILE to ${DATAIN_DIR}/eurofxref-daily.xml]]></attr>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" folded="false" height="107" id="Note16" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Note 1: Read before running the graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="702" x="21" y="-151">
+<attr name="text"><![CDATA[Rates Reader reads data from internet. If you don't have your computer connected to internet, you can read eurofxref-daily.xml placed in data-in directory. To do that, set parameter RATES_FILE to ${DATAIN_DIR}/eurofxref-daily.xml]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="107" id="Note17" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Note 2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="702" x="25" y="-33">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" folded="false" height="107" id="Note17" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Note 2: Read before running the graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="702" x="25" y="-33">
 <attr name="text"><![CDATA[Transaction's file (transactions.cvs) placed in data-in directory contains 40,000 records only. If you want to run the graph for more data, you can easily create it with CreditCardsTransactionGenerator graph.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="customer_id" enabled="enabled" guiHeight="0" guiName="SumByCustomer" guiWidth="0" guiX="250" guiY="765" id="AGGREGATE0" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
+<Node aggregateKey="customer_id" enabled="enabled" guiHeight="0" guiName="SumByCustomer" guiWidth="0" guiX="248" guiY="842" id="AGGREGATE0" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiHeight="0" guiName="Transactions" guiWidth="0" guiX="35" guiY="99" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiHeight="0" guiName="Customers" guiWidth="0" guiX="35" guiY="240" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Amount&gt;400k" guiWidth="0" guiX="492" guiY="765" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiHeight="0" guiName="Customers" guiWidth="0" guiX="35" guiY="248" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Amount&gt;400k" guiWidth="0" guiX="490" guiY="842" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.amount > 400000]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ConvertCurrency" guiWidth="0" guiX="804" guiY="263" id="EXT_HASH_JOIN0" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="ConvertCurrency" guiWidth="0" guiX="805" guiY="271" id="EXT_HASH_JOIN0" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -263,8 +263,8 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="290" guiY="99" id="FAST_SORT0" sortKey="CustomerId(a)" type="FAST_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="700" guiY="765" id="FAST_SORT1" sortKey="amount(d)" type="FAST_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="33" guiY="634" id="PARTITION0" type="PARTITION">
+<Node enabled="enabled" guiHeight="0" guiName="FastSort" guiWidth="0" guiX="698" guiY="842" id="FAST_SORT1" sortKey="amount(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="31" guiY="711" id="PARTITION0" type="PARTITION">
 <attr name="partitionSource"><![CDATA[//#CTL2
 // This transformation partitions input records into multiple output ports.
 
@@ -294,7 +294,7 @@ function integer getOutputPort() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="542" guiY="293" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="543" guiY="319" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer counter = 1;
 // Transforms input record into output record.
@@ -325,7 +325,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="337" guiY="529" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="335" guiY="606" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -354,10 +354,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="risky-customers.html" guiWidth="0" guiX="888" guiY="755" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-customer" guiWidth="0" guiX="888" guiY="530" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-currency.html" guiWidth="0" guiX="888" guiY="637" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="36" guiY="362" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="risky-customers.html" guiWidth="0" guiX="886" guiY="832" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-customer" guiWidth="0" guiX="886" guiY="607" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="0" guiName="missing-currency.html" guiWidth="0" guiX="886" guiY="714" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="36" guiY="399" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
   <Mapping element="gesmes:Envelope">
     <Mapping element="Cube">
@@ -370,10 +370,10 @@ function integer transform() {
 </Node>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="FAST_SORT0:0"/>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="281:0:-98:73:0.5|281:-73:-98:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="281:0:-98:81:0.5|281:-81:-98:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="FAST_SORT1:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="23:0:922:-369:0.5|23:191:922:-178:0.5|-914:191:-15:-178:0.5|-914:369:-15:0:0.5" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="49:0:-85:-112:0.5|49:112:-85:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="35:0:937:-438:0.5|35:272:937:-166:0.5|-913:272:-11:-166:0.5|-913:438:-11:0:0.5" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="49:0:-86:-120:0.5|49:120:-86:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge debugMode="false" fromNode="FAST_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
 <Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>

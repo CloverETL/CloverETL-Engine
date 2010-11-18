@@ -356,8 +356,9 @@ public class LookupJoin extends Node {
                 do {
 					if ((inRecords[1] != NullRecord.NULL_RECORD || leftOuterJoin)) {
 						
+						outRecord[0].reset();
+						
 						int transformResult = -1;
-
 						try {
 							transformResult = transformation.transform(inRecords, outRecord);
 						} catch (Exception exception) {

@@ -26,7 +26,7 @@ import org.jetel.util.string.StringUtils;
  */
 public class ResetTest extends CloverTestCase {
 
-	private final static String SCENARIOS_RELATIVE_PATH = "../../cloveretl.test.scenarios/";
+	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios/";
 	private final static String[] EXAMPLE_PATH = {
 			"../cloveretl.examples/SimpleExamples/",
 			"../cloveretl.examples/AdvancedExamples/",
@@ -107,7 +107,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionDecimal2long.grf") // ok, is to fail
 							&& !pathname.getName().equals("conversionDouble2integer.grf") // ok, is to fail							
 							&& !pathname.getName().equals("conversionDouble2long.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail							
+							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail
+							&& !pathname.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
 							&& !pathname.getName().equals("mountainsInformix.grf"); // see issue 2550							
 				}
 			});
@@ -173,12 +174,14 @@ public class ResetTest extends CloverTestCase {
 		// absolute path in PROJECT parameter is required for graphs using Derby database
 		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
-			runtimeContext.addAdditionalProperty("CONN_DIR", SCENARIOS_RELATIVE_PATH + "conn");
-			logger.info("CONN_DIR set to " + SCENARIOS_RELATIVE_PATH + "conn");
+			final String connDir = new File(SCENARIOS_RELATIVE_PATH + "conn").getAbsolutePath();
+			runtimeContext.addAdditionalProperty("CONN_DIR", connDir);
+			logger.info("CONN_DIR set to " + connDir);
 		}
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_LIB) != -1) {// set LIB_DIR to jdbc drivers directory
-			runtimeContext.addAdditionalProperty("LIB_DIR", SCENARIOS_RELATIVE_PATH + "lib");
-			logger.info("LIB_DIR set to " + SCENARIOS_RELATIVE_PATH + "lib");
+			final String libDir = new File(SCENARIOS_RELATIVE_PATH + "lib").getAbsolutePath();
+			runtimeContext.addAdditionalProperty("LIB_DIR", libDir);
+			logger.info("LIB_DIR set to " + libDir);
 		}
 
 		runtimeContext.setBatchMode(batchMode);

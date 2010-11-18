@@ -315,11 +315,7 @@ public class MergeJoin extends Node {
 			
 			int comparison = 0;
 			if (minIdx != i){ // compare data from different input ports
-				// comparison depends on ordering direction of inputs
-				if (joiners[i][0].getOrdering() == OrderEnum.ASC)
-					comparison = reader[minIdx].compare(reader[i]);
-				else 
-					comparison = reader[i].compare(reader[minIdx]);
+				comparison = reader[minIdx].compare(reader[i]);
 			}
 			
 			switch (comparison) {
@@ -617,6 +613,7 @@ public class MergeJoin extends Node {
 				aOrdering[i] = true;
 			} else if (joiners[i].getOrdering() == null) {	// old fashion - field name without ordering
 				joiners[i].setOrdering(ascendingInputs ? OrderEnum.ASC : OrderEnum.DESC);
+				aOrdering[i] = ascendingInputs;
 			} else if (joiners[i].getOrdering() != OrderEnum.DESC) {
 				throw new ComponentNotReadyException("Wrong order definition in join key: " + joiners[i].getOrdering());
 			}

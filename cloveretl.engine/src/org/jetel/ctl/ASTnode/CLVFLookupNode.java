@@ -26,6 +26,7 @@ import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 
 public class CLVFLookupNode extends SimpleNode {
@@ -41,7 +42,8 @@ public class CLVFLookupNode extends SimpleNode {
 	private /* final */ DataRecord lookupRecord;
 	private /* final */ TLType[] paramTypes;
 	private /* final */ List<Integer> decimalPrecisions;
-
+	private /* final */ Lookup lookup;
+	
 	public CLVFLookupNode(TransformLangParser p, int id) {
 		super(p, id);
 	}
@@ -115,6 +117,14 @@ public class CLVFLookupNode extends SimpleNode {
 	
 	public List<Integer> getDecimalPrecisions() {
 		return decimalPrecisions == null || decimalPrecisions.isEmpty() ? Collections.<Integer>emptyList() : new LinkedList<Integer>(decimalPrecisions);
+	}
+
+	public Lookup getLookup() {
+		return lookup;
+	}
+
+	public void setLookup(Lookup lookup) {
+		this.lookup = lookup;
 	}
 
 }

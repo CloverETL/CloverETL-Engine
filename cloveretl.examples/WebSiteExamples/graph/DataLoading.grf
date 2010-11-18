@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 14 12:57:27 CEST 2010" description=" This simple graph performs the following steps&#10;&#10;    *     Exchange rates for multiple currencies are loaded from an XML file located on the web&#10;    *     A timestamp is then added to the list of exchange rates&#10;    *     The completed list is written to an Excel Worksheet&#10;&#10;" guiVersion="0.0.0.devel" id="1279107410652" licenseType="Evaluation Devel" modified="Fri Jul 30 09:36:34 CEST 2010" modifiedBy="avackova" name="DataLoading" revision="1.19">
+<Graph author="avackova" created="Wed Jul 14 12:57:27 CEST 2010" description=" This simple graph performs the following steps&#10;&#10;    *     Exchange rates for multiple currencies are loaded from an XML file located on the web&#10;    *     A timestamp is then added to the list of exchange rates&#10;    *     The completed list is written to an Excel Worksheet&#10;&#10;" guiVersion="0.0.0.devel" id="1279107410652" licenseType="Evaluation Devel" modified="Tue Aug 17 12:31:40 CEST 2010" modifiedBy="Pavel" name="DataLoading" revision="1.20">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="rates" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -15,7 +15,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="156" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Data Loading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="555" x="23" y="13">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="156" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Data Loading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="621" x="23" y="13">
 <attr name="text"><![CDATA[ This simple graph performs the following steps
 
     *      Exchange rates for multiple currencies are loaded from an XML file located on the web
@@ -23,7 +23,7 @@
     *      The completed list is written to an Excel Worksheet
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="175" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="554" x="24" y="255">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="175" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="621" x="23" y="255">
 <attr name="text"><![CDATA[    *      Data can be loaded from many different text formats including XML, CSV, ASCII
     *      Even variable formats can be read from within a single file
     *      Data can be automatically read from multiple files 
@@ -34,7 +34,7 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Add timestamp" guiWidth="0" guiX="232" guiY="181" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="Add timestamp" guiWidth="0" guiX="269" guiY="181" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -65,8 +65,8 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/rates.xls" guiHeight="0" guiName="XLSDataWriter" guiWidth="0" guiX="450" guiY="181" id="XLS_WRITER0" namesRow="1" sheetName="$date" type="XLS_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="24" guiY="181" id="XML_EXTRACT0" sourceUri="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml" type="XML_EXTRACT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/rates.xls" guiHeight="0" guiName="XLSDataWriter" guiWidth="0" guiX="516" guiY="181" id="XLS_WRITER0" namesRow="1" sheetName="$date" type="XLS_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Rates Reader" guiWidth="0" guiX="23" guiY="181" id="XML_EXTRACT0" sourceUri="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml" type="XML_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
   <Mapping element="gesmes:Envelope">
     <Mapping element="Cube">
