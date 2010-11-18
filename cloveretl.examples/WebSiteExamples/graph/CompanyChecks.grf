@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Fri Jul 30 09:34:56 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.134">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Wed Aug 11 15:21:27 CEST 2010" modifiedBy="avackova" name="CompanyChecks" revision="1.135">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -28,7 +28,7 @@
 <Field name="likv" size="1" type="string"/>
 </Record>
 </Metadata>
-<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" id="Connection0" jdbcSpecific="DERBY" jndiName="" name="Derby" password="app" type="JDBC" user="app"/>
+<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="379" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="328" x="580" y="6">
 <attr name="text"><![CDATA[
@@ -48,7 +48,7 @@
 
 Validate Company ID of customer]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="105" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="                            Pahse 0 (see '0' top left)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="64" y="280">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="105" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="                            Phase 0 (see '0' top left)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="351" x="64" y="280">
 <attr name="text"><![CDATA[                                              This runs in Phase 0 and deletes
                                                tables in Derby DB. Rest of graph
                                                runs in Pahse 1 after Phase 0
