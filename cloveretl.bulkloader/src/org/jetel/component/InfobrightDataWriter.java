@@ -362,7 +362,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		try {
 			if (logFile != null) {
-				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getProjectURL(), logFile, append, -1));
+				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), logFile, append, -1));
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				dataParser = new DataParser(charset);
 				dataParser.setQuotedStrings(true);
