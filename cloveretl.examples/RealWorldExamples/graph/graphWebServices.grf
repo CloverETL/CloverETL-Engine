@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Evaluation Devel" modified="Tue Aug 17 15:34:00 CEST 2010" modifiedBy="Pavel" name="g" revision="1.366">
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Evaluation Devel" modified="Fri Nov 19 15:05:13 CET 2010" modifiedBy="lucie" name="g" revision="1.367">
 <Global>
 <Metadata id="Metadata10">
 <Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
@@ -200,9 +200,9 @@ function transform() {
 <Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:0"/>
 <Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN2:1"/>
 <Edge debugMode="true" fromNode="EXT_MERGE_JOIN2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (response)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:0" guiBendpoints="63:0:-35:122:0.5|63:-122:-35:0:0.5" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (response)" toNode="EXT_FILTER0:0"/>
 <Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata10" outPort="Port 1 (response)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:2" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 2 (response)" toNode="EXT_MERGE_JOIN1:0"/>
-<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:3" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 3 (response)" toNode="EXT_MERGE_JOIN1:1"/>
+<Edge debugMode="true" fromNode="WEB_SERVICE_CLIENT1:3" guiBendpoints="27:0:-71:-36:0.5|27:36:-71:0:0.5" guiRouter="Manual" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 3 (response)" toNode="EXT_MERGE_JOIN1:1"/>
 </Phase>
 </Graph>
