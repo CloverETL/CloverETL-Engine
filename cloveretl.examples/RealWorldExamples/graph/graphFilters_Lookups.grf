@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Wed Aug 04 14:24:13 CEST 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.22">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Evaluation Devel" modified="Fri Nov 19 15:02:18 CET 2010" modifiedBy="lucie" name="graphFilters_Lookups" revision="1.24">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
@@ -15,50 +15,51 @@
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata0" name="customers_look" type="simpleLookup"/>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Who of the customers got the delivery belatedly because WE did ship it late?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="840" x="18" y="-102">
-<attr name="text"><![CDATA[SOLUTION: To get the answer, data from files with different metadata must be put together and compared using lookup table
-- file with orders answers which orders were sent late and the respective customerID
-- files with customers can identify who is behind the selected customerID]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="212" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Filtering" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="203" y="289">
+<attr name="text"><![CDATA[We want only orders where
+ShipDate > RequiredDate]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="191" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How to fill in a lookup table with data?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="432" y="42">
-<attr name="text"><![CDATA[
-1. before the graph runs
-- selecting file to be the data source
-- typing the values
-2. during the graph run
-- using Java class
-- using LookupTableReaderWriter (commercial component)
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="195" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="filtering" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="211" y="307">
-<attr name="text"><![CDATA[
-Only those orders where the ShipDate occured after the RequiredDate are sent to the output port.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="212" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="reading from the lookup tbl" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="421" y="285">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="248" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Reading from the lookup tbl" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="442" y="267">
 <attr name="text"><![CDATA[
 For each record:
 - lookup tbl is searched for the OrderID value
 - if found, selected field values (see customers_out metadata) are mapped to output fields]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="203" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to fill in a lookup table with data?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="424" x="439" y="63">
+<attr name="text"><![CDATA[
+Case 1: Before the graph runs
+- selecting file to be the data source
+- typing the values
+
+Case 2:. During the graph run
+- using a Java class
+- using LookupTableReaderWriter component
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Find which customers received their order late due to delayed shipping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="840" x="28" y="-92">
+<attr name="text"><![CDATA[SOLUTION: Data from files with different metadata must be put together and compared using lookup table
+
+- File with orders shows which orders were sent late and the respective customerID
+- Files with customers can identify who is behind the selected customerID
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiHeight="0" guiName="reads customers 1" guiWidth="0" guiX="33" guiY="118" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiHeight="0" guiName="reads customers 2" guiWidth="0" guiX="34" guiY="208" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="fills in lookup tbl" guiWidth="0" guiX="515" guiY="164" id="REFORMAT1" transformURL="${TRANS_DIR}/LookupFill.java" type="REFORMAT"/>
-<Node enabled="enabled" guiHeight="0" guiName="gathers into 1 file" guiWidth="0" guiX="285" guiY="175" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="0" guiName="discards all" guiWidth="0" guiX="710" guiY="241" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="726" guiY="153" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="gathers into 1 file" guiWidth="0" guiX="281" guiY="156" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="283:0:-34:1:0.5|283:-1:-34:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="writes info in file" guiWidth="0" guiX="670" guiY="362" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="shipped late" guiWidth="0" guiX="223" guiY="417" id="EXT_FILTER0" type="EXT_FILTER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/delimited/orders_late.txt" guiHeight="0" guiName="writes info in file" guiWidth="0" guiX="695" guiY="425" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="shipped late" guiWidth="0" guiX="252" guiY="427" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.RequiredDate < $0.ShippedDate]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="orders + lookup tbl" guiWidth="0" guiX="459" guiY="421" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="0" guiName="orders + lookup tbl" guiWidth="0" guiX="475" guiY="427" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 customers matched_record;
 // Transforms input record into output record.
@@ -94,9 +95,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiHeight="0" guiName="reads orders" guiWidth="0" guiX="37" guiY="418" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiHeight="0" guiName="reads orders" guiWidth="0" guiX="45" guiY="426" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
 <Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="71:0:-21:2:0.5|71:-2:-21:0:0.5" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 <Edge fromNode="XLS_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>
