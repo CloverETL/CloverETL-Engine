@@ -428,4 +428,18 @@ public class SQLDataParser implements Parser {
 		incVal.store(new FileOutputStream(incrementalFile), null);
 	}
 
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		reset();
+	}
+
+	@Override
+	public void free() throws ComponentNotReadyException, IOException {
+		close();
+	}
+
 }

@@ -422,4 +422,19 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		_delimStartEnd[0] = -1;
 		_delimStartEnd[1] = 0;
 	}
+
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    	reset();
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }

@@ -505,4 +505,18 @@ public class JExcelXLSDataParser extends XLSParser {
 		return wb.getSheet(index).getName();
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	reset();
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }

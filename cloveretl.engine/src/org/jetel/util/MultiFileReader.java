@@ -412,6 +412,17 @@ public class MultiFileReader {
 			parser.close();
 	}
 	
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+    public void postExecute() throws ComponentNotReadyException {
+    	reset();
+    }
+    
+    public void free() throws IOException {
+		close();
+    }
+	
     /**
 	 * Reset reader for next graph execution. 
      * @throws ComponentNotReadyException 

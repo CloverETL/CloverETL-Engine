@@ -270,4 +270,18 @@ public class ByteBufferParser implements Parser {
 		return backendStream;
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    	reset();
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }

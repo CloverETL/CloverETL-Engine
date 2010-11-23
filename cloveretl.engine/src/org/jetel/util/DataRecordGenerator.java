@@ -624,4 +624,18 @@ public class DataRecordGenerator implements Parser {
 		// TODO Auto-generated method stub
 
 	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		reset();
+	}
+
+	@Override
+	public void free() {
+		close();
+	}
 }

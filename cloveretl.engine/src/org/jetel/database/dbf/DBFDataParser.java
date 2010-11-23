@@ -502,4 +502,18 @@ public class DBFDataParser implements Parser {
 		}
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    	reset();
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }

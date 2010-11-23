@@ -284,5 +284,19 @@ public class BinaryDataParser implements Parser {
 		this.useDirectBuffers = useDirectBuffers;
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    	reset();
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 	
 }
