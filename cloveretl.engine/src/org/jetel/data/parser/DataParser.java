@@ -974,4 +974,19 @@ public class DataParser implements Parser {
 	public boolean isVerbose() {
 		return verbose;
 	}
+
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+       	reset();
+    }
+    
+	@Override
+    public void free() throws IOException {
+		close();
+    }
+	
 }

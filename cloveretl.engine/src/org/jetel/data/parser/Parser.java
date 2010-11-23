@@ -79,10 +79,13 @@ public interface Parser {
     public void setReleaseDataSource(boolean releaseInputSource);
 
 	/**
+     * @deprecated this method was substituted by another method {@link #free()}
+     * 
 	 *  Closing/deinitialization of parser
 	 *
 	 * @since    May 2, 2002
 	 */
+    @Deprecated
 	public void close() throws IOException;
 
 
@@ -103,8 +106,12 @@ public interface Parser {
     public PolicyType getPolicyType();
 
     /**
+     * @deprecated this method was substituted by pair of another methods {@link #preExecute()}
+     * and {@link #postExecute()}.
+     * 
 	 * Reset parser for next graph execution. 
      */
+    @Deprecated
 	public void reset() throws ComponentNotReadyException;
     
 	/**
@@ -120,6 +127,35 @@ public interface Parser {
 	 * @param position
 	 */
 	public void movePosition(Object position) throws IOException;
+	
+    /**
+     * Life-cycle hook. Follows the semantics of Node.preExecute()
+     * Called by the owner of the parser before each graph phase execution.
+     *  
+     * @throws ComponentNotReadyException Catch-all exception
+     */
+    public void preExecute() throws ComponentNotReadyException;
+    
+    /**
+     * Life-cycle hook. Follows the semantics of Node.postExecute()
+     * Called by the owner of the parser after each graph phase execution.
+     * NOTE! postExecute should do exactly the same thing as deprecated method reset(). The only advantage
+     * over reset() is that it matches with the name of Node's life-cycle method postExecute().
+     *    
+     * @throws ComponentNotReadyException Catch-all exception
+     */
+    public void postExecute() throws ComponentNotReadyException;
+
+    /**
+     * Life-cycle hook. Follows the semantics of Node.free()
+     * Called by the owner of the parser to release resources when the parser is not needed anymore
+     * NOTE! free() should do exactly the same thing as deprecated method close(). The only advantage
+     * over close() is that it matches with the name of Node's life-cycle method free(). 
+     *    
+     * @throws ComponentNotReadyException Catch-all exception
+     * @throws IOException
+     */
+    public void free() throws ComponentNotReadyException, IOException;
 
 }
 /*

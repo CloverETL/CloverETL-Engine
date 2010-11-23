@@ -25,6 +25,7 @@ import java.nio.charset.CharacterCodingException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 
 /**
@@ -200,4 +201,18 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		dataLim = 0;
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    	reset();
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }

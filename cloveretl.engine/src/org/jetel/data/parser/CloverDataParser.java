@@ -374,4 +374,20 @@ public class CloverDataParser implements Parser {
 	public void setSkipSourceRows(int skipSourceRows) {
 		this.indexSkipSourceRows = LONG_SIZE_BYTES * skipSourceRows;
 	}
+
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	reset();
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
+
 }

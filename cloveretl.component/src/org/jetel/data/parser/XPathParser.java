@@ -596,5 +596,19 @@ public class XPathParser implements Parser {
 	public void setDataModel(SupportedDataModels dataModel) {
 		this.dataModel = dataModel;
 	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		reset();
+	}
+
+	@Override
+	public void free() {
+		close();
+	}
 	
 }

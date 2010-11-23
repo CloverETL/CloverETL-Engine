@@ -510,4 +510,18 @@ public class XLSXDataParser extends XLSParser {
         sheet = null;
 	}
 
+	@Override
+    public void preExecute() throws ComponentNotReadyException {
+    	reset();
+    }
+    
+	@Override
+    public void postExecute() throws ComponentNotReadyException {    	
+    }
+    
+	@Override
+    public void free() {
+    	close();
+    }
+	
 }
