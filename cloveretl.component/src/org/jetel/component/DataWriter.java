@@ -18,6 +18,7 @@
  */
 package org.jetel.component;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -434,9 +435,14 @@ public class DataWriter extends Node {
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
 
-        if (appendData && FileURLParser.isArchiveURL(fileURL)) {
-            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
-            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+        try {
+	        if (appendData && FileURLParser.isServerURL(fileURL) && FileURLParser.isArchiveURL(fileURL)) {
+	        	status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+	            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+	        }
+        } catch (MalformedURLException e) {
+            status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);        	
         }
         
         if (!StringUtils.isEmpty(excludeFields)) {

@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -347,10 +348,15 @@ public class StructureWriter extends Node {
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
         
-        if (appendData && FileURLParser.isArchiveURL(fileURL)) {
-            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
-            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
-        }
+        try {
+			if (appendData && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
+			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			}
+		} catch (MalformedURLException e) {
+            status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
+		}
 
         return status;
     }
