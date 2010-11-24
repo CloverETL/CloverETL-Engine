@@ -1573,6 +1573,71 @@ public class StringUtils {
 		return -1;
 	}
 
+	
+	/**
+	 * Tests if this string starts with the specified prefix. 
+	 * 
+	 * @param input	input string to check
+	 * @param offset index at which start (zero based)
+	 * @param prefix the prefix 
+	 * @return true if the character sequence represented by the prefix argument is a prefix of the character sequence represented by the input string; false otherwise.
+	 * Note also that true will be returned if the argument is an empty string or is equal to this String object as determined by the equals(Object) method.
+	 */
+	public static boolean startsWith(CharSequence input, int offset, CharSequence prefix){
+		final int sLength=prefix.length();
+		final int iLength=input.length();
+		if (offset>iLength) throw new StringIndexOutOfBoundsException(offset);
+		if (iLength-offset < sLength) return false;
+		for(int i=0;i< sLength;i++){
+			if (input.charAt(offset++)!=prefix.charAt(i)) 
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Tests if this string starts with the specified prefix. 
+	 * 
+	 * @param input	input string to check
+	 * @param prefix the prefix 
+	 * @return true if the character sequence represented by the prefix argument is a prefix of the character sequence represented by the input string; false otherwise.
+	 * Note also that true will be returned if the argument is an empty string or is equal to this String object as determined by the equals(Object) method.
+	 */
+	public static boolean startsWith(CharSequence input, CharSequence subString){
+		return startsWith(input,0,subString);
+	}
+	
+	/**
+	 * Tests if this string starts with the specified prefix - case insensitive comparison
+	 * 
+	 * @param input input string to check
+	 * @param offset  index at which start (zero based)
+	 * @param subString the prefix 
+	 * @return true if the character sequence represented by the prefix argument is a prefix of the character sequence represented by the input string; false otherwise
+	 */
+	public static boolean startsWithIgnoreCase(CharSequence input, int offset, CharSequence subString){
+		final int sLength=subString.length();
+		final int iLength=input.length();
+		if (offset>iLength) throw new StringIndexOutOfBoundsException(offset);
+		if (iLength-offset < sLength) return false;
+		for(int i=0;i< sLength;i++){
+			if ( Character.toUpperCase(input.charAt(offset++)) != Character.toUpperCase(subString.charAt(i))) 
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Tests if this string starts with the specified prefix - case insensitive comparison
+	 * 
+	 * @param input input string to check
+	 * @param subString the prefix 
+	 * @return true if the character sequence represented by the prefix argument is a prefix of the character sequence represented by the input string; false otherwise
+	 */
+	public static boolean startsWithIgnoreCase(CharSequence input, CharSequence subString){
+		return startsWith(input,0,subString);
+	}
+	
 	/**
 	 * Returns number of occurrences of given char in the char sequence
 	 * 
@@ -1877,6 +1942,7 @@ public class StringUtils {
 	 * (!t1.toString().equals(t2.toString()) || !t1.toString().equals(t3.toString()) ||
 	 * !t1.toString().equals(t4.toString())) throw new RuntimeException(); }
 	 */
+	
 
 	/*
 	public static String replaceVariables(String temlate, Properties properties, String startString, String endString) {
