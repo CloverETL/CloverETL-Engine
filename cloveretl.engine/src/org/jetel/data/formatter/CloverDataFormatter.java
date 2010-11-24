@@ -31,8 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import de.schlichtherle.util.zip.ZipEntry;
+import de.schlichtherle.util.zip.ZipOutputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -205,6 +205,10 @@ public class CloverDataFormatter implements Formatter {
 						} 
 					}
 					//append indexes from tmp file 
+					if (fileURL.startsWith("zip:")) {
+						idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + "#" + INDEX_DIRECTORY + fileName +
+								CloverDataFormatter.INDEX_EXTENSION, append, 0);
+					}
 					idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + CloverDataFormatter.INDEX_EXTENSION, 
 							append, -1);
 					do {
