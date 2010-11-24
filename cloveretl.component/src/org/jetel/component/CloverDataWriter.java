@@ -160,8 +160,15 @@ public class CloverDataWriter extends Node {
 			DataRecordMetadataXMLReaderWriter.write(metadata, out);
 			((ZipOutputStream)out).closeEntry();
 		}else{
-			OutputStream metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-					fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
+			OutputStream metaFile;
+			if (fileURL.startsWith("zip:")) {
+				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
+						fileURL + "#" + CloverDataFormatter.METADATA_DIRECTORY + fileName + CloverDataFormatter.METADATA_EXTENSION, false, -1);
+			}
+			else {
+				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
+						fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
+			}
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);	
 			metaFile.close();
 		}
