@@ -46,7 +46,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -286,6 +285,18 @@ public class FileUtils {
 	 */
     public static InputStream getInputStream(URL contextURL, String input) throws IOException {
         InputStream innerStream = null;
+        
+        // It is important to use the same mechanism (TrueZip) for both reading and writing
+        // of the local archives!
+        //
+        // The TrueZip library has it's own virtual file system. Even after a stream from TrueZip
+        // gets closed, the contents are not immediately written to the disc.
+        // Therefore reading local archive with different library (e.g. java.util.zip) might lead to
+        // inconsistency if the archive has not been flushed by TrueZip yet.
+        StringBuilder localArchivePath = new StringBuilder();
+        if (getLocalArchiveInputPath(contextURL, input, localArchivePath)) {
+        	return new de.schlichtherle.io.FileInputStream(localArchivePath.toString());        	
+        }
 
         //first we try the custom path resolvers
     	for (CustomPathResolver customPathResolver : customPathResolvers) {
@@ -634,6 +645,129 @@ public class FileUtils {
 		return getWritableChannel(contextURL, input, appendData, -1);
 	}
 
+	private static boolean isArchive(String input) {
+		return input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("gzip:");
+	}
+
+	private static boolean isZipArchive(String input) {
+		return input.startsWith("zip:");
+	}
+	
+	private static boolean isRemoteFile(String input) {
+		return input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
+	}
+	
+	private static boolean isConsole(String input) {
+		return input.equals(STD_CONSOLE);
+	}
+	
+	private static boolean isSandbox(String input) {
+		return input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL_URL_PREFIX);
+	}
+	
+	private static boolean isLocalFile(String input) {
+		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input);
+	}
+	
+	private static boolean hasCustomPathOutputResolver(URL contextURL, String input, boolean appendData,
+			int compressLevel)
+		throws IOException {
+		OutputStream os;
+    	for (CustomPathResolver customPathResolver : customPathResolvers) {
+    		os = customPathResolver.getOutputStream(contextURL, input, appendData, compressLevel);
+    		if (os != null) {
+    			os.close();
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+	}
+	
+	private static boolean hasCustomPathInputResolver(URL contextURL, String input) throws IOException {	
+		InputStream innerStream;
+		for (CustomPathResolver customPathResolver : customPathResolvers) {
+			innerStream = customPathResolver.getInputStream(contextURL, input);
+			if (innerStream != null) {
+				innerStream.close();
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Descends through the URL to figure out whether this is a local archive.
+	 * 
+	 * If the whole URL represents a local archive, standard FS path (archive.zip/dir1/another_archive.zip/dir2/file)
+	 * will be returned inside of the path string builder, and true will be returned.
+	 * 
+	 * @param input URL to inspect
+	 * @param path output buffer for full file-system path
+	 * @return true if the URL represents a file inside a local archive
+	 * @throws IOException
+	 */
+	private static boolean getLocalArchivePath(URL contextURL, String input, boolean appendData, int compressLevel,
+			StringBuilder path, int nestLevel, boolean output) throws IOException {
+		
+		if (output) {
+			if (hasCustomPathOutputResolver(contextURL, input, appendData, compressLevel)) {
+				return false;
+			}
+		}
+		else {
+			if (hasCustomPathInputResolver(contextURL, input)) {
+				return false;
+			}
+		}
+		
+		if (isArchive(input)) {
+			Matcher matcher = getInnerInput(input);
+			// URL-centered convention, zip:(inner.zip)/outer.txt
+			// this might be misleading, as what you will see on the filesystem first is inner.zip
+			// and inside of that there will be a file named outer.txt
+			String innerSource; // inner part of the URL (outer file on the FS)
+			String outer; // outer part of the URL (inner file file on the FS)
+			boolean ret;
+			
+			if (matcher != null && (innerSource = matcher.group(5)) != null) {
+				outer = matcher.group(10);
+			}
+			else {
+				return false;
+			}
+			
+			ret = getLocalArchivePath(contextURL, innerSource, appendData, compressLevel, path, nestLevel + 1, output);
+			if (ret) {
+				if (path.length() != 0) {
+					path.append(File.separator);
+				}
+				path.append(outer);
+			}
+			
+			return ret;
+		}
+		else if (isLocalFile(input) && nestLevel > 0) {
+			assert(path.length() == 0);			
+			path.append(input);
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	private static boolean getLocalArchiveOutputPath(URL contextURL, String input, boolean appendData,
+			int compressLevel, StringBuilder path) throws IOException {
+		return getLocalArchivePath(contextURL, input, appendData, compressLevel, path, 0, true);
+	}
+
+	private static boolean getLocalArchiveInputPath(URL contextURL, String input, StringBuilder path)
+		throws IOException {
+		return getLocalArchivePath(contextURL, input, false, 0, path, 0, false);
+	}
+	
 	/**
      * Creates OutputStream from the url definition.
      * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>
@@ -651,7 +785,12 @@ public class FileUtils {
 	 */
 	public static OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel)	throws IOException {
         OutputStream os = null;
-	
+        
+        StringBuilder localArchivePath = new StringBuilder();
+        if (getLocalArchiveOutputPath(contextURL, input, appendData, compressLevel, localArchivePath)) {
+        	return new de.schlichtherle.io.FileOutputStream(localArchivePath.toString(), appendData);
+        }
+        
         //first we try the custom path resolvers
     	for (CustomPathResolver customPathResolver : customPathResolvers) {
     		os = customPathResolver.getOutputStream(contextURL, input, appendData, compressLevel);
@@ -660,9 +799,9 @@ public class FileUtils {
     			return os; //we found the desired output stream using external resolver method
     		}
     	}
-
+    	
 		// std input (console)
-		if (input.equals(STD_CONSOLE)) {
+		if (isConsole(input)) {
 			return Channels.newOutputStream(new SystemOutByteChannel());
 		}
 		
@@ -682,15 +821,10 @@ public class FileUtils {
 		ArchiveType archiveType = getArchiveType(input, sbInnerInput, sbAnchor);
 		input = sbInnerInput.toString();
 		
-		boolean isFtp = false;
-		if (input.startsWith("ftp") || input.startsWith("sftp") || input.startsWith("scp")) {
-        	isFtp = true;
-        }
-
         //open channel
         if (os == null) {
     		// create output stream
-    		if(isFtp) {
+    		if (isRemoteFile(input)) {
     			// ftp output stream
     			URL url = FileUtils.getFileURL(contextURL, input);
     			URLConnection urlConnection = url.openConnection();
@@ -703,7 +837,7 @@ public class FileUtils {
     				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
     				throw e;
     			}
-    		} else if (input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL_URL_PREFIX)) {
+    		} else if (isSandbox(input)) {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)
         			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
@@ -721,12 +855,13 @@ public class FileUtils {
 		// zip channel
 		if(archiveType == ArchiveType.ZIP) {
 			// resolve url format for zip files
-			ZipOutputStream zout = new ZipOutputStream(os);
+			de.schlichtherle.util.zip.ZipOutputStream zout = new de.schlichtherle.util.zip.ZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}
 			String anchor = sbAnchor.toString();
-			ZipEntry entry = new ZipEntry(anchor.equals("") ? "default_output" : anchor);
+			de.schlichtherle.util.zip.ZipEntry entry =
+				new de.schlichtherle.util.zip.ZipEntry(anchor.equals("") ? "default_output" : anchor);
 			zout.putNextEntry(entry);
 			return zout;
         } 
