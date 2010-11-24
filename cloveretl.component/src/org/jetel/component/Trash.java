@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
@@ -387,10 +388,15 @@ public class Trash extends Node {
 	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
 				}
                 
-                if (debugAppend && FileURLParser.isArchiveURL(debugFilename)) {
-                    status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
-                    		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
-                }
+                try {
+					if (debugAppend && FileURLParser.isArchiveURL(debugFilename) && FileURLParser.isServerURL(debugFilename)) {
+					    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+					    		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+					}
+				} catch (MalformedURLException e) {
+	                status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this, 
+	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+				}
     		}
             
     		return status;

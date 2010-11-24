@@ -18,6 +18,7 @@
  */
 package org.jetel.component;
 
+import java.net.MalformedURLException;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -483,10 +484,15 @@ public class XLSWriter extends Node {
             status.add(problem);
         }
 
-        if (formatterProvider.isAppend() && FileURLParser.isArchiveURL(fileURL)) {
-            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
-            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
-        }
+        try {
+			if (formatterProvider.isAppend() && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
+			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			}
+		} catch (MalformedURLException e) {
+		    status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this,
+		    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+		}
         
         if (!StringUtils.isEmpty(excludeFields)) {
             DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();

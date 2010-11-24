@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -248,10 +249,15 @@ public class CloverDataWriter extends Node {
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
         
-        if (append && FileURLParser.isArchiveURL(fileURL)) {
-            status.add("Append true is not supported on archive files.", ConfigurationStatus.Severity.WARNING, this,
-            		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
-        }
+        try {
+			if (append && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
+			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			}
+		} catch (MalformedURLException e) {
+            status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
+		}
         
         return status;
     }
