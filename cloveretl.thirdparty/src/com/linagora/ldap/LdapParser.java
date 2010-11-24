@@ -18,6 +18,7 @@
  */
 package com.linagora.ldap;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -420,6 +421,20 @@ public class LdapParser implements Parser {
 
 	public void setMultiValueSeparator(String multiValueSeparator) {
 		this.multiSeparator = multiValueSeparator;
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		reset();
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+	}
+
+	@Override
+	public void free() throws ComponentNotReadyException, IOException {
+		close();
 	}
 
 }
