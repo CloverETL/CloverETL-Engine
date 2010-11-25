@@ -20,6 +20,7 @@ package org.jetel.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -514,11 +515,13 @@ public class TargetFile {
     	} else if (fileNames != null) {
             String fName = fileNames.next();
             if (fileName != null) fName = addUnassignedName(fName);
-        	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData, compressLevel );
+            OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
+        	byteChannel = Channels.newChannel(os);
+        	
         	if (useChannel) {
         		setDataTarget(byteChannel);
         	} else {
-           		setDataTarget(new Object[] {contextURL, fName});
+           		setDataTarget(new Object[] {contextURL, fName, os});
         	}
         	
         } else {

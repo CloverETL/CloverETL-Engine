@@ -254,8 +254,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
     		os = null;
     		InputStream is = null;
     		if (outputDataTarget instanceof Object[]) {
-    			URL url = (URL) ((Object[])outputDataTarget)[0];
-        		String fName = (String) ((Object[])outputDataTarget)[1];
+    			Object[] args = (Object[])outputDataTarget;
+    			URL url = (URL) args[0];
+        		String fName = (String) args[1];
         		try {
             		is = FileUtils.getInputStream(url, fName);
             		oldWb = Workbook.getWorkbook(is, settings);
@@ -263,7 +264,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         		} catch (Throwable t) {
         			//NOTHING - xls file doesn't exist, create new one
         		}
-        		os = FileUtils.getOutputStream(url, fName, false, -1);
+        		if (args.length >= 3) {
+        			os = (OutputStream) args[2];
+        		}
+        		else {
+        			os = FileUtils.getOutputStream(url, fName, false, -1);
+        		}
     		} else if (outputDataTarget instanceof WritableByteChannel) {
     			os = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
     		}
