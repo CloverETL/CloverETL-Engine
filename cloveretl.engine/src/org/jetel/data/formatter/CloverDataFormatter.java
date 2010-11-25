@@ -209,8 +209,10 @@ public class CloverDataFormatter implements Formatter {
 						idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + "#" + INDEX_DIRECTORY + fileName +
 								CloverDataFormatter.INDEX_EXTENSION, append, 0);
 					}
-					idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + CloverDataFormatter.INDEX_EXTENSION, 
+					else {
+						idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + CloverDataFormatter.INDEX_EXTENSION, 
 							append, -1);
+					}
 					do {
 						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
