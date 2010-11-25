@@ -48,7 +48,7 @@ This graph shows also how works StructureWriter component (it can be used for wr
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="zip:${DATAIN_DIR}/fixlen/customers.zip#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="31" guiY="112" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/fixlen/customers.zip)#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="31" guiY="112" id="DATA_READER1" type="DATA_READER">
 <attr name="enableIncomplete"><![CDATA[true]]></attr>
 <attr name="byteMode"><![CDATA[false]]></attr>
 </Node>
