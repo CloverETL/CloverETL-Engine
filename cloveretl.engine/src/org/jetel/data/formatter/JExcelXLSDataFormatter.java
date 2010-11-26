@@ -265,7 +265,12 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         			//NOTHING - xls file doesn't exist, create new one
         		}
         		if (args.length >= 3) {
-        			os = (OutputStream) args[2];
+        			if (os instanceof de.schlichtherle.io.FileOutputStream) {
+            			os = (OutputStream) args[2]; // truezip does limit number of opened streams
+        			}
+        			else {
+        				os = FileUtils.getOutputStream(url, fName, false, -1);
+        			}
         		}
         		else {
         			os = FileUtils.getOutputStream(url, fName, false, -1);
