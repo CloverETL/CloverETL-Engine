@@ -62,6 +62,7 @@ import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
+import org.jetel.util.protocols.webdav.WebdavOutputStream;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -669,6 +670,10 @@ public class FileUtils {
 		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input);
 	}
 	
+	private static boolean isHttp(String input) {
+		return input.startsWith("http:") || input.startsWith("https:");
+	}
+	
 	private static boolean hasCustomPathOutputResolver(URL contextURL, String input, boolean appendData,
 			int compressLevel)
 		throws IOException {
@@ -837,6 +842,8 @@ public class FileUtils {
     				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
     				throw e;
     			}
+    		} else if (isHttp(input)) {
+    			return new WebdavOutputStream(input);
     		} else if (isSandbox(input)) {
     			TransformationGraph graph = ContextProvider.getGraph();
         		if (graph == null)

@@ -39,5 +39,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.3.jar" sourcepath="lib.src/XmlSchema-1.4.3-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-6.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/sardine.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

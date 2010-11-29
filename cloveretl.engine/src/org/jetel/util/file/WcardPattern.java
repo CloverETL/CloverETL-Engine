@@ -40,7 +40,12 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
+import org.jetel.util.protocols.webdav.WebdavOutputStream;
 
+import com.googlecode.sardine.DavResource;
+import com.googlecode.sardine.Sardine;
+import com.googlecode.sardine.SardineFactory;
+import com.googlecode.sardine.util.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -87,6 +92,12 @@ public class WcardPattern {
 	
 	// ftp protocol
 	private final static String FTP = "ftp";
+	
+	// http protocol
+	private final static String HTTP = "http";
+
+	// https protocol
+	private final static String HTTPS = "https";
 
 	// Collection of filename patterns.
 	private List<String> patterns;
@@ -417,6 +428,11 @@ public class WcardPattern {
 				//NOTHING
 			}
 		}
+		
+		else if (resolveAllNames && (
+			url.getProtocol().equals(HTTP) || url.getProtocol().equals(HTTPS))) {
+			return getHttpNames(url);
+		}
 
 		// return original filename
 		List<String> mfiles = new ArrayList<String>();
@@ -490,6 +506,54 @@ public class WcardPattern {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Gets files from HTTP source using WebDAV 
+	 */
+	private List<String> getHttpNames(URL url) {
+		List<String> mfiles = new ArrayList<String>();
+		
+		if (!hasWildcard(url)) {
+			mfiles.add(url.toString());
+			return mfiles;
+		}
+		
+		// When there are wildcards, we will presume the user wants to use WebDAV access
+		try {
+			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
+			String file = url.getFile();
+			int lastSlash = file.lastIndexOf('/');
+			if (lastSlash == -1) {
+				throw new IllegalArgumentException("Unexpected format of URL");
+			}
+			// The issue with sardine is that user authorization must be passed in begin() of SardineFactory
+			// but cannot be kept as part of the URL for which we try to get resources.
+			// And finally, later we need the authorization details in the URL 
+			// to actually access the file.
+			// So, typically, for anonymous access a URL like http://anonymous:@host/ is required
+			String dir = file.substring(0, lastSlash + 1);
+
+			// remove authorization info 
+			String dirURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + dir;
+			String pattern = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + url.getFile();
+			
+			List<DavResource> resources = sardine.getResources(dirURL);
+			for (DavResource res : resources) {
+				if (res.isDirectory()) {
+					continue;
+				}
+				if (checkName(pattern, res.getAbsoluteUrl())) {
+					// add authorization info back
+					String fullURL = url.getProtocol() + "://" + url.getAuthority() + dir + res.getName();
+					mfiles.add(fullURL);
+				}
+			}
+		} catch (SardineException e) {
+			e.printStackTrace();
+		}
+		
+		return mfiles;
 	}
 	
 	/**
