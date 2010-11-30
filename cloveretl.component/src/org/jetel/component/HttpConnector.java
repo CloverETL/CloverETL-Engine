@@ -43,7 +43,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpConnection;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthPolicy;
@@ -76,9 +75,11 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -690,8 +691,30 @@ public class HttpConnector extends Node {
 			}
 		}
 		
-		//authentication
 		httpClient = new HttpClient();
+
+		//
+		// proxy usage
+		//
+
+		String proxyUrlString = FileURLParser.getInnerAddress(rawUrlToProceed);
+
+		if (proxyUrlString != null) {
+			URL proxyUrl = null;
+
+			try {
+				proxyUrl = new URL(null, proxyUrlString, new ProxyHandler());
+			} catch (MalformedURLException exception) {
+				throw new ComponentNotReadyException("Malformed proxy URL!", exception);
+			}
+
+			httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(), proxyUrl.getPort());
+		}
+
+		//
+		// authentication
+		//
+
 		if (username != null && password != null) {
 			//create credentials
 			creds = new UsernamePasswordCredentials(username, password);
@@ -727,7 +750,7 @@ public class HttpConnector extends Node {
 			if( logger.isDebugEnabled() ){
 				logger.debug("Creating POST request to " + rawUrlToProceed);
 			}
-			postMethod = new PostMethod(rawUrlToProceed);
+			postMethod = new PostMethod(FileURLParser.getOuterAddress(rawUrlToProceed));
 			postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
 			//do authentication
 			if (username != null && password != null) {
@@ -755,7 +778,7 @@ public class HttpConnector extends Node {
 			if( logger.isDebugEnabled() ) {
 				logger.debug("Creating GET request to " + rawUrlToProceed);
 			}
-			getMethod = new GetMethod(rawUrlToProceed);
+			getMethod = new GetMethod(FileURLParser.getOuterAddress(rawUrlToProceed));
 			getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
 			//do authentication
 			if (username != null && password != null) {
