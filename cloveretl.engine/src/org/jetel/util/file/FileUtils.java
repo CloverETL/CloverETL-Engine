@@ -798,11 +798,12 @@ public class FileUtils {
         
         StringBuilder localArchivePath = new StringBuilder();
         if (getLocalArchiveOutputPath(contextURL, input, appendData, compressLevel, localArchivePath)) {
-        	de.schlichtherle.io.File archive = new de.schlichtherle.io.File(localArchivePath.toString());
+        	String archPath = localArchivePath.toString();
+        	de.schlichtherle.io.File archive = new de.schlichtherle.io.File(archPath);
         	log.debug("Opening local archive entry " + archive.getAbsolutePath()
-        			+ " (mkdirs: " + archive.mkdirs()
+        			+ " (mkdirs: " + archive.getParentFile().mkdirs()
         			+ ", exists:" + archive.exists() + ")");
-        	return new de.schlichtherle.io.FileOutputStream(archive, appendData);
+        	return new de.schlichtherle.io.FileOutputStream(archPath, appendData);
         }
         
         //first we try the custom path resolvers
