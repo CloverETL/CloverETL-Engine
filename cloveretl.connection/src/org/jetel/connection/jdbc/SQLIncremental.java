@@ -30,8 +30,8 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -249,17 +249,29 @@ public class SQLIncremental {
 		}
 		statement.close();
 		//initialize key record from starting values
+		try {
+			initPositionKeyRecord(keyRecord, keyValue);
+		} catch (BadDataFormatException e) {
+			throw new ComponentNotReadyException(e);
+		}
+		return setPosition(dbConnection);
+	}
+
+	/**
+	 * @param keyRecord record to be initialized
+	 * @param keyValue values to initialize record with
+	 */
+	private void initPositionKeyRecord(DataRecord keyRecord, Properties keyValue) {
 		for (Iterator iterator = keyValue.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, String> key = (Entry<String, String>) iterator.next();
 			try {
 				keyRecord.getField(key.getKey()).fromString(key.getValue());
 			} catch (BadDataFormatException e) {
-				throw new ComponentNotReadyException("Invalid value for key " + StringUtils.quote(key.getKey()), e);
-			}catch(ArrayIndexOutOfBoundsException e){
-				//do nothing: ignore this value - it is not in key definition
+				throw new BadDataFormatException("Invalid value for key " + StringUtils.quote(key.getKey()), e);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// do nothing: ignore this value - it is not in key definition
 			}
 		}
-		return setPosition(dbConnection);
 	}
 	
 	/**
@@ -372,4 +384,42 @@ public class SQLIncremental {
 		return keyDefinition;
 	}
 
+	/**
+	 * @param position values of incremental key to be merged with current values of incremental key of this instance (keyRecord).
+	 * Result of the merge is stored in <code>position</code> object.
+	 */
+	public void mergePosition(Properties position) {
+		DataRecord posKeyRecord = new DataRecord(keyRecord.getMetadata());
+		posKeyRecord.init();
+		posKeyRecord.setToNull();
+		initPositionKeyRecord(posKeyRecord, position);
+		
+		for (int i = 0; i < keyRecord.getNumFields(); i++){
+			DataField f1 = posKeyRecord.getField(i);
+			DataField f2 = keyRecord.getField(i);
+			if (f2.isNull()) continue;
+			if (f1.isNull()) {
+				f1.setValue(f2);
+			} else {
+				switch ((IncrementalKeyType)keyDef[i][TYPE]) {
+				case LAST:
+					f1.setValue(f2);
+					break;
+				case MAX:
+					if (f1.compareTo(f2) < 0){
+						f1.setValue(f2);
+					}
+					break;
+				case MIN:
+					if (f1.compareTo(f2) > 0){
+						f1.setValue(f2);
+					}
+					break;
+				}
+			}
+			
+			position.setProperty(posKeyRecord.getField(i).getMetadata().getName(), posKeyRecord.getField(i).toString());
+		}
+		
+	}
 }
