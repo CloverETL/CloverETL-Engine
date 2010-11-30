@@ -298,7 +298,11 @@ public class FileUtils {
         // inconsistency if the archive has not been flushed by TrueZip yet.
         StringBuilder localArchivePath = new StringBuilder();
         if (getLocalArchiveInputPath(contextURL, input, localArchivePath)) {
-        	return new de.schlichtherle.io.FileInputStream(localArchivePath.toString());        	
+        	// apply the contextURL
+        	URL url = FileUtils.getFileURL(contextURL, localArchivePath.toString());
+			String absolutePath = url.getFile();
+
+        	return new de.schlichtherle.io.FileInputStream(absolutePath);
         }
 
         //first we try the custom path resolvers
