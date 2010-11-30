@@ -37,6 +37,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
+import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
@@ -508,18 +509,41 @@ public class WcardPattern {
 		return false;
 	}
 	
+	private boolean hasAsteriskWildcard(URL url) {
+		String topmostFile = new File(url.getFile()).getName();
+		return topmostFile.indexOf('*') != -1;
+	}
+	
 	/**
 	 * Gets files from HTTP source using WebDAV 
 	 */
 	private List<String> getHttpNames(URL url) {
 		List<String> mfiles = new ArrayList<String>();
+
+		// We will only consider asterisk (*) as a wild-card in HTTP URL.
+		// Question mark (?) serves as a query separator.
 		
-		if (url.getFile().indexOf('*') == -1) {
+		if (S3InputStream.isS3File(url)) {
+			if (hasAsteriskWildcard(url)) {
+				try {
+					return S3InputStream.getObjects(url);
+				} catch (IOException e) {
+					mfiles.add(url.toString());
+					return mfiles;
+				}
+			}
+			else {
+				mfiles.add(url.toString());
+				return mfiles;
+			}
+		}
+		
+		if (!hasAsteriskWildcard(url)) {
 			mfiles.add(url.toString());
 			return mfiles;
 		}
 		
-		// When there are wildcards, we will presume the user wants to use WebDAV access
+		// When there is asterisk wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
 			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
 			String file = url.getFile();

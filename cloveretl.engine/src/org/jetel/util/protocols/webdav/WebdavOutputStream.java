@@ -108,6 +108,13 @@ public class WebdavOutputStream extends OutputStream {
 				sardine.put(URL, is);
 			}
 			catch (IOException e) {
+				try {
+					// this will make the associated writer eventually crash
+					// it is necessary to prevent the graph running forever
+					is.close();
+				} catch (IOException closeException) {
+					closeException.printStackTrace();
+				}
 				throw new RuntimeException(e);
 			}
 		}

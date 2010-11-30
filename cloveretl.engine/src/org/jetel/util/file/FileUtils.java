@@ -56,6 +56,8 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
+import org.jetel.util.protocols.amazon.S3InputStream;
+import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
@@ -343,6 +345,9 @@ public class FileUtils {
         	}
         	
         	try {
+        		if (S3InputStream.isS3File(url)) {
+        			return new S3InputStream(url);
+        		}
             	innerStream = getAuthorizedConnection(url).getInputStream();
         	} catch (IOException e) {
 				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
@@ -842,6 +847,9 @@ public class FileUtils {
     				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
     				throw e;
     			}
+    		} else if (S3InputStream.isS3File(input)) {
+    			// must be done before isHttp() check
+    			return new S3OutputStream(new URL(input));
     		} else if (isHttp(input)) {
     			return new WebdavOutputStream(input);
     		} else if (isSandbox(input)) {
