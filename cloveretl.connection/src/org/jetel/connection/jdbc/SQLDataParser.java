@@ -290,11 +290,13 @@ public class SQLDataParser implements Parser {
 	        		StringUtils.quote(sqlCloverStatement.getQuery()));
 			startTime = System.currentTimeMillis();
 			resultSet = sqlCloverStatement.executeQuery();
-            long executionTime = System.currentTimeMillis() - startTime;
-            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
-            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Query execution time: " + 
-            		formatter.format(new Date(executionTime)));
+			if (logger.isDebugEnabled()) {
+	            long executionTime = System.currentTimeMillis() - startTime;
+	            SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss.SSS");
+	            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+	            logger.debug((parentNode != null ? (parentNode.getId() + ": ") : "") + "Query execution time: " + 
+	            		formatter.format(new Date(executionTime)));
+			}
 		} catch (Exception e1) {
             throw new ComponentNotReadyException(e1);
 		}
@@ -313,7 +315,7 @@ public class SQLDataParser implements Parser {
 	}
 	
 	public boolean checkIncremental() throws ComponentNotReadyException{
-    	if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
+    	if (incrementalKey != null && sqlQuery != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 			try {
 				SQLIncremental sqlIncremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
 				sqlIncremental.checkConfig();
@@ -347,7 +349,7 @@ public class SQLDataParser implements Parser {
 	}
 
 	public void setFetchSize(int fetchSize){
-	    this.fetchSize=fetchSize;
+	    this.fetchSize = fetchSize;
 	}
 
     public void setExceptionHandler(IParserExceptionHandler handler) {
@@ -406,6 +408,17 @@ public class SQLDataParser implements Parser {
 		}
 	}
 	
+	/**
+	 * Updates <code>position</code> with incremental key values with incremental key values
+	 * this parser currently holds.
+	 * @param position
+	 */
+	public void megrePosition(Object position) {
+		if (incremental != null) {
+			incremental.mergePosition((Properties)position);
+		}
+	}
+	
 	public void setIncrementalFile(String incrementalFile){
 		this.incrementalFile = incrementalFile;
 	}
@@ -424,8 +437,12 @@ public class SQLDataParser implements Parser {
 	
 	public void storeIncrementalReading() throws IOException {
 		if (incremental == null || incrementalFile == null) return;
-		Properties incVal = (Properties)incremental.getPosition();
-		incVal.store(new FileOutputStream(incrementalFile), null);
+		storeIncrementalReading(incremental.getPosition());
+	}
+	
+	public void storeIncrementalReading(Object position) throws IOException {
+		if (incrementalKey == null || incrementalFile == null) return;
+		((Properties) position).store(new FileOutputStream(incrementalFile), null);
 	}
 
 	@Override
