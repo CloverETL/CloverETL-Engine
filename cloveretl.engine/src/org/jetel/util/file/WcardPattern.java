@@ -514,7 +514,7 @@ public class WcardPattern {
 	private List<String> getHttpNames(URL url) {
 		List<String> mfiles = new ArrayList<String>();
 		
-		if (!hasWildcard(url)) {
+		if (url.getFile().indexOf('*') == -1) {
 			mfiles.add(url.toString());
 			return mfiles;
 		}
@@ -550,7 +550,9 @@ public class WcardPattern {
 				}
 			}
 		} catch (SardineException e) {
-			e.printStackTrace();
+			// it was not possible to connect using WebDAV, let's presume it's a normal HTTP request
+			mfiles.add(url.toString());
+			return mfiles;
 		}
 		
 		return mfiles;
