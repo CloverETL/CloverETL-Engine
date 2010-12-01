@@ -37,4 +37,9 @@
 		<parameter id="className" value="org.jetel.ctl.extensions.RandomLib"/>
 	</extension>
 	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="util"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.UtilLib"/>
+	</extension>
+	
 </plugin>
