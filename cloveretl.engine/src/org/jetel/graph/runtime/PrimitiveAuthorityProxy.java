@@ -220,6 +220,10 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		}
 	}
 
+	public void makeDirectories(long runId, String storageCode, String path) {
+		throw new UnsupportedOperationException("Sandbox directory may be created only in CloverETL Server environment!");
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(long, java.lang.String, java.lang.String)
