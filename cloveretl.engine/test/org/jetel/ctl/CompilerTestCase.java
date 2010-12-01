@@ -1848,6 +1848,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_left() {
 		doCompile("test_stringlib_left");
 		check("lef", "The q");
+		check("padded", "The q   ");
+		check("notPadded", "The q");
 	}
 	
 	public void test_stringlib_length() {
@@ -1902,6 +1904,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_right() {
 		doCompile("test_stringlib_right");
 		check("righ", "y dog");
+		check("padded", "   y dog");
+		check("notPadded", "y dog");
 	}
 	
 	public void test_stringlib_soundex() {
