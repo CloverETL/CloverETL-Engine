@@ -18,6 +18,8 @@
  */
 package org.jetel.util.file;
 
+import java.net.URL;
+
 /**
  * Utility class for working with sandbox URLs.
  *
@@ -42,6 +44,17 @@ public final class SandboxUtils {
 	 */
 	public static boolean isSandboxUrl(String url) {
 		return (url != null && url.startsWith(SANDBOX_PROTOCOL_URL_PREFIX));
+	}
+
+	/**
+	 * Checks whether or not an URL is a sandbox URL.
+	 *
+	 * @param url an URL to be checked
+	 *
+	 * @return <code>true</code> if the given URL is a sandbox URL, <code>false</code> otherwise 
+	 */
+	public static boolean isSandboxUrl(URL url) {
+		return (url != null && url.getProtocol().equals(SANDBOX_PROTOCOL));
 	}
 
 	/**

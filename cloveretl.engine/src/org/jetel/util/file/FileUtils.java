@@ -977,6 +977,23 @@ public class FileUtils {
 		} catch (MalformedURLException e) {
 			return null;
 		}
+
+		if (SandboxUtils.isSandboxUrl(url)) {
+			TransformationGraph graph = ContextProvider.getGraph();
+
+			if (graph == null) {
+				throw new NullPointerException("Graph reference cannot be null when \"" + SandboxStreamHandler.SANDBOX_PROTOCOL + "\" protocol is used.");
+			}
+
+			try {
+				graph.getAuthorityProxy().makeDirectories(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
+			} catch (IOException exception) {
+				throw new ComponentNotReadyException("Making of sandbox directories failed!", exception);
+			}
+
+			return null;
+		}
+
 		if (!url.getProtocol().equals(FILE_PROTOCOL)) return null;
 		
 		//find the first non-existing directory

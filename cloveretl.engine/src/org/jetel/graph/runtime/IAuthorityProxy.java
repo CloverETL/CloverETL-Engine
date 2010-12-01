@@ -74,6 +74,16 @@ public abstract class IAuthorityProxy {
 	public abstract RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
 
 	/**
+	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
+	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
+	 *
+	 * @param runId 
+	 * @param storageCode
+	 * @param path
+	 */
+	public abstract void makeDirectories(long runId, String storageCode, String path) throws IOException;
+
+	/**
 	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.
 	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
 	 * @param runId 
