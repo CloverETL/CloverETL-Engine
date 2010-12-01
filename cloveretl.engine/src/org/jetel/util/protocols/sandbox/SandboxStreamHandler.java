@@ -33,9 +33,6 @@ import org.jetel.util.file.SandboxUrlUtils;
  */
 public class SandboxStreamHandler extends URLStreamHandler {
 
-	public static final String SANDBOX_PROTOCOL = "sandbox";
-	public static final String SANDBOX_PROTOCOL_URL_PREFIX = SANDBOX_PROTOCOL+"://";
-	
 	private final TransformationGraph graph; 
 	
 	public SandboxStreamHandler(TransformationGraph graph) {

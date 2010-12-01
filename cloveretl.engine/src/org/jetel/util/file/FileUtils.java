@@ -149,7 +149,7 @@ public class FileUtils {
         } catch(MalformedURLException e) {}
 
         // sandbox url
-		if (fileURL.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL)){
+		if (SandboxUrlUtils.isSandboxUrl(fileURL)){
     		TransformationGraph graph = ContextProvider.getGraph();
         	try {
         		return new URL(contextURL, fileURL, new SandboxStreamHandler(graph));
@@ -344,7 +344,7 @@ public class FileUtils {
         	// creates file input stream for incremental reading (random access file)
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile());
-        	} else if (archiveType == null && url.getProtocol().equals(SandboxStreamHandler.SANDBOX_PROTOCOL)) {
+        	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
             	return url.openConnection().getInputStream();
         	}
         	
@@ -672,7 +672,7 @@ public class FileUtils {
 	}
 	
 	private static boolean isSandbox(String input) {
-		return input.startsWith(SandboxStreamHandler.SANDBOX_PROTOCOL_URL_PREFIX);
+		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
 	private static boolean isLocalFile(String input) {
@@ -868,8 +868,9 @@ public class FileUtils {
     			return new WebdavOutputStream(input);
     		} else if (isSandbox(input)) {
     			TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null)
-        			throw new NullPointerException("Graph reference cannot be null when \""+SandboxStreamHandler.SANDBOX_PROTOCOL+"\" protocol is used.");
+        		if (graph == null) {
+					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+        		}
     			URL url = FileUtils.getFileURL(contextURL, input);
             	return graph.getAuthorityProxy().getSandboxResourceOutput(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
     		} else {
@@ -982,7 +983,7 @@ public class FileUtils {
 			TransformationGraph graph = ContextProvider.getGraph();
 
 			if (graph == null) {
-				throw new NullPointerException("Graph reference cannot be null when \"" + SandboxStreamHandler.SANDBOX_PROTOCOL + "\" protocol is used.");
+				throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
 			}
 
 			try {
