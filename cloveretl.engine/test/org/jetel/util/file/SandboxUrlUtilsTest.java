@@ -26,40 +26,40 @@ import junit.framework.TestCase;
  * @version 3.1.0
  * @since 3.1.0
  */
-public class SandboxUtilsTest extends TestCase {
+public class SandboxUrlUtilsTest extends TestCase {
 
-	private static final String SANDBOX_URL = SandboxUtils.SANDBOX_PROTOCOL_URL_PREFIX + "default";
+	private static final String SANDBOX_URL = SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + "default";
 	private static final String SANDBOX_GRAPH_FILE = "graph/someGraph.grf";
 	private static final String SANDBOX_GRAPH_URL = SANDBOX_URL + '/' + SANDBOX_GRAPH_FILE;
 
 	/**
-	 * Test method for {@link org.jetel.util.file.SandboxUtils#isSandboxUrl(java.lang.String)}.
+	 * Test method for {@link org.jetel.util.file.SandboxUrlUtils#isSandboxUrl(java.lang.String)}.
 	 */
 	public void testIsSandboxUrl() {
 		// valid sandbox URLs
-		assertTrue(SandboxUtils.isSandboxUrl(SANDBOX_URL));
-		assertTrue(SandboxUtils.isSandboxUrl(SANDBOX_GRAPH_URL));
+		assertTrue(SandboxUrlUtils.isSandboxUrl(SANDBOX_URL));
+		assertTrue(SandboxUrlUtils.isSandboxUrl(SANDBOX_GRAPH_URL));
 
 		// invalid sandbox URLs
-		assertFalse(SandboxUtils.isSandboxUrl("sandbox.grf"));
-		assertFalse(SandboxUtils.isSandboxUrl("file://default/graph/someGraph.grf"));
+		assertFalse(SandboxUrlUtils.isSandboxUrl("sandbox.grf"));
+		assertFalse(SandboxUrlUtils.isSandboxUrl("file://default/graph/someGraph.grf"));
 	}
 
 	/**
-	 * Test method for {@link org.jetel.util.file.SandboxUtils#getSandboxName(java.lang.String)}.
+	 * Test method for {@link org.jetel.util.file.SandboxUrlUtils#getSandboxName(java.lang.String)}.
 	 */
 	public void testGetSandboxName() {
-		assertEquals("default", SandboxUtils.getSandboxName(SANDBOX_URL));
-		assertEquals("default", SandboxUtils.getSandboxName(SANDBOX_GRAPH_URL));
+		assertEquals("default", SandboxUrlUtils.getSandboxName(SANDBOX_URL));
+		assertEquals("default", SandboxUrlUtils.getSandboxName(SANDBOX_GRAPH_URL));
 	}
 
 	/**
-	 * Test method for {@link org.jetel.util.file.SandboxUtils#getRelativeUrl(java.lang.String)}.
+	 * Test method for {@link org.jetel.util.file.SandboxUrlUtils#getRelativeUrl(java.lang.String)}.
 	 */
 	public void testGetRelativeUrl() {
-		assertEquals(".", SandboxUtils.getRelativeUrl(SANDBOX_URL));
-		assertEquals(".", SandboxUtils.getRelativeUrl(SANDBOX_URL + '/'));
-		assertEquals(SANDBOX_GRAPH_FILE, SandboxUtils.getRelativeUrl(SANDBOX_GRAPH_URL));
+		assertEquals(".", SandboxUrlUtils.getRelativeUrl(SANDBOX_URL));
+		assertEquals(".", SandboxUrlUtils.getRelativeUrl(SANDBOX_URL + '/'));
+		assertEquals(SANDBOX_GRAPH_FILE, SandboxUrlUtils.getRelativeUrl(SANDBOX_GRAPH_URL));
 	}
 
 }

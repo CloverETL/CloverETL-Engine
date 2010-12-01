@@ -978,7 +978,7 @@ public class FileUtils {
 			return null;
 		}
 
-		if (SandboxUtils.isSandboxUrl(url)) {
+		if (SandboxUrlUtils.isSandboxUrl(url)) {
 			TransformationGraph graph = ContextProvider.getGraph();
 
 			if (graph == null) {
