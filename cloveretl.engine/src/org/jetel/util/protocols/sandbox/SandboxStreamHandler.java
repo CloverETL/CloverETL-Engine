@@ -43,19 +43,11 @@ public class SandboxStreamHandler extends URLStreamHandler {
 		this.graph = graph;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.net.URLStreamHandler#openConnection(java.net.URL)
-	 */
 	@Override
 	public URLConnection openConnection(URL url) throws IOException {
 		return new SandboxConnection(graph, url);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see java.net.URLStreamHandler#parseURL(java.net.URL, java.lang.String, int, int)
-	 */
     protected void parseURL(URL url, String spec, int start, int limit) {
     	super.parseURL(url, spec, start, limit);
 
