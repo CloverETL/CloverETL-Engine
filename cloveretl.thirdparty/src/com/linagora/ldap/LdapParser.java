@@ -45,6 +45,8 @@ import org.jetel.metadata.DataRecordMetadata;
 
 import com.linagora.ldap.Ldap2JetelData.Ldap2JetelByte;
 import com.linagora.ldap.Ldap2JetelData.Ldap2JetelString;
+import com.linagora.ldap.LdapManager.AliasHandling;
+import com.linagora.ldap.LdapManager.ReferralHandling;
 
 
 
@@ -77,14 +79,17 @@ public class LdapParser implements Parser {
 
 
 	/** List of DN matching the search filter */
-	List dnList = null; 
-	Iterator resultDn = null;
+	List<String> dnList = null; 
+	Iterator<String> resultDn = null;
 	
 	/** Transformation object between Attributes  and DataRecord */
 	private Ldap2JetelData[] transMap = null;
 
 	/** Hack to manage multivaluated attributes */
 	private String multiSeparator = null;
+
+	private AliasHandling aliasHandling;
+	private ReferralHandling referralHandling;
 
 	/** Useful constant to connect to the LDAP server and perform the search */
 	private String base;
@@ -149,7 +154,10 @@ public class LdapParser implements Parser {
 		} else {
 			ldapManager = new LdapManager(ldapUrl);
 		}
-			
+		
+		ldapManager.setAliasHandling(aliasHandling);
+		ldapManager.setReferralHandling(referralHandling);
+		
 		try {
 			ldapManager.openContext();
 		} catch (NamingException ne) {
@@ -171,13 +179,19 @@ public class LdapParser implements Parser {
 			throw new ComponentNotReadyException(e);
 		}
 		
-		dnList = new ArrayList();
+		dnList = new ArrayList<String>();
 		int i = 0;
 		try {
 			while (ne.hasMore()) {
 				i++;
-				String name = ((SearchResult) ne.next()).getName();
-				dnList.add(name + (base.length() != 0 && name.length() != 0 ? "," : "") + base);
+				SearchResult result = (SearchResult) ne.next(); 
+				String name = result.getName();
+				if (result.isRelative()) {
+					dnList.add(name + (base.length() != 0 && name.length() != 0 ? "," : "") + base);
+				} else {
+					// search result is a referral
+					dnList.add(name);
+				}
 			}
 		} catch (SizeLimitExceededException e) {
 			if( LIMIT == 0 || i < LIMIT) {
@@ -421,6 +435,22 @@ public class LdapParser implements Parser {
 
 	public void setMultiValueSeparator(String multiValueSeparator) {
 		this.multiSeparator = multiValueSeparator;
+	}
+
+	public AliasHandling getAliasHandling() {
+		return aliasHandling;
+	}
+
+	public void setAliasHandling(AliasHandling aliasHandling) {
+		this.aliasHandling = aliasHandling;
+	}
+
+	public ReferralHandling getReferralHandling() {
+		return referralHandling;
+	}
+
+	public void setReferralHandling(ReferralHandling referralHandling) {
+		this.referralHandling = referralHandling;
 	}
 
 	@Override
