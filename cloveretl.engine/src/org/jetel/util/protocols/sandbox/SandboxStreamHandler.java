@@ -24,6 +24,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * 
@@ -55,13 +56,11 @@ public class SandboxStreamHandler extends URLStreamHandler {
 	 * (non-Javadoc)
 	 * @see java.net.URLStreamHandler#parseURL(java.net.URL, java.lang.String, int, int)
 	 */
-    protected void parseURL(URL u, String spec, int start, int limit) {
-    	super.parseURL(u, spec, start, limit);
-    	String protocol = u.getProtocol();
-    	if (!protocol.equals(SANDBOX_PROTOCOL)) {
+    protected void parseURL(URL url, String spec, int start, int limit) {
+    	super.parseURL(url, spec, start, limit);
+
+    	if (!SandboxUrlUtils.isSandboxUrl(url)) {
     		throw new RuntimeException("Parse error: The URL protocol name must be sandbox!");
-    	} else {
-    		this.getClass(); // just to have a line for break-point
     	}
     }
 
