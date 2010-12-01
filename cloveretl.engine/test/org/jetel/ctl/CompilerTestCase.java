@@ -2655,4 +2655,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompileExpectErrors("test_dictionary_string_to_int", Arrays.asList("Type mismatch: cannot convert from 'string' to 'integer'","Type mismatch: cannot convert from 'string' to 'integer'"));
 	}
 	
+	public void test_utillib_sleep() {
+		long time = System.currentTimeMillis();
+		doCompile("test_utillib_sleep");
+		assertTrue("sleep() function didn't pause execution", System.currentTimeMillis() - time > 1000);
+	}
 }
