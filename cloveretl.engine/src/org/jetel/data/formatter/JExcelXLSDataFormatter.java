@@ -257,6 +257,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
     			Object[] args = (Object[])outputDataTarget;
     			URL url = (URL) args[0];
         		String fName = (String) args[1];
+        		if (args.length >= 3 && args[2] instanceof de.schlichtherle.io.FileOutputStream) {
+        			((de.schlichtherle.io.FileOutputStream) args[2]).close();
+        		}
         		try {
             		is = FileUtils.getInputStream(url, fName);
             		oldWb = Workbook.getWorkbook(is, settings);
@@ -264,17 +267,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         		} catch (Throwable t) {
         			//NOTHING - xls file doesn't exist, create new one
         		}
-        		if (args.length >= 3) {
-        			if (args[2] instanceof de.schlichtherle.io.FileOutputStream) {
-            			os = (OutputStream) args[2]; // truezip does limit number of opened streams
-        			}
-        			else {
-        				os = FileUtils.getOutputStream(url, fName, false, -1);
-        			}
-        		}
-        		else {
-        			os = FileUtils.getOutputStream(url, fName, false, -1);
-        		}
+    			os = FileUtils.getOutputStream(url, fName, false, -1);
     		} else if (outputDataTarget instanceof WritableByteChannel) {
     			os = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
     		}
