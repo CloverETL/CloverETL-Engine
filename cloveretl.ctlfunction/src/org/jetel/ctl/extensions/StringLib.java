@@ -167,15 +167,33 @@ public class StringLib extends TLFunctionLibrary {
 		return input.length() < length ? "" : input.substring(0, length);
 	}
 
+	@TLFunctionAnnotation("Returns prefix of the specified length. If input string is shorter than specified length " +
+		"and 3th argument is true, right side of result is padded with blank spaces so that the result has specified length.")
+	public static final String left(TLFunctionCallContext context, String input, int length, boolean spacePad) {
+		if (input.length() < length) {
+			if (spacePad) {
+				return String.format("%-" + length + "s", input);
+			}
+			return input;
+		}
+		return left(context, input, length);
+	}
+	
 	class LeftFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			int params = context.getParams().length;
+			final boolean spacePad = params > 2 ? stack.popBoolean() : false;
 			final int length = stack.popInt();
 			final String input = stack.popString();
-			stack.push(left(context, input, length));
+			if (params > 2) {
+				stack.push(left(context, input, length, spacePad));
+			} else {
+				stack.push(left(context, input, length));
+			}
 		}
 	}
 
@@ -185,15 +203,33 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(input.length() - length, input.length());
 	}
 
+	@TLFunctionAnnotation("Returns suffix of the specified length. If input string is shorter than specified length " +
+			"and 3th argument is true, left side of result is padded with blank spaces so that the result has specified length.")
+	public static final String right(TLFunctionCallContext context, String input, int length, boolean spacePad) {
+		if (input.length() < length) {
+			if (spacePad) {
+				return String.format("%"+length+"s", input);
+			}
+			return input;
+		}
+		return right(context, input, length);
+	}
+
 	class RightFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			int params = context.getParams().length;
+			final boolean spacePad = params > 2 ? stack.popBoolean() : false;
 			final int length = stack.popInt();
 			final String input = stack.popString();
-			stack.push(right(context, input, length));
+			if (params > 2) {
+				stack.push(right(context, input, length, spacePad));
+			} else {
+				stack.push(right(context, input, length));
+			}
 		}
 	}
 
