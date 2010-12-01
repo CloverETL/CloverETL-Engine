@@ -74,5 +74,4 @@ done;
 
 
 clover_exec_command="exec \"$JAVACMD\" $CLOVER_OPTS $java_exec_args -classpath \"$CLASSPATH:$TRANSFORM_PATH:$user_classpath:$LOCAL_CLASSPATH\" -Dclover.home=\"$CLOVER_HOME\" org.jetel.main.runGraph -plugins $CLOVER_HOME/plugins $clover_exec_args"
-echo $clover_exec_command
 eval $clover_exec_command
