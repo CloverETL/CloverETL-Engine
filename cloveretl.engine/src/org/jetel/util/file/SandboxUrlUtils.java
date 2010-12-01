@@ -28,7 +28,7 @@ import java.net.URL;
  * @version 3.1.0
  * @since 3.1.0
  */
-public final class SandboxUtils {
+public final class SandboxUrlUtils {
 
 	/** The name of sandbox protocol. */
 	public static final String SANDBOX_PROTOCOL = "sandbox";
@@ -104,7 +104,7 @@ public final class SandboxUtils {
 		return sandboxUrl.substring(slashIndex + 1);
 	}
 
-	private SandboxUtils() {
+	private SandboxUrlUtils() {
 		throw new UnsupportedOperationException();
 	}
 
