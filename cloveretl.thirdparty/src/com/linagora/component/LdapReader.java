@@ -39,6 +39,8 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
+import com.linagora.ldap.LdapManager.AliasHandling;
+import com.linagora.ldap.LdapManager.ReferralHandling;
 import com.linagora.ldap.LdapParser;
 
 /**
@@ -104,6 +106,8 @@ public class LdapReader extends Node {
 	private static final String XML_USER_ATTRIBUTE = "user";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
+	private static final String XML_ALIAS_HANDLING_ATTRIBUTE = "aliasHandling";
+	private static final String XML_REFERRAL_HANDLING_ATTRIBUTE = "referralHandling";
 
 	/**
 	 * Component type
@@ -131,6 +135,9 @@ public class LdapReader extends Node {
 	/** This string is used as a multi-value separator. 
 	 *  One jetel field can contain multiple values separated by this string. */
 	private String multiValueSeparator = "|";
+	
+	private AliasHandling aliasHandling;
+	private ReferralHandling referralHandling;
 
 	/**
 	 * A logger for the class
@@ -190,6 +197,8 @@ public class LdapReader extends Node {
 			this.parser = new LdapParser(this.ldapUrl, this.base, this.filter, this.scope);
 		}	
 		parser.setMultiValueSeparator(multiValueSeparator);
+		parser.setAliasHandling(aliasHandling);
+		parser.setReferralHandling(referralHandling);
 		
 		/*
 		 * TODO : well... I don't know how to add LdapConnection node to transformation graphe.
@@ -308,6 +317,12 @@ public class LdapReader extends Node {
 			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
 				aLdapReader.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_ALIAS_HANDLING_ATTRIBUTE)) {
+				aLdapReader.setAliasHandling(Enum.valueOf(AliasHandling.class, xattribs.getString(XML_ALIAS_HANDLING_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_REFERRAL_HANDLING_ATTRIBUTE)) {
+				aLdapReader.setReferralHandling(Enum.valueOf(ReferralHandling.class, xattribs.getString(XML_REFERRAL_HANDLING_ATTRIBUTE)));
+			}
 
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
@@ -315,7 +330,6 @@ public class LdapReader extends Node {
 		
 		return aLdapReader;
 	}
-
 
 	/*
 	 * (non-Javadoc)
@@ -350,5 +364,12 @@ public class LdapReader extends Node {
 		}
 	}
 
-	
+	public void setAliasHandling(AliasHandling aliasHandling) {
+		this.aliasHandling = aliasHandling;
+	}
+
+	public void setReferralHandling(ReferralHandling referralHandling) {
+		this.referralHandling = referralHandling;
+	}
+
 }

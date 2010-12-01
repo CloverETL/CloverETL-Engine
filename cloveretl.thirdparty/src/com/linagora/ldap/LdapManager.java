@@ -18,30 +18,52 @@
  */
 package com.linagora.ldap;
 
-import javax.naming.*;
-import javax.naming.directory.*;
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.*;
-
 public class LdapManager {
 
 	private static final String DEFAULT_CTX = "com.sun.jndi.ldap.LdapCtxFactory";
+	private static final String DEREF_ALIASES_ENV_PROPERTY = "java.naming.ldap.derefAliases";
 
 	/** How to handle ldap referrals if unspecified */
-	public static final String DEFAULT_REFERRAL_HANDLING = "ignore";
+	public static final String DEFAULT_REFERRAL_HANDLING = ReferralHandling.IGNORE.name().toLowerCase();
+	
+	/** @see http://download.oracle.com/javase/jndi/tutorial/ldap/referral/jndi.html */
+	public enum ReferralHandling {
+		IGNORE,
+		FOLLOW,
+		THROW;
+	}
 
 	/** How to handle ldap aliases if unspecified */
-	public static final String DEFAULT_ALIAS_HANDLING = "finding";
+	public static final String DEFAULT_ALIAS_HANDLING = AliasHandling.FINDING.name().toLowerCase();
+
+	/** @see http://download.oracle.com/javase/jndi/tutorial/ldap/misc/aliases.html */
+	public enum AliasHandling {
+		ALWAYS,
+		NEVER,
+		FINDING,
+		SEARCHING;
+	}
 
 	/** Default time limit on search, o means no limit */
 	private static final int DEFAULT_SEARCH_TIMEOUT = 0;
 
 	/** Default max number of result returned, 0 means no limit */
 	private static final int DEFAULT_SEARCH_LIMIT = 0;
-
+	
 	/**
 	 * To speed up existance checks, we use a single static constraints object that
 	 * never changes.
@@ -102,6 +124,23 @@ public class LdapManager {
 		setupSimpleSecurityProperties(userDN, pwd); // add the username + password parameters
 	}
 
+	public void setReferralHandling(ReferralHandling handling) {
+		if (handling != null) {
+			env.put(Context.REFERRAL, handling.name().toLowerCase());
+		} else {
+			env.remove(Context.REFERRAL); // use default -- determined by the service provider
+		}
+	}
+	
+	public void setAliasHandling(AliasHandling handling) {
+		if (handling != null) {
+			env.put(DEREF_ALIASES_ENV_PROPERTY, handling.name().toLowerCase());
+		} else {
+			env.remove(DEREF_ALIASES_ENV_PROPERTY); // same as "always"
+		}
+	}
+	
+	
 	/**
 	 * This sets the basic environment properties needed for a simple,
 	 * unauthenticated jndi connection.  It is used by openBasicContext().
@@ -121,7 +160,7 @@ public class LdapManager {
 		this.env.put(Context.SECURITY_AUTHENTICATION, "none"); // use setSimpleAuthentification to modify that
 
 		this.env.put(Context.REFERRAL, referralType);
-		this.env.put("java.naming.ldap.derefAliases", aliasHandle);
+		this.env.put(DEREF_ALIASES_ENV_PROPERTY, aliasHandle);
 		// the ldap url to connect to, for instance : "ldap://localhost:389"
 		
 		/*
