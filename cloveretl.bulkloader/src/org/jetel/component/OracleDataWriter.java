@@ -483,9 +483,10 @@ public class OracleDataWriter extends BulkLoader {
     	
     	defaultCreateFileForExchange(EXCHANGE_FILE_PREFIX);
     	
-    	if (isDataReadFromPort && !ProcBox.isWindowsPlatform() && dataURL == null) {
-			useFileForExchange = false;
-		}
+//    	Fix of issue #5510: use of pipe seemed to be needlessly forced on non-Windows platforms
+//    	if (isDataReadFromPort && !ProcBox.isWindowsPlatform() && dataURL == null) {
+//			useFileForExchange = false;
+//		}
     }
 
     /**
