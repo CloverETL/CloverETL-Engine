@@ -564,6 +564,8 @@ public class XMLExtract extends Node {
 	                            throw ex;
 	                        }
 	                    }
+                    } else if (field.getType() == DataFieldMetadata.STRING_FIELD) {
+                    	field.setValue("");
                     }
                 }
                 
