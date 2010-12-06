@@ -192,9 +192,9 @@ public class LdapReader extends Node {
 		super.init();
 		
 		if(this.user != null) {
-			this.parser = new LdapParser(this.ldapUrl, this.base, this.filter, this.scope, this.user, this.passwd);
+			this.parser = new LdapParser(getOutputPort(OUTPUT_PORT).getMetadata(), this.ldapUrl, this.base, this.filter, this.scope, this.user, this.passwd);
 		} else {
-			this.parser = new LdapParser(this.ldapUrl, this.base, this.filter, this.scope);
+			this.parser = new LdapParser(getOutputPort(OUTPUT_PORT).getMetadata(), this.ldapUrl, this.base, this.filter, this.scope);
 		}	
 		parser.setMultiValueSeparator(multiValueSeparator);
 		parser.setAliasHandling(aliasHandling);
@@ -207,7 +207,7 @@ public class LdapReader extends Node {
 		 */
 //		parser.open(getGraph().getLdapConnection(this.ldapConnectionId), getOutputPort(OUTPUT_PORT).getMetadata());
 //		LdapConnection ldapCon = new LdapConnection("id_ldapCon",ldapUrl,"","");
-		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.init();
 		/*
 		 * Well... some other things to do ?
 		 */

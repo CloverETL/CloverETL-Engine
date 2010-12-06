@@ -413,9 +413,9 @@ public class RangeLookupTest extends CloverTestCase {
 		fieldMetadata.setFormatStr("dd.MM.yy");
 		lookupMetadata.addField(fieldMetadata);
 
-		XLSParser parser = new JExcelXLSDataParser();
+		XLSParser parser = new JExcelXLSDataParser(lookupMetadata);
 		parser.setSheetNumber("0");
-		parser.init(lookupMetadata);
+		parser.init();
 		parser.setDataSource(new FileInputStream("../cloveretl.engine/data" + File.separatorChar + "rangeLookup.dat.xls"));
 
 		lookup = (RangeLookupTable) LookupTableFactory.createLookupTable(null, "rangeLookup", new Object[] { "RangeLookup", lookupMetadata, new String[] { "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8" }, new String[] { "e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8" }, parser }, new Class[] { String.class, DataRecordMetadata.class, String[].class, String[].class, Parser.class });
@@ -456,8 +456,8 @@ public class RangeLookupTest extends CloverTestCase {
 		RecordKey key = new RecordKey(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }, metadata);
 		lookupResult = lookup.createLookup(key, record);
 
-		DelimitedDataParser dataParser = new DelimitedDataParser();
-		dataParser.init(metadata);
+		DelimitedDataParser dataParser = new DelimitedDataParser(metadata);
+		dataParser.init();
 		dataParser.setDataSource(new FileInputStream("../cloveretl.engine/data" + File.separatorChar + "data.dat"));
 
 		for (int i = 0; i < 500; i++) {

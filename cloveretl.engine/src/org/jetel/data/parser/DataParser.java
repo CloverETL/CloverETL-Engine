@@ -38,7 +38,6 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
@@ -56,14 +55,14 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.data.Defaults
  * @revision $Revision: 1.9 $
  */
-public class DataParser implements Parser {
+public class DataParser implements TextParser {
 	
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
 	
+	private TextParserConfiguration cfg;
+	
 	private IParserExceptionHandler exceptionHandler;
-
-	private DataRecordMetadata metadata;
 
 	private ReadableByteChannel reader;
 
@@ -87,15 +86,7 @@ public class DataParser implements Parser {
 	
 	private AhoCorasick delimiterSearcher;
 	
-	private boolean quotedStrings = false;
-
 	private StringBuilder tempReadBuffer;
-	
-	private boolean treatMultipleDelimitersAsOne = false;
-	
-	private Boolean trim = null; 
-	private Boolean skipLeadingBlanks = null;
-	private Boolean skipTrailingBlanks = null;
 	
 	private boolean[] isAutoFilling;
 	
@@ -119,35 +110,30 @@ public class DataParser implements Parser {
 	
 	private DataFieldMetadata[] metadataFields;
 	
-	private final boolean verbose;
-	
 	/**
 	 * We are in the middle of process of record parsing.
 	 */
 	private boolean recordIsParsed;
 	
-	public DataParser() {
-		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+	public DataParser(TextParserConfiguration cfg){
+		this.cfg = cfg;
+		decoder = Charset.forName(cfg.getCharset()).newDecoder();
+		reader = null;
 	}
 	
-	public DataParser(String charset) {
-		this(charset, true);
-	}
-
-	public DataParser(String charset, boolean verbose) {
-		if (charset == null) {
-			charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
-		}
-		decoder = Charset.forName(charset).newDecoder();
-		reader = null;
-		this.verbose = verbose;
+	/**
+	 * 
+	 * @return integer 0-100
+	 */
+	public static Integer getParserSpeed(TextParserConfiguration cfg){
+		return 10;
 	}
 
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = new DataRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);
@@ -179,9 +165,9 @@ public class DataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public void init() throws ComponentNotReadyException {
 		//init private variables
-		if (metadata == null) {
+		if (cfg.getMetadata() == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
 		byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
@@ -190,15 +176,12 @@ public class DataParser implements Parser {
 		fieldBuffer = new StringBuilder(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		recordBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		numFields = metadata.getNumFields();
+		numFields = cfg.getMetadata().getNumFields();
 		isAutoFilling = new boolean[numFields];
 //		isSkipBlanks = new boolean[numFields];
 		isSkipLeadingBlanks = new boolean[numFields];
 		isSkipTrailingBlanks = new boolean[numFields];
 		eofAsDelimiters = new boolean[numFields];
-
-		//save metadata
-		this.metadata = metadata;
 
 		//aho-corasick initialize
 		delimiterSearcher = new AhoCorasick();
@@ -206,8 +189,8 @@ public class DataParser implements Parser {
 		// create array of delimiters & initialize them
 		String[] delimiters;
 		for (int i = 0; i < numFields; i++) {
-			if(metadata.getField(i).isDelimited()) {
-				delimiters = metadata.getField(i).getDelimiters();
+			if(cfg.getMetadata().getField(i).isDelimited()) {
+				delimiters = cfg.getMetadata().getField(i).getDelimiters();
 				if(delimiters != null && delimiters.length > 0) { //it is possible in case eofAsDelimiter tag is set
 					for(int j = 0; j < delimiters.length; j++) {
 						delimiterSearcher.addPattern(delimiters[j], i);
@@ -216,26 +199,26 @@ public class DataParser implements Parser {
 					delimiterSearcher.addPattern(null, i);
 				}
 			}
-			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
-			isSkipLeadingBlanks[i] = skipLeadingBlanks != null ? skipLeadingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
+			isAutoFilling[i] = cfg.getMetadata().getField(i).getAutoFilling() != null;
+			isSkipLeadingBlanks[i] = cfg.getSkipLeadingBlanks() != null ? cfg.getSkipLeadingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(i).isTrim();
 //			isSkipBlanks[i] = skipLeadingBlanks
 //					|| trim == Boolean.TRUE
 //					|| (trim == null && metadata.getField(i).isTrim());
-			isSkipTrailingBlanks[i] = skipTrailingBlanks != null ? skipTrailingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
-			eofAsDelimiters[i] = metadata.getField(i).isEofAsDelimiter();
+			isSkipTrailingBlanks[i] = cfg.getSkipTrailingBlanks() != null ? cfg.getSkipTrailingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(i).isTrim();
+			eofAsDelimiters[i] = cfg.getMetadata().getField(i).isEofAsDelimiter();
 		}
 
 		//aho-corasick initialize
-		if(metadata.isSpecifiedRecordDelimiter()) {
+		if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			hasRecordDelimiter = true;
-			delimiters = metadata.getRecordDelimiters();
+			delimiters = cfg.getMetadata().getRecordDelimiters();
 			for(int j = 0; j < delimiters.length; j++) {
 				delimiterSearcher.addPattern(delimiters[j], RECORD_DELIMITER_IDENTIFIER);
 			}
 		}
-		if(metadata.isSpecifiedFieldDelimiter()) {
+		if(cfg.getMetadata().isSpecifiedFieldDelimiter()) {
 			hasDefaultFieldDelimiter = true;
-			delimiters = metadata.getFieldDelimiters();
+			delimiters = cfg.getMetadata().getFieldDelimiters();
 			for(int j = 0; j < delimiters.length; j++) {
 				delimiterSearcher.addPattern(delimiters[j], DEFAULT_FIELD_DELIMITER_IDENTIFIER);
 			}
@@ -246,16 +229,16 @@ public class DataParser implements Parser {
 		fieldLengths = new int[numFields];
 		quotedFields = new boolean[numFields];
 		for (int i = 0; i < numFields; i++) {
-			if(metadata.getField(i).isFixed()) {
-				fieldLengths[i] = metadata.getField(i).getSize();
+			if(cfg.getMetadata().getField(i).isFixed()) {
+				fieldLengths[i] = cfg.getMetadata().getField(i).getSize();
 			}
-			char type = metadata.getFieldType(i);
-			quotedFields[i] = quotedStrings 
+			char type = cfg.getMetadata().getFieldType(i);
+			quotedFields[i] = cfg.isQuotedStrings() 
 					&& type != DataFieldMetadata.BYTE_FIELD
 					&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 		}
 		
-		metadataFields = metadata.getFields();
+		metadataFields = cfg.getMetadata().getFields();
 	}
 
 	/* (non-Javadoc)
@@ -357,7 +340,7 @@ public class DataParser implements Parser {
 		boolean quotedField;
 		
 		recordCounter++;
-		if (verbose) {
+		if (cfg.isVerbose()) {
 			recordBuffer.clear();
 		}
 		recordIsParsed = false;
@@ -432,7 +415,7 @@ public class DataParser implements Parser {
 								if (skipTBlanks) {
 									StringUtils.trimTrailing(fieldBuffer);
 								}
-								if(treatMultipleDelimitersAsOne)
+								if(cfg.isTreatMultipleDelimitersAsOne())
 									while(followFieldDelimiter(fieldCounter));
 								break;
 							}
@@ -553,7 +536,7 @@ public class DataParser implements Parser {
 
         if (charBuffer.hasRemaining()) {
     		character = charBuffer.get();
-    		if (verbose) {
+    		if (cfg.isVerbose()) {
 	    		try {
 	    			recordBuffer.put(character);
 	    		} catch (BufferOverflowException e) {
@@ -603,7 +586,7 @@ public class DataParser implements Parser {
 		
 		if (charBuffer.hasRemaining()) {
 			final int ret = charBuffer.get();
-			if (verbose) {
+			if (cfg.isVerbose()) {
 				try {
 					recordBuffer.put((char) ret);
 				} catch (BufferOverflowException e) {
@@ -686,7 +669,7 @@ public class DataParser implements Parser {
 	 * Find first record delimiter in input channel.
 	 */
 	private boolean findFirstRecordDelimiter() throws JetelException {
-        if(!metadata.isSpecifiedRecordDelimiter()) {
+        if(!cfg.getMetadata().isSpecifiedRecordDelimiter()) {
             return false;
         }
 		int character;
@@ -819,22 +802,6 @@ public class DataParser implements Parser {
 		return -1;
 	}
 
-	/**
-	 * Specifies whether leading blanks at each field should be skipped
-	 * @param skippingLeadingBlanks The skippingLeadingBlanks to set.
-	 */
-	public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
-		this.skipLeadingBlanks = skipLeadingBlanks;
-	}
-
-	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
-		this.skipTrailingBlanks = skipTrailingBlanks;
-	}
-
-	public String getCharsetName() {
-		return decoder.charset().name();
-	}
-	
 	public boolean endOfInputChannel() {
 		return reader == null || !reader.isOpen();
 	}
@@ -844,7 +811,7 @@ public class DataParser implements Parser {
 	}
 	
 	public String getLastRawRecord() {
-		if (verbose) {
+		if (cfg.isVerbose()) {
 			recordBuffer.flip();
 			String lastRawRecord = recordBuffer.toString();
 			recordBuffer.position(recordBuffer.limit()); //it is necessary for repeated invocation of this method for the same record
@@ -854,13 +821,6 @@ public class DataParser implements Parser {
 		}
 	}
 	
-	public void setQuotedStrings(boolean quotedStrings) {
-		this.quotedStrings = quotedStrings;
-	}
-	
-	public void setTreatMultipleDelimitersAsOne(boolean treatMultipleDelimitersAsOne) {
-		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
-	}
 	
 //	/**
 //	 * Skip first line/record in input channel.
@@ -889,7 +849,7 @@ public class DataParser implements Parser {
 	public int skip(int count) throws JetelException {
         int skipped;
 
-        if(metadata.isSpecifiedRecordDelimiter()) {
+        if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findFirstRecordDelimiter()) {
 				    break;
@@ -920,14 +880,6 @@ public class DataParser implements Parser {
         }
         return null;
     }
-
-	public Boolean getTrim() {
-		return trim;
-	}
-
-	public void setTrim(Boolean trim) {
-		this.trim = trim;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -963,18 +915,6 @@ public class DataParser implements Parser {
 		}
 	}
 
-	public Boolean getSkipLeadingBlanks() {
-		return skipLeadingBlanks;
-	}
-
-	public Boolean getSkipTrailingBlanks() {
-		return skipTrailingBlanks;
-	}
-
-	public boolean isVerbose() {
-		return verbose;
-	}
-
 	@Override
     public void preExecute() throws ComponentNotReadyException {
     }
@@ -988,5 +928,10 @@ public class DataParser implements Parser {
     public void free() throws IOException {
 		close();
     }
+
+	@Override
+	public TextParserConfiguration getConfiguration() {
+		return cfg;
+	}
 	
 }

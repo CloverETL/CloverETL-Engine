@@ -108,6 +108,10 @@ public abstract class XLSParser implements Parser {
 
 	public final static int MAX_NAME_LENGTH = 15;
 
+	public XLSParser(DataRecordMetadata metadata){
+		this.metadata = metadata;
+	}
+	
 	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
 	}
@@ -174,11 +178,10 @@ public abstract class XLSParser implements Parser {
         return null;
 	}
 
-	public void init(DataRecordMetadata _metadata)throws ComponentNotReadyException{
-		if (_metadata == null) {
+	public void init()throws ComponentNotReadyException{
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		this.metadata = _metadata;
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;

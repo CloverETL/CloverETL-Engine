@@ -83,10 +83,12 @@ public class DBFDataParser implements Parser {
 
 	private int read;
 
-    public DBFDataParser() {
+    public DBFDataParser(DataRecordMetadata metadata) {
+    	this.metadata = metadata;
     }
 
-    public DBFDataParser(String charSet) {
+    public DBFDataParser(DataRecordMetadata metadata, String charSet) {
+    	this.metadata = metadata;
         this.charSet = charSet;
     }
     
@@ -245,12 +247,11 @@ public class DBFDataParser implements Parser {
      * @see org.jetel.data.DataParser#open(java.lang.Object,
      *      org.jetel.metadata.DataRecordMetadata)
      */
-    public void init(DataRecordMetadata _metadata)
+    public void init()
             throws ComponentNotReadyException {
-		if (_metadata == null) {
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        metadata = _metadata;
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;

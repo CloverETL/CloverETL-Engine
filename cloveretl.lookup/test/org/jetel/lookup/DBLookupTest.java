@@ -38,8 +38,8 @@ public class DBLookupTest extends CloverTestCase {
 		DataRecordMetadata customerMetadata = conn.createMetadata(p);
 		customer = new DataRecord(customerMetadata);
 		customer.init();
-		parser = new SQLDataParser("select * from customer");
-		parser.init(customerMetadata);
+		parser = new SQLDataParser(customerMetadata, "select * from customer");
+		parser.init();
 		parser.setDataSource(aDBConnection);
 
 		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);

@@ -25,7 +25,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  Interface to input data parsers
@@ -60,7 +59,7 @@ public interface Parser {
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 27, 2002
 	 */
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException;
+	public void init() throws ComponentNotReadyException;
 
     /**
      * Sets input data source. Some of parsers allow to call this method repeatedly.

@@ -62,23 +62,23 @@ protected void setUp() {
 		e.printStackTrace();
 	}
 	
-	aParser = new FixLenCharDataParser();
-	aParser2 = new FixLenCharDataParser();
-	aParser3 = new FixLenCharDataParser();
+	aParser = new FixLenCharDataParser(metadata);
+	aParser2 = new FixLenCharDataParser(metadata);
+	aParser3 = new FixLenCharDataParser(metadata);
 
 	try {
 		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-		aParser.init(metadata);
+		aParser.init();
 //		aParser.setDataSource(in3);
 		record = new DataRecord(metadata);
 		record.init();
 
 		aParser2.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 
 		aParser3.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-		aParser3.init(metadata);
+		aParser3.init();
 		aParser3.setDataSource(in2);
 	} catch (ComponentNotReadyException e) {
 		e.printStackTrace();

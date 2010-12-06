@@ -314,10 +314,10 @@ public class SystemExecute extends Node{
 			out_record= new DataRecord(meta);
 			out_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser= charset != null ? new DelimitedDataParser(charset) : new DelimitedDataParser();
+				parser= charset != null ? new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
 			}else {
 				parser= meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false) ?
-						new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
+						new FixLenByteDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new FixLenCharDataParser(getOutputPort(OUTPUT_PORT).getMetadata(),charset);
 			}
 		}else{
 			parser=null;
@@ -342,7 +342,7 @@ public class SystemExecute extends Node{
 		SendDataToFile sendDataToFile = null;
 		SendDataToConsole sendDataToConsole = null;
 		if (outPort!=null){
-            parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+            parser.init();
             parser.setDataSource(process_out);
             sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 			//send all out_records to output ports

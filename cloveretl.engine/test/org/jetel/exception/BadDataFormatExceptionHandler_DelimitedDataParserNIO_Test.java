@@ -49,9 +49,9 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		in = new FileInputStream("data/in/good/DL28_NL.txt");
 		in2 = new FileInputStream("data/in/bad/DL_NL_nulls.txt");
 		
-		aParser2 = new DelimitedDataParser();
+		aParser2 = new DelimitedDataParser(metadata);
 
-		aParser = new DelimitedDataParser();
+		aParser = new DelimitedDataParser(metadata);
 		record = new DataRecord(metadata);
 		record.init();
 	}
@@ -76,7 +76,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	
 	public void test_goodFile() throws ComponentNotReadyException, JetelException {
 		// test no handler ------------------------------------
-		aParser.init(metadata);
+		aParser.init();
 		aParser.setDataSource(in);
 		while((record=aParser.getNext(record))!=null){}
 		aParser.close();
@@ -89,7 +89,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	public void test_strict_goodFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
 		// test strict handler ------------------------------------
-		aParser.init(metadata);
+		aParser.init();
 		aParser.setDataSource(in);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
 		aParser.setExceptionHandler(aHandler);
@@ -104,7 +104,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	public void test_controlled_goodFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
 		// test controlled handler ------------------------------------
-		aParser.init(metadata);
+		aParser.init();
 		aParser.setDataSource(in);
 
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
@@ -145,7 +145,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	public void test_lenient_goodFile() throws JetelException, ComponentNotReadyException {
 		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser.init(metadata);
+		aParser.init();
 		aParser.setDataSource(in);
 
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
@@ -187,7 +187,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	public void test_badFile() throws ComponentNotReadyException, JetelException {
 		boolean failed = false;
 		// test no handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		try{
 			while((record=aParser2.getNext(record))!=null){
@@ -211,7 +211,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		boolean failed = false;
 
 		// test strict handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
 		aParser2.setExceptionHandler(aHandler);
@@ -238,7 +238,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		IParserExceptionHandler aHandler = null;
 
 		// test controlled handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
 		aParser2.setExceptionHandler(aHandler);
@@ -269,7 +269,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	public void test_lenient_badFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
 		aParser2.setExceptionHandler(aHandler);

@@ -54,7 +54,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.StrictParserExceptionHandler;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -410,7 +409,7 @@ public class XPathParser implements Parser {
 	}
 
 
-	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public void init() throws ComponentNotReadyException {
 		try {
 			// parse xml mapping
 			xpathContext = parseXPath(xpathDocument);
@@ -556,7 +555,7 @@ public class XPathParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
 	public void reset() throws ComponentNotReadyException {
-		init(null);
+		init();
 		//xpathContext.reset();
 		//isReseted = true;
 	}

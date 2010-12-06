@@ -148,7 +148,6 @@ public class DBFDataReader extends Node {
 	public DBFDataReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DBFDataParser();
 	}
 
 
@@ -162,10 +161,8 @@ public class DBFDataReader extends Node {
 	public DBFDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DBFDataParser(this.charset = charset);
+		this.charset = charset;
 	}
-
-	
 	
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
@@ -268,6 +265,12 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		if( charset == null ){
+			parser = new DBFDataParser(getInputPort(INPUT_PORT).getMetadata());
+		} else {
+			parser = new DBFDataParser(getInputPort(INPUT_PORT).getMetadata(), charset);
+		}
+
 		prepareMultiFileReader();
 	}
 

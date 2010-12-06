@@ -137,7 +137,6 @@ public class CloverDataReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.indexFileURL = indexFileURL;
-		parser = new CloverDataParser();
 	}
 
 	/* (non-Javadoc)
@@ -332,6 +331,8 @@ public class CloverDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		parser = new CloverDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		
 		initFileIterator();
 
 		//set start record
@@ -355,7 +356,7 @@ public class CloverDataReader extends Node {
         parser.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
 
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-		parser.init(metadata);
+		parser.init();
 		parser.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		
     	if (metadata != null) {

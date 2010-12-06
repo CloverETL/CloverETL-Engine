@@ -42,9 +42,9 @@ public class SQLDataParserTest extends CloverTestCase {
 		record = new DataRecord(metadata);
 		record.init();
 
-		aParser2 = new SQLDataParser("connection", "SELECT * FROM good");
+		aParser2 = new SQLDataParser(metadata,"connection", "SELECT * FROM good");
 
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 	}
 

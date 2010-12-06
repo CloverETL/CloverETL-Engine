@@ -90,8 +90,8 @@ public class SQLDataParser implements Parser {
 	 * @param sqlQuery
 	 */
 	@Deprecated
-	public SQLDataParser(String dbConnectionName,String sqlQuery) {
-		this(sqlQuery);
+	public SQLDataParser(DataRecordMetadata metadata, String dbConnectionName,String sqlQuery) {
+		this(metadata, sqlQuery);
 	}
 
 	/**
@@ -99,7 +99,8 @@ public class SQLDataParser implements Parser {
 	 * 
 	 * @param sqlQuery query to be executed against DB
 	 */
-	public SQLDataParser(String sqlQuery) {
+	public SQLDataParser(DataRecordMetadata metadata, String sqlQuery) {
+		this.metadata = metadata;
 		this.sqlQuery = sqlQuery;
 	}
 	
@@ -249,11 +250,10 @@ public class SQLDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		if (_metadata == null) {
+	public void init() throws ComponentNotReadyException {
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		metadata = _metadata;
 	}
 
 	/* (non-Javadoc)

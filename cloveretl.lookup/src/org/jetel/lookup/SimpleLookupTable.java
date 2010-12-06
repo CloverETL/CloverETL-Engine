@@ -31,8 +31,8 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -207,10 +207,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 		}
 		if (dataParser == null && (fileURL != null || data != null)) {
-			dataParser = new DataParser(charset);
+			dataParser = TextParserFactory.getParser(metadata,charset);
 		}
 		if (dataParser != null) {
-			dataParser.init(metadata);
+			dataParser.init();
 		}
 	}
 

@@ -53,9 +53,9 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 		in2 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 		
 	
-		aParser2 = new FixLenCharDataParser();
+		aParser2 = new FixLenCharDataParser(metadata);
 
-		aFixLenDataParser = new FixLenCharDataParser();
+		aFixLenDataParser = new FixLenCharDataParser(metadata);
 		record = new DataRecord(metadata);
 		record.init();
 	}
@@ -79,7 +79,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	 */
 	public void test_goodFile() throws ComponentNotReadyException, JetelException {
 		// test no handler ------------------------------------
-			aFixLenDataParser.init(metadata);
+			aFixLenDataParser.init();
 		aFixLenDataParser.setDataSource(in);
 		while((record=aFixLenDataParser.getNext(record))!=null){}
 		aFixLenDataParser.close();
@@ -93,7 +93,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	public void test_strict_goodFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
 		// test strict handler ------------------------------------
-		aFixLenDataParser.init(metadata);
+		aFixLenDataParser.init();
 		aFixLenDataParser.setDataSource(in);
 
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
@@ -109,7 +109,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	public void test_controlled_goodFile() throws ComponentNotReadyException, JetelException {
 		IParserExceptionHandler aHandler = null;
 		// test controlled handler ------------------------------------
-		aFixLenDataParser.init(metadata);
+		aFixLenDataParser.init();
 		aFixLenDataParser.setDataSource(new ByteArrayInputStream(new String("" +
 				"		1.0Stone    101   01/11/93" +
 				"-15.5Brook    112   11/03/02" +
@@ -152,7 +152,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	public void test_lenient_goodFile() throws JetelException, ComponentNotReadyException {
 		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aFixLenDataParser.init(metadata);
+		aFixLenDataParser.init();
 		aFixLenDataParser.setDataSource(new ByteArrayInputStream(new String(
 				"		1.0Stone    101   01/11/93" +
 				"-15.5Brook    112   11/03/02" +
@@ -195,7 +195,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	public void test_badFile() throws ComponentNotReadyException, JetelException {
 		boolean failed = false;
 		// test no handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		try {
 			while ((record = aParser2.getNext(record)) != null) {
@@ -219,7 +219,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 
 		boolean failed = false;
 		// test strict handler ------------------------------------
-		aParser2.init(metadata);
+//		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
 		aParser2.setExceptionHandler(aHandler);
@@ -247,7 +247,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 		IParserExceptionHandler aHandler = null;
 
 		// test controlled handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
 		aParser2.setExceptionHandler(aHandler);
@@ -273,7 +273,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	public void test_lenient_badFile() throws JetelException, ComponentNotReadyException {
 		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(in2);
 		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
 		aParser2.setExceptionHandler(aHandler);

@@ -581,9 +581,9 @@ public class XLSReader extends Node {
 
     private void instantiateParser() {
         if ((parserType == XLSType.AUTO && fileURL.matches(XLSFormatter.XLSX_FILE_PATTERN)) || parserType == XLSType.XLSX) {
-            parser = new XLSXDataParser();
+            parser = new XLSXDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
         } else {
-            parser = (charset != null) ? new JExcelXLSDataParser(charset) : new JExcelXLSDataParser();
+            parser = (charset != null) ? new JExcelXLSDataParser(getOutputPort(OUTPUT_PORT).getMetadata(),charset) : new JExcelXLSDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
         }
     }
 

@@ -997,12 +997,12 @@ public class OracleDataWriter extends BulkLoader {
 	    	metadata = outPort.getMetadata();
 	    	
 	    	if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-	    		parser = new DelimitedDataParser();
+	    		parser = new DelimitedDataParser(metadata);
 	    	} else { // FIXEDLEN_RECORD
-	    		parser = new FixLenCharDataParser();
+	    		parser = new FixLenCharDataParser(metadata);
 	    	}
 	    	
-			parser.init(metadata);
+			parser.init();
 		}
 		
 		public void run() throws Exception {

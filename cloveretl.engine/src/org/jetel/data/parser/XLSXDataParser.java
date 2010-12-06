@@ -59,6 +59,10 @@ public class XLSXDataParser extends XLSParser {
 	/** currently parsed sheet */
 	private Sheet sheet;
 
+	public XLSXDataParser(DataRecordMetadata metadata){
+		super(metadata);
+	}
+	
 	@Override
 	public void setDataSource(Object dataSource) throws ComponentNotReadyException {
 		if (dataSource == null) {
