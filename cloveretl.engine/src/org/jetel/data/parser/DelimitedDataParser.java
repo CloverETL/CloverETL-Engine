@@ -95,8 +95,8 @@ public class DelimitedDataParser implements Parser {
 	
 	private boolean releaseInputSource = true;
 	
-	public DelimitedDataParser() {
-		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER, new QuotingDecoder());		
+	public DelimitedDataParser(DataRecordMetadata metadata) {
+		this(metadata,Defaults.DataParser.DEFAULT_CHARSET_DECODER, new QuotingDecoder());		
 	}
 	// Associations
 
@@ -107,13 +107,13 @@ public class DelimitedDataParser implements Parser {
 	 *
 	 *@since    March 28, 2002
 	 */
-	public DelimitedDataParser(QuotingDecoder qdecoder) {
-		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER, qdecoder);
+	public DelimitedDataParser(DataRecordMetadata metadata, QuotingDecoder qdecoder) {
+		this(metadata, Defaults.DataParser.DEFAULT_CHARSET_DECODER, qdecoder);
 	}
 
 
-	public DelimitedDataParser(String charsetDecoder) {
-		this(charsetDecoder, new QuotingDecoder());		
+	public DelimitedDataParser(DataRecordMetadata metadata, String charsetDecoder) {
+		this(metadata, charsetDecoder, new QuotingDecoder());		
 	}
 
 	/**
@@ -123,7 +123,8 @@ public class DelimitedDataParser implements Parser {
 	 *      UNICODE chars
 	 *@since                  March 28, 2002
 	 */
-	public DelimitedDataParser(String charsetDecoder, QuotingDecoder qdecoder) {
+	public DelimitedDataParser(DataRecordMetadata metadata, String charsetDecoder, QuotingDecoder qdecoder) {
+		this.metadata = metadata;
 		this.charSet = charsetDecoder;
 		this.qdecoder = qdecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -189,7 +190,7 @@ public class DelimitedDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata metadata)
+	public void init()
 	throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -198,7 +199,6 @@ public class DelimitedDataParser implements Parser {
 			throw new ComponentNotReadyException("Delimited data expected but not encountered");
 		}        
         DataFieldMetadata fieldMetadata;
-		this.metadata = metadata;
 
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];

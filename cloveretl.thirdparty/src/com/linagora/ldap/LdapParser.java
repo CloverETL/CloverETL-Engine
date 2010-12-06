@@ -110,7 +110,8 @@ public class LdapParser implements Parser {
 	 * @param scope one off  SearchControls.OBJECT_SCOPE,
 	 *               SearchControls.ONELEVEL_SCOPE, SearchControls.SUBTREE_SCOPE
 	 */
-	public LdapParser(String ldapUrl, String base, String filter, int scope) {
+	public LdapParser(DataRecordMetadata metadata, String ldapUrl, String base, String filter, int scope) {
+		this.metadata = metadata;
 		this.base = base;
 		this.filter = filter;
 		this.ldapUrl = ldapUrl;
@@ -126,8 +127,8 @@ public class LdapParser implements Parser {
 	 * @param user
 	 * @param pwd
 	 */
-	public LdapParser(String ldapUrl, String base, String filter, int scope, String user, String pwd) {
-		this(ldapUrl, base, filter, scope);
+	public LdapParser(DataRecordMetadata metadata, String ldapUrl, String base, String filter, int scope, String user, String pwd) {
+		this(metadata, ldapUrl, base, filter, scope);
 		this.user = user;
 		this.pwd = pwd;
 	}
@@ -137,14 +138,12 @@ public class LdapParser implements Parser {
 	 * This function try to contact the LDAP server and perform the search query.
 	 * ComponentNotReadyException exception are raised for each caught exceptions.
 	 */
-	public void init(DataRecordMetadata metadata) 
+	public void init() 
 		throws ComponentNotReadyException {
 
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		this.metadata = metadata;
-
 
 		/* 
 		 * create a new LdapManager to do related actions

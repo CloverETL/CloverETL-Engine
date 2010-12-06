@@ -41,6 +41,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -291,7 +292,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 
 	    if (dataParser == null && (fileURL != null || data!= null)) {
-			dataParser = new DataParser(charset);
+			dataParser = TextParserFactory.getParser(metadata, charset);
 	    }
 	    
 	    DataRecord tmpRecord = new DataRecord(metadata);
@@ -299,7 +300,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	    //read records from file
         if (dataParser != null) {
-            dataParser.init(metadata);
+            dataParser.init();
         }
 	}
 

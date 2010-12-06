@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -150,7 +151,9 @@ public class FileCloseTest extends TestCase {
 			DataRecordMetadata dataRecordMetadata = dataRecordMetadataXMLReaderWriter.read(is);
 			
 			// create multifile reader
-			DataParser dataParser = new DataParser();
+			TextParserConfiguration dataParserCfg = new TextParserConfiguration();
+			dataParserCfg.setMetadata(dataRecordMetadata);
+			DataParser dataParser = new DataParser(dataParserCfg);
 			MultiFileReader multiFileReader = new MultiFileReader(dataParser, null, detaInDir + "/delimited/" + "orders?.dat");
 
 			// test checkconfig

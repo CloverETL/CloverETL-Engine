@@ -883,7 +883,7 @@ public class InformixDataWriter extends BulkLoader {
     		getIndexesOfAddedFields();
     		checkErrPortMetadata();
     		
-    		dbParser = new DelimitedDataParser(CHARSET_NAME);
+    		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
     		this.dbOutMetadata = createDbOutMetadata();
 
     		dbRecord = new DataRecord(dbOutMetadata);
@@ -895,7 +895,7 @@ public class InformixDataWriter extends BulkLoader {
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");
 			
-   			dbParser.init(dbOutMetadata);
+   			dbParser.init();
     	}
     	
     	/**

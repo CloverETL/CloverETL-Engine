@@ -135,7 +135,6 @@ public class DelimitedDataReader extends Node {
 	public DelimitedDataReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParser();
 	}
 
 
@@ -149,7 +148,7 @@ public class DelimitedDataReader extends Node {
 	public DelimitedDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParser(this.charset = charset);
+		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), this.charset = charset);
 	}
 
 	@Override
@@ -214,7 +213,8 @@ public class DelimitedDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-
+		
+		parser = new DelimitedDataParser(getInputPort(INPUT_PORT).getMetadata());
 		prepareMultiFileReader();
 	}
 

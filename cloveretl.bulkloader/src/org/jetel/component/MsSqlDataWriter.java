@@ -1253,8 +1253,8 @@ public class MsSqlDataWriter extends BulkLoader {
 			dbOutRecord = new DataRecord(dbOutMetadata);
 			dbOutRecord.init();
 
-			dbParser = new DelimitedDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
-			dbParser.init(dbOutMetadata);
+			dbParser = new DelimitedDataParser(dbOutMetadata, Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+			dbParser.init();
 
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");

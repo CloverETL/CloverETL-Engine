@@ -29,7 +29,9 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParser;
+import org.jetel.data.parser.TextParserConfiguration;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -142,7 +144,7 @@ public class DataReader extends Node {
     private String incrementalFile;
     private String incrementalKey;
 
-	private DataParser parser;
+	private TextParser parser;
     private MultiFileReader reader;
     private PolicyType policyType = PolicyType.STRICT;
 
@@ -207,15 +209,7 @@ public class DataReader extends Node {
 			}
 		}
 		
-		//create data parser
-		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-        parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        parser.setQuotedStrings(quotedStrings);
-        parser.setSkipLeadingBlanks(skipLeadingBlanks);
-        parser.setSkipTrailingBlanks(skipTrailingBlanks);
-        parser.setTrim(trim);
-        
+		prepareParser();
         prepareMultiFileReader();
 	}
 
@@ -360,6 +354,24 @@ public class DataReader extends Node {
 		return field.getType() == DataFieldMetadata.STRING_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 	}
 	
+	private void prepareParser() {
+		//create data parser
+		final TextParserConfiguration parserCfg = new TextParserConfiguration();
+		parserCfg.setMetadata(getOutputPort(OUTPUT_PORT).getMetadata());
+		parserCfg.setCharset(charset);
+		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
+        parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
+        parserCfg.setQuotedStrings(quotedStrings);
+        parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
+        parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
+        parserCfg.setTrim(trim);
+        if( incrementalFile != null || incrementalKey != null ){
+        	parserCfg.setIncremental(true);
+        }
+        parser = TextParserFactory.getParser(parserCfg);
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+	}
+	
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser
 		TransformationGraph graph = getGraph();
@@ -407,19 +419,19 @@ public class DataReader extends Node {
 	    super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
 		// returns either user specified charset, or default value
-		String charSet = this.parser.getCharsetName();
+		String charSet = this.parser.getConfiguration().getCharset();
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		if (parser.getTrim() != null) {
-			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getTrim()));
+		if (parser.getConfiguration().getTrim() != null) {
+			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getConfiguration().getTrim()));
 		}		
-		if (parser.getSkipLeadingBlanks() != null){
-			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE, String.valueOf(parser.getSkipLeadingBlanks()));
+		if (parser.getConfiguration().getSkipLeadingBlanks() != null){
+			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE, String.valueOf(parser.getConfiguration().getSkipLeadingBlanks()));
 		}
-		if (parser.getSkipTrailingBlanks() != null){
-			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE, String.valueOf(parser.getSkipTrailingBlanks()));
+		if (parser.getConfiguration().getSkipTrailingBlanks() != null){
+			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE, String.valueOf(parser.getConfiguration().getSkipTrailingBlanks()));
 		}
 		
 	}
@@ -528,15 +540,9 @@ public class DataReader extends Node {
         }
         
         try {
-    		parser = new DataParser(charset, logging ? true : verbose); //verbose mode is true by default in case the logging port is used
-            parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-            parser.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-            parser.setQuotedStrings(quotedStrings);
-            parser.setSkipLeadingBlanks(skipLeadingBlanks);
-            parser.setSkipTrailingBlanks(skipTrailingBlanks);
-            parser.setTrim(trim);
+    		prepareParser();
+            prepareMultiFileReader();
             
-    		prepareMultiFileReader();
     		if (!getOutputPort(OUTPUT_PORT).getMetadata().hasFieldWithoutAutofilling()) {
     			status.add(new ConfigurationProblem(
                 		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 

@@ -52,7 +52,7 @@ public class BinaryDataParser implements Parser {
 	 * just remember the inputstream we used to create "reader" channel
 	 */
 	InputStream backendStream;
-	DataRecordMetadata metaData;
+	DataRecordMetadata metadata;
 	ByteBuffer buffer;
 	IParserExceptionHandler exceptionHandler;
 	/*
@@ -74,11 +74,12 @@ public class BinaryDataParser implements Parser {
 	
 	private boolean eofReached;
 
-	public BinaryDataParser() {
-
+	public BinaryDataParser(DataRecordMetadata metadata) {
+		this.metadata = metadata;
 	}
 
-	public BinaryDataParser(int bufferLimit) {
+	public BinaryDataParser(DataRecordMetadata metadata, int bufferLimit) {
+		this.metadata = metadata;
 		setBufferLimit(bufferLimit);
 	}
 	
@@ -138,7 +139,7 @@ public class BinaryDataParser implements Parser {
 	}
 
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(metaData);
+		DataRecord record = new DataRecord(metadata);
 		record.init();
 		return getNext(record);
 	}
@@ -203,11 +204,10 @@ public class BinaryDataParser implements Parser {
 		return null;
 	}
 
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		if (_metadata == null) {
+	public void init() throws ComponentNotReadyException {
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
-		this.metaData = _metadata;
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(buffSize) : ByteBuffer.allocate(buffSize);
 //		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
@@ -218,7 +218,7 @@ public class BinaryDataParser implements Parser {
 	}
 
 	public DataRecordMetadata getMetadata() {
-		return this.metaData;
+		return this.metadata;
 	}
 
 	public void movePosition(Object position) throws IOException {

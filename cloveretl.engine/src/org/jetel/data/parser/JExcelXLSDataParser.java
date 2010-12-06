@@ -74,14 +74,16 @@ public class JExcelXLSDataParser extends XLSParser {
 	/**
 	 * Default constructor
 	 */
-	public JExcelXLSDataParser() {
+	public JExcelXLSDataParser(DataRecordMetadata metadata) {
+		super(metadata);
 		charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	}
 	
 	/**
 	 * @param charset
 	 */
-	public JExcelXLSDataParser(String charset) {
+	public JExcelXLSDataParser(DataRecordMetadata metadata, String charset) {
+		super(metadata);
 		this.charset = charset;
 	}
 

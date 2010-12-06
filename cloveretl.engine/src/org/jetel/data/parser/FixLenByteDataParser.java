@@ -27,6 +27,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Parser for sequence of records represented by fixed count of bytes
@@ -45,15 +46,15 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * Create instance for specified charset.
 	 * @param charset
 	 */
-	public FixLenByteDataParser(String charset) {
-		super(charset);
+	public FixLenByteDataParser(DataRecordMetadata metadata, String charset) {
+		super(metadata, charset);
 	}
 
 	/**
 	 * Create instance for default charset. 
 	 */
-	public FixLenByteDataParser() {
-		super(null);
+	public FixLenByteDataParser(DataRecordMetadata metadata) {
+		super(metadata, null);
 	}
 
 	/* (non-Javadoc)

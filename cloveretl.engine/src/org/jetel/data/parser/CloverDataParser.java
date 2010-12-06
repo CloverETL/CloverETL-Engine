@@ -83,6 +83,11 @@ public class CloverDataParser implements Parser {
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
 
+    public CloverDataParser(DataRecordMetadata metadata){
+    	this.metadata = metadata;
+    }
+    
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
@@ -103,12 +108,11 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata)
+	public void init()
 			throws ComponentNotReadyException {
-		if (_metadata == null) {
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		this.metadata = _metadata;
         recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 

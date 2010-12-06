@@ -29,10 +29,10 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -287,16 +287,16 @@ public class DataRecordGenerator implements Parser {
 			// prepare approperiate data parser
 			switch (metadata.getRecType()) {
 			case DataRecordMetadata.DELIMITED_RECORD:
-				parser = new DelimitedDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				parser = new DelimitedDataParser(cutMetadata,Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 				break;
 			case DataRecordMetadata.FIXEDLEN_RECORD:
-				parser = new FixLenCharDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				parser = new FixLenCharDataParser(cutMetadata,Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 				break;
 			default:
-				parser = new DataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				parser = TextParserFactory.getParser(cutMetadata);
 				break;
 			}
-			parser.init(cutMetadata);
+			parser.init();
 			try {
 				parser.setDataSource(new ByteArrayInputStream(pattern
 						.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER)));

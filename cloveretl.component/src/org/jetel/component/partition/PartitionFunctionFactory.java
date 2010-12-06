@@ -122,7 +122,7 @@ public class PartitionFunctionFactory {
 				}
 				//create RangeLookupTable 
 				RangeLookupTable table = new RangeLookupTable(node.getId() + "_lookupTable", 
-						lookupMetadata, startFields, endFields, new DelimitedDataParser());
+						lookupMetadata, startFields, endFields, new DelimitedDataParser(metadata));
 				table.setUseI18N(useI18N);
 				table.setLocale(locale);
 				table.setData(rangesData);

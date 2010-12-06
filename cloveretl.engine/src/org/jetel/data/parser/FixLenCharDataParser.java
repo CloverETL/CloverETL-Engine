@@ -79,8 +79,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * Create instance for specified charset.
 	 * @param charset
 	 */
-	public FixLenCharDataParser(String charset) {		
-		super(charset);
+	public FixLenCharDataParser(DataRecordMetadata metadata, String charset) {		
+		super(metadata, charset);
+		this.metadata = metadata;
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		setRecordDelimiters(null);
 	}
@@ -88,8 +89,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	/**
 	 * Create instance for default charset. 
 	 */
-	public FixLenCharDataParser() {
-		super(null);
+	public FixLenCharDataParser(DataRecordMetadata metadata) {
+		super(metadata, null);
+		this.metadata = metadata;
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		setRecordDelimiters(null);
 	}
@@ -97,9 +99,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.FixLenDataParser3#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata metadata)
+	public void init()
 			throws ComponentNotReadyException {
-		super.init(metadata);
+		super.init();
 
 		setRecordDelimiters(metadata.getRecordDelimiters());
 	}

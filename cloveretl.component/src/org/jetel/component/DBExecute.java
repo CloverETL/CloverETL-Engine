@@ -37,7 +37,8 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -231,7 +232,7 @@ public class DBExecute extends Node {
 	private OutputPort errPort;
 	private ReadableChannelIterator channelIterator;
 	private OutputPort outPort;
-	private DataParser parser;
+	private TextParser parser;
 	private DataRecordMetadata statementMetadata;
 
 	/**
@@ -367,8 +368,8 @@ public class DBExecute extends Node {
 				statementField.setEofAsDelimiter(true);
 				statementField.setTrim(true);
 				statementMetadata.addField(statementField);
-				parser = charset != null ? new DataParser(charset) : new DataParser();
-				parser.init(statementMetadata);
+				parser = TextParserFactory.getParser(statementMetadata, charset);
+				parser.init();
 			}
         }
 		if (printStatements && dbSQL != null){

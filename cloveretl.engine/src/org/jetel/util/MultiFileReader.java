@@ -105,7 +105,7 @@ public class MultiFileReader {
     	incrementalReading = new IncrementalReading(incrementalFile, incrementalKey);
     	incrementalReading.setContextURL(contextURL);
     	incrementalReading.init();
-        parser.init(metadata);
+        parser.init();
     	if (metadata != null) autoFilling.addAutoFillingFields(metadata);
 		iSource = -1;
         
@@ -160,7 +160,7 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        parser.init(metadata);
+        parser.init();
         checkChannelIterator();
         
 		String fName = null; 

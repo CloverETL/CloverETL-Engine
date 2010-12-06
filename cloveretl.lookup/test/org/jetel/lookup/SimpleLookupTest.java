@@ -11,6 +11,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -38,7 +39,7 @@ public class SimpleLookupTest extends CloverTestCase {
 		DataRecordMetadata lookupMetadata = reader.read(new FileInputStream(
 				lookupProperties.getProperty(LookupTable.XML_METADATA_ID)));
 		SimpleLookupTable lookupTable = new SimpleLookupTable("myLookup", lookupMetadata, 
-				lookupProperties.getProperty("key").split(";"), new DataParser());
+				lookupProperties.getProperty("key").split(";"), new DataParser(new TextParserConfiguration(lookupMetadata)));
 		lookupTable.setData(lookupProperties.getProperty("data"));
 		lookupTable.setKeyDuplicates(true);
 		lookupTable.init();

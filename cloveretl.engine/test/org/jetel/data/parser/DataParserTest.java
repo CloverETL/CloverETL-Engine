@@ -28,10 +28,10 @@ public class DataParserTest extends CloverTestCase {
 	DataRecordMetadata metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
 	DataRecord recordUTF8, recordUTF16, recordCp1250, recordISO88591;
 	
-	DataParser parserUTF8 = new DataParser("UTF-8");
-	DataParser parserUTF16 = new DataParser("UTF-16");
-	DataParser parserCp1250 = new DataParser("windows-1250");
-	DataParser parserISO88591 = new DataParser("ISO-8859-1");
+	DataParser parserUTF8;
+	DataParser parserUTF16;
+	DataParser parserCp1250;
+	DataParser parserISO88591;
 	
 	private int oldBufferSize;
 	
@@ -41,29 +41,51 @@ public class DataParserTest extends CloverTestCase {
 		metadata.setFieldDelimiter("\n");
 		metadata.setRecordDelimiter("\n");
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
+
 		recordUTF8 = new DataRecord(metadata);
 		recordUTF8.init();
+		TextParserConfiguration parserUTF8Cfg = new TextParserConfiguration();
+		parserUTF8Cfg.setMetadata(metadata);
+		parserUTF8Cfg.setCharset("UTF-8");
+		parserUTF8Cfg.setTrim(true);
+		parserUTF8 = new DataParser(parserUTF8Cfg);
+		
 		recordUTF16 = new DataRecord(metadata);
 		recordUTF16.init();
+		TextParserConfiguration parserUTF16Cfg = new TextParserConfiguration();
+		parserUTF16Cfg.setMetadata(metadata);
+		parserUTF16Cfg.setCharset("UTF-16");
+		parserUTF16Cfg.setTrim(true);
+		parserUTF16 = new DataParser(parserUTF16Cfg);
+
+		
 		recordCp1250 = new DataRecord(metadata);
 		recordCp1250.init();
+		TextParserConfiguration parserCp1250Cfg = new TextParserConfiguration();
+		parserCp1250Cfg.setMetadata(metadata);
+		parserCp1250Cfg.setCharset("windows-1250");
+		parserCp1250Cfg.setTrim(true);
+		parserCp1250 = new DataParser(parserCp1250Cfg);
+		
 		recordISO88591 = new DataRecord(metadata);
 		recordISO88591.init();
-		parserUTF8.setTrim(true);
-		parserUTF16.setTrim(true);
-		parserCp1250.setTrim(true);
-		parserISO88591.setTrim(true);
+		TextParserConfiguration parserISO88591Cfg = new TextParserConfiguration();
+		parserISO88591Cfg.setMetadata(metadata);
+		parserISO88591Cfg.setCharset("ISO-8859-1");
+		parserISO88591Cfg.setTrim(true);
+		parserISO88591 = new DataParser(parserISO88591Cfg);
+		
 		oldBufferSize = Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 	}
 
 	public void testParsers() throws Exception {
-		parserUTF8.init(metadata);
+		parserUTF8.init();
 		parserUTF8.setDataSource(FileUtils.getInputStream(null, TEST_FILE_UTF8));
-		parserUTF16.init(metadata);
+		parserUTF16.init();
 		parserUTF16.setDataSource(FileUtils.getInputStream(null, TEST_FILE_UTF16));
-		parserCp1250.init(metadata);
+		parserCp1250.init();
 		parserCp1250.setDataSource(FileUtils.getInputStream(null, TEST_FILE_CP1250));
-		parserISO88591.init(metadata);
+		parserISO88591.init();
 		parserISO88591.setDataSource(FileUtils.getInputStream(null, TEST_FILE_ISO88591));
 		while ((recordUTF8 = parserUTF8.getNext(recordUTF8)) != null) {
 			recordUTF16 = parserUTF16.getNext(recordUTF16);

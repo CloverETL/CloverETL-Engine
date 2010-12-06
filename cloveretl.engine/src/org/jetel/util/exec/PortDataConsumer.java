@@ -87,9 +87,9 @@ public class PortDataConsumer implements DataConsumer {
 
 	private void createParser() {
 		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-			parser = new DelimitedDataParser();
+			parser = new DelimitedDataParser(metadata);
 		} else {
-			parser= FixLenDataParser.createParser(metadata.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
+			parser= FixLenDataParser.createParser(metadata, metadata.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
 		}
 	}
 
@@ -98,7 +98,7 @@ public class PortDataConsumer implements DataConsumer {
 	 */
 	public void setInput(InputStream stream) {		
 		try {
-			parser.init(metadata);
+			parser.init();
             parser.setDataSource(stream);
 		} catch (ComponentNotReadyException e) {
 			// this is not expected to happen 

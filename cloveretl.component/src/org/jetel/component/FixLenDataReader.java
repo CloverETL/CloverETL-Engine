@@ -156,9 +156,6 @@ public class FixLenDataReader extends Node {
 		super(id);
 		this.byteMode = byteMode; 
 		this.fileURL = fileURL;
-		parser = byteMode ?
-				new FixLenByteDataParser() :
-				new FixLenCharDataParser();
 	}
 
 
@@ -175,9 +172,6 @@ public class FixLenDataReader extends Node {
 		this.byteMode = byteMode; 
 		this.fileURL = fileURL;
 		this.charset = charset;
-		parser = byteMode ?
-				new FixLenByteDataParser(charset) :
-				new FixLenCharDataParser(charset);
 	}
 
 	/* (non-Javadoc)
@@ -253,6 +247,9 @@ public class FixLenDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		parser = byteMode ?
+				new FixLenByteDataParser(getInputPort(INPUT_PORT).getMetadata(), charset) :
+				new FixLenCharDataParser(getInputPort(INPUT_PORT).getMetadata(), charset);
         
 		prepareMultiFileReader();
 	}

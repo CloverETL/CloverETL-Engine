@@ -41,8 +41,10 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserConfiguration;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -184,7 +186,7 @@ public class InfobrightDataWriter extends Node {
 	private ValueConverter converter;
 	private InfobrightNamedPipeLoader loader;
 	private int[] cloverFieldIndexes;
-	private DataParser dataParser;
+	private TextParser dataParser;
 	private Charset chset;
 	private CommonsLogger log;
 	private boolean checkValues = false;
@@ -449,9 +451,12 @@ public class InfobrightDataWriter extends Node {
 			if (logFile != null) {
 				loader.setDebugOutputStream(FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), logFile, append, -1));
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
-				dataParser = new DataParser(charset);
-				dataParser.setQuotedStrings(true);
-				dataParser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+				final TextParserConfiguration parserCfg = new TextParserConfiguration();
+				parserCfg.setCharset(charset);
+				parserCfg.setQuotedStrings(true);
+				parserCfg.setMetadata(getOutputPort(WRITE_TO_PORT).getMetadata());
+				dataParser = TextParserFactory.getParser(parserCfg);
+				dataParser.init();
 				PipedInputStream parserInput = new PipedInputStream();
 				PipedOutputStream loaderOutput = new PipedOutputStream(	parserInput);
 				dataParser.setDataSource(parserInput);

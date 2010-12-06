@@ -45,13 +45,13 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 
 		aDBConnection.init();
 
-		aParser2 = new SQLDataParser("connection", "SELECT * FROM bad");
+		aParser2 = new SQLDataParser(metadata, "connection", "SELECT * FROM bad");
 
-		aParser1 = new SQLDataParser("connection", "SELECT * FROM good");
+		aParser1 = new SQLDataParser(metadata, "connection", "SELECT * FROM good");
 
-		aParser1.init(metadata);
+		aParser1.init();
 		aParser1.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
-		aParser2.init(metadata);
+		aParser2.init();
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 
 		record = new DataRecord(metadata);

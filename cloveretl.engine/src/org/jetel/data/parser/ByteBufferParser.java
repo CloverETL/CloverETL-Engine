@@ -53,7 +53,7 @@ public class ByteBufferParser implements Parser {
 	 * just remember the inputstream we used to create "reader" channel
 	 */
 	InputStream backendStream;
-	DataRecordMetadata metaData;
+	DataRecordMetadata metadata;
 	ByteBuffer buffer;
 	IParserExceptionHandler exceptionHandler;
 	/*
@@ -69,10 +69,12 @@ public class ByteBufferParser implements Parser {
 	
 	private boolean eofReached;
 
-	public ByteBufferParser() {
+	public ByteBufferParser(DataRecordMetadata metadata) {
+		this.metadata = metadata;
 	}
 
-	public ByteBufferParser(int bufferLimit) {
+	public ByteBufferParser(DataRecordMetadata metadata, int bufferLimit) {
+		this.metadata = metadata;
 		setBufferLimit(bufferLimit);
 	}
 	
@@ -213,11 +215,10 @@ public class ByteBufferParser implements Parser {
 		return null;
 	}
 
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		if (_metadata == null) {
+	public void init() throws ComponentNotReadyException {
+		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
-		this.metaData = _metadata;
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 		buffer = ByteBuffer.allocateDirect(buffSize);
 		buffer.clear();
@@ -227,7 +228,7 @@ public class ByteBufferParser implements Parser {
 	}
 
 	public DataRecordMetadata getMetadata() {
-		return this.metaData;
+		return this.metadata;
 	}
 
 	public void movePosition(Object position) throws IOException {

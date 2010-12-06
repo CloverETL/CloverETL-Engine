@@ -34,6 +34,8 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.TextParser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -162,7 +164,7 @@ public class DBInputTable extends Node {
 	public static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
 	
 	private PolicyType policyType;
-	private DataParser inputParser;
+	private TextParser inputParser;
 
 	private String dbConnectionName;
 	private String sqlQuery;
@@ -233,8 +235,8 @@ public class DBInputTable extends Node {
 			statementField.setEofAsDelimiter(true);
 			statementField.setTrim(true);
 			statementMetadata.addField(statementField);
-			inputParser = charset != null ? new DataParser(charset) : new DataParser();
-			inputParser.init(statementMetadata);
+			inputParser = TextParserFactory.getParser(statementMetadata, charset);
+			inputParser.init();
         }
         
 		connection = (DBConnection)conn;
@@ -306,13 +308,13 @@ public class DBInputTable extends Node {
 	}
 	
 	private SQLDataParser processSqlQuery(String sqlQuery) throws Exception {
-		SQLDataParser parser = new SQLDataParser(sqlQuery);
+		SQLDataParser parser = new SQLDataParser(getOutputPort(WRITE_TO_PORT).getMetadata(), sqlQuery);
 		try {
 			parser.setIncrementalKey(incrementalKeyDef);
 			parser.setIncrementalFile(incrementalFile);
 			//set fetch size (if defined)
 			if (fetchSize != 0) parser.setFetchSize(fetchSize);
-			parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+			parser.init();
 			parser.setParentNode(this);
 	        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 
@@ -522,8 +524,8 @@ public class DBInputTable extends Node {
             }
             connection = (DBConnection)conn;
             connection.init();
-            SQLDataParser parser = new SQLDataParser(sqlQuery); // TODO is it OK?
-            parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+            SQLDataParser parser = new SQLDataParser(getOutputPort(WRITE_TO_PORT).getMetadata(), sqlQuery); // TODO is it OK?
+            parser.init();
     		if (incrementalFile != null) {
 				try {
 					parser.setIncrementalFile(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile));

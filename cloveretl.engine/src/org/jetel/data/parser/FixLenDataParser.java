@@ -78,7 +78,8 @@ public abstract class FixLenDataParser implements Parser {
 
 	private boolean releaseInputSource = true;
 	
-	FixLenDataParser(String charset) {
+	FixLenDataParser(DataRecordMetadata metadata, String charset) {
+		this.metadata = metadata;
 		// initialize charset decoder
 		if (charset == null) {  
 			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -91,7 +92,7 @@ public abstract class FixLenDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata metadata)
+	public void init()
 	throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -99,7 +100,6 @@ public abstract class FixLenDataParser implements Parser {
 		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
 			throw new ComponentNotReadyException("Fixed length data format expected but not encountered");
 		}
-		this.metadata = metadata;
 
 		fieldCnt = metadata.getNumFields();
 		recordIdx = 0;
@@ -317,11 +317,11 @@ public abstract class FixLenDataParser implements Parser {
 		return;
 	}
 	
-	public static FixLenDataParser createParser(boolean byteMode) {
+	public static FixLenDataParser createParser(DataRecordMetadata metadata, boolean byteMode) {
 		if (byteMode) {
-			return new FixLenByteDataParser();
+			return new FixLenByteDataParser(metadata);
 		} else {
-			return new FixLenCharDataParser();			
+			return new FixLenCharDataParser(metadata);			
 		}			
 	}
 
