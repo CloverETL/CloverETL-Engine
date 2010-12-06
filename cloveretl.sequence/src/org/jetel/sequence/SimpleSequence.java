@@ -91,6 +91,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     ByteBuffer buffer;
 
 	private String configFileName;
+	private Exception initFromConfigFileException; 
     private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_START_ATTRIBUTE = "start";
@@ -151,6 +152,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 stream.close();
             } catch (Exception ex) {
                 this.filename = null;
+                initFromConfigFileException = ex;
             }
         }
 
@@ -363,6 +365,11 @@ public class SimpleSequence extends GraphElement implements Sequence {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
+    	if (initFromConfigFileException != null) {
+    		status.add("Failed to initialize sequence from definition file; " + initFromConfigFileException, Severity.ERROR, this, Priority.NORMAL);
+    		return status;
+    	}
+    	
         try {
 			if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
 	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
