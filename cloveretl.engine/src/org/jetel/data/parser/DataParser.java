@@ -127,8 +127,7 @@ public class DataParser implements TextParser {
 	}
 	
 	/**
-	 * 
-	 * @return integer 0-100
+	 * Returns parser speed for specified configuration. See {@link TextParserFactory#getParser(TextParserConfiguration)}.
 	 */
 	public static Integer getParserSpeed(TextParserConfiguration cfg){
 		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {

@@ -43,6 +43,9 @@ public final class TextParserFactory {
 	
 	/**
 	 * Creates data parser according to the configuration and data type. The fastes parser implementation is used.
+	 * 
+	 * Each {@link TextParser} implementation must have method <code>getParserSpeed</code>. This method returns null value 
+	 * if parser can't parse specified configuration, otherwise return parser speed as integer <code>0(slowest)-100(fastest)</code>. 
 	 * @param cfg requested parser configuration
 	 * @return fastest parse implemementation, always is not null
 	 * @throws JetelRuntimeException if no parser found
@@ -55,7 +58,7 @@ public final class TextParserFactory {
 				final Method speedMethod = parserClass.getMethod("getParserSpeed", TextParserConfiguration.class);
 				final Integer parserSpeed = (Integer) speedMethod.invoke(null, cfg);
 				if (logger.isDebugEnabled()) {
-					logger.debug("Spedd " + parserSpeed + " for parser " + parserClass.getName() + " and configuration " + cfg);
+					logger.debug("Speed " + parserSpeed + " for parser " + parserClass.getName() + " and configuration " + cfg);
 				}
 				if (parserSpeed != null) {
 					if (maxSpeed == null || maxSpeed < parserSpeed) {
