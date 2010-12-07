@@ -119,6 +119,7 @@ public class DataParser implements TextParser {
 		this.cfg = cfg;
 		decoder = Charset.forName(cfg.getCharset()).newDecoder();
 		reader = null;
+		exceptionHandler = cfg.getExceptionHandler();
 	}
 	
 	/**

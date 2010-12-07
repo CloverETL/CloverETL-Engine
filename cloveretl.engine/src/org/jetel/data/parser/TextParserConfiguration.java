@@ -40,7 +40,6 @@ public class TextParserConfiguration {
 	private Boolean skipLeadingBlanks = null;
 	private Boolean skipTrailingBlanks = null;
 	private boolean incremental = false;
-	private boolean allowMultipleDelimiters = false;
 	private PolicyType policyType = null;
 	private IParserExceptionHandler exceptionHandler = null;
 
@@ -63,7 +62,7 @@ public class TextParserConfiguration {
 
 	public TextParserConfiguration(String charset, boolean verbose, DataRecordMetadata metadata,
 			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Boolean skipLeadingBlanks,
-			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, boolean allowMultipleDelimiters, 
+			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, 
 			PolicyType policyType) {
 		super();
 		this.metadata = metadata;
@@ -77,22 +76,7 @@ public class TextParserConfiguration {
 		this.skipTrailingBlanks = skipTrailingBlanks;
 		this.trim = trim;
 		this.incremental = incremental;
-		this.allowMultipleDelimiters = allowMultipleDelimiters;
 		setPolicyType(policyType);
-	}
-
-	/**
-	 * @return the allowMultipleDelimiters
-	 */
-	public boolean isAllowMultipleDelimiters() {
-		return allowMultipleDelimiters;
-	}
-
-	/**
-	 * @param allowMultipleDelimiters the allowMultipleDelimiters to set
-	 */
-	public void setAllowMultipleDelimiters(boolean allowMultipleDelimiters) {
-		this.allowMultipleDelimiters = allowMultipleDelimiters;
 	}
 
 	/**
