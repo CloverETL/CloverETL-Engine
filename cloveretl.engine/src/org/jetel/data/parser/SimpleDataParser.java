@@ -78,6 +78,7 @@ public class SimpleDataParser implements TextParser {
 	public SimpleDataParser(TextParserConfiguration cfg) {
 		super();
 		this.cfg = cfg;
+		exceptionHandler = cfg.getExceptionHandler();
 	}
 
 	public SimpleDataParser(String charset) {
