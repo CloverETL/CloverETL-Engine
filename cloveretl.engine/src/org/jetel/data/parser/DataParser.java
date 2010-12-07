@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -60,6 +62,8 @@ public class DataParser implements TextParser {
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
 	
+	private final static Log logger = LogFactory.getLog(DataParser.class);
+
 	private TextParserConfiguration cfg;
 	
 	private IParserExceptionHandler exceptionHandler;
@@ -127,6 +131,12 @@ public class DataParser implements TextParser {
 	 * @return integer 0-100
 	 */
 	public static Integer getParserSpeed(TextParserConfiguration cfg){
+		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
+			if (field.isByteBased() && !field.isAutoFilled()) {
+				logger.debug("Parser cannot be used for the specified data as they contain byte-based field '" + field);
+				return null;
+			}
+		}
 		return 10;
 	}
 

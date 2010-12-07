@@ -29,14 +29,8 @@ import java.nio.charset.CodingErrorAction;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.jetel.data.DataField;
-import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.QuotingDecoder;
-import org.jetel.util.string.StringUtils;
 
 /**
  * An abstract class for input readers able to provide mixed char/byte data
