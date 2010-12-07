@@ -86,7 +86,9 @@ public class SimpleDataParser implements TextParser {
 	}
 
 	public static Integer getParserSpeed(TextParserConfiguration cfg) {
-		if (cfg.isQuotedStrings()) {
+		if (cfg.isVerbose()) {
+			logger.debug("This parser can't be used because 'verbose' feature");
+		} else if (cfg.isQuotedStrings()) {
 			logger.debug("This parser can't be used because 'quotedStrings' feature");
 		} else if (cfg.getTrim() != null && cfg.getTrim()) {
 			logger.debug("This parser can't be used because 'trim' feature");
