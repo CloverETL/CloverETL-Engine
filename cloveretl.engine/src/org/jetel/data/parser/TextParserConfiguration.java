@@ -19,6 +19,9 @@
 package org.jetel.data.parser;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -37,6 +40,9 @@ public class TextParserConfiguration {
 	private Boolean skipLeadingBlanks = null;
 	private Boolean skipTrailingBlanks = null;
 	private boolean incremental = false;
+	private boolean allowMultipleDelimiters = false;
+	private PolicyType policyType = null;
+	private IParserExceptionHandler exceptionHandler = null;
 
 	public TextParserConfiguration() {
 		super();
@@ -57,7 +63,8 @@ public class TextParserConfiguration {
 
 	public TextParserConfiguration(String charset, boolean verbose, DataRecordMetadata metadata,
 			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Boolean skipLeadingBlanks,
-			Boolean skipTrailingBlanks, Boolean trim, boolean incremental) {
+			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, boolean allowMultipleDelimiters, 
+			PolicyType policyType) {
 		super();
 		this.metadata = metadata;
 		if (charset != null) {
@@ -70,6 +77,22 @@ public class TextParserConfiguration {
 		this.skipTrailingBlanks = skipTrailingBlanks;
 		this.trim = trim;
 		this.incremental = incremental;
+		this.allowMultipleDelimiters = allowMultipleDelimiters;
+		setPolicyType(policyType);
+	}
+
+	/**
+	 * @return the allowMultipleDelimiters
+	 */
+	public boolean isAllowMultipleDelimiters() {
+		return allowMultipleDelimiters;
+	}
+
+	/**
+	 * @param allowMultipleDelimiters the allowMultipleDelimiters to set
+	 */
+	public void setAllowMultipleDelimiters(boolean allowMultipleDelimiters) {
+		this.allowMultipleDelimiters = allowMultipleDelimiters;
 	}
 
 	/**
@@ -211,6 +234,31 @@ public class TextParserConfiguration {
 	 */
 	public void setIncremental(boolean incremental) {
 		this.incremental = incremental;
+	}
+	
+	/**
+	 * Sets data policy and the corresponding exception handler
+	 * @param policyType
+	 */
+	public void setPolicyType(PolicyType policyType) {
+		this.policyType = policyType;
+		exceptionHandler = ParserExceptionHandlerFactory.getHandler(policyType);
+	}
+
+	/**
+	 * Nomen omen
+	 * @return policyType
+	 */
+	public PolicyType getPolicyType() {
+		return policyType;
+	}
+	
+	/**
+	 * Nomen omen 
+	 * @return
+	 */
+	public IParserExceptionHandler getExceptionHandler() {
+		return exceptionHandler;
 	}
 
 	@Override
