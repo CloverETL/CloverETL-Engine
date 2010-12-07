@@ -18,6 +18,10 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -66,7 +70,17 @@ public class StringLib extends TLFunctionLibrary {
 			"find".equals(functionName) ? new FindFunction() :
 			"matches".equals(functionName) ? new MatchesFunction() :
 			"chop".equals(functionName) ? new ChopFunction() :
-			"cut".equals(functionName) ? new CutFunction() : null;
+			"cut".equals(functionName) ? new CutFunction() :
+			"isUrl".equals(functionName) ? new IsUrlFunction() :
+			"getUrlProtocol".equals(functionName) ? new GetUrlProtocolFunction() :
+			"getUrlUserInfo".equals(functionName) ? new GetUrlUserInfo() :
+			"getUrlHost".equals(functionName) ? new GetUrlHostFunction() :
+			"getUrlPort".equals(functionName) ? new GetUrlPortFunction() :
+			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() :
+			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() :
+			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() :
+			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() :
+			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null;
 
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -868,6 +882,248 @@ public class StringLib extends TLFunctionLibrary {
 			stack.push(cut(context, input, TLFunctionLibrary.<Integer>convertTo(indices)));
 		}
 	}
+
+	// URL parsing
 	
+    //   foo://username:password@example.com:8042/over/there/index.dtb?type=animal;name=narwhal#nose
+    //   \_/   \_______________/ \_________/ \__/\___________________/ \______________________/ \__/
+    //    |           |               |       |            |                    |                |
+    //  scheme    userinfo         hostname  port        path                 query             ref
+
+		   
+	@TLFunctionAnnotation("Checks whether specified string is valid URL")
+	public static final boolean isUrl(TLFunctionCallContext context, String url) {
+		try {
+			new URL(url);
+			return true;
+		} catch (MalformedURLException e) {
+			return false;
+		}
+	}
+	
+	class IsUrlFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(isUrl(context, url));
+		}
+	}
+
+	@TLFunctionAnnotation("Parses out protocol name from specified URL")
+	public static final String getUrlProtocol(TLFunctionCallContext context, String url) {
+		try {
+			return new URL(url).getProtocol();
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlProtocolFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlProtocol(context, url));
+		}
+	}
+	
+	@TLFunctionAnnotation("Parses out user info from specified URL")
+	public static final String getUrlUserInfo(TLFunctionCallContext context, String url) {
+		try {
+			String ui = new URL(url).getUserInfo();
+			return ui == null ? "" : ui;
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlUserInfo implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlUserInfo(context, url));
+		}
+	}
+
+	@TLFunctionAnnotation("Parses out host name from specified URL")
+	public static final String getUrlHost(TLFunctionCallContext context, String url) {
+		try {
+			return new URL(url).getHost();
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlHostFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlHost(context, url));
+		}
+	}
+	
+	@TLFunctionAnnotation("Parses out port number from specified URL. Returns -1 if port not defined, -2 if URL has invalid syntax.")
+	public static final int getUrlPort(TLFunctionCallContext context, String url) {
+		try {
+			return new URL(url).getPort();
+		} catch (MalformedURLException e) {
+			return -2;
+		}
+	}
+	
+	class GetUrlPortFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlPort(context, url));
+		}
+	}
+
+	@TLFunctionAnnotation("Parses out path part of specified URL")
+	public static final String getUrlPath(TLFunctionCallContext context, String url) {
+		try {
+			return new URL(url).getPath();
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlPathFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlPath(context, url));
+		}
+	}
+
+	@TLFunctionAnnotation("Parses out query (parameters) from specified URL")
+	public static final String getUrlQuery(TLFunctionCallContext context, String url) {
+		try {
+			String q = new URL(url).getQuery();
+			return q == null ? "" : q;
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlQueryFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlQuery(context, url));
+		}
+	}
+	
+	@TLFunctionAnnotation("Parses out fragment after \"#\" character, also known as ref, reference or anchor, from specified URL")
+	public static final String getUrlRef(TLFunctionCallContext context, String url) {
+		try {
+			String query = new URL(url).getRef();
+			return query == null ? "" : query;
+		} catch (MalformedURLException e) {
+			return null;
+		}
+	}
+	
+	class GetUrlRefFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(getUrlRef(context, url));
+		}
+	}
+	
+
+	// ESCAPE URL
+	
+	@TLFunctionAnnotation("Escapes any illegal characters within components of specified URL (the URL is parsed first).")
+	public static final String escapeUrl(TLFunctionCallContext context, String urlStr) {
+		try {
+			// parse input string
+			URL url = new URL(urlStr);
+			// create URI representation of the URL which handles character quoting
+			return new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toASCIIString();
+		} catch (MalformedURLException e) {
+			throw new TransformLangExecutorRuntimeException("Failed to parse input string as URL", e);
+		} catch (URISyntaxException e) {
+			throw new TransformLangExecutorRuntimeException("Failed to escape URL", e);
+		}
+	}
+	
+	class EscapeUrlFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(escapeUrl(context, url));
+		}
+	}
+
+	
+	// UNESCAPE URL
+	
+	@TLFunctionAnnotation("Decodes sequence of escaped octets with sequence of characters that it represents in UTF-8, e.g. \"%20\" is replaced with \" \".")
+	public static final String unescapeUrl(TLFunctionCallContext context, String url) {
+		try {
+			// try to parse passed string as URL and convert it to URI which handles escaping of characters
+			URI uri = new URL(url).toURI();
+			
+			// get unescaped parts of the URL
+			String scheme = uri.getScheme();
+			String authority = uri.getAuthority();
+			String path = uri.getPath();
+			String query = uri.getQuery();
+			String fragment = uri.getFragment();
+			
+			// reconstruct URL from unescaped parts and return its String representation
+			StringBuilder sb = new StringBuilder();
+			if (scheme != null) sb.append(scheme).append("://");
+			if (authority != null) sb.append(authority);
+			if (path != null) sb.append(path);
+			if (query != null) sb.append('?').append(query);
+			if (fragment != null) sb.append('#').append(fragment);
+			
+			return new URL(sb.toString()).toString();
+		} catch (MalformedURLException e) {
+			throw new TransformLangExecutorRuntimeException("Failed to unescape URL", e);
+		} catch (URISyntaxException e) {
+			throw new TransformLangExecutorRuntimeException("Failed to unescape URL. Wrong syntax of input string?", e);
+		}
+	}
+	
+	class UnescapeUrlFunction implements TLFunctionPrototype {
+	
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(unescapeUrl(context, url));
+		}
+	}
 	
 }

@@ -2660,4 +2660,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_utillib_sleep");
 		assertTrue("sleep() function didn't pause execution", System.currentTimeMillis() - time > 1000);
 	}
+	
+	public void test_stringlib_validUrl() {
+		doCompile("test_stringlib_url");
+		check("urlValid", Arrays.asList(true, true, false));
+		check("protocol", Arrays.asList("http", "https", null));
+		check("userInfo", Arrays.asList("", "chuck:norris", null));
+		check("host", Arrays.asList("example.com", "server.javlin.eu", null));
+		check("port", Arrays.asList(-1, 12345, -2));
+		check("path", Arrays.asList("", "/backdoor/trojan.cgi", null));
+		check("query", Arrays.asList("", "hash=SHA560;god=yes", null));
+		check("ref", Arrays.asList("", "autodestruct", null));
+	}
+	
+	public void test_stringlib_escapeUrl() {
+		doCompile("test_stringlib_escapeUrl");
+		check("escaped", "http://example.com/foo%20bar%5E");
+		check("unescaped", "http://example.com/foo bar^");
+	}
 }
