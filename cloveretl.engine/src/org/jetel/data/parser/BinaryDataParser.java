@@ -83,6 +83,30 @@ public class BinaryDataParser implements Parser {
 		setBufferLimit(bufferLimit);
 	}
 	
+	public BinaryDataParser(DataRecordMetadata metadata, InputStream inputStream) {
+		this.metadata = metadata;
+		try {
+			setDataSource(inputStream);
+		} catch (ComponentNotReadyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public BinaryDataParser(DataRecordMetadata metadata, InputStream inputStream, int bufferLimit) {
+		this(metadata, inputStream);
+		this.bufferLimit = bufferLimit;
+	}
+
+	public BinaryDataParser(DataRecordMetadata metadata, File file) {
+		this.metadata = metadata;
+		try {
+			setDataSource(file);
+		} catch (ComponentNotReadyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	public int getBufferLimit() {
 		return bufferLimit;
@@ -92,28 +116,6 @@ public class BinaryDataParser implements Parser {
 		this.bufferLimit = bufferLimit;
 	}
 
-	public BinaryDataParser(InputStream inputStream) {
-		try {
-			setDataSource(inputStream);
-		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public BinaryDataParser(InputStream inputStream, int bufferLimit) {
-		this(inputStream);
-		this.bufferLimit = bufferLimit;
-	}
-
-	public BinaryDataParser(File file) {
-		try {
-			setDataSource(file);
-		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	public void close() {
 		if (reader != null && reader.isOpen()) {
