@@ -86,7 +86,7 @@ public final class TextParserFactory {
 	}
 
 	public static final TextParser getParser(DataRecordMetadata metadata, String charset) {
-		return getParser(metadata, charset);
+		return getParser(new TextParserConfiguration(metadata, charset));
 	}
 
 }
