@@ -636,6 +636,13 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * 
+	 * @return <code>true</code> if this data field is byte-based, <code>false</code> otherwise
+	 */
+	public boolean isByteBased() {
+		return (type == BYTE_FIELD || type == BYTE_FIELD_COMPRESSED);
+	}
+	/**
 	 * Sets the position of the field in a data record (used only when dealing with fixed-size type of record).
 	 * 
 	 * @param shift the new position of the field in a data record
