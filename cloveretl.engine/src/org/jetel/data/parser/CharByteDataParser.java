@@ -30,6 +30,8 @@ import java.nio.charset.CharsetEncoder;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -53,6 +55,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class CharByteDataParser implements TextParser {
 	TextParserConfiguration cfg;
+	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
+
 	ReadableByteChannel inputSource;
 	private CharByteInputReader inputReader;
 	private InputConsumer[] fieldConsumers;
@@ -76,6 +80,32 @@ public class CharByteDataParser implements TextParser {
 		releaseInputSource = false;
 		skipLeftBlanks = cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks().booleanValue();
 		skipRightBlanks = cfg.getSkipTrailingBlanks() != null && cfg.getSkipTrailingBlanks().booleanValue();
+	}
+
+	/**
+	 * 
+	 * @return integer 0-100
+	 */
+	public static Integer getParserSpeed(TextParserConfiguration cfg){
+		boolean hasByteFields = false;
+		boolean hasCharFields = false;
+		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
+			if (field.isAutoFilled()) {
+				continue;
+			}
+			if (field.isByteBased()) {
+				hasByteFields = true;				
+			} else {
+				hasCharFields = true;
+			}
+		}
+		if (!hasByteFields || !hasCharFields) {
+			return 50;
+		} else if (cfg.isSingleByteCharset()) {
+			return 30;
+		} else {
+			return 5;
+		}
 	}
 
 	/**
@@ -115,7 +145,7 @@ public class CharByteDataParser implements TextParser {
 		for (int idx = 0; idx < numConsumers; idx++) {
 			try {
 				if (!fieldConsumers[idx].consumeInput(record)) {
-					if (idx == 0 && record.getField(0).isNull()) {
+					if (idx == 0) {
 						return null;
 					}
 					break;
@@ -202,7 +232,7 @@ public class CharByteDataParser implements TextParser {
 				} else { // delimited char field consumer
 					AhoCorasick delimPatterns = new AhoCorasick(fields[idx].getDelimiters());
 					fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, delimPatterns,
-							cfg.isAllowMultipleDelimiters(), fields[idx].isEofAsDelimiter(), cfg.isQuotedStrings(),
+							cfg.isTreatMultipleDelimitersAsOne(), fields[idx].isEofAsDelimiter(), cfg.isQuotedStrings(),
 							fields[idx].isTrim() || skipLeftBlanks, fields[idx].isTrim() || skipRightBlanks);
 				}
 				idx++;
@@ -348,13 +378,18 @@ public class CharByteDataParser implements TextParser {
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ibt;
 			inputReader.mark();
+			
 			for (int i = 0; i < dataLength; i++) {
 				ibt = inputReader.readByte();
 				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
 					throw new BadDataFormatException("End quote not found, try to increase MAX_RECORD_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
-					throw new BadDataFormatException("End of input encountered instead of the closing quote");
+					if (i == 0) {
+						return false;
+					} else {
+						throw new BadDataFormatException("End of input encountered instead of the closing quote");
+					}
 				}
 			}
 			ByteBuffer seq = inputReader.getByteSequence(0);
@@ -396,7 +431,11 @@ public class CharByteDataParser implements TextParser {
 					throw new BadDataFormatException("Decoding of input into char data failed");
 				}
 				if (ichr == CharByteInputReader.END_OF_INPUT) {
-					throw new BadDataFormatException("End of input encountered instead of the closing quote");
+					if (i == 0) {
+						return false;
+					} else {
+						throw new BadDataFormatException("End of input encountered instead of the closing quote");
+					}
 				}
 			}
 			record.getField(fieldNumber).fromString(inputReader.getCharSequence(0));
@@ -515,7 +554,10 @@ public class CharByteDataParser implements TextParser {
 
 			inputReader.mark();
 
-			ichr = inputReader.readChar();			
+			ichr = inputReader.readChar();
+			if (ichr == CharByteInputReader.END_OF_INPUT) {
+				return false;
+			}
 			if (isQuoted && qDecoder.isStartQuote(((char)ichr))) { // let's suppose that special values like END_OF_INPUT will not be type-cast to a quote
 				if (!consumeQuotedField(record.getField(fieldNumber))) {
 					return false; // indicates success and end of input

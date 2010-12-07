@@ -73,7 +73,7 @@ public class SimpleDataParser implements TextParser {
 	private int nextChar;
 	private boolean isEOF;
 
-	private final static Log logger = LogFactory.getLog(TextParserFactory.class);
+	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
 
 	public SimpleDataParser(TextParserConfiguration cfg) {
 		super();
@@ -89,21 +89,21 @@ public class SimpleDataParser implements TextParser {
 		if (cfg.isVerbose()) {
 			logger.debug("This parser can't be used because 'verbose' feature");
 		} else if (cfg.isQuotedStrings()) {
-			logger.debug("This parser can't be used because 'quotedStrings' feature");
+			logger.debug("This parser can't be used because of the 'quotedStrings' feature");
 		} else if (cfg.getTrim() != null && cfg.getTrim()) {
-			logger.debug("This parser can't be used because 'trim' feature");
+			logger.debug("This parser can't be used because of the 'trim' feature");
 		} else if (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks()) {
-			logger.debug("This parser can't be used because 'skipLeadingBlanks' feature");
+			logger.debug("This parser can't be used because of the 'skipLeadingBlanks' feature");
 		} else if (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks()) {
-			logger.debug("This parser can't be used because 'skipTrailingBlanks' feature");
+			logger.debug("This parser can't be used because of the 'skipTrailingBlanks' feature");
 		} else if (cfg.isTreatMultipleDelimitersAsOne()) {
-			logger.debug("This parser can't be used because 'treatMultipleDelimitersAsOne' feature");
+			logger.debug("This parser can't be used because of the 'treatMultipleDelimitersAsOne' feature");
 		} else if (cfg.isIncremental()) {
-			logger.debug("This parser can't be used because 'incremental' feature");
+			logger.debug("This parser can't be used because of the 'incremental' feature");
 		} else if (!isSimpleData(cfg.getMetadata())) {
-			logger.debug("This parser can't be used because data record complexity");
+			logger.debug("This parser can't be used because of the data record complexity");
 		} else {
-			logger.debug("This parser will may be used");
+			logger.debug("This parser may be used");
 			return 80;
 		}
 		return null;
@@ -137,6 +137,10 @@ public class SimpleDataParser implements TextParser {
 			}
 			if (field.isTrim()) {
 				logger.debug("Field " + field + " has 'trim' feature");
+				return false;
+			}
+			if (field.isByteBased()) {
+				logger.debug("Field " + field + " is byte-based");
 				return false;
 			}
 		}

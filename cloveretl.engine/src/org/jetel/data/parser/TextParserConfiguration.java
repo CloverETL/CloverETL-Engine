@@ -18,6 +18,8 @@
  */
 package org.jetel.data.parser;
 
+import java.nio.charset.Charset;
+
 import org.jetel.data.Defaults;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
@@ -243,6 +245,10 @@ public class TextParserConfiguration {
 	 */
 	public IParserExceptionHandler getExceptionHandler() {
 		return exceptionHandler;
+	}
+	
+	public boolean isSingleByteCharset() {
+		return 1 == Math.round(Charset.forName(charset).newEncoder().maxBytesPerChar());
 	}
 
 	@Override

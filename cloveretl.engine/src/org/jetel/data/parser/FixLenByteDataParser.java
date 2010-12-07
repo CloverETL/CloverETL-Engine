@@ -27,6 +27,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -55,6 +56,20 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 */
 	public FixLenByteDataParser(DataRecordMetadata metadata) {
 		super(metadata, null);
+	}
+
+	/**
+	 * 
+	 * @return integer 0-100
+	 */
+	public static Integer getParserSpeed(TextParserConfiguration cfg){
+		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
+			if (!field.isByteBased() && !field.isAutoFilled()) {
+				logger.debug("Parser cannot be used for the specified data as they contain char-based field '" + field);
+				return null;
+			}
+		}
+		return 60;
 	}
 
 	/* (non-Javadoc)
