@@ -101,8 +101,8 @@ public class SimpleDataParser implements TextParser {
 			logger.debug("This parser can't be used because of the 'skipTrailingBlanks' feature");
 		} else if (cfg.isTreatMultipleDelimitersAsOne()) {
 			logger.debug("This parser can't be used because of the 'treatMultipleDelimitersAsOne' feature");
-		} else if (cfg.isIncremental()) {
-			logger.debug("This parser can't be used because of the 'incremental' feature");
+		} else if (cfg.isSkipRows()) {
+			logger.debug("This parser can't be used because of the 'skipRows' feature");
 		} else if (!isSimpleData(cfg.getMetadata())) {
 			logger.debug("This parser can't be used because of the data record complexity");
 		} else {
