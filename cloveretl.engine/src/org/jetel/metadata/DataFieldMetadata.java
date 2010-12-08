@@ -106,6 +106,7 @@ public class DataFieldMetadata implements Serializable {
 
 	public static final String LENGTH_ATTR = "length";
 	public static final String SCALE_ATTR = "scale";
+	public static final String SIZE_ATTR = "size";
 
 	/** Characters that can be contained in format of date. */
 	private static final Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
