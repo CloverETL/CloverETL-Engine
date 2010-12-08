@@ -247,11 +247,16 @@ public class FixLenDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		parser = byteMode ?
-				new FixLenByteDataParser(getInputPort(INPUT_PORT).getMetadata(), charset) :
-				new FixLenCharDataParser(getInputPort(INPUT_PORT).getMetadata(), charset);
-        
+		prepareReader();
 		prepareMultiFileReader();
+	}
+
+
+	private void prepareReader() {
+		parser = byteMode ?
+				new FixLenByteDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) :
+				new FixLenCharDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
@@ -435,6 +440,7 @@ public class FixLenDataReader extends Node {
         checkMetadata(status, getOutMetadata());
 
         try {
+        	prepareReader();
     		prepareMultiFileReader();
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
@@ -472,7 +478,6 @@ public class FixLenDataReader extends Node {
     
 	public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
 	public PolicyType getPolicyType() {
