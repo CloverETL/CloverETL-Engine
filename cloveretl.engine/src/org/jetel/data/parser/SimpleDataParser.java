@@ -118,11 +118,16 @@ public class SimpleDataParser implements TextParser {
 				logger.debug("Field " + field + " is not delimited");
 				return false;
 			}
-			if (field.getDelimiters().length > 1) {
+			final String[] fieldDelimiters = field.getDelimiters();
+			if( fieldDelimiters == null ){
+				logger.debug("Field " + field + " has none delimiter");
+				return false;
+			}
+			if (fieldDelimiters.length > 1) {
 				logger.debug("Field " + field + " has multiple deminiters");
 				return false;
 			}
-			final char[] delimiter = field.getDelimiters()[0].toCharArray();
+			final char[] delimiter = fieldDelimiters[0].toCharArray();
 			// first char of delimiter cannot be in another location in
 			if (delimiter.length > 1) {
 				for (int y = 1; y < delimiter.length; y++) {
