@@ -209,6 +209,7 @@ public class DataReader extends Node {
 			}
 		}
 		
+        updeSkipSourceRowsByMetadata();
 		prepareParser();
         prepareMultiFileReader();
 	}
@@ -365,7 +366,7 @@ public class DataReader extends Node {
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTrim(trim);
-        if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows >0 || skipRows > 0 ) {
+        if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
         }
         parser = TextParserFactory.getParser(parserCfg);
@@ -389,8 +390,12 @@ public class DataReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
+        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
+	}
 
-        // skip source rows
+
+	private void updeSkipSourceRowsByMetadata() {
+		// skip source rows
         if (skipSourceRows == -1) {
         	OutputPort outputPort = getOutputPort(OUTPUT_PORT); //only 1.output port without log port
         	DataRecordMetadata metadata;
@@ -401,7 +406,6 @@ public class DataReader extends Node {
             	}
         	}
         }
-        reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
 	}
 
 	/* (non-Javadoc)
@@ -543,6 +547,7 @@ public class DataReader extends Node {
         }
         
         try {
+            updeSkipSourceRowsByMetadata();
     		prepareParser();
             prepareMultiFileReader();
             
