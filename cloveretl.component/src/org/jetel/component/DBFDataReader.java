@@ -265,16 +265,17 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		if( charset == null ){
-			parser = new DBFDataParser(getInputPort(INPUT_PORT).getMetadata());
-		} else {
-			parser = new DBFDataParser(getInputPort(INPUT_PORT).getMetadata(), charset);
-		}
-
 		prepareMultiFileReader();
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
+		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+		if( charset == null ){
+			parser = new DBFDataParser(metadata);
+		} else {
+			parser = new DBFDataParser(metadata, charset);
+		}
+		
 		TransformationGraph graph = getGraph();
 
         // initialize multifile reader based on prepared parser
