@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,9 +138,17 @@ public class SQLUtil {
 	 * @throws SQLException
 	 */
 	public static DataFieldMetadata dbMetadata2jetel(String name, ResultSetMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+		return dbMetadata2jetel(name, new ResultSetDbMetadata(dbMetadata), sqlIndex, jdbcSpecific);
+	}
+	
+	public static DataFieldMetadata dbMetadata2jetel(String name, ParameterMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+		return dbMetadata2jetel(name, new ParameterDbMetadata(dbMetadata), sqlIndex, jdbcSpecific);
+	}
+
+	public static DataFieldMetadata dbMetadata2jetel(String name, DbMetadata dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
 		
-		int type = dbMetadata.getColumnType(sqlIndex);
+		int type = dbMetadata.getType(sqlIndex);
 		char cloverType = jdbcSpecific.sqlType2jetel(type);
 		//set length and scale for decimal field
 		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
@@ -188,56 +195,6 @@ public class SQLUtil {
 		return fieldMetadata;
 	}
 	
-	public static DataFieldMetadata dbMetadata2jetel(String name, ParameterMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
-		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
-		
-		int type = dbMetadata.getParameterType(sqlIndex);
-		char cloverType = jdbcSpecific.sqlType2jetel(type);
-		//set length and scale for decimal field
-		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
-			int scale = 0;
-			int length = 0;
-			try {
-				scale = dbMetadata.getScale(sqlIndex);
-				if (scale < 0) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}else{
-					fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
-				}
-			} catch (SQLException e) {
-				cloverType = DataFieldMetadata.NUMERIC_FIELD;
-			}
-			try {
-				length = scale + dbMetadata.getPrecision(sqlIndex);
-				if (length <= scale) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}else{
-					fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
-				}
-			} catch (SQLException e) {
-				cloverType = DataFieldMetadata.NUMERIC_FIELD;
-			}
-		}
-		fieldMetadata.setType(cloverType);
-		//for Date Data Field set proper format
-		switch (type) {
-		case Types.DATE:
-			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
-			break;
-		case Types.TIME:
-			fieldMetadata.setFormatStr(Defaults.DEFAULT_TIME_FORMAT);
-			break;
-		case Types.TIMESTAMP:
-			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
-			break;
-		}
-		
-		if (dbMetadata.isNullable(sqlIndex) == ResultSetMetaData.columnNullable) {
-			fieldMetadata.setNullable(true);
-		}
-		return fieldMetadata;
-	}
-
 	/**
 	 *  Converts SQL metadata into Clover's DataRecordMetadata
 	 *
@@ -592,7 +549,6 @@ public class SQLUtil {
 		String selectlc = select.toLowerCase();
 		int selectKwOffset = 0;
 		
-		int fromOffset;
 		int contentOffset;
 		String selectPart;
 		String parts[];
@@ -637,6 +593,74 @@ public class SQLUtil {
 		
 		return newQuery.toString();
 	}
+
 	
+	
+	
+	/**
+	 * The aim of this interface together with delegating classes {@link ResultSetMetaData} and
+	 * {@link ParameterDbMetadata} is to have common interface for ResultSetMetaData and ParameterMetaData classes.
+	 */
+	private interface DbMetadata {
+		/** Retrieves the designated SQL type of column/parameter */
+		public int getType(int index) throws SQLException;
+		/** Gets the designated column/parameter's number of digits to right of the decimal point */
+		public int getScale(int index) throws SQLException;
+		/** Get the designated column/parameter's specified column size. */
+		public int getPrecision(int index) throws SQLException;
+		/** Indicates the nullability of values in the designated column/parameter */
+		public int isNullable(int index) throws SQLException;
+	}
+	
+	/** Delegates methods to ResultSetMetaData instance. */
+	private static class ResultSetDbMetadata implements DbMetadata {
+		private ResultSetMetaData dbMetadata;
+
+		public ResultSetDbMetadata(ResultSetMetaData dbMetadata) {
+			this.dbMetadata = dbMetadata;
+		}
+
+		public int getType(int column) throws SQLException {
+			return dbMetadata.getColumnType(column);
+		}
+
+		public int isNullable(int column) throws SQLException {
+			return dbMetadata.isNullable(column);
+		}
+
+		public int getPrecision(int column) throws SQLException {
+			return dbMetadata.getPrecision(column);
+		}
+
+		public int getScale(int column) throws SQLException {
+			return dbMetadata.getScale(column);
+		}
+	}
+	
+	/** Delegates methods to ParameterMetaData instance. */
+	private static class ParameterDbMetadata implements DbMetadata {
+		private ParameterMetaData dbMetadata;
+
+		public ParameterDbMetadata(ParameterMetaData dbMetadata) {
+			this.dbMetadata = dbMetadata;
+		}
+
+		public int getType(int param) throws SQLException {
+			return dbMetadata.getParameterType(param);
+		}
+
+		public int isNullable(int param) throws SQLException {
+			return dbMetadata.isNullable(param);
+		}
+
+		public int getPrecision(int param) throws SQLException {
+			return dbMetadata.getPrecision(param);
+		}
+
+		public int getScale(int param) throws SQLException {
+			return dbMetadata.getScale(param);
+		}
+	}
+
 }
 
