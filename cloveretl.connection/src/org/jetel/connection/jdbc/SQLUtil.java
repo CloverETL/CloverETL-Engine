@@ -174,8 +174,21 @@ public class SQLUtil {
 			} catch (SQLException e) {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
 			}
+			
+		} else {
+			// Set size attribute to column size if possible. Serves as default size in case user decides to switch field to fixed size (see issue #3938)
+			try {
+				int size = dbMetadata.getPrecision(sqlIndex);
+				if (size > 0) {
+					fieldMetadata.setProperty(DataFieldMetadata.SIZE_ATTR, Integer.toString(size));
+				}
+			} catch (SQLException e) {
+				// well, never mind...
+			}
 		}
+		
 		fieldMetadata.setType(cloverType);
+		
 		//for Date Data Field set proper format
 		switch (type) {
 		case Types.DATE:
