@@ -163,7 +163,7 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public ByteInputReader() {
-			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
@@ -208,7 +208,8 @@ public abstract class CharByteInputReader {
 			currentMark = byteBuffer.position();
 		}
 
-		public void reset() throws OperationNotSupportedException {
+		@Override
+		public void revert() throws OperationNotSupportedException {
 			byteBuffer.position(currentMark);
 			currentMark = INVALID_MARK;
 		}
@@ -333,7 +334,8 @@ public abstract class CharByteInputReader {
 			currentMark = charBuffer.position();
 		}
 
-		public void reset() throws OperationNotSupportedException {
+		@Override
+		public void revert() throws OperationNotSupportedException {
 			if (currentMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
@@ -496,7 +498,8 @@ public abstract class CharByteInputReader {
 			currentMark = charBuffer.position();
 		}
 
-		public void reset() throws OperationNotSupportedException {
+		@Override
+		public void revert() throws OperationNotSupportedException {
 			if (currentMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
@@ -725,7 +728,8 @@ public abstract class CharByteInputReader {
 			currentCharMark = charBuffer.position();
 		}
 
-		public void reset() throws OperationNotSupportedException {
+		@Override
+		public void revert() throws OperationNotSupportedException {
 			if (currentByteMark == INVALID_MARK) {
 				assert currentCharMark == INVALID_MARK : "Unexpected internal state occured during code execution";
 				;

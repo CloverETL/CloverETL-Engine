@@ -26,6 +26,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 import javax.naming.OperationNotSupportedException;
@@ -173,22 +174,17 @@ public class CharByteDataParser implements TextParser {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
 		
-		/* let's ignore auto-filled fields from the very beginning */
-		DataFieldMetadata[] fields = new DataFieldMetadata[metadata.getNumFields()];
-		numFields = 0;
-		for (int idx = 0; idx < metadata.getNumFields(); idx++) {
-			if (metadata.getField(idx).isAutoFilled()) {
-				continue;
-			}
-			fields[numFields++] = metadata.getField(idx);
-		}
-		
 		boolean needByteInput = false;
 		boolean needCharInput = false;
 
+		numFields = metadata.getNumFields();
+		
 		// first we determine what kind of input reader we need
-		for (int idx = 0; idx < numFields; idx++) {			
-			if (fields[idx].isByteBased()) {
+		for (DataFieldMetadata field : metadata.getFields()) {
+			if (field.isAutoFilled()) {
+				continue;
+			}
+			if (field.isByteBased()) {
 				needByteInput = true;
 			} else {
 				needCharInput = true;
@@ -202,7 +198,7 @@ public class CharByteDataParser implements TextParser {
 		} else if (!needByteInput) {
 			inputReader = new CharByteInputReader.CharInputReader(charset);
 //			inputReader = new CharByteInputReader.RobustInputReader(charset);
-			inputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
+//			inputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
 		} else if (singleByteCharset) {
 			inputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
 		} else {
@@ -211,10 +207,19 @@ public class CharByteDataParser implements TextParser {
 
 		numConsumers = 0;
 		fieldConsumers = new InputConsumer[numFields];
-		for (int idx = 0; idx < numFields; numConsumers++) {	
+		for (int idx = 0; idx < numFields; numConsumers++) {
+			// skip autofilling fields
+			for (; idx < numFields; idx++) {
+				if (!metadata.getField(idx).isAutoFilled()) {
+					break;
+				}
+			}
 			int byteFieldCount = 0;
 			for (; idx + byteFieldCount < numFields; byteFieldCount++) {
-				DataFieldMetadata field = fields[idx + byteFieldCount];
+				DataFieldMetadata field = metadata.getField(idx + byteFieldCount);
+				if (field.isAutoFilled()) { // skip auto-filled field
+					continue;
+				}
 				if (!field.isByteBased()) {
 					break;
 				}
@@ -226,13 +231,14 @@ public class CharByteDataParser implements TextParser {
 				fieldConsumers[numConsumers] = new FixlenByteFieldConsumer(metadata, inputReader, idx, byteFieldCount);
 				idx += byteFieldCount;
 			} else { // char field consumer
-				if (fields[idx].isFixed()) { // fixlen char field consumer
-					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, fields[idx].getSize());
+				DataFieldMetadata field = metadata.getField(idx);
+				if (field.isFixed()) { // fixlen char field consumer
+					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize());
 				} else { // delimited char field consumer
-					AhoCorasick delimPatterns = new AhoCorasick(fields[idx].getDelimiters());
+					AhoCorasick delimPatterns = new AhoCorasick(field.getDelimiters());
 					fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, delimPatterns,
-							cfg.isTreatMultipleDelimitersAsOne(), fields[idx].isEofAsDelimiter(), cfg.isQuotedStrings(),
-							fields[idx].isTrim() || skipLeftBlanks, fields[idx].isTrim() || skipRightBlanks);
+							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), cfg.isQuotedStrings(),
+							field.isTrim() || skipLeftBlanks, field.isTrim() || skipRightBlanks);
 				}
 				idx++;
 			}
@@ -334,7 +340,7 @@ public class CharByteDataParser implements TextParser {
 	
 	public static class FixlenByteFieldConsumer extends InputConsumer {
 
-
+		private final CharsetDecoder decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		private int startFieldIdx;
 		private int fieldCount;
 
@@ -394,12 +400,14 @@ public class CharByteDataParser implements TextParser {
 			ByteBuffer seq = inputReader.getByteSequence(0);
 			int startPos = seq.position();
 			for (int idx = 0; idx < fieldCount; idx++) {
-				if (isAutoFilling[idx])
+				if (isAutoFilling[idx]) {
+					continue;
+				}
 				seq.position(startPos + fieldStart[idx]);
 				seq.limit(startPos + fieldEnd[idx]);
-				record.getField(startFieldIdx + idx).fromByteBuffer(seq, null);
+				record.getField(startFieldIdx + idx).fromByteBuffer(seq, decoder);
 			}
-			return false;
+			return true;
 		}
 		
 	}
