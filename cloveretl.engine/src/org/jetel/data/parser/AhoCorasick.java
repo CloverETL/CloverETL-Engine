@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -123,6 +124,31 @@ public class AhoCorasick {
 					iterator.children[s.charAt(i)] = new NodeTrie(iterator, s.charAt(i));
 				}
 				iterator = iterator.children[s.charAt(i)]; 
+			}
+			iterator.patterns.add(new MyInt(idx));
+		}
+		
+        if(idx < minPattern) minPattern = idx;
+        if(idx > maxPattern) maxPattern = idx;
+	}
+
+	/**
+	 * Add next searched pattern.
+	 * @param s pattern
+	 * @param idx pattern identifier 
+	 */
+	public void addBytePattern(ByteBuffer bb, int idx) {
+		if(failureFunctionDone) {
+			throw new IllegalArgumentException("AhoCorasick: failureFunction is already done.");
+		}
+		if(bb.hasRemaining()) {
+			NodeTrie iterator = rootTrie;
+			for(int i = 0; bb.hasRemaining(); i++) {
+				byte b = bb.get();
+				if(iterator.children[b] == null) {
+					iterator.children[b] = new NodeTrie(iterator, (char)b);
+				}
+				iterator = iterator.children[b]; 
 			}
 			iterator.patterns.add(new MyInt(idx));
 		}
@@ -284,4 +310,5 @@ public class AhoCorasick {
 			}
 		}
 	}
+
 }
