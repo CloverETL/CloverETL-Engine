@@ -369,6 +369,9 @@ public class DataReader extends Node {
         	parserCfg.setIncremental(true);
         }
         parser = TextParserFactory.getParser(parserCfg);
+		if( logger.isDebugEnabled()){
+			logger.debug("Component " + getId() + " uses parser " + parser.getClass().getName() );
+		}
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 	
