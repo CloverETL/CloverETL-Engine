@@ -345,10 +345,12 @@ public class SimpleDataParser implements TextParser {
 						if (delimiterSplit) {
 							delimiterSplit = false;
 							fieldBuffer.append(delimiter, 0, delimiterIndex);
+							nextChar = i;
 						}
-						delimiterIndex = 0;
-						if (c == delimiter[delimiterIndex]) {
-							delimiterIndex++;
+						if (c == delimiter[0]) {
+							delimiterIndex = 1;
+						} else {
+							delimiterIndex = 0;
 						}
 					}
 				}
