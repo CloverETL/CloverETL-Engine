@@ -262,7 +262,7 @@ public class DataFieldMetadata implements Serializable {
 		this.type = fieldType;
 		this.delimiter = delimiter;
 
-		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD || fieldType == BOOLEAN_FIELD) {
+		if (isTrimType()) {
 			this.trim = true;
 		}
 
@@ -292,7 +292,7 @@ public class DataFieldMetadata implements Serializable {
 		this.type = fieldType;
 		this.size = size;
 
-		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD) {
+		if (isTrimType()) {
 			this.trim = true;
 		}
 
@@ -426,6 +426,10 @@ public class DataFieldMetadata implements Serializable {
 		return (type == NUMERIC_FIELD || type == INTEGER_FIELD || type == LONG_FIELD || type == DECIMAL_FIELD);
 	}
 
+	private boolean isTrimType() {
+		return isNumeric() || type == DATE_FIELD || type == DATETIME_FIELD || type == BOOLEAN_FIELD;
+	}
+	
 	/**
 	 * Sets the delimiter string.
 	 * 
