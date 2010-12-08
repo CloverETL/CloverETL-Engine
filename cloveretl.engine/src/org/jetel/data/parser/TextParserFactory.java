@@ -36,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public final class TextParserFactory {
 	private final static Log logger = LogFactory.getLog(TextParserFactory.class);
 
-	private static final Class[] availableParsers = new Class[] { SimpleDataParser.class, DataParser.class, CharByteDataParser.class, FixLenByteDataParser.class };
+	private static final Class[] availableParsers = new Class[] { SimpleDataParser.class, DataParser.class, CharByteDataParser.class };
 
 	private TextParserFactory(){
 	}
