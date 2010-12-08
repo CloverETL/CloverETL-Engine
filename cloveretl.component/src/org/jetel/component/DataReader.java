@@ -365,8 +365,8 @@ public class DataReader extends Node {
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTrim(trim);
-        if( incrementalFile != null || incrementalKey != null ){
-        	parserCfg.setIncremental(true);
+        if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows >0 || skipRows > 0 ) {
+        	parserCfg.setSkipRows(true);
         }
         parser = TextParserFactory.getParser(parserCfg);
 		if( logger.isDebugEnabled()){

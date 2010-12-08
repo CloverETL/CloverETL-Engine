@@ -41,7 +41,7 @@ public class TextParserConfiguration {
 	private Boolean trim = null;
 	private Boolean skipLeadingBlanks = null;
 	private Boolean skipTrailingBlanks = null;
-	private boolean incremental = false;
+	private boolean skipRows = false;
 	private PolicyType policyType = null;
 	private IParserExceptionHandler exceptionHandler = null;
 
@@ -77,7 +77,7 @@ public class TextParserConfiguration {
 		this.skipLeadingBlanks = skipLeadingBlanks;
 		this.skipTrailingBlanks = skipTrailingBlanks;
 		this.trim = trim;
-		this.incremental = incremental;
+		this.skipRows = incremental;
 		setPolicyType(policyType);
 	}
 
@@ -208,20 +208,19 @@ public class TextParserConfiguration {
 	}
 
 	/**
-	 * @return the incremental
+	 * @return the skipRows
 	 */
-	public boolean isIncremental() {
-		return incremental;
+	public boolean isSkipRows() {
+		return skipRows;
 	}
 
 	/**
-	 * @param incremental
-	 *            the incremental to set
+	 * @param skipRows the skipRows to set
 	 */
-	public void setIncremental(boolean incremental) {
-		this.incremental = incremental;
+	public void setSkipRows(boolean skipRows) {
+		this.skipRows = skipRows;
 	}
-	
+
 	/**
 	 * Sets data policy and the corresponding exception handler
 	 * @param policyType
