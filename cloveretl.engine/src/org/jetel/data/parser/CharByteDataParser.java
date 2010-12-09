@@ -98,9 +98,9 @@ public class CharByteDataParser implements TextParser {
 			}
 		}
 		if (!hasByteFields || !hasCharFields) {
-			return 7;
+			return 9;
 		} else if (cfg.isSingleByteCharset()) {
-			return 6;
+			return 7;
 		} else {
 			return 5;
 		}
@@ -177,54 +177,7 @@ public class CharByteDataParser implements TextParser {
 
 		numFields = metadata.getNumFields();
 
-/*		String[][] delimArray = new String[numFields][];
-		for (int idx = 0; idx < numFields; idx++) {
-			delimArray[idx] = metadata.getField(idx).getDelimiters();
-		}
-		AhoCorasick[] searcherArray = new AhoCorasick[numFields];
-		for (int idx = 0; idx < numFields; idx++) {
-			DataFieldMetadata idxField = metadata.getField(idx);
-			if (idxField.isAutoFilled() || idxField.isFixed()) {
-				searcherArray[idx] = null;
-				continue;
-			}
-			int jdx;
-			for (jdx = 0; jdx < idx; jdx++) {
-				DataFieldMetadata jdxField = metadata.getField(jdx);
-				if (searcherArray[jdx] == null) {
-					continue;
-				}
-				if (idxField.isByteBased() != jdxField.isByteBased()) {
-					continue;
-				}
-				if (delimArray[idx].length != delimArray[jdx].length) {
-					continue;
-				}
-				int kdx;
-				for (kdx = 0; kdx < delimArray[idx].length; kdx++) {
-					if (!delimArray[idx][kdx].equals(delimArray[jdx][kdx])) {
-						break;
-					}
-				}
-				if (kdx == delimArray[idx].length) { // delimiters are the same
-					break;
-				}
-			}
-			if (jdx < idx) {
-				searcherArray[idx] = searcherArray[jdx];
-			} else {
-				if (idxField.isByteBased()) {
-					searcherArray[idx] = new AhoCorasick();
-					for (String delim : delimArray[idx]) {
-						searcherArray[idx].addBytePattern(charset.encode(delim), CharByteDataParser.InputConsumer.ANY_PATTERN);
-					}
-					searcherArray[idx].compile();
-				} else {
-					searcherArray[idx] = new AhoCorasick(delimArray[idx]);					
-				}
-			}
-		}
-*/
+		// prepare delimiter searcher. the same searcher is used for all the fields.
 		AhoCorasick searcher = new AhoCorasick();
 		for (int idx = 0; idx < numFields; idx++) {
 			DataFieldMetadata field = metadata.getField(idx);
@@ -236,6 +189,21 @@ public class CharByteDataParser implements TextParser {
 					searcher.addBytePattern(charset.encode(delim), idx);					
 				} else {
 					searcher.addPattern(delim, idx);
+				}
+			}
+		}
+		int lastEffectiveField;
+		for (lastEffectiveField = numFields - 1; lastEffectiveField >= 0; lastEffectiveField--) {
+			if (!metadata.getField(lastEffectiveField).isAutoFilled()) {
+				break;
+			}
+		}
+		boolean needRecordDelimiterConsumer = false;
+		if (metadata.isSpecifiedRecordDelimiter()) {
+			if (lastEffectiveField == -1 || metadata.getField(lastEffectiveField).isFixed()) {
+				needRecordDelimiterConsumer = true;
+				for (String delim : metadata.getRecordDelimiters()) {
+					searcher.addPattern(delim, numFields);
 				}
 			}
 		}
@@ -268,7 +236,7 @@ public class CharByteDataParser implements TextParser {
 		}
 
 		numConsumers = 0;
-		fieldConsumers = new InputConsumer[numFields];
+		fieldConsumers = new InputConsumer[numFields + 1];
 		for (int idx = 0; idx < numFields; numConsumers++) {
 			// skip autofilling fields
 			for (; idx < numFields; idx++) {
@@ -293,7 +261,8 @@ public class CharByteDataParser implements TextParser {
 				DataFieldMetadata field = metadata.getField(idx);
 				if (field.isFixed()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
-					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize());
+					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(),
+							field.isTrim() || skipLeftBlanks, field.isTrim() || skipRightBlanks);
 				} else if (field.isByteBased()) { // delimited byte field consumer
 					fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, searcher,
 							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(),
@@ -306,6 +275,10 @@ public class CharByteDataParser implements TextParser {
 				idx++;
 			}
 		} // loop
+		if (needRecordDelimiterConsumer) {
+			fieldConsumers[numConsumers++] = new CharDelimConsumer(inputReader, searcher, numFields,
+					metadata.getField(numFields - 1).isEofAsDelimiter());
+		}
 		
 	}
 	
@@ -477,14 +450,20 @@ public class CharByteDataParser implements TextParser {
 
 	public static class FixlenCharFieldConsumer extends InputConsumer {
 
-		private int fieldNumber;
+		protected int fieldNumber;
 		private int fieldLength;
+		private boolean lTrim;
+		private boolean rTrim;
 
-		FixlenCharFieldConsumer(CharByteInputReader inputReader, int fieldNumber, int fieldLength) {
+
+		FixlenCharFieldConsumer(CharByteInputReader inputReader, int fieldNumber, int fieldLength,
+				boolean lTrim, boolean rTrim) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.inputReader = inputReader;
 			this.fieldLength = fieldLength;
+			this.lTrim = lTrim;
+			this.rTrim = rTrim;
 		}
 		
 		@Override
@@ -504,11 +483,23 @@ public class CharByteDataParser implements TextParser {
 					if (i == 0) {
 						return false;
 					} else {
-						throw new BadDataFormatException("End of input encountered instead of the closing quote");
+						throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 					}
 				}
 			}
-			record.getField(fieldNumber).fromString(inputReader.getCharSequence(0));
+			CharSequence seq = inputReader.getCharSequence(0);
+			if (lTrim || rTrim) {
+				StringBuilder sb = new StringBuilder(seq);
+				if (lTrim) {
+					StringUtils.trimLeading(sb);
+				}
+				if (rTrim) {
+					StringUtils.trimTrailing(sb);
+				}
+				record.getField(fieldNumber).fromString(sb);
+			} else {
+				record.getField(fieldNumber).fromString(seq);
+			}
 			return true;
 		}
 		
@@ -589,7 +580,7 @@ public class CharByteDataParser implements TextParser {
 						// be careful not to lose last input value in ichr
 						delimPatterns.reset();
 						delimPatterns.update(chr);
-						fieldValue.append(inputReader.getCharSequence(-1)); // append without quote
+						fieldValue.append(inputReader.getCharSequence(-2)); // append without quote
 						field.fromString(fieldValue);
 						break;
 					} // end quote followed by non-quote char
@@ -796,5 +787,94 @@ public class CharByteDataParser implements TextParser {
 		}
 		
 	} // DelimByteFieldConsumer
+	
+	public static class CharDelimConsumer extends InputConsumer {
+		private AhoCorasick delimPatterns;
+		private int delimId;
+		private boolean acceptEofAsDelim;
+		
+		CharDelimConsumer(CharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
+			super(inputReader);
+			this.delimPatterns = delimPatterns;
+			this.delimId = delimId;
+			this.acceptEofAsDelim = acceptEofAsDelim;
+		}
+		
+		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
+			delimPatterns.reset();
+			inputReader.mark();
+			int ichr;
+			char chr;
+			while (true) {
+				ichr = inputReader.readChar();
+				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
+					throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+				}
+				if (ichr == CharByteInputReader.DECODING_FAILED) {
+					throw new BadDataFormatException("Decoding of input into char data failed while looking for obligatory delimiter");
+				}
+				if (ichr == CharByteInputReader.END_OF_INPUT) {
+					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
+						return false; // indicates success and end of input
+					} else {
+						throw new BadDataFormatException("End of input encountered instead of the field delimiter");						
+					}
+				}
+				chr = (char)ichr;
+				delimPatterns.update(chr);
+				if (delimPatterns.isPattern(delimId)) {
+					return true;
+				}
+				if (delimPatterns.getMatchLength() == 0) {
+					throw new BadDataFormatException("Obligatory delimiter not found after field");						
+				}
+			}
+		}
+		
+	} // DelimCharConsumer
+	
+	public static class ByteDelimConsumer {
+		private CharByteInputReader inputReader;
+		private AhoCorasick delimPatterns;
+		private int delimId;
+		private boolean acceptEofAsDelim;
+		
+		ByteDelimConsumer(CharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
+			this.inputReader = inputReader;
+			this.delimPatterns = delimPatterns;
+			this.delimId = delimId;
+			this.acceptEofAsDelim = acceptEofAsDelim;
+		}
+		
+		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
+			delimPatterns.reset();
+			inputReader.mark();
+			int ibt;
+			char bt;
+			while (true) {
+				ibt = inputReader.readByte();
+				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
+					throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+				}
+				if (ibt == CharByteInputReader.END_OF_INPUT) {
+					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
+						return false; // indicates success and end of input
+					} else {
+						throw new BadDataFormatException("End of input encountered instead of the field delimiter");						
+					}
+				}
+				bt = (char)ibt;
+				delimPatterns.update(bt);
+				if (delimPatterns.isPattern(delimId)) {
+					return true;
+				}
+				if (delimPatterns.getMatchLength() == 0) {
+					throw new BadDataFormatException("Obligatory delimiter not found after field");						
+				}
+			}
+		}
+		
+	} // DelimFixlenCharFieldConsumer
+	
 
 }
