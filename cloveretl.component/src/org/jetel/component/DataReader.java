@@ -209,7 +209,7 @@ public class DataReader extends Node {
 			}
 		}
 		
-        updeSkipSourceRowsByMetadata();
+        updeteSkipSourceRowsByMetadata();
 		prepareParser();
         prepareMultiFileReader();
 	}
@@ -394,7 +394,7 @@ public class DataReader extends Node {
 	}
 
 
-	private void updeSkipSourceRowsByMetadata() {
+	private void updeteSkipSourceRowsByMetadata() {
 		// skip source rows
         if (skipSourceRows == -1) {
         	OutputPort outputPort = getOutputPort(OUTPUT_PORT); //only 1.output port without log port
@@ -547,7 +547,7 @@ public class DataReader extends Node {
         }
         
         try {
-            updeSkipSourceRowsByMetadata();
+            updeteSkipSourceRowsByMetadata();
     		prepareParser();
             prepareMultiFileReader();
             
