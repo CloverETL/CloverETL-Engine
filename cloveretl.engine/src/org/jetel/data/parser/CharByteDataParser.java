@@ -98,11 +98,11 @@ public class CharByteDataParser implements TextParser {
 			}
 		}
 		if (!hasByteFields || !hasCharFields) {
-			return 9;
+			return 90;
 		} else if (cfg.isSingleByteCharset()) {
-			return 7;
+			return 70;
 		} else {
-			return 5;
+			return 50;
 		}
 	}
 
