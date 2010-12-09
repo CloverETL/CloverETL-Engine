@@ -43,9 +43,9 @@ import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -379,13 +379,6 @@ public final class TransformationGraph extends GraphElement {
 			
 	        if(isInitialized()) return;
 			super.init();
-	
-	        //remove disabled components and their edges
-	        try {
-				TransformationGraphAnalyzer.disableNodesInPhases(this);
-			} catch (GraphConfigurationException e) {
-				throw new ComponentNotReadyException(this, e);
-			}
 	
 			//initialize dictionary
 			dictionary.init();
@@ -1089,6 +1082,15 @@ public final class TransformationGraph extends GraphElement {
 	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
 	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
 	        }
+	
+	        //remove disabled components and their edges
+	        try {
+				TransformationGraphAnalyzer.disableNodesInPhases(this);
+			} catch (GraphConfigurationException e) {
+				ConfigurationProblem problem = new ConfigurationProblem("Check config: Failed to remove disabled/pass-through nodes from graph", Severity.ERROR, this, Priority.HIGH);
+				problem.setCauseException(e);
+				status.add(problem);
+			}
 	
 	        //check phases configuration
 	        for(Phase phase : getPhases()) {
