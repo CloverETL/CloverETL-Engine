@@ -668,7 +668,9 @@ public abstract class CharByteInputReader {
 		public int readByte() throws IOException, OperationNotSupportedException {
 			// simple cases first
 			if (byteBuffer.hasRemaining()) {
-				return DATA_AVAILABLE;
+				currentCharMark = INVALID_MARK; // reading bytes without decoding them invalidates any buffered chars and the char mark
+				assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
+				return byteBuffer.get();
 			}
 			if (endOfInput) {
 				return END_OF_INPUT;
@@ -707,8 +709,7 @@ public abstract class CharByteInputReader {
 				return END_OF_INPUT;
 			}
 			assert byteBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
-			currentCharMark = INVALID_MARK; // reading bytes without decoding them invalidates any buffered chars and
-											// the char mark
+			currentCharMark = INVALID_MARK; // reading bytes without decoding them invalidates any buffered chars and the char mark
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 			return byteBuffer.get();
 		}
