@@ -230,6 +230,7 @@ public class SimpleDataParser implements TextParser {
 
 		recordCounter = 0;// reset record counter
 		// bytesCounter = 0;
+		isEOF = false;
 
 		try {
 			if (inputDataSource == null) {
