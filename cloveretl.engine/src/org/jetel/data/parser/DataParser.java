@@ -57,15 +57,13 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.data.Defaults
  * @revision $Revision: 1.9 $
  */
-public class DataParser implements TextParser {
+public class DataParser extends AbstractTextParser {
 	
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
 	
 	private final static Log logger = LogFactory.getLog(DataParser.class);
 
-	private TextParserConfiguration cfg;
-	
 	private IParserExceptionHandler exceptionHandler;
 
 	private ReadableByteChannel reader;
@@ -120,7 +118,7 @@ public class DataParser implements TextParser {
 	private boolean recordIsParsed;
 	
 	public DataParser(TextParserConfiguration cfg){
-		this.cfg = cfg;
+		super(cfg);
 		decoder = Charset.forName(cfg.getCharset()).newDecoder();
 		reader = null;
 		exceptionHandler = cfg.getExceptionHandler();
@@ -142,6 +140,7 @@ public class DataParser implements TextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
+    @Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = new DataRecord(cfg.getMetadata());
 		record.init();
@@ -172,9 +171,7 @@ public class DataParser implements TextParser {
 		return record;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
-	 */
+    @Override
 	public void init() throws ComponentNotReadyException {
 		//init private variables
 		if (cfg.getMetadata() == null) {
@@ -210,11 +207,11 @@ public class DataParser implements TextParser {
 				}
 			}
 			isAutoFilling[i] = cfg.getMetadata().getField(i).getAutoFilling() != null;
-			isSkipLeadingBlanks[i] = cfg.getSkipLeadingBlanks() != null ? cfg.getSkipLeadingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(i).isTrim();
+			isSkipLeadingBlanks[i] = isSkipFieldLeadingBlanks(i);
 //			isSkipBlanks[i] = skipLeadingBlanks
 //					|| trim == Boolean.TRUE
 //					|| (trim == null && metadata.getField(i).isTrim());
-			isSkipTrailingBlanks[i] = cfg.getSkipTrailingBlanks() != null ? cfg.getSkipTrailingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(i).isTrim();
+			isSkipTrailingBlanks[i] = isSkipFieldTrailingBlanks(i);
 			eofAsDelimiters[i] = cfg.getMetadata().getField(i).isEofAsDelimiter();
 		}
 
@@ -251,16 +248,12 @@ public class DataParser implements TextParser {
 		metadataFields = cfg.getMetadata().getFields();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
+    @Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 		this.releaseInputSource = releaseInputSource;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
+    @Override
 	public void setDataSource(Object inputDataSource) throws IOException {
 		if (releaseInputSource) releaseDataSource();
 
@@ -853,9 +846,7 @@ public class DataParser implements TextParser {
 //		}		
 //	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#skip(int)
-	 */
+    @Override
 	public int skip(int count) throws JetelException {
         int skipped;
 
@@ -876,14 +867,17 @@ public class DataParser implements TextParser {
 		return skipped;
 	}
 
+    @Override
     public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
 
+    @Override
     public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
 
+    @Override
     public PolicyType getPolicyType() {
         if(exceptionHandler != null) {
             return exceptionHandler.getType();
@@ -891,10 +885,7 @@ public class DataParser implements TextParser {
         return null;
     }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#reset()
-	 */
+    @Override
 	public void reset() {
 		if (releaseInputSource) {	
 			try {
@@ -908,10 +899,12 @@ public class DataParser implements TextParser {
 		bytesProcessed = 0;
 	}
 
+    @Override
 	public Object getPosition() {
 		return bytesProcessed;
 	}
 
+    @Override
 	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {
@@ -939,9 +932,4 @@ public class DataParser implements TextParser {
 		close();
     }
 
-	@Override
-	public TextParserConfiguration getConfiguration() {
-		return cfg;
-	}
-	
 }
