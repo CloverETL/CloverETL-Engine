@@ -37,6 +37,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 import sun.nio.ch.ChannelInputStream;
 
@@ -56,9 +57,8 @@ import sun.nio.ch.ChannelInputStream;
  * 
  * @created 19.8.2009
  */
-public class SimpleDataParser implements TextParser {
+public class SimpleDataParser extends AbstractTextParser {
 
-	private TextParserConfiguration cfg;
 	private IParserExceptionHandler exceptionHandler;
 	private int numFields;
 	private boolean releaseInputSource = true;
@@ -73,16 +73,14 @@ public class SimpleDataParser implements TextParser {
 	private int nextChar;
 	private boolean isEOF;
 
+	private boolean[] isSkipLeadingBlanks;
+	private boolean[] isSkipTrailingBlanks;
+	
 	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
 
 	public SimpleDataParser(TextParserConfiguration cfg) {
-		super();
-		this.cfg = cfg;
+		super(cfg);
 		exceptionHandler = cfg.getExceptionHandler();
-	}
-
-	public SimpleDataParser(String charset) {
-		reader = null;
 	}
 
 	/**
@@ -93,12 +91,6 @@ public class SimpleDataParser implements TextParser {
 			logger.debug("This parser can't be used because 'verbose' feature");
 		} else if (cfg.isQuotedStrings()) {
 			logger.debug("This parser can't be used because of the 'quotedStrings' feature");
-		} else if (cfg.getTrim() != null && cfg.getTrim()) {
-			logger.debug("This parser can't be used because of the 'trim' feature");
-		} else if (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks()) {
-			logger.debug("This parser can't be used because of the 'skipLeadingBlanks' feature");
-		} else if (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks()) {
-			logger.debug("This parser can't be used because of the 'skipTrailingBlanks' feature");
 		} else if (cfg.isTreatMultipleDelimitersAsOne()) {
 			logger.debug("This parser can't be used because of the 'treatMultipleDelimitersAsOne' feature");
 		} else if (cfg.isSkipRows()) {
@@ -143,10 +135,6 @@ public class SimpleDataParser implements TextParser {
 				logger.debug("Field " + field + " has 'autoFill' feature");
 				return false;
 			}
-			if (field.isTrim()) {
-				logger.debug("Field " + field + " has 'trim' feature");
-				return false;
-			}
 			if (field.isByteBased()) {
 				logger.debug("Field " + field + " is byte-based");
 				return false;
@@ -156,9 +144,7 @@ public class SimpleDataParser implements TextParser {
 		return true;
 	}
 
-	/**
-	 * @see org.jetel.data.parser.Parser#getNext()
-	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = new DataRecord(cfg.getMetadata());
 		record.init();
@@ -187,11 +173,7 @@ public class SimpleDataParser implements TextParser {
 		return record;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
-	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (cfg.getMetadata() == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -204,26 +186,24 @@ public class SimpleDataParser implements TextParser {
 
 		// create array of delimiters & initialize them
 		delimiters = new char[numFields][];
+		isSkipLeadingBlanks = new boolean[numFields];
+		isSkipTrailingBlanks = new boolean[numFields];
 		for (int i =0; i< numFields; i++) {
 			final DataFieldMetadata field = cfg.getMetadata().getField(i);
 			delimiters[i] = field.getDelimiters()[0].toCharArray();
+			isSkipLeadingBlanks[i] = isSkipFieldLeadingBlanks(i);
+			isSkipTrailingBlanks[i] = isSkipFieldTrailingBlanks(i);
 		}
+		
+		
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
 		this.releaseInputSource = releaseInputSource;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
+	@Override
 	public void setDataSource(Object inputDataSource) {
 		if (releaseInputSource)
 			releaseDataSource();
@@ -266,9 +246,7 @@ public class SimpleDataParser implements TextParser {
 		reader = null;
 	}
 
-	/**
-	 * @see org.jetel.data.parser.Parser#close()
-	 */
+	@Override
 	public void close() {
 		if (reader != null) {
 			try {
@@ -332,6 +310,7 @@ public class SimpleDataParser implements TextParser {
 					if (fieldBuffer.length() == 0 && fieldIndex == 0) {
 						return null;
 					} else if (cfg.getMetadata().getField(fieldIndex).isEofAsDelimiter()) {
+						finalFieldDecoration(fieldIndex);
 						return fieldBuffer;
 					} else {
 						parsingErrorFound("Unexpected end of file", record, fieldIndex);
@@ -369,6 +348,7 @@ public class SimpleDataParser implements TextParser {
 					if (len > 0) {
 						fieldBuffer.append(cb, startChar, len);
 					}
+					finalFieldDecoration(fieldIndex);
 					return fieldBuffer;
 				} else {
 					int len = nextChar - startChar - delimiterIndex;
@@ -389,6 +369,15 @@ public class SimpleDataParser implements TextParser {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), fieldBuffer, fieldIndex), ex);
 		}
 
+	}
+
+	private void finalFieldDecoration(int fieldIndex) {
+		if( isSkipLeadingBlanks[fieldIndex] ){
+			StringUtils.trimLeading(fieldBuffer);
+		}
+		if( isSkipTrailingBlanks[fieldIndex] ){
+			StringUtils.trimTrailing(fieldBuffer);
+		}
 	}
 
 	private void fill() throws IOException {
@@ -469,14 +458,17 @@ public class SimpleDataParser implements TextParser {
 		return recordCounter;
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return exceptionHandler;
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
 		if (exceptionHandler != null) {
 			return exceptionHandler.getType();
@@ -484,11 +476,7 @@ public class SimpleDataParser implements TextParser {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.data.parser.Parser#reset()
-	 */
+	@Override
 	public void reset() {
 		if (releaseInputSource)
 			releaseDataSource();
