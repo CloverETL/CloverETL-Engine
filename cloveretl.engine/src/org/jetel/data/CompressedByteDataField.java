@@ -162,7 +162,7 @@ public class CompressedByteDataField extends ByteDataField {
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
 		dataLen = metadata.getSize();
 		if (dataLen <= 0) {
-			dataLen = INITIAL_BYTE_ARRAY_CAPACITY;
+			dataLen = Math.max(INITIAL_BYTE_ARRAY_CAPACITY, dataBuffer.remaining());
 		}
 		byte[] buf = new byte[dataLen];
 		dataBuffer.get(buf);
