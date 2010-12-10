@@ -125,23 +125,6 @@ public abstract class CharByteInputReader {
 	}
 
 	/**
-	 * creates a reader best suited to parse data input specified by the passed parameters
-	 * 
-	 * @param metadata
-	 *            data description
-	 * @param charset
-	 *            charset of the input source
-	 * @param channel
-	 *            input source
-	 * @return reader ready to read
-	 **/
-	public static CharByteInputReader create(DataRecordMetadata metadata, Charset charset) {
-		CharByteInputReader reader;
-		reader = new ByteInputReader(); // TODO
-		return reader;
-	}
-
-	/**
 	 * Sets new input source. Invalidates the mark.
 	 * 
 	 * @param channel
@@ -149,6 +132,10 @@ public abstract class CharByteInputReader {
 	public void setInputSource(ReadableByteChannel channel) {
 		this.channel = channel;
 	}
+	
+	protected abstract void setMark(int mark);
+
+	protected abstract int getMark();
 
 	/**
 	 * This input reader can be used only for data inputs which doesn't contain any delimiters or char-based fields
@@ -233,6 +220,17 @@ public abstract class CharByteInputReader {
 			super.setInputSource(channel);
 			byteBuffer.clear().flip(); // make it appear empty, so that it is clear we need to fill it
 			currentMark = INVALID_MARK;
+			endOfInput = false;
+		}
+
+		@Override
+		protected void setMark(int mark) {
+			currentMark = mark;
+		}
+
+		@Override
+		protected int getMark() {
+			return currentMark;
 		}
 
 	}
@@ -363,6 +361,16 @@ public abstract class CharByteInputReader {
 			decoder.reset();
 			currentMark = INVALID_MARK;
 			endOfInput = false;
+		}
+
+		@Override
+		protected void setMark(int mark) {
+			currentMark = mark;
+		}
+
+		@Override
+		protected int getMark() {
+			return currentMark;
 		}
 
 	}
@@ -542,6 +550,16 @@ public abstract class CharByteInputReader {
 			decoder.reset();
 			currentMark = INVALID_MARK;
 			endOfInput = false;
+		}
+
+		@Override
+		protected void setMark(int mark) {
+			currentMark = mark;
+		}
+
+		@Override
+		protected int getMark() {
+			return currentMark;
 		}
 
 	}
@@ -768,6 +786,110 @@ public abstract class CharByteInputReader {
 			return seq;
 		}
 
+		@Override
+		protected void setMark(int mark) {
+			currentByteMark = mark;
+		}
+
+		@Override
+		protected int getMark() {
+			return currentByteMark;
+		}
+
 	}
 
+	/**
+	 *
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Dec 10, 2010
+	 */
+	public static class DoubleMarkCharByteInputReader extends CharByteInputReader {
+		CharByteInputReader inputReader;
+		int outerMark;
+		int innerMark;
+		
+		/**
+		 * 
+		 */
+		public DoubleMarkCharByteInputReader(CharByteInputReader inputReader) {
+			this.inputReader = inputReader;
+			this.outerMark = INVALID_MARK;
+			this.innerMark = INVALID_MARK;
+		}
+
+		public void setOuterMark() throws OperationNotSupportedException {
+			inputReader.mark();
+			outerMark = inputReader.getMark();
+		}
+
+		public void releaseOuterMark() throws OperationNotSupportedException {
+			outerMark = INVALID_MARK;
+			inputReader.setMark(innerMark);
+		}
+
+		public Object getOuterSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+			inputReader.setMark(outerMark);
+			try {
+				return inputReader.getByteSequence(relativeEnd);
+			} catch (OperationNotSupportedException e) {
+				return inputReader.getCharSequence(relativeEnd);
+			}
+		}
+
+		@Override
+		public int readChar() throws IOException, OperationNotSupportedException {
+			inputReader.setMark(outerMark);
+			return inputReader.readChar();
+		}
+
+		@Override
+		public int readByte() throws IOException, OperationNotSupportedException {
+			inputReader.setMark(outerMark);
+			return inputReader.readByte();
+		}
+
+		@Override
+		public void revert() throws OperationNotSupportedException, InvalidMarkException {
+			inputReader.setMark(innerMark);
+			inputReader.revert();
+		}
+
+		@Override
+		public CharSequence getCharSequence(int relativeEnd) throws OperationNotSupportedException,
+				InvalidMarkException {
+			inputReader.setMark(innerMark);
+			return inputReader.getCharSequence(relativeEnd);
+		}
+
+		@Override
+		public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+			inputReader.setMark(innerMark);
+			return inputReader.getByteSequence(relativeEnd);
+		}
+
+		@Override
+		public void setInputSource(ReadableByteChannel channel) {
+			inputReader.setInputSource(channel);
+			innerMark = outerMark = INVALID_MARK;
+		}
+
+		@Override
+		public void mark() throws OperationNotSupportedException {
+			inputReader.mark();
+			innerMark = inputReader.getMark();
+			inputReader.setMark(outerMark);
+		}
+
+		@Override
+		protected void setMark(int mark) {
+			outerMark = mark;
+		}
+
+		@Override
+		protected int getMark() {
+			return outerMark;
+		}
+	}
 }
