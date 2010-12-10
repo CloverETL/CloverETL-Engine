@@ -92,4 +92,7 @@ public final class TextParserFactory {
 		return getParser(new TextParserConfiguration(metadata, charset));
 	}
 
+	public static final TextParser getParser(DataRecordMetadata metadata, String charset, boolean verbose) {
+		return getParser(new TextParserConfiguration(metadata, charset, verbose));
+	}
 }

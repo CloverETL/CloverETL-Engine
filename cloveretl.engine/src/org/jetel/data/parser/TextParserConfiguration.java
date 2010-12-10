@@ -62,6 +62,15 @@ public class TextParserConfiguration {
 		}
 	}
 
+	public TextParserConfiguration(DataRecordMetadata metadata, String charset, boolean verbose) {
+		super();
+		this.metadata = metadata;
+		if (charset != null) {
+			this.charset = charset;
+		}
+		this.verbose = verbose;
+	}
+
 	public TextParserConfiguration(String charset, boolean verbose, DataRecordMetadata metadata,
 			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Boolean skipLeadingBlanks,
 			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, 
