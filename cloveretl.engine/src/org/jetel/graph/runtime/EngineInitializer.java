@@ -29,7 +29,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.main.runGraph;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
@@ -154,6 +156,14 @@ public class EngineInitializer {
 	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		graph.setPassword(runtimeContext.getPassword());
+		
+        //remove disabled components and their edges
+        try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new ComponentNotReadyException(graph, "Failed to remove disabled/pass-through nodes from graph", e);
+		}
+		
 		if (!runtimeContext.isSkipCheckConfig()) {
 			logger.info("Checking graph configuration...");
 			ConfigurationStatus status = graph.checkConfig(null);
