@@ -53,12 +53,11 @@ import org.jetel.util.string.StringUtils;
  *
  * @created Nov 30, 2010
  */
-public class CharByteDataParser implements TextParser {
+public class CharByteDataParser extends AbstractTextParser {
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
 	
 
-	TextParserConfiguration cfg;
 	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
 
 	ReadableByteChannel inputSource;
@@ -71,8 +70,6 @@ public class CharByteDataParser implements TextParser {
 	private Charset charset;
 	private IParserExceptionHandler exceptionHandler;
 	private PolicyType policyType;
-	private boolean skipLeftBlanks;
-	private boolean skipRightBlanks;
 	private AhoCorasick byteSearcher;
 	private AhoCorasick charSearcher;
 	private int lastNonAutoFilledField;
@@ -80,7 +77,7 @@ public class CharByteDataParser implements TextParser {
 	private int recordCounter;
 
 	public CharByteDataParser(TextParserConfiguration cfg) {
-		this.cfg = cfg;
+		super(cfg);
 		String charsetName = cfg.getCharset(); 
 		if (charsetName == null) {
 			charsetName = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
@@ -88,8 +85,6 @@ public class CharByteDataParser implements TextParser {
 		charset = Charset.forName(charsetName);
 		policyType = cfg.getPolicyType();
 		releaseInputSource = false;
-		skipLeftBlanks = cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks().booleanValue();
-		skipRightBlanks = cfg.getSkipTrailingBlanks() != null && cfg.getSkipTrailingBlanks().booleanValue();
 		recordSkipper = null;
 		isInitialized = false;
 		exceptionHandler = cfg.getExceptionHandler();
@@ -203,12 +198,12 @@ public class CharByteDataParser implements TextParser {
 						}
 					}
 				} catch (UnexpectedEndOfRecordDataFormatException e) {
-					return parsingErrorFound(e.getMessage(), record, idx, null);					
+					return parsingErrorFound(e.getSimpleMessage(), record, idx, null);					
 				} catch (BadDataFormatException e) {
 					if (recordSkipper != null) {
 						recordSkipper.skipInput(idx);
 					}
-					return parsingErrorFound(e.getMessage(), record, idx, e.getOffendingValue());
+					return parsingErrorFound(e.getSimpleMessage(), record, idx, e.getOffendingValue());
 				}
 			}
 		} catch (OperationNotSupportedException e) {
@@ -447,15 +442,15 @@ public class CharByteDataParser implements TextParser {
 				if (!field.isDelimited()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
 					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(),
-							field.isTrim() || skipLeftBlanks, field.isTrim() || skipRightBlanks);
+							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
 				} else if (field.isByteBased()) { // delimited byte field consumer
 					fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(),
 							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false,
-							field.isTrim() || skipLeftBlanks, field.isTrim() || skipRightBlanks);
+							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
 				} else { // delimited char field consumer
 					fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(),
 							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false,
-									cfg.isQuotedStrings(), field.isTrim() || skipLeftBlanks, field.isTrim() || skipRightBlanks);
+									cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
 				}
 				idx++;
 			}

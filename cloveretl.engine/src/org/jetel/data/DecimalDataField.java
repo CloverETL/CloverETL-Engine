@@ -376,7 +376,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()));
+							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()), seq.toString());
 		}
 	}
 
