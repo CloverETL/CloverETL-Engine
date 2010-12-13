@@ -100,11 +100,8 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
-	private void prepareBuf(ByteBuffer newValue) {
-		if (this.value == null) {
-			int len = Math.max(metadata.getSize(), newValue.remaining());
-			this.value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
-		}
+	private void prepareBuf(ByteBuffer newValue) {		
+		this.value = new byte[newValue.remaining()];
 	}
 
 	public DataField duplicate(){

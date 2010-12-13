@@ -373,7 +373,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 		} catch (Exception ex) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"" 
 					+ (!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\"" : ""),
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()));
+					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()),
+					(new StringBuilder(seq)).toString());
 		}
 	}
 
