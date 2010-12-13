@@ -141,7 +141,7 @@ public class AhoCorasick {
 		if(failureFunctionDone) {
 			throw new IllegalArgumentException("AhoCorasick: failureFunction is already done.");
 		}
-		if(bb.hasRemaining()) {
+		if(bb != null && bb.hasRemaining()) {
 			NodeTrie iterator = rootTrie;
 			for(int i = 0; bb.hasRemaining(); i++) {
 				byte b = bb.get();
