@@ -430,7 +430,7 @@ public class CharByteDataParser implements TextParser {
 				if (field.isAutoFilled()) { // skip auto-filled field
 					continue;
 				}
-				if (!field.isByteBased() || !field.isDelimited()) {
+				if (!field.isByteBased() || field.isDelimited()) {
 					break;
 				}
 			}
