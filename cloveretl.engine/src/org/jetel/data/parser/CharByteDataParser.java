@@ -157,7 +157,7 @@ public class CharByteDataParser implements TextParser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
-//            	exceptionHandler.setRawRecord(getLastRawRecord());
+            	exceptionHandler.setRawRecord(getLastRawRecord());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -172,7 +172,7 @@ public class CharByteDataParser implements TextParser {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
-//            	exceptionHandler.setRawRecord(getLastRawRecord());
+            	exceptionHandler.setRawRecord(getLastRawRecord());
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -281,8 +281,14 @@ public class CharByteDataParser implements TextParser {
 		for (String recordDelim : recordDelimiters) {
 			searcher.addBytePattern(charset.encode(recordDelim), RECORD_DELIMITER_IDENTIFIER);
 		}
+		if (recordDelimiters.length == 0) {
+			searcher.addBytePattern(null, RECORD_DELIMITER_IDENTIFIER);			
+		}
 		for (String defaultFieldDelim : defaultFieldDelimiters) {
 			searcher.addBytePattern(charset.encode(defaultFieldDelim), DEFAULT_FIELD_DELIMITER_IDENTIFIER);
+		}
+		if (defaultFieldDelimiters.length == 0) {
+			searcher.addBytePattern(null, DEFAULT_FIELD_DELIMITER_IDENTIFIER);
 		}
 		searcher.compile();
 		return byteSearcher = searcher;
@@ -336,8 +342,14 @@ public class CharByteDataParser implements TextParser {
 		for (String recordDelim : recordDelimiters) {
 			searcher.addPattern(recordDelim, RECORD_DELIMITER_IDENTIFIER);
 		}
+		if (recordDelimiters.length == 0) {
+			searcher.addBytePattern(null, RECORD_DELIMITER_IDENTIFIER);			
+		}
 		for (String defaultFieldDelim : defaultFieldDelimiters) {
 			searcher.addPattern(defaultFieldDelim, DEFAULT_FIELD_DELIMITER_IDENTIFIER);
+		}
+		if (defaultFieldDelimiters.length == 0) {
+			searcher.addBytePattern(null, DEFAULT_FIELD_DELIMITER_IDENTIFIER);
 		}
 		searcher.compile();
 		return charSearcher = searcher;
@@ -349,8 +361,6 @@ public class CharByteDataParser implements TextParser {
 			return;
 		}
 		isInitialized = true;
-
-		exceptionHandler = cfg.getExceptionHandler();
 
 		DataRecordMetadata metadata = cfg.getMetadata();
 		if (metadata == null) {
