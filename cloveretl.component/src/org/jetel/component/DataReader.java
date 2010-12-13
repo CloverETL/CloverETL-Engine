@@ -129,6 +129,7 @@ public class DataReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
+	private static final String XML_PARSER_ATTRIBUTE = "parser";
 	private static final String XML_VERBOSE_ATTRIBUTE = "verbose";
 
 	private final static int OUTPUT_PORT = 0;
@@ -143,6 +144,7 @@ public class DataReader extends Node {
 	private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
+    private String parserClassName;
 
 	private TextParser parser;
     private MultiFileReader reader;
@@ -369,7 +371,7 @@ public class DataReader extends Node {
         if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
         }
-        parser = TextParserFactory.getParser(parserCfg);
+        parser = TextParserFactory.getParser(parserCfg, parserClassName);
 		if( logger.isDebugEnabled()){
 			logger.debug("Component " + getId() + " uses parser " + parser.getClass().getName() );
 		}
@@ -500,6 +502,9 @@ public class DataReader extends Node {
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 				aDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_PARSER_ATTRIBUTE)){
+				aDataReader.setParserClassName(xattribs.getString(XML_PARSER_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -665,6 +670,14 @@ public class DataReader extends Node {
 
 	public void setTrim(Boolean trim) {
 		this.trim = trim;
+	}
+
+	public String getParserClassName() {
+		return parserClassName;
+	}
+
+	public void setParserClassName(String parserClassName) {
+		this.parserClassName = parserClassName;
 	}
 
 }
