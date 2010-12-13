@@ -32,56 +32,71 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @created Dec 6, 2010
  */
-@SuppressWarnings({ "unchecked","rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public final class TextParserFactory {
 	private final static Log logger = LogFactory.getLog(TextParserFactory.class);
 
 	private static final Class[] availableParsers = new Class[] { SimpleDataParser.class, DataParser.class, CharByteDataParser.class };
 
-	private TextParserFactory(){
+	private TextParserFactory() {
 	}
-	
+
 	/**
 	 * Creates data parser according to the configuration and data type. The fastes parser implementation is used.
 	 * 
-	 * Each {@link TextParser} implementation must have method <code>getParserSpeed</code>. This method returns null value 
-	 * if parser can't parse specified configuration, otherwise return parser speed as integer <code>0(slowest)-100(fastest)</code>. 
-	 * @param cfg requested parser configuration
+	 * Each {@link TextParser} implementation must have method <code>getParserSpeed</code>. This method returns null
+	 * value if parser can't parse specified configuration, otherwise return parser speed as integer
+	 * <code>0(slowest)-100(fastest)</code>.
+	 * 
+	 * @param cfg
+	 *            requested parser configuration
 	 * @return fastest parse implemementation, always is not null
-	 * @throws JetelRuntimeException if no parser found
+	 * @throws JetelRuntimeException
+	 *             if no parser found
 	 */
-	public static final TextParser getParser(TextParserConfiguration cfg) {
-		Integer maxSpeed = null;
-		Class maxParserClass = null;
-		for (Class parserClass : availableParsers) {
+	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName) {
+		Class bestParserClass = null;
+		if (parserClassName != null) {
 			try {
-				final Method speedMethod = parserClass.getMethod("getParserSpeed", TextParserConfiguration.class);
-				final Integer parserSpeed = (Integer) speedMethod.invoke(null, cfg);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Speed " + parserSpeed + " for parser " + parserClass.getName() + " and configuration " + cfg);
-				}
-				if (parserSpeed != null) {
-					if (maxSpeed == null || maxSpeed < parserSpeed) {
-						maxSpeed = parserSpeed;
-						maxParserClass = parserClass;
+				bestParserClass = Class.forName(parserClassName);
+			} catch (ClassNotFoundException e) {
+				throw new JetelRuntimeException("Invalid parser '" + parserClassName + "'", e);
+			}
+		} else {
+			Integer bestSpeed = null;
+			for (Class parserClass : availableParsers) {
+				try {
+					final Method speedMethod = parserClass.getMethod("getParserSpeed", TextParserConfiguration.class);
+					final Integer parserSpeed = (Integer) speedMethod.invoke(null, cfg);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Speed " + parserSpeed + " for parser " + parserClass.getName() + " and configuration " + cfg);
 					}
+					if (parserSpeed != null) {
+						if (bestSpeed == null || bestSpeed < parserSpeed) {
+							bestSpeed = parserSpeed;
+							bestParserClass = parserClass;
+						}
+					}
+				} catch (Throwable e) {
+					logger.error("Invalid parser " + parserClass.getName(), e);
 				}
-			} catch (Throwable e) {
-				logger.error("Invalid parser " + parserClass.getName(), e);
+			}
+			if (bestSpeed == null) {
+				throw new JetelRuntimeException("No parser can parser " + cfg + " available parsers: " + Arrays.asList(availableParsers));
 			}
 		}
 
-		if (maxSpeed == null) {
-			throw new JetelRuntimeException("No parser can parser " + cfg + " available parsers: " + Arrays.asList(availableParsers));
-		}
-		
 		try {
-			final Constructor maxParserConstructor = maxParserClass.getConstructor(TextParserConfiguration.class);
+			final Constructor maxParserConstructor = bestParserClass.getConstructor(TextParserConfiguration.class);
 			final TextParser ret = (TextParser) maxParserConstructor.newInstance(cfg);
 			return ret;
 		} catch (Throwable e) {
-			throw new JetelRuntimeException("Invalid parser " + maxParserClass.getName(), e);
+			throw new JetelRuntimeException("Invalid parser " + bestParserClass.getName(), e);
 		}
+	}
+
+	public static final TextParser getParser(TextParserConfiguration cfg) {
+		return getParser(cfg, null);
 	}
 
 	public static final TextParser getParser(DataRecordMetadata metadata) {
@@ -95,4 +110,5 @@ public final class TextParserFactory {
 	public static final TextParser getParser(DataRecordMetadata metadata, String charset, boolean verbose) {
 		return getParser(new TextParserConfiguration(metadata, charset, verbose));
 	}
+
 }
