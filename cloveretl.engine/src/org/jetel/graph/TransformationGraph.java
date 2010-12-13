@@ -1083,15 +1083,6 @@ public final class TransformationGraph extends GraphElement {
 	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
 	        }
 	
-	        //remove disabled components and their edges
-	        try {
-				TransformationGraphAnalyzer.disableNodesInPhases(this);
-			} catch (GraphConfigurationException e) {
-				ConfigurationProblem problem = new ConfigurationProblem("Check config: Failed to remove disabled/pass-through nodes from graph", Severity.ERROR, this, Priority.HIGH);
-				problem.setCauseException(e);
-				status.add(problem);
-			}
-	
 	        //check phases configuration
 	        for(Phase phase : getPhases()) {
 	            phase.checkConfig(status);
