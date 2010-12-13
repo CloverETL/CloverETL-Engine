@@ -231,7 +231,7 @@ public class AhoCorasick {
 		 * @param transition transition char from parent
 		 */
 		public NodeTrie(NodeTrie parent, char transition) {
-			children = new NodeTrie[Character.MAX_VALUE];
+			children = new NodeTrie[Character.MAX_VALUE + 1];
 			patterns = new HashSet<MyInt>();
 			this.parent = parent;
 			this.transition = transition;

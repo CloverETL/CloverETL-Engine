@@ -41,13 +41,13 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public abstract class CharByteInputReader {
 	/** special return value for byte/char reading, indicates that data are available */
-	public static final int DATA_AVAILABLE = 0;
+	public static final int DATA_AVAILABLE = Integer.MIN_VALUE + 0;
 	/** special return value for byte/char reading, indicates end of input */
-	public static final int END_OF_INPUT = -1;
+	public static final int END_OF_INPUT = Integer.MIN_VALUE + 1;
 	/** special return value for byte/char reading, indicates decoding error during byte->char conversion */
-	public static final int DECODING_FAILED = -2;
+	public static final int DECODING_FAILED = Integer.MIN_VALUE + 2;
 	/** special return value for byte/char reading, indicates that input reader is blocked by large span of the mark */
-	public static final int BLOCKED_BY_MARK = -3;
+	public static final int BLOCKED_BY_MARK = Integer.MIN_VALUE + 3;
 
 	/** special value indicating that mark is not set */
 	public static final int INVALID_MARK = -1;
@@ -392,7 +392,7 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public SingleByteCharsetInputReader(Charset charset) {
-			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
 			if (charset == null) {
@@ -799,7 +799,7 @@ public abstract class CharByteInputReader {
 	}
 
 	/**
-	 *
+	 * 
 	 * @author jhadrava (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
@@ -841,13 +841,21 @@ public abstract class CharByteInputReader {
 		@Override
 		public int readChar() throws IOException, OperationNotSupportedException {
 			inputReader.setMark(outerMark);
-			return inputReader.readChar();
+			int retval = inputReader.readChar();
+			int markDiff = outerMark - inputReader.getMark();
+			outerMark -= markDiff;
+			innerMark -= markDiff;
+			return retval;
 		}
 
 		@Override
 		public int readByte() throws IOException, OperationNotSupportedException {
 			inputReader.setMark(outerMark);
-			return inputReader.readByte();
+			int retval = inputReader.readByte();
+			int markDiff = outerMark - inputReader.getMark();
+			outerMark -= markDiff;
+			innerMark -= markDiff;
+			return retval;
 		}
 
 		@Override
