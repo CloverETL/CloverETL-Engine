@@ -128,10 +128,12 @@ public class DataParser extends AbstractTextParser {
 	 * Returns parser speed for specified configuration. See {@link TextParserFactory#getParser(TextParserConfiguration)}.
 	 */
 	public static Integer getParserSpeed(TextParserConfiguration cfg){
-		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
-			if (field.isByteBased() && !field.isAutoFilled()) {
-				logger.debug("Parser cannot be used for the specified data as they contain byte-based field '" + field);
-				return null;
+		if (!cfg.isSingleByteCharset()) {
+			for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
+				if (field.isByteBased() && !field.isAutoFilled()) {
+					logger.debug("Parser cannot be used for the specified data as they contain byte-based field '" + field);
+					return null;
+				}
 			}
 		}
 		return 10;
