@@ -24,7 +24,7 @@ echo ${SCENARIOS} | grep '\-koule' > /dev/null \
 export ANT_OPTS="-Xmx500m"
 HUDSON_URL=http://klara.javlin.eu:8081/hudson
 
-CLOVER_VERSION_X_X=`echo $JOB_NAME | sed 's/^cloveretl.engine-tests-\(night\|night-functional\|koule\).*-\([^-/]\+\)$/\2/'`
+CLOVER_VERSION_X_X=`echo $JOB_NAME | sed 's/^cloveretl.engine-tests-\(night\|night-functional\|koule\|IBM\).*-\([^-/]\+\)$/\2/'`
 CLOVER_VERSION_X_X_DASH=`echo $CLOVER_VERSION_X_X | sed 's/\./-/g'`
 ENGINE_JOB_NAME=cloveretl.engine-${CLOVER_VERSION_X_X}
 
