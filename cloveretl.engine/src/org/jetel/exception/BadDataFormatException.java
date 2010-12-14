@@ -91,6 +91,10 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		return rawRecord;
 	}
 
+	public String getSimpleMessage() {
+		return super.getMessage();
+	}
+	
     @Override
     public String getMessage() {
         StringBuffer ret = new StringBuffer();
