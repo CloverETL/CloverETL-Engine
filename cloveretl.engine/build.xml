@@ -376,8 +376,6 @@ defined.version.suffix=release
 
 		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
 
-		<!-- TODO - cloveretl.component not compilable if cloveretl.engine is obfuscated - see issue 4726 -->
-		<fail message="Obfuscated engine not available - for now"/>
 		<proguard 
 			shrink="false" 
 			verbose="true"
