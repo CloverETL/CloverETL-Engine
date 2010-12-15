@@ -226,8 +226,15 @@
 		
 		<pathconvert property="plugin-libs.classpath" refid="plugin-libs"/>
 		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
-		
-		<touch file="${engine.mapping.all}"> <!-- may not exist if main engine plugin is not obfuscated -->
+
+		<if><available file="${engine.mapping.all}"/>
+			<then>
+				<property name="apply.mapping" value="${engine.mapping.all}"/>
+			</then>
+			<else>
+				<property name="apply.mapping" value="${dir.build-scripts}/empty-mapping.txt"/>
+			</else>
+		</if>
 		
 		<proguard 
 			shrink="false" 
@@ -235,7 +242,7 @@
 			optimize="false" 
 			skipnonpubliclibraryclasses="false"
 			skipnonpubliclibraryclassmembers="false"
-			applymapping="${engine.mapping.all}"
+			applymapping="${apply.mapping}"
 			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
 			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
 			dump="${dir.obfuscate}/proGuard-dump.txt"
