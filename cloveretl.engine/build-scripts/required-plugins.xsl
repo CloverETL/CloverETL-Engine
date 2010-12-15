@@ -6,23 +6,30 @@
  	
  	<xsl:param name="separator"/>
  	<xsl:param name="dist"/>
+ 	<xsl:param name="home"/>
 	<xsl:output method="text"/> 	
  	
 	<xsl:template match="*">
 		<xsl:text>required.plugins=</xsl:text>
         <xsl:apply-templates select="/plugin/requires" mode="list"/>
-        
 		<xsl:text disable-output-escaping="yes"><![CDATA[
 ]]></xsl:text>
 		
 		<xsl:text>required.plugins.dist=</xsl:text>
         <xsl:apply-templates select="/plugin/requires" mode="cp"/>
+		<xsl:text disable-output-escaping="yes"><![CDATA[
+]]></xsl:text>
+
+		<xsl:text>required.plugins.classes=</xsl:text>
+        <xsl:apply-templates select="/plugin/requires" mode="classes"/>
+		<xsl:text disable-output-escaping="yes"><![CDATA[
+]]></xsl:text>
 	</xsl:template>
+
 
 	<xsl:template match="/plugin/requires" mode="list">
         <xsl:apply-templates select="*" mode="list"/>
 	</xsl:template>
-
 	<xsl:template match="import" mode="list">
 		<xsl:if test="position() != 1">
 			<xsl:value-of select="$separator"/>
@@ -30,10 +37,10 @@
 		<xsl:value-of select="@plugin-id"/>
 	</xsl:template>	
 
+
 	<xsl:template match="/plugin/requires" mode="cp">
         <xsl:apply-templates select="*" mode="cp"/>
 	</xsl:template>
-
 	<xsl:template match="import" mode="cp">
 		<xsl:text>;</xsl:text>
 		<!-- escape \ for build on windows -->
@@ -45,6 +52,18 @@
 		<xsl:text>.jar</xsl:text>
 	</xsl:template>	
 	
+
+	<xsl:template match="/plugin/requires" mode="classes">
+        <xsl:apply-templates select="*" mode="classes"/>
+	</xsl:template>
+	<xsl:template match="import" mode="classes">
+		<xsl:text>;</xsl:text>
+		<!-- escape \ for build on windows -->
+		<xsl:call-template name="escapeBackslash"><xsl:with-param name="string"><xsl:value-of select="$home" /></xsl:with-param></xsl:call-template>
+		<xsl:text>/cloveretl.</xsl:text>
+		<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+		<xsl:text>/build/classes</xsl:text>
+	</xsl:template>	
 		
 
 	<xsl:template name="escapeBackslash">

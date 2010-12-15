@@ -412,9 +412,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.plugin.Extension"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.Result"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.GraphElement"><field name="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.Node"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.Node"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.EdgeDebuger"><field access="public"/><method access="public"/></keep>
-			
 			
 			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.GraphRuntimeContext"><field access="protected public"/><method access="protected public"/></keep>
@@ -446,6 +445,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
 						
+			<keep name="org.jetel.main.runGraph"><field access="public"/><method access="public"/></keep>
+			
 			<!-- keep classes usualy used in trasformation -->
 			<keep name="java.util.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.*"><field access="public"/><method access="public"/></keep>
@@ -516,8 +517,11 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.crypto.Enigma"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Base64"><field access="public"/><method access="public"/></keep>
 			
-			
 		</proguard>
+		
+		<concat destfile="${dir.obfuscate}/proGuard-mapping-all.txt">
+			<filelist files="${dir.obfuscate}/proGuard-mapping.txt"/>
+		</concat>
 	</target>
 
 
