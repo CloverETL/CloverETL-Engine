@@ -21,6 +21,8 @@
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
 	<property name="dir.cobertura" value="${dir.engine.tools}/cobertura" />
 	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
+	<property name="dir.engine.classes" value="${dir.engine}/build-tmp/classes" />
+	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
 	
 	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
@@ -154,10 +156,11 @@
 			>
 			<param name="separator" expression=","/>
 			<param name="dist" expression="${dir.dist.other.plugins}"/>
+			<param name="home" expression="${basedir}/.."/>
 		</xslt>
 		<property file="${required.plugins.file}"/>
 		
-		<property name="cp.compile" value="${dir.dist.other.plugins}${engine.dist}${required.plugins.dist}" />
+		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		
 		<echo>required.plugins=${required.plugins}</echo>
 	</target>
@@ -230,6 +233,7 @@
 			optimize="false" 
 			skipnonpubliclibraryclasses="false"
 			skipnonpubliclibraryclassmembers="false"
+			applymapping="${engine.mapping.all}"
 			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
 			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
 			dump="${dir.obfuscate}/proGuard-dump.txt"
@@ -343,6 +347,9 @@
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
 		</proguard>
+		<concat destfile="${engine.mapping.all}">
+			<filelist files="${dir.obfuscate}/proGuard-mapping.txt"/>
+		</concat>
 	</target>
 	
 	
