@@ -25,6 +25,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 
 /**
+ * Tests the DataRecord implementation.
+ *
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  *
  * @version 15th December 2010
@@ -32,41 +34,35 @@ import org.jetel.test.CloverTestCase;
  */
 public class DataRecordTest extends CloverTestCase {
 
-	private static final String DELIMITER = ";";
+	private static final int NUMBER_OF_FIELDS = 16;
+	private static final int NULL_FIELDS = 0xDDBA;
 
 	private DataRecord record;
 
 	protected void setUp() {
 		initEngine();
+
+		// make sure that the optimized serialization of null values is turned on
 		Defaults.Record.USE_FIELDS_NULL_INDICATORS = true;
 
 		DataRecordMetadata metadata = new DataRecordMetadata("record");
-		metadata.addField(createDataField(DataFieldMetadata.STRING_FIELD, "string", false));
-		metadata.addField(createDataField(DataFieldMetadata.STRING_FIELD, "nullString", true));
-		metadata.addField(createDataField(DataFieldMetadata.INTEGER_FIELD, "integer", false));
-		metadata.addField(createDataField(DataFieldMetadata.INTEGER_FIELD, "nullInteger", true));
-		metadata.addField(createDataField(DataFieldMetadata.BOOLEAN_FIELD, "boolean", false));
-		metadata.addField(createDataField(DataFieldMetadata.BOOLEAN_FIELD, "nullBoolean", true));
+
+		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {
+			metadata.addField(new DataFieldMetadata("f" + i, DataFieldMetadata.INTEGER_FIELD, ";"));
+		}
 
 		record = new DataRecord(metadata);
 		record.init();
 
-		record.getField(0).setValue("String value");
-		record.getField(2).setValue(73);
-		record.getField(4).setValue(true);
-	}
-
-	private DataFieldMetadata createDataField(char dataType, String name, boolean nullable) {
-		DataFieldMetadata field = new DataFieldMetadata(name, dataType, DELIMITER);
-		field.setNullable(nullable);
-
-		return field;
+		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {
+			record.getField(i).setValue((((1 << i) & NULL_FIELDS) != 0) ? null : i);
+		}
 	}
 
 	/**
 	 * Test method for {@link org.jetel.data.DataRecord#serialize(java.nio.ByteBuffer)}.
 	 */
-	public void testSerializeByteBuffer() {
+	public void testSerialize() {
 		DataRecord deserializedRecord = new DataRecord(record.getMetadata());
 		deserializedRecord.init();
 
@@ -75,7 +71,11 @@ public class DataRecordTest extends CloverTestCase {
 		buffer.flip();
 		deserializedRecord.deserialize(buffer);
 
-		assertEquals(record, deserializedRecord);
+		RecordKey comparator = new RecordKey(record.getMetadata().getFieldNamesArray(), record.getMetadata());
+		comparator.setEqualNULLs(true);
+		comparator.init();
+
+		assertEquals(0, comparator.compare(record, deserializedRecord));
 	}
 
 }
