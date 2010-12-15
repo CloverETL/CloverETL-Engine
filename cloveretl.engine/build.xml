@@ -813,12 +813,15 @@ defined.version.suffix=release
 <target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
 </target>
 
-<target name="reports-hudson" depends="check-sources,runtests-with-testdb,javadoc">
+<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 </target>
 
 <target name="reports-hudson-detail" depends="runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 </target>
 
+<target name="reports-hudson-optimalized" depends="dist,runtests-with-testdb">
+</target>
+	
 <target name="night-hudson" depends="runtests-scenario-night">
 </target>
 
@@ -906,7 +909,7 @@ defined.version.suffix=release
 		<classpath>
 			<pathelement path="${dir.classestest}"/>
 			<pathelement path="${dir.test.additional.classpath}"/>
-			<pathelement path="${dir.bin}"/>
+			<pathelement path="${dir.package.classes}"/>
 			<fileset dir="${dir.lib}">
 				<include name="*.jar"/>
 			</fileset>
@@ -965,7 +968,7 @@ defined.version.suffix=release
 	</ant>
 </target>
 
-<target name="runtests-scenario-after-commit" depends="build" if="cte.environment.config">
+<target name="runtests-scenario-after-commit" if="cte.environment.config">
 	<echo message="Executing Clover Test Environment environment - after commit"/>
 	<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 		<property name="environment.config" value="${cte.environment.config}"/>
@@ -1015,7 +1018,7 @@ defined.version.suffix=release
 	</junitreport>
 </target>
 
-<target name="runtests-with-testdb">
+<target name="runtests-with-testdb" depends="build">
 	<parallel>
 		<daemons>
 			<antcall target="start-testdb" />

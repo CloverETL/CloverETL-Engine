@@ -11,7 +11,7 @@ set
 
 cd cloveretl.engine
 
-/opt/apache-ant/bin/ant clean build reports-hudson dist \
+/opt/apache-ant/bin/ant clean reports-hudson \
 	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial\
 	-Dcte.environment.config=engine-${CLOVER_VERSION_X_X}_java-1.6-Sun \
 	-Dcte.logpath=/data/cte-logs \

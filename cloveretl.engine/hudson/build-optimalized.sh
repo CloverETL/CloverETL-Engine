@@ -11,9 +11,9 @@ set
 
 cd cloveretl.engine
 
-/opt/apache-ant/bin/ant clean dist reports-hudson  \
+/opt/apache-ant/bin/ant clean reports-hudson-optimalized \
 	-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial\
-	-Dcte.environment.config=engine-${CLOVER_VERSION_X_X}_java-1.6-Sun \
+	-Dcte.environment.config=engine-${CLOVER_VERSION_X_X}_java-1.6-Sun_optimalized \
 	-Dcte.logpath=/data/cte-logs \
 	-Dcte.hudson.link=job/$JOB_NAME/$BUILD_NUMBER \
 	-Dtest.exclude=org/jetel/graph/ResetTest.java \
