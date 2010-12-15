@@ -227,6 +227,8 @@
 		<pathconvert property="plugin-libs.classpath" refid="plugin-libs"/>
 		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
 		
+		<touch file="${engine.mapping.all}"> <!-- may not exist if main engine plugin is not obfuscated -->
+		
 		<proguard 
 			shrink="false" 
 			verbose="true"
