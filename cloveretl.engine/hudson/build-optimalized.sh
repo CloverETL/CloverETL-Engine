@@ -19,6 +19,7 @@ cd cloveretl.engine
 	-Dtest.exclude=org/jetel/graph/ResetTest.java \
 	-Ddir.examples=../cloveretl.examples \
 	-Dobfuscate.plugin.pattern=cloveretl.*
+	-Druntests-dontrun=true
 	
 if  [ "$(hostname)" != "klara" ] ; then
 	rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs
