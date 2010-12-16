@@ -356,7 +356,7 @@
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
 		</proguard>
-		<concat destfile="${engine.mapping.all}">
+		<concat destfile="${engine.mapping.all}" append="true">
 			<filelist files="${dir.obfuscate}/proGuard-mapping.txt"/>
 		</concat>
 	</target>
