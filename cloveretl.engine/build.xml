@@ -420,13 +420,11 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.EngineInitializer"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.CloverClassPath"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean"></keep>
-			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"></keep>
-			<keep name="org.jetel.graph.runtime.jmx.GraphTrackingDetail"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.PhaseTrackingDetail"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.NodeTrackingDetail"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.PortTrackingDetail"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.InputPortTrackingDetail"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.graph.runtime.jmx.OutputPortTrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
+
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
@@ -683,522 +681,523 @@ defined.version.suffix=release
 			<bottom>
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>
 			</bottom>
-		<link href="http://java.sun.com/j2se/${java.src.version}.0/docs/api/"/>
-	</javadoc>
-</target>
-
-<target name="collect-javadoc-src" depends="init">
-	<mkdir dir="${dir.src.javadoc}"/>
-	<copy todir="${dir.src.javadoc}">
-		<fileset dir="${dir.src}">
-		</fileset>
-	</copy>
-
-	<mkdir dir="${dir.lib.javadoc}"/>
-	<copy todir="${dir.lib.javadoc}">
-		<fileset refid="engine-libs"/>
-		<fileset refid="engine-tools"/>
-		<flattenmapper/>
-		<filterset endtoken=".jar"/>
-	</copy>
-
-	<foreach list="${plugin.list}" inheritall="true" target="plugin-collect-javadoc-src" param="plugin.dir"/>
-</target>
-<target name="plugin-collect-javadoc-src">
-	<echo message="Collect plugin javadoc sources - ${plugin.dir}"/>
-	<ant target="collect-javadoc-src" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-		<property name="dir.src.javadoc" value="${dir.src.javadoc}"/>
-		<property name="dir.lib.javadoc" value="${dir.lib.javadoc}"/>
-		<property name="java.src.exclude" value="${java.src.exclude}"/>
-		<property name="javadoc.limited" value="${javadoc.limited}"/>
-	</ant>
-</target>
-
-
-<target name="generateDocContainer" description="Generates container XML, which contains docs from all components from all plugins">
-	<delete file="${dir.component.doc.default}/components/ComponentDoc.xml"/>
-	<xslt in="${dir.component.doc.default}/components/xsl/null.xml" out="${dir.component.doc.default}/components/ComponentDoc.xml"
-			style="${dir.component.doc.default}/components/xsl/componentsContainer.xsl"/>
-</target>
-
-<target name="transformXMLDocs" depends="generateDocContainer" description="Convert the documentation of component from xml to html. 
-		Display a warning if some of the sources is more recent than the XML description">
-
-	<xslt in="${dir.component.doc.default}/components/xsl/TypesDoc.xml" out="${dir.component.doc.default}/components/html/TypesDoc.html"
-			style="${dir.component.doc.default}/components/xsl/types.xsl"
-		/>
-
-	<xslt in="${dir.component.doc.default}/components/ComponentDoc.xml" out="${dir.component.doc.default}/components/html/ComponentsDoc.html"
-			style="${dir.component.doc.default}/components/xsl/description.xsl"
-		/>
-
-</target>
-
-<target name="init-user-property" unless="user">
-	<if>
-		<isset property="env.USERNAME"/>
-		<then>
-			<property name="user" value="${env.USERNAME}"/>
-		</then>
-		<else>
-			<if>
-				<isset property="env.USER"/>
-				<then>
-					<property name="user" value="${env.USER}"/>
-				</then>
-				<else>
-					<fail message="no user variable is set"/>
-				</else>
-			</if>
-		</else>
-	</if>
-</target>
-
-<target name="init" depends="init-user-property">
-	<if>
-		<isset property="defined.version.suffix"/>
-		<then>
-			<if>
-				<equals arg1="${defined.version.suffix}" arg2="release"/>
-				<then>
-					<property name="version.suffix" value=""/>
-					<property name="version.full" value="${version}"/>
-				</then>
-				<else>
-					<property name="version.suffix" value="${defined.version.suffix}"/>
-					<property name="version.full" value="${version}.${version.suffix}"/>
-				</else>
-			</if>
-		</then>
-		<else>
-			<property name="version.suffix" value="devel${build.time.compact}${user}"/>
-			<property name="version.full" value="${version}.${version.suffix}"/>
-		</else>
-	</if>
-
-	<propertyregex property="engine.obfuscate" input="cloveretl.engine" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/>
-	<if>
-		<equals arg1="${engine.obfuscate}" arg2="true"/>
-		<then>
-			<property name="engine.obfuscate.run" value="true"/>
-			<property name="dir.package.classes" value="${dir.obfuscate.classes}"/>
-			<property name="dir.package.manifest" value="${dir.obfuscate.manifest}"/>
-		</then>
-		<else>
-			<property name="dir.package.classes" value="${dir.bin}"/>
-			<property name="dir.package.manifest" value="${dir.manifest}"/>
-		</else>
-	</if>
-
-	<echo>
-			version.full=${version.full}
-			
-			version.major=${version.major}
-			version.minor=${version.minor}
-			version.revision=${version.revision}
-			version.suffix=${version.suffix}
-			build.number=${build.number}
-			build.time=${build.time}
-			build.year=${build.year}
-			engine.obfuscate.run=${engine.obfuscate.run}
-		</echo>
-
-	<echo message="Using directory for classes: ${dir.bin}"/>
-	<echo message="Using directory for javadoc: ${dir.doc}"/>
-	<echo message="Using directory for package: ${dir.package}"/>
-
-	<mkdir dir="${dir.build}"/>
-</target>
-
-<target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
-</target>
-
-<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
-</target>
-
-<target name="reports-hudson-detail" depends="runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
-</target>
-
-<target name="reports-hudson-optimalized" depends="dist,runtests-with-testdb">
-</target>
+			<link href="http://java.sun.com/j2se/${java.src.version}.0/docs/api/"/>
+		</javadoc>
+	</target>
 	
-<target name="night-hudson" depends="runtests-scenario-night">
-</target>
-
-<target name="compile-tests" depends="compile">
-	<mkdir dir="${dir.classestest}"/>
-	<javac debug="true" destdir="${dir.classestest}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
-		<classpath>
-			<pathelement path="${tools}"/>
-			<fileset refid="engine-libs"/>
-			<pathelement path="${dir.bin}"/>
-			<pathelement path="${dir.tools}/junit-4.4.jar"/>
-		</classpath>
-		<src path="${dir.src.test}"/>
-	</javac>
-	<copy todir="${dir.classestest}">
-		<fileset dir="${dir.src.test}">
-			<exclude name="**/*.java"/>
-		</fileset>
-	</copy>
-</target>
-
-<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">
-</target>
-
-<target name="coverage-instrument-engine" depends="compile">
-	<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
-		<fileset dir="${dir.bin}">
-			<include name="**/*.class" />
-		</fileset>
-	</cobertura-instrument>
-	<copy todir="${dir.coverage.plugins}/plugins/org.jetel.engine">
-		<fileset dir="${dir.package}/plugins/org.jetel.engine"/>
-	</copy>
-</target>
-
-<target name="coverage-instrument-plugins" depends="init">
-	<mkdir dir="${dir.coverage.plugins}"/>
-	<foreach list="${plugin.list}" inheritall="true" target="plugin-coverage-instrument" param="plugin.dir"/>
-</target>
-
-<target name="plugin-coverage-instrument">
-	<echo message="Coverage instrument plugin - ${plugin.dir}"/>
-	<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-		<property name="dir.dist" value="${dir.package}"/>
-		<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-		<property name="cobertura.ser" value="${cobertura.ser}"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="java.src.header.file" value="${java.src.header.file}"/>
-		<property name="java.src.target" value="${java.src.target}"/>
-		<property name="java.src.exclude" value="${java.src.exclude}"/>
-		<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-	</ant>
-</target>
-
-<target name="runtests" depends="" description="Runs engine and plugins JUnit tests">
-	<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
-	<property name="dir.test.additional.classpath" value=""/>
-	<antcall target="runtests-engine" inheritall="true" inheritrefs="true"/>
-	<antcall target="runtests-plugins" inheritall="true" inheritrefs="true"/>
-</target>
-
-<target name="runtests-coverage" depends="coverage-instrument" description="Runs engine and plugins JUnit tests with test coverage report">
-	<property name="test.cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
-	<property name="dir.test.additional.classpath" value="${dir.coverage.bin}"/>
-	<antcall target="runtests-engine" inheritall="true" inheritrefs="true" />
-	<antcall target="runtests-plugins-coverage" inheritall="true" inheritrefs="true"/>
-</target>
-
-<target name="runtests-engine" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests">
-	<mkdir dir="${dir.testsresult}"/>
-	<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
-	<junit 
-				haltonerror="false" 
-				haltonfailure="false" 
-				printsummary="true"
-				fork="true"
-				forkmode="once" 
-				>
-		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
-		<sysproperty key="file.encoding" value="UTF-8" />
-		<jvmarg value="-Xmx2048m"/>
-		<jvmarg value="-XX:MaxPermSize=256m"/>
-		<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
-		<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-		<classpath>
-			<pathelement path="${dir.classestest}"/>
-			<pathelement path="${dir.test.additional.classpath}"/>
-			<pathelement path="${dir.package.classes}"/>
-			<fileset dir="${dir.lib}">
-				<include name="*.jar"/>
+	<target name="collect-javadoc-src" depends="init">
+		<mkdir dir="${dir.src.javadoc}"/>
+		<copy todir="${dir.src.javadoc}">
+			<fileset dir="${dir.src}">
 			</fileset>
-			<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
-			<pathelement path="${dir.tools}/junit-4.4.jar"/>
-			<path refid="cp.cobertura"/>
-		</classpath>
-		<batchtest todir="${dir.testsresult}">
-			<fileset dir="${dir.src.test}">
-				<include name="${test.include}"/>
-				<exclude name="${test.exclude}"/>
-			</fileset>
-		</batchtest>
-		<formatter type="plain"/>
-		<formatter type="xml"/>
-	</junit>
-</target>
-
-<target name="runtests-plugins" depends="compile-tests,build-plugins" unless="runtests-plugins-dontrun">
-	<mkdir dir="${dir.coverage.plugins}"/>
-	<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
-</target>
-
-<target name="runtests-plugin">
-	<echo message="Runtests plugin - ${plugin.dir}"/>
-	<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-		<property name="dir.dist" value="${dir.package}"/>
-		<property name="dir.engine.classestest" value="${dir.classestest}"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-		<property name="java.src.header.file" value="${java.src.header.file}"/>
-		<property name="java.src.target" value="${java.src.target}"/>
-		<property name="java.src.exclude" value="${java.src.exclude}"/>
-		<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-	</ant>
-</target>
-
-<target name="runtests-plugins-coverage" depends="compile-tests">
-	<mkdir dir="${dir.coverage.plugins}"/>
-	<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin-coverage" param="plugin.dir"/>
-</target>
-
-<target name="runtests-plugin-coverage">
-	<echo message="Runtests plugin - ${plugin.dir}"/>
-	<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-		<property name="dir.dist" value="${dir.package}"/>
-		<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-		<property name="dir.engine.classestest" value="${dir.classestest}"/>
-		<property name="cobertura.ser" value="${cobertura.ser}"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-		<property name="java.src.header.file" value="${java.src.header.file}"/>
-		<property name="java.src.target" value="${java.src.target}"/>
-		<property name="java.src.exclude" value="${java.src.exclude}"/>
-		<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-	</ant>
-</target>
-
-<target name="runtests-scenario-after-commit" if="cte.environment.config">
-	<echo message="Executing Clover Test Environment environment - after commit"/>
-	<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-		<property name="environment.config" value="${cte.environment.config}"/>
-		<property name="scenarios" value="after-commit.ts" />
-		<property name="dir.engine.classes" value="${dir.bin}"/>
-		<property name="dir.plugins" value="${dir.dist}/plugins"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="hudson.link" value="${cte.hudson.link}"/>
-		<property name="logpath" value="${cte.logpath}"/>
-	</ant>
-</target>
-
-<target name="runtests-scenario-night" depends="build">
-	<echo message="Executing Clover Test Environment environment - night"/>
-	<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-		<property name="environment.config" value="${cte.environment.config}"/>
-		<property name="scenarios" value="night.ts" />
-		<property name="dir.engine.classes" value="${dir.bin}"/>
-		<property name="dir.plugins" value="${dir.dist}/plugins"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="hudson.link" value="${cte.hudson.link}"/>
-		<property name="logpath" value="${cte.logpath}"/>
-	</ant>
-</target>
-
-<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
-	<echo message="Executing Clover Test Environment environment - coverage"/>
-	<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-		<property name="environment.config" value="${cte.environment.config}"/>
-		<property name="scenarios" value="after-commit.ts" />
-		<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.bin}"/>
-		<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
-		<property name="cobertura.ser" value="${cobertura.ser}"/>
-		<property name="version.full" value="${version.full}"/>
-		<property name="hudson.link" value="${cte.hudson.link}"/>
-		<property name="logpath" value="${cte.logpath}"/>
-	</ant>
-</target>
-
-<target name="reporttests" depends="runtests">
-	<mkdir dir="${dir.testsreport}"/>
-	<junitreport>
-		<fileset dir="${dir.testsresult}">
-			<include name="*.xml"/>
-		</fileset>
-		<report format="noframes" todir="${dir.testsreport}"/>
-	</junitreport>
-</target>
-
-<target name="runtests-with-testdb" depends="build">
-	<parallel>
-		<daemons>
-			<antcall target="start-testdb" />
-		</daemons>
-		<sequential>
-			<sleep seconds="5" />
-			<antcall target="runtests-scenario-after-commit" />
-			<antcall target="runtests" />
-		</sequential>
-	</parallel>
-</target>
-
-<target name="runtests-with-testdb-coverage">
-	<parallel>
-		<daemons>
-			<antcall target="start-testdb" />
-		</daemons>
-		<sequential>
-			<sleep seconds="5" />
-			<antcall target="runtests-scenario-coverage" />
-			<antcall target="runtests-coverage" />
-		</sequential>
-	</parallel>
-</target>
-
-<target name="start-testdb">
-	<property name="derby.home" value="${dir.examples}/ExtExamples/lib/derby"/>
-	<echo message="Starting test db Derby with DERBY_HOME=${derby.home}" />
-	<exec executable="${dir.examples}/ExtExamples/lib/derby/bin/startNetworkServer">
-		<env key="DERBY_HOME" value="${derby.home}"/>
-	</exec>
-</target>
-
-<target name="findbugs-init">
-	<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
-		<classpath>
-			<pathelement location="${dir.findbugs}/lib/findbugs-ant.jar"/>
-		</classpath>
-	</taskdef>
-</target>
-
-<target name="findbugs-html" depends="init,findbugs-init,compile,compile-tests">
-	<mkdir dir="${dir.findbugsreport}"/>
-	<findbugs 
-				home="${dir.findbugs}" 
-				output="html"
-				outputfile="${dir.findbugsreport}/bugreport.html" 
-				stylesheet="fancy-hist.xsl"
-				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
-				effort="max"
-				reportlevel="low"
-				jvmargs="-Xmx500m">
-		<class location="${dir.bin}"/>
-		<class location="${dir.classestest}"/>
-		<sourcePath path="${dir.src}" />
-		<sourcePath path="${dir.src.test}" />
-		<auxclasspath path="${tools}"/>
-		<auxClasspath>
+		</copy>
+	
+		<mkdir dir="${dir.lib.javadoc}"/>
+		<copy todir="${dir.lib.javadoc}">
 			<fileset refid="engine-libs"/>
 			<fileset refid="engine-tools"/>
-		</auxClasspath>
-	</findbugs>
-</target>
-
-<target name="findbugs-xml" depends="init,findbugs-init,compile">
-	<mkdir dir="${dir.findbugsreport}"/>
-	<findbugs 
-				home="${dir.findbugs}" 
-				output="xml"
-				outputfile="${dir.findbugsreport}/bugreport.xml" 
-				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
-				effort="max"
-				reportlevel="low"
-				jvmargs="-Xmx500m">
-		<class location="${dir.bin}"/>
-		<class location="${dir.classestest}"/>
-		<sourcePath path="${dir.src}" />
-		<sourcePath path="${dir.src.test}" />
-		<auxclasspath path="${tools}"/>
-		<auxClasspath>
-			<fileset refid="engine-libs"/>
-			<fileset refid="engine-tools"/>
-		</auxClasspath>
-	</findbugs>
-</target>
-
-<target name="findbugs-xml-plugins" depends="build-engine,build-plugins,compile-tests">
-	<foreach list="${plugin.list}" inheritall="true" target="findbugs-xml-plugin" param="plugin.dir"/>
-</target>
-<target name="findbugs-xml-plugin">
-	<echo message="Findbugs plugin - ${plugin.dir}"/>
-	<ant dir="../${plugin.dir}" target="findbugs-xml" inheritAll="false" inheritrefs="false">
-		<property name="dir.findbugs" value="${dir.findbugs}"/>
-		<property name="dir.dist" value="${dir.package}"/>
-		<property name="dir.engine.classestest" value="${dir.classestest}"/>
-	</ant>
-</target>
-
-<target name="coverage-html" depends="runtests,collect-javadoc-src">
-	<cobertura-report 
-			datafile="${cobertura.ser}" 
-			format="html" 
-			destdir="${dir.coverage.html}" >
-		<fileset dir="${dir.src.javadoc}">
-			<include name="**/*.java"/>
-		</fileset>
-	</cobertura-report>
-</target>
-
-<target name="coverage-xml" depends="runtests,collect-javadoc-src">
-	<cobertura-report 
-			datafile="${cobertura.ser}"
-			format="xml"
-			destdir="${dir.coverage.xml}">
-		<fileset dir="${dir.src.javadoc}">
-			<include name="**/*.java"/>
-		</fileset>
-	</cobertura-report>
-</target>
-
-<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
-
-<target name="check-sources-engine">
-	<fileheading heading="${java.src.header.file.opensource}" dryrun="true" propertyifrewritten="java.src.header.invalid">
-		<fileset dir="${dir.src}">
-			<include name="**/*.java"/>
-			<exclude name="org/jetel/interpreter/TransformLangParser*"/>
-			<exclude name="org/jetel/interpreter/JJTTransformLangParserState.java"/>
-			<exclude name="org/jetel/ctl/TransformLangParser*"/>
-			<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
-			<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
-		</fileset>
-	</fileheading>
-	<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
-</target>
-
-<target name="check-sources-plugins">
-	<foreach list="${plugin.list}" inheritall="true" target="check-sources-plugin" param="plugin.dir"/>
-</target>
-<target name="check-sources-plugin">
-	<echo message="Check file heading plugin - ${plugin.dir}"/>
-	<ant dir="../${plugin.dir}" target="check-sources" inheritAll="false" inheritrefs="false">
-	</ant>
-</target>
-
-<macrodef name="customproperty">
-	<attribute name="name"/>
-	<attribute name="value"/>
-	<attribute name="prefix"/>
-	<attribute name="suffix"/>
-	<sequential>
+			<flattenmapper/>
+			<filterset endtoken=".jar"/>
+		</copy>
+	
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-collect-javadoc-src" param="plugin.dir"/>
+	</target>
+	<target name="plugin-collect-javadoc-src">
+		<echo message="Collect plugin javadoc sources - ${plugin.dir}"/>
+		<ant target="collect-javadoc-src" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.src.javadoc" value="${dir.src.javadoc}"/>
+			<property name="dir.lib.javadoc" value="${dir.lib.javadoc}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="javadoc.limited" value="${javadoc.limited}"/>
+		</ant>
+	</target>
+	
+	
+	<target name="generateDocContainer" description="Generates container XML, which contains docs from all components from all plugins">
+		<delete file="${dir.component.doc.default}/components/ComponentDoc.xml"/>
+		<xslt in="${dir.component.doc.default}/components/xsl/null.xml" out="${dir.component.doc.default}/components/ComponentDoc.xml"
+				style="${dir.component.doc.default}/components/xsl/componentsContainer.xsl"/>
+	</target>
+	
+	<target name="transformXMLDocs" depends="generateDocContainer" description="Convert the documentation of component from xml to html. 
+			Display a warning if some of the sources is more recent than the XML description">
+	
+		<xslt in="${dir.component.doc.default}/components/xsl/TypesDoc.xml" out="${dir.component.doc.default}/components/html/TypesDoc.html"
+				style="${dir.component.doc.default}/components/xsl/types.xsl"
+			/>
+	
+		<xslt in="${dir.component.doc.default}/components/ComponentDoc.xml" out="${dir.component.doc.default}/components/html/ComponentsDoc.html"
+				style="${dir.component.doc.default}/components/xsl/description.xsl"
+			/>
+	
+	</target>
+	
+	<target name="init-user-property" unless="user">
 		<if>
-			<isset property="@{prefix}@{value}@{suffix}"/>
+			<isset property="env.USERNAME"/>
 			<then>
-				<property name="@{name}" value="${@{prefix}@{value}@{suffix}}"/>
+				<property name="user" value="${env.USERNAME}"/>
 			</then>
 			<else>
-				<property name="@{name}" value="@{value}"/>
+				<if>
+					<isset property="env.USER"/>
+					<then>
+						<property name="user" value="${env.USER}"/>
+					</then>
+					<else>
+						<fail message="no user variable is set"/>
+					</else>
+				</if>
 			</else>
 		</if>
-	</sequential>
-</macrodef>
+	</target>
 	
-<macrodef name="replaceR">
-	<attribute name="file"/>
-	<sequential>
-		<var file="@{file}.replace.properties"/>
-		<echo message="Replacing regexp ${match} in file @{file}"/>
-		<!--
-		<echo>RRRRRR
-			file="@{file}.replace.properties"
-			match="${match}"
-			replace="${replace}"
-		RRRRRR</echo>-->
-		<replaceregexp file="@{file}" encoding="UTF-8"
-			match="${match}"
-			replace="${replace}"
-			flags="s"
-		>
-		</replaceregexp>
-</sequential>
-</macrodef>	
+	<target name="init" depends="init-user-property">
+		<if>
+			<isset property="defined.version.suffix"/>
+			<then>
+				<if>
+					<equals arg1="${defined.version.suffix}" arg2="release"/>
+					<then>
+						<property name="version.suffix" value=""/>
+						<property name="version.full" value="${version}"/>
+					</then>
+					<else>
+						<property name="version.suffix" value="${defined.version.suffix}"/>
+						<property name="version.full" value="${version}.${version.suffix}"/>
+					</else>
+				</if>
+			</then>
+			<else>
+				<property name="version.suffix" value="devel${build.time.compact}${user}"/>
+				<property name="version.full" value="${version}.${version.suffix}"/>
+			</else>
+		</if>
+	
+		<propertyregex property="engine.obfuscate" input="cloveretl.engine" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/>
+		<if>
+			<equals arg1="${engine.obfuscate}" arg2="true"/>
+			<then>
+				<property name="engine.obfuscate.run" value="true"/>
+				<property name="dir.package.classes" value="${dir.obfuscate.classes}"/>
+				<property name="dir.package.manifest" value="${dir.obfuscate.manifest}"/>
+			</then>
+			<else>
+				<property name="dir.package.classes" value="${dir.bin}"/>
+				<property name="dir.package.manifest" value="${dir.manifest}"/>
+			</else>
+		</if>
+	
+		<echo>
+				version.full=${version.full}
+				
+				version.major=${version.major}
+				version.minor=${version.minor}
+				version.revision=${version.revision}
+				version.suffix=${version.suffix}
+				build.number=${build.number}
+				build.time=${build.time}
+				build.year=${build.year}
+				engine.obfuscate.run=${engine.obfuscate.run}
+			</echo>
+	
+		<echo message="Using directory for classes: ${dir.bin}"/>
+		<echo message="Using directory for javadoc: ${dir.doc}"/>
+		<echo message="Using directory for package: ${dir.package}"/>
+	
+		<mkdir dir="${dir.build}"/>
+	</target>
+	
+	<target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
+	</target>
+	
+	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
+	</target>
+	
+	<target name="reports-hudson-detail" depends="runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	</target>
+	
+	<target name="reports-hudson-optimalized" depends="dist,runtests-with-testdb">
+	</target>
+		
+	<target name="night-hudson" depends="runtests-scenario-night">
+	</target>
+	
+	<target name="compile-tests" depends="compile">
+		<mkdir dir="${dir.classestest}"/>
+		<javac debug="true" destdir="${dir.classestest}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
+			<classpath>
+				<pathelement path="${tools}"/>
+				<fileset refid="engine-libs"/>
+				<pathelement path="${dir.bin}"/>
+				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+			</classpath>
+			<src path="${dir.src.test}"/>
+		</javac>
+		<copy todir="${dir.classestest}">
+			<fileset dir="${dir.src.test}">
+				<exclude name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">
+	</target>
+	
+	<target name="coverage-instrument-engine" depends="compile">
+		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
+			<fileset dir="${dir.bin}">
+				<include name="**/*.class" />
+			</fileset>
+		</cobertura-instrument>
+		<copy todir="${dir.coverage.plugins}/plugins/org.jetel.engine">
+			<fileset dir="${dir.package}/plugins/org.jetel.engine"/>
+		</copy>
+	</target>
+	
+	<target name="coverage-instrument-plugins" depends="init">
+		<mkdir dir="${dir.coverage.plugins}"/>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin-coverage-instrument" param="plugin.dir"/>
+	</target>
+	
+	<target name="plugin-coverage-instrument">
+		<echo message="Coverage instrument plugin - ${plugin.dir}"/>
+		<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.package}"/>
+			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
+		</ant>
+	</target>
+	
+	<target name="runtests" depends="" description="Runs engine and plugins JUnit tests" unless="runtests-dontrun">
+		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
+		<property name="dir.test.additional.classpath" value=""/>
+		<antcall target="runtests-engine" inheritall="true" inheritrefs="true"/>
+		<antcall target="runtests-plugins" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="runtests-coverage" depends="coverage-instrument" description="Runs engine and plugins JUnit tests with test coverage report">
+		<property name="test.cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
+		<property name="dir.test.additional.classpath" value="${dir.coverage.bin}"/>
+		<antcall target="runtests-engine" inheritall="true" inheritrefs="true" />
+		<antcall target="runtests-plugins-coverage" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="runtests-engine" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests">
+		<mkdir dir="${dir.testsresult}"/>
+		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
+		<junit 
+					haltonerror="false" 
+					haltonfailure="false" 
+					printsummary="true"
+					fork="true"
+					forkmode="once" 
+					>
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
+			<sysproperty key="file.encoding" value="UTF-8" />
+			<jvmarg value="-Xmx2048m"/>
+			<jvmarg value="-XX:MaxPermSize=256m"/>
+			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<classpath>
+				<pathelement path="${dir.classestest}"/>
+				<pathelement path="${dir.test.additional.classpath}"/>
+				<pathelement path="${dir.package.classes}"/>
+				<fileset dir="${dir.lib}">
+					<include name="*.jar"/>
+				</fileset>
+				<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
+				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+				<path refid="cp.cobertura"/>
+			</classpath>
+			<batchtest todir="${dir.testsresult}">
+				<fileset dir="${dir.src.test}">
+					<include name="${test.include}"/>
+					<exclude name="${test.exclude}"/>
+				</fileset>
+			</batchtest>
+			<formatter type="plain"/>
+			<formatter type="xml"/>
+		</junit>
+	</target>
+	
+	<target name="runtests-plugins" depends="compile-tests,build-plugins" unless="runtests-plugins-dontrun">
+		<mkdir dir="${dir.coverage.plugins}"/>
+		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
+	</target>
+	
+	<target name="runtests-plugin">
+		<echo message="Runtests plugin - ${plugin.dir}"/>
+		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.package}"/>
+			<property name="dir.engine.classestest" value="${dir.classestest}"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
+		</ant>
+	</target>
+	
+	<target name="runtests-plugins-coverage" depends="compile-tests">
+		<mkdir dir="${dir.coverage.plugins}"/>
+		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin-coverage" param="plugin.dir"/>
+	</target>
+	
+	<target name="runtests-plugin-coverage">
+		<echo message="Runtests plugin - ${plugin.dir}"/>
+		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
+			<property name="dir.dist" value="${dir.package}"/>
+			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
+			<property name="dir.engine.classestest" value="${dir.classestest}"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<property name="java.src.header.file" value="${java.src.header.file}"/>
+			<property name="java.src.target" value="${java.src.target}"/>
+			<property name="java.src.exclude" value="${java.src.exclude}"/>
+			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
+		</ant>
+	</target>
+	
+	<target name="runtests-scenario-after-commit" if="cte.environment.config">
+		<echo message="Executing Clover Test Environment environment - after commit"/>
+		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="environment.config" value="${cte.environment.config}"/>
+			<property name="scenarios" value="after-commit.ts" />
+			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.plugins" value="${dir.dist}/plugins"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
+		</ant>
+	</target>
+	
+	<target name="runtests-scenario-night" depends="build">
+		<echo message="Executing Clover Test Environment environment - night"/>
+		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="environment.config" value="${cte.environment.config}"/>
+			<property name="scenarios" value="night.ts" />
+			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.plugins" value="${dir.dist}/plugins"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
+		</ant>
+	</target>
+	
+	<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
+		<echo message="Executing Clover Test Environment environment - coverage"/>
+		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="environment.config" value="${cte.environment.config}"/>
+			<property name="scenarios" value="after-commit.ts" />
+			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.package.classes}"/>
+			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
+			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
+		</ant>
+	</target>
+	
+	<target name="reporttests" depends="runtests">
+		<mkdir dir="${dir.testsreport}"/>
+		<junitreport>
+			<fileset dir="${dir.testsresult}">
+				<include name="*.xml"/>
+			</fileset>
+			<report format="noframes" todir="${dir.testsreport}"/>
+		</junitreport>
+	</target>
+	
+	<target name="runtests-with-testdb" depends="build">
+		<parallel>
+			<daemons>
+				<antcall target="start-testdb" />
+			</daemons>
+			<sequential>
+				<sleep seconds="5" />
+				<antcall target="runtests-scenario-after-commit" />
+				<antcall target="runtests" />
+			</sequential>
+		</parallel>
+	</target>
+	
+	<target name="runtests-with-testdb-coverage">
+		<parallel>
+			<daemons>
+				<antcall target="start-testdb" />
+			</daemons>
+			<sequential>
+				<sleep seconds="5" />
+				<antcall target="runtests-scenario-coverage" />
+				<antcall target="runtests-coverage" />
+			</sequential>
+		</parallel>
+	</target>
+	
+	<target name="start-testdb">
+		<property name="derby.home" value="${dir.examples}/ExtExamples/lib/derby"/>
+		<echo message="Starting test db Derby with DERBY_HOME=${derby.home}" />
+		<exec executable="${dir.examples}/ExtExamples/lib/derby/bin/startNetworkServer">
+			<env key="DERBY_HOME" value="${derby.home}"/>
+		</exec>
+	</target>
+	
+	<target name="findbugs-init">
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+			<classpath>
+				<pathelement location="${dir.findbugs}/lib/findbugs-ant.jar"/>
+			</classpath>
+		</taskdef>
+	</target>
+	
+	<target name="findbugs-html" depends="init,findbugs-init,compile,compile-tests">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+					home="${dir.findbugs}" 
+					output="html"
+					outputfile="${dir.findbugsreport}/bugreport.html" 
+					stylesheet="fancy-hist.xsl"
+					excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+					effort="max"
+					reportlevel="low"
+					jvmargs="-Xmx500m">
+			<class location="${dir.bin}"/>
+			<class location="${dir.classestest}"/>
+			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
+			<auxclasspath path="${tools}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
+		</findbugs>
+	</target>
+	
+	<target name="findbugs-xml" depends="init,findbugs-init,compile">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+					home="${dir.findbugs}" 
+					output="xml"
+					outputfile="${dir.findbugsreport}/bugreport.xml" 
+					excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+					effort="max"
+					reportlevel="low"
+					jvmargs="-Xmx500m">
+			<class location="${dir.bin}"/>
+			<class location="${dir.classestest}"/>
+			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
+			<auxclasspath path="${tools}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
+		</findbugs>
+	</target>
+	
+	<target name="findbugs-xml-plugins" depends="build-engine,build-plugins,compile-tests">
+		<foreach list="${plugin.list}" inheritall="true" target="findbugs-xml-plugin" param="plugin.dir"/>
+	</target>
+	<target name="findbugs-xml-plugin">
+		<echo message="Findbugs plugin - ${plugin.dir}"/>
+		<ant dir="../${plugin.dir}" target="findbugs-xml" inheritAll="false" inheritrefs="false">
+			<property name="dir.findbugs" value="${dir.findbugs}"/>
+			<property name="dir.dist" value="${dir.package}"/>
+			<property name="dir.engine.classestest" value="${dir.classestest}"/>
+		</ant>
+	</target>
+	
+	<target name="coverage-html" depends="runtests,collect-javadoc-src">
+		<cobertura-report 
+				datafile="${cobertura.ser}" 
+				format="html" 
+				destdir="${dir.coverage.html}" >
+			<fileset dir="${dir.src.javadoc}">
+				<include name="**/*.java"/>
+			</fileset>
+		</cobertura-report>
+	</target>
+	
+	<target name="coverage-xml" depends="runtests,collect-javadoc-src">
+		<cobertura-report 
+				datafile="${cobertura.ser}"
+				format="xml"
+				destdir="${dir.coverage.xml}">
+			<fileset dir="${dir.src.javadoc}">
+				<include name="**/*.java"/>
+			</fileset>
+		</cobertura-report>
+	</target>
+	
+	<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
+	
+	<target name="check-sources-engine">
+		<fileheading heading="${java.src.header.file.opensource}" dryrun="true" propertyifrewritten="java.src.header.invalid">
+			<fileset dir="${dir.src}">
+				<include name="**/*.java"/>
+				<exclude name="org/jetel/interpreter/TransformLangParser*"/>
+				<exclude name="org/jetel/interpreter/JJTTransformLangParserState.java"/>
+				<exclude name="org/jetel/ctl/TransformLangParser*"/>
+				<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
+				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
+			</fileset>
+		</fileheading>
+		<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
+	</target>
+	
+	<target name="check-sources-plugins">
+		<foreach list="${plugin.list}" inheritall="true" target="check-sources-plugin" param="plugin.dir"/>
+	</target>
+	<target name="check-sources-plugin">
+		<echo message="Check file heading plugin - ${plugin.dir}"/>
+		<ant dir="../${plugin.dir}" target="check-sources" inheritAll="false" inheritrefs="false">
+		</ant>
+	</target>
+
+	<macrodef name="customproperty">
+		<attribute name="name"/>
+		<attribute name="value"/>
+		<attribute name="prefix"/>
+		<attribute name="suffix"/>
+		<sequential>
+			<if>
+				<isset property="@{prefix}@{value}@{suffix}"/>
+				<then>
+					<property name="@{name}" value="${@{prefix}@{value}@{suffix}}"/>
+				</then>
+				<else>
+					<property name="@{name}" value="@{value}"/>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="replaceR">
+		<attribute name="file"/>
+		<sequential>
+			<var file="@{file}.replace.properties"/>
+			<echo message="Replacing regexp ${match} in file @{file}"/>
+			<!--
+			<echo>RRRRRR
+				file="@{file}.replace.properties"
+				match="${match}"
+				replace="${replace}"
+			RRRRRR</echo>-->
+			<replaceregexp file="@{file}" encoding="UTF-8"
+				match="${match}"
+				replace="${replace}"
+				flags="s"
+			>
+			</replaceregexp>
+		</sequential>
+	</macrodef>
+	
 </project>
