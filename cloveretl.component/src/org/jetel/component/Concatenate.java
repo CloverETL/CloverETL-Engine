@@ -18,16 +18,18 @@
  */
 package org.jetel.component;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 
-import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
+import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
@@ -95,9 +97,11 @@ import org.w3c.dom.Element;
  */
 public class Concatenate extends Node {
 
+    /** The type of the component. */
 	public static final String COMPONENT_TYPE = "CONCATENATE";
 
-	private static final int WRITE_TO_PORT = 0;
+	/** The port index for data record output. */
+	private static final int OUTPUT_PORT = 0;
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
@@ -110,7 +114,10 @@ public class Concatenate extends Node {
 		}
 	}
 
-	public Concatenate(String id) {
+    /** A byte buffer used for fast copying of data records as their deserialized version is never used. */
+    private ByteBuffer recordBuffer;
+
+    public Concatenate(String id) {
 		super(id);
 	}
 
@@ -131,32 +138,46 @@ public class Concatenate extends Node {
 		return status;
 	}
 
-	public void init() throws ComponentNotReadyException {
-		if (!isInitialized()) {
-			super.init();
+	@Override
+	public synchronized void init() throws ComponentNotReadyException {
+		if (isInitialized()) {
+			return;
 		}
+
+		super.init();
+
+        recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+
+        if (recordBuffer == null) {
+            throw new ComponentNotReadyException("Error allocating a data record buffer!");
+        }
 	}
 
 	@Override
 	public Result execute() throws Exception {
 		Iterator<InputPort> inputPortsIterator = getInPorts().iterator();
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-
-		DataRecord record = new DataRecord(outPort.getMetadata());
-		record.init();
+		OutputPortDirect outPort = getOutputPortDirect(OUTPUT_PORT);
 
 		while (runIt && inputPortsIterator.hasNext()) {
-			InputPort inPort = inputPortsIterator.next();
+			// FIXME: Avoid casting here as soon as the getInPortsDirect() method is available.
+			InputPortDirect inPort = (InputPortDirect) inputPortsIterator.next();
 
-			while (runIt && inPort.readRecord(record) != null) {
-				outPort.writeRecord(record);
+			while (runIt && inPort.readRecordDirect(recordBuffer)) {
+				outPort.writeRecordDirect(recordBuffer);
 				SynchronizeUtils.cloverYield();
 			}
 		}
 
-		setEOF(WRITE_TO_PORT);
+		setEOF(OUTPUT_PORT);
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	@Override
+	public synchronized void free() {
+		super.free();
+
+		recordBuffer = null;
 	}
 
 }
