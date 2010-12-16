@@ -40,9 +40,13 @@ import org.jetel.util.primitive.BitArray;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataRecord implements Serializable, Comparable, Iterable<DataField> {
+public class DataRecord implements Serializable, Comparable<Object>, Iterable<DataField> {
 
-    private static final long serialVersionUID = 2497808992091497225L;
+    /** The most significant bit in a byte */
+	private static final int HIGHEST_BIT = 0x80;
+
+
+	private static final long serialVersionUID = 2497808992091497225L;
 
 
     /**
@@ -246,30 +250,33 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
-			// the bit array is stored at the base position (the beginning of the serialized record)
-			final int basePosition = buffer.position();
-			// the number of bytes the bit array occupies
-			final int numNullBytes = BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
+			// bit array containing 1 if corresponding field is null loaded from the buffer
+			final byte[] nullBits = new byte[BitArray.bitsLength2Bytes(metadata.getNumNullableFields())];
+			buffer.get(nullBits);
 
-			// skip the stored bit array and go to the first field
-			buffer.position(buffer.position() + numNullBytes);
+			int index = 0;
+			int bits = nullBits[index];  // current byte of the nullBits
+			int bit = 0x01;
 
-			// the number of fields that are really null (from all the nullable fields)
-			int nullCounter = 0;
-
-			for (int i = 0; i < fields.length; i++) {
+			for (DataField field : fields) {
 				// if the current field is nullable
-				if (metadata.getFieldsNullSwitches().isSet(i)) {
-					// and if it is really null
-					if (BitArray.isSet(buffer, basePosition, nullCounter)) {
-						fields[i].setNull(true);
-					} else {
-						fields[i].deserialize(buffer);
+				if (field.getMetadata().isNullable()) {
+					if (bit > HIGHEST_BIT) {
+						index++;
+						bits = nullBits[index];
+						bit = 0x01;
 					}
 
-					nullCounter++;
+					// and if it is really null
+					if ((bits & bit) != 0) {
+						field.setNull(true);
+					} else {
+						field.deserialize(buffer);
+					}
+					
+					bit <<= 1;
 				} else {
-					fields[i].deserialize(buffer);
+					field.deserialize(buffer);
 				}
 			}
 		} else {
@@ -435,38 +442,52 @@ public class DataRecord implements Serializable, Comparable, Iterable<DataField>
         if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
 			// the bit array is stored at the base position (the beginning of the serialized record)
 			final int basePosition = buffer.position();
-			// the number of bytes the bit array occupies
-			final int numNullBytes = BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
+			// bit array will contain 1 for null field 
+			final byte[] nullBits = new byte[BitArray.bitsLength2Bytes(metadata.getNumNullableFields())];
+			
+			// reserve space for nullBits
+			buffer.position(basePosition + nullBits.length);
 
-			// clear the bit array
-			for (int i = 0; i < numNullBytes; i++) {
-				buffer.put((byte) 0x00);
-			}
+			int index = 0;
+			int bits = 0x00;
+			int bit = 0x01;
 
-			// the number of fields that are really null (from all the nullable fields)
-			int nullCounter = 0;
-
-			for (int i = 0; i < fields.length; i++) {
+            for (DataField field : fields) {
 				// if the current field is nullable
-				if (metadata.getFieldsNullSwitches().isSet(i)) {
+				if (field.getMetadata().isNullable()) {
 					// and if it is really null
-					if (fields[i].isNull()) {
-						BitArray.set(buffer, basePosition, nullCounter);
+					if (field.isNull()) {
+						bits |= bit;
 					} else {
-						fields[i].serialize(buffer);
+						field.serialize(buffer);
 					}
 
-					nullCounter++;
+					bit <<= 1;
+
+					if (bit > HIGHEST_BIT) {
+						nullBits[index] = (byte) bits;
+						index++;
+						bits = 0x00;
+						bit = 0x01;
+					}
 				} else {
-					fields[i].serialize(buffer);
+					field.serialize(buffer);
 				}
 			}
+            
+            if (bits > 0) {
+				nullBits[index] = (byte)bits;
+            }
+            for (int i = 0; i < nullBits.length; i++) {
+                buffer.put(i + basePosition, nullBits[i]);
+            }
         } else {
             for (DataField field : fields) {
             	field.serialize(buffer);
             }
         }
     }
+	
 
 	/**
      * Serializes this record's content into ByteBuffer.<br>
