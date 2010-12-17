@@ -112,7 +112,7 @@ if( !runTests ){
 		antTarget = "run-scenarios-with-profiler"
 		antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
 	}
-	if( testName == "koule" ){
+	if( testName == "after-commit-koule" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
 	
