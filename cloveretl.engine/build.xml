@@ -814,15 +814,12 @@ defined.version.suffix=release
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	<target name="reports-hudson-detail" depends="dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
 	<target name="reports-hudson-optimalized" depends="dist,runtests-with-testdb">
 	</target>
 		
-	<target name="night-hudson" depends="runtests-scenario-night">
-	</target>
-	
 	<target name="compile-tests" depends="compile">
 		<mkdir dir="${dir.classestest}"/>
 		<javac debug="true" destdir="${dir.classestest}" target="${java.src.version}" source="${java.src.version}" encoding="UTF-8">
@@ -968,24 +965,12 @@ defined.version.suffix=release
 	
 	<target name="runtests-scenario-after-commit" if="cte.environment.config">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
-		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+		<ant target="run-scenarios-with-engine-build" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
 			<property name="scenarios" value="after-commit.ts" />
 			<property name="dir.engine.classes" value="${dir.package.classes}"/>
-			<property name="dir.plugins" value="${dir.dist}/plugins"/>
-			<property name="version.full" value="${version.full}"/>
-			<property name="hudson.link" value="${cte.hudson.link}"/>
-			<property name="logpath" value="${cte.logpath}"/>
-		</ant>
-	</target>
-	
-	<target name="runtests-scenario-night" depends="build">
-		<echo message="Executing Clover Test Environment environment - night"/>
-		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="scenarios" value="night.ts" />
-			<property name="dir.engine.classes" value="${dir.package.classes}"/>
-			<property name="dir.plugins" value="${dir.dist}/plugins"/>
+			<property name="dir.engine.build" value="${dir.package}/lib"/>
+			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
@@ -1016,7 +1001,7 @@ defined.version.suffix=release
 		</junitreport>
 	</target>
 	
-	<target name="runtests-with-testdb" depends="build">
+	<target name="runtests-with-testdb">
 		<parallel>
 			<daemons>
 				<antcall target="start-testdb" />
