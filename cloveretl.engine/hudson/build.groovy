@@ -1,7 +1,8 @@
 #!/usr/bin/env groovy
 
-def env=System.getenv()
-def ant = new AntBuilder() 
+def env = System.getenv()
+def ant = new AntBuilder()
+init()
 
 def jobName = env['JOB_NAME']
 assert jobName
@@ -57,14 +58,15 @@ antC = ["${env['HUDSON_HOME']}/tools/ant-1.7/bin/ant",
 ]
 antArgs.each{arg-> antC += arg}
 
-print "starting ant command: "; antC.each{ print "'"+it+"' "}; println ""
-antP = antC.execute(subEnv(["ANT_OPTS":"-Xmx500m"]), engineD)
-antP.waitForProcessOutput( System.out, System.err )
-assert antP.exitValue() == 0
+antC.executeSave(subEnv(["ANT_OPTS":"-Xmx500m"]), engineD)
 	
 if( env['HOST_NAME'] != "klara" ) {
 	"rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs".executeSave()
 }
+
+
+
+/* some common Groovy extensions */
 
 def String[] subEnv(m) { 
 	n = [:]
@@ -73,8 +75,18 @@ def String[] subEnv(m) {
 	n.collect { k, v -> "$k=$v" }
 }
 
-String.metaClass.executeSave = {
-	def p = delegate.execute()
-	p.waitForProcessOutput( System.out, System.err )
-	assert p.exitValue() == 0
+void init(){
+	String.metaClass.executeSave = {
+		println "starting ant command: ${delegate}"
+		def p = delegate.execute()
+		p.waitForProcessOutput( System.out, System.err )
+		assert p.exitValue() == 0
+	}
+	
+	ArrayList.metaClass.executeSave = { procEnv, dir ->
+		print "starting ant command: "; delegate.each{ print "'"+it+"' "}; println ""
+		def p = delegate.execute(procEnv, dir)
+		p.waitForProcessOutput( System.out, System.err )
+		assert p.exitValue() == 0
+	}
 }
