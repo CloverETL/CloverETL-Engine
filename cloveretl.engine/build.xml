@@ -410,6 +410,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.plugin.Plugins"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.ExtensionParameter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.Extension"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.plugin.PluginClassLoader"><method name="getAllURLs"/></keep>
 			<keep name="org.jetel.graph.Result"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.GraphElement"><field name="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.Node"><field access="protected public"/><method access="protected public"/></keep>
