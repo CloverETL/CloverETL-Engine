@@ -36,17 +36,25 @@ def antArgs = [
 	"-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial",
 	"-Dcte.logpath=/data/cte-logs",
 	"-Dcte.hudson.link=job/jobName/${buildNumber}",
-	"-Dtest.exclude=org/jetel/graph/ResetTest.java",
 	"-Ddir.examples=../cloveretl.examples",
 ]
 if( jobGoal == "after-commit" ) {
 	antTarget = "reports-hudson"
 	antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun"
+	antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
 } else if( jobGoal == "optimalized"){
 	antTarget = "reports-hudson-optimalized"
 	antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
 	antArgs += "-Dobfuscate.plugin.pattern=cloveretl.*"
 	antArgs += "-Druntests-dontrun=true"
+} else if( jobGoal == "detail"){
+	antTarget = "reports-hudson-detail"
+	antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_detail"
+	antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+} else if( jobGoal == "tests-reset"){
+	antTarget = "runtests-with-testdb"
+	antArgs += "-Druntests-plugins-dontrun=true"	
+	antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 } else {
 	println "ERROR: Unknown goal '${jobGoal}'"
 	exit 1
