@@ -119,7 +119,7 @@ if( !runTests ){
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build 
 	ant.delete( dir:cloverD )
-	ant.delete{ fileset( dir:"/data/bigfiles/tmp" , includes:"**") } 
+	ant.delete(failonerror:false){ fileset( dir:"/data/bigfiles/tmp" , includes:"**")}
 
 	engineURL = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/dist/cloverETL.rel-${cloverVersionDash}.zip" )
 	engineFile = new File( baseD, "cloverETL.zip" )
