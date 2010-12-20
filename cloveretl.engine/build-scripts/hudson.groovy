@@ -132,9 +132,20 @@ if( !runTests ){
 }
 
 assert antTarget
-antC = ["${env['BASE']}/tools/ant-1.7/bin/ant",
-	antTarget
-]
+if( env['ComSpec'] ) {
+	// windows
+	antC = [env['ComSpec'],
+		"/c",
+		"${env['BASE']}/tools/ant-1.7/bin/ant",
+		antTarget
+	]
+} else {
+	// unix
+	antC = ["${env['BASE']}/tools/ant-1.7/bin/ant",
+		antTarget
+	]
+}
+
 antArgs.each{arg-> antC += arg}
 antC.executeSave(antEnv, antBaseD)
 	
