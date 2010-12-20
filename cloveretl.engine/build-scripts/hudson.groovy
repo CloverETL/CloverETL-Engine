@@ -144,7 +144,7 @@ if( env['ComSpec'] ) {
 	]
 } else {
 	// unix
-	antC = ["${env['BASE']}/tools/ant-1.7/bin/ant",
+	antC = ["${env['HUDSON_HOME']}/tools/ant-1.7/bin/ant",
 		antTarget
 	]
 }
