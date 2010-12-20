@@ -153,7 +153,7 @@ antArgs.each{arg-> antC += arg}
 antC.executeSave(antEnv, antBaseD)
 	
 if( env['HOST_NAME'] != "klara" ) {
-	"rsync -rv --remove-source-files /data/cte-logs/ klara:/data/cte-logs".executeSave()
+	"rsync -rv --remove-source-files /data/cte-logs/ hudson@klara:/data/cte-logs".executeSave()
 }
 
 
@@ -162,7 +162,7 @@ if( env['HOST_NAME'] != "klara" ) {
 
 void init(){
 	String.metaClass.executeSave = {
-		println "starting ant command: ${delegate}"
+		println "starting command: ${delegate}"
 		def p = delegate.execute()
 		p.waitForProcessOutput( System.out, System.err )
 		assert p.exitValue() == 0
