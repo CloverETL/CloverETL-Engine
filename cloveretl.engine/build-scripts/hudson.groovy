@@ -132,7 +132,7 @@ if( !runTests ){
 }
 
 assert antTarget
-antC = ["${env['HUDSON_HOME']}/tools/ant-1.7/bin/ant",
+antC = ["${env['BASE']}/tools/ant-1.7/bin/ant",
 	antTarget
 ]
 antArgs.each{arg-> antC += arg}
