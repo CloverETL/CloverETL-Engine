@@ -44,8 +44,8 @@ println "versionSuffix = " + versionSuffix
 println "buildNumber   = " + buildNumber 
 println "====================================================="
 
-println "Environment variables:"
-System.getenv().each{ println "\t${it}" }
+//println "Environment variables:"
+//System.getenv().each{ println "\t${it}" }
 
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
@@ -114,6 +114,9 @@ if( !runTests ){
 	}
 	if( testName == "after-commit-koule" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+	}
+	if( testName == "after-commit-windows" ){
+		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
 	}
 	
 	cloverD = new File(baseD, "cloverETL")
