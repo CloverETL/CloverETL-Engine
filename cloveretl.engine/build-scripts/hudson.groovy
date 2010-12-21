@@ -153,7 +153,7 @@ antArgs.each{arg-> antC += arg}
 antC.executeSave(antEnv, antBaseD)
 	
 if( env['HOST_NAME'] != "klara" ) {
-	rsyncC = ["rsync", "-rv", "--remove-source-files, "/data/cte-logs/", "hudson@klara:/data/cte-logs"]
+	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "hudson@klara:/data/cte-logs"]
 	keyFile = new File("/hudson/id_dsa")
 	if( keyFile.exists() ){
 		rsyncC += "--rsh=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${keyFile.absolutePath}"
