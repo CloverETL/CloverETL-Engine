@@ -176,6 +176,10 @@ void init(){
 		assert p.exitValue() == 0
 	}
 	
+	ArrayList.metaClass.executeSave = {
+		delegate.executeSave(null, null)
+	}
+	
 	ArrayList.metaClass.executeSave = { procEnv, dir ->
 		print "starting ant command: "; delegate.each{ print "'"+it+"' "}; println ""
 		def p = delegate.execute(procEnv, dir)
