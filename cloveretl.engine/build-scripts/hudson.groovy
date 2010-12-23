@@ -114,9 +114,9 @@ if( !runTests ){
 	}
 	if( testName == "after-commit-koule" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-		antCustomEnv["PATH":"${env['PATH']}:/home/db2inst/sqllib/bin:/home/db2inst/sqllib/adm:/home/db2inst/sqllib/misc"];
-		antCustomEnv["DB2DIR":"/opt/ibm/db2/V9.7"]
-		antCustomEnv["DB2INSTANCE":"db2inst"]
+		antCustomEnv["PATH"]="${env['PATH']}:/home/db2inst/sqllib/bin:/home/db2inst/sqllib/adm:/home/db2inst/sqllib/misc"
+		antCustomEnv["DB2DIR"]="/opt/ibm/db2/V9.7"
+		antCustomEnv["DB2INSTANCE"]="db2inst"
 	}
 	if( testName == "after-commit-windows" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
