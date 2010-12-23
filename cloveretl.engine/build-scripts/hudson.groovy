@@ -51,7 +51,7 @@ baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
 
-antEnv = subEnv(["ANT_OPTS":"-Xmx500m"])
+antCustomEnv = ["ANT_OPTS":"-Xmx500m"]
 if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
@@ -114,6 +114,9 @@ if( !runTests ){
 	}
 	if( testName == "after-commit-koule" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		antCustomEnv["PATH":"${env['PATH']}:/home/db2inst/sqllib/bin:/home/db2inst/sqllib/adm:/home/db2inst/sqllib/misc"];
+		antCustomEnv["DB2DIR":"/opt/ibm/db2/V9.7"]
+		antCustomEnv["DB2INSTANCE":"db2inst"]
 	}
 	if( testName == "after-commit-windows" ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
@@ -150,7 +153,7 @@ if( env['ComSpec'] ) {
 }
 
 antArgs.each{arg-> antC += arg}
-antC.executeSave(antEnv, antBaseD)
+antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
 if( env['HOST_NAME'] != "klara" ) {
 	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "hudson@klara:/data/cte-logs"]
