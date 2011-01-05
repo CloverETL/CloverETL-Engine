@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.InvalidMarkException;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -30,7 +31,6 @@ import java.nio.charset.CodingErrorAction;
 import javax.naming.OperationNotSupportedException;
 
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * An abstract class for input readers able to provide mixed char/byte data
@@ -39,106 +39,98 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @created Dec 7, 2010
  */
-public abstract class CharByteInputReader {
-	/** special return value for byte/char reading, indicates that data are available */
-	public static final int DATA_AVAILABLE = Integer.MIN_VALUE + 0;
-	/** special return value for byte/char reading, indicates end of input */
-	public static final int END_OF_INPUT = Integer.MIN_VALUE + 1;
-	/** special return value for byte/char reading, indicates decoding error during byte->char conversion */
-	public static final int DECODING_FAILED = Integer.MIN_VALUE + 2;
-	/** special return value for byte/char reading, indicates that input reader is blocked by large span of the mark */
-	public static final int BLOCKED_BY_MARK = Integer.MIN_VALUE + 3;
-
-	/** special value indicating that mark is not set */
-	public static final int INVALID_MARK = -1;
+public abstract class CharByteInputReader implements ICharByteInputReader {
 
 	/** minimal size of buffer operation (reading, decoding, ..) */
-	protected final int MIN_BUFFER_OPERATION_SIZE = 512;
-	
+	protected static final int MIN_BUFFER_OPERATION_SIZE = 512;
+
 	protected ReadableByteChannel channel;
+	protected int inputBytesConsumed;
 
-	/**
-	 * 
-	 * @return END_OF_INPUT, DECODING_FAILED, BLOCKED_BY_MARK on error, input char value otherwise
-	 * @throws IOException
-	 * @throws OperationNotSupportedException
-	 */
+	public CharByteInputReader() {
+		channel = null;
+		inputBytesConsumed = 0;
+	}
+
+	@Override
 	public int readChar() throws IOException, OperationNotSupportedException {
-		throw new OperationNotSupportedException("Input reader doesn't support readChar operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support readChar() operation. Choose another implementation");
 	}
 
-	/**
-	 * 
-	 * @return END_OF_INPUT, DECODING_FAILED, BLOCKED_BY_MARK on error, input byte value otherwise
-	 * @throws IOException
-	 * @throws OperationNotSupportedException
-	 */
+	@Override
 	public int readByte() throws IOException, OperationNotSupportedException {
-		throw new OperationNotSupportedException("Input reader doesn't support readByte operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support readByte() operation. Choose another implementation");
 	}
 
-	/**
-	 * Marks current position in the input. Precedes reset(), getCharSequence(), and getByteSequence()
-	 * 
-	 * @throws OperationNotSupportedException
-	 */
+	@Override
 	public void mark() throws OperationNotSupportedException {
-		throw new OperationNotSupportedException("Input reader doesn't support revertBytes() operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support mark() operation. Choose another implementation");
 	}
-
-	/**
-	 * Reverts the input to the mark. Invalidates mark
-	 * 
-	 * @throws OperationNotSupportedException
-	 * @throws InvalidMarkException
-	 */
+	@Override
 	public void revert() throws OperationNotSupportedException, InvalidMarkException {
-		throw new OperationNotSupportedException("Input reader doesn't support revertBytes() operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support revert() operation. Choose another implementation");
 	}
 
-	/**
-	 * Returns the chars starting at the mark and ending at the position specified by the parameter. Invalidates the
-	 * mark.
-	 * 
-	 * @param relativeEnd
-	 *            End of the sequence, relative to the current position. Should be zero or negative.
-	 * @return
-	 * @throws OperationNotSupportedException
-	 * @throws InvalidMarkException
-	 */
+	@Override
 	public CharSequence getCharSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
-		throw new OperationNotSupportedException("Input reader doesn't support revertBytes() operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support getCharSequence() operation. Choose another implementation");
 	}
 
-	/**
-	 * Returns the bytes starting at the mark and ending at the position specified by the parameter. Invalidates the
-	 * mark.
-	 * 
-	 * @param relativeEnd
-	 *            End of the sequence, relative to the current position. Should be zero or negative
-	 * @return
-	 * @throws OperationNotSupportedException
-	 * @throws InvalidMarkException
-	 */
+	@Override
 	public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
-		throw new OperationNotSupportedException("Input reader doesn't support revertBytes() operation. Choose another implementation");
+		throw new OperationNotSupportedException("Input reader doesn't support getByteSequence() operation. Choose another implementation");
 	}
 
-	/**
-	 * Sets new input source. Invalidates the mark.
-	 * 
-	 * @param channel
-	 */
+	@Override
 	public void setInputSource(ReadableByteChannel channel) {
 		this.channel = channel;
 	}
 	
+	/** used by DoubleMarkCharByteInputReader */
 	protected abstract void setMark(int mark);
 
+	/** used by DoubleMarkCharByteInputReader */
 	protected abstract int getMark();
 
+	public int getPosition() {
+		return inputBytesConsumed;
+	}
+
+	public void setPosition(int position) throws OperationNotSupportedException, IOException {
+		if (inputBytesConsumed != 0) {
+			throw new OperationNotSupportedException("setPosition() must be called before reading starts");
+		}
+		if (position < 0) {
+			throw new OperationNotSupportedException("Illegal position: " + position);
+		}
+		if (channel instanceof FileChannel) {
+			((FileChannel)channel).position(position);
+		} else {
+			ByteBuffer buf = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+			int bytesRemaining = position;
+			while (bytesRemaining > 0) {
+				buf.clear();
+				if (buf.remaining() > bytesRemaining) {
+					buf.limit(bytesRemaining);
+				}
+				int n = channel.read(buf);
+				if (n == -1) {
+					bytesRemaining = 0;
+					break;  // setting position greater than input size is legal but next reading operation will produce end-of-input result
+				}
+				if (n == 0) {
+					throw new OperationNotSupportedException("Asynchronous input source not support");
+				}
+				bytesRemaining -= n;
+			}
+			assert bytesRemaining == 0 : "Unexpected internal state occured during code execution";
+		}
+		inputBytesConsumed = position;
+				
+	}
+
 	/**
-	 * This input reader can be used only for data inputs which doesn't contain any delimiters or char-based fields
+	 * This input reader can be used only for data inputs which don't contain any delimiters or char-based fields
 	 * 
 	 * @author jhadrava (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
 	 * 
@@ -150,6 +142,7 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public ByteInputReader() {
+			super();
 			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
@@ -197,6 +190,9 @@ public abstract class CharByteInputReader {
 
 		@Override
 		public void revert() throws OperationNotSupportedException {
+			if (currentMark == INVALID_MARK) {
+				throw new InvalidMarkException();
+			}
 			byteBuffer.position(currentMark);
 			currentMark = INVALID_MARK;
 		}
@@ -233,6 +229,11 @@ public abstract class CharByteInputReader {
 			return currentMark;
 		}
 
+		@Override
+		public Charset getCharset() {
+			return null;
+		}
+
 	}
 
 	/**
@@ -243,6 +244,7 @@ public abstract class CharByteInputReader {
 	 * @created Dec 7, 2010
 	 */
 	public static class CharInputReader extends CharByteInputReader {
+		private Charset charset;
 		private ByteBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
@@ -250,9 +252,11 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public CharInputReader(Charset charset) {
+			super();
 			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
+			this.charset = charset;
 			if (charset == null) {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
@@ -373,6 +377,11 @@ public abstract class CharByteInputReader {
 			return currentMark;
 		}
 
+		@Override
+		public Charset getCharset() {
+			return charset;
+		}
+
 	}
 
 	/**
@@ -384,7 +393,7 @@ public abstract class CharByteInputReader {
 	 * @created Dec 7, 2010
 	 */
 	public static class SingleByteCharsetInputReader extends CharByteInputReader {
-
+		private Charset charset;
 		private ByteBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
@@ -392,9 +401,11 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public SingleByteCharsetInputReader(Charset charset) {
+			super();
 			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
+			this.charset = charset;
 			if (charset == null) {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
@@ -562,6 +573,11 @@ public abstract class CharByteInputReader {
 			return currentMark;
 		}
 
+		@Override
+		public Charset getCharset() {
+			return charset;
+		}
+
 	}
 
 	/**
@@ -575,7 +591,7 @@ public abstract class CharByteInputReader {
 	 * @created Dec 7, 2010
 	 */
 	public static class RobustInputReader extends CharByteInputReader {
-
+		private Charset charset;
 		private ByteBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
@@ -584,7 +600,9 @@ public abstract class CharByteInputReader {
 		private boolean endOfInput;
 
 		public RobustInputReader(Charset charset) {
+			super();
 			channel = null;
+			this.charset = charset;
 			if (charset == null) {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
@@ -796,22 +814,35 @@ public abstract class CharByteInputReader {
 			return currentByteMark;
 		}
 
+		@Override
+		public Charset getCharset() {
+			return charset;
+		}
+
 	}
 
 	/**
-	 * 
+	 * An ugly hack to provide support for the verbose error reporting in the parsers.
+	 * Adds double mark capability to the underlying input reader.
+	 * The additional mark (outer mark) precedes the standard mark supported nastively by
+	 * the underlying input reader. Typically outer mark is set at the beginning of the record
+	 * while standard mark is set at the beginning of the field.
+	 * Revert to the position of the outer mark is not supported, it is used only
+	 * by the getOuterSequence() method.
+	 *  
 	 * @author jhadrava (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
 	 * @created Dec 10, 2010
 	 */
-	public static class DoubleMarkCharByteInputReader extends CharByteInputReader {
+	public static class DoubleMarkCharByteInputReader implements ICharByteInputReader {
 		CharByteInputReader inputReader;
 		int outerMark;
 		int innerMark;
-		
+
 		/**
-		 * 
+		 * Sole constructor
+		 * @param inputReader Underlying input reader
 		 */
 		public DoubleMarkCharByteInputReader(CharByteInputReader inputReader) {
 			this.inputReader = inputReader;
@@ -819,16 +850,31 @@ public abstract class CharByteInputReader {
 			this.innerMark = INVALID_MARK;
 		}
 
+		/**
+		 * Sets the outer mark.
+		 * @throws OperationNotSupportedException
+		 */
 		public void setOuterMark() throws OperationNotSupportedException {
 			inputReader.mark();
 			outerMark = inputReader.getMark();
 		}
 
+		/**
+		 * Releases the outer mark.
+		 * @throws OperationNotSupportedException
+		 */
 		public void releaseOuterMark() throws OperationNotSupportedException {
 			outerMark = INVALID_MARK;
 			inputReader.setMark(innerMark);
 		}
 
+		/**
+		 * Returns a subsequence starting at the position of the outer mark. 
+		 * @param relativeEnd
+		 * @return
+		 * @throws OperationNotSupportedException
+		 * @throws InvalidMarkException
+		 */
 		public Object getOuterSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 			inputReader.setMark(outerMark);
 			try {
@@ -887,17 +933,27 @@ public abstract class CharByteInputReader {
 		public void mark() throws OperationNotSupportedException {
 			inputReader.mark();
 			innerMark = inputReader.getMark();
+			if (outerMark == INVALID_MARK) {
+				outerMark = innerMark;
+			}
 			inputReader.setMark(outerMark);
 		}
 
 		@Override
-		protected void setMark(int mark) {
-			outerMark = mark;
+		public int getPosition() {
+			return inputReader.getPosition();
 		}
 
 		@Override
-		protected int getMark() {
-			return outerMark;
+		public void setPosition(int position) throws OperationNotSupportedException, IOException {
+			inputReader.setPosition(position);
 		}
+
+		@Override
+		public Charset getCharset() {
+			return inputReader.getCharset();
+		}
+
 	}
+	
 }

@@ -31,7 +31,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @created Dec 6, 2010
  */
-public class TextParserConfiguration {
+public class TextParserConfiguration implements Cloneable {
 
 	private DataRecordMetadata metadata = null;
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
@@ -236,7 +236,11 @@ public class TextParserConfiguration {
 	 */
 	public void setPolicyType(PolicyType policyType) {
 		this.policyType = policyType;
-		exceptionHandler = ParserExceptionHandlerFactory.getHandler(policyType);
+		if (this.policyType == null) {
+			exceptionHandler = null;
+		} else {
+			exceptionHandler = ParserExceptionHandlerFactory.getHandler(policyType);
+		}
 	}
 
 	/**
@@ -262,6 +266,28 @@ public class TextParserConfiguration {
 	@Override
 	public String toString() {
 		return "ParserConfiguration [charset=" + charset + ", verbose=" + verbose + ", metadata=" + metadata + ", treatMultipleDelimitersAsOne=" + treatMultipleDelimitersAsOne + ", quotedStrings=" + quotedStrings + ", skipLeadingBlanks=" + skipLeadingBlanks + ", skipTrailingBlanks=" + skipTrailingBlanks + ", trim=" + trim + "]";
+	}
+
+	public TextParserConfiguration(TextParserConfiguration cfg) {
+		super();
+		if (cfg == null) {
+			return;
+		}
+		if (cfg.metadata == null) {
+			this.metadata = null;
+		} else {
+			this.metadata = cfg.metadata.duplicate();
+		}
+		
+		this.charset = new String(cfg.charset);
+		this.verbose = cfg.verbose;
+		this.treatMultipleDelimitersAsOne = cfg.treatMultipleDelimitersAsOne;
+		this.quotedStrings = cfg.quotedStrings;
+		this.trim = cfg.trim;
+		this.skipLeadingBlanks = new Boolean(cfg.skipLeadingBlanks);
+		this.skipTrailingBlanks = new Boolean(cfg.skipTrailingBlanks);
+		this.skipRows = cfg.skipRows;
+		this.setPolicyType(cfg.policyType);
 	}
 
 }

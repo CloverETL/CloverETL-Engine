@@ -61,7 +61,7 @@ public class CharByteDataParser extends AbstractTextParser {
 	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
 
 	ReadableByteChannel inputSource;
-	private CharByteInputReader inputReader;
+	private ICharByteInputReader inputReader;
 	private CharByteInputReader.DoubleMarkCharByteInputReader verboseInputReader;
 	private InputConsumer[] fieldConsumers;
 	private RecordSkipper recordSkipper;
@@ -75,6 +75,8 @@ public class CharByteDataParser extends AbstractTextParser {
 	private int lastNonAutoFilledField;
 	private boolean isInitialized;
 	private int recordCounter;
+	private boolean needCharInput;
+	private boolean needByteInput;
 
 	public CharByteDataParser(TextParserConfiguration cfg) {
 		super(cfg);
@@ -88,6 +90,8 @@ public class CharByteDataParser extends AbstractTextParser {
 		recordSkipper = null;
 		isInitialized = false;
 		exceptionHandler = cfg.getExceptionHandler();
+		needByteInput = false;
+		needCharInput = false;
 	}
 
 	/**
@@ -184,26 +188,31 @@ public class CharByteDataParser extends AbstractTextParser {
 			if (verboseInputReader != null) {
 				verboseInputReader.setOuterMark();
 			}
-			for (int idx = 0; idx < numConsumers; idx++) {
-				try {
-					if (!fieldConsumers[idx].consumeInput(record)) {
-						if (idx == 0) {
+			int consumerIdx = 0;
+			try {
+				for (consumerIdx = 0; consumerIdx < numConsumers; consumerIdx++) {
+					if (!fieldConsumers[consumerIdx].consumeInput(record)) {
+						if (consumerIdx == 0) {
 							return null;
 						} else {
-							if (idx != numConsumers - 1) {
-								return parsingErrorFound("Incomplete record at the end of input", record, idx, null);
+							if (consumerIdx != numConsumers - 1) {
+								return parsingErrorFound("Incomplete record at the end of input", record, consumerIdx, null);
 							} else {
 								break;
 							}
 						}
 					}
-				} catch (UnexpectedEndOfRecordDataFormatException e) {
-					return parsingErrorFound(e.getSimpleMessage(), record, idx, null);					
-				} catch (BadDataFormatException e) {
-					if (recordSkipper != null) {
-						recordSkipper.skipInput(idx);
-					}
-					return parsingErrorFound(e.getSimpleMessage(), record, idx, e.getOffendingValue());
+				}
+			} catch (UnexpectedEndOfRecordDataFormatException e) {
+				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);					
+			} catch (BadDataFormatException e) {
+				if (recordSkipper != null) {
+					recordSkipper.skipInput(consumerIdx);
+				}
+				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, e.getOffendingValue());
+			} finally {
+				if (verboseInputReader != null) {
+					verboseInputReader.releaseOuterMark();
 				}
 			}
 		} catch (OperationNotSupportedException e) {
@@ -355,6 +364,16 @@ public class CharByteDataParser extends AbstractTextParser {
 		return charSearcher = searcher;
 	}
 	
+	
+	public void setInputReader(ICharByteInputReader inputReader) {
+		this.inputReader = inputReader;
+		this.verboseInputReader = null;
+	}
+
+	public void setVerboseInputReader(CharByteInputReader.DoubleMarkCharByteInputReader verboseInputReader) {
+		this.inputReader = this.verboseInputReader = verboseInputReader;
+	}
+
 	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized) {
@@ -380,9 +399,6 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 
 		// let's find out what kind of input reader we need
-		boolean needByteInput = false;
-		boolean needCharInput = false;
-
 		for (DataFieldMetadata field : metadata.getFields()) {
 			if (field.isAutoFilled()) {
 				continue;
@@ -394,18 +410,24 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 		}
 		// create input reader according to data record requirements
-		if (!needCharInput) {
-			inputReader = new CharByteInputReader.ByteInputReader();
-		} else if (!needByteInput) {
-			inputReader = new CharByteInputReader.CharInputReader(charset);
-		} else if (cfg.isSingleByteCharset()) {
-			inputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
-		} else {
-			inputReader = new CharByteInputReader.RobustInputReader(charset);
-		}
-		if (cfg.isVerbose()) {
-			inputReader = verboseInputReader = new CharByteInputReader.DoubleMarkCharByteInputReader(inputReader);
-		}
+		CharByteInputReader singleMarkInputReader;
+		if (inputReader == null) {
+			if (!needCharInput) {
+				singleMarkInputReader = new CharByteInputReader.ByteInputReader();
+			} else if (!needByteInput) {
+				singleMarkInputReader = new CharByteInputReader.CharInputReader(charset);
+			} else if (cfg.isSingleByteCharset()) {
+				singleMarkInputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
+			} else {
+				singleMarkInputReader = new CharByteInputReader.RobustInputReader(charset);
+			}
+			if (cfg.isVerbose()) {
+				inputReader = verboseInputReader = new CharByteInputReader.DoubleMarkCharByteInputReader(singleMarkInputReader);
+			} else {
+				verboseInputReader = null;
+				inputReader = singleMarkInputReader;
+			}
+		} else {} // preserve inputReader set externally - this is useful for creating a set of parsers sharing the same inputReader
 		boolean[] isDelimited = new boolean[numFields];
 		for (int idx = 0; idx < numFields; idx++) {
 			DataFieldMetadata field = metadata.getField(idx);
@@ -468,18 +490,39 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 	
+	public CharByteDataParser setNeedByteInput() throws OperationNotSupportedException {
+		if (inputReader != null) {
+			throw new OperationNotSupportedException("Cannot set input reader features after the reader was initialized");
+		}
+		needByteInput = true;
+		return this;
+	}
+
+	public CharByteDataParser setNeedCharInput() throws OperationNotSupportedException {
+		if (inputReader != null) {
+			throw new OperationNotSupportedException("Cannot set input reader features after the reader was initialized");
+		}
+		needCharInput = true;
+		return this;
+	}
+
+	public ICharByteInputReader getInputReader() {
+		return inputReader;
+	}
 
 	@Override
 	public void setDataSource(Object inputDataSource) throws IOException, ComponentNotReadyException {
 		recordCounter = 0;
 		if (inputDataSource instanceof ReadableByteChannel) {
 			inputSource = (ReadableByteChannel)inputDataSource;
-			inputReader.setInputSource((ReadableByteChannel)inputDataSource);
 		} else if (inputDataSource instanceof FileInputStream) {
-			inputReader.setInputSource(((FileInputStream)inputDataSource).getChannel());
-		} else { 
-			inputReader.setInputSource(Channels.newChannel((InputStream)inputDataSource));
+			inputSource = ((FileInputStream)inputDataSource).getChannel();
+		} else if (inputDataSource instanceof InputStream) { 
+			inputSource = Channels.newChannel((InputStream)inputDataSource);
+		} else {
+			inputSource = null;
 		}
+		inputReader.setInputSource(inputSource);
 	}
 
 	@Override
@@ -551,9 +594,9 @@ public class CharByteDataParser extends AbstractTextParser {
 		public static final int END_OF_FILE_AFTER_VALUE = -1;
 		public static final int END_OF_FILE_WITHOUT_VALUE = 2;
 
-		protected CharByteInputReader inputReader;
+		protected ICharByteInputReader inputReader;
 		
-		protected InputConsumer(CharByteInputReader inputReader) {
+		protected InputConsumer(ICharByteInputReader inputReader) {
 			this.inputReader = inputReader;
 		}
 		
@@ -580,7 +623,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private int[] fieldEnd;
 		private boolean[] isAutoFilling;
 
-		FixlenByteFieldConsumer(DataRecordMetadata metadata, CharByteInputReader inputReader, int startFieldIdx, int fieldCount) throws ComponentNotReadyException {
+		FixlenByteFieldConsumer(DataRecordMetadata metadata, ICharByteInputReader inputReader, int startFieldIdx, int fieldCount) throws ComponentNotReadyException {
 			super(inputReader);
 			this.startFieldIdx = startFieldIdx;
 			this.fieldCount = fieldCount;
@@ -651,7 +694,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean rTrim;
 
 
-		FixlenCharFieldConsumer(CharByteInputReader inputReader, int fieldNumber, int fieldLength,
+		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength,
 				boolean lTrim, boolean rTrim) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
@@ -711,7 +754,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean lTrim;
 		private boolean rTrim;
 
-		public DelimCharFieldConsumer(CharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
+		public DelimCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean isQuoted,
 				boolean lTrim, boolean rTrim) {
 			super(inputReader);
@@ -919,7 +962,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean lTrim;
 		private boolean rTrim;
 
-		public DelimByteFieldConsumer(CharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
+		public DelimByteFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, 
 				boolean lTrim, boolean rTrim) {
 			super(inputReader);
@@ -1021,7 +1064,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private int delimId;
 		private boolean acceptEofAsDelim;
 		
-		CharDelimConsumer(CharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
+		CharDelimConsumer(ICharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
 			super(inputReader);
 			this.delimPatterns = delimPatterns;
 			this.delimId = delimId;
@@ -1070,7 +1113,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		private int delimId;
 		private boolean acceptEofAsDelim;
 		
-		ByteDelimConsumer(CharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
+		ByteDelimConsumer(ICharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
 			super(inputReader);
 			this.delimPatterns = delimPatterns;
 			this.delimId = delimId;
@@ -1130,12 +1173,12 @@ public class CharByteDataParser extends AbstractTextParser {
 	}
 	
 	public abstract static class RecordSkipper {
-		protected CharByteInputReader inputReader; 
+		protected ICharByteInputReader inputReader; 
 		protected AhoCorasick delimPatterns;
 		protected boolean[] isDelimited;
 		protected int numFields;
 
-		public RecordSkipper(CharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
+		public RecordSkipper(ICharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
 			this.inputReader = inputReader;
 			this.delimPatterns = delimPatterns;
 			this.isDelimited = isDelimited;
@@ -1152,7 +1195,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		 * @param delimPatterns
 		 * @param isDelimited
 		 */
-		public CharRecordSkipper(CharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
+		public CharRecordSkipper(ICharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
 			super(inputReader, delimPatterns, isDelimited);
 		}
 
@@ -1204,7 +1247,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		 * @param delimPatterns
 		 * @param isDelimited
 		 */
-		public ByteRecordSkipper(CharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
+		public ByteRecordSkipper(ICharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
 			super(inputReader, delimPatterns, isDelimited);
 		}
 

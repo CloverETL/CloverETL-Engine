@@ -403,32 +403,28 @@ public class MultiFileReader {
 	}
 	
 	/**
+	 * @deprecated Replaced by free()
+	 * 
 	 * Releases resources held by the instance
 	 * @throws IOException 
 	 *
 	 */
 	public void close() throws IOException {
-		if (isSourceOpen) 
-			parser.close();
+		free();
 	}
 	
+	/**
+	 * A method to be called by the owner before the start of each phase 
+	 */
     public void preExecute() throws ComponentNotReadyException {
+    	parser.preExecute();
     }
     
-    public void postExecute() throws ComponentNotReadyException {
-    	reset();
-    }
-    
-    public void free() throws IOException {
-		close();
-    }
-	
     /**
-	 * Reset reader for next graph execution. 
-     * @throws ComponentNotReadyException 
+     * A method to be called by the owner after the end of each phase
      */
-	public void reset() throws ComponentNotReadyException {
-		parser.reset();
+    public void postExecute() throws ComponentNotReadyException {
+		parser.postExecute();
 		noInputFile = false;
 		autoFilling.reset();
 		iSource = -1;
@@ -440,10 +436,35 @@ public class MultiFileReader {
 			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 
 			    noInputFile = true;
 		} catch (JetelException e) {
-			logger.error("reset", e);
+			logger.error("postExecute", e);
 		} catch (IOException e) {
-			logger.error("reset", e);
+			logger.error("postExecute", e);
 		}
+    }
+    
+    /*
+     * Releases resources held by the instance. It is supposed to be called exactly once by the owner of the instance 
+     * @throws IOException 
+	 */
+    public void free() throws IOException {
+    	try {
+			if (isSourceOpen) {
+				parser.free();
+			}
+    	} catch (Exception e) {
+    		logger.error("Failed to release resources orderly", e);
+    	}
+    }
+	
+    /**
+     * @deprecated Replaced by preExecute(), postExecute()
+     * 
+	 * Reset reader for next graph execution. 
+     * @throws ComponentNotReadyException 
+     */
+    @Deprecated
+	public void reset() throws ComponentNotReadyException {
+    	postExecute();
 	}
 
 	public void setCharset(String charset) {
