@@ -1227,7 +1227,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 						return true;
 					}
-					if (delimPatterns.isPattern(currentField)) {
+					if (currentField < numFields && delimPatterns.isPattern(currentField)) {
 						for (currentField++; currentField < numFields && !isDelimited[currentField]; currentField++);
 						if (currentField == numFields) {
 							return true;
