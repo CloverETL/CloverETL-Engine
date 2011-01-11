@@ -51,6 +51,10 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		super(metadata, charset);
 	}
 
+	public FixLenByteDataParser(TextParserConfiguration cfg) {
+		super(cfg.getMetadata(), cfg.getCharset());
+	}
+
 	/**
 	 * Create instance for default charset. 
 	 */
@@ -229,5 +233,5 @@ public class FixLenByteDataParser extends FixLenDataParser {
     public void free() {
     	close();
     }
-	
+
 }
