@@ -42,7 +42,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/05/06  
  */
-public abstract class FixLenDataParser implements Parser {
+public abstract class FixLenDataParser implements TextParser {
 
 	protected IParserExceptionHandler exceptionHandler = null;
 
@@ -325,4 +325,9 @@ public abstract class FixLenDataParser implements Parser {
 		}			
 	}
 
+	@Override
+	public TextParserConfiguration getConfiguration() {
+		return null;
+	}
+	
 }
