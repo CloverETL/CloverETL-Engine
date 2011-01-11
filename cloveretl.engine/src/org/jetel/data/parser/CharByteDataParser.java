@@ -651,7 +651,6 @@ public class CharByteDataParser extends AbstractTextParser {
 				}
 			}
 		}
-		
 
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
@@ -1228,10 +1227,11 @@ public class CharByteDataParser extends AbstractTextParser {
 						return true;
 					}
 					if (currentField < numFields && delimPatterns.isPattern(currentField)) {
-						for (currentField++; currentField < numFields && !isDelimited[currentField]; currentField++);
+						currentField++;
 						if (currentField == numFields) {
 							return true;
 						}
+						for (; currentField < numFields && !isDelimited[currentField]; currentField++);
 					}
 				}
 				ichr = inputReader.readChar();
@@ -1279,11 +1279,12 @@ public class CharByteDataParser extends AbstractTextParser {
 					if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 						return true;
 					}
-					if (delimPatterns.isPattern(currentField)) {
-						for (currentField++; currentField < numFields && !isDelimited[currentField]; currentField++);
+					if (currentField < numFields && delimPatterns.isPattern(currentField)) {
+						currentField++;
 						if (currentField == numFields) {
 							return true;
 						}
+						for (; currentField < numFields && !isDelimited[currentField]; currentField++);
 					}
 				}
 				ibt = inputReader.readByte();
