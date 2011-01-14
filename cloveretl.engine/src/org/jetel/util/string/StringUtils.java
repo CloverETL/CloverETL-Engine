@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.codec.language.DoubleMetaphone;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.AhoCorasick;
 import org.jetel.metadata.DataFieldMetadata;
 
 import com.ibm.icu.text.Normalizer;
@@ -1541,11 +1540,37 @@ public class StringUtils {
 	 *         specified index, or -1 if the sequence does not occur
 	 */
 	public static int indexOf(CharSequence input, CharSequence pattern, int fromIndex) {
-		AhoCorasick ac = new AhoCorasick(new String[] { pattern.toString() });
-		for (int i = fromIndex; i < input.length(); i++) {
-			ac.update(input.charAt(i));
-			if (ac.isPattern(0)) {
-				return i - pattern.length() + 1;
+		if (fromIndex >= input.length()) {
+			return (pattern.length() == 0 ? input.length() : -1);
+		}
+		if (fromIndex < 0) {
+			fromIndex = 0;
+		}
+		if (pattern.length() == 0) {
+			return fromIndex;
+		}
+
+		char first = pattern.charAt(0);
+		int max = (input.length() - pattern.length());
+
+		for (int i = fromIndex; i <= max; i++) {
+			/* Look for first character. */
+			if (input.charAt(i) != first) {
+				while (++i <= max && input.charAt(i) != first)
+					;
+			}
+
+			/* Found first character, now look at the rest of v2 */
+			if (i <= max) {
+				int j = i + 1;
+				int end = j + pattern.length() - 1;
+				for (int k = 1; j < end && input.charAt(j) == pattern.charAt(k); j++, k++)
+					;
+
+				if (j == end) {
+					/* Found whole string. */
+					return i;
+				}
 			}
 		}
 		return -1;
