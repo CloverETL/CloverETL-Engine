@@ -507,6 +507,23 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("", StringUtils.replaceVariables("${empty}", vars, "${", "}"));
 	}
 
+	public void testIndexOf() {
+		assertEquals("abcdedfg".indexOf("cde", 0), StringUtils.indexOf("abcdedfg", "cde", 0));
+		assertEquals("abcdedfg".indexOf("cde", 2), StringUtils.indexOf("abcdedfg", "cde", 2));
+		assertEquals("abcdedfg".indexOf("cde", 4), StringUtils.indexOf("abcdedfg", "cde", 4));
+		assertEquals("abcdedfg".indexOf("abc", 0), StringUtils.indexOf("abcdedfg", "abc", 0));
+		assertEquals("abcdedfg".indexOf("abc", 100), StringUtils.indexOf("abcdedfg", "abc", 100));
+		assertEquals("abcdedfg".indexOf("dfg", 0), StringUtils.indexOf("abcdedfg", "dfg", 0));
+		assertEquals("abcdedfg".indexOf("dfg", 5), StringUtils.indexOf("abcdedfg", "dfg", 5));
+		assertEquals("abcdedfg".indexOf("cba", 0), StringUtils.indexOf("abcdedfg", "cba", 0));
+		assertEquals("abcdedfg".indexOf("cba", 1), StringUtils.indexOf("abcdedfg", "cba", 1));
+		assertEquals("aaaaaaaaaaabc".indexOf("aaaa", 0), StringUtils.indexOf("aaaaaaaaaaabc", "aaaa", 0));
+		assertEquals("aaaaaaaaaaabc".indexOf("aaaa", 6), StringUtils.indexOf("aaaaaaaaaaabc", "aaaa", 6));
+		assertEquals("aaaaaaaaaaabc".indexOf("aaaa", 100), StringUtils.indexOf("aaaaaaaaaaabc", "aaaa", 100));
+		assertEquals("aaaaaaaaaaabc".indexOf("abc", 0), StringUtils.indexOf("aaaaaaaaaaabc", "abc", 0));
+		assertEquals("aaaaaaaaaaabc".indexOf("abc", 10), StringUtils.indexOf("aaaaaaaaaaabc", "abc", 10));
+	}
+	
 	private Properties getVariablesPropertiesDefault() {
 		final Properties ret = new Properties();
 		ret.put("bus","ikarus");
