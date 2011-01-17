@@ -354,7 +354,7 @@
 
 			<keep name="com.opensys.cloveretl.ctl.BytecodeCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			
-			<keep name="com.opensys.cloveretl.connection.domino.IDomino*" type="interface"></keep>
+			<keep name="com.opensys.cloveretl.connection.domino.*"><method name="*"/></keep>
 				
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
