@@ -95,6 +95,13 @@ public class PluginDescriptor {
     private ClassLoader classLoader;
 
     /**
+     * This class loader is optional and is used as a parent for {@link PluginClassLoader}.
+     * This feature is used for example by clover designer in engine initialization.
+     * @see GuiPlugin
+     */
+    private ClassLoader parentClassLader;
+    
+    /**
      * Instance of plugin described by this desriptor.
      * If the plugin is not active, is <b>null</b>.
      */
@@ -111,8 +118,13 @@ public class PluginDescriptor {
      */
     private boolean isActive = false;
     
-    public PluginDescriptor(URL manifest) {
+    /**
+     * @param manifest
+     * @param parentClassLoader can be null
+     */
+    public PluginDescriptor(URL manifest, ClassLoader parentClassLoader) {
         this.manifest = manifest; 
+        this.parentClassLader = parentClassLoader;
         
         prerequisites = new ArrayList<PluginPrerequisite>();
         libraries = new ArrayList<String>();
@@ -198,10 +210,11 @@ public class PluginDescriptor {
 //            return null;
         }
         if(classLoader == null) {
+        	ClassLoader realParentCL = parentClassLader != null ? parentClassLader : PluginDescriptor.class.getClassLoader();
         	if (Plugins.isSimpleClassLoading()) {
-        		classLoader = PluginDescriptor.class.getClassLoader();
+        		classLoader = realParentCL;
         	} else {
-        		classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this);
+        		classLoader = new PluginClassLoader(realParentCL, this);
         	}
         }
         return classLoader;

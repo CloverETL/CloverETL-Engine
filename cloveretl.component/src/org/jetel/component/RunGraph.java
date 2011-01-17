@@ -25,7 +25,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -54,6 +53,7 @@ import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.ProcBox;
@@ -421,8 +421,8 @@ public class RunGraph extends Node{
 
 		if (!cloverCommandLineArgs.contains(runGraph.PLUGINS_SWITCH)) {
             Concatenate pluginsDir = new Concatenate(";");
-            for (URL pluginUrl : Plugins.getPluginDirectories()) {
-                pluginsDir.append(pluginUrl.getPath());
+            for (PluginLocation pluginLocation : Plugins.getPluginLocations()) {
+                pluginsDir.append(pluginLocation.getLocation().getPath());
             }
             commandList.add(runGraph.PLUGINS_SWITCH);
             commandList.add(pluginsDir.toString());
