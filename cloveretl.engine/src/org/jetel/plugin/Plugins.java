@@ -62,7 +62,7 @@ public class Plugins {
     
     private static Map<String, PluginDescriptor> deactivePlugins;
 
-    private static URL[] pluginDirectories;
+    private static PluginLocation[] pluginLocations;
     
     /**
      * Whether the class references are actively loaded by the plugin system.
@@ -76,31 +76,35 @@ public class Plugins {
     }
     
     public static void init(String directory) {
+        String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        List<PluginRepositoryLocation> repositoryLocations = new ArrayList<PluginRepositoryLocation>();
+        for (String dir : dirs) {
+        	repositoryLocations.add(new PluginRepositoryLocation(new File(dir)));
+        }
+        init(repositoryLocations.toArray(new PluginRepositoryLocation[repositoryLocations.size()]));
+	}
+	
+	public static void init(PluginRepositoryLocation[] repositoryLocations) {
 
-        if(directory == null) {
-            directory = Defaults.DEFAULT_PLUGINS_DIRECTORY;
+        if (repositoryLocations == null) {
+        	repositoryLocations = new PluginRepositoryLocation[] { new PluginRepositoryLocation(new File(Defaults.DEFAULT_PLUGINS_DIRECTORY)) };
         }
         
-        //check plugin directories
-        List<URL> pluginDirectories = new ArrayList<URL>();
-        String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        
         FilenameFilter pluginManifestFilter = new FilenameFilter() {
+			@Override
 			public boolean accept(File dir, String name) {
 				return name.equals(PLUGIN_MANIFEST_FILE_NAME);
 			}
 		};
 
-		for (String dir : dirs) {
-    		File pluginRepositoryPath = new File(dir);
+		List<PluginLocation> pluginLocations = new ArrayList<PluginLocation>();
+		
+		for (PluginRepositoryLocation repositoryLocation : repositoryLocations) {
+    		File pluginRepositoryPath = repositoryLocation.getLocation();
     		File[] pluginManifestFiles = pluginRepositoryPath.listFiles(pluginManifestFilter);
 
     		if (pluginManifestFiles != null && pluginManifestFiles.length != 0) {
-				try {
-					pluginDirectories.add(pluginRepositoryPath.toURI().toURL());
-    			} catch (MalformedURLException e) {
-                    logger.error("Plugin directory does not exist. (" + pluginRepositoryPath + ")");
-    			}
+    			pluginLocations.add(new PluginLocation(pluginRepositoryPath, repositoryLocation.getClassloader()));
     		} else {
     			File[] pd = pluginRepositoryPath.listFiles();
 				if (pd == null) {
@@ -109,33 +113,30 @@ public class Plugins {
 				}
 				for (int i = 0; i < pd.length; i++) {
 					if (pd[i].isDirectory()) {
-						try {
-							pluginDirectories.add(pd[i].toURI().toURL());
-						} catch (MalformedURLException e) {
-							logger.error("Plugin directory does not exist. (" + pd[i] + ")");
-						}
+						pluginLocations.add(new PluginLocation(pd[i], repositoryLocation.getClassloader()));
 					}
 				}
     		}
         }
-
-        init(pluginDirectories.toArray(new URL[pluginDirectories.size()]));
+		
+		PluginLocation[] pls = pluginLocations.toArray(new PluginLocation[pluginLocations.size()]);
+        Plugins.init(pls);
     }
 
-    public static void init(URL[] pluginsUrls) {
+    public static void init(PluginLocation[] pluginLocations) {
         //remove all previous settings
         pluginDescriptors = new HashMap<String, PluginDescriptor>();
         activePlugins = new HashMap<String, PluginDescriptor>();
         deactivePlugins = new HashMap<String, PluginDescriptor>();
 
-        if(pluginsUrls == null || pluginsUrls.length == 0) {
+        if (pluginLocations == null || pluginLocations.length == 0) {
         	logger.warn("Engine starts without plugins.");
-        	if(pluginsUrls == null) {
-        		pluginsUrls = new URL[0];
+        	if (pluginLocations == null) {
+        		pluginLocations = new PluginLocation[0];
         	}
         }
         
-        Plugins.pluginDirectories = pluginsUrls;
+        Plugins.pluginLocations = pluginLocations;
         
         //create all plugin descriptor
         loadPluginDescription();
@@ -170,18 +171,17 @@ public class Plugins {
 
     private static void loadPluginDescription() {
     	//iterates over all plugin repositories
-        for(URL pluginUrl : pluginDirectories) {
-        	
+        for (PluginLocation pluginLocation : pluginLocations) {
         	
     		URL pluginManifestUrl;
     		try {
     			//find a plugin manifest "plugin.xml"
-    			pluginManifestUrl = FileUtils.getFileURL(pluginUrl, PLUGIN_MANIFEST_FILE_NAME);
+    			pluginManifestUrl = FileUtils.getFileURL(pluginLocation.getLocation().toURI().toURL(), PLUGIN_MANIFEST_FILE_NAME);
 			} catch (MalformedURLException e) {
-				logger.error("Plugin '" + pluginUrl + "' is not available (skipped).", e);
+				logger.error("Plugin '" + pluginLocation.getLocation() + "' is not available (skipped).", e);
 				continue;
 			}
-    		PluginDescriptor pluginDescriptor = new PluginDescriptor(pluginManifestUrl);
+    		PluginDescriptor pluginDescriptor = new PluginDescriptor(pluginManifestUrl, pluginLocation.getClassloader());
     		try {
     			pluginDescriptor.init();
     		} catch (ComponentNotReadyException e) {
@@ -214,8 +214,8 @@ public class Plugins {
         }
     }
 
-    public static URL[] getPluginDirectories() {
-        return pluginDirectories;
+    public static PluginLocation[] getPluginLocations() {
+        return pluginLocations;
     }
 
     public static PluginDescriptor getPluginDescriptor(String pluginId) {

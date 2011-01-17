@@ -18,7 +18,11 @@
  */
 package org.jetel.graph.runtime;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +37,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.main.runGraph;
+import org.jetel.plugin.PluginRepositoryLocation;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
 
@@ -59,26 +64,12 @@ public class EngineInitializer {
      *        <br>i.e. connections password can be encrypted
      *        <br>can be null
      */
-    public static void initEngine(String pluginsRootDirectory, String defaultPropertiesFile, String logHost) {
-    	synchronized (EngineInitializer.class) {
-	    	if(alreadyInitialized) {
-	    		//clover engine is already initialized
-	    		return;
-	    	}
-	    	alreadyInitialized = true;
-	    	
-	    	//init logging
-	    	initLogging(logHost);
-
-	        // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
-	        runGraph.printRuntimeHeader();
-
-	        //init framework constants
-	        Defaults.init(defaultPropertiesFile);
+    public static synchronized void initEngine(String pluginsRootDirectory, String defaultPropertiesFile, String logHost) {
+    	//shared part of initialiation
+    	internalInit(defaultPropertiesFile, logHost);
 	
-	        //init clover plugins system
-	        Plugins.init(pluginsRootDirectory);
-		}
+        //init clover plugins system
+        Plugins.init(pluginsRootDirectory);
     }
 
     /**
@@ -89,25 +80,56 @@ public class EngineInitializer {
      *        <br>i.e. connections password can be encrypted
      *        <br>can be null
      */
-    public static void initEngine(URL[] pluginsUrls, String defaultPropertiesFile, String logHost) {
+    public static synchronized void initEngine(URL[] pluginsUrls, String defaultPropertiesFile, String logHost) {
+		//shared part of initialiation
+    	internalInit(defaultPropertiesFile, logHost);
+    	
+        //init clover plugins system
+    	List<PluginRepositoryLocation> pluginRepositoryLocations = new ArrayList<PluginRepositoryLocation>();
+    	for (URL pluginUrl : pluginsUrls) {
+    		try {
+				pluginRepositoryLocations.add(new PluginRepositoryLocation(new File(pluginUrl.toURI())));
+			} catch (URISyntaxException e) {
+				logger.error("Plugin '" + pluginUrl + "' is not available (skipped).", e);
+				continue;
+			}
+    	}
+        Plugins.init(pluginRepositoryLocations.toArray(new PluginRepositoryLocation[pluginRepositoryLocations.size()]));
+    }
+
+    /**
+     * Clover.ETL engine initialization. Should be called only once.
+     * @param pluginRepositories locations of all engine plugins 
+     * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
+     * @param password password for encrypting some hidden part of graphs
+     *        <br>i.e. connections password can be encrypted
+     *        <br>can be null
+     */
+    public static synchronized void initEngine(PluginRepositoryLocation[] pluginRepositories, String defaultPropertiesFile, String logHost) {
+    	//shared part of initialiation
+    	internalInit(defaultPropertiesFile, logHost);
+    	
+        //init clover plugins system
+        Plugins.init(pluginRepositories);
+    }
+
+    private static void internalInit(String defaultPropertiesFile, String logHost) {
     	if(alreadyInitialized) {
     		//clover engine is already initialized
     		return;
     	}
+    	alreadyInitialized = true;
     	
     	//init logging
     	initLogging(logHost);
-    	
+
+        // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
+        runGraph.printRuntimeHeader();
+
         //init framework constants
         Defaults.init(defaultPropertiesFile);
-
-        //init clover plugins system
-        Plugins.init(pluginsUrls);
-        
-        //make a note, engine is already initialized
-        alreadyInitialized = true;
     }
-
+    
     /**
      * This method forces engine to activate all plugins at once.
      * For engine initialization it is not necessary to call this method,
