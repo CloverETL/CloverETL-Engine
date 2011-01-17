@@ -81,6 +81,8 @@
 				<!-- fileset plugin-libs contains all jar files in plugin lib directory, used while compile plugin -->
 				<fileset id="plugin-libs" dir="${dir.lib}">
 					<include name="**/*.jar"/>
+					<!-- this is not an actual library, the module is loaded dynamically into separated classloader -->
+					<exclude name="**/cloveretl.component.dominoloader.jar"/>
 				</fileset>
 				<!-- fileset plugin-lib-files contains all files in plugin lib directory, may contain executables (e.g. cloveretl.bulkloader), used while package plugin -->
 				<fileset id="plugin-lib-files" dir="${dir.lib}">
@@ -352,7 +354,7 @@
 
 			<keep name="com.opensys.cloveretl.ctl.BytecodeCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			
-			<keep name="com.opensys.cloveretl.connection.domino.IDomino*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.domino.IDomino*" type="interface"></keep>
 				
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
