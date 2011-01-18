@@ -63,6 +63,13 @@ public interface ICharByteInputReader {
 	public int readByte() throws IOException, OperationNotSupportedException;
 
 	/**
+	 * Skips specified number of bytes.
+	 * @param num Positive value for skip, negative value for revert. zero doesn't do anything
+	 * @return Number of characters skipped
+	 */
+	public int skip(int num);
+	
+	/**
 	 * Marks current position in the input. Precedes revert(), getCharSequence(), and getByteSequence()
 	 * 
 	 * @throws OperationNotSupportedException
