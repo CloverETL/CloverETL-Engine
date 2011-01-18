@@ -56,7 +56,6 @@ import org.jetel.util.string.StringUtils;
 public class CharByteDataParser extends AbstractTextParser {
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
-	
 
 	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
 
@@ -409,18 +408,9 @@ public class CharByteDataParser extends AbstractTextParser {
 				needCharInput = true;
 			}
 		}
-		// create input reader according to data record requirements
-		CharByteInputReader singleMarkInputReader;
+		// create input reader according to data record requirements		
 		if (inputReader == null) {
-			if (!needCharInput) {
-				singleMarkInputReader = new CharByteInputReader.ByteInputReader();
-			} else if (!needByteInput) {
-				singleMarkInputReader = new CharByteInputReader.CharInputReader(charset);
-			} else if (cfg.isSingleByteCharset()) {
-				singleMarkInputReader = new CharByteInputReader.SingleByteCharsetInputReader(charset);
-			} else {
-				singleMarkInputReader = new CharByteInputReader.RobustInputReader(charset);
-			}
+			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false);
 			if (cfg.isVerbose()) {
 				inputReader = verboseInputReader = new CharByteInputReader.DoubleMarkCharByteInputReader(singleMarkInputReader);
 			} else {
@@ -456,23 +446,24 @@ public class CharByteDataParser extends AbstractTextParser {
 					break;
 				}
 			}
+			DataFieldMetadata field = metadata.getField(idx);
 			if (byteFieldCount > 0) { // fixlen byte field consumer
-				fieldConsumers[numConsumers] = new FixlenByteFieldConsumer(metadata, inputReader, idx, byteFieldCount);
+				fieldConsumers[numConsumers] = new FixlenByteFieldConsumer(metadata, inputReader, idx, byteFieldCount, field.getShift());
 				idx += byteFieldCount;
 			} else {
-				DataFieldMetadata field = metadata.getField(idx);
 				if (!field.isDelimited()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
 					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(),
-							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
+							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
 				} else if (field.isByteBased()) { // delimited byte field consumer
 					fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(),
 							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false,
-							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
+							isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
 				} else { // delimited char field consumer
 					fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(),
 							cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false,
-									cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx));
+							cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx),
+							field.getShift());
 				}
 				idx++;
 			}
@@ -617,17 +608,20 @@ public class CharByteDataParser extends AbstractTextParser {
 		private final CharsetDecoder decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		private int startFieldIdx;
 		private int fieldCount;
+		private int shift;
 
 		private int dataLength;
 		private int[] fieldStart;
 		private int[] fieldEnd;
 		private boolean[] isAutoFilling;
 
-		FixlenByteFieldConsumer(DataRecordMetadata metadata, ICharByteInputReader inputReader, int startFieldIdx, int fieldCount) throws ComponentNotReadyException {
+		FixlenByteFieldConsumer(DataRecordMetadata metadata, ICharByteInputReader inputReader,
+				int startFieldIdx, int fieldCount, int shift) throws ComponentNotReadyException {
 			super(inputReader);
 			this.startFieldIdx = startFieldIdx;
 			this.fieldCount = fieldCount;
 			this.inputReader = inputReader;
+			this.shift = shift;
 			
 			fieldStart = new int[fieldCount];
 			fieldEnd = new int[fieldCount];
@@ -655,12 +649,13 @@ public class CharByteDataParser extends AbstractTextParser {
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ibt;
+			inputReader.skip(shift);
 			inputReader.mark();
 			
 			for (int i = 0; i < dataLength; i++) {
 				ibt = inputReader.readByte();
 				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("End quote not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("Insufficient buffer capacity, try to increase MAX_RECORD_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
 					if (i == 0) {
@@ -691,22 +686,25 @@ public class CharByteDataParser extends AbstractTextParser {
 		private int fieldLength;
 		private boolean lTrim;
 		private boolean rTrim;
+		private int shift;
 
 
 		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength,
-				boolean lTrim, boolean rTrim) {
+				boolean lTrim, boolean rTrim, int shift) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.inputReader = inputReader;
 			this.fieldLength = fieldLength;
 			this.lTrim = lTrim;
 			this.rTrim = rTrim;
+			this.shift = shift;
 		}
 		
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ichr;
 
+			inputReader.skip(shift);
 			inputReader.mark();
 			for (int i = 0; i < fieldLength; i++) {
 				ichr = inputReader.readChar();
@@ -752,10 +750,11 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean isQuoted;
 		private boolean lTrim;
 		private boolean rTrim;
+		private int shift;
 
 		public DelimCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean isQuoted,
-				boolean lTrim, boolean rTrim) {
+				boolean lTrim, boolean rTrim, int shift) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.delimPatterns = delimPatterns;
@@ -770,12 +769,14 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 			this.lTrim = lTrim;
 			this.rTrim = rTrim;
+			this.shift = shift;
 		}
 		
 		private boolean consumeQuotedField(DataField field)  throws OperationNotSupportedException, IOException {
 			int ichr;
 			char chr;
 
+			inputReader.skip(shift);
 			inputReader.mark();
 
 			StringBuilder fieldValue = new StringBuilder();
@@ -852,6 +853,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			int ichr;
 			char chr;
 
+			inputReader.skip(shift);
 			inputReader.mark();
 
 			ichr = inputReader.readChar();
@@ -960,10 +962,11 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean acceptEndOfRecord;
 		private boolean lTrim;
 		private boolean rTrim;
+		private int shift;
 
 		public DelimByteFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, 
-				boolean lTrim, boolean rTrim) {
+				boolean lTrim, boolean rTrim, int shift) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.delimPatterns = delimPatterns;
@@ -972,12 +975,14 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.acceptEndOfRecord = acceptEndOfRecord;
 			this.lTrim = lTrim;
 			this.rTrim = rTrim;
+			this.shift = shift;
 		}
 		
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ibt;
 			char bt;
 
+			inputReader.skip(shift);
 			inputReader.mark();
 
 			ibt = inputReader.readByte();
@@ -1111,16 +1116,19 @@ public class CharByteDataParser extends AbstractTextParser {
 		private AhoCorasick delimPatterns;
 		private int delimId;
 		private boolean acceptEofAsDelim;
+		private int shift;
 		
-		ByteDelimConsumer(ICharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim) {
+		ByteDelimConsumer(ICharByteInputReader inputReader, AhoCorasick delimPatterns, int delimId, boolean acceptEofAsDelim, int shift) {
 			super(inputReader);
 			this.delimPatterns = delimPatterns;
 			this.delimId = delimId;
 			this.acceptEofAsDelim = acceptEofAsDelim;
+			this.shift = shift;
 		}
 		
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
+			inputReader.skip(shift);
 			inputReader.mark();
 			int ibt;
 			char bt;
@@ -1151,24 +1159,6 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 		}
 		
-		public static class RecordSkipper extends InputConsumer {
-
-			/**
-			 * @param inputReader
-			 */
-			protected RecordSkipper(CharByteInputReader inputReader) {
-				super(inputReader);
-				// TODO Auto-generated constructor stub
-			}
-
-			@Override
-			public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
-				// TODO Auto-generated method stub
-				return false;
-			}
-			
-		}
-				
 	}
 	
 	public abstract static class RecordSkipper {
@@ -1292,8 +1282,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			// unreachable
 		}
 
-	}
-		
+	}		
 		
 } 
 

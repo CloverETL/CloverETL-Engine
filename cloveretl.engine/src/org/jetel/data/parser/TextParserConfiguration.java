@@ -258,9 +258,17 @@ public class TextParserConfiguration implements Cloneable {
 	public IParserExceptionHandler getExceptionHandler() {
 		return exceptionHandler;
 	}
-	
+
+	public static boolean isSingleByteCharset(Charset charset) {
+		return 1 == Math.round(charset.newEncoder().maxBytesPerChar());
+	}
+
+	public static boolean isSingleByteCharset(String charset) {
+		return isSingleByteCharset(Charset.forName(charset));
+	}
+
 	public boolean isSingleByteCharset() {
-		return 1 == Math.round(Charset.forName(charset).newEncoder().maxBytesPerChar());
+		return isSingleByteCharset(charset);
 	}
 
 	@Override

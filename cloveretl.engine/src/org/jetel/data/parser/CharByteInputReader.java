@@ -31,6 +31,8 @@ import java.nio.charset.CodingErrorAction;
 import javax.naming.OperationNotSupportedException;
 
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * An abstract class for input readers able to provide mixed char/byte data
@@ -62,6 +64,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		throw new OperationNotSupportedException("Input reader doesn't support readByte() operation. Choose another implementation");
 	}
 
+	
 	@Override
 	public void mark() throws OperationNotSupportedException {
 		throw new OperationNotSupportedException("Input reader doesn't support mark() operation. Choose another implementation");
@@ -125,8 +128,43 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			assert bytesRemaining == 0 : "Unexpected internal state occured during code execution";
 		}
-		inputBytesConsumed = position;
-				
+		inputBytesConsumed = position;				
+	}
+	
+	public static CharByteInputReader createInputReader(DataRecordMetadata metadata, Charset charset, boolean needByteInput, boolean needCharInput) {
+		return createInputReader(new DataRecordMetadata[]{metadata}, charset, needByteInput, needCharInput);
+	}
+	
+	public static CharByteInputReader createInputReader(DataRecordMetadata[] metadataArray, Charset charset, boolean needByteInput, boolean needCharInput) {
+		int maxBackShift = 0;
+
+		for (DataRecordMetadata metadata : metadataArray) {
+			for (DataFieldMetadata field : metadata.getFields()) {
+				if (field.isAutoFilled()) {
+					continue;
+				}
+				if (field.isByteBased()) {
+					needByteInput = true;
+				} else {
+					needCharInput = true;
+				}
+				maxBackShift = Math.max(maxBackShift, -field.getShift());				
+			}
+		}
+
+		CharByteInputReader reader;
+
+		if (!needCharInput) {
+			reader = new CharByteInputReader.ByteInputReader(maxBackShift);
+		} else if (!needByteInput) {
+			reader = new CharByteInputReader.CharInputReader(charset, maxBackShift);
+		} else if (TextParserConfiguration.isSingleByteCharset(charset)) {
+			reader = new CharByteInputReader.SingleByteCharsetInputReader(charset, maxBackShift);
+		} else {
+			reader = new CharByteInputReader.RobustInputReader(charset, maxBackShift);
+		}
+		
+		return reader;
 	}
 
 	/**
@@ -140,13 +178,19 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		private ByteBuffer byteBuffer;
 		private int currentMark;
 		private boolean endOfInput;
+		private int maxBackMark;
 
-		public ByteInputReader() {
+		/**
+		 * Sole constructor
+		 * @param maxBackMark Max span for backward skip.
+		 */
+		public ByteInputReader(int maxBackMark) {
 			super();
 			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
+			this.maxBackMark = maxBackMark;
 		}
 
 		@Override
@@ -157,19 +201,22 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				}
 				// byteBuffer gets ready to receive data
 				int numBytesToPreserve;
+				int markSpan;
 				if (currentMark == INVALID_MARK) {
-					numBytesToPreserve = 0;
+					markSpan = 0;
 				} else {
-					numBytesToPreserve = byteBuffer.position() - currentMark;
-					if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-						return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-												// mark
-					}
-					// preserve data between mark and current position
-					byteBuffer.position(currentMark);
-					byteBuffer.compact();
-					currentMark = 0;
+					markSpan = byteBuffer.position() - currentMark;
 				}
+				numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(markSpan, maxBackMark));
+				if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+											// mark
+				}
+				// preserve data between mark and current position
+				byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
+				byteBuffer.compact();
+				currentMark = numBytesToPreserve - markSpan;
+
 				byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve);
 				int bytesConsumed = channel.read(byteBuffer);
 				byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
@@ -182,6 +229,32 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				}
 			}
 			return byteBuffer.get();
+		}
+
+		public int skip(int numBytes) {
+			if (numBytes == 0) {
+				return 0;
+			}
+			if (numBytes > 0) {
+				int idx;
+				for (idx = 0; idx < numBytes; idx++) {
+					try {
+						readByte();
+					} catch (IOException e) {
+						break;
+					} catch (OperationNotSupportedException e) {
+						assert false : "Unexpected execution flow";						
+					}
+				}
+				return idx;
+			}			
+			int pos = byteBuffer.position();
+			if (-numBytes > pos) {
+				byteBuffer.position(0);
+				return -pos;
+			}
+			byteBuffer.position(pos + numBytes);
+			return numBytes;
 		}
 
 		public void mark() throws OperationNotSupportedException {
@@ -250,8 +323,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		private CharsetDecoder decoder;
 		private int currentMark;
 		private boolean endOfInput;
+		private int maxBackMark;
 
-		public CharInputReader(Charset charset) {
+		/**
+		 * Sole constructor
+		 * @param charset Input charset
+		 * @param maxBackMark Max span for backward skip.
+		 */
+		public CharInputReader(Charset charset, int maxBackMark) {
 			super();
 			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
@@ -265,6 +344,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
 			currentMark = INVALID_MARK;
 			endOfInput = false;
+			this.maxBackMark = maxBackMark;
 		}
 
 		@Override
@@ -280,24 +360,26 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			// need to get more data in charBuffer
 
 			// charBuffer gets ready to receive data
-			int numBytesToPreserve;
+			int numCharsToPreserve;
+			int markSpan;
 			if (currentMark == INVALID_MARK) {
-				numBytesToPreserve = 0;
+				markSpan = 0;
 			} else {
-				numBytesToPreserve = charBuffer.position() - currentMark;
-				if (charBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-											// mark
-				}
-				// preserve data between mark and current position
-				charBuffer.position(currentMark);
-				charBuffer.compact();
-				currentMark = 0;
+				markSpan = charBuffer.position() - currentMark;
 			}
+			numCharsToPreserve = Math.min(charBuffer.position(), Math.max(markSpan, maxBackMark));
+			if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+										// mark
+			}
+			// preserve data between mark and current position
+			charBuffer.position(charBuffer.position() - numCharsToPreserve);
+			charBuffer.compact();
+			currentMark = numCharsToPreserve - markSpan;
 			do {
-				charBuffer.limit(charBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
+				charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to receive data
 				decoder.decode(byteBuffer, charBuffer, false);
-				charBuffer.flip().position(numBytesToPreserve); // get ready to provide data
+				charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
 				if (!charBuffer.hasRemaining()) { // need to read more data from input
 					byteBuffer.compact(); // get ready to receive data
 					int bytesConsumed = channel.read(byteBuffer);
@@ -306,15 +388,15 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					case 0:
 						throw new OperationNotSupportedException("Non-blocking input source not supported by the selected input reader. Choose another implementation");
 					case -1: // end of input
-						charBuffer.limit(charBuffer.capacity()).position(numBytesToPreserve); // get ready to receive
+						charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to receive
 																								// data
 						decoder.decode(byteBuffer, charBuffer, true);
-						charBuffer.flip().position(numBytesToPreserve); // get ready to provide data
+						charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
 						if (!charBuffer.hasRemaining()) {
-							charBuffer.limit(charBuffer.capacity()).position(numBytesToPreserve); // get ready to
+							charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to
 																									// receive data
 							decoder.flush(charBuffer);
-							charBuffer.flip().position(numBytesToPreserve);
+							charBuffer.flip().position(numCharsToPreserve);
 							if (!charBuffer.hasRemaining()) {
 								endOfInput = true;
 								return END_OF_INPUT;
@@ -330,6 +412,32 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				} // attempt to decode from byte buffer
 			} while (!charBuffer.hasRemaining());
 			return charBuffer.get();
+		}
+
+		public int skip(int numChars) {
+			if (numChars == 0) {
+				return 0;
+			}
+			if (numChars > 0) {
+				int idx;
+				for (idx = 0; idx < numChars; idx++) {
+					try {
+						readByte();
+					} catch (IOException e) {
+						break;
+					} catch (OperationNotSupportedException e) {
+						assert false : "Unexpected execution flow";						
+					}
+				}
+				return idx;
+			}			
+			int pos = charBuffer.position();
+			if (-numChars > pos) {
+				charBuffer.position(0);
+				return -pos;
+			}
+			charBuffer.position(pos + numChars);
+			return numChars;
 		}
 
 		public void mark() throws OperationNotSupportedException {
@@ -351,10 +459,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			if (currentMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
-			CharSequence seq = new String(charBuffer.array(), charBuffer.arrayOffset() + currentMark, charBuffer.arrayOffset() + charBuffer.position() + relativeEnd - currentMark);
-			// discard mark automatically to avoid problems with instance user forgetting to discard it explicitly
+			CharSequence seq = String.copyValueOf(charBuffer.array(), charBuffer.arrayOffset() + currentMark, charBuffer.arrayOffset() + charBuffer.position() + relativeEnd - currentMark);
+//			CharSequence seq = CharBuffer.wrap(charBuffer.array(), charBuffer.arrayOffset() + currentMark, charBuffer.arrayOffset() + charBuffer.position() + relativeEnd - currentMark);
 			currentMark = INVALID_MARK;
 			return seq;
+			
 		}
 
 		@Override
@@ -399,8 +508,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		private CharsetDecoder decoder;
 		private int currentMark;
 		private boolean endOfInput;
+		private int maxBackMark;
 
-		public SingleByteCharsetInputReader(Charset charset) {
+		/**
+		 * Sole constructor
+		 * @param charset Input charset
+		 * @param maxBackMark Max span for backward skip.
+		 */
+		public SingleByteCharsetInputReader(Charset charset, int maxBackMark) {
 			super();
 			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
@@ -414,6 +529,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 			currentMark = INVALID_MARK;
 			endOfInput = false;
+			this.maxBackMark = maxBackMark;
 		}
 
 		private int ensureBuffersNotEmpty() throws IOException, OperationNotSupportedException {
@@ -428,23 +544,23 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			// need to get more data in charBuffer
 
 			int numBytesToPreserve;
+			int markSpan;
 			if (currentMark == INVALID_MARK) {
-				numBytesToPreserve = 0;
+				markSpan = 0;
 			} else {
-				assert charBuffer.position() == byteBuffer.position() : "Unexpected internal state occured during code execution";
-				numBytesToPreserve = charBuffer.position() - currentMark;
-
-				if (charBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-											// mark
-				}
-				// preserve data between mark and current position
-				charBuffer.position(currentMark);
-				charBuffer.compact();
-				byteBuffer.position(currentMark);
-				byteBuffer.compact();
-				currentMark = 0;
+				markSpan = charBuffer.position() - currentMark;
 			}
+			numBytesToPreserve = Math.min(charBuffer.position(), Math.max(markSpan, maxBackMark));
+			if (charBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+				// mark
+			}
+			// preserve data between mark and current position
+			charBuffer.position(charBuffer.position() - numBytesToPreserve);
+			charBuffer.compact();
+			byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
+			byteBuffer.compact();
+			currentMark = numBytesToPreserve - markSpan;
 
 			// get more data from input
 			charBuffer.limit(charBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
@@ -510,6 +626,36 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			byteBuffer.get(); // skip byte
 			return charBuffer.get();
+		}
+
+		public int skip(int numBytes) {
+			assert charBuffer.position() == byteBuffer.position() : "Unexpected condition occured during code execution";
+			if (numBytes == 0) {
+				return 0;
+			}
+			if (numBytes > 0) {
+				int idx;
+				for (idx = 0; idx < numBytes; idx++) {
+					try {
+						readByte();
+					} catch (IOException e) {
+						break;
+					} catch (OperationNotSupportedException e) {
+						assert false : "Unexpected execution flow";						
+					}
+				}
+				assert charBuffer.position() == byteBuffer.position() : "Unexpected condition occured during code execution";
+				return idx;
+			}			
+			int pos = charBuffer.position();
+			if (-numBytes > pos) {
+				charBuffer.position(0);
+				byteBuffer.position(0);
+				return -pos;
+			}
+			charBuffer.position(pos + numBytes);
+			byteBuffer.position(pos + numBytes);
+			return numBytes;
 		}
 
 		public void mark() throws OperationNotSupportedException {
@@ -598,8 +744,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		private int currentByteMark;
 		private int currentCharMark;
 		private boolean endOfInput;
+		private int maxBackMark;
 
-		public RobustInputReader(Charset charset) {
+		/**
+		 * Sole constructor
+		 * @param charset Input charset
+		 * @param maxBackMark Max span for backward skip.
+		 */
+		public RobustInputReader(Charset charset, int maxBackMark) {
 			super();
 			channel = null;
 			this.charset = charset;
@@ -614,6 +766,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 			currentCharMark = currentByteMark = INVALID_MARK;
 			endOfInput = false;
+			this.maxBackMark = maxBackMark;
 		}
 
 		@Override
@@ -629,22 +782,22 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			// need to get more data in charBuffer
 
 			int numCharsToPreserve;
-
+			int charMarkSpan;
 			if (currentCharMark == INVALID_MARK) {
-				numCharsToPreserve = 0;
-				charBuffer.clear();
+				charMarkSpan = 0;
 			} else {
-				numCharsToPreserve = charBuffer.position() - currentCharMark;
+				charMarkSpan = charBuffer.position() - currentCharMark;
 				// char buffer capacity test
-				if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-											// mark
-				}
-				// preserve data between mark and current position
-				charBuffer.position(currentCharMark);
-				charBuffer.compact();
-				currentCharMark = 0;
 			}
+			numCharsToPreserve = Math.min(charBuffer.position(), Math.max(charMarkSpan, maxBackMark));
+			if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+										// mark
+			}
+			// preserve data between mark and current position
+			charBuffer.position(charBuffer.position() - numCharsToPreserve);
+			charBuffer.compact();
+			currentCharMark = numCharsToPreserve - charMarkSpan;
 
 			// need to decode more data
 			do {
@@ -657,19 +810,20 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				if (!charBuffer.hasRemaining()) { // need to read and decode more data from input
 					// prepare byte buffer
 					int numBytesToPreserve;
+					int byteMarkSpan;
 					if (currentByteMark == INVALID_MARK) {
 						assert currentCharMark == INVALID_MARK : "Unexpected internal state occured during code execution";
-						byteBuffer.clear();
-						numBytesToPreserve = 0;
+						byteMarkSpan = 0;
 					} else {
-						numBytesToPreserve = byteBuffer.position() - currentByteMark;
-						// following condition is implied by char buffer capacity test above
-						assert byteBuffer.capacity() - numBytesToPreserve >= MIN_BUFFER_OPERATION_SIZE : "Unexpected internal state occured during code execution";
-						// preserve data between mark and current position
-						byteBuffer.position(currentByteMark);
-						byteBuffer.compact();
-						currentByteMark = 0;
+						byteMarkSpan = byteBuffer.position() - currentByteMark;
 					}
+					numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(byteMarkSpan, maxBackMark));
+					// following condition is implied by char buffer capacity test above
+					assert byteBuffer.capacity() - numBytesToPreserve >= MIN_BUFFER_OPERATION_SIZE : "Unexpected internal state occured during code execution";
+					// preserve data between mark and current position
+					byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
+					byteBuffer.compact();
+					currentByteMark = numBytesToPreserve - byteMarkSpan;
 
 					byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
 					int bytesConsumed = channel.read(byteBuffer);
@@ -713,19 +867,24 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 
 			int numBytesToPreserve;
+			int byteMarkSpan;
 			if (currentByteMark == INVALID_MARK) {
 				assert currentCharMark == INVALID_MARK : "Unexpected internal state occured during code execution";
-				byteBuffer.clear();
-				numBytesToPreserve = 0;
+				byteMarkSpan = 0;
 			} else {
-				numBytesToPreserve = byteBuffer.position() - currentByteMark;
-				// following condition is implied by char buffer capacity test above
-				assert byteBuffer.capacity() - numBytesToPreserve >= MIN_BUFFER_OPERATION_SIZE : "Unexpected internal state occured during code execution";
-				// preserve data between mark and current position
-				byteBuffer.position(currentByteMark);
-				byteBuffer.compact();
-				currentByteMark = 0;
+				byteMarkSpan = byteBuffer.position() - currentByteMark;
 			}
+			numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(byteMarkSpan, maxBackMark));
+			
+			if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+										// mark
+			}
+			// preserve data between mark and current position
+			byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
+			byteBuffer.compact();
+			currentByteMark = numBytesToPreserve - byteMarkSpan;
+
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to receive data
 			int bytesConsumed = channel.read(byteBuffer);
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
@@ -760,6 +919,33 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			endOfInput = false;
 		}
 
+		public int skip(int numBytes) {
+			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
+			if (numBytes == 0) {
+				return 0;
+			}
+			if (numBytes > 0) {
+				int idx;
+				for (idx = 0; idx < numBytes; idx++) {
+					try {
+						readByte();
+					} catch (IOException e) {
+						break;
+					} catch (OperationNotSupportedException e) {
+						assert false : "Unexpected execution flow";						
+					}
+				}
+				return idx;
+			}
+			int pos = byteBuffer.position();
+			if (-numBytes > pos) {
+				byteBuffer.position(0);
+				return -pos;
+			}
+			byteBuffer.position(pos + numBytes);
+			return numBytes;
+		}
+
 		public void mark() throws OperationNotSupportedException {
 			currentByteMark = byteBuffer.position();
 			currentCharMark = charBuffer.position();
@@ -769,7 +955,6 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		public void revert() throws OperationNotSupportedException {
 			if (currentByteMark == INVALID_MARK) {
 				assert currentCharMark == INVALID_MARK : "Unexpected internal state occured during code execution";
-				;
 				throw new InvalidMarkException();
 			}
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
@@ -824,7 +1009,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	/**
 	 * An ugly hack to provide support for the verbose error reporting in the parsers.
 	 * Adds double mark capability to the underlying input reader.
-	 * The additional mark (outer mark) precedes the standard mark supported nastively by
+	 * The additional mark (outer mark) precedes the standard mark supported natively by
 	 * the underlying input reader. Typically outer mark is set at the beginning of the record
 	 * while standard mark is set at the beginning of the field.
 	 * Revert to the position of the outer mark is not supported, it is used only
@@ -927,6 +1112,16 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		public void setInputSource(ReadableByteChannel channel) {
 			inputReader.setInputSource(channel);
 			innerMark = outerMark = INVALID_MARK;
+		}
+
+		@Override
+		public int skip(int numBytes) {
+			inputReader.setMark(outerMark);
+			int retval = inputReader.skip(numBytes);
+			int markDiff = outerMark - inputReader.getMark();
+			outerMark -= markDiff;
+			innerMark -= markDiff;
+			return retval;
 		}
 
 		@Override
