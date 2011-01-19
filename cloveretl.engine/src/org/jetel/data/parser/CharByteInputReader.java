@@ -231,6 +231,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return byteBuffer.get();
 		}
 
+		@Override
 		public int skip(int numBytes) {
 			if (numBytes == 0) {
 				return 0;
@@ -256,7 +257,13 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			byteBuffer.position(pos + numBytes);
 			return numBytes;
 		}
-
+		
+		@Override
+		public boolean isEndOfInput() {
+			return endOfInput;
+		}
+		
+		@Override
 		public void mark() throws OperationNotSupportedException {
 			currentMark = byteBuffer.position();
 		}
@@ -440,6 +447,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return numChars;
 		}
 
+		@Override
+		public boolean isEndOfInput() {
+			return endOfInput;
+		}
+		
 		public void mark() throws OperationNotSupportedException {
 			currentMark = charBuffer.position();
 		}
@@ -658,6 +670,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return numBytes;
 		}
 
+		@Override
+		public boolean isEndOfInput() {
+			return endOfInput;
+		}
+		
 		public void mark() throws OperationNotSupportedException {
 			assert charBuffer.position() == byteBuffer.position() : "Unexpected internal state occured during code execution";
 			currentMark = charBuffer.position();
@@ -952,6 +969,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
+		public boolean isEndOfInput() {
+			return endOfInput;
+		}
+		
+		@Override
 		public void revert() throws OperationNotSupportedException {
 			if (currentByteMark == INVALID_MARK) {
 				assert currentCharMark == INVALID_MARK : "Unexpected internal state occured during code execution";
@@ -1124,6 +1146,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return retval;
 		}
 
+		@Override
+		public boolean isEndOfInput() {
+			return inputReader.isEndOfInput();
+		}
+		
 		@Override
 		public void mark() throws OperationNotSupportedException {
 			inputReader.mark();
