@@ -178,8 +178,12 @@ public class SimpleDataParser extends AbstractTextParser {
 		if (cfg.getMetadata() == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
+		for (DataFieldMetadata field : cfg.getMetadata()) {
+			if (!field.isDelimited()) {
+				throw new ComponentNotReadyException("Fixed length fields not supported");
+			}
+		}
 		numFields = cfg.getMetadata().getNumFields();
-
 		cb = new char[8192];
 		isEOF = false;
 		fieldBuffer = new StringBuilder(Defaults.DataParser.FIELD_BUFFER_LENGTH);
