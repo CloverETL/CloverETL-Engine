@@ -130,7 +130,11 @@ public class DataParser extends AbstractTextParser {
 	public static Integer getParserSpeed(TextParserConfiguration cfg){
 		for (DataFieldMetadata field : cfg.getMetadata().getFields()) {
 			if (field.isByteBased() && !field.isAutoFilled()) {
-				logger.debug("Parser cannot be used for the specified data as they contain byte-based field '" + field);
+				logger.debug("Parser cannot be used for the specified data as they contain byte-based field '" + field + "'");
+				return null;
+			}
+			if (field.getShift() != 0) {
+				logger.debug("Parser cannot be used for the specified data as they contain field '" + field +  "' with non-zero shift");
 				return null;
 			}
 		}

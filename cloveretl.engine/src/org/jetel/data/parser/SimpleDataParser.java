@@ -106,17 +106,21 @@ public class SimpleDataParser extends AbstractTextParser {
 
 	static private boolean isSimpleData(DataRecordMetadata metadata) {
 		for (DataFieldMetadata field : metadata.getFields()) {
+			if (field.getShift() != 0) {
+				logger.debug("Field " + field + " has non-zero shift");
+				return false;
+			}
 			if (!field.isDelimited()) {
 				logger.debug("Field " + field + " is not delimited");
 				return false;
 			}
 			final String[] fieldDelimiters = field.getDelimiters();
 			if( fieldDelimiters == null ){
-				logger.debug("Field " + field + " has none delimiter");
+				logger.debug("Field " + field + " has no delimiter");
 				return false;
 			}
 			if (fieldDelimiters.length > 1) {
-				logger.debug("Field " + field + " has multiple deminiters");
+				logger.debug("Field " + field + " has multiple delimiters");
 				return false;
 			}
 			final char[] delimiter = fieldDelimiters[0].toCharArray();
