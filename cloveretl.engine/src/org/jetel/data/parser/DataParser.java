@@ -855,12 +855,14 @@ public class DataParser extends AbstractTextParser {
 				if(!findFirstRecordDelimiter()) {
 				    break;
                 }
+				recordBuffer.clear();
 			}
 		} else {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findEndOfRecord(0)) {
 				    break;
                 }
+				recordBuffer.clear();
 			}
 		}
         
