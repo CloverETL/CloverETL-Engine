@@ -164,7 +164,7 @@ public class CompressedByteDataField extends ByteDataField {
 		byte[] buf = new byte[dataLen];
 		dataBuffer.get(buf);
 
-		if (!Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset()))) {
+		if (!Arrays.equals(buf, metadata.getNullValue().getBytes(decoder.charset()))) {
 			setValue(buf);
 			setNull(false);
 		} else {
@@ -228,17 +228,18 @@ public class CompressedByteDataField extends ByteDataField {
 		byte[] left;
 		byte[] right;
 
-		if (obj instanceof CompressedByteDataField){
-			left = value;
-			right = ((CompressedByteDataField)obj).value;
-		}else if (obj instanceof byte[]){
+		if (obj instanceof CompressedByteDataField) {
+			if (((CompressedByteDataField)obj).isNull) return 1;
 			left = getByteArray();
-			right = (byte[])obj;
-		}else {
-		    throw new ClassCastException("Can't compare CompressedByteDataField and "+obj.getClass().getName());
+			right = ((CompressedByteDataField)obj).getByteArray();
+		} else if (obj instanceof byte[]) {
+			left = getByteArray();
+			right = (byte[]) obj;
+		} else {
+			throw new ClassCastException("Can't compare CompressedByteDataField and " + obj.getClass().getName());
 		}
-		 
-		int compLength = left.length >= right.length ? left.length : right.length;
+
+		int compLength = left.length < right.length ? left.length : right.length;
 		for (int i = 0; i < compLength; i++) {
 			if (left[i] > right[i]) {
 				return 1;
