@@ -121,7 +121,8 @@ public class CloverDataReader extends Node {
 	private int numRecords = -1;
 	private int skipSourceRows = -1;
 	private int numSourceRecords = -1;
-
+    private int skipped = 0; // number of records skipped to satisfy the skipRows attribute, records skipped to satisfy skipSourceRows are not included
+    
     private AutoFilling autoFilling = new AutoFilling();
 
 	private Iterator<String> filenameItor;
@@ -159,6 +160,7 @@ public class CloverDataReader extends Node {
     		autoFilling.reset();
     	}
 		inputSource = setDataSource(); //assigns data source to a parser and returns true if succeeds
+		skip();
     }    
 
 	
@@ -170,19 +172,17 @@ public class CloverDataReader extends Node {
         DataRecord rec;
 		if (inputSource) {
 			do {
-				while ((rec = parser.getNext(record))!=null && runIt){
-					if (!checkRowAndPrepareSource()) break;
-					
+				if (checkRow() && (rec = parser.getNext(record)) != null) {
 			        autoFilling.setLastUsedAutoFillingFields(rec);
 				    writeRecordBroadcast(rec);
 					SynchronizeUtils.cloverYield();
-				}
-
-				// prepare next file
-				if (!nextSource()) break;
-				
-			} while (true);
-			
+				} else {
+					// prepare next file
+					if (!nextSource()) {
+						break;
+					}
+				}				
+			} while (runIt);			
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -202,18 +202,14 @@ public class CloverDataReader extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException 
 	 */
-	private final boolean checkRowAndPrepareSource() throws ComponentNotReadyException {
-        //check for index of last returned record
-        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
-            return numSourceRecords > 0 && nextSource();
+	private final boolean checkRow() {
+        if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
+            return false;
         }
-        
-        //check for index of last returned record for each source
-        if(numSourceRecords > 0 && numSourceRecords == autoFilling.getSourceCounter()) {
-            return numRecords > autoFilling.getGlobalCounter() || nextSource();
+        if (numSourceRecords > 0 && numSourceRecords <= autoFilling.getSourceCounter()) {
+        	return false;
         }
-        
-        return true;
+       	return true;
 	}
 
 	private boolean nextSource() throws ComponentNotReadyException {
@@ -232,6 +228,7 @@ public class CloverDataReader extends Node {
 		} else {
 			parser.setDataSource(fName);
 		}
+		skip();
 		return true;
 	}
 	
@@ -335,13 +332,6 @@ public class CloverDataReader extends Node {
 		
 		initFileIterator();
 
-		//set start record
-		if (skipRows > 0) {
-			try{
-				parser.skip(skipRows);
-			}catch (JetelException ex) {}
-		}
-		
         // skip/number source rows
         if (skipSourceRows == -1) {
         	OutputPort outputPort = getOutputPort(OUTPUT_PORT);
@@ -353,7 +343,6 @@ public class CloverDataReader extends Node {
             	}
         	}
         }
-        parser.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
 
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		parser.init();
@@ -378,6 +367,34 @@ public class CloverDataReader extends Node {
 		return false;
 	}
 	
+	/**
+	 * Performs skip operation at the start of a data source. Per-source skip is always performed.
+	 * If the target number of globally skipped records has not yet been reached, it is followed
+	 * by global skip.  
+	 * Increases per-source number of records by number of records skipped to satisfy global skip attribute.
+	 * @throws JetelException 
+	 */
+	private void skip() {
+		int skippedInCurrentSource = 0;
+		try {
+			if (skipSourceRows > 0) {
+				parser.skip(skipSourceRows);
+			}
+			if (skipped >= skipRows) {
+				return;
+			}
+			int globalSkipInCurrentSource = skipRows - skipped;
+			if (numSourceRecords >= 0 && numSourceRecords < globalSkipInCurrentSource) {
+				// records for global skip in local file are limited by max number of records from local file
+				globalSkipInCurrentSource = numSourceRecords;
+			}
+			skippedInCurrentSource = parser.skip(globalSkipInCurrentSource);
+		} catch (JetelException e) {			
+		}
+        autoFilling.incSourceCounter(skippedInCurrentSource);
+        skipped += skippedInCurrentSource;
+    }
+    
 	private void initFileIterator() throws ComponentNotReadyException {
 		WcardPattern pat = new WcardPattern();
 		pat.setParent(getGraph().getRuntimeContext().getContextURL());
@@ -413,6 +430,7 @@ public class CloverDataReader extends Node {
 	 * @param startRecord The startRecord to set.
 	 */
 	public void setSkipRows(int skipRows) {
+		this.skipped = 0;
 		this.skipRows = Math.max(skipRows, 0);
 	}
 	
