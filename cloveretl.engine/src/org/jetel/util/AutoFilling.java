@@ -315,6 +315,14 @@ public class AutoFilling {
 	}
 
 	/**
+	 * Increases source counter
+	 * @param step
+	 */
+	public void incSourceCounter(int step) {
+		sourceCounter += step;
+	}
+
+	/**
 	 * Gets a file or source name.
 	 * @return
 	 */
