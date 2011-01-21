@@ -101,6 +101,9 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#skip(int)
 	 */
 	public int skip(int nRec) throws JetelException {
+		if (nRec == 0) {
+			return 0;
+		}
 		if (indexFile != null) {
 			long currentDataPosition;
 			long nextDataPosition;
@@ -119,7 +122,7 @@ public class CloverDataParser implements Parser {
 					throw new JetelException("Unable to find index for current record - index file seems to be corrupt");					
 				}				
 				// find out what is the index of the record following skipped records
-				skipBytes = nRec*LONG_SIZE_BYTES;
+				skipBytes = (nRec - 1)*LONG_SIZE_BYTES;
 				indexSkippedBytes = indexFile.skip(skipBytes);
 				currentIndexPosition += indexSkippedBytes;
 				nextDataPosition = currentDataPosition;
