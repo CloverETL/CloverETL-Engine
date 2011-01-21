@@ -65,6 +65,7 @@ public class MultiFileReader {
     private String fileURL;
 	private ReadableChannelIterator channelIterator;
     private int skip;
+    private int skipped; // number of records skipped to satisfy the skip attribute, records skipped to satisfy skipSourceRows are not included 
     private int fSkip;
 	private int skipSourceRows;
 	private int numRecords; //max number of returned records
@@ -206,6 +207,7 @@ public class MultiFileReader {
      * @param skip
      */
     public void setSkip(int skip) {
+    	skipped = 0;
         this.skip = fSkip = skip;
     }
     
@@ -267,7 +269,7 @@ public class MultiFileReader {
 				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
 					parser.movePosition(sourcePosition);
 				}
-				if(skipSourceRows > 0) parser.skip(skipSourceRows);
+				skip();
 				return isSourceOpen = true;
 			} catch (IOException e) {
 				throw new JetelException("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
@@ -286,20 +288,32 @@ public class MultiFileReader {
 	}
 
 	/**
-	 * This private method try to skip records given in <code>skip</code> variable.
-     * @param skip number of skipped records
+	 * Performs skip operation at the start of a data source. Per-source skip is always performed.
+	 * If the target number of globally skipped records has not yet been reached, it is followed
+	 * by global skip.  
+	 * Increases per-source number of records by number of records skipped to satisfy global skip attribute.
 	 * @throws JetelException 
 	 */
-	private void skip(int skip) throws JetelException {
-        int skipped = 0;
-
-        do {
-            try {
-                skipped += parser.skip(skip - skipped);            
-            } catch (JetelException e) {
-                logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
-            }
-        } while (skipped < skip && nextSource());
+	private void skip() throws JetelException {
+		int skippedInCurrentSource = 0;
+        try {
+    		if (skipSourceRows > 0) {
+    			parser.skip(skipSourceRows);
+    		}
+    		if (skipped >= skip) {
+    			return;
+    		}
+    		int globalSkipInCurrentSource = skip - skipped;
+    		if (numSourceRecords >= 0 && numSourceRecords < globalSkipInCurrentSource) {
+    			// records for global skip in local file are limited by max number of records from local file
+    			globalSkipInCurrentSource = numSourceRecords;
+    		}
+    		skippedInCurrentSource = parser.skip(globalSkipInCurrentSource);
+        } catch (JetelException e) {
+            logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
+        }
+        autoFilling.incSourceCounter(skippedInCurrentSource);
+        skipped += skippedInCurrentSource;
     }
     
 	/**
@@ -315,20 +329,20 @@ public class MultiFileReader {
         }
         
         //check for index of last returned record
-        if(numRecords > 0 && numRecords == autoFilling.getGlobalCounter()) {
-            return numSourceRecords > 0 && nextSource();
+        if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
+            return false;
         }
-        
+
         //check for index of last returned record for each source
-        if(numSourceRecords > 0 && numSourceRecords == autoFilling.getSourceCounter()) {
-            return numRecords > autoFilling.getGlobalCounter() || nextSource();
+        if (numSourceRecords > 0) {
+        	while (numSourceRecords <= autoFilling.getSourceCounter()) {
+        		if (!nextSource()) {
+        			return false;
+        		}
+        	}
+        	return true;
         }
         
-        //shall i skip some records?
-        if(skip > 0) {
-            skip(skip);
-            skip = 0;
-        }
         return true;        
 	}
 	
