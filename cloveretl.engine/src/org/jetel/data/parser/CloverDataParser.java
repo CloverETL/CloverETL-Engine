@@ -43,6 +43,8 @@ import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 
+import com.sun.tools.hat.internal.parser.ReadBuffer;
+
 /**
  * Class for reading data saved in Clover internal format
  * It is predicted that zip file (with name dataFile.zip) has following structure:
@@ -68,17 +70,15 @@ public class CloverDataParser implements Parser {
 	private DataRecordMetadata metadata;
 	private ReadableByteChannel recordFile;
 	private ByteBuffer recordBuffer;
-	private long index = 0;//index for reading index
-	private long idx = 0;//index for reading record
-	private boolean readIdx;
-	private int recordSize;
 	private String indexFileURL;
 	private String inData;
 	private InputStream inStream;
 	private URL projectURL;
 	
-	private int indexSkipSourceRows;
 	private boolean noDataAvailable;
+    private DataInputStream indexFile;
+    private long currentIndexPosition;
+    private long sourceRecordCounter;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -101,8 +101,66 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#skip(int)
 	 */
 	public int skip(int nRec) throws JetelException {
-		index = LONG_SIZE_BYTES * nRec;
-		return nRec;
+		if (indexFile != null) {
+			long currentDataPosition;
+			long nextDataPosition;
+			long skipBytes = sourceRecordCounter*LONG_SIZE_BYTES - currentIndexPosition;
+			long indexSkippedBytes = 0;
+			try {
+				// find out what is the current index in the input stream
+				if (skipBytes != indexFile.skip(skipBytes)) {
+					throw new JetelException("Unable to skip in index file - it seems to be corrupt");					
+				}
+				currentIndexPosition += skipBytes;
+				try {
+					currentDataPosition = indexFile.readLong();
+					currentIndexPosition += LONG_SIZE_BYTES;
+				} catch (EOFException e) {
+					throw new JetelException("Unable to find index for current record - index file seems to be corrupt");					
+				}				
+				// find out what is the index of the record following skipped records
+				skipBytes = nRec*LONG_SIZE_BYTES;
+				indexSkippedBytes = indexFile.skip(skipBytes);
+				currentIndexPosition += indexSkippedBytes;
+				nextDataPosition = currentDataPosition;
+				try {
+					nextDataPosition = indexFile.readLong();
+					currentIndexPosition += LONG_SIZE_BYTES;
+				} catch (EOFException e) {
+					noDataAvailable = true;
+				}				
+			} catch (IOException e) {
+				throw new JetelException("An IO error occured while trying to skip data in index file", e);
+			}
+			long dataSkipBytes = nextDataPosition - currentDataPosition;
+			try {
+				while (dataSkipBytes > recordBuffer.remaining()) {
+					dataSkipBytes -= recordBuffer.remaining();
+					recordBuffer.clear();
+					ByteBufferUtils.reload(recordBuffer,recordFile);
+					recordBuffer.flip();
+					if (!recordBuffer.hasRemaining()) { // no more data available
+						break;
+					}
+				}
+				if (dataSkipBytes > recordBuffer.remaining()) { // there are not enough data available in the record file
+					throw new JetelException("Index file inconsistent with record file");
+				}
+				recordBuffer.position(recordBuffer.position() + (int)dataSkipBytes);
+			} catch (IOException e) {
+				throw new JetelException("An IO error occured while trying to skip data in record file", e);				
+			}
+			return (int)indexSkippedBytes%LONG_SIZE_BYTES;
+		} else {
+			DataRecord record = new DataRecord(metadata);
+			record.init();
+			for (int skipped = 0; skipped < nRec; skipped++) {
+				if (getNext(record) == null) {
+					return skipped;
+				}
+			}
+			return nRec;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -128,6 +186,10 @@ public class CloverDataParser implements Parser {
      * parameter: data fiele name or {data file name, index file name}
      */
     public void setDataSource(Object in) throws ComponentNotReadyException {
+    	sourceRecordCounter = 0;
+    	currentIndexPosition = 0;
+    	indexFile = null;
+    	
         if (in instanceof String[]) {
         	inData = ((String[])in)[0];
         	indexFileURL = ((String[])in)[1];
@@ -150,53 +212,23 @@ public class CloverDataParser implements Parser {
                 	
                 //read and check header of clover binary data format to check out the compatibility issues
                 checkCompatibilityHeader(recordFile);
-                boolean idxSet = false;
-                if (indexSkipSourceRows > 0 || index > 0 || readIdx) {//reading not all records --> find index in record file
-                	try {
-    					noDataAvailable = !setStartIndex(fileName);
-    					idxSet = true;
-    				} catch (Exception e) {
-    					// error in setting start index. We will do it later, using slower way.
-    					idxSet = false;
-    				}
-                }
-                //skip idx bytes from record file
-                int i=0;
-                recordBuffer.clear();
-                do {
-                    ByteBufferUtils.reload(recordBuffer,recordFile);
-                    recordBuffer.flip();
-                    i++;
-                }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
-                recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-                if(index>0 && !idxSet) {
-                	//idxSet==false means we need to skip rows now. It is slower than using index to skip, but skipping 
-                	//with index failed.
-					for(int ndx=0; ndx<index/LONG_SIZE_BYTES;ndx++) {
-						try {
-							this.getNext();
-						} catch (JetelException e1) {
-			                throw new ComponentNotReadyException(e1);
-						}
-					}
-                	
-                }
+                initIndexFile(fileName);
             } catch (IOException ex) {
                 throw new ComponentNotReadyException(ex);
             }
         } else if (inStream != null) {
+        	indexFile = null;
         	recordFile = Channels.newChannel(inStream);
-
         	//read and check header of clover binary data format to check out the compatibility issues
             checkCompatibilityHeader(recordFile);
-
-			try {
-				ByteBufferUtils.reload(recordBuffer,recordFile);
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(e);			
-			}
-			recordBuffer.flip();
         }
+    	recordBuffer.clear();
+		try {
+			ByteBufferUtils.reload(recordBuffer,recordFile);
+			recordBuffer.flip();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e.getLocalizedMessage());
+		}
     }
 
     private static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
@@ -239,38 +271,23 @@ public class CloverDataParser implements Parser {
     	}
     }
 
-    private boolean setStartIndex(String fileName) throws IOException, ComponentNotReadyException{
-        DataInputStream indexFile;
-        if (inData.startsWith("zip:")){
-            indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + "#" + CloverDataFormatter.INDEX_DIRECTORY + 
-            		fileName + CloverDataFormatter.INDEX_EXTENSION));
-        }else{//read index from binary file
-            if (indexFileURL == null){
-            	indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + CloverDataFormatter.INDEX_EXTENSION));
-            }else{
-            	indexFile = new DataInputStream((FileUtils.getInputStream(projectURL, indexFileURL)));
-            }
-        }
-        // skip source rows
-        if (indexSkipSourceRows > 0) {
-        	indexFile.skip(indexSkipSourceRows);
-            if (indexFile.available() <= 0) return false;
-        }
-
-        // skip rows
-        long available = indexFile.available();
-        indexFile.skip(index);
-        index -= available - Math.max(0, indexFile.available());
-        try {
-        	if (indexFile.available() <= 0) return false;	// next file
-			idx = indexFile.readLong();//read index for reading records
-			readIdx = idx != 0;
-		} catch (EOFException e) {
-			throw new ComponentNotReadyException("Start record is greater than last record!!!");
-		}finally{
-            indexFile.close();
-		}
-		return true;
+    private boolean initIndexFile(String fileName) throws ComponentNotReadyException {
+    	indexFile = null;
+    	try {
+	        if (inData.startsWith("zip:")){
+	            indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + "#" + CloverDataFormatter.INDEX_DIRECTORY + 
+	            		fileName + CloverDataFormatter.INDEX_EXTENSION));
+	        }else{//read index from binary file
+	            if (indexFileURL == null){
+	            	indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + CloverDataFormatter.INDEX_EXTENSION));
+	            }else{
+	            	indexFile = new DataInputStream((FileUtils.getInputStream(projectURL, indexFileURL)));
+	            }
+	        }
+    	} catch (IOException e) {
+    		indexFile = null;
+    	}
+        return indexFile != null;
     }
     
 	/* (non-Javadoc)
@@ -307,7 +324,7 @@ public class CloverDataParser implements Parser {
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
 			return null;
 		}
-		recordSize = recordBuffer.getInt();
+		int recordSize = recordBuffer.getInt();
 		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < recordSize ){
 			try{
@@ -322,6 +339,7 @@ public class CloverDataParser implements Parser {
 					", but record size is " + recordSize + ". Set appropriate parameter in defautProperties file.");
 		}
 		record.deserialize(recordBuffer);
+		sourceRecordCounter++;
 		return record;
 	}
  
@@ -369,14 +387,6 @@ public class CloverDataParser implements Parser {
 
 	public void setProjectURL(URL projectURL) {
 		this.projectURL = projectURL;
-	}
-
-	/**
-	 * Sets the skip rows per each input
-	 * @param skipSourceRows
-	 */
-	public void setSkipSourceRows(int skipSourceRows) {
-		this.indexSkipSourceRows = LONG_SIZE_BYTES * skipSourceRows;
 	}
 
 	@Override
