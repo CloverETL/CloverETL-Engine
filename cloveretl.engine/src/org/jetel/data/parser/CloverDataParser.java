@@ -303,6 +303,13 @@ public class CloverDataParser implements Parser {
 				ex.printStackTrace();
 			}
 		}
+		if (indexFile != null) {
+			try {
+				indexFile.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	/* (non-Javadoc)
