@@ -71,8 +71,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Denormalizes input records - ie composes one output record from several input records
- * with identical key using user-specified transformation.
+ * <td>Denormalizes input records - ie composes one output record from several input records using user-specified transformation.
+ * One group is defined with the same value on the given field(s) (<i>key</i>) or has the fixed size (<i>groupSize</i>).
  * The transformation is supposed to implement interface <code>RecordDenormalize</code>.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
@@ -92,7 +92,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>denormalizeURL</b></td><td>path to the file with transformation code</td></tr>
  *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>key</b></td><td>list of key fields used to identify input record groups.
- *  Each group is < sequence of input records with identical key field values.</td></tr>
+ *  Each group is sequence of input records with identical key field values.</td></tr>
+ *  </tr>
+ *  <tr><td><b>groupSize</b></td><td>number of input records creating one group.</td></tr>
  *  </tr>
  *  <tr><td><b>order</b></td><td>Describe expected order of input records. "asc" for ascending, "desc" for descending,
  *  "auto" for auto-detection, "ignore" for processing input records without order checking (this may produce unexpected
@@ -126,6 +128,7 @@ public class Denormalizer extends Node {
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "denormalizeURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_KEY_ATTRIBUTE = "key";
+	private static final String XML_SIZE_ATTRIBUTE = "groupSize";
 	private static final String XML_ORDER_ATTRIBUTE = "order";
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
@@ -156,6 +159,7 @@ public class Denormalizer extends Node {
 	private Order order;
 	private String[] key;
 	RecordKey recordKey;
+	private int size = 0;
 		
 	private String errorActionsString;
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
@@ -268,9 +272,13 @@ public class Denormalizer extends Node {
 		outPort = getOutputPort(OUT_PORT);	
 		inMetadata = inPort.getMetadata();
 		outMetadata = outPort.getMetadata();
-		recordKey = new RecordKey(key, inMetadata);
-		recordKey.setEqualNULLs(equalNULL);
-		recordKey.init();
+		if (size > 0) {
+			order = Order.IGNORE;
+		}else {
+			recordKey = new RecordKey(key, inMetadata);
+			recordKey.setEqualNULLs(equalNULL);
+			recordKey.init();
+		}
 	}
 	
 	private RecordDenormalize createRecordDenormalizer(String code) throws ComponentNotReadyException {
@@ -309,15 +317,21 @@ public class Denormalizer extends Node {
 	 * @throws TransformException 
 	 * @throws JetelException Indicates that input is not sorted as expected.
 	 */
-	private boolean endRun(DataRecord prevRecord, DataRecord currentRecord) throws TransformException {
+	private boolean endRun(DataRecord prevRecord, DataRecord currentRecord, int counter) throws TransformException {
+		
 		if (prevRecord == null) {
 			return false;
 		}
 		if (currentRecord == null) {
+			if (size > 0 && counter % size != 0) {
+				throw new TransformException("Incomplete group - required group size: " + size
+						+ ", current record in group: " + (counter % size), counter, -1);
+			}
 			return true;
 		}
 
-		int cmpResult = recordKey.compare(prevRecord, currentRecord);
+		int cmpResult = size > 0 ? (counter % size == 0 ? 1 : 0) //group defined by size 
+				: recordKey.compare(prevRecord, currentRecord); //group defined by key
 
 		if (cmpResult == 0) {
 			return false;
@@ -354,7 +368,7 @@ public class Denormalizer extends Node {
 		int transformResult;
 		while (runIt) {
 			currentRecord = inPort.readRecord(srcRecord[src]);
-			if (endRun(prevRecord, currentRecord)) {
+			if (endRun(prevRecord, currentRecord, counter)) {
 				outRecord.reset();
 				transformResult = -1;
 
@@ -610,6 +624,9 @@ public class Denormalizer extends Node {
 			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
 				denorm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SIZE_ATTRIBUTE)) {
+				denorm.setGroupSize(xattribs.getInteger(XML_SIZE_ATTRIBUTE));
+			}
 
 			denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
 
@@ -617,6 +634,20 @@ public class Denormalizer extends Node {
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
+	}
+	
+	/**
+	 * @param number of input records creating one group
+	 */
+	public void setGroupSize(int size) {
+		this.size = size;
+	}
+
+	/**
+	 * @return number of input records creating one group
+	 */
+	public int getGroupSize() {
+		return size;
 	}
 	
 	public void setErrorLog(String errorLog) {
@@ -649,6 +680,9 @@ public class Denormalizer extends Node {
 		
 		if (charset != null){
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
+		if (size > 0) {
+			xmlElement.setAttribute(XML_SIZE_ATTRIBUTE, String.valueOf(size));
 		}
 		String orderString = "";
 		if (order == Order.ASC) {
