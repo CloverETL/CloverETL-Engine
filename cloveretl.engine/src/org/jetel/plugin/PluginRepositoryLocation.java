@@ -21,7 +21,7 @@ package org.jetel.plugin;
 import java.io.File;
 
 /**
- * This class represent a location of a clover engine plugin repository, for instance
+ * This class represents a location of a clover engine plugin repository, for instance
  * <code>./plugins</code> in default installation. Internally is implemented by
  * a {@link File} of plugin repository and optional class loader which should be used
  * as default class loader of all plugins placed in the repository.
