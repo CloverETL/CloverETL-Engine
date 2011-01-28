@@ -77,6 +77,16 @@ public class RecordComparator implements Comparator {
         }
     }
     
+	public static RecordComparator createRecordComparator(DataRecordMetadata metadata, int[] keyFields, 
+			boolean[] sortOrderings) {
+		RecordComparator comparator = new RecordComparator(keyFields);
+		if (sortOrderings != null) {
+			comparator.setSortOrderings(sortOrderings);
+		}
+		comparator.updateCollators(metadata);
+		return comparator;
+	}
+	
 	/**
 	 *  Gets the keyFields attribute of the RecordKey object
 	 *
@@ -154,7 +164,7 @@ public class RecordComparator implements Comparator {
 	 * @param compResult
 	 * @return
 	 */
-	private final int orderCorrection(int keyField, int compResult) {
+	protected int orderCorrection(int keyField, int compResult) {
 		return sortOrderings[keyField] ? compResult : compResult * -1;
 	}
 
