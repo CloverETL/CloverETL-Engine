@@ -26,9 +26,12 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import org.jetel.enums.CollatorSensitivityType;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.key.OrderType;
+import org.jetel.util.key.RecordKeyTokens;
 
 /**
  *  This class compares two records of the same structure (created based on
@@ -77,14 +80,29 @@ public class RecordComparator implements Comparator {
         }
     }
     
-	public static RecordComparator createRecordComparator(DataRecordMetadata metadata, int[] keyFields, 
-			boolean[] sortOrderings) {
-		RecordComparator comparator = new RecordComparator(keyFields);
-		if (sortOrderings != null) {
-			comparator.setSortOrderings(sortOrderings);
+	public static RecordComparator createRecordComparator(RecordKeyTokens keyRecordDesc, 
+			DataRecordMetadata metadata) throws ComponentNotReadyException{
+		boolean[] keyOrderings = new boolean[keyRecordDesc.size()];
+		int[] keyFields = new int[keyRecordDesc.size()];
+		for (int i = 0; i < keyRecordDesc.size(); i++) {
+			keyFields[i] = metadata.getFieldPosition(keyRecordDesc.getKeyField(i).getFieldName());
+			if (keyFields[i] == -1) {
+				throw new ComponentNotReadyException("Field '" + keyRecordDesc.getKeyField(i).getFieldName()
+						+ "' not found in metadata '" + metadata.getName() + "'.");
+			}
+			OrderType orderType = keyRecordDesc.getKeyField(i).getOrderType();
+			if (orderType == OrderType.ASCENDING || orderType == null) {
+				keyOrderings[i] = true;
+			} else if (orderType == OrderType.DESCENDING) {
+				keyOrderings[i] = false;
+			} else {
+				throw new ComponentNotReadyException("Unsupported key ordering type '" + orderType + "'.");
+			}
 		}
-		comparator.updateCollators(metadata);
-		return comparator;
+		RecordComparator comaparator = new RecordComparator(keyFields);
+		comaparator.setSortOrderings(keyOrderings);
+		comaparator.updateCollators(metadata);
+		return comaparator;
 	}
 	
 	/**
