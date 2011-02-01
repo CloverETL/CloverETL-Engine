@@ -21,8 +21,10 @@ package org.jetel.data;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
 
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.key.OrderType;
+import org.jetel.util.key.RecordKeyTokens;
 
 /**
  * @author avackova (info@cloveretl.com)
@@ -51,14 +53,23 @@ public class RecordComapratorAnyOrderType extends RecordComparator {
         Arrays.fill(sortOrderingsAnyType, OrderType.AUTO);
 	}
 	
-	public static RecordComapratorAnyOrderType createRecordComparator(DataRecordMetadata metadata, int[] keyFields, 
-			OrderType[] sortOrderings) {
-		RecordComapratorAnyOrderType comparator = new RecordComapratorAnyOrderType(keyFields);
-		if (sortOrderings != null) {
-			comparator.setSortOrderingsAnyType(sortOrderings);
+	public static RecordComapratorAnyOrderType createRecordComparator(RecordKeyTokens keyRecordDesc, 
+			DataRecordMetadata metadata) throws ComponentNotReadyException{
+		OrderType[] keyOrderings = new OrderType[keyRecordDesc.size()]; 
+		int[] keyFields = new int[keyRecordDesc.size()];
+		for (int i = 0; i < keyRecordDesc.size(); i++) {
+			keyFields[i] = metadata.getFieldPosition(keyRecordDesc.getKeyField(i).getFieldName());
+			if (keyFields[i] == -1) {
+				throw new ComponentNotReadyException("Field '" + keyRecordDesc.getKeyField(i).getFieldName()
+						+ "' not found in metadata '" + metadata.getName() + "'.");
+			}
+			OrderType orderType = keyRecordDesc.getKeyField(i).getOrderType();
+			keyOrderings[i] = orderType != null ? orderType : OrderType.AUTO;
 		}
-		comparator.updateCollators(metadata);
-		return comparator;
+		RecordComapratorAnyOrderType comaparator = new RecordComapratorAnyOrderType(keyFields);
+		comaparator.setSortOrderingsAnyType(keyOrderings);
+		comaparator.updateCollators(metadata);
+		return comaparator;
 	}
 	
 	@Override
@@ -101,5 +112,13 @@ public class RecordComapratorAnyOrderType extends RecordComparator {
 	 */
 	public void setSortOrderingsAnyType(OrderType[] sortOrderingsAnyType) {
 		this.sortOrderingsAnyType = sortOrderingsAnyType;
+	}
+	
+	@Override
+	public void setSortOrderings(boolean[] sortOrderings) {
+		super.setSortOrderings(sortOrderings);
+		for (int i = 0; i < sortOrderings.length; i++) {
+			sortOrderingsAnyType[i] = sortOrderings[i] ? OrderType.ASCENDING : OrderType.DESCENDING;
+		}
 	}
 }

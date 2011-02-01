@@ -98,31 +98,25 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 //					System.out.println("Comparing: " + intValue + " - " + intValueNext + ", " 
 //							+ stringValue + " - " + stringValueNext + " with orderings: [" 
 //							+ orderings[0] + ", " + orderings[1] + "]. Result: " + recResult);
+					if (intResult == 0) {
+						expectedString = check(stringResult, recResult, orderings[1], expectedString);
+						continue;
+					}
 					switch (orderings[0]) {
-					case ASCENDING:
 					case IGNORE:
-						if (intResult != 0) {
-							assertEquals(intResult, recResult);
-						}else {
-							expectedString = check(stringResult, recResult, orderings[1], expectedString);
-						}
+						assertEquals(-1, recResult);
+						break;
+					case ASCENDING:
+						assertEquals(intResult, recResult);
 						break;
 					case DESCENDING:
-						if (intResult != 0) {
-							assertEquals(intResult, -recResult);
-						}else{
-							expectedString = check(stringResult, recResult, orderings[1], expectedString);
-						}
+						assertEquals(intResult, -recResult);
 						break;
 					case AUTO:
-						if (intResult != 0) {
-							if (expectedInt == null) {
-								expectedInt = intResult < 0 ? OrderType.ASCENDING : OrderType.DESCENDING;
-							}
-							check(intResult, recResult, orderings[0], expectedInt);
-						}else{
-							expectedString = check(stringResult, recResult, orderings[1], expectedString);
+						if (expectedInt == null) {
+							expectedInt = intResult < 0 ? OrderType.ASCENDING : OrderType.DESCENDING;
 						}
+						check(intResult, recResult, orderings[0], expectedInt);
 						break;
 					default:
 						throw new RuntimeException("Unknown order type: " + orderings[0]);
@@ -143,8 +137,10 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		}
 		switch (orderType) {
 		case ASCENDING:
-		case IGNORE:
 			assertEquals(expResult, recResult);
+			break;
+		case IGNORE:
+			assertEquals(-1, recResult);
 			break;
 		case DESCENDING:
 			assertEquals(-expResult, recResult);
