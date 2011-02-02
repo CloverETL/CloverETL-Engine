@@ -157,6 +157,8 @@ public class XLSReader extends Node {
     public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	private static final String XML_SKIP_SOURCE_ROWS_ATTRIBUTE = "skipSourceRows";
 	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
+	private static final String XML_SKIP_SHEET_ROWS_ATTRIBUTE = "skipSheetRows";
+	private static final String XML_NUM_SHEET_RECORDS_ATTRIBUTE = "numSheetRecords";
 
     public static final String XLS_CELL_CODE_INDICATOR = "#";
 
@@ -232,6 +234,12 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
 				aXLSReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SKIP_SHEET_ROWS_ATTRIBUTE)){
+				aXLSReader.setSkipSheetRows(xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUM_SHEET_RECORDS_ATTRIBUTE)){
+				aXLSReader.setNumSheetRecords(xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE));
+			}
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":"
                     + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
@@ -249,6 +257,8 @@ public class XLSReader extends Node {
     private String incrementalKey;
 	private int skipSourceRows = -1;
 	private int numSourceRecords = -1;
+	private int skipSheetRows = -1;
+	private int numSheetRecords = -1;
 
     private XLSParser parser;
     private MultiFileReader reader;
@@ -383,6 +393,19 @@ public class XLSReader extends Node {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
 	}
 	
+	/**
+	 * @param how many rows to skip for every source
+	 */
+	public void setSkipSheetRows(int skipSourceRows) {
+		this.skipSheetRows = Math.max(skipSourceRows, 0);
+	}
+	
+	/**
+	 * @param how many rows to process for every source
+	 */
+	public void setNumSheetRecords(int numSourceRecords) {
+		this.numSheetRecords = Math.max(numSourceRecords, 0);
+	}
 
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
