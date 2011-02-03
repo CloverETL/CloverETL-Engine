@@ -391,13 +391,18 @@ public class FileUtils {
     	
     	// parse the archive
         if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR)) {
-            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
+        	if (input.contains(")#")) {
+                anchor.append(input.substring(input.lastIndexOf(")#") + 2));
+                innerInput.append(input.substring(input.indexOf(":(") + 2, input.lastIndexOf(")#")));
+        	}
+        	else if (input.contains("#")) {
+                anchor.append(input.substring(input.lastIndexOf('#') + 1));
+                innerInput.append(input.substring(input.indexOf(':') + 1, input.lastIndexOf('#')));
+        	}
+        	else {
                 anchor = null;
                 innerInput.append(input.substring(input.indexOf(':') + 1));
-            } else {
-                anchor.append(input.substring(input.indexOf('#') + 1));
-                innerInput.append(input.substring(input.indexOf(':') + 1, input.indexOf('#')));
-            }
+        	}
         }
         else if (archiveType == ArchiveType.GZIP) {
         	innerInput.append(input.substring(input.indexOf(':') + 1));

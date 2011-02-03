@@ -711,10 +711,12 @@ public class WcardPattern {
 		// list and add all suitable directories directories
 		FilenameFilter filter = new WcardFilter(sWCardPath);
 		File[] curMatch = sResolvedPath.listFiles(filter);
-		Arrays.sort(curMatch);
-		for (File f: curMatch) {
-			if (f.isDirectory()) {
-				lResolvedPaths.addAll(getResolvedPaths(f.toString() + sDir.substring(parentFile.toString().length())));
+		if (curMatch != null) {
+			Arrays.sort(curMatch);
+			for (File f: curMatch) {
+				if (f.isDirectory()) {
+					lResolvedPaths.addAll(getResolvedPaths(f.toString() + sDir.substring(parentFile.toString().length())));
+				}
 			}
 		}
 		return lResolvedPaths;
