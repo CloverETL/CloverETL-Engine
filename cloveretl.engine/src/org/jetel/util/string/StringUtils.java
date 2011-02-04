@@ -19,6 +19,8 @@
 package org.jetel.util.string;
 
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.io.StreamTokenizer;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -1916,6 +1918,56 @@ public class StringUtils {
                 block != null &&
                 block != Character.UnicodeBlock.SPECIALS;
     }
+	
+	
+	/**
+	 * Abbreviates input char sequence by using first letter of each word composing the sequence.
+	 * Skips any spaces, punctuation and other special chars.
+	 * 
+	 * @param input	character sequence to abbreviate
+	 * @param elementLength how many characters from each word to use (if more than 1, then each element is divided by "_" in output
+	 * @param capitalize capitalize letters - i.e. convert to uppercase
+	 * @param useNumbers also include numbers in sequence
+	 * @return abbreviation of input sequence
+	 */
+	public static CharSequence abbreviateString(CharSequence input, int elementLength, boolean capitalize,boolean useNumbers){
+		StringBuilder out=new StringBuilder();      
+		StreamTokenizer st = new StreamTokenizer(new CharSequenceReader(input));
+		st.ordinaryChar('.');
+		st.ordinaryChar('-');
+		try{
+		while(st.nextToken() !=
+	        StreamTokenizer.TT_EOF) {
+	        switch(st.ttype) {
+	          case StreamTokenizer.TT_WORD:
+	        	  if (capitalize){
+	        		  String s = st.sval.subSequence(0, elementLength).toString();
+	        		  out.append(s.toUpperCase());
+	        	  }else{
+	        		  out.append(st.sval.subSequence(0, elementLength));
+	        	  }
+	        	  if (elementLength>1) out.append('_');
+	            break;
+	          case StreamTokenizer.TT_NUMBER:
+	        	  if (useNumbers) out.append((int)st.nval);
+	          default: 
+	        	  // do nothing
+	        }
+		}
+		}catch(IOException ex){
+		}
+		return out;
+	}
+	
+	/**
+	 * Abbreviate input char sequence.
+	 * 
+	 * @param input
+	 * @return abbreviation of input
+	 */
+	public static CharSequence abbreviateString(CharSequence input){
+		return abbreviateString(input,1,false,false);
+	}
 	
 	/*
 	 * End class StringUtils
