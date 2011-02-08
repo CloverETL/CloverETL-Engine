@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,6 +47,7 @@ import java.util.zip.Checksum;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.logging.Log;
@@ -716,6 +719,22 @@ public class FileUtils {
 		return false;
 	}
 	
+	@java.lang.SuppressWarnings("unchecked")
+	private static String getFirstFileInZipArchive(String path) throws NullPointerException, FileNotFoundException, ZipException, IOException {
+		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(path);
+		Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
+		de.schlichtherle.util.zip.ZipEntry entry;
+		
+		for (zipEnmr = zipFile.entries(); zipEnmr.hasMoreElements() ;) {
+			entry = zipEnmr.nextElement();
+			if (!entry.isDirectory()) {
+				return entry.getName();
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Descends through the URL to figure out whether this is a local archive.
 	 * 
@@ -759,6 +778,12 @@ public class FileUtils {
 			
 			ret = getLocalArchivePath(contextURL, innerSource, appendData, compressLevel, path, nestLevel + 1, output);
 			if (ret) {
+				if (outer == null && isZipArchive(input)) {
+					outer = getFirstFileInZipArchive(path.toString());
+					if (outer == null) {
+						throw new IOException("The archive does not contain any files");
+					}
+				}
 				if (path.length() != 0) {
 					path.append(File.separator);
 				}
