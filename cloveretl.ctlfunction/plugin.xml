@@ -5,6 +5,7 @@
 
 	<runtime>
 		<library path="bin/"/>
+		<library path="lib/json.jar"/>
    	</runtime> 
 
 	<extension point-id="ctlfunction">
