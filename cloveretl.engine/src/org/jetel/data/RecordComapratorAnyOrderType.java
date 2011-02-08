@@ -27,6 +27,11 @@ import org.jetel.util.key.OrderType;
 import org.jetel.util.key.RecordKeyTokens;
 
 /**
+ * Compares two data records with the same structure. If the records are 
+ * different but in the order conforming the ordering type, compare method 
+ * returns -1, if they are in wrong order - it returns 1. That means, that 
+ * for IGNORE order, method compare always returns -1 for different records.
+ * 
  * @author avackova (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
