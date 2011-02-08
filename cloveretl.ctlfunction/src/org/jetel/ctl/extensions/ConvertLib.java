@@ -39,6 +39,9 @@ import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.XML;
 
 public class ConvertLib extends TLFunctionLibrary {
 
@@ -77,6 +80,8 @@ public class ConvertLib extends TLFunctionLibrary {
 		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
 		    "long2packDecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
 		    "packDecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
+			"xml2json".equals(functionName) ? new Xml2JsonFunction() : 
+			"json2xml".equals(functionName) ? new Json2XmlFunction() : 
 		    "md5".equals(functionName) ? new MD5Function() : 
 		    "sha".equals(functionName) ? new SHAFunction() : 
 		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
@@ -1047,6 +1052,50 @@ public class ConvertLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(packDecimal2long(context, stack.popByteArray()));
 		}
+	}
+
+	@TLFunctionAnnotation("Returns json representation of a xml text")
+	public static final String xml2json(TLFunctionCallContext contex, String xml){
+		try {
+			return XML.toJSONObject(xml).toString();
+		} catch (JSONException e) {
+			throw new TransformLangExecutorRuntimeException("xml2json - can't convert \"" + xml + "\": " + e.getMessage());
+		}
+	}
+	
+	//XML2JSON
+	class Xml2JsonFunction implements TLFunctionPrototype {
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			String input = stack.popString();
+			stack.push(xml2json(context, input));
+		}
+
+	}
+
+	@TLFunctionAnnotation("Returns xml representation of a json object")
+	public static final String json2xml(TLFunctionCallContext contex, String json){
+		try {
+			return XML.toString(new JSONObject(json));
+		} catch (JSONException e) {
+			throw new TransformLangExecutorRuntimeException("json2xml - can't convert \"" + json + "\": " + e.getMessage());
+		}
+	}
+	
+	//JSON2XML
+	class Json2XmlFunction implements TLFunctionPrototype {
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			String input = stack.popString();
+			stack.push(json2xml(context, input));
+		}
+
 	}
 
 	@TLFunctionAnnotation("Calculates MD5 hash of input string.")
