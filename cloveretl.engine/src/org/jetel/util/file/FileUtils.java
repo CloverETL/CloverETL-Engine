@@ -760,7 +760,7 @@ public class FileUtils {
 			}
 		}
 		
-		if (isArchive(input)) {
+		if (isZipArchive(input)) {
 			Matcher matcher = getInnerInput(input);
 			// URL-centered convention, zip:(inner.zip)/outer.txt
 			// this might be misleading, as what you will see on the filesystem first is inner.zip
