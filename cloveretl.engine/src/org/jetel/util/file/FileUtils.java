@@ -720,8 +720,15 @@ public class FileUtils {
 	}
 	
 	@java.lang.SuppressWarnings("unchecked")
-	private static String getFirstFileInZipArchive(String path) throws NullPointerException, FileNotFoundException, ZipException, IOException {
-		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(path);
+	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
+		File file;
+		if (context != null) {
+			file = new File(context.getPath(), filePath);
+		}
+		else {
+			file = new File(filePath);
+		}
+		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(file);
 		Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
 		de.schlichtherle.util.zip.ZipEntry entry;
 		
@@ -779,7 +786,7 @@ public class FileUtils {
 			ret = getLocalArchivePath(contextURL, innerSource, appendData, compressLevel, path, nestLevel + 1, output);
 			if (ret) {
 				if (outer == null && isZipArchive(input)) {
-					outer = getFirstFileInZipArchive(path.toString());
+					outer = getFirstFileInZipArchive(contextURL, path.toString());
 					if (outer == null) {
 						throw new IOException("The archive does not contain any files");
 					}
