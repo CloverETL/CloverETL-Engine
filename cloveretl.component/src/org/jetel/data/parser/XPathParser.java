@@ -609,5 +609,10 @@ public class XPathParser implements Parser {
 	public void free() {
 		close();
 	}
+
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
 	
 }

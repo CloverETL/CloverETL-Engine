@@ -412,6 +412,13 @@ public class CloverDataParser implements Parser {
     public void free() {
     	close();
     }
+
+
+	@Override
+	public boolean nextL3Source() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 
 }

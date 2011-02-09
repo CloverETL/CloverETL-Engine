@@ -438,5 +438,10 @@ public class FixLenCharDataParser extends FixLenDataParser {
     public void free() {
     	close();
     }
+
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
 	
 }

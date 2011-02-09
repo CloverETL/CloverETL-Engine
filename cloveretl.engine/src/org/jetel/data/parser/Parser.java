@@ -155,6 +155,11 @@ public interface Parser {
      * @throws IOException
      */
     public void free() throws ComponentNotReadyException, IOException;
+    
+    /**
+     * 
+     */
+    public boolean nextL3Source();
 
 }
 /*
