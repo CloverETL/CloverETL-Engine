@@ -684,7 +684,7 @@ public class FileUtils {
 	}
 	
 	private static boolean isLocalFile(String input) {
-		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input);
+		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input) && !isArchive(input);
 	}
 	
 	private static boolean isHttp(String input) {
