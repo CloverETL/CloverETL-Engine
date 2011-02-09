@@ -459,4 +459,9 @@ public class SQLDataParser implements Parser {
 		close();
 	}
 
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
+
 }

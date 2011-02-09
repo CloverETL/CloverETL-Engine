@@ -234,4 +234,9 @@ public class FixLenByteDataParser extends FixLenDataParser {
     	close();
     }
 
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
+
 }

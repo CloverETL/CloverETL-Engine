@@ -59,6 +59,7 @@ public class AutoFilling {
     private long fileSize;
 	private int globalCounter; //number of returned records
 	private int sourceCounter; //number of returned records in one source
+	private int l3Counter; // number of returned records in one section of input source (eg XLS spreadsheet)
     private String filename;
     private Date readerTimestamp;
 
@@ -202,6 +203,7 @@ public class AutoFilling {
 	 */
 	private final void setAutofilling(DataRecord rec) {
         if (autoFillingData.noAutoFillingData) {
+            l3Counter++;
             sourceCounter++;
             globalCounter++;
         	return;
@@ -239,6 +241,7 @@ public class AutoFilling {
        	}
         globalCounter++;
         sourceCounter++;
+        l3Counter++;
         autoFillingData.counter++;
         autoFillingData.sourceCounter++;
 	}
@@ -249,6 +252,7 @@ public class AutoFilling {
 	public void reset() {
 		globalCounter=0;
 		sourceCounter=0;
+		l3Counter=0;
 		autoFillingMap.clear();
 	}
 
@@ -266,6 +270,13 @@ public class AutoFilling {
 	 */
 	public void resetGlobalSourceCounter() {
 		sourceCounter=0;
+	}
+
+	/**
+	 * Sets section source counter to 0.
+	 */
+	public void resetL3Counter() {
+		l3Counter=0;
 	}
 
 	/**
@@ -308,6 +319,13 @@ public class AutoFilling {
 	}
 
 	/**
+	 * Returns per-section (L3) counter
+	 */
+	public final int getL3Counter() {
+		return l3Counter;
+	}
+
+	/**
 	 * Adds 1 to the source counter.
 	 */
 	public void incSourceCounter() {
@@ -320,6 +338,21 @@ public class AutoFilling {
 	 */
 	public void incSourceCounter(int step) {
 		sourceCounter += step;
+	}
+
+	/**
+	 * Adds 1 to the per-section (L3) counter.
+	 */
+	public void incL3Counter() {
+		l3Counter++;
+	}
+
+	/**
+	 * Increases per-section (L3) counter
+	 * @param step
+	 */
+	public void incL3Counter(int step) {
+		l3Counter += step;
 	}
 
 	/**

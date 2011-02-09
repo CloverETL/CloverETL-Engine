@@ -279,12 +279,12 @@ public class XLSXDataParser extends XLSParser {
 
 		Row namesRow = null;
 		if((metadataRow > -1)) {
-			namesRow = sheet.getRow(metadataRow);
+		namesRow = sheet.getRow(metadataRow);
 		} else {
 			namesRow = sheet.getRow(firstRow);
 		}
 		
-		
+          
 		
         Row dataRow = sheet.getRow(firstRow);
           
@@ -527,5 +527,5 @@ public class XLSXDataParser extends XLSParser {
     public void free() {
     	close();
     }
-	
+
 }

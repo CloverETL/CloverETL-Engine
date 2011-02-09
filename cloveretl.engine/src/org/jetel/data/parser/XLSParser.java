@@ -138,11 +138,13 @@ public abstract class XLSParser implements Parser {
 				record = parseNext(record);
 			}
 		}
+/* following code was moved to MultiFileReader to allow proper implementation of the skip-per-spreadsheet feature
 		if (record == null) {//record from current sheet
 			if (getNextSheet()) {
 				record = getNext();
 			}
 		}
+*/
 		return record;
 	}
 
@@ -219,9 +221,15 @@ public abstract class XLSParser implements Parser {
 		this.releaseDataSource = releaseDataSource;
 	}
 
-	public int skip(int nRec) throws JetelException {
-		currentRow+=nRec;
-		return nRec;
+	public int skip(int nRec) {
+		if (currentRow + nRec <= lastRow) {
+			currentRow += nRec;
+			return nRec;			
+		} else {
+			int retval = 1 + lastRow - currentRow;
+			currentRow = lastRow + 1;
+			return retval;
+		}
 	}
 
 	/**
@@ -430,7 +438,7 @@ public abstract class XLSParser implements Parser {
 
 		if (firstRow == 0) {
 			firstRow = this.metadataRow + 1;
-		}
+	}
 	}
 	
 	/**
@@ -632,6 +640,11 @@ public abstract class XLSParser implements Parser {
 			sbKey.append("#");
 			return sbKey.append(sbValue.toString()).toString();
 		}
+	}
+	
+	@Override
+	public boolean nextL3Source() {
+		return getNextSheet();
 	}
 	
 }

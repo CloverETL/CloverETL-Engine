@@ -18,6 +18,14 @@
  */
 package org.jetel.data.parser;
 
+import java.io.IOException;
+
+import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
+
 /**
  * Abstract class for all TextParsers. It contains some useful common methods.
  * 
@@ -28,6 +36,107 @@ package org.jetel.data.parser;
  */
 public abstract class AbstractTextParser implements TextParser {
 	
+	@Override
+	public DataRecord getNext() throws JetelException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int skip(int nRec) throws JetelException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void init() throws ComponentNotReadyException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setDataSource(Object inputDataSource) throws IOException, ComponentNotReadyException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setReleaseDataSource(boolean releaseInputSource) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void close() throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public IParserExceptionHandler getExceptionHandler() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public PolicyType getPolicyType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void reset() throws ComponentNotReadyException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object getPosition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void movePosition(Object position) throws IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void free() throws ComponentNotReadyException, IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
+
 	final protected TextParserConfiguration cfg;
 
 	public AbstractTextParser(TextParserConfiguration cfg) {

@@ -284,5 +284,10 @@ public class ByteBufferParser implements Parser {
     public void free() {
     	close();
     }
+
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
 	
 }

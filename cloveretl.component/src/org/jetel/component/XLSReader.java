@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.util.Iterator;
 
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -236,6 +237,8 @@ public class XLSReader extends Node {
 			}
 			if (xattribs.exists(XML_SKIP_SHEET_ROWS_ATTRIBUTE)){
 				aXLSReader.setSkipSheetRows(xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE));
+			} else {
+				aXLSReader.setSkipSheetRows(aXLSReader.getMetadataRow());
 			}
 			if (xattribs.exists(XML_NUM_SHEET_RECORDS_ATTRIBUTE)){
 				aXLSReader.setNumSheetRecords(xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE));
@@ -256,7 +259,9 @@ public class XLSReader extends Node {
     private String incrementalFile;
     private String incrementalKey;
 	private int skipSourceRows = -1;
+	private int numRecords = -1;
 	private int numSourceRecords = -1;
+	private int skip = -1;
 	private int skipSheetRows = -1;
 	private int numSheetRecords = -1;
 
@@ -338,14 +343,14 @@ public class XLSReader extends Node {
 	 * @param startRecord The startRecord to set.
 	 */
 	public void setSkipRows(int skipRows) {
-		setStartRow(metadataRow+skipRows+1);
+		this.skip = skipRows; 
 	}
 	
 	/**
 	 * @param finalRecord The finalRecord to set.
 	 */
 	public void setNumRecords(int numRecords) {
-		setFinalRow(numRecords + (startRow > metadataRow ? startRow : metadataRow+1));
+		this.numRecords = numRecords;
 	}
 
     /**
@@ -369,6 +374,10 @@ public class XLSReader extends Node {
 
     public void setMetadataRow(int metadaRow) {
         this.metadataRow = metadaRow;
+    }
+
+    public int getMetadataRow() {
+        return metadataRow;
     }
 
     public void setIncrementalFile(String incrementalFile) {
@@ -480,11 +489,6 @@ public class XLSReader extends Node {
             instantiateParser();
 
             parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-            parser.setFirstRow(startRow - 1);
-
-            if (finalRow > -1) {
-                parser.setLastRow(finalRow - 1);
-            }
 
             try {
                 parser.setMetadataRow(metadataRow - 1);
@@ -526,11 +530,6 @@ public class XLSReader extends Node {
         instantiateParser();
 
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-        parser.setFirstRow(startRow - 1);
-
-        if (finalRow > -1) {
-            parser.setLastRow(finalRow - 1);
-        }
 
         parser.setMetadataRow(metadataRow - 1);
 
@@ -586,7 +585,12 @@ public class XLSReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
+        reader.setNumRecords(numRecords);
         reader.setNumSourceRecords(numSourceRecords);
+        reader.setL3NumRecords(numSheetRecords);
+        reader.setSkip(skip);
+        reader.setSkipSourceRows(skipSourceRows);
+        reader.setL3Skip(skipSheetRows);
         
         // skip source rows
         if (skipSourceRows == -1) {

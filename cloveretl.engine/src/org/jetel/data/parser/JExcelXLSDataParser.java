@@ -129,13 +129,13 @@ public class JExcelXLSDataParser extends XLSParser {
 	public String[] getNames() {
 		ArrayList<String> names = new ArrayList<String>();
 		if (metadataRow > -1) {
-			Cell[] row = sheet.getRow(metadataRow);
-			//go through each not empty cell
-			for (int i=0;i<row.length;i++){
-				Cell cell = row[i];
+		Cell[] row = sheet.getRow(metadataRow);
+		//go through each not empty cell
+		for (int i=0;i<row.length;i++) {
+			Cell cell = row[i];
 				names.add(XLSFormatter.getCellCode(cell.getColumn()) + " - " +
 						cell.getContents());
-			}
+		}
 		}else{
 			Cell[] row = sheet.getRow(firstRow);
 			for (int i=0;i<row.length;i++){
@@ -198,7 +198,7 @@ public class JExcelXLSDataParser extends XLSParser {
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 		Cell[] namesRow;
 		if (metadataRow > -1) {
-			 namesRow = sheet.getRow(metadataRow);
+		namesRow = sheet.getRow(metadataRow);
 		}else{
 			metadataRow = -1;
   			namesRow = sheet.getRow(firstRow);
@@ -520,5 +520,5 @@ public class JExcelXLSDataParser extends XLSParser {
     public void free() {
     	close();
     }
-	
+
 }
