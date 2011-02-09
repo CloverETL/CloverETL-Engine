@@ -204,7 +204,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
                 seq.setStart(xattribs.getInteger(XML_START_ATTRIBUTE));
             }
             if(xattribs.exists(XML_STEP_ATTRIBUTE)) {
-                seq.setStart(xattribs.getInteger(XML_STEP_ATTRIBUTE));
+                seq.setStep(xattribs.getInteger(XML_STEP_ATTRIBUTE));
             }
             
             return seq;
