@@ -591,6 +591,7 @@ public class XLSReader extends Node {
         reader.setSkip(skip);
         reader.setSkipSourceRows(skipSourceRows);
         reader.setL3Skip(skipSheetRows);
+        parser.setFirstRow(startRow);
         
         // skip source rows
         if (skipSourceRows == -1) {
