@@ -355,7 +355,12 @@ public class FileUtils {
         		if (S3InputStream.isS3File(url)) {
         			return new S3InputStream(url);
         		}
-            	innerStream = getAuthorizedConnection(url).getInputStream();
+        		try {
+        			innerStream = getAuthorizedConnection(url).getInputStream();
+        		}
+        		catch (Exception e) {
+        			throw new IOException("Cannot obtain connection input stream for URL '" + url + "'. Make sure the URL is valid.", e);
+        		}
         	} catch (IOException e) {
 				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
 				throw e;
@@ -672,7 +677,9 @@ public class FileUtils {
 	}
 	
 	private static boolean isRemoteFile(String input) {
-		return input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
+		return input.startsWith("http:")
+			|| input.startsWith("https:")
+			|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
 	}
 	
 	private static boolean isConsole(String input) {
