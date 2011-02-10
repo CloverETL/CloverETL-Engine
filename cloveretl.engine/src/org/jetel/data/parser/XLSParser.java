@@ -435,10 +435,6 @@ public abstract class XLSParser implements Parser {
 		}
 
 		this.metadataRow = metadataRow;
-
-		if (firstRow == 0) {
-			firstRow = this.metadataRow + 1;
-	}
 	}
 	
 	/**
