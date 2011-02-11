@@ -43,11 +43,11 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -116,27 +116,27 @@ import org.w3c.dom.Element;
  */
 public class Denormalizer extends Node {
 
-	enum Order {
+	protected enum Order {
 		ASC,	// ascending order
 		DESC,	// descending order
 		IGNORE,	// don't check order of records
 		AUTO,	// check the input to be either in ascending or descending order
 	}
 
-	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "denormalizeClass";
-	private static final String XML_TRANSFORM_ATTRIBUTE = "denormalize";
-	private static final String XML_TRANSFORMURL_ATTRIBUTE = "denormalizeURL";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_KEY_ATTRIBUTE = "key";
-	private static final String XML_SIZE_ATTRIBUTE = "groupSize";
-	private static final String XML_ORDER_ATTRIBUTE = "order";
-	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
-    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
+	public static final String XML_TRANSFORMCLASS_ATTRIBUTE = "denormalizeClass";
+	public static final String XML_TRANSFORM_ATTRIBUTE = "denormalize";
+	public static final String XML_TRANSFORMURL_ATTRIBUTE = "denormalizeURL";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	public static final String XML_KEY_ATTRIBUTE = "key";
+	public static final String XML_SIZE_ATTRIBUTE = "groupSize";
+	public static final String XML_ORDER_ATTRIBUTE = "order";
+	public static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+    public static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
     /** the name of an XML attribute used to store the "equal NULL" flag */
-    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+    public static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	
-	private static final int IN_PORT = 0;
-	private static final int OUT_PORT = 0;
+	protected static final int IN_PORT = 0;
+	protected static final int OUT_PORT = 0;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DENORMALIZER";
@@ -145,19 +145,19 @@ public class Denormalizer extends Node {
 
 	static Log logger = LogFactory.getLog(Denormalizer.class);
 
-	private InputPort inPort;
-	private OutputPort outPort;
-	private RecordDenormalize denorm;
+	protected InputPort inPort;
+	protected OutputPort outPort;
+	protected RecordDenormalize denorm;
 	
-	private DataRecordMetadata inMetadata;
-	private DataRecordMetadata outMetadata;
+	protected DataRecordMetadata inMetadata;
+	protected DataRecordMetadata outMetadata;
 	
-	private String xformClass;
-	private String xform;
-	private String xformURL = null;
+	protected String xformClass;
+	protected String xform;
+	protected String xformURL = null;
 	private String charset = null;
 	private Order order;
-	private String[] key;
+	protected String[] key;
 	RecordKey recordKey;
 	private int size = 0;
 		
@@ -231,7 +231,7 @@ public class Denormalizer extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
+	protected RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
         Object transObject = DynamicJavaClass.instantiate(denormCode, this.getClass().getClassLoader(),
         		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
 
@@ -281,7 +281,7 @@ public class Denormalizer extends Node {
 		}
 	}
 	
-	private RecordDenormalize createRecordDenormalizer(String code) throws ComponentNotReadyException {
+	protected RecordDenormalize createRecordDenormalizer(String code) throws ComponentNotReadyException {
 		switch (RecordTransformFactory.guessTransformType(code)) {
 		case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
 			return createDenormalizerDynamic(code);
@@ -317,7 +317,7 @@ public class Denormalizer extends Node {
 	 * @throws TransformException 
 	 * @throws JetelException Indicates that input is not sorted as expected.
 	 */
-	private boolean endRun(DataRecord prevRecord, DataRecord currentRecord, int counter) throws TransformException {
+	protected boolean endRun(DataRecord prevRecord, DataRecord currentRecord, int counter) throws TransformException {
 		
 		if (prevRecord == null) {
 			return false;
@@ -355,7 +355,7 @@ public class Denormalizer extends Node {
 	 * @throws InterruptedException
 	 * @throws TransformException
 	 */
-	private void processInput() throws IOException, InterruptedException, TransformException {
+	protected void processInput() throws IOException, InterruptedException, TransformException {
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
 		DataRecord srcRecord[] = new DataRecord[] {new DataRecord(inMetadata),new DataRecord(inMetadata)} ;
@@ -406,7 +406,7 @@ public class Denormalizer extends Node {
 		} // while
 	}
 
-	private void handleException(String functionName, int transformResult, int recNo) throws TransformException, IOException{
+	protected void handleException(String functionName, int transformResult, int recNo) throws TransformException, IOException{
 		ErrorAction action = errorActions.get(transformResult);
 		if (action == null) {
 			action = errorActions.get(Integer.MIN_VALUE);
@@ -567,11 +567,11 @@ public class Denormalizer extends Node {
 	 * Sets denormalization parameters.
 	 * @param transformationParameters
 	 */
-	private void setTransformationParameters(Properties transformationParameters) {
+	public void setTransformationParameters(Properties transformationParameters) {
 		this.transformationParameters = transformationParameters;
 	}
 
-	private static String[] parseKeyList(String keyList) {
+	protected static String[] parseKeyList(String keyList) {
 		return keyList == null ? new String[]{} : keyList.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	}
 	

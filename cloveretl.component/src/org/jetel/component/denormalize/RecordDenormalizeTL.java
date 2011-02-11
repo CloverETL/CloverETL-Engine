@@ -59,11 +59,11 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 
 	private final TLValue[] onErrorArguments = new TLValue[] { new TLStringValue(), new TLStringValue() };
 
-	private int appendFunction;
-	private int appendOnErrorFunction;
-	private int transformFunction;
-	private int transformOnErrorFunction;
-	private int cleanFunction;
+	protected int appendFunction;
+	protected int appendOnErrorFunction;
+	protected int transformFunction;
+	protected int transformOnErrorFunction;
+	protected int cleanFunction;
 
 	/** Constructor for the DataRecordTransform object */
 	public RecordDenormalizeTL(Log logger, String srcCode, TransformationGraph graph) {
@@ -96,7 +96,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 	}
 
 	@Override
-	public int append(DataRecord inRecord) {
+	public int append(DataRecord inRecord) throws TransformException {
 		return appendImpl(appendFunction, inRecord, null);
 	}
 
@@ -118,7 +118,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 	}
 
 	@Override
-	public int transform(DataRecord outRecord) {
+	public int transform(DataRecord outRecord) throws TransformException {
 		return transformImpl(transformFunction, outRecord, null);
 	}
 
