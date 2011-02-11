@@ -157,7 +157,15 @@ public interface Parser {
     public void free() throws ComponentNotReadyException, IOException;
     
     /**
-     * 
+     * Used to move to the next subsection of an input source where applicable.
+     * Example: For XLS files each sheet is considered a separate subsection,
+     * upon reaching end of sheet getNext() call returns null, this may
+     * be followed by a nextL3Source() call; if the call succeeds reading may continue.
+     * Implementation for parsers that do not deal with data inputs with multiple subsections
+     * should always return false.
+     * Naming explanation: level 1 (L1) - all inputs to be processed,
+     * level 2 (L2) - individual inputs in L1, level 3 (L3) - individual subsections in L2.
+     * @return true on success, false if no more subsections are available   
      */
     public boolean nextL3Source();
 
