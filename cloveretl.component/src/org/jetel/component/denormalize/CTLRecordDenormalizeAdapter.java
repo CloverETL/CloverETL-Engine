@@ -49,16 +49,16 @@ import org.jetel.util.MiscUtils;
  */
 public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter implements RecordDenormalize {
 
-	private final DataRecord[] inputRecords = new DataRecord[1];
-	private final DataRecord[] outputRecords = new DataRecord[1];
+	protected final DataRecord[] inputRecords = new DataRecord[1];
+	protected final DataRecord[] outputRecords = new DataRecord[1];
 
 	private final Object[] onErrorArguments = new Object[2];
 
-	private CLVFFunctionDeclaration appendFunction;
-	private CLVFFunctionDeclaration appendOnErrorFunction;
-	private CLVFFunctionDeclaration transformFunction;
-	private CLVFFunctionDeclaration transformOnErrorFunction;
-	private CLVFFunctionDeclaration cleanFunction;
+	protected CLVFFunctionDeclaration appendFunction;
+	protected CLVFFunctionDeclaration appendOnErrorFunction;
+	protected CLVFFunctionDeclaration transformFunction;
+	protected CLVFFunctionDeclaration transformOnErrorFunction;
+	protected CLVFFunctionDeclaration cleanFunction;
 
 	/**
      * Constructs a <code>CTLRecordDenormalizeAdapter</code> for a given CTL executor and logger.
@@ -97,7 +97,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 	}
 
 	@Override
-	public int append(DataRecord inRecord) {
+	public int append(DataRecord inRecord) throws TransformException {
 		return appendImpl(appendFunction, inRecord, NO_ARGUMENTS);
 	}
 
@@ -127,7 +127,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 	}
 
 	@Override
-	public int transform(DataRecord outRecord) {
+	public int transform(DataRecord outRecord) throws TransformException {
 		return transformImpl(transformFunction, outRecord, NO_ARGUMENTS);
 	}
 

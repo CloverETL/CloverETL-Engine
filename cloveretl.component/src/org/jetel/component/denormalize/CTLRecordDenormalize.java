@@ -44,9 +44,9 @@ import org.jetel.util.MiscUtils;
 public abstract class CTLRecordDenormalize extends CTLAbstractTransform implements RecordDenormalize {
 
 	/** Input data record used for denormalization, or <code>null</code> if not accessible. */
-	private DataRecord inputRecord = null;
+	protected DataRecord inputRecord = null;
 	/** Output data record used for denormalization, or <code>null</code> if not accessible. */
-	private DataRecord outputRecord = null;
+	protected DataRecord outputRecord = null;
 
 	@Override
 	public final boolean init(Properties parameters, DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
