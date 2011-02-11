@@ -83,6 +83,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class FileUtils {
 
+	private final static String DEFAULT_ZIP_FILE = "default_output";
+	
 	// for embedded source
 	//     "something   :       (         something   )       [#something]?
 	//      ([^:]*)     (:)     (\\()     (.*)        (\\))   (((#)(.*))|($))
@@ -793,7 +795,7 @@ public class FileUtils {
 			ret = getLocalArchivePath(contextURL, innerSource, appendData, compressLevel, path, nestLevel + 1, output);
 			if (ret) {
 				if (outer == null && isZipArchive(input)) {
-					outer = getFirstFileInZipArchive(contextURL, path.toString());
+					outer = output ? DEFAULT_ZIP_FILE : getFirstFileInZipArchive(contextURL, path.toString());
 					if (outer == null) {
 						throw new IOException("The archive does not contain any files");
 					}
@@ -935,7 +937,7 @@ public class FileUtils {
 			}
 			String anchor = sbAnchor.toString();
 			de.schlichtherle.util.zip.ZipEntry entry =
-				new de.schlichtherle.util.zip.ZipEntry(anchor.equals("") ? "default_output" : anchor);
+				new de.schlichtherle.util.zip.ZipEntry(anchor.equals("") ? DEFAULT_ZIP_FILE : anchor);
 			zout.putNextEntry(entry);
 			return zout;
         } 
