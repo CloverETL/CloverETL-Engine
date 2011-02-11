@@ -466,4 +466,8 @@ public class LdapParser implements Parser {
 		close();
 	}
 
+	@Override
+	public boolean nextL3Source() {
+		return false;
+	}
 }
