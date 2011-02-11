@@ -197,14 +197,6 @@ public class XLSReader extends Node {
             aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
             aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 
-            if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)) { // do not move
-                aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
-            }
-
-            aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE, 1)); // do not move
-            if (xattribs.exists(XML_FINALROW_ATTRIBUTE)) { // do not move
-                aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
-            }
             if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)) {
                 aXLSReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
             }
@@ -235,14 +227,13 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
 				aXLSReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_SKIP_SHEET_ROWS_ATTRIBUTE)){
-				aXLSReader.setSkipSheetRows(xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE));
-			} else {
-				aXLSReader.setSkipSheetRows(aXLSReader.getMetadataRow());
-			}
-			if (xattribs.exists(XML_NUM_SHEET_RECORDS_ATTRIBUTE)){
-				aXLSReader.setNumSheetRecords(xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE));
-			}
+			aXLSReader.setSheetRange(
+					xattribs.getInteger(XML_METADATAROW_ATTRIBUTE, -1),
+					xattribs.getInteger(XML_STARTROW_ATTRIBUTE, -1),
+					xattribs.getInteger(XML_FINALROW_ATTRIBUTE, -1),
+					xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE, -1),
+					xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE, -1)
+					);
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":"
                     + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
@@ -253,8 +244,6 @@ public class XLSReader extends Node {
     
     private XLSType parserType = XLSType.AUTO;
     private String fileURL;
-    private int startRow = 0;
-    private int finalRow = -1;
     private int maxErrorCount = -1;
     private String incrementalFile;
     private String incrementalKey;
@@ -309,34 +298,42 @@ public class XLSReader extends Node {
     }
 
     /**
-     * @param startRow The startRow to set.
+     * This function is used to set several mutually conflicting component attributes
+     * used for sheet range specification,
+     * setting them all in one place helps to avoid confusion caused by their interdependency
      */
-    public void setStartRow(int startRecord) {
-        if(startRecord < 1 || (finalRow != -1 && startRecord > finalRow)) {
-            throw new InvalidParameterException("Invalid StartRecord parameter.");
-        }
-        this.startRow = startRecord;
-    }
-    
-    public int getStartRow() {
-        return startRow;
-    }
-    
-    /**
-     * @param finalRow The finalRow to set.
-     */
-    public void setFinalRow(int finalRecord) {
-        if(finalRecord < 0 || (startRow != -1 && startRow > finalRecord)) {
-            throw new InvalidParameterException("Invalid finalRow parameter.");
-        }
-        this.finalRow = finalRecord;
-    }
+    public void setSheetRange(int metadataRow, int startRow, int finalRow,
+    		int skipSheetRows, int numSheetRecords) {
+    	// first set defaults
+    	this.metadataRow = metadataRow == -1 ? 0 : metadataRow;
 
-    /**
-     * @return Returns the finalRow.
-     */
-    public int getFinalRow() {
-        return finalRow;
+    	if (startRow == -1) {
+    		if (skipSheetRows == -1) {
+    			this.skipSheetRows = this.metadataRow;
+    		} else {
+    			this.skipSheetRows = skipSheetRows; // 0th row (cell-names) is skipped unless startRow is defined
+    		}
+    	} else {
+    		if (skipSheetRows == -1) {
+    			this.skipSheetRows = startRow;
+    		} else {
+    			this.skipSheetRows = startRow + skipSheetRows;
+    		}
+    	}
+    	
+    	if (finalRow == -1) {
+    		if (numSheetRecords == -1) {
+    			this.numSheetRecords = -1;
+    		} else {
+    			this.numSheetRecords = numSheetRecords;
+    		}
+    	} else {
+    		if (numSheetRecords == -1) {
+    			this.numSheetRecords = finalRow - this.skipSheetRows;
+    		} else {
+    			this.numSheetRecords = Math.min(numSheetRecords, finalRow - this.skipSheetRows);
+    		}
+    	}
     }
     
 	/**
@@ -372,14 +369,6 @@ public class XLSReader extends Node {
         this.sheetNumber = sheetNumber;
     }
 
-    public void setMetadataRow(int metadaRow) {
-        this.metadataRow = metadaRow;
-    }
-
-    public int getMetadataRow() {
-        return metadataRow;
-    }
-
     public void setIncrementalFile(String incrementalFile) {
         this.incrementalFile = incrementalFile;
     }
@@ -402,20 +391,6 @@ public class XLSReader extends Node {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
 	}
 	
-	/**
-	 * @param how many rows to skip for every source
-	 */
-	public void setSkipSheetRows(int skipSourceRows) {
-		this.skipSheetRows = Math.max(skipSourceRows, 0);
-	}
-	
-	/**
-	 * @param how many rows to process for every source
-	 */
-	public void setNumSheetRecords(int numSourceRecords) {
-		this.numSheetRecords = Math.max(numSourceRecords, 0);
-	}
-
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
 
@@ -432,12 +407,6 @@ public class XLSReader extends Node {
 
             xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE, StringUtils.stringArraytoString(fm,
                     Defaults.Component.KEY_FIELDS_DELIMITER));
-        }
-
-        xmlElement.setAttribute(XML_STARTROW_ATTRIBUTE, String.valueOf(startRow));
-
-        if (finalRow > -1) {
-            xmlElement.setAttribute(XML_FINALROW_ATTRIBUTE, String.valueOf(finalRow));
         }
 
         if (maxErrorCount > -1) {
@@ -591,7 +560,6 @@ public class XLSReader extends Node {
         reader.setSkip(skip);
         reader.setSkipSourceRows(skipSourceRows);
         reader.setL3Skip(skipSheetRows);
-        parser.setFirstRow(startRow);
         
         // skip source rows
         if (skipSourceRows == -1) {
