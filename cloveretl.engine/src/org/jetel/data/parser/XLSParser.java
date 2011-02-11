@@ -389,6 +389,7 @@ public abstract class XLSParser implements Parser {
 		this.firstRow = firstRecord;
 	}
 
+	
 	/**
 	 * Row, wchich was set by setFirstRow method
 	 * 
