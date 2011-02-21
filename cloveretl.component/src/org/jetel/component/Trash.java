@@ -90,7 +90,10 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  */
 public class Trash extends Node {
-
+	public enum Mode {
+		FULL_DESERIALIZE, PERFORMANCE,
+	}
+	
 	private static Log logger = LogFactory.getLog(Trash.class);
 
 	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
@@ -100,6 +103,10 @@ public class Trash extends Node {
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	private static final String XML_PRINT_TRASH_ID_ATTRIBUTE = "printTrashID";
+	private static final String XML_MODE ="mode";
+	
+	private static final String FULL_DESERIALIZE="full_deserialize";
+	private static final String PERFORMANCE = "performance";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
@@ -108,6 +115,7 @@ public class Trash extends Node {
 	private boolean debugPrint;
 	private String debugFilename;
 	private boolean printTrashID;
+	private Mode mode;
 
 	private TextTableFormatter formatter;
 	private MultiFileWriter writer;
@@ -127,6 +135,7 @@ public class Trash extends Node {
 		super(id);
 		debugPrint = false;
 		debugFilename = null;
+		this.mode = Mode.PERFORMANCE;
 	}
 
 
@@ -227,11 +236,20 @@ public class Trash extends Node {
 	
 	private Result executeWithoutWriter() throws Exception {
 		InputPortDirect inPort = getInputPortDirect(READ_FROM_PORT);
+		DataRecord record = new DataRecord(inPort.getMetadata());
 		ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		
+		if(mode.equals(Mode.FULL_DESERIALIZE))
+			record.init();
+
 		while (inPort.readRecordDirect(recordBuffer) && runIt) {
+			if(mode.equals(Mode.FULL_DESERIALIZE)) {
+				record.deserialize(recordBuffer);
+			}
+			
 			SynchronizeUtils.cloverYield();
+
 		}
+			
 		
 		if (debugFilename != null && debugPrint){
 			formatter.finish();
@@ -313,6 +331,7 @@ public class Trash extends Node {
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
+
 		xmlElement.setAttribute(XML_DEBUGPRINT_ATTRIBUTE, String.valueOf(this.debugPrint));
 		if (debugFilename != null) {
 			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE,this.debugFilename);
@@ -322,6 +341,12 @@ public class Trash extends Node {
 		}
 		if (compressLevel > -1){
 			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
+		}
+		if( mode != null || mode.equals(Mode.PERFORMANCE)) {
+			xmlElement.setAttribute(XML_MODE, PERFORMANCE);
+		}
+		else if(mode.equals(Mode.FULL_DESERIALIZE)) {
+			xmlElement.setAttribute(XML_MODE, FULL_DESERIALIZE);
 		}
 	}
 
@@ -339,6 +364,7 @@ public class Trash extends Node {
 
 		try {
 			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
+		
 			if (xattribs.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
 				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
@@ -357,6 +383,11 @@ public class Trash extends Node {
 			if(xattribs.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
 				trash.setPrintTrashID(xattribs.getBoolean(XML_PRINT_TRASH_ID_ATTRIBUTE));
             }
+			if (xattribs.exists(XML_MODE)) {
+				trash.setMode(xattribs.getString(XML_MODE));
+			}
+			else trash.setMode(PERFORMANCE);
+			
 			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 			
 		} catch (Exception ex) {
@@ -430,6 +461,7 @@ public class Trash extends Node {
 		this.compressLevel = compressLevel;
 	}
 	
+	
 	/**
 	 * Sets make directory.
 	 * @param mkDir - true - creates output directories for output file
@@ -445,5 +477,16 @@ public class Trash extends Node {
 	private void setPrintTrashID(boolean printTrashID) {
 		this.printTrashID = printTrashID;
 	}
+	
+	/**
+	 * Sets mode
+	 * @param mode
+	 */
+	 private void setMode(String mode) {
+		 if(mode == null || mode.equalsIgnoreCase(PERFORMANCE))
+			 this.mode = Mode.PERFORMANCE;
+		 else if(mode.equalsIgnoreCase(FULL_DESERIALIZE))
+			 this.mode = Mode.FULL_DESERIALIZE;
+	 }
 }
 

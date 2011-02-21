@@ -1757,6 +1757,16 @@
          <attrDesc>debugPrint</attrDesc>
          <attrDefaultVal></attrDefaultVal>
       </attribute>
+      <attribute>
+         <attrName>mode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            enumeration:  full_deserialize performance 
+            
+         </attrType>
+         <attrDesc>mode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
       <example>
          <exampleXml></exampleXml>
          <exampleDesc></exampleDesc>
