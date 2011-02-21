@@ -116,7 +116,7 @@ import org.w3c.dom.Element;
  */
 public class Denormalizer extends Node {
 
-	protected enum Order {
+	public enum Order {
 		ASC,	// ascending order
 		DESC,	// descending order
 		IGNORE,	// don't check order of records
