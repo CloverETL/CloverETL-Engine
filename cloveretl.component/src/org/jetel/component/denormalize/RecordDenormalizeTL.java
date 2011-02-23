@@ -30,6 +30,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 
@@ -57,7 +58,8 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 
 	private final DataRecord[] outRec = new DataRecord[1];
 
-	private final TLValue[] onErrorArguments = new TLValue[] { new TLStringValue(), new TLStringValue() };
+	protected final TLValue[] onErrorArguments = new TLValue[] { 
+			new TLStringValue(), new TLStringValue(), TLValue.create(TLValueType.INTEGER)};
 
 	protected int appendFunction;
 	protected int appendOnErrorFunction;
@@ -87,9 +89,9 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 		}
 
 		appendFunction = wrapper.prepareFunctionExecution(APPEND_FUNCTION_NAME);
-		appendOnErrorFunction = wrapper.prepareOptionalFunctionExecution(APPEND_FUNCTION_NAME);
+		appendOnErrorFunction = wrapper.prepareOptionalFunctionExecution(APPEND_ON_ERROR_FUNCTION_NAME);
 		transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
-		transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
 		cleanFunction = wrapper.prepareOptionalFunctionExecution(CLEAN_FUNCTION_NAME);
 
 		return result == null ? true : result == TLBooleanValue.TRUE;
