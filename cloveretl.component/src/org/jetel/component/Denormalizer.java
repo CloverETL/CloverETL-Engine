@@ -99,6 +99,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>order</b></td><td>Describe expected order of input records. "asc" for ascending, "desc" for descending,
  *  "auto" for auto-detection, "ignore" for processing input records without order checking (this may produce unexpected
  *  results when input is not ordered).</td></tr>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
  *  <tr><td><b>errorActions </b><i>optional</i></td><td>defines if graph is to stop, when denormalize functions return negative value.
  *  Available actions are: STOP or CONTINUE. For CONTINUE action, error message is logged to console or file (if errorLog attribute
  *  is specified) and for STOP there is thrown TransformExceptions and graph execution is stopped. <br>
@@ -141,7 +142,7 @@ public class Denormalizer extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DENORMALIZER";
 
-	private Properties transformationParameters;
+	protected Properties transformationParameters;
 
 	static Log logger = LogFactory.getLog(Denormalizer.class);
 
@@ -550,7 +551,9 @@ public class Denormalizer extends Node {
     			try {
     				RecordDenormalize denorm = createRecordDenormalizer(checkTransform);
     				denorm.setNode(this);
-    				denorm.init(transformationParameters, inMetadata, outMetadata);
+    				if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
+    					throw new ComponentNotReadyException("Transformation is invalid: " + denorm.getMessage());
+    				}
     			} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = xform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
