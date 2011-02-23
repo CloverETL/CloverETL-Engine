@@ -138,6 +138,7 @@ public class DBFDataReader extends Node {
 	private DBFDataParser parser;
 	private String charset;
 
+	IParserExceptionHandler exceptionHandler = null;
 
 	/**
 	 *Constructor for the DBFDataReader object
@@ -275,6 +276,7 @@ public class DBFDataReader extends Node {
 		} else {
 			parser = new DBFDataParser(metadata, charset);
 		}
+		parser.setExceptionHandler(exceptionHandler);
 		
 		TransformationGraph graph = getGraph();
 
@@ -389,7 +391,7 @@ public class DBFDataReader extends Node {
 	 * @param  handler
 	 */
 	private void setExceptionHandler(IParserExceptionHandler handler) {
-		parser.setExceptionHandler(handler);
+		exceptionHandler = handler;
 	}
 
 
