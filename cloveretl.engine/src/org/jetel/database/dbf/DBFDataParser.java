@@ -226,9 +226,10 @@ public class DBFDataParser implements Parser {
             }
             record.getField(fieldNum).fromString(data.toString());
         } catch (BadDataFormatException bdfe) {
+        	bdfe.setRecordNumber(recordCounter);
             if (exceptionHandler != null) { //use handler only if configured
                 exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),
-                        data, recordCounter, fieldNum), record, -1, fieldNum, data.toString(), bdfe);
+                        data, recordCounter, fieldNum), record, recordCounter, fieldNum, data.toString(), bdfe);
             } else {
                 throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
                         data, recordCounter, fieldNum));
