@@ -53,10 +53,9 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     private static final String XML_STEP_ATTRIBUTE = "step";
 
     private long value = 0;
-    
     private long start = 0;
-    
     private long step = 1;
+    boolean alreadyIncremented = false;
     
     public PrimitiveSequence(String id, TransformationGraph graph, String name) {
         super(id, graph, name);
@@ -79,6 +78,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		alreadyIncremented = false;
     }
 
     
@@ -112,51 +112,53 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.data.sequence.Sequence#currentValueInt()
      */
     public int currentValueInt() {
-        return (int) value;
+        return (int) currentValueLong();
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueInt()
      */
     public int nextValueInt() {
-        value += step;
-        return (int) value;
+        return (int) nextValueLong();
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#currentValueLong()
      */
     public long currentValueLong() {
-        return value;
+        return alreadyIncremented ? value - step : value;
+
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueLong()
      */
     public long nextValueLong() {
+    	long tmpVal=value;
         value += step;
-        return value;
+        alreadyIncremented = true;
+        return tmpVal;
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#currentValueString()
      */
     public String currentValueString() {
-        return Long.toString(value);
+        return Long.toString(currentValueLong());
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueString()
      */
     public String nextValueString() {
-        value += step;
-        return Long.toString(value);
+        return Long.toString(nextValueLong());
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#resetValue()
      */
     public void resetValue() {
+    	alreadyIncremented = false;
         value = start;
     }
 
