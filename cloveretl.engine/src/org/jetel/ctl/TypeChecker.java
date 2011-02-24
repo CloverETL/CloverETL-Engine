@@ -1888,6 +1888,14 @@ public class TypeChecker extends NavigatingVisitor {
 			return TLType.ERROR;
 		}
 
+		if (lhs.isByteArray()) {
+			if (rhs.isByteArray()) {
+				return TLTypePrimitive.BYTEARRAY;
+			}
+
+			return TLType.ERROR;
+		}
+		
 		return TLType.ERROR;
 
 	}

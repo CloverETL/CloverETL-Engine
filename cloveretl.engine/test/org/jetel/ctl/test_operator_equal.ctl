@@ -31,6 +31,24 @@ boolean eq16;
 boolean eq17;
 boolean eq18;
 boolean eq19;
+byte byte1;
+byte byte2;
+cbyte cbyte1;
+cbyte cbyte2;
+boolean eq20;
+boolean eq21;
+boolean eq22;
+boolean eq23;
+boolean eq24;
+boolean eq25;
+boolean eq20c;
+boolean eq21c;
+boolean eq22c;
+boolean eq23c;
+boolean eq24c;
+boolean eq25c;
+boolean eq26;
+boolean eq27;
 
 function integer getInt() {
 	return 1000;
@@ -156,5 +174,29 @@ function integer transform() {
 	printErr('eq12: null!=null ' + eq12);
 	
 	
+      // byte
+      byte1 = hex2byte("C0FFEE");
+      byte2 = hex2byte("BABE");
+      
+      eq20 = byte1 == byte1;
+      eq21 = byte1 == hex2byte("C0FFEE");
+      eq22 = byte1 != hex2byte("C0FFEE");
+      eq23 = byte1 == byte2;
+      eq24 = hex2byte("BABE") == byte2;
+      eq25 = byte1 == null;
+
+      cbyte1 = hex2byte("C0FFEE");
+      cbyte2 = hex2byte("BABE");
+      
+      eq20c = cbyte1 == cbyte1;
+      eq21c = cbyte1 == hex2byte("C0FFEE");
+      eq22c = cbyte1 != hex2byte("C0FFEE");
+      eq23c = cbyte1 == cbyte2;
+      eq24c = hex2byte("BABE") == cbyte2;
+      eq25c = cbyte1 == null;
+      
+      eq26 = byte1 == cbyte1;
+      eq27 = byte1 != cbyte2;
+      
 	return 0;
 }
