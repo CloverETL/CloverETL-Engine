@@ -43,8 +43,6 @@ import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 
-import com.sun.tools.hat.internal.parser.ReadBuffer;
-
 /**
  * Class for reading data saved in Clover internal format
  * It is predicted that zip file (with name dataFile.zip) has following structure:
