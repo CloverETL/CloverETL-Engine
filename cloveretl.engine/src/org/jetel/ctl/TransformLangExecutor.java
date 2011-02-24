@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -637,229 +638,248 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return;
 		}
 
-			// Integer
-			if (operationType.isInteger()) {
-				final int lhs = (Integer)lhsValue;
-				final int rhs = (Integer)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs == rhs);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs < rhs);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs > rhs);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs <= rhs);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs >= rhs);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(lhs != rhs);
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			// Long
-			if (operationType.isLong()) {
-				final long lhs = (Long)lhsValue;
-				final long rhs = (Long)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs == rhs);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs < rhs);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs > rhs);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs <= rhs);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs >= rhs);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(lhs != rhs);
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-		
-			// Double
-			if (operationType.isDouble()) {
-				final double lhs = (Double)lhsValue;
-				final double rhs = (Double)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs == rhs);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs < rhs);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs > rhs);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs <= rhs);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs >= rhs);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(lhs != rhs);
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			// Boolean
-			if (operationType.isBoolean()) {
-				final boolean lhs = (Boolean)lhsValue;
-				final boolean rhs = (Boolean)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs == rhs);
-					break;// equal
-				case NON_EQUAL:
-					stack.push(lhs != rhs);
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			// Decimal
-			if (operationType.isDecimal()) {
-				final BigDecimal lhs = (BigDecimal)lhsValue;
-				final BigDecimal rhs = (BigDecimal)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs.compareTo(rhs) == 0);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs.compareTo(rhs) < 0);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs.compareTo(rhs) > 0);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) <= 0);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) >= 0);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(!lhs.equals(rhs));
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			// Datetime
-			if (operationType.isDate()) {
-				final Date lhs = (Date)lhsValue;
-				final Date rhs = (Date)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs.compareTo(rhs) == 0);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs.compareTo(rhs) < 0);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs.compareTo(rhs) > 0);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) <= 0);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) >= 0);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(!lhs.equals(rhs));
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			// String
-			if (operationType.isString()) {
-				final String lhs = (String)lhsValue;
-				final String rhs = (String)rhsValue;
-				
-				switch (operator) {
-				case EQUAL:
-					stack.push(lhs.compareTo(rhs) == 0);
-					break;// equal
-				case LESS_THAN:
-					stack.push(lhs.compareTo(rhs) < 0);
-					break;// less than
-				case GREATER_THAN:
-					stack.push(lhs.compareTo(rhs) > 0);
-					break;// grater than
-				case LESS_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) <= 0);
-					break;// less than equal
-				case GREATER_THAN_EQUAL:
-					stack.push(lhs.compareTo(rhs) >= 0);
-					break;// greater than equal
-				case NON_EQUAL:
-					stack.push(!lhs.equals(rhs));
-					break;
-				default:
-					// this should never happen !!!
-					logger.fatal("Internal error: Unsupported comparison operator !");
-					throw new RuntimeException("Internal error - Unsupported comparison operator !");
-				}
-	
-				return;
-			}
-			
-			throw new IllegalArgumentException("Unknwon type or operator");
-			
-	}
+		// Integer
+		if (operationType.isInteger()) {
+			final int lhs = (Integer) lhsValue;
+			final int rhs = (Integer) rhsValue;
 
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs == rhs);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs < rhs);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs > rhs);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs <= rhs);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs >= rhs);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(lhs != rhs);
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// Long
+		if (operationType.isLong()) {
+			final long lhs = (Long) lhsValue;
+			final long rhs = (Long) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs == rhs);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs < rhs);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs > rhs);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs <= rhs);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs >= rhs);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(lhs != rhs);
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// Double
+		if (operationType.isDouble()) {
+			final double lhs = (Double) lhsValue;
+			final double rhs = (Double) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs == rhs);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs < rhs);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs > rhs);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs <= rhs);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs >= rhs);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(lhs != rhs);
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// Boolean
+		if (operationType.isBoolean()) {
+			final boolean lhs = (Boolean) lhsValue;
+			final boolean rhs = (Boolean) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs == rhs);
+				break;// equal
+			case NON_EQUAL:
+				stack.push(lhs != rhs);
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// Decimal
+		if (operationType.isDecimal()) {
+			final BigDecimal lhs = (BigDecimal) lhsValue;
+			final BigDecimal rhs = (BigDecimal) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs.compareTo(rhs) == 0);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs.compareTo(rhs) < 0);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs.compareTo(rhs) > 0);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) <= 0);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) >= 0);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(!lhs.equals(rhs));
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// Datetime
+		if (operationType.isDate()) {
+			final Date lhs = (Date) lhsValue;
+			final Date rhs = (Date) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs.compareTo(rhs) == 0);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs.compareTo(rhs) < 0);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs.compareTo(rhs) > 0);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) <= 0);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) >= 0);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(!lhs.equals(rhs));
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// String
+		if (operationType.isString()) {
+			final String lhs = (String) lhsValue;
+			final String rhs = (String) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs.compareTo(rhs) == 0);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs.compareTo(rhs) < 0);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs.compareTo(rhs) > 0);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) <= 0);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) >= 0);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(!lhs.equals(rhs));
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+		
+		// byte
+		if (operationType.isByteArray()) {
+			final byte[] lhs = (byte[]) lhsValue;
+			final byte[] rhs = (byte[]) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(Arrays.equals(lhs, rhs));
+				break;
+			case NON_EQUAL:
+				stack.push(!Arrays.equals(lhs, rhs));
+				break;
+			default:
+				logger.fatal("Unsupported comparison operator (" + operator + ") for byte values!");
+				throw new RuntimeException("Unsupported comparison operator for byte values!");
+			}
+
+			return;
+		}
+
+		throw new IllegalArgumentException("Unknwon type or operator");
+
+	}
 	
 
 	public Object visit(CLVFSubNode node, Object data) {
