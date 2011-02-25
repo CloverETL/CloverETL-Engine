@@ -1190,6 +1190,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq17", false);
 		check("eq18", false);
 		check("eq19", false);
+		// byte
+		check("eq20", true);
+		check("eq21", true);
+		check("eq22", false);
+		check("eq23", false);
+		check("eq24", true);
+		check("eq25", false);
+		check("eq20c", true);
+		check("eq21c", true);
+		check("eq22c", false);
+		check("eq23c", false);
+		check("eq24c", true);
+		check("eq25c", false);
+		check("eq26", true);
+		check("eq27", true);
 	}
 	
 	public void test_operator_non_equal(){
