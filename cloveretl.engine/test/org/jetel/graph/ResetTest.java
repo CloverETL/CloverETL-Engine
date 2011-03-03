@@ -13,9 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IThreadManager;
-import org.jetel.graph.runtime.SimpleThreadManager;
-import org.jetel.graph.runtime.WatchDog;
+import org.jetel.main.runGraph;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
@@ -195,10 +193,7 @@ public class ResetTest extends CloverTestCase {
 
 			for (int i = 0; i < 3; i++) {
 
-				final IThreadManager threadManager = new SimpleThreadManager();
-				final WatchDog watchDog = new WatchDog(graph, runtimeContext);
-	            threadManager.initWatchDog(watchDog);
-				final Future<Result> futureResult = threadManager.executeWatchDog(watchDog);
+				final Future<Result> futureResult = runGraph.executeGraph(graph, runtimeContext);
 
 				Result result = Result.N_A;
 				result = futureResult.get();
