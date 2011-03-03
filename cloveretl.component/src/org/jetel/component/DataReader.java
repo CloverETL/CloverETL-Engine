@@ -314,7 +314,7 @@ public class DataReader extends Node {
 					logger.error(getId() + ": failed to write log record", e);
 				}
 			} else {
-				throw new IllegalArgumentException("DataField type has to by string, byte or cbyte");
+				throw new IllegalArgumentException("DataField type has to be string, byte or cbyte");
 			}
 		}
 	}
