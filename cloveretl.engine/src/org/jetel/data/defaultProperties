@@ -8,7 +8,7 @@
 #Clover at runtime allocates several internal buffers of MAX_RECORD_SIZE, thus increasing this value increases also 
 #memory utilization. 
 
-Record.MAX_RECORD_SIZE = 12288
+Record.MAX_RECORD_SIZE = 65536
 
 #Compression level for compressed data fields (cbyte).
 Record.DEFAULT_COMPRESSION_LEVEL=5
@@ -18,13 +18,14 @@ Record.DEFAULT_COMPRESSION_LEVEL=5
 #If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
 #The impact on memory utilization is low as each parser your graph uses allocates only one such buffer. 
 
-DataParser.FIELD_BUFFER_LENGTH = 4096
+DataParser.FIELD_BUFFER_LENGTH = 65536
 
 
 #the same as above, but for formatting data to text representation
 #should be set to the same value as above
 
-DataFormatter.FIELD_BUFFER_LENGTH = 4096
+#4096
+DataFormatter.FIELD_BUFFER_LENGTH = 65536
 
 
 #This constant determines the internal buffer clover components allocate for I/O operations. 
