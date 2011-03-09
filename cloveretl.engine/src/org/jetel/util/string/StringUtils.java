@@ -1940,16 +1940,17 @@ public class StringUtils {
 	        StreamTokenizer.TT_EOF) {
 	        switch(st.ttype) {
 	          case StreamTokenizer.TT_WORD:
+	        	  if (elementLength>1 && out.length()>0) out.append('_'); // append underscore to divide abbr.pieces
 	        	  if (capitalize){
 	        		  String s = st.sval.subSequence(0, elementLength).toString();
 	        		  out.append(s.toUpperCase());
 	        	  }else{
 	        		  out.append(st.sval.subSequence(0, elementLength));
 	        	  }
-	        	  if (elementLength>1) out.append('_');
 	            break;
 	          case StreamTokenizer.TT_NUMBER:
 	        	  if (useNumbers) out.append((int)st.nval);
+	        	  break;
 	          default: 
 	        	  // do nothing
 	        }
