@@ -350,6 +350,9 @@
 			
 			<keep name="com.opensys.cloveretl.component.pivot.CTLPivotTransform"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.pivot.PivotTransformTL"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.appcraft.ACSession"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.appcraft.apptreemodel.*"><field access="public"/><method access="public"/></keep>
 
 			<keep name="com.opensys.cloveretl.ctl.CTLUtils"><field access="protected public"/><method access="protected public"/></keep>
 	
