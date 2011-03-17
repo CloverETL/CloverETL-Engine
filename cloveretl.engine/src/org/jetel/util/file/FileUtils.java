@@ -32,6 +32,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.SocketAddress;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.channels.Channels;
@@ -1307,6 +1308,25 @@ public class FileUtils {
 	 */
 	public static void addCustomPathResolver(CustomPathResolver customPathResolver) {
 		customPathResolvers.add(customPathResolver);
+	}
+	
+	/**
+	 * Converts the given URL to File.
+	 * @param url
+	 * @return
+	 * @throws MalformedURLException is thrown if the given URL does not have 'file' protocol.
+	 * @see http://weblogs.java.net/blog/kohsuke/archive/2007/04/how_to_convert.html
+	 */
+	public static File convertUrlToFile(URL url) throws MalformedURLException {
+		if (url.getProtocol().equals("file")) {
+			try {
+				return new File(url.toURI());
+			} catch(URISyntaxException e) {
+				return new File(url.getPath());
+			}
+		} else {
+			throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+		}
 	}
 	
 }
