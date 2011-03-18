@@ -122,7 +122,9 @@ public class DynamicRecordBufferTest extends CloverTestCase {
         System.out.println("has file:"+buffer.isHasFile());
         System.out.println("buffered records:"+buffer.getBufferedRecords());
         int count;
-        for(count=0;count<800;count++){
+        // WARNING, if the buffer didn't cache out more than 500 records, the following loop will freeze the test!
+        // this depends on the MAX_RECORD_SIZE constant, increasing it may make this test unstable (blocked)
+        for(count=0;count<500;count++){
             if (buffer.readRecord(record)==null) break;
             System.out.println("**** "+count+"****");
             System.out.print(record);
