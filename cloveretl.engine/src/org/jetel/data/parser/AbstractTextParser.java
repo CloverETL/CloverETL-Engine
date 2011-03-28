@@ -150,11 +150,15 @@ public abstract class AbstractTextParser implements TextParser {
 	}
 	
 	protected boolean isSkipFieldTrailingBlanks(int fieldIndex) {
-		return cfg.getSkipTrailingBlanks() != null ? cfg.getSkipTrailingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(fieldIndex).isTrim();
+		return(cfg.getSkipTrailingBlanks() != null && cfg.getSkipTrailingBlanks())
+			|| (cfg.getTrim() != null && cfg.getTrim())
+			|| cfg.getMetadata().getField(fieldIndex).isTrim();
 	}
 
 	protected boolean isSkipFieldLeadingBlanks(int fieldIndex) {
-		return cfg.getSkipLeadingBlanks() != null ? cfg.getSkipLeadingBlanks() : cfg.getTrim() != null ? cfg.getTrim() : cfg.getMetadata().getField(fieldIndex).isTrim();
+		return (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks())
+		 || (cfg.getTrim() != null && cfg.getTrim())
+		 || cfg.getMetadata().getField(fieldIndex).isTrim();
 	}
 
 	
