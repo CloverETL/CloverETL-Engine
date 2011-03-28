@@ -190,8 +190,12 @@ public class Plugins {
     			continue;
     		}
     		//stores prepared plugin descriptor
-    		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-    		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+    		if (!pluginDescriptors.containsKey(pluginDescriptor.getId())) {
+        		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
+        		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+    		} else {
+        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. An another plugin is already registered with identical id attribute.");
+    		}
         }
     }
 
