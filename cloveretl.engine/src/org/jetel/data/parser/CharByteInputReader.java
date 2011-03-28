@@ -898,7 +898,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 										// mark
 			}
 			// preserve data between mark and current position
-			byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
+			byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve);
 			byteBuffer.compact();
 			currentByteMark = numBytesToPreserve - byteMarkSpan;
 
