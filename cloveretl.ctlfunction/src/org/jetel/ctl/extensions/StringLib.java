@@ -214,7 +214,7 @@ public class StringLib extends TLFunctionLibrary {
 	// RIGHT
 	@TLFunctionAnnotation("Returns suffix of the specified length")
 	public static final String right(TLFunctionCallContext context, String input, int length) {
-		return input.substring(input.length() - length, input.length());
+		return StringLib.right(context, input, length, false);
 	}
 
 	@TLFunctionAnnotation("Returns suffix of the specified length. If input string is shorter than specified length " +
@@ -226,7 +226,7 @@ public class StringLib extends TLFunctionLibrary {
 			}
 			return input;
 		}
-		return right(context, input, length);
+		return input.substring(input.length() - length, input.length());
 	}
 
 	class RightFunction implements TLFunctionPrototype {
