@@ -1919,8 +1919,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_right() {
 		doCompile("test_stringlib_right");
 		check("righ", "y dog");
+		check("rightNotPadded", "y dog");
+		check("rightPadded", "y dog");
 		check("padded", "   y dog");
 		check("notPadded", "y dog");
+		check("short", "Dog");
+		check("shortNotPadded", "Dog");
+		check("shortPadded", "     Dog");
 	}
 	
 	public void test_stringlib_soundex() {
