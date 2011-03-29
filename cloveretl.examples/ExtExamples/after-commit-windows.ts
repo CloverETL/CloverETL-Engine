@@ -5,7 +5,9 @@
 	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
 
    <FunctionalTest ident="MsSqlDataWriter" graphFile="graph/graphMsSqlDataWriter.grf">
-<!-- TODO flat file analysis -->
+	 <FlatFile outputFile="data-out/err.bcp" supposedFile="supposed-out/err.MsSqlWriter.bcp"/>	                                                                    
+	 <FlatFile outputFile="data-out/exchange.bcp" supposedFile="supposed-out/exchange.MsSqlWriter.bcp"/>	                                                                    
+	 <FlatFile outputFile="data-out/out.txt" supposedFile="supposed-out/out.MsSqlWriter.txt"/>	                                                                    
     </FunctionalTest>
    
 
