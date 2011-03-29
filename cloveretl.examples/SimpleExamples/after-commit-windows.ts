@@ -5,7 +5,9 @@
 	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
 
    <FunctionalTest ident="SystemExecute" graphFile="graph/graphSystemExecuteWin.grf">
-<!-- TODO flat file analysis -->
+	 <FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.systemExecute.out"/>	                                                                    
+	 <FlatFile outputFile="data-out/dir_command_File.out" supposedFile="supposed-out/dir_command_File.systemExecute.out"/>	                                                                    
+	 <FlatFile outputFile="data-out/dir_command_Port.out" supposedFile="supposed-out/dir_command_Port.systemExecute.out"/>	                                                                    
     </FunctionalTest>
    
 
