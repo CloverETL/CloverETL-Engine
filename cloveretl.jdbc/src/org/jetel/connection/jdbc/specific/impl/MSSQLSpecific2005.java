@@ -110,4 +110,19 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
       return currentCatalog;
     }
     
+	@Override
+	public String getTablePrefix(String schema, String owner,
+			boolean quoteIdentifiers) {
+		String tablePrefix;
+		String notNullOwner = (owner == null) ? "" : owner;
+		if(quoteIdentifiers) {
+			tablePrefix = quoteIdentifier(schema)+".";
+			//in case when owner is empty or null skip adding
+			if(!notNullOwner.isEmpty())
+				tablePrefix += quoteIdentifier(notNullOwner);
+		} else {
+			tablePrefix = schema+"."+notNullOwner;
+		}
+		return tablePrefix;
+	}
 }
