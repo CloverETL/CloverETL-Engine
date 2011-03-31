@@ -131,10 +131,26 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		inputBytesConsumed = position;				
 	}
 	
+	/**
+	 * Creates input reader suitable for parsing specified metadata
+	 * @param metadata
+	 * @param charset
+	 * @param needByteInput
+	 * @param needCharInput
+	 * @return
+	 */
 	public static CharByteInputReader createInputReader(DataRecordMetadata metadata, Charset charset, boolean needByteInput, boolean needCharInput) {
 		return createInputReader(new DataRecordMetadata[]{metadata}, charset, needByteInput, needCharInput);
 	}
 	
+	/**
+	 * Creates input reader suitable for parsing specified metadata
+	 * @param metadataArray
+	 * @param charset
+	 * @param needByteInput
+	 * @param needCharInput
+	 * @return
+	 */
 	public static CharByteInputReader createInputReader(DataRecordMetadata[] metadataArray, Charset charset, boolean needByteInput, boolean needCharInput) {
 		int maxBackShift = 0;
 
@@ -317,7 +333,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	}
 
 	/**
-	 * This input reader can be used only for data inputs which doesn't contain any byte-based fields
+	 * This input reader can be used only for data inputs which don't contain any byte-based fields
 	 * 
 	 * @author jhadrava (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
 	 * 
@@ -421,6 +437,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return charBuffer.get();
 		}
 
+		@Override
 		public int skip(int numChars) {
 			if (numChars == 0) {
 				return 0;
@@ -452,6 +469,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return endOfInput;
 		}
 		
+		@Override
 		public void mark() throws OperationNotSupportedException {
 			currentMark = charBuffer.position();
 		}
@@ -466,6 +484,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentMark = INVALID_MARK;
 		}
 
+		@Override
 		public CharSequence getCharSequence(int relativeEnd) throws OperationNotSupportedException,
 				InvalidMarkException {
 			if (currentMark == INVALID_MARK) {
@@ -544,6 +563,12 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			this.maxBackMark = maxBackMark;
 		}
 
+		/**
+		 * Nomen omen
+		 * @return value indicating success or the reason of failure
+		 * @throws IOException
+		 * @throws OperationNotSupportedException
+		 */
 		private int ensureBuffersNotEmpty() throws IOException, OperationNotSupportedException {
 			// simple cases first
 			if (charBuffer.hasRemaining()) {
@@ -640,6 +665,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return charBuffer.get();
 		}
 
+		@Override
 		public int skip(int numBytes) {
 			assert charBuffer.position() == byteBuffer.position() : "Unexpected condition occured during code execution";
 			if (numBytes == 0) {
@@ -675,6 +701,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return endOfInput;
 		}
 		
+		@Override
 		public void mark() throws OperationNotSupportedException {
 			assert charBuffer.position() == byteBuffer.position() : "Unexpected internal state occured during code execution";
 			currentMark = charBuffer.position();
@@ -691,6 +718,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentMark = INVALID_MARK;
 		}
 
+		@Override
 		public CharSequence getCharSequence(int relativeEnd) throws OperationNotSupportedException,
 				InvalidMarkException {
 			if (currentMark == INVALID_MARK) {
@@ -963,6 +991,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return numBytes;
 		}
 
+		@Override
 		public void mark() throws OperationNotSupportedException {
 			currentByteMark = byteBuffer.position();
 			currentCharMark = charBuffer.position();
