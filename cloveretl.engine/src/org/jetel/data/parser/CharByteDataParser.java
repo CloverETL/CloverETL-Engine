@@ -47,7 +47,7 @@ import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
 /**
- * A parser able to deal with mixed records containing byte-based fields (BYTE/CBYTE)
+ * A parser able to deal with mixed records containing both char-based and byte-based fields (BYTE/CBYTE)
  * 
  * @author jhadrava (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -74,9 +74,11 @@ public class CharByteDataParser extends AbstractTextParser {
 	private int lastNonAutoFilledField;
 	private boolean isInitialized;
 	private int recordCounter;
-	private boolean needCharInput;
-	private boolean needByteInput;
 
+	/**
+	 * Sole constructor
+	 * @param cfg
+	 */
 	public CharByteDataParser(TextParserConfiguration cfg) {
 		super(cfg);
 		String charsetName = cfg.getCharset();
@@ -89,8 +91,6 @@ public class CharByteDataParser extends AbstractTextParser {
 		recordSkipper = null;
 		isInitialized = false;
 		exceptionHandler = cfg.getExceptionHandler();
-		needByteInput = false;
-		needCharInput = false;
 	}
 
 	/**
@@ -119,6 +119,10 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 
+	/**
+	 * Nomen omen
+	 * @return
+	 */
 	private String getLastRawRecord() {
 		if (verboseInputReader != null) {
 			Object seq;
@@ -182,6 +186,12 @@ public class CharByteDataParser extends AbstractTextParser {
 		return record;
 	}
 
+	/**
+	 * Parses next record from input reader
+	 * @param record
+	 * @return parsed record
+	 * @throws JetelException
+	 */
 	public DataRecord parseNext(DataRecord record) throws JetelException {
 		recordCounter++;
 		try {
@@ -251,10 +261,9 @@ public class CharByteDataParser extends AbstractTextParser {
 	}
 
 	/**
-	 * Sets delimiters for each field
+	 * Returns byte searcher of the delimiters. In case it doesn't exist creates it 
 	 * 
-	 * @param byteMode
-	 * @return
+	 * @return byte searcher
 	 */
 	private AhoCorasick getByteDelimSearcher() {
 		if (lastNonAutoFilledField == -1) {
@@ -312,10 +321,9 @@ public class CharByteDataParser extends AbstractTextParser {
 	}
 
 	/**
-	 * Sets delimiters for each field
+	 * Returns char searcher of the delimiters. In case it doesn't exist creates it 
 	 * 
-	 * @param byteMode
-	 * @return
+	 * @return char searcher
 	 */
 	private AhoCorasick getCharDelimSearcher() {
 		if (lastNonAutoFilledField == -1) {
@@ -373,11 +381,25 @@ public class CharByteDataParser extends AbstractTextParser {
 		return charSearcher = searcher;
 	}
 
+	/**
+	 * Sets an input reader to be used by the parser. In typical case this is not necessary
+	 * as the reader is created during parser initialization. However, it
+	 * may be useful in special cases, eg when we want more parsers to share the same reader. 
+	 * 
+	 * @param inputReader
+	 */
 	public void setInputReader(ICharByteInputReader inputReader) {
 		this.inputReader = inputReader;
 		this.verboseInputReader = null;
 	}
 
+	/**
+	 * Sets verbose input reader to be used by the parser. In typical case this is not necessary
+	 * as the reader is created during parser initialization. However, it
+	 * may be useful in special cases, eg when we want more parsers to share the same reader. 
+	 * 
+	 * @param inputReader
+	 */
 	public void setVerboseInputReader(CharByteInputReader.DoubleMarkCharByteInputReader verboseInputReader) {
 		this.inputReader = this.verboseInputReader = verboseInputReader;
 	}
@@ -406,6 +428,9 @@ public class CharByteDataParser extends AbstractTextParser {
 			return;
 		}
 
+		boolean needByteInput = false;
+		boolean needCharInput = false;
+		
 		// let's find out what kind of input reader we need
 		for (DataFieldMetadata field : metadata.getFields()) {
 			if (field.isAutoFilled()) {
@@ -482,26 +507,6 @@ public class CharByteDataParser extends AbstractTextParser {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter
 			fieldConsumers[numConsumers++] = new CharDelimConsumer(inputReader, needCharInput ? getCharDelimSearcher() : getByteDelimSearcher(), RECORD_DELIMITER_IDENTIFIER, metadata.getField(lastNonAutoFilledField).isEofAsDelimiter());
 		}
-	}
-
-	public CharByteDataParser setNeedByteInput() throws OperationNotSupportedException {
-		if (inputReader != null) {
-			throw new OperationNotSupportedException("Cannot set input reader features after the reader was initialized");
-		}
-		needByteInput = true;
-		return this;
-	}
-
-	public CharByteDataParser setNeedCharInput() throws OperationNotSupportedException {
-		if (inputReader != null) {
-			throw new OperationNotSupportedException("Cannot set input reader features after the reader was initialized");
-		}
-		needCharInput = true;
-		return this;
-	}
-
-	public ICharByteInputReader getInputReader() {
-		return inputReader;
 	}
 
 	@Override
@@ -583,11 +588,15 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 
+	/**
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public abstract static class InputConsumer {
-		public static final int VALUE_WITHOUT_END_OF_FILE = 0;
-		public static final int END_OF_FILE_AFTER_VALUE = -1;
-		public static final int END_OF_FILE_WITHOUT_VALUE = 2;
-
+		
 		protected ICharByteInputReader inputReader;
 
 		protected InputConsumer(ICharByteInputReader inputReader) {
@@ -595,7 +604,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 
 		/**
-		 * Reads part of input and fill it in in the record
+		 * Reads part of the input and save it into the record
 		 * 
 		 * @param record
 		 * @return false if no single byte/char of input is available, true otherwise
@@ -606,6 +615,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	}
 
+	/**
+	 * Consumes several adjacent byte fields of fixed length.
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class FixlenByteFieldConsumer extends InputConsumer {
 
 		private final CharsetDecoder decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -618,6 +635,14 @@ public class CharByteDataParser extends AbstractTextParser {
 		private int[] fieldEnd;
 		private boolean[] isAutoFilling;
 
+		/**
+		 * @param metadata Metadata, used to retrieve lenght and position of the fields being consumed 
+		 * @param inputReader
+		 * @param startFieldIdx index of the first field to be consumed
+		 * @param fieldCount number of field to be consumed
+		 * @param shift 
+		 * @throws ComponentNotReadyException
+		 */
 		FixlenByteFieldConsumer(DataRecordMetadata metadata, ICharByteInputReader inputReader, int startFieldIdx,
 				int fieldCount, int shift) throws ComponentNotReadyException {
 			super(inputReader);
@@ -683,6 +708,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	}
 
+	/**
+	 * Consumes a char-based field of fixed length
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class FixlenCharFieldConsumer extends InputConsumer {
 
 		protected int fieldNumber;
@@ -691,6 +724,15 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean rTrim;
 		private int shift;
 
+		/** 
+		 * Sole constructor
+		 * @param inputReader
+		 * @param fieldNumber
+		 * @param fieldLength
+		 * @param lTrim
+		 * @param rTrim
+		 * @param shift
+		 */
 		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength, boolean lTrim,
 				boolean rTrim, int shift) {
 			super(inputReader);
@@ -742,6 +784,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	}
 
+	/**
+	 * Consumes delimited char-based field
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class DelimCharFieldConsumer extends InputConsumer {
 		private int fieldNumber;
 		private QuotingDecoder qDecoder;
@@ -754,6 +804,19 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean rTrim;
 		private int shift;
 
+		/**
+		 * Sole constructor
+		 * @param inputReader
+		 * @param fieldNumber
+		 * @param delimPatterns Searcher used to identify end of field
+		 * @param multipleDelimiters
+		 * @param acceptEofAsDelim
+		 * @param acceptEndOfRecord
+		 * @param isQuoted
+		 * @param lTrim
+		 * @param rTrim
+		 * @param shift
+		 */
 		public DelimCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean isQuoted,
 				boolean lTrim, boolean rTrim, int shift) {
@@ -957,6 +1020,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	} // DelimCharFieldConsumer
 
+	/**
+	 * Consumes delimited byte field. (Can such field even exist?)
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class DelimByteFieldConsumer extends InputConsumer {
 		private final CharsetDecoder decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		private int fieldNumber;
@@ -968,6 +1039,19 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean rTrim;
 		private int shift;
 
+		/**
+		 * Sole constructor
+		 * 
+		 * @param inputReader
+		 * @param fieldNumber
+		 * @param delimPatterns searcher used to identify delimiter
+		 * @param multipleDelimiters
+		 * @param acceptEofAsDelim
+		 * @param acceptEndOfRecord
+		 * @param lTrim
+		 * @param rTrim
+		 * @param shift
+		 */
 		public DelimByteFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean lTrim,
 				boolean rTrim, int shift) {
@@ -1067,6 +1151,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	} // DelimByteFieldConsumer
 
+	/**
+	 * Consumes a char-based delimiter that cannot be preceded by any other data
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class CharDelimConsumer extends InputConsumer {
 		private AhoCorasick delimPatterns;
 		private int delimId;
@@ -1117,6 +1209,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	} // DelimCharConsumer
 
+	/**
+	 * Consumes a char-based delimiter that cannot be preceded by any other data
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class ByteDelimConsumer extends InputConsumer {
 		private AhoCorasick delimPatterns;
 		private int delimId;
@@ -1167,6 +1267,14 @@ public class CharByteDataParser extends AbstractTextParser {
 
 	}
 
+	/**
+	 * Attempts to skip a record.
+	 * 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public abstract static class RecordSkipper {
 		protected ICharByteInputReader inputReader;
 		protected AhoCorasick delimPatterns;
@@ -1180,9 +1288,23 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.numFields = isDelimited.length;
 		}
 
+		/**
+		 * Skip the rest of current record
+		 * @param nextField index of the field at cursor's position
+		 * @return
+		 * @throws OperationNotSupportedException
+		 * @throws IOException
+		 */
 		public abstract boolean skipInput(int nextField) throws OperationNotSupportedException, IOException;
 	}
 
+	/**
+	 * Record skipper for input reader that may not support byte operations 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class CharRecordSkipper extends RecordSkipper {
 
 		/**
@@ -1238,6 +1360,13 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 
+	/**
+	 * Record skipper for input reader that may not support char operations 
+	 * @author jhadrava (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 31, 2011
+	 */
 	public static class ByteRecordSkipper extends RecordSkipper {
 
 		/**
