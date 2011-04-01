@@ -344,7 +344,7 @@ defined.version.suffix=release
 	</target>
 
 	<!-- compile temp copy of source -->
-	<target name="compile" depends="init,improve-java-sources" description="Compile sources">
+	<target name="compile" depends="clean,init,improve-java-sources" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.bin}"/>
 
