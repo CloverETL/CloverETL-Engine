@@ -33,7 +33,11 @@ public class TLDataGeneratorCache extends TLCache {
 	public TLDataGeneratorCache() {
 		dataGenerator = new DataGenerator(); 
 	}
-	
+
+	public TLDataGeneratorCache(DataGenerator dataGenerator) {
+		this.dataGenerator = dataGenerator; 
+	}
+
 	public DataGenerator getDataGenerator() {
 		return dataGenerator;
 	}
