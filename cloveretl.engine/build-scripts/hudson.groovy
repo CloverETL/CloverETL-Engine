@@ -65,15 +65,18 @@ if( !runTests ){
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
 		antArgs += "-Dobfuscate.plugin.pattern=cloveretl.*"
 		antArgs += "-Druntests-dontrun=true"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
 		antTarget = "runtests-with-testdb"
 		antArgs += "-Druntests-plugins-dontrun=true"	
