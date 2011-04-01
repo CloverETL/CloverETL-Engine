@@ -73,16 +73,21 @@ public class RandomLib extends TLFunctionLibrary {
 		return LIBRARY_NAME;
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
 
 	@TLFunctionAnnotation("Random number (>=0, <1)")
 	public static final Double random(TLFunctionCallContext context) {
-		return getGenerator(context.getTransformationID()).nextDouble();
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextDouble();
 	}
 
 	// RANDOM
 	class RandomFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -90,15 +95,21 @@ public class RandomLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomGaussianInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Random Gaussian number.")
 	public static final Double randomGaussian(TLFunctionCallContext context) {
-		return getGenerator(context.getTransformationID()).nextGaussian();
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextGaussian();
 	}
 
 	// RANDOM Gaussian
 	class RandomGaussianFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomGaussianInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -106,15 +117,21 @@ public class RandomLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomBooleanInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Random boolean.")
 	public static final Boolean randomBoolean(TLFunctionCallContext context) {
-		return getGenerator(context.getTransformationID()).nextBoolean();
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextBoolean();
 	}
 
 	// RANDOM Boolean
 	class RandomBooleanFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomBooleanInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -122,20 +139,26 @@ public class RandomLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomIntegerInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Random integer.")
 	public static final Integer randomInteger(TLFunctionCallContext context) {
-		return getGenerator(context.getTransformationID()).nextInt();
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextInt();
 	}
 
 	@TLFunctionAnnotation("Random integer. Allows changing start and end value.")
 	public static final Integer randomInteger(TLFunctionCallContext context, Integer min, Integer max) {
-		return getGenerator(context.getTransformationID()).nextInt(min, max);
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextInt(min, max);
 	}
 
 	// RANDOMINTEGER
 	class RandomIntegerFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomIntegerInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -151,20 +174,26 @@ public class RandomLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomLongInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Random long.")
 	public static final Long randomLong(TLFunctionCallContext context) {
-		return getGenerator(context.getTransformationID()).nextLong();
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextLong();
 	}
 
 	@TLFunctionAnnotation("Random long. Allows changing start and end value.")
 	public static final Long randomLong(TLFunctionCallContext context, Long min, Long max) {
-		return getGenerator(context.getTransformationID()).nextLong(min, max);
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextLong(min, max);
 	}
 
 	// RANDOMLONG
 	class RandomLongFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomLongInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -180,14 +209,20 @@ public class RandomLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionInitAnnotation
+    public static final void randomStringInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Generates a random string.")
 	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength) {
-		return getGenerator(context.getTransformationID()).nextString(minLength, maxLength);
+		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextString(minLength, maxLength);
 	}
 
 	class RandomStringFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			randomStringInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -272,16 +307,21 @@ public class RandomLib extends TLFunctionLibrary {
 			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
 		}
 	}
-	
+
+	@TLFunctionInitAnnotation
+    public static final void setRandomSeedInit(TLFunctionCallContext context) {
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    }	
+
 	@TLFunctionAnnotation("Changes seed of random.")
 	public static void setRandomSeed(TLFunctionCallContext context, long randomSeed) {
-		DataGenerator generator = getGenerator(context.getTransformationID());
-		generator.setSeed(randomSeed);
+		((TLDataGeneratorCache) context.getCache()).getDataGenerator().setSeed(randomSeed);
 	}
 
 	class SetRandomSeedFunction implements TLFunctionPrototype {
 
 		public void init(TLFunctionCallContext context) {
+			setRandomSeedInit(context);
 		}
 
 		public void execute(Stack stack, TLFunctionCallContext context) {

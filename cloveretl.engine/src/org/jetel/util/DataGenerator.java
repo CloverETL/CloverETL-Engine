@@ -81,16 +81,35 @@ public class DataGenerator extends Random {
 	 * @return random long
 	 */
 	public long nextLong(long min, long max) {
-		// raw random number
-		long r = Math.abs(nextLong());
-		
-		// calculate an interval
-		long interval = max-min+1;
-		
-		// adjust the random number to the interval
-		return r-(r/interval*interval)+min;
+		if (min > max) {
+			throw new IllegalArgumentException("Min parameter cannot be bigger than max parameter.");
+		}
+		return nextLong(max - min + 1) + min;
 	}
 
+	/**
+	 * Modification of nextInt(int n) method for long.
+	 */
+	public long nextLong(long n) {
+        if (n <= 0)
+            throw new IllegalArgumentException("n must be positive");
+
+        if (n <= Integer.MAX_VALUE) {
+        	return nextInt((int) n);
+        }
+
+// error checking and 2^x checking removed for simplicity.
+//        if ((n & -n) == n)  // i.e., n is a power of 2
+//            return (int)((n * (long)next(31)) >> 31);
+        
+		long bits, val;
+		do {
+			bits = (nextLong() << 1) >>> 1;
+			val = bits % n;
+		} while (bits - val + (n - 1) < 0L);
+		return val;
+	}
+	
 	/**
 	 * This method creates random integer
 	 * @param min
@@ -98,14 +117,10 @@ public class DataGenerator extends Random {
 	 * @return random integer
 	 */
 	public int nextInt(int min, int max) {
-		// raw random number
-		int r = Math.abs(nextInt());
-		
-		// calculate an interval
-		int interval = max-min+1;
-		
-		// adjust the random number to the interval
-		return r-(r/interval*interval)+min;
+		if (min > max) {
+			throw new IllegalArgumentException("Min parameter cannot be bigger than max parameter.");
+		}
+		return nextInt(max - min + 1) + min;
 	}
 
 }
