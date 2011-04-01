@@ -813,12 +813,15 @@ defined.version.suffix=release
 	</target>
 	
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
+		<property name="runtests-target" value="runtests-scenario-after-commit"/>
 	</target>
 	
 	<target name="reports-hudson-detail" depends="dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+		<property name="runtests-target" value="runtests-scenario-after-commit"/>
 	</target>
 	
 	<target name="reports-hudson-optimalized" depends="dist,runtests-with-testdb">
+		<property name="runtests-target" value="runtests-scenario-after-commit-with-engine-classes"/>
 	</target>
 		
 	<target name="compile-tests" depends="compile">
@@ -978,6 +981,20 @@ defined.version.suffix=release
 		</ant>
 	</target>
 	
+	<target name="runtests-scenario-after-commit-with-engine-classes" if="cte.environment.config">
+		<echo message="Executing Clover Test Environment environment - after commit"/>
+		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="environment.config" value="${cte.environment.config}"/>
+			<property name="scenarios" value="after-commit.ts" />
+			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.engine.build" value="${dir.package}/lib"/>
+			<property name="dir.plugins" value="${dir.package}/plugins"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
+		</ant>
+	</target>
+
 	<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
 		<echo message="Executing Clover Test Environment environment - coverage"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
@@ -1009,7 +1026,7 @@ defined.version.suffix=release
 			</daemons>
 			<sequential>
 				<sleep seconds="5" />
-				<antcall target="runtests-scenario-after-commit" />
+				<antcall target="${runtests-target}" />
 				<antcall target="runtests" />
 			</sequential>
 		</parallel>
