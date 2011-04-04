@@ -983,7 +983,7 @@ defined.version.suffix=release
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
 			<property name="scenarios" value="after-commit.ts" />
-			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.engine.classes" value="${dir.bin}"/>
 			<property name="dir.engine.build" value="${dir.package}/lib"/>
 			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
