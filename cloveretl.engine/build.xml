@@ -506,6 +506,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.ASTnode.CLVFFunctionDeclaration"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.data.TLType"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.data.TLTypePrimitive"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.extensions.*"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="org.jetel.database.IConnection"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.database.dbf.DBFDataParser"><field access="public"/><method access="public"/></keep>
