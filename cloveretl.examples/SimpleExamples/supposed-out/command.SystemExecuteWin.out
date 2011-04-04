@@ -1,8 +1,8 @@
 
-C:\Agata\workspaceCloverTrunk\cloveretl.examples\SimpleExamples>echo Listing .\graph 
+C:\hudson\workspace\cloveretl.engine-tests-after-commit-windows-java-1.6-Sun-trunk\cloveretl.examples\SimpleExamples>echo Listing .\graph 
 Listing .\graph
 
-C:\Agata\workspaceCloverTrunk\cloveretl.examples\SimpleExamples>dir /b .\graph 
+C:\hudson\workspace\cloveretl.engine-tests-after-commit-windows-java-1.6-Sun-trunk\cloveretl.examples\SimpleExamples>dir /b .\graph 
 graphAggregateSorted.grf
 graphAggregateUnsorted.grf
 graphApproximativeJoin.grf
