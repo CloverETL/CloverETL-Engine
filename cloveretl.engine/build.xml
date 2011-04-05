@@ -431,7 +431,7 @@ defined.version.suffix=release
 			
 			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.PluginableItemDescription"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="org.jetel.data.parser.*Parser"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.parser.*Parser*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.DriverReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.InputReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.SlaveReader"><field access="public"/><method access="public"/></keep>
@@ -441,6 +441,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.formatter.CloverDataFormatter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.formatter.StructureFormatter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.formatter.Formatter"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.formatter.provider.FormatterProvider"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.formatter.provider.XLSFormatterProvider"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
