@@ -475,7 +475,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.file.FileUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.file.FileURLParser"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.file.WcardPattern"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.util.formatter.*FormatterFactory"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.formatter.*Formatter*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.AproximativeJoinKey"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.JoinKeyUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.OrderedKey"><field access="public"/><method access="public"/></keep>
@@ -490,7 +490,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.enums.PartitionFileTagType"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.enums.OrderEnum"><field access="public"/><method access="public"/></keep>
 			
-			<keep name="org.jetel.component.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.component.*"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="org.jetel.graph.dictionary.*"><field access="public"/><method access="public"/></keep>
 			
@@ -506,7 +506,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.CTLEntryPoint"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ErrorMessage"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ErrorMessageException"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.ctl.ITLCompiler"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ITLCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.ctl.TLCompiler"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TLCompilerFactory"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangExecutor"><field access="public"/><method access="public"/></keep>
