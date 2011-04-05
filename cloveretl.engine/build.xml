@@ -417,10 +417,12 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.Node"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.EdgeDebuger"><field access="public"/><method access="public"/></keep>
 			
+			<keep name="org.jetel.graph.runtime.IAuthorityProxy"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.GraphRuntimeContext"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.EngineInitializer"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.CloverClassPath"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.CloverWorker"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.CloverJMXMBean"></keep>
 			<keep name="org.jetel.graph.runtime.jmx.CloverJMX"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
@@ -444,7 +446,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.formatter.provider.*FormatterProvider"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.lookup.Lookup"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.lookup.LookupTable"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="jetel.data.tape.DataRecordTape"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.data.tape.DataRecordTape"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
 						
@@ -465,6 +467,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.classloader.GreedyURLClassLoader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.exec.ProcBox"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.exec.DataConsumer"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.string.Compare"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.string.StringUtils"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.string.StringAproxComparator"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.string.Concatenate"><field access="public"/><method access="public"/></keep>			
@@ -472,6 +475,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.file.FileUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.file.FileURLParser"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.file.WcardPattern"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.formatter.*FormatterFactory"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.AproximativeJoinKey"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.JoinKeyUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.OrderedKey"><field access="public"/><method access="public"/></keep>
@@ -479,6 +483,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.bytes.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Enigma"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Base64"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.crypto.Digest"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.component.RecordTransform"><field access="public"/><method access="public"/></keep>
 
@@ -500,6 +505,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.CTLAbstractTransformAdapter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.CTLEntryPoint"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ErrorMessage"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ErrorMessageException"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ITLCompiler"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TLCompiler"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TLCompilerFactory"><field access="public"/><method access="public"/></keep>
