@@ -442,6 +442,9 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.formatter.StructureFormatter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.formatter.*Formatter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.formatter.provider.*FormatterProvider"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.lookup.Lookup"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.data.lookup.LookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="jetel.data.tape.DataRecordTape"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
 						
@@ -457,6 +460,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.property.ComponentXMLAttributes"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.property.PropertyRefResolver"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.property.RefResFlag"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.protocols.proxy.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.compile.ClassLoaderUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.classloader.GreedyURLClassLoader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.exec.ProcBox"><field access="public"/><method access="public"/></keep>
@@ -471,9 +475,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.joinKey.AproximativeJoinKey"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.JoinKeyUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.OrderedKey"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.util.compile.DynamicJavaClass"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.util.bytes.SystemOutByteChannel"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.util.bytes.WritableByteChannelIterator"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.compile.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.bytes.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Enigma"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Base64"><field access="public"/><method access="public"/></keep>
 			
@@ -509,10 +512,7 @@ defined.version.suffix=release
 			
 			<keep name="org.jetel.database.IConnection"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.database.dbf.DBFDataParser"><field access="public"/><method access="public"/></keep>
-
-			<keep name="org.jetel.data.lookup.Lookup"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="org.jetel.data.lookup.LookupTable"><field access="protected public"/><method access="protected public"/></keep>
-						
+					
 		</proguard>
 		
 		<concat destfile="${dir.obfuscate}/proGuard-mapping-all.txt">
