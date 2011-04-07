@@ -69,7 +69,7 @@ if( !runTests ){
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
-		antArgs += "-Dobfuscate.plugin.pattern=cloveretl.*"
+		antArgs += "-Dobfuscate.plugin.pattern=cloveretl.(?!ctlfunction)*"
 		antArgs += "-Druntests-dontrun=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
@@ -158,10 +158,7 @@ if( env['ComSpec'] ) {
 antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
-println "Host name: " + env['HOST_NAME']
-	
-/*	
-if( env['HOST_NAME'] != "klara" ) {
+if( env['HOSTNAME'] != "klara" ) {
 	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "hudson@klara:/data/cte-logs"]
 	keyFile = new File("/hudson/id_dsa")
 	if( keyFile.exists() ){
@@ -172,7 +169,7 @@ if( env['HOST_NAME'] != "klara" ) {
 	}
 	rsyncC.executeSave()
 }
-*/
+
 
 
 /* some common Groovy extensions */

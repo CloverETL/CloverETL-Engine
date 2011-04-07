@@ -100,6 +100,9 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	TLFunctionAnnotation a = null;
     	for (Method m : clazz.getMethods()) {
     		if ( (a = m.getAnnotation(TLFunctionAnnotation.class)) == null) {
+        		if (logger.isTraceEnabled()) {
+        			logger.trace("Method " + m.toString() + " doesn't represent ctl function (annotation not found). Skipped.");
+        		}
     			continue;
     		}
     	
@@ -143,6 +146,9 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		
 	    		registerFunction(new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
 	    				initMethods.contains(m.getName() + "Init")));
+        		if (logger.isTraceEnabled()) {
+        			logger.trace("Method " + m.toString() + " registered as ctl function: " + functionName);
+        		}
     		} catch (IllegalArgumentException e) {
     			logger.warn("Function '" + getClass().getName() + "." + m.getName() + "' ignored - " + e.getMessage());
     		}
