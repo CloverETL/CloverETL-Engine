@@ -18,11 +18,11 @@
  */
 package org.jetel.plugin;
 
-import java.io.File;
+import java.net.URL;
 
 /**
  * This class represent a location of a clover engine plugin. Internally is implemented by
- * a {@link File} of plugin repository and optional class loader which should be used
+ * a {@link URL} of plugin repository and optional class loader which should be used
  * as default class loader of all plugins placed in the repository.
  * 
  * @author Martin Zatopek (info@cloveretl.com)
@@ -32,20 +32,20 @@ import java.io.File;
  */
 public class PluginLocation {
 
-	private File location;
+	private URL location;
 	
 	private ClassLoader classloader;
 	
-	public PluginLocation(File location) {
+	public PluginLocation(URL location) {
 		this(location, null);
 	}
 
-	public PluginLocation(File location, ClassLoader classloader) {
+	public PluginLocation(URL location, ClassLoader classloader) {
 		this.location = location;
 		this.classloader = classloader;
 	}
 
-	public File getLocation() {
+	public URL getLocation() {
 		return location;
 	}
 
