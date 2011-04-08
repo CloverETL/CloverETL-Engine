@@ -104,7 +104,12 @@ public class Plugins {
     		File[] pluginManifestFiles = pluginRepositoryPath.listFiles(pluginManifestFilter);
 
     		if (pluginManifestFiles != null && pluginManifestFiles.length != 0) {
-    			pluginLocations.add(new PluginLocation(pluginRepositoryPath, repositoryLocation.getClassloader()));
+    			try {
+					pluginLocations.add(new PluginLocation(pluginRepositoryPath.toURI().toURL(), repositoryLocation.getClassloader()));
+				} catch (MalformedURLException e) {
+					logger.error("Plugin at '" + pluginRepositoryPath + "' cannot be loaded.", e);
+					continue;
+				}
     		} else {
     			File[] pd = pluginRepositoryPath.listFiles();
 				if (pd == null) {
@@ -113,7 +118,12 @@ public class Plugins {
 				}
 				for (int i = 0; i < pd.length; i++) {
 					if (pd[i].isDirectory()) {
-						pluginLocations.add(new PluginLocation(pd[i], repositoryLocation.getClassloader()));
+						try {
+							pluginLocations.add(new PluginLocation(pd[i].toURI().toURL(), repositoryLocation.getClassloader()));
+						} catch (MalformedURLException e) {
+							logger.error("Plugin at '" + pd[i] + "' cannot be loaded.", e);
+							continue;
+						}
 					}
 				}
     		}
@@ -176,7 +186,7 @@ public class Plugins {
     		URL pluginManifestUrl;
     		try {
     			//find a plugin manifest "plugin.xml"
-    			pluginManifestUrl = FileUtils.getFileURL(pluginLocation.getLocation().toURI().toURL(), PLUGIN_MANIFEST_FILE_NAME);
+    			pluginManifestUrl = FileUtils.getFileURL(pluginLocation.getLocation(), PLUGIN_MANIFEST_FILE_NAME);
 			} catch (MalformedURLException e) {
 				logger.error("Plugin '" + pluginLocation.getLocation() + "' is not available (skipped).", e);
 				continue;

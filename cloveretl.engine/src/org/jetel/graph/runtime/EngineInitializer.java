@@ -18,8 +18,6 @@
  */
 package org.jetel.graph.runtime;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +35,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.main.runGraph;
+import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.PluginRepositoryLocation;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
@@ -74,7 +73,7 @@ public class EngineInitializer {
 
     /**
      * Clover.ETL engine initialization. Should be called only once.
-     * @param pluginsUrls locations of all engine plugin 
+     * @param pluginsUrls locations of all individual engine plugins 
      * @param defaultPropertiesFile file with external definition of default values usually stored in defaultProperties
      * @param password password for encrypting some hidden part of graphs
      *        <br>i.e. connections password can be encrypted
@@ -85,16 +84,11 @@ public class EngineInitializer {
     	internalInit(defaultPropertiesFile, logHost);
     	
         //init clover plugins system
-    	List<PluginRepositoryLocation> pluginRepositoryLocations = new ArrayList<PluginRepositoryLocation>();
+    	List<PluginLocation> pluginLocations = new ArrayList<PluginLocation>();
     	for (URL pluginUrl : pluginsUrls) {
-    		try {
-				pluginRepositoryLocations.add(new PluginRepositoryLocation(new File(pluginUrl.toURI())));
-			} catch (URISyntaxException e) {
-				logger.error("Plugin '" + pluginUrl + "' is not available (skipped).", e);
-				continue;
-			}
+    		pluginLocations.add(new PluginLocation(pluginUrl));
     	}
-        Plugins.init(pluginRepositoryLocations.toArray(new PluginRepositoryLocation[pluginRepositoryLocations.size()]));
+        Plugins.init(pluginLocations.toArray(new PluginLocation[pluginLocations.size()]));
     }
 
     /**
