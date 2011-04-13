@@ -1,11 +1,10 @@
-false;vÆôÎ˜À¾\7sJ'h;2010-01-20;35.67;4;72;91.62469512617625;ocn;0;getFieldType(myInputRecords, Index);boolean
-false;x'¼°óÁrß˜Áôó¯Ä;2010-09-30;81.47;37;85;29.894404424422348;vroy;2;getFieldType(myInputRecords, Index);date
-false;d’œ¸oï‚¢§lÙ5$üÑ;2010-06-06;74.01;54;92;25.015798392490694;yifow;4;getFieldType(myInputRecords, Index);integer
-true;HåVgñØ½=¿¸r²Óç<;2010-05-15;97.67;86;51;67.06667673202662;libtf;4;getFieldType(myInputRecords, Index);integer
-false;Ë¨CëÃÒt¥×—Ê8WU;2010-08-21;5.37;38;35;9.724962683463922;xepe;0;getFieldType(myInputRecords, Index);boolean
-true;|›*).j6ô¦)Kô}C;2010-01-09;80.85;38;96;88.87943228026886;sfxwc;2;getFieldType(myInputRecords, Index);date
-false;}Œ×…®¶†ò„¸Š/;2010-12-05;16.44;40;36;54.57367987051146;zehad;1;getFieldType(myInputRecords, Index);byte
-true;›e÷¥	DÕ´Úi-¹"µÙ;2010-07-22;1.29;78;98;84.17665490986104;bkl;5;getFieldType(myInputRecords, Index);long
-false;…Ì`5ÈX<Œ÷sj;2010-09-20;9.70;45;42;82.12089995244968;nlqe;4;getFieldType(myInputRecords, Index);integer
-true;Q
-:9Õ»Ü[òşT,lol;2010-05-01;29.00;16;67;76.86741918046982;qmbzi;6;getFieldType(myInputRecords, Index);number
+false;vÆôÎ˜À¾\7sJ'h;2010-01-20;35.67;32;20;35.02936946786487;loc;3;getFieldType(myInputRecords, Index);decimal
+false;¥zòç¹CŞ»¯±'œş‚ƒ‹;2010-01-06;17.98;71;71;66.91998385938207;ewjda;2;getFieldType(myInputRecords, Index);date
+false;Ifº«±ƒKÅ?hL¥>`ä’;2010-12-21;82.34;55;49;60.68575307198915;qew;3;getFieldType(myInputRecords, Index);decimal
+true;’¦,YøÑ¼GM?L–;2010-05-14;73.04;0;38;27.654695658059957;kvomu;0;getFieldType(myInputRecords, Index);boolean
+false;ÁÇÛGú±4˜mĞ6“©%;2010-10-13;19.17;82;15;4.298741705612851;dayz;5;getFieldType(myInputRecords, Index);long
+true;\´7ÓG;I-DºŠ;2010-12-22;76.23;10;83;55.113009699363914;ufaa;1;getFieldType(myInputRecords, Index);byte
+true;ÂaØ›å‚²,Ìí-0‰ÛXC;2010-04-11;99.14;8;26;3.8868459530008725;mkr;2;getFieldType(myInputRecords, Index);date
+true;¡UTcÃaçj'J‹Dâ‘’;2010-06-06;54.73;27;79;23.126646656342974;sga;6;getFieldType(myInputRecords, Index);number
+false;êş M¤ìdwğ§&&Õ r;2010-03-21;34.98;0;79;63.76667690340013;lbdh;2;getFieldType(myInputRecords, Index);date
+true;Úòø»óŸŠ$—[±šŠ;2010-02-13;96.16;20;13;8.660028343940319;efoh;2;getFieldType(myInputRecords, Index);date
