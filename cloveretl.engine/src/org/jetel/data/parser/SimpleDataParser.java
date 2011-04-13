@@ -156,6 +156,7 @@ public class SimpleDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
+				exceptionHandler.setRawRecord("SimpleDataParser does not provide raw record.");
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -170,6 +171,7 @@ public class SimpleDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
+				exceptionHandler.setRawRecord("SimpleDataParser does not provide raw record.");
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
