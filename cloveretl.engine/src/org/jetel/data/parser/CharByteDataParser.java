@@ -30,8 +30,6 @@ import java.nio.charset.CharsetDecoder;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -57,8 +55,6 @@ public class CharByteDataParser extends AbstractTextParser {
 	private static final int RECORD_DELIMITER_IDENTIFIER = -1;
 	private static final int DEFAULT_FIELD_DELIMITER_IDENTIFIER = -2;
 
-	private final static Log logger = LogFactory.getLog(SimpleDataParser.class);
-
 	ReadableByteChannel inputSource;
 	private ICharByteInputReader inputReader;
 	private CharByteInputReader.DoubleMarkCharByteInputReader verboseInputReader;
@@ -74,7 +70,8 @@ public class CharByteDataParser extends AbstractTextParser {
 	private int lastNonAutoFilledField;
 	private boolean isInitialized;
 	private int recordCounter;
-
+	private String lastRawRecord;
+	
 	/**
 	 * Sole constructor
 	 * @param cfg
@@ -125,18 +122,21 @@ public class CharByteDataParser extends AbstractTextParser {
 	 */
 	private String getLastRawRecord() {
 		if (verboseInputReader != null) {
+			if (lastRawRecord != null) {
+				return lastRawRecord;
+			}
 			Object seq;
 			try {
 				seq = verboseInputReader.getOuterSequence(0);
 			} catch (InvalidMarkException e) {
-				return "<Raw record data is not available, please turn on verbose mode.>";
+				return lastRawRecord = "<Raw record data is not available, please turn on verbose mode.>";
 			} catch (OperationNotSupportedException e) {
-				return "<Raw record data is not available, please turn on verbose mode.>";
+				return lastRawRecord = "<Raw record data is not available, please turn on verbose mode.>";
 			}
 			if (seq instanceof CharSequence) {
-				return (new StringBuilder((CharSequence) seq)).toString();
+				return lastRawRecord = (new StringBuilder((CharSequence) seq)).toString();
 			} else if (seq instanceof ByteBuffer) {
-				return Charset.forName("ISO-8859-1").decode((ByteBuffer) seq).toString();
+				return lastRawRecord = Charset.forName("ISO-8859-1").decode((ByteBuffer) seq).toString();
 			}
 		}
 		return "<Raw record data is not available, please turn on verbose mode.>";
@@ -156,6 +156,7 @@ public class CharByteDataParser extends AbstractTextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = new DataRecord(cfg.getMetadata());
 		record.init();
@@ -163,7 +164,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				// exceptionHandler.setRawRecord(getLastRawRecord());
+				exceptionHandler.setRawRecord(getLastRawRecord());
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -174,11 +175,12 @@ public class CharByteDataParser extends AbstractTextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				// exceptionHandler.setRawRecord(getLastRawRecord());
+				exceptionHandler.setRawRecord(getLastRawRecord());
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -197,6 +199,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		try {
 			if (verboseInputReader != null) {
 				verboseInputReader.setOuterMark();
+				lastRawRecord = null;
 			}
 			int consumerIdx = 0;
 			try {
@@ -915,6 +918,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			return true; // return value indicates success without encountering end of input
 		}
 
+		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ichr;
 			char chr;
@@ -1066,6 +1070,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.shift = shift;
 		}
 
+		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ibt;
 			char bt;
@@ -1172,6 +1177,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.acceptEofAsDelim = acceptEofAsDelim;
 		}
 
+		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
 			inputReader.mark();
@@ -1232,6 +1238,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.shift = shift;
 		}
 
+		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
 			inputReader.skip(shift);
@@ -1316,6 +1323,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			super(inputReader, delimPatterns, isDelimited);
 		}
 
+		@Override
 		public boolean skipInput(int nextField) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
 			inputReader.mark();
@@ -1378,6 +1386,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			super(inputReader, delimPatterns, isDelimited);
 		}
 
+		@Override
 		public boolean skipInput(int nextField) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
 			inputReader.mark();
