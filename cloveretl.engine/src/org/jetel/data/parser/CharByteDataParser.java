@@ -122,21 +122,18 @@ public class CharByteDataParser extends AbstractTextParser {
 	 */
 	private String getLastRawRecord() {
 		if (verboseInputReader != null) {
-			if (lastRawRecord != null) {
-				return lastRawRecord;
-			}
 			Object seq;
 			try {
 				seq = verboseInputReader.getOuterSequence(0);
 			} catch (InvalidMarkException e) {
-				return lastRawRecord = "<Raw record data is not available, please turn on verbose mode.>";
+				return "<Raw record data is not available, please turn on verbose mode.>";
 			} catch (OperationNotSupportedException e) {
-				return lastRawRecord = "<Raw record data is not available, please turn on verbose mode.>";
+				return "<Raw record data is not available, please turn on verbose mode.>";
 			}
 			if (seq instanceof CharSequence) {
-				return lastRawRecord = (new StringBuilder((CharSequence) seq)).toString();
+				return (new StringBuilder((CharSequence) seq)).toString();
 			} else if (seq instanceof ByteBuffer) {
-				return lastRawRecord = Charset.forName("ISO-8859-1").decode((ByteBuffer) seq).toString();
+				return Charset.forName("ISO-8859-1").decode((ByteBuffer) seq).toString();
 			}
 		}
 		return "<Raw record data is not available, please turn on verbose mode.>";
@@ -149,7 +146,8 @@ public class CharByteDataParser extends AbstractTextParser {
 					offendingValue, new BadDataFormatException(exceptionMessage));
 			return record;
 		} else {
-			throw new RuntimeException("Parsing error: " + exceptionMessage + " (" + offendingValue + ")");
+			throw new RuntimeException("Parsing error: " + exceptionMessage + 
+					(offendingValue != null ? " (" + offendingValue + ")" : ""));
 		}
 	}
 
@@ -164,7 +162,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(getLastRawRecord());
+				exceptionHandler.setRawRecord(lastRawRecord);
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -180,7 +178,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(getLastRawRecord());
+				exceptionHandler.setRawRecord(lastRawRecord);
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -223,13 +221,10 @@ public class CharByteDataParser extends AbstractTextParser {
 					recordSkipper.skipInput(consumerIdx);
 				}
 				if (cfg.isVerbose()) {
-					e.setOffendingValue(getLastRawRecord());
-				}
-				if (e.getOffendingValue() == null) {
-					e.setOffendingValue("");
+					lastRawRecord = getLastRawRecord(); 
 				}
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx,
-						new StringBuilder(e.getOffendingValue()).toString());
+						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null);
 			} finally {
 				if (verboseInputReader != null) {
 					verboseInputReader.releaseOuterMark();
