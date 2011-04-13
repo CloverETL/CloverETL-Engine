@@ -31,6 +31,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 /**
  *  A class that represents decimal number field (double precision)
@@ -396,7 +397,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 		} catch (Exception ex) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - try using a different number format (currently: %s)",
 					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, 
-					numericFormatter.getFormatPattern() != null ? numericFormatter.getFormatPattern() : "none"));
+					!StringUtils.isEmpty(numericFormatter.getFormatPattern()) ? numericFormatter.getFormatPattern() : "none"));
 		}
 	}
 
