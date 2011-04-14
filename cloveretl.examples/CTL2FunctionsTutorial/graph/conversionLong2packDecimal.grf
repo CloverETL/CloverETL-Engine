@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Mon Jul 12 11:09:06 CEST 2010" modifiedBy="cloveruser" name="conversionLong2packDecimal" revision="1.36">
+<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Thu Apr 14 13:27:24 CEST 2011" modifiedBy="cloveruser" name="conversionLong2packDecimal" revision="1.43">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Long2packDecimalInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -7,25 +7,11 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="Long2packDecimalOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="mixed">
-<Field eofAsDelimiter="false" name="Long" nullable="true" shift="0" size="0" type="long"/>
-<Field eofAsDelimiter="false" name="Function" nullable="true" shift="0" size="0" type="string"/>
-<Field eofAsDelimiter="false" name="Result" nullable="true" shift="0" size="16" type="byte"/>
-<Field eofAsDelimiter="false" name="ResultHexadecimal" nullable="true" shift="0" size="0" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata2">
-<Record fieldDelimiter=";" name="Pacdecimal2longInput" recordDelimiter="\r\n" type="delimited">
-<Field name="Long" type="long"/>
-<Field name="Function" type="string"/>
-<Field name="Result" type="byte"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="pacdecimal2longOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
-<Field eofAsDelimiter="false" name="Result" nullable="true" shift="0" size="0" type="byte"/>
-<Field eofAsDelimiter="false" name="Function" nullable="true" shift="0" size="0" type="string"/>
-<Field eofAsDelimiter="false" name="Long" nullable="true" shift="0" size="0" type="long"/>
+<Record fieldDelimiter=";" name="Long2packDecimalOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="Long" nullable="true" shift="0" type="long"/>
+<Field eofAsDelimiter="false" name="Function" nullable="true" shift="0" type="string"/>
+<Field eofAsDelimiter="false" name="Result" nullable="true" shift="0" type="byte"/>
+<Field eofAsDelimiter="false" name="ResultHexadecimal" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -72,7 +58,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

@@ -1,12 +1,12 @@
-1;long2packDecimal($0.Long);               1c
--1;long2packDecimal($0.Long);               1d
-2;long2packDecimal($0.Long);,               2c
-12345;long2packDecimal($0.Long);4\             12345c
--12345;long2packDecimal($0.Long);4]             12345d
-2134;long2packDecimal($0.Long);L             02134c
-9876;long2packDecimal($0.Long);	‡l             09876c
-1234;long2packDecimal($0.Long);#L             01234c
-1276;long2packDecimal($0.Long);'l             01276c
-18;long2packDecimal($0.Long);Œ              018c
-7;long2packDecimal($0.Long);|               7c
-9;long2packDecimal($0.Long);œ               9c
+1;long2packDecimal($0.Long);;1c
+-1;long2packDecimal($0.Long);;1d
+2;long2packDecimal($0.Long);,;2c
+12345;long2packDecimal($0.Long);4\;12345c
+-12345;long2packDecimal($0.Long);4];12345d
+2134;long2packDecimal($0.Long);L;02134c
+9876;long2packDecimal($0.Long);	‡l;09876c
+1234;long2packDecimal($0.Long);#L;01234c
+1276;long2packDecimal($0.Long);'l;01276c
+18;long2packDecimal($0.Long);Œ;018c
+7;long2packDecimal($0.Long);|;7c
+9;long2packDecimal($0.Long);œ;9c
