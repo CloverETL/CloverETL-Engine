@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation license." modified="Fri Jul 31 11:01:27 CEST 2009" modifiedBy="avackova" name="conversionLong2pacdecimal" revision="1.49">
+<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Thu Apr 14 13:58:08 CEST 2011" modifiedBy="cloveruser" name="conversionLong2pacdecimal" revision="1.50">
 <Global>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="Long2pacdecimalInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
-<Field name="Long" nullable="true" shift="0" size="0" type="long"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata2">
-<Record fieldDelimiter=";" name="Pacdecimal2longInput" recordDelimiter="\r\n" type="delimited">
-<Field name="Long" type="long"/>
-<Field name="Function" type="string"/>
-<Field name="Result" type="byte"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="ShaFromStringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="InputString" nullable="true" shift="0" size="0" type="string"/>
@@ -32,6 +20,7 @@
 The sha(string) function accepts one argument of string data type. It takes this argument and calculates its SHA hash value.
 The result is also displayed in its hexadecimal representation since some bytes are unprintable.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionShaFromString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="129" guiY="207" id="DATA_READER1" type="DATA_READER"/>
@@ -57,7 +46,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
-<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
