@@ -4,9 +4,9 @@
 4\;12345c;pacdecimal2long($0.Pacdecimal);12345
 4];12345d;pacdecimal2long($0.Pacdecimal);-12345
 L;02134c;pacdecimal2long($0.Pacdecimal);2134
-	ï¿½l;  09876c;pacdecimal2long($0.Pacdecimal);104
+	‡l;09876c;pacdecimal2long($0.Pacdecimal);9876
 #L;01234c;pacdecimal2long($0.Pacdecimal);1234
 'l;01276c;pacdecimal2long($0.Pacdecimal);1276
-ï¿½;  018c;pacdecimal2long($0.Pacdecimal);24
+Œ;018c;pacdecimal2long($0.Pacdecimal);18
 |;7c;pacdecimal2long($0.Pacdecimal);7
-ï¿½;  9c;pacdecimal2long($0.Pacdecimal);14
+œ;9c;pacdecimal2long($0.Pacdecimal);9

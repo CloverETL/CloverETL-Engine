@@ -4,9 +4,9 @@
 4\;12345c;packDecimal2long($0.PackDecimal);12345
 4];12345d;packDecimal2long($0.PackDecimal);-12345
 L;02134c;packDecimal2long($0.PackDecimal);2134
-	ï¿½l;  09876c;packDecimal2long($0.PackDecimal);104
+	‡l;09876c;packDecimal2long($0.PackDecimal);9876
 #L;01234c;packDecimal2long($0.PackDecimal);1234
 'l;01276c;packDecimal2long($0.PackDecimal);1276
-ï¿½;  018c;packDecimal2long($0.PackDecimal);24
+Œ;018c;packDecimal2long($0.PackDecimal);18
 |;7c;packDecimal2long($0.PackDecimal);7
-ï¿½;  9c;packDecimal2long($0.PackDecimal);14
+œ;9c;packDecimal2long($0.PackDecimal);9
