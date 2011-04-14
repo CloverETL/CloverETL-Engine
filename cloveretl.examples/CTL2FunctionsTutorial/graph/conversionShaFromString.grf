@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Mon Jul 12 11:17:39 CEST 2010" modifiedBy="cloveruser" name="conversionShaFromString" revision="1.55">
+<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Thu Apr 14 13:55:17 CEST 2011" modifiedBy="cloveruser" name="conversionShaFromString" revision="1.56">
 <Global>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter=";" name="Long2pacdecimalInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
-<Field name="Long" nullable="true" shift="0" size="0" type="long"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata2">
-<Record fieldDelimiter=";" name="Pacdecimal2longInput" recordDelimiter="\r\n" type="delimited">
-<Field name="Long" type="long"/>
-<Field name="Function" type="string"/>
-<Field name="Result" type="byte"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="ShaFromStringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="InputString" nullable="true" shift="0" size="0" type="string"/>
@@ -69,7 +57,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>
