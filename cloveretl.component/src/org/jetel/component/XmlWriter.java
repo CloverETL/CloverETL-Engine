@@ -1036,7 +1036,7 @@ public class XmlWriter extends Node {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
 		
-		return writer; 
+		return writer;
 	}
 
 	/**

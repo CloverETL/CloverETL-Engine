@@ -7,6 +7,7 @@
 		<library path="bin/"/>
 		<library path="lib/commons-httpclient-3.1.jar"/>
 		<library path="lib/saxon8.jar"/>
+		<library path="lib/je-4.1.7.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
@@ -293,6 +294,11 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
 	    <parameter id="type" value="XML_WRITER"/>
+	</extension>
+  
+  <extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlWriterReloaded"/>
+	    <parameter id="type" value="XML_WRITER1"/>
 	</extension>
 
 	<extension point-id="component">

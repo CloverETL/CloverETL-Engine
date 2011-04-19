@@ -163,7 +163,11 @@ public class FileUtils {
 		}
         
         // file url
-        return new URL(contextURL, "file:" + fileURL);
+		String prefix = FILE_PROTOCOL + ":";
+		if (new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
+			prefix += "/";
+		}
+        return new URL(contextURL, prefix + fileURL);
     }
 
     /**
