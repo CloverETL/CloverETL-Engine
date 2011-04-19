@@ -72,7 +72,7 @@ public class StringUtils {
 
     private static Pattern delimiterPattern;
 	
-	private final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
+	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
 	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
 	
 	private final static char[] vowels = {'A', 'E', 'I', 'O', 'U'};
