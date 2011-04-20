@@ -360,7 +360,7 @@ public class XMLExtract extends Node {
             Mapping mapping = null;
             if (m_activeMapping == null) {
                 mapping = (Mapping) m_elementPortMap.get(localName);
-            } else {
+            } else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
                 mapping = (Mapping) m_activeMapping.getChildMapping(localName);
             }
             if (mapping != null) {
