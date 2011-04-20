@@ -185,6 +185,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LICENSE_TYPE_ATTRIBUTE = "licenseType";
 	public final static String LICENSE_CODE_ATTRIBUTE = "licenseCode";
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
+	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
 	
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
