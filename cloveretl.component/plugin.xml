@@ -297,8 +297,8 @@
 	</extension>
   
   <extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XmlWriterReloaded"/>
-	    <parameter id="type" value="XML_WRITER1"/>
+	    <parameter id="className" value="org.jetel.component.ExtXmlWriter"/>
+	    <parameter id="type" value="EXT_XML_WRITER"/>
 	</extension>
 
 	<extension point-id="component">
