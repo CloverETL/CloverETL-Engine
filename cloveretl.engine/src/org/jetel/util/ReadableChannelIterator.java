@@ -108,7 +108,7 @@ public class ReadableChannelIterator {
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(false);
+		common(true);
 	}
 
 	/**
@@ -164,6 +164,10 @@ public class ReadableChannelIterator {
         try {
 			files = pat.filenames();
 		} catch (IOException e) {
+			for(StackTraceElement trace : e.getStackTrace()) {
+				defaultLogger.error("\t"+trace);
+				System.out.println("\t"+trace);
+			}
 			throw new ComponentNotReadyException(e);
 		}
         firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);
