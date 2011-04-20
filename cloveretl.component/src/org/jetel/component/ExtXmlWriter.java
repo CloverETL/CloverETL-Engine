@@ -72,9 +72,9 @@ import org.w3c.dom.Element;
  * @author lkrejci
  * @created Dec 03, 2010
  */
-public class XmlWriterReloaded extends Node {
+public class ExtXmlWriter extends Node {
 
-	public final static String COMPONENT_TYPE = "XML_WRITER1";
+	public final static String COMPONENT_TYPE = "EXT_XML_WRITER";
 	
 	public static final String XML_FILE_URL_ATTRIBUTE = "fileUrl";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -123,10 +123,10 @@ public class XmlWriterReloaded extends Node {
 	private String partitionUnassignedFileName;
 	private LookupTable lookupTable;
 	
-	private static Log logger = LogFactory.getLog(XmlWriterReloaded.class);
+	private static Log logger = LogFactory.getLog(ExtXmlWriter.class);
 	
 
-	public XmlWriterReloaded(String id) {
+	public ExtXmlWriter(String id) {
 		super(id);
 	}
 	
@@ -436,10 +436,10 @@ public class XmlWriterReloaded extends Node {
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-		XmlWriterReloaded writer = null;
+		ExtXmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
-			writer = new XmlWriterReloaded(xattribs.getString(XML_ID_ATTRIBUTE));
+			writer = new ExtXmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
 			
 			writer.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
 			writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
