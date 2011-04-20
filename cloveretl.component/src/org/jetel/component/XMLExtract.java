@@ -50,7 +50,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.SAXContentHandler;
-import org.jetel.component.XMLExtract.Mapping.AncestorFieldMapping;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -689,23 +688,10 @@ public class XMLExtract extends Node {
 		boolean bDoMap = true;							// should I skip an xml element? depends on processSkipOrNumRecords
 		boolean bReset4CurrentRecord4Mapping;			// should I reset submappings?
         
-		public class AncestorFieldMapping {
-			final Mapping ancestor;
-			final String ancestorField;
-			final String currentField;
-
-			public AncestorFieldMapping(Mapping ancestor, String ancestorField, String currentField) {
-				this.ancestor = ancestor;
-				this.ancestorField = ancestorField;
-				this.currentField = currentField;
-			}
-		}
-		
-		
 		/**
 		 * Copy constructor - created a deep copy of all attributes and children elements
 		 */
-		public Mapping(Mapping otherMapping) {
+		public Mapping(Mapping otherMapping, Mapping parent) {
 			this.m_element = otherMapping.m_element;
 			this.m_outPort = otherMapping.m_outPort;
 			this.m_parentKey = otherMapping.m_parentKey == null ? null : Arrays.copyOf(otherMapping.m_parentKey,otherMapping.m_parentKey.length);
@@ -714,32 +700,48 @@ public class XMLExtract extends Node {
 			this.m_sequenceId = otherMapping.m_sequenceId;
 			this.skipRecords4Mapping = otherMapping.skipRecords4Mapping;
 			this.numRecords4Mapping = otherMapping.numRecords4Mapping;
+			xml2CloverFieldsMap = new HashMap<String, String>(otherMapping.xml2CloverFieldsMap);
 			
 			// Create deep copy of children elements 
 			if (otherMapping.m_childMap != null) {
 				this.m_childMap = new HashMap<String,Mapping>();
 				for (String key : otherMapping.m_childMap.keySet()) {
-					final Mapping child = new Mapping(otherMapping.m_childMap.get(key));
-					child.setParent(this);
+					final Mapping child = new Mapping(otherMapping.m_childMap.get(key), this);
 					this.m_childMap.put(key, child);
 				}
 			}
+
+			if (parent != null) {
+				setParent(parent);
+				parent.addChildMapping(this);
+			}
+			
+			if (otherMapping.hasFieldsFromAncestor()) {
+				for (AncestorFieldMapping m : otherMapping.getFieldsFromAncestor()) {
+					addAcestorFieldMapping(m.originalFieldReference, m.currentField);
+				}
+			}
+
 		}
 		
         /**
          * Minimally required information.
          */
-        public Mapping(String element, int outPort) {
+        public Mapping(String element, int outPort, Mapping parent) {
             m_element = element;
             m_outPort = outPort;
+            m_parent = new WeakReference<Mapping>(parent);
+            if (parent != null) {
+            	parent.addChildMapping(this);
+            }
         }
         
 		/**
          * Gives the optional attributes parentKey and generatedKey.
          */
         public Mapping(String element, int outPort, String parentKey[],
-                String[] generatedKey) {
-            this(element, outPort);
+                String[] generatedKey, Mapping parent) {
+            this(element, outPort, parent);
             
             m_parentKey = parentKey;
             m_generatedKey = generatedKey;
@@ -1110,12 +1112,12 @@ public class XMLExtract extends Node {
         	return !processSkipOrNumRecords || (processSkipOrNumRecords && bDoMap);
         }
         
-        public void addAncestorField(Mapping ancestor, String ancestorField, String currentField) {
+        public void addAncestorField(AncestorFieldMapping ancestorFieldReference) {
         	if (fieldsFromAncestor == null) {
         		fieldsFromAncestor = new LinkedList<AncestorFieldMapping>();
         	}
-        	fieldsFromAncestor.add(new AncestorFieldMapping(ancestor, ancestorField, currentField));
-        	ancestor.descendantRefernces.put(ancestorField, null);
+        	fieldsFromAncestor.add(ancestorFieldReference);
+        	ancestorFieldReference.ancestor.descendantRefernces.put(ancestorFieldReference.ancestorField, null);
         }
         
 		public List<AncestorFieldMapping> getFieldsFromAncestor() {
@@ -1125,8 +1127,40 @@ public class XMLExtract extends Node {
 		public boolean hasFieldsFromAncestor() {
 			return fieldsFromAncestor != null && !fieldsFromAncestor.isEmpty(); 
 		}
+		
+		private void addAcestorFieldMapping(String ancestorField, String currentField) {
+			String parentField = ancestorField;
+			Mapping parent = this;
+			while (parentField.startsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
+				parent = parent.getParent();
+				if (parent == null) {
+					LOG.warn("Invalid ancestor record field reference " + ancestorField + " in mapping of element <" + this.getElement() + ">"); 
+					break;
+				}
+				parentField = parentField.substring(PARENT_MAPPING_REFERENCE_PREFIX.length());
+			}
+			if (parent != null) {
+				addAncestorField(new AncestorFieldMapping(parent, parentField, currentField, ancestorField));
+			}
+		}
+		
     }
     
+	public static class AncestorFieldMapping {
+		final Mapping ancestor;
+		final String ancestorField;
+		final String currentField;
+		final String originalFieldReference;
+
+		public AncestorFieldMapping(Mapping ancestor, String ancestorField, String currentField, String originalFieldReference) {
+			this.ancestor = ancestor;
+			this.ancestorField = ancestorField;
+			this.currentField = currentField;
+			this.originalFieldReference = originalFieldReference;
+		}
+	}
+	
+	
     /**
      * Constructs an XML Extract node with the given id.
      */
@@ -1300,7 +1334,7 @@ public class XMLExtract extends Node {
 					return;
 				}
 
-				mapping = new Mapping(declaredTemplates.get(templateId));
+				mapping = new Mapping(declaredTemplates.get(templateId), parentMapping);
 			}
 
         	// standard mapping declaration
@@ -1311,11 +1345,13 @@ public class XMLExtract extends Node {
             	}
 
             	if (mapping == null) {
-            		mapping = new Mapping(attributes.getString(XML_ELEMENT), outputPort);
+            		mapping = new Mapping(attributes.getString(XML_ELEMENT), outputPort, parentMapping);
             	} else {
             		if (outputPort != -1) {
 	            		mapping.setOutPort(outputPort);
-	            		mapping.setElement(attributes.getString(XML_ELEMENT));
+	            		if (attributes.exists(XML_ELEMENT)) {
+	            			mapping.setElement(attributes.getString(XML_ELEMENT));
+	            		}
             		}
             	}
             } catch(AttributeNotFoundException ex) {
@@ -1326,11 +1362,8 @@ public class XMLExtract extends Node {
                 return;
             }
             
-            // Add this mapping to the parent
-            if (parentMapping != null) {
-                parentMapping.addChildMapping(mapping);
-                mapping.setParent(parentMapping);
-            } else {
+            // Add new root mapping
+            if (parentMapping == null) {
                 addMapping(mapping);
             }
 
@@ -1366,15 +1399,14 @@ public class XMLExtract extends Node {
                 String[] cloverFields = attributes.getString(XML_CLOVERFIELDS, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 
                 if(xmlFields.length == cloverFields.length){
-                    Map<String, String> xmlCloverMap = new HashMap<String, String>();
+                    Map<String, String> xmlCloverMap = mapping.xml2CloverFieldsMap;
                     for (int i = 0; i < xmlFields.length; i++) {
                     	if (xmlFields[i].startsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
-                    		addAcestorFieldMapping(mapping, xmlFields[i], cloverFields[i]);
+                    		mapping.addAcestorFieldMapping(xmlFields[i], cloverFields[i]);
                     	} else {
                     		xmlCloverMap.put(xmlFields[i], cloverFields[i]);
                     	}
                     }
-                    mapping.setXml2CloverFieldsMap(xmlCloverMap);
                 } else {
                     LOG
                     .warn(getId()
@@ -1432,22 +1464,6 @@ public class XMLExtract extends Node {
     }
 
 
-	private void addAcestorFieldMapping(Mapping mapping, String ancestorField, String currentField) {
-		String parentField = ancestorField;
-		Mapping parent = mapping;
-		while (parentField.startsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
-			parent = parent.getParent();
-			if (parent == null) {
-				LOG.warn("Invalid ancestor record field reference " + ancestorField + " in mapping of element <" + mapping.getElement() + ">"); 
-				break;
-			}
-			parentField = parentField.substring(PARENT_MAPPING_REFERENCE_PREFIX.length());
-		}
-		if (parent != null) {
-			mapping.addAncestorField(parent, parentField, currentField);
-		}
-	}
-    
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
@@ -1965,4 +1981,3 @@ public class XMLExtract extends Node {
 //        }
 //    }
 }
-
