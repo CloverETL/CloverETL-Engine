@@ -201,9 +201,6 @@ public class TextTableFormatter implements Formatter {
         sentBytes += writeString(TABLE_VERTICAL);
 
         if (showTrashID) {
-			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
-				directFlush();
-			}
 			fieldBuffer.clear();
 			fieldBuffer.put(trashID);
 			fieldBuffer.flip();
@@ -211,6 +208,10 @@ public class TextTableFormatter implements Formatter {
 			blank.clear();
 			lenght = trashIDOffset - fieldBuffer.limit();
 			blank.limit(lenght > 0 ? lenght : 0);
+
+			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
+				directFlush();
+			}
             mark=dataBuffer.position();
 
 			//put field value to data buffer
@@ -225,9 +226,6 @@ public class TextTableFormatter implements Formatter {
             counter++;
             sCounter = Integer.toString(counter);
             
-			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
-				directFlush();
-			}
 			//change field value to bytes
 			fieldBuffer.clear();
 			fieldBuffer.put(prefix);
@@ -237,8 +235,12 @@ public class TextTableFormatter implements Formatter {
 			blank.clear();
 			lenght = prefixOffset - fieldBuffer.limit();
 			blank.limit(lenght > 0 ? lenght : 0);
-            mark=dataBuffer.position();
 
+			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
+				directFlush();
+			}
+            mark=dataBuffer.position();
+			
 			//put field value to data buffer
 			dataBuffer.put(fieldBuffer);
 			dataBuffer.put(encoder.encode(blank));
@@ -252,9 +254,6 @@ public class TextTableFormatter implements Formatter {
 		try {
 	        DataField dataField;
 			for (i=0;i<maskAnalize.length;i++){
-				if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
-					directFlush();
-				}
 				//change field value to bytes
 				fieldBuffer.clear();
 				dataField = record.getField(maskAnalize[i].index);
@@ -270,6 +269,10 @@ public class TextTableFormatter implements Formatter {
 					// fieldBuffer.limit() is wrong too - encoding
 					lenght = maskAnalize[i].length - dataField.toString().length();  
 					blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
+				}
+
+				if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
+					directFlush();
 				}
 	            mark=dataBuffer.position();
 
