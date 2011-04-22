@@ -178,7 +178,7 @@ public class ObjectElement extends ObjectRepresentation {
 			}
 			
 		default:
-			return null;
+			return super.getProperty(property);
 		}
 	}
 
@@ -301,6 +301,9 @@ public class ObjectElement extends ObjectRepresentation {
 		if (parent == null) {
 			return ""; 
 		} else {
+			if (recurringInfo != null && recurringInfo.getProperty(MappingProperty.DATASCOPE) != null) {
+				return super.getPath() + " [$" + recurringInfo.getProperty(MappingProperty.DATASCOPE) + "]";
+			}
 			return super.getPath();
 		}
 	}

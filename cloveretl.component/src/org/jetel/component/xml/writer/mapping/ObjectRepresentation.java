@@ -88,6 +88,9 @@ public abstract class ObjectRepresentation {
 	}
 	
 	public String getProperty(MappingProperty property) {
+		if (property == MappingProperty.PATH) {
+			return getPath();
+		}
 		for (MappingProperty availableProperty : getAvailableProperties()) {
 			if (property == availableProperty) {
 				return properties.get(property);
