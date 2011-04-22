@@ -395,7 +395,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 			value = numericFormatter.parseDouble(seq);
 			setNull(Double.isNaN(value));
 		} catch (Exception ex) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - try using a different number format (currently: %s)",
+			throw new BadDataFormatException(String.format("field \"%s\" (%s) cannot be set to \"%s\" - try using a different number format (currently: \"%s\")",
 					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, 
 					!StringUtils.isEmpty(numericFormatter.getFormatPattern()) ? numericFormatter.getFormatPattern() : "none"));
 		}
