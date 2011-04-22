@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
@@ -212,6 +213,15 @@ public class CharByteDataParser extends AbstractTextParser {
 								break;
 							}
 						}
+					}
+				}
+				boolean doSkip = (consumerIdx == numConsumers) && 
+					(policyType == PolicyType.LENIENT) && 
+					(fieldConsumers != null && numConsumers > 0) &&
+					(Boolean.TRUE.equals(fieldConsumers[numConsumers - 1].hasMoreFields())); 
+				if(doSkip) {
+					if (recordSkipper != null) {
+						recordSkipper.skipInput(consumerIdx);
 					}
 				}
 			} catch (UnexpectedEndOfRecordDataFormatException e) {
@@ -488,10 +498,13 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (!field.isDelimited()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
 					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
-				} else if (field.isByteBased()) { // delimited byte field consumer
-					fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
-				} else { // delimited char field consumer
-					fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
+				} else { // delimited
+					boolean acceptDefaultFieldDelimiter = (policyType == PolicyType.LENIENT && idx == lastNonAutoFilledField); 
+					if (field.isByteBased()) { // delimited byte field consumer
+						fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter);
+					} else { // delimited char field consumer
+						fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter);
+					}
 				}
 				idx++;
 			}
@@ -610,6 +623,18 @@ public class CharByteDataParser extends AbstractTextParser {
 		 * @throws IOException
 		 */
 		public abstract boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException;
+		
+		/**
+		 * A flag that indicates that the last consumed field should have completed a record and it did not,
+		 * typically when encountered an unexpected delimiter (a field delimiter instead of a record delimiter).
+		 * 
+		 * The method is supposed to return <code>null</code> if unknown.
+		 * 
+		 * @return <code>true</code> if the record probably contains more fields, <code>null</code> if not known
+		 */
+		public Boolean hasMoreFields() {
+			return null;
+		}
 
 	}
 
@@ -801,6 +826,9 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean lTrim;
 		private boolean rTrim;
 		private int shift;
+		private boolean acceptDefaultFieldDelim;
+		
+		private Boolean hasMoreFields = null;
 
 		/**
 		 * Sole constructor
@@ -817,7 +845,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		 */
 		public DelimCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean isQuoted,
-				boolean lTrim, boolean rTrim, int shift) {
+				boolean lTrim, boolean rTrim, int shift, boolean acceptDefaultFieldDelim) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.delimPatterns = delimPatterns;
@@ -833,6 +861,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.lTrim = lTrim;
 			this.rTrim = rTrim;
 			this.shift = shift;
+			this.acceptDefaultFieldDelim = acceptDefaultFieldDelim;
 		}
 
 		private boolean consumeQuotedField(DataField field) throws OperationNotSupportedException, IOException {
@@ -912,9 +941,33 @@ public class CharByteDataParser extends AbstractTextParser {
 			inputReader.mark(); // just to avoid unnecessary BLOCKED_BY_MARK failures
 			return true; // return value indicates success without encountering end of input
 		}
+		
+		private void produceOutput(DataRecord record) throws OperationNotSupportedException {
+			CharSequence seq = inputReader.getCharSequence(-delimPatterns.getMatchLength());
+			if (lTrim || rTrim) {
+				StringBuilder sb = new StringBuilder(seq);
+				if (lTrim) {
+					StringUtils.trimLeading(sb);
+				}
+				if (rTrim) {
+					StringUtils.trimTrailing(sb);
+				}
+				record.getField(fieldNumber).fromString(sb);
+			} else {
+				record.getField(fieldNumber).fromString(seq);
+			}
+			if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
+				throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
+			}
+			delimPatterns.reset();
+			inputReader.mark();
+		}
 
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
+			
+			this.hasMoreFields = null; //reset the incomplete record flag
+			
 			int ichr;
 			char chr;
 
@@ -951,26 +1004,15 @@ public class CharByteDataParser extends AbstractTextParser {
 					chr = (char) ichr;
 					delimPatterns.update(chr);
 					if (delimPatterns.isPattern(fieldNumber)) { // first delimiter found
-						CharSequence seq = inputReader.getCharSequence(-delimPatterns.getMatchLength());
-						if (lTrim || rTrim) {
-							StringBuilder sb = new StringBuilder(seq);
-							if (lTrim) {
-								StringUtils.trimLeading(sb);
-							}
-							if (rTrim) {
-								StringUtils.trimTrailing(sb);
-							}
-							record.getField(fieldNumber).fromString(sb);
-						} else {
-							record.getField(fieldNumber).fromString(seq);
-						}
-						if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
-							throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
-						}
-						delimPatterns.reset();
-						inputReader.mark();
+						produceOutput(record);
 						break;
 					} else if (delimPatterns.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER)) {
+						// lenient data policy - allow default field delimiters for the last field 
+						if(acceptDefaultFieldDelim) {
+							hasMoreFields = true;
+							produceOutput(record);
+							break;
+						}
 						throw new BadDataFormatException("Unexpected field delimiter found - record probably contains too many fields");
 					} else if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 						throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
@@ -1017,6 +1059,11 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 		}
 
+		@Override
+		public Boolean hasMoreFields() {
+			return hasMoreFields;
+		}
+
 	} // DelimCharFieldConsumer
 
 	/**
@@ -1037,6 +1084,9 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean lTrim;
 		private boolean rTrim;
 		private int shift;
+		private boolean acceptDefaultFieldDelim = false;
+
+		private Boolean hasMoreFields = null;
 
 		/**
 		 * Sole constructor
@@ -1053,7 +1103,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		 */
 		public DelimByteFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean lTrim,
-				boolean rTrim, int shift) {
+				boolean rTrim, int shift, boolean acceptDefaultFieldDelim) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.delimPatterns = delimPatterns;
@@ -1063,10 +1113,24 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.lTrim = lTrim;
 			this.rTrim = rTrim;
 			this.shift = shift;
+			this.acceptDefaultFieldDelim = acceptDefaultFieldDelim;
+		}
+		
+		private void produceOutput(DataRecord record) throws CharacterCodingException, OperationNotSupportedException {
+			ByteBuffer seq = inputReader.getByteSequence(-delimPatterns.getMatchLength());
+			record.getField(fieldNumber).fromByteBuffer(seq, decoder);
+			if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
+				throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
+			}
+			delimPatterns.reset();
+			inputReader.mark();
 		}
 
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
+			
+			hasMoreFields = null; // reset the incomplete record flag
+			
 			int ibt;
 			char bt;
 
@@ -1095,15 +1159,15 @@ public class CharByteDataParser extends AbstractTextParser {
 				bt = (char) ibt;
 				delimPatterns.update(bt);
 				if (delimPatterns.isPattern(fieldNumber)) { // first delimiter found
-					ByteBuffer seq = inputReader.getByteSequence(-delimPatterns.getMatchLength());
-					record.getField(fieldNumber).fromByteBuffer(seq, decoder);
-					if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
-						throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
-					}
-					delimPatterns.reset();
-					inputReader.mark();
+					produceOutput(record);
 					break;
 				} else if (delimPatterns.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER)) {
+					// lenient data policy - allow default field delimiters for the last field 
+					if(acceptDefaultFieldDelim) {
+						hasMoreFields = true;
+						produceOutput(record);
+						break;
+					}
 					throw new BadDataFormatException("Unexpected field delimiter found - record probably contains too many fields");
 				} else if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 					throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
@@ -1147,6 +1211,11 @@ public class CharByteDataParser extends AbstractTextParser {
 					throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
 				}
 			}
+		}
+
+		@Override
+		public Boolean hasMoreFields() {
+			return hasMoreFields;
 		}
 
 	} // DelimByteFieldConsumer

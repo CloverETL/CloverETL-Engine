@@ -155,6 +155,9 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		int maxBackShift = 0;
 
 		for (DataRecordMetadata metadata : metadataArray) {
+			if(metadata == null) {
+				continue;
+			}
 			for (DataFieldMetadata field : metadata.getFields()) {
 				if (field.isAutoFilled()) {
 					continue;
