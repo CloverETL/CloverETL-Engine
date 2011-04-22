@@ -142,6 +142,17 @@ public class MappingTagger extends AbstractVisitor {
 		return portTagMap.get(portIndex).isCached();
 	}
 	
+	public boolean isPortAvailable(ObjectElement element, int portIndex) {
+		Tag tag = getTag(element);
+		if (tag != null && tag.getPortIndex() == portIndex) {
+			return true;
+		}
+		if (element.getParent() != null) {
+			return isPortAvailable(element.getParent(), portIndex);
+		}
+		return false;
+	}
+	
 	public void setMapping(Mapping mapping) {
 		super.setMapping(mapping);
 		clear();
