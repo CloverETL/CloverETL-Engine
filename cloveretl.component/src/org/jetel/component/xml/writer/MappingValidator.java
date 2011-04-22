@@ -46,6 +46,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
+import com.sun.org.apache.xml.internal.utils.XMLChar;
+
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -272,10 +274,9 @@ public class MappingValidator extends AbstractVisitor {
 		if (!runIt) {
 			return;
 		}
+		
 		String name = element.getProperty(MappingProperty.NAME);
-		if (name == null) {
-			addProblem(element, MappingProperty.NAME, new MappingError("Empty name", Severity.ERROR));
-		} else {
+		if (validateName(element, name)) {
 			int colonIndex = name.indexOf(':');
 			if (colonIndex >= 0) {
 				checkNamespacePrefixAvailable(element, name.substring(0, colonIndex), MappingProperty.NAME);
@@ -305,15 +306,12 @@ public class MappingValidator extends AbstractVisitor {
 		}
 		
 		String name = element.getProperty(MappingProperty.NAME);
-		if (StringUtils.isEmpty(name)) {
-			addProblem(element, MappingProperty.NAME, new MappingError("Name must not be empty", Severity.ERROR));
-		} else {
+		if (validateName(element, name)) {
 			int colonIndex = name.indexOf(':');
 			if (colonIndex >= 0) {
 				checkNamespacePrefixAvailable(element, element, name.substring(0, colonIndex), MappingProperty.NAME);
 			}
 		}
-		
 		checkCorrectBooleanValue(element, MappingProperty.WRITE_NULL_ELEMENT);
 		
 		List<Integer> addedPorts = null;
@@ -456,6 +454,19 @@ public class MappingValidator extends AbstractVisitor {
 			return;
 		}
 		validateValue(element);
+	}
+	
+	private boolean validateName(ObjectRepresentation element, String name) {
+		if (StringUtils.isEmpty(name)) {
+			addProblem(element, MappingProperty.NAME, new MappingError("Name must not be empty", Severity.ERROR));
+		} else {
+			if (XMLChar.isValidName(name)) {
+				return true;
+			} else {
+				addProblem(element, MappingProperty.NAME, new MappingError("Invalid name " + name, Severity.ERROR));
+			}
+		}
+		return false;
 	}
 	
 	private void validateValue(ObjectRepresentation element) {
