@@ -312,7 +312,7 @@ public class XMLExtract extends Node {
 
 	private NodeList mappingNodes;
 
-	private TreeMap<String,Mapping> declaredTemplates = new TreeMap<String, Mapping>();
+	private TreeMap<String, Mapping> declaredTemplates = new TreeMap<String, Mapping>();
 	
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -425,9 +425,7 @@ public class XMLExtract extends Node {
                             //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
                             //I know it is ugly code...
                             if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
-                                LOG
-                                        .warn(getId()
-                                        + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
+                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
                                 m_activeMapping.setGeneratedKey(null);
                                 m_activeMapping.setParentKey(null);
                             } else {
@@ -437,17 +435,12 @@ public class XMLExtract extends Node {
                                     boolean existParentKeyField = m_activeMapping.getParent().getOutRecord() != null 
                                     					&& m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
                                     if (!existGeneratedKeyField) {
-                                        LOG
-                                                .warn(getId()
-                                                + ": XML Extract Mapping's generatedKey field was not found. "
+                                        LOG.warn(getId() + ": XML Extract Mapping's generatedKey field was not found. "
                                                 + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else if (!existParentKeyField) {
-                                        LOG
-                                                .warn(getId()
-                                                + ": XML Extract Mapping's parentKey field was not found. "
-                                                + parentKey[i]);
+                                        LOG.warn(getId() + ": XML Extract Mapping's parentKey field was not found. " + parentKey[i]);
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else {
@@ -457,9 +450,7 @@ public class XMLExtract extends Node {
                                         DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
                                         if(generatedKey.length != parentKey.length) {
                                             if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
-                                                LOG
-                                                        .warn(getId()
-                                                        + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
+                                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
                                                 m_activeMapping.setGeneratedKey(null);
                                                 m_activeMapping.setParentKey(null);
                                             } else {
@@ -1294,7 +1285,8 @@ public class XMLExtract extends Node {
      * @throws XMLConfigurationException
      */
     public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    	dbf.setCoalescing(true);
         Document doc;
         try {
             doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
@@ -1303,7 +1295,6 @@ public class XMLExtract extends Node {
         }
         return doc;
     }
-
     
     /**
      * Creates mappings.
@@ -1313,7 +1304,8 @@ public class XMLExtract extends Node {
      * @param parentMapping
      * @param nodeXML
      */
-	private void processMappings(TransformationGraph graph, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
+	private List<String> processMappings(TransformationGraph graph, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
+		List<String> errors = new LinkedList<String>();
 		if (XML_MAPPING.equals(nodeXML.getNodeName())) {
 			// for a mapping declaration, process all of the attributes
 			// element, outPort, parentKeyName, generatedKey
@@ -1327,13 +1319,13 @@ public class XMLExtract extends Node {
 					templateId = attributes.getString(XML_TEMPLATE_REF);
 				} catch (AttributeNotFoundException e) {
 					// this cannot happen (see if above)
-					LOG.warn(getId() + ": Mapping error - attribute 'templateId' is missing");
-					return;
+					errors.add("Attribute 'templateId' is missing");
+					return errors;
 				}
 
 				if (!declaredTemplates.containsKey(templateId)) {
-					LOG.warn(getId() + ": Mapping error - template '" + templateId + "' has not been declared");
-					return;
+					errors.add("Template '" + templateId + "' has not been declared");
+					return errors;
 				}
 
 				mapping = new Mapping(declaredTemplates.get(templateId), parentMapping);
@@ -1357,9 +1349,8 @@ public class XMLExtract extends Node {
             		}
             	}
             } catch(AttributeNotFoundException ex) {
-                LOG.warn(getId() + ": Mapping error - required attribute 'element' missing."
-                        + "  Skipping this mapping and all children.");
-                return;
+            	errors.add("Required attribute 'element' missing. Skipping this mapping and all children.");
+                return errors;
             }
             
             // Add new root mapping
@@ -1380,14 +1371,14 @@ public class XMLExtract extends Node {
             }
             
             if (parentKeyPresent != generatedKeyPresent) {
-                LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+            	errors.add("Mapping for element: " + mapping.getElement() 
                 		+ " must either have both 'parentKey' and 'generatedKey' attributes or neither.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
 
             if (parentKeyPresent && mapping.getParent() == null) {
-                LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+            	errors.add("Mapping for element: " + mapping.getElement() 
                 		+ " may only have 'parentKey' or 'generatedKey' attributes if it is a nested mapping.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
@@ -1408,7 +1399,7 @@ public class XMLExtract extends Node {
                     	}
                     }
                 } else {
-                    LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+                	errors.add("Mapping for element: " + mapping.getElement() 
                     		+ " must have same number of the xml fields and the clover fields attribute.");
                 }
             }
@@ -1433,7 +1424,7 @@ public class XMLExtract extends Node {
             if (attributes.exists(XML_TEMPLATE_ID)) {
             	final String templateId = attributes.getString(XML_TEMPLATE_ID, null);
             	if (declaredTemplates.containsKey(templateId)) {
-            		LOG.warn(getId() + ": Mapping error - template '" + templateId + "' has duplicate declaration");
+            		errors.add("Template '" + templateId + "' has duplicate declaration");
             	}
             	declaredTemplates.put(templateId, mapping);
             }
@@ -1445,16 +1436,16 @@ public class XMLExtract extends Node {
             NodeList nodes = nodeXML.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
                 org.w3c.dom.Node node = nodes.item(i);
-                processMappings(graph, mapping, node);
+                errors.addAll(processMappings(graph, mapping, node));
             }
             
             // prepare variable reset of skip and numRecords' attributes
             mapping.prepareReset4CurrentRecord4Mapping();
             
         } else if (nodeXML.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-            LOG.warn(getId() + ": Mapping error - unknown element '" + nodeXML.getNodeName()
-                    + "' is ignored with all it's child elements.");
+        	errors.add("Unknown element '" + nodeXML.getNodeName() + "' is ignored with all it's child elements.");
         } // Ignore every other xml element (text values, comments...)
+		return errors;
     }
 
 
@@ -1622,9 +1613,13 @@ public class XMLExtract extends Node {
 			mappingNodes = rootElement.getChildNodes();
 		}
         //iterate over 'Mapping' elements
+		String errorPrefix = getId() + ": Mapping error - "; 
         for (int i = 0; i < mappingNodes.getLength(); i++) {
             org.w3c.dom.Node node = mappingNodes.item(i);
-            processMappings(graph, null, node);
+            List<String> errors = processMappings(graph, null, node);
+            for (String error : errors) {
+            	LOG.warn(errorPrefix + error);
+			}
         }
 		
         // test that we have at least one input port and one output
@@ -1710,17 +1705,23 @@ public class XMLExtract extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
+    	TransformationGraph graph = getGraph();
     	//Check whether XML mapping schema is valid
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler handler = new MyHandler();
 			InputStream is = null;
+			Document doc = null;
 			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), mappingURL);
+				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
 				is = new FileInputStream(new File(filePath));
+				ReadableByteChannel ch = FileUtils.getReadableChannel(
+						graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				doc = createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
 				is = new ByteArrayInputStream(mapping.getBytes(charset));
+				doc = createDocumentFromString(mapping);
 	        }
 			if (is != null) {
 				saxParser.parse(is, handler);
@@ -1731,8 +1732,23 @@ public class XMLExtract extends Node {
 					}
 				}
 			}
+			if (doc != null) {
+				Element rootElement = doc.getDocumentElement();
+				mappingNodes = rootElement.getChildNodes();
+				 
+		        for (int i = 0; i < mappingNodes.getLength(); i++) {
+		            org.w3c.dom.Node node = mappingNodes.item(i);
+		            List<String> errors = processMappings(graph, null, node);
+		            ConfigurationProblem problem;
+		            for (String error : errors) {
+		            	problem = new ConfigurationProblem("Mapping error - " + error, Severity.WARNING, this, Priority.NORMAL);
+		                status.add(problem);
+					}
+		        }
+			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+			declaredTemplates.clear();
 		}
 		
         try { 
@@ -1741,7 +1757,6 @@ public class XMLExtract extends Node {
         		createReadableChannelIterator();
         		this.readableChannelIterator.checkConfig();
         		
-            	TransformationGraph graph = getGraph();
             	URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
         		String fName = null; 
         		Iterator<String> fit = readableChannelIterator.getFileIterator();
