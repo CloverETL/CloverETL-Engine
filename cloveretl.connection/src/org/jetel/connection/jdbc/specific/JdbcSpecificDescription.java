@@ -128,6 +128,9 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());
             throw new RuntimeException("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());
+        } catch(NoSuchMethodException ex) {
+        	logger.error("Jdbc specific: " + getDatabase() + " doesn't have method getInstance");
+        	throw new RuntimeException("Unknown jdbc specific type: " + getDatabase());
         } catch(Exception ex) {
             logger.error("Unknown jdbc specific type: " + getDatabase());
             throw new RuntimeException("Unknown jdbc specific type: " + getDatabase());
