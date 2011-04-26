@@ -498,7 +498,8 @@ public class XMLExtract extends Node {
                     String attrName = attributes.getQName(i);
                     
                     if (m_activeMapping.descendantRefernces.containsKey(attrName)) {
-                    	m_activeMapping.descendantRefernces.put(attrName, attributes.getValue(i));
+                    	String val = attributes.getValue(i);
+                    	m_activeMapping.descendantRefernces.put(attrName, trim ? val.trim() : val);
                     }
                     
                     //use fields mapping
@@ -508,7 +509,8 @@ public class XMLExtract extends Node {
                     }
                     
                     if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
-                        m_activeMapping.getOutRecord().getField(attrName).fromString(attributes.getValue(i));
+                    	String val = attributes.getValue(i);
+                        m_activeMapping.getOutRecord().getField(attrName).fromString(trim ? val.trim() : val);
                     }
                 }
             }
