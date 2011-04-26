@@ -1327,12 +1327,12 @@ public class XMLExtract extends Node {
 					templateId = attributes.getString(XML_TEMPLATE_REF);
 				} catch (AttributeNotFoundException e) {
 					// this cannot happen (see if above)
-					LOG.warn(getId() + ": XML Extract : Attribute 'templateId' is missing");
+					LOG.warn(getId() + ": Mapping error - attribute 'templateId' is missing");
 					return;
 				}
 
 				if (!declaredTemplates.containsKey(templateId)) {
-					LOG.warn(getId() + ": XML Extract : Template '" + templateId + "' has not been declared");
+					LOG.warn(getId() + ": Mapping error - template '" + templateId + "' has not been declared");
 					return;
 				}
 
@@ -1357,9 +1357,7 @@ public class XMLExtract extends Node {
             		}
             	}
             } catch(AttributeNotFoundException ex) {
-                LOG
-                        .warn(getId()
-                        + ": XML Extract : Mapping missing a required attribute - element."
+                LOG.warn(getId() + ": Mapping error - required attribute 'element' missing."
                         + "  Skipping this mapping and all children.");
                 return;
             }
@@ -1382,15 +1380,15 @@ public class XMLExtract extends Node {
             }
             
             if (parentKeyPresent != generatedKeyPresent) {
-                LOG.warn(getId() + ": XML Extract Mapping for element: " + 
-                		mapping.getElement() + " must either have both parentKey and generatedKey attributes or neither.");
+                LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+                		+ " must either have both 'parentKey' and 'generatedKey' attributes or neither.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
 
             if (parentKeyPresent && mapping.getParent() == null) {
-                LOG.warn(getId() + ": XML Extact Mapping for element: "
-                        + mapping.getElement() + " may only have parentKey or generatedKey attributes if it is a nested mapping.");
+                LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+                		+ " may only have 'parentKey' or 'generatedKey' attributes if it is a nested mapping.");
                 mapping.setParentKey(null);
                 mapping.setGeneratedKey(null);
             }
@@ -1410,11 +1408,8 @@ public class XMLExtract extends Node {
                     	}
                     }
                 } else {
-                    LOG
-                    .warn(getId()
-                    + ": XML Extact Mapping for element: "
-                    + mapping.getElement()
-                    + " must have same number of the xml fields and the clover fields attribute.");
+                    LOG.warn(getId() + ": Mapping error - mapping for element: " + mapping.getElement() 
+                    		+ " must have same number of the xml fields and the clover fields attribute.");
                 }
             }
             
@@ -1438,7 +1433,7 @@ public class XMLExtract extends Node {
             if (attributes.exists(XML_TEMPLATE_ID)) {
             	final String templateId = attributes.getString(XML_TEMPLATE_ID, null);
             	if (declaredTemplates.containsKey(templateId)) {
-            		LOG.warn(getId() + ": XML Extract Template '" + templateId + "' has duplicate declaration");
+            		LOG.warn(getId() + ": Mapping error - template '" + templateId + "' has duplicate declaration");
             	}
             	declaredTemplates.put(templateId, mapping);
             }
@@ -1456,13 +1451,10 @@ public class XMLExtract extends Node {
             // prepare variable reset of skip and numRecords' attributes
             mapping.prepareReset4CurrentRecord4Mapping();
             
-        } else if (nodeXML.getNodeType() == org.w3c.dom.Node.TEXT_NODE || nodeXML.getNodeType() == org.w3c.dom.Node.COMMENT_NODE) {
-            // Ignore text values & comments inside nodes
-        } else {
-            LOG.warn(getId() + ": Unknown element: "
-                    + nodeXML.getLocalName()
-                    + " ignoring it and all child elements.");
-        }
+        } else if (nodeXML.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            LOG.warn(getId() + ": Mapping error - unknown element '" + nodeXML.getNodeName()
+                    + "' is ignored with all it's child elements.");
+        } // Ignore every other xml element (text values, comments...)
     }
 
 
