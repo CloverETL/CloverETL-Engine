@@ -480,7 +480,7 @@ public class MappingValidator extends AbstractVisitor {
 		for (ParsedFieldExpression parsedFieldExpression : fields) {
 			Integer inPortIndex = getAvailableInputPort(parsedFieldExpression.getPort(), element, MappingProperty.VALUE);
 			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.DATASCOPE, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not connected!", Severity.ERROR));
+				addProblem(element, MappingProperty.DATASCOPE, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not available here!", Severity.ERROR));
 			} else if (inPorts.get(inPortIndex).getField(parsedFieldExpression.getFields()) == null) {
 				addProblem(element, MappingProperty.VALUE,
 						new MappingError("Field '" + parsedFieldExpression.getFields() + "' is not available.", Severity.ERROR));
