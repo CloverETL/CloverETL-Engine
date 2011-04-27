@@ -85,6 +85,12 @@
 		<parameter id="name" value="Derby"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
 	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="FIREBIRD"/>
+		<parameter id="name" value="Firebird"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
+	</extension>
 
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
@@ -149,5 +155,13 @@
 		<parameter id="urlHint" value="jdbc:derby://hostname:1527/derby.db"/>
 		<parameter id="jdbcSpecific" value="DERBY"/>
 	</extension>
-
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="FIREBIRD"/>
+		<parameter id="name" value="Firebird"/>
+		<parameter id="dbDriver" value="org.firebirdsql.jdbc.FBDriver"/>
+		<parameter id="driverLibrary" value="lib/firebird/jaybird-full-2.1.6.jar"/>
+		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
+		<parameter id="jdbcSpecific" value="FIREBIRD"/>
+	</extension>
 </plugin>
