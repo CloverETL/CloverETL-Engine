@@ -215,11 +215,24 @@ public class ExtXmlWriter extends Node {
 			
 			Set<Integer> usedPorts = tagger.getUsedPorts();
 			if (usedPorts.size() < inPorts.size()) {
+				StringBuilder sb = new StringBuilder();
+				int counter = 0;
 				for (Integer portIndex : inPorts.keySet()) {
 					if (!usedPorts.contains(portIndex)) {
-						status.add(new ConfigurationProblem("Input port " + portIndex + " is connected, but isn't used in mapping.",
-								ConfigurationStatus.Severity.ERROR,	this, ConfigurationStatus.Priority.NORMAL));
+						sb.append(portIndex);
+						sb.append(", ");
+						counter++;
 					}
+				}
+				if (usedPorts.size() == 0) {
+					status.add(new ConfigurationProblem("None of the connected input ports is used in mapping.",
+							ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+				} else if (counter == 1) {
+					status.add(new ConfigurationProblem("Input port " + sb.substring(0, sb.length() - 2) + " is connected, but isn't used in mapping.",
+							ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+				} else if (counter > 1) {
+					status.add(new ConfigurationProblem("Input ports " + sb.substring(0, sb.length() - 2) + " are connected, but aren't used in mapping.",
+							ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
 				}
 			}
 		}
@@ -291,15 +304,7 @@ public class ExtXmlWriter extends Node {
 		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0; 
 		this.engineMapping = compiler.compile(inPorts, tmpDir, cacheSize, partition);
 		
-		portDataMap = compiler.getPortDataMap();
-		if (portDataMap.size() < inPorts.size()) {
-			for (Integer portIndex : inPorts.keySet()) {
-				if (!portDataMap.containsKey(portIndex)) {
-					throw new ComponentNotReadyException("Input port " + portIndex + " is connected, but isn't used in mapping.");
-				}
-			}
-		}
-		
+		portDataMap = compiler.getPortDataMap();		
 		for (PortData portData : portDataMap.values()) {
 			portData.init();
 		}
@@ -394,9 +399,9 @@ public class ExtXmlWriter extends Node {
 		}		
 		
 		//Read all remaining data
-		for (PortData portData : portDataMap.values()) {
-			if (!portData.readInputPort()) {
-				InputReader reader = new InputReader(portData);
+		for (InputPort inPort : inPorts.values()) {
+			if (inPort.hasData()) {
+				InputReader reader = new InputReader(inPort);
 				reader.start();
 				readers.add(reader);
 			}
@@ -603,25 +608,31 @@ public class ExtXmlWriter extends Node {
 	protected class InputReader extends Thread {
 
 		private final InputPort inPort;
-		private final DataRecordMetadata metadata;
 		private final PortData portData;
 
 		public InputReader(PortData portData) {
 			super(Thread.currentThread().getName() + ".InputThread#" + portData.getInPort().getInputPortNumber());
 			this.portData = portData;
 			this.inPort = portData.getInPort();
-			metadata = inPort.getMetadata();
+		}
+		
+		public InputReader(InputPort inPort) {
+			super(Thread.currentThread().getName() + ".InputThread#" + inPort.getInputPortNumber());
+			this.portData = null;
+			this.inPort = inPort;
 		}
 
 		public void run() {
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(metadata);
+					DataRecord record = new DataRecord(inPort.getMetadata());
 					record.init();
 					if (inPort.readRecord(record) == null) {
 						return;
 					}
-					portData.put(record);
+					if (portData != null) {
+						portData.put(record);
+					}
 
 				} catch (InterruptedException e) {
 					logger.error(getId() + ": thread forcibly aborted", e);
