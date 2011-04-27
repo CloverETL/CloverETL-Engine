@@ -149,7 +149,8 @@ public class SQLUtil {
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
 		
 		int type = dbMetadata.getType(sqlIndex);
-		char cloverType = jdbcSpecific.sqlType2jetel(type);
+		int precision = dbMetadata.getPrecision(sqlIndex);
+		char cloverType = jdbcSpecific.sqlType2jetel(type, precision);
 		//set length and scale for decimal field
 		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
 			int scale = 0;

@@ -113,6 +113,14 @@ public interface JdbcSpecific {
 	/**
 	 * This method defines a conversion table from a sql type to a clover field type.	 * 
 	 * @param sqlType
+	 * @param sqlPrecision
+	 * @return
+	 */
+	public char sqlType2jetel(int sqlType, int sqlPrecision);
+	
+	/**
+	 * This method defines a conversion table from a sql type to a clover field type.	 * 
+	 * @param sqlType
 	 * @return
 	 */
 	public char sqlType2jetel(int sqlType);

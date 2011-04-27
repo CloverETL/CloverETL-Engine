@@ -183,6 +183,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		}
 		
 	}
+	
+	public char sqlType2jetel(int sqlType, int sqlPrecision) {
+		return sqlType2jetel(sqlType);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.JdbcSpecific#sqlType2jetel(int)
