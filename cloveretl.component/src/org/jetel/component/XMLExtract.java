@@ -241,7 +241,7 @@ public class XMLExtract extends Node {
     private static final Log LOG = LogFactory.getLog(XMLExtract.class);
 
     // xml attributes
-    private static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
+    public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
     private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
