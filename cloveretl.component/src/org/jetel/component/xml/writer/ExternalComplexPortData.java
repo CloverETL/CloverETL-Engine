@@ -42,6 +42,8 @@ import com.sleepycat.je.OperationStatus;
 
 public class ExternalComplexPortData extends PortData {
 	
+	public static final String NULL_INDEX_NAME = "$NULL_INDEX";
+	
 	private DirectDynamicRecordBuffer dataStorage;
 	private Map<String, Database> dataMap;
 
@@ -98,27 +100,25 @@ public class ExternalComplexPortData extends PortData {
 		
 		stringKeys = new String[primaryKey.length];
 		for (int outer = 0; outer < primaryKey.length; outer++) {
-			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setAllowCreate(true);
-			dbConfig.setTemporary(true);
-			dbConfig.setSortedDuplicates(true);
-			dbConfig.setTransactional(false);
-			
 			int[] key = primaryKey[outer];
 			stringKeys[outer] = generateKey(metadata, key);
-			Database database = dbEnvironment.openDatabase(null, stringKeys[outer], dbConfig);
+			Database database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
 			dataMap.put(stringKeys[outer], database);
 		}
 		if (nullKey) {
-			DatabaseConfig dbConfig = new DatabaseConfig();
-			dbConfig.setAllowCreate(true);
-			dbConfig.setTemporary(true);
-			dbConfig.setSortedDuplicates(true);
-			dbConfig.setTransactional(false);
-			
-			Database database = dbEnvironment.openDatabase(null, NULL_INDEX_NAME + inPort.getInputPortNumber(), dbConfig);
+			Database database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
 			dataMap.put(NULL_INDEX_NAME, database);
 		}
+	}
+	
+	private DatabaseConfig getDbConfig() {
+		DatabaseConfig dbConfig = new DatabaseConfig();
+		dbConfig.setAllowCreate(true);
+		dbConfig.setTemporary(true);
+		dbConfig.setSortedDuplicates(true);
+		dbConfig.setTransactional(false);
+		dbConfig.setExclusiveCreate(true);
+		return dbConfig;
 	}
 
 	@Override

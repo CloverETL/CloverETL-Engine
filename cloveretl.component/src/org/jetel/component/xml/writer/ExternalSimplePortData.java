@@ -63,8 +63,6 @@ public class ExternalSimplePortData extends PortData {
 		super.init();
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		
-		DataRecordMetadata metadata = inPort.getMetadata();
-		
 		EnvironmentConfig envConfig = new EnvironmentConfig();
 		envConfig.setCacheSize(cacheSize);
 		envConfig.setAllowCreate(true);
@@ -89,11 +87,9 @@ public class ExternalSimplePortData extends PortData {
 		dbConfig.setTemporary(true);
 		dbConfig.setSortedDuplicates(true);
 		dbConfig.setTransactional(false);
-		if (nullKey) {
-			database = dbEnvironment.openDatabase(null, NULL_INDEX_NAME + inPort.getInputPortNumber(), dbConfig);
-		} else {
-			database = dbEnvironment.openDatabase(null, generateKey(metadata, primaryKey[0]), dbConfig);
-		}
+		dbConfig.setExclusiveCreate(true);
+		
+		database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), dbConfig);
 	}
 
 	@Override
@@ -140,14 +136,6 @@ public class ExternalSimplePortData extends PortData {
 	@Override
 	public boolean readInputPort() {
 		return true;
-	}
-	
-	private String generateKey(DataRecordMetadata metadata, int[] key) {
-		StringBuilder stringKey = new StringBuilder();
-		for (int j = 0; j < key.length; j++) {
-			stringKey.append(metadata.getField(key[j]).getName());
-		}
-		return stringKey.toString();
 	}
 	
 	private void readData(DatabaseEntry foundValue, DataRecord record) throws IOException {
