@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Tue Aug 17 15:28:01 CEST 2010" modifiedBy="Pavel" name="graphSystemExecute" revision="1.95">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Thu Apr 28 11:54:29 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.99" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -80,31 +80,38 @@ the "save file list" writer.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiHeight="0" guiName="read file pattern" guiWidth="0" guiX="287" guiY="772" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiHeight="98" guiName="read file pattern" guiWidth="149" guiX="287" guiY="772" id="DATA_READER1" type="DATA_READER">
 <attr name="finalRecord"><![CDATA[30]]></attr>
 <attr name="startRecord"><![CDATA[0]]></attr>
+<attr name="guiDescription"><![CDATA[File's paths with wildcards]]></attr>
 </Node>
-<Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiHeight="0" guiName="save file list" guiWidth="0" guiX="888" guiY="554" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="saves file list" guiWidth="0" guiX="433" guiY="535" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="0" guiName="save file list" guiWidth="0" guiX="467" guiY="958" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="cat " guiWidth="0" guiX="345" guiY="210" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiHeight="98" guiName="save file list" guiWidth="128" guiX="888" guiY="554" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="98" guiName="saves file list" guiWidth="128" guiX="433" guiY="535" id="DATA_WRITER1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="98" guiName="save file list" guiWidth="128" guiX="466" guiY="991" id="DATA_WRITER2" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
+</Node>
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="64" guiName="cat " guiWidth="128" guiX="345" guiY="210" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[cat -n graph/graphExecutingExternal.grf]]></attr>
 </Node>
-<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="list" guiWidth="0" guiX="237" guiY="439" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
+<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="64" guiName="list" guiWidth="128" guiX="237" guiY="439" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="execute batch" guiWidth="0" guiX="362" guiY="866" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="enabled" guiHeight="64" guiName="execute batch" guiWidth="132" guiX="365" guiY="906" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[while read in; do
   echo $in
   find -name "$in" 
 done]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="disabled" guiHeight="0" guiName="WINDOWS _ dir" guiWidth="0" guiX="658" guiY="554" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="disabled" guiHeight="64" guiName="WINDOWS _ dir" guiWidth="140" guiX="658" guiY="554" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[dir]]></attr>
 </Node>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="36:0:89:-94:0.5|36:57:89:-37:0.5|-88:57:-35:-37:0.5|-88:94:-35:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="10:0:81:-134:0.5|10:90:81:-44:0.5|-82:90:-11:-44:0.5|-82:134:-11:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>
 <Edge fromNode="SYS_EXECUTE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER1:0"/>
-<Edge fromNode="SYS_EXECUTE2:0" guiBendpoints="51:0:74:-92:0.5|51:57:74:-35:0.5|-71:57:-48:-35:0.5|-71:92:-48:0:0.5" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER2:0"/>
+<Edge fromNode="SYS_EXECUTE2:0" guiBendpoints="49:0:80:-85:0.5|49:50:80:-35:0.5|-78:50:-47:-35:0.5|-79:85:-48:0:0.5" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER2:0"/>
 <Edge fromNode="SYS_EXECUTE3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
