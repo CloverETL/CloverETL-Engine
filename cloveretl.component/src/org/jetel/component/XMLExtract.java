@@ -266,6 +266,7 @@ public class XMLExtract extends Node {
     /** MiSho Experimental Templates */
     private static final String XML_TEMPLATE_ID = "templateId";
     private static final String XML_TEMPLATE_REF = "templateRef";
+    private static final String XML_TEMPLATE_DEPTH = "nestedDepth";
     
     private static final String FEATURES_DELIMETER = ";";
     private static final String FEATURES_ASSIGN = ":=";
@@ -1327,7 +1328,7 @@ public class XMLExtract extends Node {
 					errors.add("Template '" + templateId + "' has not been declared");
 					return errors;
 				}
-
+				
 				mapping = new Mapping(declaredTemplates.get(templateId), parentMapping);
 			}
 
@@ -1432,6 +1433,21 @@ public class XMLExtract extends Node {
             // prepare variables for skip and numRecords for this mapping
         	mapping.prepareProcessSkipOrNumRecords();
 
+        	// multiple nested references of a template
+        	if (attributes.exists(XML_TEMPLATE_REF) && attributes.exists(XML_TEMPLATE_DEPTH)) {
+				int depth = attributes.getInteger(XML_TEMPLATE_DEPTH, 1) - 1;
+				Mapping currentMapping = mapping;
+				while (depth > 0) {
+					currentMapping = new Mapping(currentMapping, currentMapping);
+					currentMapping.prepareProcessSkipOrNumRecords();
+					depth--;
+				}
+				while (currentMapping != mapping) {
+					currentMapping.prepareReset4CurrentRecord4Mapping();
+					currentMapping = currentMapping.getParent();
+				}
+        	}
+        	
             // Process all nested mappings
             NodeList nodes = nodeXML.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -1613,6 +1629,7 @@ public class XMLExtract extends Node {
 			mappingNodes = rootElement.getChildNodes();
 		}
         //iterate over 'Mapping' elements
+		declaredTemplates.clear();
 		String errorPrefix = getId() + ": Mapping error - "; 
         for (int i = 0; i < mappingNodes.getLength(); i++) {
             org.w3c.dom.Node node = mappingNodes.item(i);
@@ -1748,6 +1765,7 @@ public class XMLExtract extends Node {
 			}
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+		} finally {
 			declaredTemplates.clear();
 		}
 		
@@ -1841,7 +1859,8 @@ public class XMLExtract extends Node {
 				attribute.equals(XML_VALIDATE_ATTRIBUTE) ||
 				attribute.equals(XML_XML_FEATURES_ATTRIBUTE) ||
 				attribute.equals(XML_TEMPLATE_ID) ||
-				attribute.equals(XML_TEMPLATE_REF)) {
+				attribute.equals(XML_TEMPLATE_REF) ||
+				attribute.equals(XML_TEMPLATE_DEPTH)) {
 			return true;
 		}
 		
