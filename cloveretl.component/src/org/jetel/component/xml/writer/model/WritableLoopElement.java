@@ -122,7 +122,11 @@ public class WritableLoopElement extends WritableElement {
 		}
 		record.copyFrom(writeRecord);
 		if (!hidden) {
-			formatter.getWriter().writeStartElement(name);
+			if (children.length == 0) {
+				formatter.getWriter().writeEmptyElement(name);
+			} else {
+				formatter.getWriter().writeStartElement(name);
+			}
 			for (Writable namespace : namespaces) {
 				namespace.write(formatter, availableData);
 			}
@@ -133,7 +137,7 @@ public class WritableLoopElement extends WritableElement {
 		for (Writable child : children) {
 			child.write(formatter, availableData);
 		}
-		if (!hidden) {
+		if (!hidden && children.length != 0) {
 			formatter.getWriter().writeEndElement();
 		}
 	}
