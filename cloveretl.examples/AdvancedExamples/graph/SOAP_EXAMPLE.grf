@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation Devel" modified="Wed Dec 23 10:33:40 GMT+01:00 2009" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.355">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation Devel" modified="Thu Apr 28 15:52:29 CEST 2011" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.361" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
 <Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
@@ -17,55 +17,25 @@
 <Property fileURL="workspace.prm" id="GraphParameter4"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="87" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining geographical information" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="174" y="-103">
-<attr name="text"><![CDATA[
-Information about 193 cities is joined with information about their latitude and longitude. 
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="87" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining temporal information" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="334" x="127" y="100">
-<attr name="text"><![CDATA[
-Information about time ranges is joined with layout-keys. 
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="93" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Joining all temperatures for each individual time range with geographical location" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="38" y="311">
-<attr name="text"><![CDATA[
-Information about temperatures for individual time range is joined with information about geographical locations.
-
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="59" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Duplicate layout-keys are removed" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="248" x="632" y="312"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="59" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Duplicate geographical locations are removed" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="349" x="636" y="542"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="61" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="For each location, a group corresponding to time range series is created." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="490" x="898" y="450"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="61" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="For each layout-key, a group of time ranges is created." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="396" x="897" y="234"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="65" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temperature and time range series are joined with locations." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="410" x="1156" y="335"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="54" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Cities are joined with temperature and time range series." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="402" x="780" y="66"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="65" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Data records are sorted according to cities in ascending order." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="434" x="950" y="-100"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="70" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="For each city, minimum, maximum and average temperatures are calculated." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="523" x="1323" y="202">
-<attr name="text"><![CDATA[
-For time range series, start and end times are calculated.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Forecast information is get from SOAP server." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="352" x="-312" y="-40">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="194" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Forecast information is get from SOAP server." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="-307" y="110">
 <attr name="text"><![CDATA[
 We want to get information about daily maximum temperatures for 7 day weather forecast.
 
 We can read the information from SOAP server or from the prepared ndfdXMLclient.xml file containing the necessary data.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="75" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Full information is written to an xls file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="340" x="1533" y="-70">
-<attr name="text"><![CDATA[
-To the "all_data" sheet.
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="75" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Statistical information is written to an xls file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="340" x="1531" y="37">
-<attr name="text"><![CDATA[
-To the "aggregated" sheet.
-]]></attr>
-</Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="city;state" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="1210" guiY="130" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($start_valid_time);$endDate:=max($end_valid_time);$moreWeatherInformation:=first($moreWeatherInformation);" sorted="false" type="AGGREGATE"/>
-<Node dedupKey="applicable_location" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="576" guiY="472" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="layout_key" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="576" guiY="240" id="DEDUP1" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="Join Location with additional info" guiWidth="0" guiX="174" guiY="-4" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
+<Node aggregateKey="city;state" enabled="enabled" guiHeight="81" guiName="For each city, minimum, maximum and average temperatures are calculated." guiWidth="384" guiX="881" guiY="13" id="AGGREGATE0" mapping="$city:=$city;$state:=$state;$name:=first($name);$units:=first($units);$avg:=avg($value);$min:=min($value);$max:=max($value);$startDate:=min($start_valid_time);$endDate:=max($end_valid_time);$moreWeatherInformation:=first($moreWeatherInformation);" sorted="false" type="AGGREGATE">
+<attr name="guiDescription"><![CDATA[For time range series, start and end times are calculated.]]></attr>
+</Node>
+<Node dedupKey="applicable_location" enabled="enabled" guiHeight="98" guiName="Dedup" guiWidth="128" guiX="574" guiY="347" id="DEDUP0" keep="first" type="DEDUP">
+<attr name="guiDescription"><![CDATA[Duplicate geographical locations are removed]]></attr>
+</Node>
+<Node dedupKey="layout_key" enabled="enabled" guiHeight="98" guiName="Dedup" guiWidth="128" guiX="574" guiY="176" id="DEDUP1" keep="first" type="DEDUP">
+<attr name="guiDescription"><![CDATA[Duplicate layout-keys are removed]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="Join Location with additional info" guiWidth="269" guiX="-1" guiY="-25" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.location_key := $0.location_key;
 $0.city := $0.city;
@@ -73,8 +43,9 @@ $0.state := $0.state;
 $0.moreWeatherInformation := $1.moreWeatherInformation;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Information about 193 cities is joined with information about their latitude and longitude. ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join temp value with time layout" guiWidth="0" guiX="38" guiY="420" id="EXT_HASH_JOIN1" joinKey="$param_id=$param_id;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Join temp value with time layout" guiWidth="268" guiX="-4" guiY="234" id="EXT_HASH_JOIN1" joinKey="$param_id=$param_id;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[sequence(Sequence0).reset;
 
 function transform() {
@@ -87,8 +58,9 @@ function transform() {
 	$0.temp_dim_id := sequence(Sequence0).next;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Information about temperatures for individual time range is joined with information about geographical locations.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join time with layout key" guiWidth="0" guiX="126" guiY="199" id="EXT_HASH_JOIN2" joinKey="$parent_id=$id;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Join time with layout key" guiWidth="212" guiX="-1" guiY="109" id="EXT_HASH_JOIN2" joinKey="$parent_id=$id;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[sequence(Sequence1).reset;
 
 string start_time;
@@ -103,8 +75,9 @@ function transform() {
 	$0.time_dim_id := sequence(Sequence1).next;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Information about time ranges is joined with layout-keys. ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for temp value " guiWidth="0" guiX="762" guiY="419" id="EXT_HASH_JOIN3" joinKey="$applicable_location=$applicable_location;$time_layout=$time_layout;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Create synthetic key for temp value " guiWidth="293" guiX="760" guiY="294" id="EXT_HASH_JOIN3" joinKey="$applicable_location=$applicable_location;$time_layout=$time_layout;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 	$0.applicable_location := $0.applicable_location;
 	$0.time_layout := $0.time_layout;
@@ -115,8 +88,9 @@ function transform() {
 	$0.temp_dim_id := $0.temp_dim_id - $1.temp_dim_id;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[For each location, a group corresponding to time range series is created.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Create synthetic key for time value" guiWidth="0" guiX="762" guiY="199" id="EXT_HASH_JOIN4" joinKey="$layout_key=$layout_key;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Create synthetic key for time value" guiWidth="284" guiX="760" guiY="135" id="EXT_HASH_JOIN4" joinKey="$layout_key=$layout_key;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.layout_key := $0.layout_key;
 $0.start_valid_time := $0.start_valid_time;
@@ -124,8 +98,9 @@ $0.end_valid_time := $0.end_valid_time;
 $0.time_dim_id := $0.time_dim_id - $1.time_dim_id;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[For each layout-key, a group of time ranges is created.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join time with temp" guiWidth="0" guiX="1000" guiY="323" id="EXT_HASH_JOIN6" joinKey="$time_layout=$layout_key;$temp_dim_id=$time_dim_id;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Join time with temp" guiWidth="175" guiX="1069" guiY="133" id="EXT_HASH_JOIN6" joinKey="$time_layout=$layout_key;$temp_dim_id=$time_dim_id;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.applicable_location := $0.applicable_location;
 $0.type := $0.type;
@@ -136,8 +111,9 @@ $0.start_valid_time := $1.start_valid_time;
 $0.end_valid_time := $1.end_valid_time;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Temperature and time range series are joined with locations.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Join Location" guiWidth="0" guiX="779" guiY="-19" id="EXT_HASH_JOIN7" joinKey="$applicable_location=$location_key;#" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="98" guiName="Join Location" guiWidth="128" guiX="338" guiY="-25" id="EXT_HASH_JOIN7" joinKey="$applicable_location=$location_key;#" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 //Convert temperature value from Fahrenheit to Celsius
@@ -159,14 +135,19 @@ function transform() {
 	$0.moreWeatherInformation := $1.moreWeatherInformation;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Cities are joined with temperature and time range series.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SortingOnCities" guiWidth="0" guiX="954" guiY="-21" id="EXT_SORT0" sortKey="city(a);state(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="1372" guiY="130" id="EXT_SORT1" sortKey="city(a);state(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="358" guiY="419" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="358" guiY="199" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="1210" guiY="-21" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="0" guiName="FullInformation" guiWidth="0" guiX="1395" guiY="-20" id="XLS_WRITER0" namesRow="1" sheetName="all_data" type="XLS_WRITER"/>
-<Node enabled="enabled" fileURL="${soap_req}" guiHeight="0" guiName="ForecastInformation" guiWidth="0" guiX="-171" guiY="106" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<Node enabled="enabled" guiHeight="98" guiName="SortingOnCities" guiWidth="145" guiX="513" guiY="-25" id="EXT_SORT0" sortKey="city(a);state(a)" type="EXT_SORT">
+<attr name="guiDescription"><![CDATA[Data records are sorted according to cities in ascending order.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="81" guiName="ExtSort" guiWidth="128" guiX="1299" guiY="91" id="EXT_SORT1" sortKey="city(a);state(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="356" guiY="294" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="356" guiY="135" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="726" guiY="-25" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="98" guiName="FullInformation" guiWidth="142" guiX="1298" guiY="-25" id="XLS_WRITER0" namesRow="1" sheetName="all_data" type="XLS_WRITER">
+<attr name="guiDescription"><![CDATA[To the "all_data" sheet.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${soap_req}" guiHeight="81" guiName="ForecastInformation" guiWidth="176" guiX="-293" guiY="3" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[<Context xpath="//data">
 	<Context xpath="location" outPort="0">
 		<Mapping xpath="./location-key/text()" cloverField="location_key"/>
@@ -203,32 +184,34 @@ function transform() {
 
 ]]></attr>
 </Node>
-<Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
-<Edge fromNode="DEDUP0:0" guiBendpoints="" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN3:1"/>
-<Edge fromNode="DEDUP1:0" guiBendpoints="" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN4:1"/>
-<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:1"/>
-<Edge fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
-<Edge fromNode="EXT_HASH_JOIN3:0" guiBendpoints="" id="Edge15" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:0"/>
-<Edge fromNode="EXT_HASH_JOIN4:0" guiBendpoints="" id="Edge19" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:1"/>
-<Edge fromNode="EXT_HASH_JOIN6:0" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata9" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:0"/>
-<Edge fromNode="EXT_HASH_JOIN7:0" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN3:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 1 (out)" toNode="DEDUP0:0"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge18" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN4:0"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 1 (out)" toNode="DEDUP1:0"/>
-<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
-<Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
-<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
-<Edge fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
-<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="10:0:-24:-78:0.5|10:-3:-24:-81:0.5|24:-3:-10:-81:0.5|24:78:-10:0:0.5" guiRouter="Manual" id="Edge13" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata8" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN3:1"/>
+<Edge fromNode="DEDUP1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (unique)" toNode="EXT_HASH_JOIN4:1"/>
+<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:1"/>
+<Edge fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="EXT_HASH_JOIN3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:0"/>
+<Edge fromNode="EXT_HASH_JOIN4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge19" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN6:1"/>
+<Edge fromNode="EXT_HASH_JOIN6:0" guiBendpoints="10:0:916:158:0.5|10:-46:916:112:0.5|-916:-46:-10:112:0.5|-916:-158:-10:0:0.5" guiRouter="Manual" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata9" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN7:0"/>
+<Edge fromNode="EXT_HASH_JOIN7:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge20" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge24" inPort="Port 0 (in)" metadata="Metadata11" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN3:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata8" outPort="Port 1 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge18" inPort="Port 0 (driver)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN4:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 1 (out)" toNode="DEDUP1:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
+<Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="22:0:-94:20:0.5|22:-20:-94:0:0.5" guiRouter="Manual" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="34:0:-82:12:0.5|34:-12:-82:0:0.5" guiRouter="Manual" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="98:0:-18:-112:0.5|98:112:-18:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
+<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="51:0:-65:-84:0.5|51:84:-65:0:0.5" guiRouter="Manual" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
+<Edge fromNode="XML_XPATH_READER0:4" guiBendpoints="84:0:-29:-217:0.5|84:217:-29:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="74:0:-39:-189:0.5|74:189:-39:0:0.5" guiRouter="Manual" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="0" guiName="StatisticalInformation" guiWidth="0" guiX="1533" guiY="130" id="XLS_WRITER1" namesRow="1" sheetName="aggregated" type="XLS_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="81" guiName="StatisticalInformation" guiWidth="188" guiX="1484" guiY="91" id="XLS_WRITER1" namesRow="1" sheetName="aggregated" type="XLS_WRITER">
+<attr name="guiDescription"><![CDATA[To the "aggregated" sheet.]]></attr>
+</Node>
 </Phase>
 </Graph>
