@@ -19,20 +19,17 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.conn.FirebirdConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author "Jan Kucera" (info@cloveretl.com)
