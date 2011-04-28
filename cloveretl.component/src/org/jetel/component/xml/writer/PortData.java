@@ -33,8 +33,6 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 20 Dec 2010
  */
 public abstract class PortData {
-
-	public static final String NULL_INDEX_NAME = "$NULL_INDEX";
 	
 	protected InputPort inPort;
 	protected int[][] primaryKey;
