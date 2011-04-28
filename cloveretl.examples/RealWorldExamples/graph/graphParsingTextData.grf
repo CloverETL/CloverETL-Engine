@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Tue Aug 17 15:36:28 CEST 2010" modifiedBy="Pavel" name="graphParsingTextData" revision="1.64">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu Apr 28 14:17:15 CEST 2011" modifiedBy="avackova" name="graphParsingTextData" revision="1.86" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -16,36 +16,22 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="362" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="13" y="81">
-<attr name="text"><![CDATA[
-
-
-
-
-
-Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), we add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="301" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="262" y="143">
-<attr name="text"><![CDATA[
-
-
-
-Cuts record that contains all children of one person to one record for one children.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="362" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="154" x="443" y="81">
-<attr name="text"><![CDATA[
-
-
-
-
-
-Joins person with her/his spouse and children and formats the data into xml file]]></attr>
-</Note>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="578" x="13" y="16"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="0" guiName="MultiLevelReader" guiWidth="0" guiX="88" guiY="92" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" type="MULTI_LEVEL_READER">
+<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="98" guiName="XMLWriter" guiWidth="128" guiX="463" guiY="95" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <person clover:inPort="0">
+    <clover:elements clover:include="$0.*" clover:exclude="$0.id"/>
+    <spouse clover:inPort="1" clover:key="id" clover:parentKey="id" clover:include="$1.*" clover:exclude="$1.id;$1.relationship"/>
+    <child clover:inPort="2" clover:key="id" clover:parentKey="id" clover:include="$2.*" clover:exclude="$2.id;$2.relationship"/>
+  </person>
+</persons>]]></attr>
+<attr name="guiDescription"><![CDATA[Joins person with her/his spouse and children and formats the data into xml file]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="98" guiName="MultiLevelReader" guiWidth="158" guiX="13" guiY="93" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" type="MULTI_LEVEL_READER">
 <attr name="selectorCode"><![CDATA[import java.nio.CharBuffer;
 
 import org.jetel.data.DataRecord;
@@ -77,8 +63,9 @@ public class SelectPerson extends PrefixMultiLevelSelector {
 		records[metadataIndex].getField("id").setValue(counter);
 	}
 }]]></attr>
+<attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), we add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="272" guiY="153" id="NORMALIZER0" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="98" guiName="Normalizer" guiWidth="128" guiX="258" guiY="155" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
@@ -135,16 +122,11 @@ function void clean() {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Cuts record that contains all children of one person to one record for one children.]]></attr>
 </Node>
-<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="0" guiName="XMLWriter" guiWidth="0" guiX="453" guiY="90" id="XML_WRITER0" omitNewLines="false" rootElement="persons" type="XML_WRITER">
-<attr name="mapping"><![CDATA[<Mapping element="person" inPort="0" fieldsIgnore="id">
-   <Mapping element="spouse" fieldsAs="attributes" inPort="1" key="id" fieldsIgnore="id;relationship" parentKey="id" />
-   <Mapping element="child" fieldsAs="attributes" inPort="2" key="id" fieldsIgnore="id;relationship" parentKey="id" />
-</Mapping> ]]></attr>
-</Node>
-<Edge debugMode="true" fromNode="MULTI_LEVEL_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XML_WRITER0:0"/>
-<Edge debugMode="false" fromNode="MULTI_LEVEL_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="XML_WRITER0:1"/>
+<Edge debugMode="true" fromNode="MULTI_LEVEL_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugMode="false" fromNode="MULTI_LEVEL_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_XML_WRITER0:1"/>
 <Edge debugMode="true" fromNode="MULTI_LEVEL_READER0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (out)" toNode="NORMALIZER0:0"/>
-<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XML_WRITER0:2"/>
+<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
 </Phase>
 </Graph>
