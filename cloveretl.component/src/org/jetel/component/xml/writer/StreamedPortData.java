@@ -111,8 +111,11 @@ class StreamedPortData extends PortData {
 					if (ascending[i]) {
 						result *= -1;
 					}
-					if (result < 0) {
-						throw new IOException("Input data records not sorted!");
+					
+					if (result > 0) {
+						break;
+					} else {
+						throw new IOException("Input data records are not sorted!");
 					}
 				}
 			}
