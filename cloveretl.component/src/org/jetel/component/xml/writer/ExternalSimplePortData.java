@@ -40,9 +40,11 @@ import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.OperationStatus;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
+ * Implementation of data provider which handles the situation when records need to be cached and need to be looked up
+ * under exactly one key
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
  * @created 11 Mar 2011
  */
 public class ExternalSimplePortData extends PortData {

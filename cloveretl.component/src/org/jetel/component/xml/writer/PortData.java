@@ -28,20 +28,49 @@ import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Abstract class representing data provider wrapping input port for xml writer model.
+ * Reflects components life-cycle.
+ * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 20 Dec 2010
  */
 public abstract class PortData {
 	
+	/** input port to read data from */
 	protected InputPort inPort;
+	/** array containing all keys data can be looked up under */
 	protected int[][] primaryKey;
-	
+	/** flag which means that data can be looked up without any key - e.g. iterator should return all the data */
 	protected boolean nullKey;
-
+	/** directory for temporary cache */
 	protected String tempDirectory;
 	
-	public PortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
+	/**
+	 * Factory method
+	 * 
+	 * @param cached true if all records should be cached first
+	 * @param inPort input port to read records from
+	 * @param keys the keys under which records can be looked up 
+	 * @param hint 
+	 * @param tempDirectory
+	 * @param cacheSize
+	 * @return
+	 */
+	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
+			SortHint hint, String tempDirectory, long cacheSize) {
+		if (cached) {
+			if (keys.size() > 1) {
+				return new ExternalComplexPortData(inPort, keys, tempDirectory, cacheSize);
+			} else {
+				return new ExternalSimplePortData(inPort, keys, tempDirectory, cacheSize);
+			}
+		} else {
+			return new StreamedPortData(inPort, keys, hint, tempDirectory);
+		}
+	}
+	
+	PortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
 		this.inPort = inPort;
 		DataRecordMetadata metadata = inPort.getMetadata();
 		
@@ -55,14 +84,6 @@ public abstract class PortData {
 		}
 	}
 	
-	private int[] resolveKey(DataRecordMetadata metadata, List<String> key) {
-		int[] resolvedKey = new int[key.size()];
-		for (int i = 0; i < key.size(); i++) {
-			resolvedKey[i] = metadata.getFieldPosition(key.get(i));
-		}
-		return resolvedKey;
-	}
-
 	public void init() throws ComponentNotReadyException {
 	}
 	
@@ -78,24 +99,15 @@ public abstract class PortData {
 
 	public abstract DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData) throws IOException;
 	
-	public DataRecord getRecord() {
-		return new DataRecord(inPort.getMetadata());
-	}
-
 	public InputPort getInPort() {
 		return inPort;
 	}
 	
-	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
-			SortHint hint, String tempDirectory, long cacheSize) {
-		if (cached) {
-			if (keys.size() > 1) {
-				return new ExternalComplexPortData(inPort, keys, tempDirectory, cacheSize);
-			} else {
-				return new ExternalSimplePortData(inPort, keys, tempDirectory, cacheSize);
-			}
-		} else {
-			return new StreamedPortData(inPort, keys, hint, tempDirectory);
+	private int[] resolveKey(DataRecordMetadata metadata, List<String> key) {
+		int[] resolvedKey = new int[key.size()];
+		for (int i = 0; i < key.size(); i++) {
+			resolvedKey[i] = metadata.getFieldPosition(key.get(i));
 		}
+		return resolvedKey;
 	}
 }
