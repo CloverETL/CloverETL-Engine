@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232020084671" licenseType="Evaluation license." modified="Fri May 15 13:53:55 CEST 2009" modifiedBy="cloveruser" name="CreatingXLSEmplChild" revision="1.42">
+<Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232020084671" licenseType="Evaluation Devel" modified="Fri Apr 29 10:03:10 CEST 2011" modifiedBy="avackova" name="CreatingXLSEmplChild" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="meta/Employees.fmt" id="Metadata0"/>
@@ -14,22 +14,29 @@ Number of spouses equals to the number of employees. Each employee has a wife or
 More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
 ]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="56" guiY="280" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="562" guiY="280" id="XLS_WRITER0" namesRow="1" sheetName="Employees" type="XLS_WRITER"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XLS_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Employees.dat" guiHeight="81" guiName="EmployeesDelimited" guiWidth="179" guiX="56" guiY="280" id="DATA_READER0" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Employees]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="98" guiName="EmployeesWithChildren" guiWidth="203" guiX="562" guiY="280" id="XLS_WRITER0" namesRow="1" sheetName="Employees" type="XLS_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XLS_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="0" guiName="ChildrenDelimited" guiWidth="0" guiX="56" guiY="399" id="DATA_READER1" skipFirstLine="true" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="AlphabeticalSorting" guiWidth="0" guiX="309" guiY="399" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="562" guiY="399" id="XLS_WRITER1" namesRow="1" sheetName="Children" type="XLS_WRITER"/>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="81" guiName="ChildrenDelimited" guiWidth="162" guiX="56" guiY="399" id="DATA_READER1" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Children]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="AlphabeticalSorting" guiWidth="174" guiX="309" guiY="399" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="98" guiName="EmployeesWithChildren" guiWidth="203" guiX="562" guiY="399" id="XLS_WRITER1" namesRow="1" sheetName="Children" type="XLS_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="0" guiName="EmployeesDelimited" guiWidth="0" guiX="57" guiY="510" id="DATA_READER2" skipFirstLine="true" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="0" guiName="EmployeesWithChildren" guiWidth="0" guiX="563" guiY="510" id="XLS_WRITER2" namesRow="1" sheetName="Spouses" type="XLS_WRITER"/>
-<Edge debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLS_WRITER2:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="81" guiName="SpousesDelimited" guiWidth="160" guiX="57" guiY="510" id="DATA_READER2" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Spouses]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="98" guiName="EmployeesWithChildren" guiWidth="203" guiX="563" guiY="510" id="XLS_WRITER2" namesRow="1" sheetName="Spouses" type="XLS_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLS_WRITER2:0"/>
 </Phase>
 </Graph>

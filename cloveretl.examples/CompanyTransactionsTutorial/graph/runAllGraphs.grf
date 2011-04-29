@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu May 07 09:41:13 CEST 2009" guiVersion="0.0.0.devel" id="1241683270406" licenseType="Evaluation Devel" modified="Thu Dec 17 09:50:24 GMT+01:00 2009" modifiedBy="avackova" name="runAllGraphs" revision="1.54">
+<Graph author="avackova" created="Thu May 07 09:41:13 CEST 2009" guiVersion="0.0.0.devel" id="1241683270406" licenseType="Evaluation Devel" modified="Fri Apr 29 15:50:46 CEST 2011" modifiedBy="avackova" name="runAllGraphs" revision="1.56" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="graph" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -16,14 +16,17 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="86" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Running all requested graphs at once" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="541" x="58" y="122">
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="86" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Running all requested graphs at once" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="612" x="59" y="149">
 <attr name="text"><![CDATA[This graph runs all the graphs that are listed in ${DATAIN_DIR}/example_etl_process.txt. 
 Data Reader reads names of graphs to execute, Reformat adds path to graph names and sends them to RunGraph component. Then each graph is executed and the result is sent to Trash. Graphs execution log and results are saved in ${DATAOUT_DIR} directory (runAllGraps.log and allGraphs.txt respectively). ]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/example_etl_process.txt" guiHeight="0" guiName="Read graphs" guiWidth="0" guiX="59" guiY="35" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="218" guiY="35" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/example_etl_process.txt" guiHeight="98" guiName="Read graphs" guiWidth="128" guiX="59" guiY="35" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads names of graphs to execute]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="Reformat" guiWidth="128" guiX="218" guiY="35" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -40,11 +43,12 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Adds path to graph name]]></attr>
 </Node>
-<Node alternativeJavaCmdLine="java -Xmx1g -cp" enabled="enabled" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="370" guiY="35" id="RUN_GRAPH0" ignoreGraphFail="true" logAppend="false" logFile="${DATAOUT_DIR}/runAllGraps.log" sameInstance="false" type="RUN_GRAPH"/>
-<Node debugFilename="${DATAOUT_DIR}/allGraphs.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="546" guiY="35" id="TRASH0" type="TRASH"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RUN_GRAPH0:0"/>
-<Edge debugMode="false" fromNode="RUN_GRAPH0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
+<Node alternativeJavaCmdLine="java -Xmx1g -cp" enabled="enabled" guiHeight="64" guiName="RunGraph" guiWidth="128" guiX="370" guiY="35" id="RUN_GRAPH0" ignoreGraphFail="true" logAppend="false" logFile="${DATAOUT_DIR}/runAllGraps.log" sameInstance="false" type="RUN_GRAPH"/>
+<Node debugFilename="${DATAOUT_DIR}/allGraphs.txt" debugPrint="true" enabled="enabled" guiHeight="64" guiName="Trash" guiWidth="128" guiX="546" guiY="35" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in regular mode: names of the graphs to be executed, otherwise nothing)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RUN_GRAPH0:0"/>
+<Edge debugMode="false" fromNode="RUN_GRAPH0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
