@@ -40,6 +40,15 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.OperationStatus;
 
+/**
+ * Implementation of data provider which handles the most complex use case - data must be cached and lookup up under
+ * multiple keys.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
+ * @created 11 Mar 2011
+ */
+
 public class ExternalComplexPortData extends PortData {
 	
 	public static final String NULL_INDEX_NAME = "$NULL_INDEX";

@@ -28,7 +28,12 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Implementation of data provider which does not cache all the records, but reads records directly from input port as
+ * needed. If data are looked up under specific key, records must be sorted!
+ * 
+ * Partial caching is required as the data lookup with the same key can be performed multiple times.   
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 20 Dec 2010
  */

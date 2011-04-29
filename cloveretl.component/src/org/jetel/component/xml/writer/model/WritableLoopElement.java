@@ -35,6 +35,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author LKREJCI (info@cloveretl.com)
@@ -54,7 +55,6 @@ public class WritableLoopElement extends WritableElement {
 	private final int parentPort;
 	private final WritableLoopElement parentLoopElement;
 	
-	
 	private final RecordFilter recordFilter;
 	private int[] keys;
 	private int[] parentKeys;
@@ -71,13 +71,15 @@ public class WritableLoopElement extends WritableElement {
 		this.portData = portData;
 		this.keys = keys;
 		this.parentKeys = parentKeys;
+		
+		DataRecordMetadata metadata = portData.getInPort().getMetadata();
 		if (filterExpression != null) {
-			this.recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, portData.getRecord().getMetadata(), graph, componentId, logger);
+			this.recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, metadata, graph, componentId, logger);
 		} else {
 			this.recordFilter = null;
 		}
 		
-		record = portData.getRecord();
+		record = new DataRecord(metadata);
 		record.init();
 		
 		portIndex = portData.getInPort().getInputPortNumber();
