@@ -18,22 +18,33 @@
  */
 package org.jetel.component.xml.writer.mapping;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jetel.component.xml.writer.MappingVisitor;
 
 /**
- * @author tkramolis (info@cloveretl.com)
+ * Class representing xml point where referenced template should be expanded.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 31 Mar 2011
+ * @created 11 Jan 2011
  */
-public class ObjectComment extends ObjectRepresentation {
+public class TemplateEntry extends AbstractElement {
 
-	// FIXME something more self-explanatory then INCLUDE?
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.INCLUDE, MappingProperty.VALUE};
-	public static final String INCLUDE_MARK = "clover:include";
+	public static final String INVALID_TEMPLATE_ELEMENT = "Template entry element must be a child of standard element!";
+	
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.TEMPLATE_NAME};
+	
+	public TemplateEntry(Element parent, boolean registerAsChild) {
+		super(parent, registerAsChild);
+	}
 
-	public ObjectComment(ObjectElement parent) {
-		super(parent, true);
+	public void setAttribute(String localName, String value) throws XMLStreamException {
+		MappingProperty property = MappingProperty.fromString(localName);
+		if (!setProperty(property, value)) {
+			throw new XMLStreamException(XmlMapping.UNKNOWN_ATTRIBUTE + localName);
+		}
 	}
 	
 	@Override
@@ -43,12 +54,18 @@ public class ObjectComment extends ObjectRepresentation {
 
 	@Override
 	public String getSimpleContent() {
-		return properties.get(MappingProperty.VALUE);
+		return properties.get(MappingProperty.TEMPLATE_NAME);
 	}
 
 	@Override
 	public String getDisplayName() {
-		return "comment";
+		return "Insert template";
+	}
+
+	@Override
+	public String getPath() {
+		return parent.getPath() + AbstractElement.LEVEL_DELIMITER
+			+ getDisplayName() + ": " + properties.get(MappingProperty.TEMPLATE_NAME);
 	}
 
 	@Override
@@ -58,7 +75,6 @@ public class ObjectComment extends ObjectRepresentation {
 
 	@Override
 	public short getType() {
-		return ObjectRepresentation.COMMENT;
+		return AbstractElement.TEMPLATE_ENTRY;
 	}
-
 }

@@ -19,7 +19,9 @@
 package org.jetel.component.xml.writer;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Simple class representing position and length of record in file.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 5 Jan 2011

@@ -22,37 +22,40 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectAttribute;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectNamespace;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
-import org.jetel.component.xml.writer.mapping.ObjectTemplateEntry;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.Attribute;
+import org.jetel.component.xml.writer.mapping.Comment;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Namespace;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.TemplateEntry;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.util.string.StringUtils;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Visitor which serializes mapping into xml.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 15 Dec 2010
  */
-public class MappingWriterVisitor implements MappingVisitor {
+public class MappingWriter implements MappingVisitor {
 	
 	private XMLStreamWriter writer;
 	
-	public MappingWriterVisitor(XMLStreamWriter writer) {
+	public MappingWriter(XMLStreamWriter writer) {
 		this.writer = writer;
 	}
 
 	@Override
-	public void visit(ObjectAggregate element) throws Exception {
+	public void visit(WildcardElement element) throws Exception {
 		checkCloverPrefix();
 		
 		if (element.isElement()) {
-			writer.writeEmptyElement(Mapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.ELEMENTS.getName());
+			writer.writeEmptyElement(XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.ELEMENTS.getName());
 		}
 		writePropertyAsCloverAttribute(element, MappingProperty.INCLUDE);
 		writePropertyAsCloverAttribute(element, MappingProperty.EXCLUDE);
@@ -63,10 +66,10 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(ObjectElement element) throws Exception {
+	public void visit(Element element) throws Exception {
 		// don't write the dummy root element it self 
 		if (element.getParent() == null && !element.getChildren().isEmpty()) {
-			for (ObjectRepresentation child : element.getChildren()) {
+			for (AbstractElement child : element.getChildren()) {
 				child.accept(this);
 			}
 			return;
@@ -76,7 +79,7 @@ public class MappingWriterVisitor implements MappingVisitor {
 		
 		if (element.isTemplate()) {
 			checkCloverPrefix();
-			writer.writeStartElement(Mapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.TEMPLATE_DECLARATION.getName());
+			writer.writeStartElement(XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.TEMPLATE.getName());
 			writePropertyAsCloverAttribute(element, MappingProperty.TEMPLATE_NAME);
 		} else {
 			if (element.getChildren().isEmpty()) {
@@ -87,18 +90,18 @@ public class MappingWriterVisitor implements MappingVisitor {
 		}
 		
 		//write namespaces
-		for (ObjectNamespace namespace : element.getNamespaces()) {
+		for (Namespace namespace : element.getNamespaces()) {
 			namespace.accept(this);
 		}
 		
 		//write attributes
-		for (ObjectAttribute attribute : element.getAttributes()) {
+		for (Attribute attribute : element.getAttributes()) {
 			attribute.accept(this);
 		}
 		
 		//write recurring element attributes
-		if (element.getRecurringInfo() != null) {
-			element.getRecurringInfo().accept(this);
+		if (element.getRelation() != null) {
+			element.getRelation().accept(this);
 		}
 		
 		//write aggregate attributes
@@ -108,13 +111,13 @@ public class MappingWriterVisitor implements MappingVisitor {
 		writePropertyAsCloverAttribute(element, MappingProperty.OMIT_NULL_ATTRIBUTE);
 		writePropertyAsCloverAttribute(element, MappingProperty.HIDE);
 		writePropertyAsCloverAttribute(element, MappingProperty.PARTITION);
-		if (element.getAttributeInfo() != null) {
-			element.getAttributeInfo().accept(this);
+		if (element.getWildcardAttribute() != null) {
+			element.getWildcardAttribute().accept(this);
 		}
 
 		//write children
 		if (!element.getChildren().isEmpty()) {
-			for (ObjectRepresentation child : element.getChildren()) {
+			for (AbstractElement child : element.getChildren()) {
 				child.accept(this);
 			}
 			writer.writeEndElement();
@@ -123,7 +126,7 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(ObjectValue element) throws XMLStreamException {
+	public void visit(Value element) throws XMLStreamException {
 		String toWrite = element.getProperty(MappingProperty.VALUE);
 		if (toWrite != null) {
 			writer.writeCharacters(toWrite);
@@ -131,7 +134,7 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(ObjectAttribute element) throws XMLStreamException {
+	public void visit(Attribute element) throws XMLStreamException {
 		String name = element.getProperty(MappingProperty.NAME);
 		if (!StringUtils.isEmpty(name)) {
 			String value = element.getProperty(MappingProperty.VALUE);
@@ -140,7 +143,7 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(ObjectNamespace element) throws XMLStreamException {
+	public void visit(Namespace element) throws XMLStreamException {
 		String name = element.getProperty(MappingProperty.NAME);
 		if (!StringUtils.isEmpty(name)) {
 			String value = element.getProperty(MappingProperty.VALUE);
@@ -149,7 +152,7 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(RecurringElementInfo element) throws XMLStreamException {
+	public void visit(Relation element) throws XMLStreamException {
 		checkCloverPrefix();
 		for (MappingProperty property : element.getAvailableProperties()) {
 			writePropertyAsCloverAttribute(element, property);
@@ -157,18 +160,18 @@ public class MappingWriterVisitor implements MappingVisitor {
 	}
 
 	@Override
-	public void visit(ObjectTemplateEntry element) throws XMLStreamException {
+	public void visit(TemplateEntry element) throws XMLStreamException {
 		checkCloverPrefix();
-		writer.writeEmptyElement(Mapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.TEMPLATE_ENTRY.getName());
+		writer.writeEmptyElement(XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI, MappingProperty.TEMPLATE_ENTRY.getName());
 		writePropertyAsCloverAttribute(element, MappingProperty.TEMPLATE_NAME);
 	}
 	
 	@Override
-	public void visit(ObjectComment objectComment) throws Exception {
+	public void visit(Comment objectComment) throws Exception {
 		StringBuilder comment = new StringBuilder();
 		if (Boolean.valueOf(objectComment.getProperty(MappingProperty.INCLUDE))) {
 			comment.append(" ");
-			comment.append(Mapping.MAPPING_INCLUDE_COMMENT);
+			comment.append(XmlMapping.MAPPING_INCLUDE_COMMENT);
 		}
 		String value = objectComment.getProperty(MappingProperty.VALUE);
 		if (value != null) {
@@ -179,16 +182,16 @@ public class MappingWriterVisitor implements MappingVisitor {
 		writer.writeComment(comment.toString());
 	}
 	
-	private void writePropertyAsCloverAttribute(ObjectRepresentation element, MappingProperty property) throws XMLStreamException {
+	private void writePropertyAsCloverAttribute(AbstractElement element, MappingProperty property) throws XMLStreamException {
 		String attribute = element.getProperty(property);
 		if (attribute != null) {
-			writer.writeAttribute(Mapping.MAPPING_KEYWORDS_NAMESPACEURI, property.getName(), attribute);
+			writer.writeAttribute(XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI, property.getName(), attribute);
 		}
 	}
 	
 	private void checkCloverPrefix() throws XMLStreamException {
-		if (writer.getPrefix(Mapping.MAPPING_KEYWORDS_NAMESPACEURI) == null) {
-			writer.setPrefix(Mapping.MAPPING_KEYWORDS_PREFIX, Mapping.MAPPING_KEYWORDS_NAMESPACEURI);
+		if (writer.getPrefix(XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI) == null) {
+			writer.setPrefix(XmlMapping.MAPPING_KEYWORDS_PREFIX, XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI);
 		}
 	}
 

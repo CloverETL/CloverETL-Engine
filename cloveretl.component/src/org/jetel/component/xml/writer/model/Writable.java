@@ -27,7 +27,9 @@ import org.jetel.component.xml.writer.XmlFormatter;
 import org.jetel.data.DataRecord;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Interface for xml writer engine model.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20 Dec 2010

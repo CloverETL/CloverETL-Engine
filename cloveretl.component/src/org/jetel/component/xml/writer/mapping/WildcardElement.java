@@ -20,15 +20,16 @@ package org.jetel.component.xml.writer.mapping;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jetel.component.xml.writer.Mapping;
 import org.jetel.component.xml.writer.MappingVisitor;
 
 /**
+ * Class representing xml multiple elements or attributes.
+ * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 14 Dec 2010
  */
-public class ObjectAggregate extends ObjectRepresentation {
+public class WildcardElement extends AbstractElement {
 	
 	public static final String INVALID_AGGREGATE_ELEMENT = "Wildcard element must be a child of standard element!";
 	
@@ -40,7 +41,7 @@ public class ObjectAggregate extends ObjectRepresentation {
 	
 	private final boolean isElement;
 
-	public ObjectAggregate(ObjectElement parent, boolean isElement) {
+	public WildcardElement(Element parent, boolean isElement) {
 		super(parent, isElement);
 		this.isElement = isElement;
 	}
@@ -48,7 +49,7 @@ public class ObjectAggregate extends ObjectRepresentation {
 	public void setProperty(String localName, String attributeValue) throws XMLStreamException {
 		MappingProperty keyword = MappingProperty.fromString(localName);
 		if (!setProperty(keyword, attributeValue)) {
-			throw new XMLStreamException(Mapping.UNKNOWN_ATTRIBUTE + localName);
+			throw new XMLStreamException(XmlMapping.UNKNOWN_ATTRIBUTE + localName);
 		}
 	}
 
@@ -78,6 +79,6 @@ public class ObjectAggregate extends ObjectRepresentation {
 
 	@Override
 	public short getType() {
-		return isElement ? ObjectRepresentation.AGGREGATE_ELEMENT : ObjectRepresentation.AGGREGATE_ATTRIBUTE;
+		return isElement ? AbstractElement.AGGREGATE_ELEMENT : AbstractElement.AGGREGATE_ATTRIBUTE;
 	}
 }

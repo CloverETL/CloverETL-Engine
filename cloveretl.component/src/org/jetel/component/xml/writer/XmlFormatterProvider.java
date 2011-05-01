@@ -23,7 +23,9 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Formater provider for MultiFileWriter.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 18 Jan 2011
  */

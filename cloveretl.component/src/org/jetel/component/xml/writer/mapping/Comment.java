@@ -21,32 +21,26 @@ package org.jetel.component.xml.writer.mapping;
 import org.jetel.component.xml.writer.MappingVisitor;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Class representing xml comment
  * 
- * @created 14 Dec 2010
+ * @author tkramolis (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 31 Mar 2011
  */
-public class ObjectNamespace extends ObjectRepresentation {
-	
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.NAME, 
-		MappingProperty.VALUE};
+public class Comment extends AbstractElement {
 
-	public ObjectNamespace(ObjectElement parent) {
-		super(parent, false);
+	// FIXME something more self-explanatory then INCLUDE?
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.INCLUDE, MappingProperty.VALUE};
+	public static final String INCLUDE_MARK = "clover:include";
+
+	public Comment(Element parent) {
+		super(parent, true);
 	}
-
+	
 	@Override
 	public void accept(MappingVisitor visitor) throws Exception {
 		visitor.visit(this);
-	}
-
-	@Override
-	public String getDisplayName() {
-		return "xmlns:" + properties.get(MappingProperty.NAME);
-	}
-	
-	@Override
-	public MappingProperty[] getAvailableProperties() {
-		return AVAILABLE_PROPERTIES;
 	}
 
 	@Override
@@ -55,7 +49,18 @@ public class ObjectNamespace extends ObjectRepresentation {
 	}
 
 	@Override
+	public String getDisplayName() {
+		return "comment";
+	}
+
+	@Override
+	public MappingProperty[] getAvailableProperties() {
+		return AVAILABLE_PROPERTIES;
+	}
+
+	@Override
 	public short getType() {
-		return ObjectRepresentation.NAMESPACE;
-	}	
+		return AbstractElement.COMMENT;
+	}
+
 }

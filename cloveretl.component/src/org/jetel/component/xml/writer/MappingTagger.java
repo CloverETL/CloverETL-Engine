@@ -32,15 +32,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Visitor which resolves which elements takes records from which input port, input port mode and partition element.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 26 Jan 2011
  */
@@ -62,9 +65,9 @@ public class MappingTagger extends AbstractVisitor {
 	
 	private Stack<Integer> availableData = new Stack<Integer>();
 
-	private ObjectElement partitionElement = null;
-	private ObjectElement partitionElementCandidate = null;
-	private Map<ObjectElement, Tag> tagMap = new HashMap<ObjectElement, Tag>();
+	private Element partitionElement = null;
+	private Element partitionElementCandidate = null;
+	private Map<Element, Tag> tagMap = new HashMap<Element, Tag>();
 
 	private Map<Integer, PortTag> portTagMap = new HashMap<Integer, PortTag>();
 	private boolean resolvePartition = false;
@@ -86,7 +89,7 @@ public class MappingTagger extends AbstractVisitor {
 		portTagMap.clear();
 	}
 	
-	public ObjectElement getPartitionElement() {
+	public Element getPartitionElement() {
 		return partitionElement != null ? partitionElement : partitionElementCandidate;
 	}
 	
@@ -109,9 +112,9 @@ public class MappingTagger extends AbstractVisitor {
 		return portDataMap;
 	}
 	
-	private boolean inPartition(ObjectElement element) {
+	private boolean inPartition(Element element) {
 		if (partitionElement != null || partitionElementCandidate != null) {
-			ObjectElement parent = element;
+			Element parent = element;
 			while (parent != null) {
 				if (parent.isPartition()) {
 					return true;
@@ -123,18 +126,18 @@ public class MappingTagger extends AbstractVisitor {
 	}
 	
 	public int getPartitionElementPortIndex() {
-		ObjectElement partitionElement = getPartitionElement();
+		Element partitionElement = getPartitionElement();
 		if (partitionElement != null) {
 			return tagMap.get(partitionElement).getPortIndex();
 		}
 		return -1;
 	}
 	
-	public Map<ObjectElement, Tag> getTagMap() {
+	public Map<Element, Tag> getTagMap() {
 		return tagMap;
 	}
 	
-	public Tag getTag(ObjectElement key) {
+	public Tag getTag(Element key) {
 		return tagMap.get(key);
 	}
 	
@@ -142,7 +145,7 @@ public class MappingTagger extends AbstractVisitor {
 		return portTagMap.get(portIndex).isCached();
 	}
 	
-	public boolean isPortAvailable(ObjectElement element, int portIndex) {
+	public boolean isPortAvailable(Element element, int portIndex) {
 		Tag tag = getTag(element);
 		if (tag != null && tag.getPortIndex() == portIndex) {
 			return true;
@@ -153,13 +156,13 @@ public class MappingTagger extends AbstractVisitor {
 		return false;
 	}
 	
-	public void setMapping(Mapping mapping) {
+	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		clear();
 	}
 
 	@Override
-	public void visit(ObjectElement element) throws Exception {
+	public void visit(Element element) throws Exception {
 		boolean recurring = false;
 		if (!isInRecursion()) {
 			recurring = resolveIndex(element);
@@ -172,7 +175,7 @@ public class MappingTagger extends AbstractVisitor {
 		}
 	}
 
-	private void updatePortModeInformation(ObjectElement element) {
+	private void updatePortModeInformation(Element element) {
 		Tag tag = tagMap.get(element);
 		if (tag == null || tag.getPortIndex() == null) {
 			return;
@@ -186,16 +189,16 @@ public class MappingTagger extends AbstractVisitor {
 
 		List<String> key = null;
 		
-		RecurringElementInfo recurringInfo = element.getRecurringInfo();
+		Relation recurringInfo = element.getRelation();
 		if (recurringInfo != null) {
 			String keyString = recurringInfo.getProperty(MappingProperty.KEY);
 			if (keyString != null) {
-				key = Arrays.asList(keyString.split(Mapping.DELIMITER));
+				key = Arrays.asList(keyString.split(XmlMapping.DELIMITER));
 			}
 		}
 
 		if (!portTagMap.containsKey(usedPortIndex) || !isCached(usedPortIndex)) {
-			ObjectElement parent = element;
+			Element parent = element;
 			do { // looking for parent
 				parent = parent.getParent();
 				if (parent == null) { // root loop element
@@ -218,9 +221,9 @@ public class MappingTagger extends AbstractVisitor {
 					
 					List<String> parentKey = null;
 					if (recurringInfo != null) {
-						String parentKeysString = recurringInfo.getProperty(MappingProperty.PARENTKEY);
+						String parentKeysString = recurringInfo.getProperty(MappingProperty.PARENT_KEY);
 						if (parentKeysString != null) {
-							parentKey = Arrays.asList(parentKeysString.split(Mapping.DELIMITER));
+							parentKey = Arrays.asList(parentKeysString.split(XmlMapping.DELIMITER));
 						}
 					}					
 					
@@ -292,12 +295,12 @@ public class MappingTagger extends AbstractVisitor {
 		return true;
 	}
 
-	private void collectPartitionInformation(ObjectElement element) {
+	private void collectPartitionInformation(Element element) {
 		if (resolvePartition && partitionElement == null) {
 			if (element.isPartition()) {
 				partitionElement = element;
 			} else if (partitionElementCandidate == null) {
-				if (element.getRecurringInfo() != null || tagMap.get(element) != null) {
+				if (element.getRelation() != null || tagMap.get(element) != null) {
 					partitionElementCandidate = element;
 				}
 			}
@@ -305,9 +308,9 @@ public class MappingTagger extends AbstractVisitor {
 
 	}
 
-	private boolean resolveIndex(ObjectElement element) {
-		if (element.getRecurringInfo() != null) {
-			String inPortString = element.getRecurringInfo().getProperty(MappingProperty.DATASCOPE); 
+	private boolean resolveIndex(Element element) {
+		if (element.getRelation() != null) {
+			String inPortString = element.getRelation().getProperty(MappingProperty.INPUT_PORT); 
 			if (inPortString != null) {
 				Integer inputPortIndex = getFirstPortIndex(inPortString, inPorts);
 				availableData.push(inputPortIndex);

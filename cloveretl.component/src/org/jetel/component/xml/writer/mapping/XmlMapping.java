@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.xml.writer;
+package org.jetel.component.xml.writer.mapping;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,13 +34,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
-import org.jetel.component.xml.writer.mapping.ObjectTemplateEntry;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
+import org.jetel.component.xml.writer.MappingVisitor;
+import org.jetel.component.xml.writer.MappingWriter;
+import org.jetel.component.xml.writer.StaxPrettyPrintHandler;
 import org.jetel.util.string.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -49,15 +45,15 @@ import org.xml.sax.SAXException;
  * 
  * @created 8 Dec 2010
  */
-public class Mapping {
+public class XmlMapping {
 
-	private final static String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
-	private final static String QUALIFIED_FIELD_REFERENCE_PATTERN = "(?<!\\$)\\$" + INPORT_REFERENCE_PATTERN + "\\." + StringUtils.OBJECT_NAME_PATTERN;
-	private final static String REFERENCE = QUALIFIED_FIELD_REFERENCE_PATTERN + "|\\{" + QUALIFIED_FIELD_REFERENCE_PATTERN + "\\}";
-	public final static Pattern DATA_REFERENCE = Pattern.compile(REFERENCE);
+	private static final String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
+	private static final String QUALIFIED_FIELD_REFERENCE_PATTERN = "(?<!\\$)\\$" + INPORT_REFERENCE_PATTERN + "\\." + StringUtils.OBJECT_NAME_PATTERN;
+	private static final String REFERENCE = QUALIFIED_FIELD_REFERENCE_PATTERN + "|\\{" + QUALIFIED_FIELD_REFERENCE_PATTERN + "\\}";
+	public static final Pattern DATA_REFERENCE = Pattern.compile(REFERENCE);
 	
-	public final static String ESCAPED_PORT_REGEX = "\\$\\$";
-	public final static String PORT_IDENTIFIER = Matcher.quoteReplacement("$");
+	public static final String ESCAPED_PORT_REGEX = "\\$\\$";
+	public static final String PORT_IDENTIFIER = Matcher.quoteReplacement("$");
 
 	public static final String MAPPING_KEYWORDS_NAMESPACEURI = "http://www.cloveretl.com/ns/xmlmapping";
 	public static final String MAPPING_KEYWORDS_PREFIX = "clover";
@@ -71,10 +67,10 @@ public class Mapping {
 
 	public static final String UNKNOWN_ATTRIBUTE = "Unknown property ";
 
-	private ObjectElement rootElement = new ObjectElement(null); // dummy root element
+	private Element rootElement = new Element(null); // dummy root element
 	private String version;
 
-	private Map<String, ObjectElement> templates = new HashMap<String, ObjectElement>();
+	private Map<String, Element> templates = new HashMap<String, Element>();
 	
 	public void toXml(OutputStream stream) throws XMLStreamException {
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
@@ -86,7 +82,7 @@ public class Mapping {
 					new Class[] { XMLStreamWriter.class }, handler);
 
 			writer.writeStartDocument(DEFAULT_ENCODING, DEFAULT_VERSION);
-			rootElement.accept(new MappingWriterVisitor(writer));
+			rootElement.accept(new MappingWriter(writer));
 			writer.writeEndDocument();
 			writer.close();
 		} catch (Exception e) {
@@ -103,12 +99,11 @@ public class Mapping {
 		}
 	}
 
-	public static Mapping fromXml(InputStream stream) throws XMLStreamException {
-		Mapping mapping = new Mapping();
-		int lastOffset = 0;
-		ObjectTemplateEntry templateEntryElement = null;
-		ObjectAggregate aggregateElement = null;
-		ObjectElement currentElement = mapping.getRootElement();
+	public static XmlMapping fromXml(InputStream stream) throws XMLStreamException {
+		XmlMapping mapping = new XmlMapping();
+		TemplateEntry templateEntryElement = null;
+		WildcardElement aggregateElement = null;
+		Element currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		XMLStreamReader parser = factory.createXMLStreamReader(stream);
@@ -123,32 +118,27 @@ public class Mapping {
 			switch (parser.getEventType()) {
 			case XMLStreamConstants.START_ELEMENT:
 				if (aggregateElement != null) {
-					throw new XMLStreamException(ObjectAggregate.INVALID_AGGREGATE_ELEMENT, parser.getLocation());
+					throw new XMLStreamException(WildcardElement.INVALID_AGGREGATE_ELEMENT, parser.getLocation());
 				}
 				MappingProperty keyword = MappingProperty.fromString(parser.getLocalName());
 				if (keyword == MappingProperty.ELEMENTS && MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(parser.getNamespaceURI())) {
 					if (currentElement.getParent() == null) {
-						throw new XMLStreamException(ObjectAggregate.INVALID_AGGREGATE_ELEMENT, parser.getLocation());
+						throw new XMLStreamException(WildcardElement.INVALID_AGGREGATE_ELEMENT, parser.getLocation());
 					}
 					aggregateElement = parseAggregateElement(parser, currentElement);
-					setPosition(parser, aggregateElement, lastOffset);
 				} else if (keyword == MappingProperty.TEMPLATE_ENTRY && MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(parser.getNamespaceURI())) {
 					if (currentElement.getParent() == null) {
-						throw new XMLStreamException(ObjectTemplateEntry.INVALID_TEMPLATE_ELEMENT, parser.getLocation());
+						throw new XMLStreamException(TemplateEntry.INVALID_TEMPLATE_ELEMENT, parser.getLocation());
 					}
 					templateEntryElement = parseTemplateEntry(parser, currentElement);
-					setPosition(parser, templateEntryElement, lastOffset);
 				} else {
 					currentElement = parseElement(parser, currentElement);
-					setPosition(parser, currentElement, lastOffset);
 				}
 				break;
 			case XMLStreamConstants.CHARACTERS:
 				if (!parser.isWhiteSpace()) {
-					ObjectValue value = new ObjectValue(currentElement);
+					Value value = new Value(currentElement);
 					value.setProperty(MappingProperty.VALUE, parser.getText());
-					value.setStartOffset(lastOffset);
-					value.setLength(parser.getLocation().getCharacterOffset() - lastOffset);
 				}
 				break;
 			case XMLStreamConstants.END_ELEMENT:
@@ -161,7 +151,7 @@ public class Mapping {
 				}
 				break;
 			case XMLStreamConstants.COMMENT:
-				ObjectComment comment = new ObjectComment(currentElement);
+				Comment comment = new Comment(currentElement);
 				String commentText = parser.getText().trim();
 				if (commentText.startsWith(MAPPING_INCLUDE_COMMENT)) {
 					comment.setProperty(MappingProperty.INCLUDE, "true");
@@ -172,24 +162,18 @@ public class Mapping {
 				comment.setProperty(MappingProperty.VALUE, commentText);
 				break;
 			}
-			lastOffset = parser.getLocation().getCharacterOffset();
 		}
 
 		return mapping;
-	}
-
-	private static void setPosition(XMLStreamReader parser, ObjectRepresentation element, int lastOffset) {
-		element.setStartOffset(lastOffset);
-		element.setLength(parser.getLocation().getCharacterOffset() - lastOffset);
 	}
 
 	/**
 	 * @param parser
 	 * @throws XMLStreamException
 	 */
-	private static ObjectTemplateEntry parseTemplateEntry(XMLStreamReader parser, ObjectElement currentElement)
+	private static TemplateEntry parseTemplateEntry(XMLStreamReader parser, Element currentElement)
 			throws XMLStreamException {
-		ObjectTemplateEntry templateEntryElement = new ObjectTemplateEntry(currentElement, true);
+		TemplateEntry templateEntryElement = new TemplateEntry(currentElement, true);
 		for (int i = 0; i < parser.getAttributeCount(); i++) {
 			templateEntryElement.setAttribute(parser.getAttributeLocalName(i), parser.getAttributeValue(i));
 		}
@@ -200,9 +184,9 @@ public class Mapping {
 	 * @param attributes
 	 * @throws SAXException
 	 */
-	private static ObjectAggregate parseAggregateElement(XMLStreamReader reader, ObjectElement currentElement)
+	private static WildcardElement parseAggregateElement(XMLStreamReader reader, Element currentElement)
 			throws XMLStreamException {
-		ObjectAggregate aggregateElement = new ObjectAggregate(currentElement, true);
+		WildcardElement aggregateElement = new WildcardElement(currentElement, true);
 		for (int i = 0; i < reader.getAttributeCount(); i++) {
 			if (MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(reader.getAttributeNamespace(i))) {
 				aggregateElement.setProperty(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
@@ -218,11 +202,11 @@ public class Mapping {
 	 * @param attributes
 	 * @throws XMLStreamException
 	 */
-	private static ObjectElement parseElement(XMLStreamReader reader, ObjectElement previousElement)
+	private static Element parseElement(XMLStreamReader reader, Element previousElement)
 			throws XMLStreamException {
-		ObjectElement currentElement = new ObjectElement(previousElement);
+		Element currentElement = new Element(previousElement);
 		MappingProperty keyword = MappingProperty.fromString(reader.getLocalName()); 
-		if (keyword == MappingProperty.TEMPLATE_DECLARATION && MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(reader.getNamespaceURI())) {
+		if (keyword == MappingProperty.TEMPLATE && MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(reader.getNamespaceURI())) {
 			currentElement.setTemplate(true);
 			for (int i = 0; i < reader.getAttributeCount(); i++) {
 				keyword = MappingProperty.fromString(reader.getAttributeLocalName(i));
@@ -271,15 +255,15 @@ public class Mapping {
 		this.version = version;
 	}
 
-	public ObjectElement getRootElement() {
+	public Element getRootElement() {
 		return rootElement;
 	}
 
-	public void setRootElement(ObjectElement rootElement) {
+	public void setRootElement(Element rootElement) {
 		this.rootElement = rootElement;
 	}
 
-	public Map<String, ObjectElement> getTemplates() {
+	public Map<String, Element> getTemplates() {
 		return Collections.unmodifiableMap(templates);
 	}
 	
@@ -287,14 +271,14 @@ public class Mapping {
 		gatherTemplatesInElement(rootElement);
 	}
 	
-	private void gatherTemplatesInElement(ObjectElement element) {
-		for (ObjectRepresentation child : element.getChildren()) {
+	private void gatherTemplatesInElement(Element element) {
+		for (AbstractElement child : element.getChildren()) {
 			short type = child.getType();
-			if (type == ObjectRepresentation.TEMPLATE) {
-				templates.put(child.getProperty(MappingProperty.TEMPLATE_NAME), (ObjectElement)child);
+			if (type == AbstractElement.TEMPLATE) {
+				templates.put(child.getProperty(MappingProperty.TEMPLATE_NAME), (Element)child);
 			}
-			if (type == ObjectRepresentation.TEMPLATE || type == ObjectRepresentation.ELEMENT) {
-				gatherTemplatesInElement((ObjectElement) child);
+			if (type == AbstractElement.TEMPLATE || type == AbstractElement.ELEMENT) {
+				gatherTemplatesInElement((Element) child);
 			}
 		}
 	}

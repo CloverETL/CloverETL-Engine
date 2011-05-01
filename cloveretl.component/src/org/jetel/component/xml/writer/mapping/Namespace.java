@@ -21,16 +21,19 @@ package org.jetel.component.xml.writer.mapping;
 import org.jetel.component.xml.writer.MappingVisitor;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Class representing xml namespace declaration
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 14 Dec 2010
  */
-public class ObjectValue extends ObjectRepresentation {
+public class Namespace extends AbstractElement {
 	
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.VALUE};
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.NAME, 
+		MappingProperty.VALUE};
 
-	public ObjectValue(ObjectElement parent) {
-		super(parent, true);
+	public Namespace(Element parent) {
+		super(parent, false);
 	}
 
 	@Override
@@ -39,27 +42,22 @@ public class ObjectValue extends ObjectRepresentation {
 	}
 
 	@Override
-	public String getSimpleContent() {
-		return properties.get(MappingProperty.VALUE);
-	}
-
-	@Override
 	public String getDisplayName() {
-		return null;
+		return "xmlns:" + properties.get(MappingProperty.NAME);
 	}
-
-	@Override
-	public String getPath() {
-		return parent.getPath() + ObjectRepresentation.LEVEL_DELIMITER + getSimpleContent();
-	}
-
+	
 	@Override
 	public MappingProperty[] getAvailableProperties() {
 		return AVAILABLE_PROPERTIES;
 	}
 
 	@Override
-	public short getType() {
-		return ObjectRepresentation.VALUE;
+	public String getSimpleContent() {
+		return properties.get(MappingProperty.VALUE);
 	}
+
+	@Override
+	public short getType() {
+		return AbstractElement.NAMESPACE;
+	}	
 }

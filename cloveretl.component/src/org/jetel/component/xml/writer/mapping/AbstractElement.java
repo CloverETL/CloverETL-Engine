@@ -25,11 +25,13 @@ import org.jetel.component.xml.writer.MappingVisitor;
 import org.jetel.util.string.StringUtils;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Abstract class for model elements
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 14 Dec 2010
  */
-public abstract class ObjectRepresentation {
+public abstract class AbstractElement {
 	
 	public static final short AGGREGATE_ELEMENT = 0;
 	public static final short AGGREGATE_ATTRIBUTE = 1;
@@ -44,47 +46,23 @@ public abstract class ObjectRepresentation {
 	
 	public static final String LEVEL_DELIMITER = "/";
 
-	protected ObjectElement parent;
+	protected Element parent;
 	protected Map<MappingProperty, String> properties = new HashMap<MappingProperty, String>();
 
-	protected int startOffset;
-	protected int length;
-
-	public ObjectRepresentation(ObjectElement parent, boolean registerAsChild) {
+	
+	public AbstractElement(Element parent, boolean registerAsChild) {
 		this.parent = parent;
 		if (parent != null && registerAsChild) {
 			parent.addChild(parent.getChildren().size(), this);
 		}
 	}
-
-	public abstract void accept(MappingVisitor visitor) throws Exception;	
-
-	public long getStartOffset() {
-		return startOffset;
-	}
-
-	public void setStartOffset(int startOffset) {
-		this.startOffset = startOffset;
-	}
-
-	public int getLength() {
-		return length;
-	}
-
-	public void setLength(int length) {
-		this.length = length;
-	}
-
-	public void setParent(ObjectElement parent) {
-		this.parent = parent;
-	}
-
-	public ObjectElement getParent() {
+	
+	public Element getParent() {
 		return parent;
 	}
-	
-	public String getPath() {
-		return parent.getPath() + ObjectRepresentation.LEVEL_DELIMITER + getDisplayName();
+
+	public void setParent(Element parent) {
+		this.parent = parent;
 	}
 	
 	public String getProperty(MappingProperty property) {
@@ -98,6 +76,7 @@ public abstract class ObjectRepresentation {
 		}
 		return null;
 	}
+	
 	public boolean setProperty(MappingProperty property, String value) {
 		for (MappingProperty availableProperty : getAvailableProperties()) {
 			if (property == availableProperty) {
@@ -112,10 +91,17 @@ public abstract class ObjectRepresentation {
 		return false;
 	}
 	
+	public String getPath() {
+		return parent.getPath() + AbstractElement.LEVEL_DELIMITER + getDisplayName();
+	}
+	
+	public abstract short getType();
+	
+	public abstract void accept(MappingVisitor visitor) throws Exception;
+	
 	public abstract String getSimpleContent();
 	public abstract String getDisplayName();
 	
-	public abstract MappingProperty[] getAvailableProperties();
-	public abstract short getType();
+	abstract MappingProperty[] getAvailableProperties();
 	
 }

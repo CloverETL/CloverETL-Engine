@@ -21,7 +21,7 @@ package org.jetel.component.xml.writer;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 4 Feb 2011

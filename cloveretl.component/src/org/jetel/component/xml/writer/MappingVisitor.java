@@ -18,28 +18,28 @@
  */
 package org.jetel.component.xml.writer;
 
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectAttribute;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectNamespace;
-import org.jetel.component.xml.writer.mapping.ObjectTemplateEntry;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.Attribute;
+import org.jetel.component.xml.writer.mapping.Comment;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Namespace;
+import org.jetel.component.xml.writer.mapping.TemplateEntry;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.Relation;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 15 Dec 2010
  */
 public interface MappingVisitor {
-	void visit(ObjectAggregate element) throws Exception;
-	void visit(ObjectAttribute element) throws Exception;
-	void visit(ObjectElement element) throws Exception;
-	void visit(ObjectNamespace element) throws Exception;
-	void visit(ObjectValue element) throws Exception;
-	void visit(RecurringElementInfo element) throws Exception;
-	void visit(ObjectTemplateEntry objectTemplateEntry) throws Exception;
-	void visit(ObjectComment objectComment) throws Exception;
+	void visit(WildcardElement element) throws Exception;
+	void visit(Attribute element) throws Exception;
+	void visit(Element element) throws Exception;
+	void visit(Namespace element) throws Exception;
+	void visit(Value element) throws Exception;
+	void visit(Relation element) throws Exception;
+	void visit(TemplateEntry objectTemplateEntry) throws Exception;
+	void visit(Comment objectComment) throws Exception;
 }

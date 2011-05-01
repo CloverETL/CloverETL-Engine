@@ -30,7 +30,9 @@ import javax.xml.stream.XMLStreamException;
 import com.sun.org.apache.xerces.internal.util.XMLStringBuffer;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Simple implementation of streamed xml writer. Does not check validity of output xml.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 11 Mar 2011
  */
