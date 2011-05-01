@@ -27,7 +27,14 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-
+/**
+ * Pretty print for XMLStreamWriter
+ * 
+ * @author lkrejci (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 14 Jan 2011
+ */
 public class StaxPrettyPrintHandler implements InvocationHandler {
 
 	private XMLStreamWriter target;

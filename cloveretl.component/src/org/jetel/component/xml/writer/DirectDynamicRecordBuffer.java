@@ -34,9 +34,10 @@ import org.jetel.data.Defaults;
 import org.jetel.util.bytes.ByteBufferUtils;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
+ * Class implementing DynamicRecordBuffer backed by temporary file - i.e. unlimited size<br>
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
  * @created 5 Jan 2011
  */
 public class DirectDynamicRecordBuffer {
@@ -210,14 +211,6 @@ public class DirectDynamicRecordBuffer {
          */
          int getSlot() {
             return slot;
-        }
-
-        /**
-         * @param slot the slot to set
-         * @since 21.11.2006
-         */
-         void setSlot(int slot) {
-            this.slot = slot;
         }
 
         /**

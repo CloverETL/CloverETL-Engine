@@ -24,40 +24,41 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jetel.component.xml.writer.Mapping;
 import org.jetel.component.xml.writer.MappingVisitor;
 import org.jetel.util.string.StringUtils;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Class representing xml element. Can be treated as a template which can be referenced.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 14 Dec 2010
  */
-public class ObjectElement extends ObjectRepresentation {
+public class Element extends AbstractElement {
 
 	public static final boolean HIDE_DEFAULT = false;
 	public static final boolean WRITE_NULL_DEFAULT = false;
 	
 	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.NAME, 
-		MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.DATASCOPE, MappingProperty.KEY, MappingProperty.PARENTKEY,
+		MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.INPUT_PORT, MappingProperty.KEY, MappingProperty.PARENT_KEY,
 		MappingProperty.HIDE, MappingProperty.FILTER, MappingProperty.PARTITION,
 		MappingProperty.INCLUDE, MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ATTRIBUTE, MappingProperty.OMIT_NULL_ATTRIBUTE};
 
 	public static final MappingProperty[] AVAILABLE_PROPERTIES_SIMPLE = {MappingProperty.NAME, MappingProperty.VALUE,
-		MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.DATASCOPE, MappingProperty.KEY, MappingProperty.PARENTKEY,
+		MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.INPUT_PORT, MappingProperty.KEY, MappingProperty.PARENT_KEY,
 		MappingProperty.HIDE, MappingProperty.FILTER, MappingProperty.PARTITION,
 		MappingProperty.INCLUDE, MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ATTRIBUTE, MappingProperty.OMIT_NULL_ATTRIBUTE};
 
-	private List<ObjectRepresentation> children = new LinkedList<ObjectRepresentation>();
-	private List<ObjectAttribute> attributes = new LinkedList<ObjectAttribute>();
-	private List<ObjectNamespace> namespaces = new LinkedList<ObjectNamespace>();
+	private Relation relation = null;
+	private List<AbstractElement> children = new LinkedList<AbstractElement>();
+	private List<Namespace> namespaces = new LinkedList<Namespace>();
+	private WildcardElement wildcardAttribute = null;
+	private List<Attribute> attributes = new LinkedList<Attribute>();
 
-	private RecurringElementInfo recurringInfo = null;
-	private ObjectAggregate attributeInfo = null;
-	
 	private boolean template = false;
 
-	public ObjectElement(ObjectElement parent) {
+	
+	public Element(Element parent) {
 		super(parent, true);
 	}
 
@@ -66,9 +67,9 @@ public class ObjectElement extends ObjectRepresentation {
 		visitor.visit(this);
 	}
 		
-	public ObjectElement getRecurringParent() {
+	public Element getRecurringParent() {
 		if (parent != null) {
-			if (parent.getRecurringInfo() != null) {
+			if (parent.getRelation() != null) {
 				return parent;
 			} else {
 				return parent.getRecurringParent();
@@ -80,7 +81,7 @@ public class ObjectElement extends ObjectRepresentation {
 	public void setAttribute(String localName, String value) throws XMLStreamException {
 		MappingProperty property = MappingProperty.fromString(localName);
 		if (!setProperty(property, value)) {
-			throw new XMLStreamException(Mapping.UNKNOWN_ATTRIBUTE + localName);
+			throw new XMLStreamException(XmlMapping.UNKNOWN_ATTRIBUTE + localName);
 		}
 	}
 	
@@ -101,22 +102,22 @@ public class ObjectElement extends ObjectRepresentation {
 			}
 			break;
 
-		case DATASCOPE:
+		case INPUT_PORT:
 		case KEY:
-		case PARENTKEY:
+		case PARENT_KEY:
 		case FILTER:
-			if (recurringInfo == null) {
-				recurringInfo = new RecurringElementInfo(this);
+			if (relation == null) {
+				relation = new Relation(this);
 			}
-			recurringInfo.setProperty(property, value);
+			relation.setProperty(property, value);
 			break;
 
 		case EXCLUDE:
 		case INCLUDE:
-			if (attributeInfo == null) {
-				attributeInfo = new ObjectAggregate(this, false);
+			if (wildcardAttribute == null) {
+				wildcardAttribute = new WildcardElement(this, false);
 			}
-			attributeInfo.setProperty(property, value);
+			wildcardAttribute.setProperty(property, value);
 			break;
 			
 		case VALUE:
@@ -129,7 +130,7 @@ public class ObjectElement extends ObjectRepresentation {
 					}
 				} else {
 					if (!StringUtils.isEmpty(value)) {
-						ObjectValue objectValue = new ObjectValue(this);
+						Value objectValue = new Value(this);
 						objectValue.setProperty(MappingProperty.VALUE, value);
 					}
 				}
@@ -154,21 +155,21 @@ public class ObjectElement extends ObjectRepresentation {
 		case PARTITION:
 			return properties.get(property);
 
-		case DATASCOPE:
+		case INPUT_PORT:
 		case KEY:
-		case PARENTKEY:
+		case PARENT_KEY:
 		case FILTER:
-			if (recurringInfo == null) {
+			if (relation == null) {
 				return null;
 			}
-			return recurringInfo.getProperty(property);
+			return relation.getProperty(property);
 
 		case EXCLUDE:
 		case INCLUDE:
-			if (attributeInfo == null) {
+			if (wildcardAttribute == null) {
 				return null;
 			}
-			return attributeInfo.getProperty(property);
+			return wildcardAttribute.getProperty(property);
 			
 		case VALUE:
 			if (isSimple() && children.size() == 1) {
@@ -191,13 +192,13 @@ public class ObjectElement extends ObjectRepresentation {
 	}
 	
 	public void addAttribute(int position, String name, String value) {
-		ObjectAttribute attribute = new ObjectAttribute(this);
+		Attribute attribute = new Attribute(this);
 		attribute.setProperty(MappingProperty.NAME, name);
 		attribute.setProperty(MappingProperty.VALUE, value);
 		attributes.add(position, attribute);
 	}
 	
-	public void addAttribute(int position, ObjectAttribute attribute) {
+	public void addAttribute(int position, Attribute attribute) {
 		attributes.add(position, attribute);
 	}
 	
@@ -206,13 +207,13 @@ public class ObjectElement extends ObjectRepresentation {
 	}
 
 	public void addNamespace(int position, String prefix, String URI) {
-		ObjectNamespace namespace = new ObjectNamespace(this);
+		Namespace namespace = new Namespace(this);
 		namespace.setProperty(MappingProperty.NAME, prefix);
 		namespace.setProperty(MappingProperty.VALUE, URI);
 		namespaces.add(position, namespace);
 	}
 	
-	public void addNamespace(int position, ObjectNamespace namespace) {
+	public void addNamespace(int position, Namespace namespace) {
 		namespaces.add(position, namespace);
 	}
 	
@@ -220,7 +221,7 @@ public class ObjectElement extends ObjectRepresentation {
 		namespaces.remove(position);
 	}
 
-	public void addChild(int position, ObjectRepresentation value) {
+	public void addChild(int position, AbstractElement value) {
 		children.add(position, value);
 	}
 	
@@ -228,36 +229,36 @@ public class ObjectElement extends ObjectRepresentation {
 		children.remove(position);
 	}
 
-	public List<ObjectRepresentation> getChildren() {
+	public List<AbstractElement> getChildren() {
 		return Collections.unmodifiableList(children);
 	}
 
-	public void setChildren(List<ObjectRepresentation> children) {
+	public void setChildren(List<AbstractElement> children) {
 		this.children = children;
 	}
 
-	public List<ObjectAttribute> getAttributes() {
+	public List<Attribute> getAttributes() {
 		return Collections.unmodifiableList(attributes);
 	}
 
-	public List<ObjectNamespace> getNamespaces() {
+	public List<Namespace> getNamespaces() {
 		return Collections.unmodifiableList(namespaces);
 	}
 
-	public RecurringElementInfo getRecurringInfo() {
-		return recurringInfo;
+	public Relation getRelation() {
+		return relation;
 	}
 
-	public void setRecurringInfo(RecurringElementInfo recurringInfo) {
-		this.recurringInfo = recurringInfo;
+	public void setRelation(Relation recurringInfo) {
+		this.relation = recurringInfo;
 	}
 
-	public ObjectAggregate getAttributeInfo() {
-		return attributeInfo;
+	public WildcardElement getWildcardAttribute() {
+		return wildcardAttribute;
 	}
 
-	public void setAttributeInfo(ObjectAggregate attributeInfo) {
-		this.attributeInfo = attributeInfo;
+	public void setWildcardAttribute(WildcardElement wildcardAttribute) {
+		this.wildcardAttribute = wildcardAttribute;
 	}
 
 	public boolean isTemplate() {
@@ -274,7 +275,7 @@ public class ObjectElement extends ObjectRepresentation {
 
 	@Override
 	public String toString() {
-		return (recurringInfo == null ? "static" : "recurring") + " ObjectElement [name=" 
+		return (relation == null ? "static" : "recurring") + " ObjectElement [name=" 
 			+ properties.get(MappingProperty.NAME) + "]";
 	}
 
@@ -293,16 +294,16 @@ public class ObjectElement extends ObjectRepresentation {
 	}
 	
 	public boolean isSimple() {
-		return recurringInfo == null && namespaces.isEmpty() && attributeInfo == null && attributes.isEmpty()
-			&& (children.isEmpty() || (children.size() == 1 && children.get(0).getType() == ObjectRepresentation.VALUE));
+		return relation == null && namespaces.isEmpty() && wildcardAttribute == null && attributes.isEmpty()
+			&& (children.isEmpty() || (children.size() == 1 && children.get(0).getType() == AbstractElement.VALUE));
 	}
 	
 	public String getPath() {
 		if (parent == null) {
 			return ""; 
 		} else {
-			if (recurringInfo != null && recurringInfo.getProperty(MappingProperty.DATASCOPE) != null) {
-				return super.getPath() + " [$" + recurringInfo.getProperty(MappingProperty.DATASCOPE) + "]";
+			if (relation != null && relation.getProperty(MappingProperty.INPUT_PORT) != null) {
+				return super.getPath() + " [$" + relation.getProperty(MappingProperty.INPUT_PORT) + "]";
 			}
 			return super.getPath();
 		}
@@ -310,6 +311,6 @@ public class ObjectElement extends ObjectRepresentation {
 
 	@Override
 	public short getType() {
-		return template ? ObjectRepresentation.TEMPLATE : ObjectRepresentation.ELEMENT;
+		return template ? AbstractElement.TEMPLATE : AbstractElement.ELEMENT;
 	}
 }

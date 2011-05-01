@@ -35,7 +35,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.xml.writer.DataIterator;
-import org.jetel.component.xml.writer.Mapping;
 import org.jetel.component.xml.writer.MappingCompiler;
 import org.jetel.component.xml.writer.MappingError;
 import org.jetel.component.xml.writer.MappingTagger;
@@ -43,7 +42,8 @@ import org.jetel.component.xml.writer.MappingValidator;
 import org.jetel.component.xml.writer.PortData;
 import org.jetel.component.xml.writer.XmlFormatterProvider;
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.component.xml.writer.model.WritableMapping;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -158,7 +158,7 @@ public class ExtXmlWriter extends Node {
 	}
 	
 	private void validateMapping(ConfigurationStatus status) throws ComponentNotReadyException  {
-		Mapping mapping = initMapping();
+		XmlMapping mapping = initMapping();
 		Map<Integer, DataRecordMetadata> connectedPorts = prepareConnectedData();
 		MappingValidator validator = new MappingValidator(connectedPorts);
 		validator.setMapping(mapping);
@@ -170,7 +170,7 @@ public class ExtXmlWriter extends Node {
 			List<MappingError> errors = new ArrayList<MappingError>(MAX_ERRORS_OR_WARNINGS);
 			List<MappingError> warnings = new ArrayList<MappingError>(MAX_ERRORS_OR_WARNINGS);
 			
-			for (Entry<ObjectRepresentation, Map<MappingProperty, SortedSet<MappingError>>> entry : validator.getErrorsMap().entrySet()) {
+			for (Entry<AbstractElement, Map<MappingProperty, SortedSet<MappingError>>> entry : validator.getErrorsMap().entrySet()) {
 				for (Entry<MappingProperty, SortedSet<MappingError>> elementEntry : entry.getValue().entrySet()) {
 					for (MappingError error : elementEntry.getValue()) {
 						if (error.getSeverity() == Severity.ERROR) {
@@ -263,7 +263,7 @@ public class ExtXmlWriter extends Node {
 		initWriter();
 	}
 	
-	private Mapping initMapping() throws ComponentNotReadyException {
+	private XmlMapping initMapping() throws ComponentNotReadyException {
 		
 		InputStream stream;
 		if (this.mappingURL != null) {
@@ -277,16 +277,16 @@ public class ExtXmlWriter extends Node {
 		} else {
 			stream = new ByteArrayInputStream(this.mappingString.getBytes());
 		}
-		Mapping mapping;
+		XmlMapping mapping;
 		try {
-			mapping = Mapping.fromXml(stream);
+			mapping = XmlMapping.fromXml(stream);
 		} catch (XMLStreamException e) {
 			throw new ComponentNotReadyException(e);
 		}
 		return mapping;		
 	}
 	
-	private void compileMapping(Mapping mapping) throws ComponentNotReadyException {
+	private void compileMapping(XmlMapping mapping) throws ComponentNotReadyException {
 		MappingValidator validator = new MappingValidator(prepareConnectedData());
 		validator.setMapping(mapping);
 		validator.validate();

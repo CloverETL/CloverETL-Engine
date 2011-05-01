@@ -33,14 +33,15 @@ import java.util.regex.Matcher;
 import org.apache.commons.logging.Log;
 import org.jetel.component.xml.writer.MappingTagger.Tag;
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectAttribute;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectNamespace;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.Attribute;
+import org.jetel.component.xml.writer.mapping.Comment;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Namespace;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.component.xml.writer.model.DynamicValue;
 import org.jetel.component.xml.writer.model.StaticValue;
 import org.jetel.component.xml.writer.model.Writable;
@@ -57,6 +58,14 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
+/**
+ * Mapping compiler, which processes xml mapping and generates engine model. Assumes that xml mapping is valid!
+ * 
+ * @author lkrejci (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 15 Dec 2010
+ */
 public class MappingCompiler extends AbstractVisitor {
 	
 	private final Map<Integer, DataRecordMetadata> inPorts;
@@ -65,13 +74,13 @@ public class MappingCompiler extends AbstractVisitor {
 	private Log logger;
 	
 	private Map<Integer, PortData> portDataMap;
-	private Map<ObjectElement, Tag> tagMap;
+	private Map<Element, Tag> tagMap;
 	
-	private Map<ObjectElement, WritableElement> compiledMap = new HashMap<ObjectElement, WritableElement>();
+	private Map<Element, WritableElement> compiledMap = new HashMap<Element, WritableElement>();
 	private Stack<Integer> availableData = new Stack<Integer>();
-	private Set<ObjectElement> addedPorts = new HashSet<ObjectElement>();
+	private Set<Element> addedPorts = new HashSet<Element>();
 	
-	private ObjectElement modelPartitionElement;
+	private Element modelPartitionElement;
 	private WritableLoopElement partitionElement;
 	
 	private WritableElement root;
@@ -97,7 +106,7 @@ public class MappingCompiler extends AbstractVisitor {
 		return new WritableMapping(mapping.getVersion(), root, partitionElement);
 	}
 	
-	public static int resolvePartitionKeyPortIndex(Mapping mapping, Map<Integer, DataRecordMetadata> inPorts) {
+	public static int resolvePartitionKeyPortIndex(XmlMapping mapping, Map<Integer, DataRecordMetadata> inPorts) {
 		MappingTagger tagger = new MappingTagger(inPorts, null);
 		tagger.setResolvePartition(true);
 		tagger.setMapping(mapping);
@@ -105,7 +114,7 @@ public class MappingCompiler extends AbstractVisitor {
 		return tagger.getPartitionElementPortIndex();
 	}
 	
-	public void setMapping(Mapping mapping) {
+	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		tagger.setMapping(mapping);
 	}
@@ -127,7 +136,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectAggregate element) throws Exception {
+	public void visit(WildcardElement element) throws Exception {
 		String include = element.getProperty(MappingProperty.INCLUDE);
 		String exclude = element.getProperty(MappingProperty.EXCLUDE);
 		
@@ -142,13 +151,13 @@ public class MappingCompiler extends AbstractVisitor {
 		}
 		
 		List<String> attributeNames = new ArrayList<String>();
-		for (ObjectAttribute attribute : element.getParent().getAttributes()) {
+		for (Attribute attribute : element.getParent().getAttributes()) {
 			attributeNames.add(attribute.getProperty(MappingProperty.NAME));
 		}
 		
 		List<DataFieldMetadataWrapper> availableFields = new LinkedList<DataFieldMetadataWrapper>();
 		if (include != null) {
-			for (String aggregateExpression : include.split(Mapping.DELIMITER)) {
+			for (String aggregateExpression : include.split(XmlMapping.DELIMITER)) {
 				if (aggregateExpression.matches(MappingValidator.QUALIFIED_FIELD_REFERENCE_PATTERN)) {
 					availableFields.addAll(getFields(aggregateExpression, element.getParent()));
 				}
@@ -163,7 +172,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		}
 		if (exclude != null) {
-			for (String aggregateExpression : exclude.split(Mapping.DELIMITER)) {
+			for (String aggregateExpression : exclude.split(XmlMapping.DELIMITER)) {
 				if (aggregateExpression.matches(MappingValidator.QUALIFIED_FIELD_REFERENCE_PATTERN)) {
 					availableFields.removeAll(getFields(aggregateExpression, element.getParent()));
 				}
@@ -171,7 +180,7 @@ public class MappingCompiler extends AbstractVisitor {
 		}
 		Set<DataFieldMetadataWrapper> writeNullSet = new HashSet<DataFieldMetadataWrapper>();
 		if (writeNull != null) {
-			for (String aggregateExpression : writeNull.split(Mapping.DELIMITER)) {
+			for (String aggregateExpression : writeNull.split(XmlMapping.DELIMITER)) {
 				if (aggregateExpression.matches(MappingValidator.QUALIFIED_FIELD_REFERENCE_PATTERN)) {
 					writeNullSet.addAll(getFields(aggregateExpression, element.getParent()));
 				}
@@ -186,7 +195,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		}
 		if (omitNull != null) {
-			for (String aggregateExpression : omitNull.split(Mapping.DELIMITER)) {
+			for (String aggregateExpression : omitNull.split(XmlMapping.DELIMITER)) {
 				if (aggregateExpression.matches(MappingValidator.QUALIFIED_FIELD_REFERENCE_PATTERN)) {
 					writeNullSet.removeAll(getFields(aggregateExpression, element.getParent()));
 				}
@@ -211,7 +220,7 @@ public class MappingCompiler extends AbstractVisitor {
 		}
 	}
 
-	private Set<DataFieldMetadataWrapper> getFields(String aggregateExpression, ObjectElement parent) {
+	private Set<DataFieldMetadataWrapper> getFields(String aggregateExpression, Element parent) {
 		ParsedFieldExpression parsed = parseAggregateExpression(aggregateExpression);
 		Integer inputPortIndex = getFirstLocalPortIndex(parsed.getPort(), availableData, inPorts);
 		DataRecordMetadata metadata = inPorts.get(inputPortIndex);
@@ -228,23 +237,23 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 	
 	@Override
-	public void visit(ObjectAttribute element) throws Exception {
+	public void visit(Attribute element) throws Exception {
 		WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 		String name = element.getProperty(MappingProperty.NAME);
 		ParsedName pName = parseName(name);
 		
-		boolean writeNull = ObjectElement.WRITE_NULL_DEFAULT;
+		boolean writeNull = Element.WRITE_NULL_DEFAULT;
 		
 		String writeNullString = element.getParent().getProperty(MappingProperty.WRITE_NULL_ATTRIBUTE);
 		String omitNullString = element.getParent().getProperty(MappingProperty.OMIT_NULL_ATTRIBUTE);
 		if (writeNullString != null || omitNullString != null) {
 			if (omitNullString == null) {
-				writeNull = Arrays.asList(writeNullString.split(Mapping.DELIMITER)).contains(name);
+				writeNull = Arrays.asList(writeNullString.split(XmlMapping.DELIMITER)).contains(name);
 			} else if (writeNullString == null) {
-				writeNull = !Arrays.asList(omitNullString.split(Mapping.DELIMITER)).contains(name);
+				writeNull = !Arrays.asList(omitNullString.split(XmlMapping.DELIMITER)).contains(name);
 			} else {
-				writeNull = Arrays.asList(writeNullString.split(Mapping.DELIMITER)).contains(name) 
-					&& !Arrays.asList(omitNullString.split(Mapping.DELIMITER)).contains(name);
+				writeNull = Arrays.asList(writeNullString.split(XmlMapping.DELIMITER)).contains(name) 
+					&& !Arrays.asList(omitNullString.split(XmlMapping.DELIMITER)).contains(name);
 			}
 		}
 		
@@ -253,7 +262,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectElement element) throws Exception {
+	public void visit(Element element) throws Exception {
 		if (element.isTemplate()) {
 			return;
 		}
@@ -271,17 +280,17 @@ public class MappingCompiler extends AbstractVisitor {
 			List<String> stringParentKeysList = null;
 			String filterExpression = null;
 
-			boolean isHidden = ObjectElement.HIDE_DEFAULT;
+			boolean isHidden = Element.HIDE_DEFAULT;
 			
-			RecurringElementInfo info = element.getRecurringInfo();
+			Relation info = element.getRelation();
 			if (info != null) {
 				String string = info.getProperty(MappingProperty.KEY);
 				if (string != null) {
-					stringKeysList = Arrays.asList(string.split(Mapping.DELIMITER));
+					stringKeysList = Arrays.asList(string.split(XmlMapping.DELIMITER));
 				}
-				string = info.getProperty(MappingProperty.PARENTKEY);
+				string = info.getProperty(MappingProperty.PARENT_KEY);
 				if (string != null) {
-					stringParentKeysList = Arrays.asList(string.split(Mapping.DELIMITER));
+					stringParentKeysList = Arrays.asList(string.split(XmlMapping.DELIMITER));
 				}
 				filterExpression = info.getProperty(MappingProperty.FILTER);
 				
@@ -328,7 +337,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		} else {
 			ParsedName pName = parseName(element.getProperty(MappingProperty.NAME));
-			boolean writeNull = ObjectElement.WRITE_NULL_DEFAULT;
+			boolean writeNull = Element.WRITE_NULL_DEFAULT;
 			String writeNullString = element.getProperty(MappingProperty.WRITE_NULL_ELEMENT);
 			if (writeNullString != null) {
 				writeNull = Boolean.parseBoolean(writeNullString);
@@ -344,16 +353,16 @@ public class MappingCompiler extends AbstractVisitor {
 			compiledMap.put(element, writableElement);
 			currentParent = writableElement;
 		}
-		for (ObjectNamespace namespace : element.getNamespaces()) {
+		for (Namespace namespace : element.getNamespaces()) {
 			namespace.accept(this);
 		}
-		if (element.getAttributeInfo() != null) {
-			element.getAttributeInfo().accept(this);
+		if (element.getWildcardAttribute() != null) {
+			element.getWildcardAttribute().accept(this);
 		}
-		for (ObjectAttribute attribute : element.getAttributes()) {
+		for (Attribute attribute : element.getAttributes()) {
 			attribute.accept(this);
 		}
-		for (ObjectRepresentation subElement : element.getChildren()) {
+		for (AbstractElement subElement : element.getChildren()) {
 			subElement.accept(this);
 		}
 		
@@ -366,8 +375,8 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectNamespace element) throws Exception {
-		if (!Mapping.MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(element.getProperty(MappingProperty.VALUE))) {
+	public void visit(Namespace element) throws Exception {
+		if (!XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(element.getProperty(MappingProperty.VALUE))) {
 			WritableNamespace namespace = new WritableNamespace(element.getProperty(MappingProperty.NAME),
 					element.getProperty(MappingProperty.VALUE));
 			currentParent.addNamespace(namespace);
@@ -375,7 +384,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectValue element) throws Exception {
+	public void visit(Value element) throws Exception {
 		WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 		currentParent.addChild(value);
 	}
@@ -388,7 +397,7 @@ public class MappingCompiler extends AbstractVisitor {
 		List<Writable> value = new LinkedList<Writable>();
 		String valueToProcess = inputValue.trim();
 		
-		Matcher matcher = Mapping.DATA_REFERENCE.matcher(valueToProcess);
+		Matcher matcher = XmlMapping.DATA_REFERENCE.matcher(valueToProcess);
 		String field;
 		String portName;
 		int portIndex;
@@ -401,7 +410,7 @@ public class MappingCompiler extends AbstractVisitor {
 		while (matcher.find()) {
 			if (matcher.start() > processed) {
 				String staticValue = valueToProcess.substring(processed, matcher.start());
-				staticValue = staticValue.replaceAll(Mapping.ESCAPED_PORT_REGEX, Mapping.PORT_IDENTIFIER);
+				staticValue = staticValue.replaceAll(XmlMapping.ESCAPED_PORT_REGEX, XmlMapping.PORT_IDENTIFIER);
 				value.add(new StaticValue(staticValue));
 			}
 			field = valueToProcess.substring(matcher.start(), matcher.end());
@@ -430,7 +439,7 @@ public class MappingCompiler extends AbstractVisitor {
 		}
 		if (processed < valueToProcess.length()) {
 			String staticValue = valueToProcess.substring(processed);
-			staticValue = staticValue.replaceAll(Mapping.ESCAPED_PORT_REGEX, Mapping.PORT_IDENTIFIER);
+			staticValue = staticValue.replaceAll(XmlMapping.ESCAPED_PORT_REGEX, XmlMapping.PORT_IDENTIFIER);
 			value.add(new StaticValue(staticValue));
 		}
 		return WritableValue.newInstance(value.toArray(new Writable[value.size()]));
@@ -464,7 +473,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 	
 	@Override
-	public void visit(ObjectComment element) throws Exception {
+	public void visit(Comment element) throws Exception {
 		if (Boolean.valueOf(element.getProperty(MappingProperty.INCLUDE))) { 
 			WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 			currentParent.addChild(new WritableComment(value));

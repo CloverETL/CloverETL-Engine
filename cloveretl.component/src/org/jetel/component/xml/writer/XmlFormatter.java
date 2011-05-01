@@ -34,7 +34,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * XmlFormatter which methods are called from MultiFileWriter.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 18 Jan 2011

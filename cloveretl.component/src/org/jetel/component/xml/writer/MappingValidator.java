@@ -32,15 +32,16 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectAttribute;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectNamespace;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
-import org.jetel.component.xml.writer.mapping.ObjectTemplateEntry;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.Attribute;
+import org.jetel.component.xml.writer.mapping.Comment;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Namespace;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.TemplateEntry;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -49,6 +50,8 @@ import org.jetel.util.string.StringUtils;
 import com.sun.org.apache.xml.internal.utils.XMLChar;
 
 /**
+ * Visitor which validates xml mapping.
+ * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 15 Dec 2010
@@ -58,12 +61,12 @@ public class MappingValidator extends AbstractVisitor {
 	private final static String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
 	public final static String QUALIFIED_FIELD_REFERENCE_PATTERN = "(.*:)?\\$" + INPORT_REFERENCE_PATTERN + "\\.[_A-Za-z\\*]+[_A-Za-z0-9\\*]*";
 	
-	private Map<ObjectRepresentation, Map<MappingProperty, SortedSet<MappingError>>> errorsMap = new HashMap<ObjectRepresentation, Map<MappingProperty, SortedSet<MappingError>>>();
+	private Map<AbstractElement, Map<MappingProperty, SortedSet<MappingError>>> errorsMap = new HashMap<AbstractElement, Map<MappingProperty, SortedSet<MappingError>>>();
 
 	private Stack<Integer> availablePorts = new Stack<Integer>();
 
 	private final Map<Integer, DataRecordMetadata> inPorts;
-	private ObjectElement globalPartition = null;
+	private Element globalPartition = null;
 	private boolean errors = false;
 	
 	private int maxErrors = 50;			// How many full error messages to collect. If exceeded, only counter gets increased
@@ -92,7 +95,7 @@ public class MappingValidator extends AbstractVisitor {
 		warningsCount = 0;
 	}
 
-	public void setMapping(Mapping mapping) {
+	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		clear();
 	}
@@ -101,12 +104,12 @@ public class MappingValidator extends AbstractVisitor {
 		return errors;
 	}
 
-	public Map<ObjectRepresentation, Map<MappingProperty, SortedSet<MappingError>>> getErrorsMap() {
+	public Map<AbstractElement, Map<MappingProperty, SortedSet<MappingError>>> getErrorsMap() {
 		return errorsMap;
 	}
 
 	@Override
-	public void visit(ObjectAggregate element) throws Exception {
+	public void visit(WildcardElement element) throws Exception {
 		if (!runIt) {
 			return;
 		}
@@ -141,7 +144,7 @@ public class MappingValidator extends AbstractVisitor {
 
 		Set<DataFieldMetadataWrapper> availableFields = new HashSet<DataFieldMetadataWrapper>();
 		if (includeString != null) {
-			String[] include = includeString.split(Mapping.DELIMITER);
+			String[] include = includeString.split(XmlMapping.DELIMITER);
 			for (String aggregateExpression : include) {
 				if (!checkAggregateExpressionFormat(aggregateExpression, element, MappingProperty.INCLUDE)) {
 					continue;
@@ -164,7 +167,7 @@ public class MappingValidator extends AbstractVisitor {
 		}
 		
 		if (excludeString != null) {
-			String[] exclude = excludeString.split(Mapping.DELIMITER);
+			String[] exclude = excludeString.split(XmlMapping.DELIMITER);
 			for (String aggregateExpression : exclude) {
 				if (!checkAggregateExpressionFormat(aggregateExpression, element, MappingProperty.EXCLUDE)) {
 					continue;
@@ -196,8 +199,8 @@ public class MappingValidator extends AbstractVisitor {
 		availableFields.clear();
 		if (writeNullString != null) {
 			MappingProperty property = element.isElement() ? MappingProperty.WRITE_NULL_ELEMENT : MappingProperty.WRITE_NULL_ATTRIBUTE;
-			ObjectRepresentation errorElement = element.isElement() ? element : element.getParent();
-			String[] writeNull = writeNullString.split(Mapping.DELIMITER);
+			AbstractElement errorElement = element.isElement() ? element : element.getParent();
+			String[] writeNull = writeNullString.split(XmlMapping.DELIMITER);
 			for (String aggregateExpression : writeNull) {
 				if (attributeNames.contains(aggregateExpression)) {
 					continue;
@@ -224,8 +227,8 @@ public class MappingValidator extends AbstractVisitor {
 		
 		if (omitNullString != null) {
 			MappingProperty property = element.isElement() ? MappingProperty.OMIT_NULL_ELEMENT : MappingProperty.OMIT_NULL_ATTRIBUTE;
-			ObjectRepresentation errorElement = element.isElement() ? element : element.getParent();
-			String[] omitNull = omitNullString.split(Mapping.DELIMITER);
+			AbstractElement errorElement = element.isElement() ? element : element.getParent();
+			String[] omitNull = omitNullString.split(XmlMapping.DELIMITER);
 			for (String aggregateExpression : omitNull) {
 				if (attributeNames.contains(aggregateExpression)) {
 					continue;
@@ -251,7 +254,7 @@ public class MappingValidator extends AbstractVisitor {
 	 * @param property property which is checked
 	 * @return true if expression is valid, false otherwise
 	 */
-	private boolean checkAggregateExpressionFormat(String aggregateExpression, ObjectRepresentation errorElement, MappingProperty property) {
+	private boolean checkAggregateExpressionFormat(String aggregateExpression, AbstractElement errorElement, MappingProperty property) {
 		if (!aggregateExpression.matches(QUALIFIED_FIELD_REFERENCE_PATTERN)) {
 			addProblem(errorElement, property, new MappingError("Invalid expression '" + aggregateExpression + "'", Severity.ERROR));
 			return false;
@@ -265,12 +268,12 @@ public class MappingValidator extends AbstractVisitor {
 	 * @param property invalid property
 	 * @param expression subexpression with no effect
 	 */
-	private void addNoEffectWarning(ObjectRepresentation errorElement, MappingProperty property, String expression) {
+	private void addNoEffectWarning(AbstractElement errorElement, MappingProperty property, String expression) {
 		addProblem(errorElement, property, new MappingError("Expression '" + expression + "' has no effect", Severity.WARNING));
 	}
 
 	@Override
-	public void visit(ObjectAttribute element) throws Exception {
+	public void visit(Attribute element) throws Exception {
 		if (!runIt) {
 			return;
 		}
@@ -286,7 +289,7 @@ public class MappingValidator extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectElement element) throws Exception {
+	public void visit(Element element) throws Exception {
 		if (!runIt || isInRecursion()) {
 			return;
 		}
@@ -315,13 +318,13 @@ public class MappingValidator extends AbstractVisitor {
 		checkCorrectBooleanValue(element, MappingProperty.WRITE_NULL_ELEMENT);
 		
 		List<Integer> addedPorts = null;
-		RecurringElementInfo recurringInfo = element.getRecurringInfo();
+		Relation recurringInfo = element.getRelation();
 		if (recurringInfo != null) {
-			String inPortString = recurringInfo.getProperty(MappingProperty.DATASCOPE);
+			String inPortString = recurringInfo.getProperty(MappingProperty.INPUT_PORT);
 			if (inPortString != null) {
 				addedPorts = getPortIndexes(inPortString, inPorts);
 				if (addedPorts.size() > 1) {
-					addProblem(recurringInfo, MappingProperty.DATASCOPE, new MappingError("Ambiguous ports!", Severity.WARNING));
+					addProblem(recurringInfo, MappingProperty.INPUT_PORT, new MappingError("Ambiguous ports!", Severity.WARNING));
 				}
 				for (Integer inputPortIndex : addedPorts) {
 					availablePorts.push(inputPortIndex);
@@ -341,7 +344,7 @@ public class MappingValidator extends AbstractVisitor {
 			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Root element cannot be a loop element", Severity.ERROR));
 			return;
 		}
-		if (element.getAttributeInfo() == null) {
+		if (element.getWildcardAttribute() == null) {
 			String writeNull = element.getProperty(MappingProperty.WRITE_NULL_ATTRIBUTE);
 			String omitNull = element.getProperty(MappingProperty.OMIT_NULL_ATTRIBUTE);
 			
@@ -350,14 +353,14 @@ public class MappingValidator extends AbstractVisitor {
 				checkCloverNamespaceAvailable(element);
 				
 				if (writeNull != null) {
-					for (String expression : writeNull.split(Mapping.DELIMITER)) {
+					for (String expression : writeNull.split(XmlMapping.DELIMITER)) {
 						if (!attributeNames.contains(expression)) {
 							addNoEffectWarning(element, MappingProperty.WRITE_NULL_ATTRIBUTE, expression);
 						}
 					}
 				}
 				if (omitNull != null) {
-					for (String expression : omitNull.split(Mapping.DELIMITER)) {
+					for (String expression : omitNull.split(XmlMapping.DELIMITER)) {
 						if (!attributeNames.contains(expression)) {
 							addNoEffectWarning(element, MappingProperty.OMIT_NULL_ATTRIBUTE, expression);
 						}
@@ -404,7 +407,7 @@ public class MappingValidator extends AbstractVisitor {
 	 * @param element ObjectRepresentation
 	 * @param property MappingProperty
 	 */
-	private void checkCorrectBooleanValue(ObjectRepresentation element, MappingProperty property) {
+	private void checkCorrectBooleanValue(AbstractElement element, MappingProperty property) {
 		String value = element.getProperty(property);
 		if(StringUtils.isEmpty(value))
 			return;
@@ -412,9 +415,9 @@ public class MappingValidator extends AbstractVisitor {
 			addProblem(element, MappingProperty.HIDE, new MappingError("Attribute accepts only boolean type values (true/false)", Severity.ERROR));
 	}
 	
-	private Set<String> collectAttributeNames(ObjectElement element) {
+	private Set<String> collectAttributeNames(Element element) {
 		Set<String> attributeNames = new HashSet<String>();
-		for (ObjectAttribute attribute : element.getAttributes()) {
+		for (Attribute attribute : element.getAttributes()) {
 			if (!attributeNames.add(attribute.getProperty(MappingProperty.NAME))) {
 				addProblem(attribute, MappingProperty.NAME,
 						new MappingError("Duplicate attribute name " + attribute.getProperty(MappingProperty.NAME), Severity.WARNING));
@@ -424,7 +427,7 @@ public class MappingValidator extends AbstractVisitor {
 	}
 	
 	@Override
-	public void visit(ObjectNamespace element) {
+	public void visit(Namespace element) {
 		if (!runIt) {
 			return;
 		}
@@ -440,7 +443,7 @@ public class MappingValidator extends AbstractVisitor {
 	
 
 	@Override
-	public void visit(ObjectComment element) throws Exception {
+	public void visit(Comment element) throws Exception {
 		if (!runIt) {
 			return;
 		}
@@ -449,14 +452,14 @@ public class MappingValidator extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(ObjectValue element) {
+	public void visit(Value element) {
 		if (!runIt) {
 			return;
 		}
 		validateValue(element);
 	}
 	
-	private boolean validateName(ObjectRepresentation element, String name) {
+	private boolean validateName(AbstractElement element, String name) {
 		if (StringUtils.isEmpty(name)) {
 			addProblem(element, MappingProperty.NAME, new MappingError("Name must not be empty", Severity.ERROR));
 		} else {
@@ -469,7 +472,7 @@ public class MappingValidator extends AbstractVisitor {
 		return false;
 	}
 	
-	private void validateValue(ObjectRepresentation element) {
+	private void validateValue(AbstractElement element) {
 		String value = element.getProperty(MappingProperty.VALUE);
 		if (value == null) {
 			addProblem(element, MappingProperty.VALUE, new MappingError("Empty value", Severity.WARNING));
@@ -480,7 +483,7 @@ public class MappingValidator extends AbstractVisitor {
 		for (ParsedFieldExpression parsedFieldExpression : fields) {
 			Integer inPortIndex = getAvailableInputPort(parsedFieldExpression.getPort(), element, MappingProperty.VALUE);
 			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.DATASCOPE, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not available here!", Severity.ERROR));
+				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not available here!", Severity.ERROR));
 			} else if (inPorts.get(inPortIndex).getField(parsedFieldExpression.getFields()) == null) {
 				addProblem(element, MappingProperty.VALUE,
 						new MappingError("Field '" + parsedFieldExpression.getFields() + "' is not available.", Severity.ERROR));
@@ -489,46 +492,46 @@ public class MappingValidator extends AbstractVisitor {
 	}
 
 	@Override
-	public void visit(RecurringElementInfo element) throws Exception {
+	public void visit(Relation element) throws Exception {
 		if (!runIt) {
 			return;
 		}
 		checkCloverNamespaceAvailable(element.getParent());
 		
-		String inPortString = element.getProperty(MappingProperty.DATASCOPE);
+		String inPortString = element.getProperty(MappingProperty.INPUT_PORT);
 		Integer inPortIndex = null;
 		if (inPortString == null) {
-			addProblem(element, MappingProperty.DATASCOPE, new MappingError("Input port not specified!", Severity.ERROR));
+			addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port not specified!", Severity.ERROR));
 			return;
 		} else {
-			inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.DATASCOPE);
+			inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.INPUT_PORT);
 			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.DATASCOPE, new MappingError("Input port '" + inPortString + "' is not connected!", Severity.ERROR));
+				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + inPortString + "' is not connected!", Severity.ERROR));
 				return;
 			}
 		}
 		
 		String keyString = element.getProperty(MappingProperty.KEY);
-		String parentKeyString = element.getProperty(MappingProperty.PARENTKEY);
+		String parentKeyString = element.getProperty(MappingProperty.PARENT_KEY);
 		
 		if (parentKeyString != null && keyString == null) {
 			addProblem(element, MappingProperty.KEY,
 					new MappingError(MappingProperty.KEY.getName() + " attribute not specified!", Severity.ERROR));
 		}
 		if (parentKeyString == null && keyString != null) {
-			addProblem(element, MappingProperty.PARENTKEY,
-					new MappingError(MappingProperty.PARENTKEY.getName() + " attribute not specified!", Severity.ERROR));
+			addProblem(element, MappingProperty.PARENT_KEY,
+					new MappingError(MappingProperty.PARENT_KEY.getName() + " attribute not specified!", Severity.ERROR));
 		}
 		
 		if (keyString != null) {
-			String[] keyList = keyString.split(Mapping.DELIMITER);
+			String[] keyList = keyString.split(XmlMapping.DELIMITER);
 			checkAvailableData(element, MappingProperty.KEY, inPorts.get(inPortIndex), keyList);
 			
 			if (parentKeyString != null) {
-				if (parentKeyString.split(Mapping.DELIMITER).length != keyList.length) {
+				if (parentKeyString.split(XmlMapping.DELIMITER).length != keyList.length) {
 					addProblem(element, MappingProperty.KEY, new MappingError(
 							"Count of fields must match parent key field count", Severity.ERROR));
-					addProblem(element, MappingProperty.PARENTKEY, new MappingError(
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(
 							"Count of fields must match key field count", Severity.ERROR));
 				}
 			}
@@ -536,26 +539,26 @@ public class MappingValidator extends AbstractVisitor {
 		}
 		if (parentKeyString != null) {
 			inPortString = null;
-			ObjectElement parent = getRecurringParent(element.getParent());
+			Element parent = getRecurringParent(element.getParent());
 			if (parent != null) {
-				inPortString = parent.getRecurringInfo().getProperty(MappingProperty.DATASCOPE);
+				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
 			}
 			if (inPortString == null) {
-				addProblem(element, MappingProperty.PARENTKEY, new MappingError("No data for parent key fields!", Severity.ERROR));
+				addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
 			} else {
-				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENTKEY);
+				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
 				if (inPortIndex == null) {
-					addProblem(element, MappingProperty.PARENTKEY, new MappingError("No data for parent key fields!", Severity.ERROR));
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
 				} else {
-					checkAvailableData(element, MappingProperty.PARENTKEY, inPorts.get(inPortIndex),
-							parentKeyString.split(Mapping.DELIMITER));
+					checkAvailableData(element, MappingProperty.PARENT_KEY, inPorts.get(inPortIndex),
+							parentKeyString.split(XmlMapping.DELIMITER));
 				}
 			}
 		}	
 	}
 
 	@Override
-	public void visit(ObjectTemplateEntry objectTemplateEntry) throws Exception {
+	public void visit(TemplateEntry objectTemplateEntry) throws Exception {
 		if (!runIt) {
 			return;
 		}
@@ -569,7 +572,7 @@ public class MappingValidator extends AbstractVisitor {
 		super.visit(objectTemplateEntry);
 	}
 
-	private List<DataFieldMetadataWrapper> getFields(ParsedFieldExpression fieldExpression, ObjectRepresentation element, MappingProperty property) {
+	private List<DataFieldMetadataWrapper> getFields(ParsedFieldExpression fieldExpression, AbstractElement element, MappingProperty property) {
 		List<DataFieldMetadataWrapper> availableFields = new ArrayList<DataFieldMetadataWrapper>();
 
 		Integer inPortIndex = getAvailableInputPort(fieldExpression.getPort(), element, property);
@@ -613,7 +616,7 @@ public class MappingValidator extends AbstractVisitor {
 		return toReturn;
 	}
 
-	private Integer getAvailableInputPort(String key, ObjectRepresentation element, MappingProperty keyword) {
+	private Integer getAvailableInputPort(String key, AbstractElement element, MappingProperty keyword) {
 		Integer toReturn = null;
 		try {
 			Integer portIndex = Integer.valueOf(key);
@@ -636,7 +639,7 @@ public class MappingValidator extends AbstractVisitor {
 		return toReturn;
 	}
 
-	private void checkAvailableData(ObjectRepresentation element, MappingProperty property, DataRecordMetadata metadata,
+	private void checkAvailableData(AbstractElement element, MappingProperty property, DataRecordMetadata metadata,
 			String[] fieldNames) {
 		for (String fieldName : fieldNames) {
 			if (metadata.getField(fieldName) == null) {
@@ -645,7 +648,7 @@ public class MappingValidator extends AbstractVisitor {
 		}
 	}
 
-	private void addProblem(ObjectRepresentation element, MappingProperty property, MappingError error) {
+	private void addProblem(AbstractElement element, MappingProperty property, MappingError error) {
 		if (error.getSeverity() == Severity.ERROR) {
 			errorsCount++;
 			errors = true;
@@ -680,25 +683,25 @@ public class MappingValidator extends AbstractVisitor {
 		errorList.add(error);
 	}
 	
-	private void checkCloverNamespaceAvailable(ObjectElement element) {
+	private void checkCloverNamespaceAvailable(Element element) {
 		if (!isCloverNamespaceAvailable(element)) {
 			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Clover namespace is not available!", Severity.ERROR));
 		}
 	}
 	
-	private void checkNamespacePrefixAvailable(ObjectRepresentation element, String prefix, MappingProperty property) {
+	private void checkNamespacePrefixAvailable(AbstractElement element, String prefix, MappingProperty property) {
 		checkNamespacePrefixAvailable(element, element.getParent(), prefix, property);
 	}
 	
-	private void checkNamespacePrefixAvailable(ObjectRepresentation source, ObjectElement parent, String prefix, MappingProperty property) {
+	private void checkNamespacePrefixAvailable(AbstractElement source, Element parent, String prefix, MappingProperty property) {
 		if (!isNamespacePrefixAvailable(parent, prefix, null)) {
 			addProblem(source, property, new MappingError("Namespace '" + prefix + "' is not available!", Severity.ERROR));
 		}
 	}
 	
 	
-	private boolean isNamespacePrefixAvailable(ObjectElement element, String prefix, ObjectNamespace exclude) {
-		for (ObjectNamespace namespace : element.getNamespaces()) {
+	private boolean isNamespacePrefixAvailable(Element element, String prefix, Namespace exclude) {
+		for (Namespace namespace : element.getNamespaces()) {
 			if (exclude == namespace) {
 				continue;
 			}
@@ -715,9 +718,9 @@ public class MappingValidator extends AbstractVisitor {
 		return false;
 	}
 	
-	private boolean isCloverNamespaceAvailable(ObjectElement element) {
-		for (ObjectNamespace namespace : element.getNamespaces()) {
-			if (Mapping.MAPPING_KEYWORDS_NAMESPACEURI.equals(namespace.getProperty(MappingProperty.VALUE))) {
+	private boolean isCloverNamespaceAvailable(Element element) {
+		for (Namespace namespace : element.getNamespaces()) {
+			if (XmlMapping.MAPPING_KEYWORDS_NAMESPACEURI.equals(namespace.getProperty(MappingProperty.VALUE))) {
 				return true;
 			}
 		}

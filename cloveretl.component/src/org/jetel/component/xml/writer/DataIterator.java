@@ -23,7 +23,9 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * DataPort iterator.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 13 Jan 2011

@@ -26,34 +26,19 @@ import org.jetel.exception.ConfigurationStatus.Severity;
  *
  * @created 13 Dec 2010
  */
-public class MappingError {
-	private static final int UNKNOWN = -1; 
+public class MappingError { 
 	
-	private final int offset;
-	private final int length; 
 	private final String message;
 	private final Severity severity;
 
 	public MappingError(String message, Severity severity) {
 		this.message = message;
 		this.severity = severity;
-		this.offset = UNKNOWN;
-		this.length = UNKNOWN;
 	}
 	
 	public MappingError(String message, Severity severity, int offset, int length) {
 		this.message = message;
 		this.severity = severity;
-		this.offset = offset;
-		this.length = length;
-	}
-	
-	public int getOffset() {
-		return offset;
-	}
-	
-	public int getLength() {
-		return length;
 	}
 	
 	public String getMessage() {

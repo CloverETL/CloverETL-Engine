@@ -38,7 +38,9 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Class representing xml element which serves also as a point of entry for records.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20 Dec 2010

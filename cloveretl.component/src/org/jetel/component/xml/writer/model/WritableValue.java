@@ -27,7 +27,9 @@ import org.jetel.component.xml.writer.model.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * class representing xml text node, can be used as a value of attribute or element.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20 Dec 2010

@@ -27,39 +27,42 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 
 import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.ObjectAggregate;
-import org.jetel.component.xml.writer.mapping.ObjectAttribute;
-import org.jetel.component.xml.writer.mapping.ObjectComment;
-import org.jetel.component.xml.writer.mapping.ObjectElement;
-import org.jetel.component.xml.writer.mapping.ObjectNamespace;
-import org.jetel.component.xml.writer.mapping.ObjectRepresentation;
-import org.jetel.component.xml.writer.mapping.ObjectTemplateEntry;
-import org.jetel.component.xml.writer.mapping.ObjectValue;
-import org.jetel.component.xml.writer.mapping.RecurringElementInfo;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.Attribute;
+import org.jetel.component.xml.writer.mapping.Comment;
+import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.Namespace;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.TemplateEntry;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * This visitor handles referencing templates, simulates expanding and prevents infinite loops when templates are used in recursive way.  
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 27 Jan 2011
  */
 public abstract class AbstractVisitor implements MappingVisitor {
 	
-	private Stack<ObjectTemplateEntry> templateStack = new Stack<ObjectTemplateEntry>();
-	private ObjectTemplateEntry recursionStart = null;
+	private Stack<TemplateEntry> templateStack = new Stack<TemplateEntry>();
+	private TemplateEntry recursionStart = null;
 	
-	protected Mapping mapping;
+	protected XmlMapping mapping;
 	
-	public void visit(ObjectAggregate element) throws Exception {}
-	public void visit(ObjectAttribute element) throws Exception {}
-	public void visit(ObjectElement element) throws Exception {}
-	public void visit(ObjectNamespace element) throws Exception {}
-	public void visit(ObjectValue element) throws Exception {}
-	public void visit(RecurringElementInfo element) throws Exception {}
-	public void visit(ObjectComment element) throws Exception {}
+	public void visit(WildcardElement element) throws Exception {}
+	public void visit(Attribute element) throws Exception {}
+	public void visit(Element element) throws Exception {}
+	public void visit(Namespace element) throws Exception {}
+	public void visit(Value element) throws Exception {}
+	public void visit(Relation element) throws Exception {}
+	public void visit(Comment element) throws Exception {}
 	
-	public void visit(ObjectTemplateEntry objectTemplateEntry) throws Exception {
+	public void visit(TemplateEntry objectTemplateEntry) throws Exception {
 		if (recursionStart == objectTemplateEntry) {
 			return;
 		}
@@ -76,51 +79,51 @@ public abstract class AbstractVisitor implements MappingVisitor {
 		}
 		
 		templateStack.push(objectTemplateEntry);
-		ObjectElement template = mapping.getTemplates().get(templateKey);
+		Element template = mapping.getTemplates().get(templateKey);
 		if (template == null) {
 			return;
 		}
 		
-		for (ObjectRepresentation child : template.getChildren()) {
+		for (AbstractElement child : template.getChildren()) {
 			child.accept(this);
 		}
 		templateStack.pop();
 		recursionStart = null;
 	}
 	
-	protected void visitChildren(ObjectElement element) throws Exception {
-		for (ObjectNamespace namespace : element.getNamespaces()) {
+	protected void visitChildren(Element element) throws Exception {
+		for (Namespace namespace : element.getNamespaces()) {
 			namespace.accept(this);
 		}
-		if (element.getAttributeInfo() != null) {
-			element.getAttributeInfo().accept(this);
+		if (element.getWildcardAttribute() != null) {
+			element.getWildcardAttribute().accept(this);
 		}
-		for (ObjectAttribute attribute : element.getAttributes()) {
+		for (Attribute attribute : element.getAttributes()) {
 			attribute.accept(this);
 		}
-		if (element.getRecurringInfo() != null) {
-			element.getRecurringInfo().accept(this);
+		if (element.getRelation() != null) {
+			element.getRelation().accept(this);
 		}
-		for (ObjectRepresentation child : element.getChildren()) {
+		for (AbstractElement child : element.getChildren()) {
 			child.accept(this);
 		}
 	}
 	
-	protected ObjectElement getRecurringParent(ObjectElement element) {
+	protected Element getRecurringParent(Element element) {
 		if (element.getParent() != null) {
 			return getRecurringParentImpl(element.getParent());
 		}
 		return null;
 	}
 	
-	private ObjectElement getRecurringParentImpl(ObjectElement element) {
+	private Element getRecurringParentImpl(Element element) {
 		if (element.isTemplate()) {
-			ObjectTemplateEntry entry = templateStack.pop();
-			ObjectElement recurringElement = getRecurringParentImpl(entry.getParent());
+			TemplateEntry entry = templateStack.pop();
+			Element recurringElement = getRecurringParentImpl(entry.getParent());
 			templateStack.push(entry);
 			return recurringElement;
 		}
-		if (element.getRecurringInfo() != null) {
+		if (element.getRelation() != null) {
 			return element;
 		} else if (element.getParent() != null){
 			return getRecurringParentImpl(element.getParent());
@@ -133,7 +136,7 @@ public abstract class AbstractVisitor implements MappingVisitor {
 		return recursionStart != null;
 	}
 
-	public void setMapping(Mapping mapping) {
+	public void setMapping(XmlMapping mapping) {
 		this.mapping = mapping;
 	}
 	
@@ -184,7 +187,7 @@ public abstract class AbstractVisitor implements MappingVisitor {
 			return toReturn;
 		}
 		
-		Matcher matcher = Mapping.DATA_REFERENCE.matcher(valueExpression);
+		Matcher matcher = XmlMapping.DATA_REFERENCE.matcher(valueExpression);
 		String field;
 		String portName;
 		String fieldName;

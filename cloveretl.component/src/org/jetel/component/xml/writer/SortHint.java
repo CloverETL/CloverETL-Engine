@@ -19,7 +19,9 @@
 package org.jetel.component.xml.writer;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Information about record sort order.
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 14 Jan 2011

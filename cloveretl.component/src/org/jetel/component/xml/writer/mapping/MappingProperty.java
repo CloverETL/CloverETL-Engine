@@ -23,26 +23,26 @@ import java.util.Map;
 
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 14 Dec 2010
  */
 public enum MappingProperty {
 
-	DATASCOPE("inPort"),
 	ELEMENTS("elements"),
 	EXCLUDE("exclude"),
 	FILTER("filter"),
 	HIDE("hide"), 		//True|False value
 	INCLUDE("include"),	//True|False value if property it's property of ObjectComment
+	INPUT_PORT("inPort"),
 	KEY("key"),
 	NAME("node name"),
-	PARENTKEY("parentKey"),
+	PARENT_KEY("parentKey"),
 	PARTITION("partition"), 	//True|False value
 	TEMPLATE_ENTRY("insertTemplate"),
 	TEMPLATE_NAME("name"),
-	TEMPLATE_DECLARATION("template"),
+	TEMPLATE("template"),
 	VALUE("value"),
 	
 	OMIT_NULL_ATTRIBUTE("omitNullAttribute"),

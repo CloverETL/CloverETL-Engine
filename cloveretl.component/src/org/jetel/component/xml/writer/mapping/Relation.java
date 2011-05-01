@@ -20,21 +20,21 @@ package org.jetel.component.xml.writer.mapping;
 
 import org.jetel.component.xml.writer.MappingVisitor;
 
-import com.sleepycat.je.tree.Key;
-
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Class representing relation between input ports and elements. 
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 15 Dec 2010
  */
-public class RecurringElementInfo extends ObjectRepresentation {
+public class Relation extends AbstractElement {
 	
 	public static final boolean PARTITION_DEFAULT = false;
 
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.DATASCOPE,
-		MappingProperty.KEY, MappingProperty.PARENTKEY, MappingProperty.FILTER};
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.INPUT_PORT,
+		MappingProperty.KEY, MappingProperty.PARENT_KEY, MappingProperty.FILTER};
 
-	public RecurringElementInfo(ObjectElement parent) {
+	public Relation(Element parent) {
 		super(parent, false);
 	}
 	
@@ -46,14 +46,14 @@ public class RecurringElementInfo extends ObjectRepresentation {
 	@Override
 	public String getSimpleContent() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Port: '").append(getProperty(MappingProperty.DATASCOPE)).append("'");
+		sb.append("Port: '").append(getProperty(MappingProperty.INPUT_PORT)).append("'");
 		
 		String property = getProperty(MappingProperty.KEY);
 		if (property != null) {
 			sb.append(" Key: ").append(property).append("'");
 		}
 		
-		property = getProperty(MappingProperty.PARENTKEY);
+		property = getProperty(MappingProperty.PARENT_KEY);
 		if (property != null) {
 			sb.append(" Parent Key: ").append(property).append("'");
 		}
@@ -72,6 +72,6 @@ public class RecurringElementInfo extends ObjectRepresentation {
 
 	@Override
 	public short getType() {
-		return ObjectRepresentation.RELATION;
+		return AbstractElement.RELATION;
 	}
 }

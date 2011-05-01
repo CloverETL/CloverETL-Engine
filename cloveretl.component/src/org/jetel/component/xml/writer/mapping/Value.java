@@ -21,29 +21,23 @@ package org.jetel.component.xml.writer.mapping;
 import org.jetel.component.xml.writer.MappingVisitor;
 
 /**
- * @author LKREJCI (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * Class representing text. Can be used as child of element or as value of attribute.
+ * 
+ * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 14 Dec 2010
  */
-public class ObjectAttribute extends ObjectRepresentation {
+public class Value extends AbstractElement {
 	
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.NAME, 
-		MappingProperty.VALUE};
-	
-	public static final boolean WRITE_NULL_DEFAULT = false;
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.VALUE};
 
-	public ObjectAttribute(ObjectElement parent) {
-		super(parent, false);
+	public Value(Element parent) {
+		super(parent, true);
 	}
 
 	@Override
 	public void accept(MappingVisitor visitor) throws Exception {
 		visitor.visit(this);
-	}
-	
-	@Override
-	public MappingProperty[] getAvailableProperties() {
-		return AVAILABLE_PROPERTIES;
 	}
 
 	@Override
@@ -53,16 +47,21 @@ public class ObjectAttribute extends ObjectRepresentation {
 
 	@Override
 	public String getDisplayName() {
-		return properties.get(MappingProperty.NAME);
+		return null;
 	}
 
 	@Override
 	public String getPath() {
-		return parent.getPath() + "[@" + getDisplayName() + "]";
+		return parent.getPath() + AbstractElement.LEVEL_DELIMITER + getSimpleContent();
+	}
+
+	@Override
+	public MappingProperty[] getAvailableProperties() {
+		return AVAILABLE_PROPERTIES;
 	}
 
 	@Override
 	public short getType() {
-		return ObjectRepresentation.ATTRIBUTE;
+		return AbstractElement.VALUE;
 	}
 }

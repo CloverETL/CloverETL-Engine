@@ -28,6 +28,8 @@ import org.jetel.component.xml.writer.model.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
 
 /**
+ * class representing xml comment
+ * 
  * @author tkramolis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

@@ -26,7 +26,9 @@ import org.jetel.component.xml.writer.XmlFormatter;
 import org.jetel.data.DataRecord;
 
 /**
- * @author LKREJCI (info@cloveretl.com)
+ * Class representing xml value which will be resolved from field of a record 
+ * 
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20 Dec 2010
