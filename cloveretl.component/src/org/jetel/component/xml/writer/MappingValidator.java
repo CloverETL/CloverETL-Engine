@@ -643,7 +643,7 @@ public class MappingValidator extends AbstractVisitor {
 			String[] fieldNames) {
 		for (String fieldName : fieldNames) {
 			if (metadata.getField(fieldName) == null) {
-				addProblem(element, property, new MappingError("Unknown field '" + fieldName + "'", Severity.ERROR));
+				addProblem(element, property, new MappingError("Record '" + metadata.getName() + "' does not contain field '" + fieldName + "'", Severity.ERROR));
 			}
 		}
 	}
