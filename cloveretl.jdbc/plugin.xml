@@ -26,6 +26,18 @@
 	</extension>
 
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="DERBY"/>
+		<parameter id="name" value="Derby"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="FIREBIRD"/>
+		<parameter id="name" value="Firebird"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="INFORMIX"/>
 		<parameter id="name" value="Informix"/>
 		<!--parameter id="majorVersion" value="x"/-->
@@ -59,6 +71,12 @@
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.OracleSpecific"/>
 	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="PERVASIVE"/>
+		<parameter id="name" value="Pervasive"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.PervasiveSpecific"/>
+	</extension>
 
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="POSTGRE"/>
@@ -78,18 +96,6 @@
 		<parameter id="database" value="SQLITE"/>
 		<parameter id="name" value="SQLite"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
-	</extension>
-
-	<extension point-id="jdbcSpecific">
-		<parameter id="database" value="DERBY"/>
-		<parameter id="name" value="Derby"/>
-		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
-	</extension>
-	
-	<extension point-id="jdbcSpecific">
-		<parameter id="database" value="FIREBIRD"/>
-		<parameter id="name" value="Firebird"/>
-		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
 	</extension>
 
 	<extension point-id="jdbcDriver">
