@@ -20,6 +20,8 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.util.Arrays;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -36,6 +38,8 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	private IntegerDataField anIntegerDataField4 = null;
 
 protected void setUp() { 
+	initEngine();
+	
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'i',(short)3);
 	anIntegerDataField1 = new IntegerDataField(fixedFieldMeta1,5);
 	
@@ -172,6 +176,129 @@ public void test_1_IntegerDataField() {
 		}
 	}
 	
+	
+	/**
+	 * Test for {@link org.jetel.data.IntegerDataField#fromByteBuffer(ByteBuffer, java.nio.charset.CharsetDecoder)}
+	 * 
+	 * Only binary formats are tested (big endian, little endian, packed decimal)
+	 */
+	public void test_fromByteBuffer() throws CharacterCodingException {
+		byte[] bytes1 = {0x12, 0x34, 0x56, 0x78};
+		byte[] bytes2 = {(byte) 0x87, 0x65, 0x43, 0x21};
+		
+		DataFieldMetadata bigEndianMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		bigEndianMetadata.setFormatStr("BINARY:BIG_ENDIAN");
+		
+		DataFieldMetadata littleEndianMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		littleEndianMetadata.setFormatStr("BINARY:LITTLE_ENDIAN");
+		
+		DataFieldMetadata packedMetadata = new DataFieldMetadata("Field", 'i', ";");
+		packedMetadata.setFormatStr("BINARY:PACKED_DECIMAL");
+
+		IntegerDataField binaryField;
+		
+		// big endian
+		binaryField = new IntegerDataField(bigEndianMetadata);
+		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes1), null);
+		assertEquals(305419896, binaryField.getInt());
+		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes2), null);
+		assertEquals(-2023406815, binaryField.getInt());
+		
+		// little endian
+		binaryField = new IntegerDataField(littleEndianMetadata);
+		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes1), null);
+		assertEquals(2018915346, binaryField.getInt());
+		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes2), null);
+		assertEquals(558065031, binaryField.getInt());
+		
+		// packed decimal
+		byte[] packedNegative = {0x01, 0x23, 0x45, 0x67, (byte) 0x8D};
+		binaryField = new IntegerDataField(packedMetadata);
+		binaryField.fromByteBuffer(ByteBuffer.wrap(packedNegative), null);
+		assertEquals(-12345678, binaryField.getInt());
+		
+		byte[] packedPositive = {0x56, 0x43, 0x16, (byte) 0x90, (byte) 0x7C};
+		binaryField = new IntegerDataField(packedMetadata);
+		binaryField.fromByteBuffer(ByteBuffer.wrap(packedPositive), null);
+		assertEquals(564316907, binaryField.getInt());
+		
+		byte[] tooBig = {0x56, 0x43, 0x16, (byte) 0x90, (byte) 0x7C, 0x49};
+		binaryField = new IntegerDataField(packedMetadata);
+		try {
+			binaryField.fromByteBuffer(ByteBuffer.wrap(tooBig), null);
+			fail("Should raise a BadDataFormatException");
+		} catch(BadDataFormatException bdfe) {}
+	}
+	
+	/**
+	 * Checks if the value stores as the expected byte array
+	 * 
+	 * @param binaryField
+	 * @param value
+	 * @param expected
+	 * @throws CharacterCodingException
+	 */
+	private void checkToByteBuffer(IntegerDataField binaryField, int value, byte[] expected) throws CharacterCodingException {
+		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		binaryField.setValue(value);
+		binaryField.toByteBuffer(dataBuffer, null);
+		assertTrue(Arrays.equals(expected, dataBuffer.array()));
+	}
+	
+	/**
+	 * Test for {@link IntegerDataField#toByteBuffer(ByteBuffer, java.nio.charset.CharsetEncoder)}
+	 * 
+	 * Only binary formats are tested.
+	 */
+	public void test_toByteBuffer() throws CharacterCodingException {
+		byte[] bytes1 = {0x12, 0x34, 0x56, 0x78};
+		byte[] bytes2 = {(byte) 0x87, 0x65, 0x43, 0x21};
+		byte[] packedNegative = {0x01, 0x23, 0x45, 0x67, (byte) 0x8D};
+		byte[] packedPositive = {0x56, 0x43, 0x16, (byte) 0x90, (byte) 0x7C};
+
+		DataFieldMetadata bigEndianMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		bigEndianMetadata.setFormatStr("BINARY:BIG_ENDIAN");
+		
+		DataFieldMetadata littleEndianMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		littleEndianMetadata.setFormatStr("BINARY:LITTLE_ENDIAN");
+		
+		DataFieldMetadata packedMetadata = new DataFieldMetadata("Field", 'i', ";");
+		packedMetadata.setFormatStr("BINARY:PACKED_DECIMAL");
+
+		IntegerDataField binaryField;
+
+		// big endian
+		binaryField = new IntegerDataField(bigEndianMetadata);
+		checkToByteBuffer(binaryField, 305419896, bytes1);
+		checkToByteBuffer(binaryField, -2023406815, bytes2);
+		
+		// little endian
+		binaryField = new IntegerDataField(littleEndianMetadata);
+		checkToByteBuffer(binaryField, 2018915346, bytes1);
+		checkToByteBuffer(binaryField, 558065031, bytes2);
+		
+		// packed decimal
+		binaryField = new IntegerDataField(packedMetadata);
+		checkToByteBuffer(binaryField, -12345678, packedNegative);
+		checkToByteBuffer(binaryField, 564316907, packedPositive);
+	}
+	
+	/**
+	 * Test for {@link DataField#putPackedDecimal(ByteBuffer, long)}
+	 */
+	public void test_putPackedDecimal() {
+		ByteBuffer dataBuffer;
+		// test a Long
+		byte[] negativeLong = {(byte) 0x92, 0x23, 0x37, 0x20, 0x36, (byte) 0x85, 0x47, 0x75, (byte) 0x80, 0x7D};
+		dataBuffer = ByteBuffer.allocate(negativeLong.length);
+		DataField.putPackedDecimal(dataBuffer, -9223372036854775807L);
+		assertTrue(Arrays.equals(negativeLong, dataBuffer.array()));
+
+		byte[] positiveLong = {(byte) 0x92, 0x23, 0x37, 0x20, 0x36, (byte) 0x85, 0x47, 0x75, (byte) 0x80, 0x7C};
+		dataBuffer = ByteBuffer.allocate(positiveLong.length);
+		DataField.putPackedDecimal(dataBuffer, 9223372036854775807L);
+		assertTrue(Arrays.equals(positiveLong, dataBuffer.array()));
+	}
 	
 	/**
 	 *  Test for @link org.jetel.data.IntegerDataField.deserialize(ByteBuffer buffer)

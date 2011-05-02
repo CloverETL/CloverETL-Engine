@@ -19,6 +19,7 @@
 package org.jetel.metadata;
 
 import java.io.Serializable;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -29,9 +30,9 @@ import org.jetel.data.DataFieldFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
@@ -112,7 +113,34 @@ public class DataFieldMetadata implements Serializable {
 	private static final Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
 	/** Characters that can be contained in format of time. */
 	private static final Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
+	
+	public static final String BINARY_FORMAT_PREFIX = "BINARY:";
 
+	/**
+	 * Enumeration of formats that may be used when reading
+	 * (multibyte) binary data.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 28.4.2011
+	 */
+	public enum BinaryFormat {
+		BIG_ENDIAN(ByteOrder.BIG_ENDIAN),
+		LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN),
+		PACKED_DECIMAL(null);
+		
+		public final ByteOrder byteOrder;
+		
+		private BinaryFormat(ByteOrder byteOrder) {
+			this.byteOrder = byteOrder;
+		}
+		
+		public String getFormatString() {
+			return DataFieldMetadata.BINARY_FORMAT_PREFIX + this;
+		}
+	}
+	
 	/**
 	 * Converts a type of a data field into its full string form.
 	 *
@@ -639,12 +667,24 @@ public class DataFieldMetadata implements Serializable {
 	public boolean isFixed() {
 		return (size != 0);
 	}
-
+	
+	public String getBinaryFormatParams() {
+		if(!StringUtils.isEmpty(formatStr) && formatStr.startsWith(BINARY_FORMAT_PREFIX)) {
+			return formatStr.substring(BINARY_FORMAT_PREFIX.length());
+		}
+		return "";
+	}
+	
 	/**
 	 * 
 	 * @return <code>true</code> if this data field is byte-based, <code>false</code> otherwise
 	 */
 	public boolean isByteBased() {
+		if(!StringUtils.isEmpty(formatStr)) {
+			if(formatStr.toUpperCase().startsWith(BINARY_FORMAT_PREFIX.toUpperCase())) {
+				return true; 
+			}
+		}
 		return (type == BYTE_FIELD || type == BYTE_FIELD_COMPRESSED);
 	}
 	/**
