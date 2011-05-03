@@ -19,7 +19,6 @@
 package org.jetel.metadata;
 
 import java.io.Serializable;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +37,8 @@ import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
+
+import static org.jetel.metadata.BinaryFormat.BINARY_FORMAT_PREFIX;
 
 /**
  * A class that represents metadata describing one particular data field.<br>
@@ -113,33 +114,6 @@ public class DataFieldMetadata implements Serializable {
 	private static final Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
 	/** Characters that can be contained in format of time. */
 	private static final Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
-	
-	public static final String BINARY_FORMAT_PREFIX = "BINARY:";
-
-	/**
-	 * Enumeration of formats that may be used when reading
-	 * (multibyte) binary data.
-	 * 
-	 * @author krivanekm (info@cloveretl.com)
-	 *         (c) Javlin, a.s. (www.cloveretl.com)
-	 *
-	 * @created 28.4.2011
-	 */
-	public enum BinaryFormat {
-		BIG_ENDIAN(ByteOrder.BIG_ENDIAN),
-		LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN),
-		PACKED_DECIMAL(null);
-		
-		public final ByteOrder byteOrder;
-		
-		private BinaryFormat(ByteOrder byteOrder) {
-			this.byteOrder = byteOrder;
-		}
-		
-		public String getFormatString() {
-			return DataFieldMetadata.BINARY_FORMAT_PREFIX + this;
-		}
-	}
 	
 	/**
 	 * Converts a type of a data field into its full string form.
