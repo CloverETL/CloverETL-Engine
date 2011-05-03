@@ -33,8 +33,8 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataFieldMetadata.BinaryFormat;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
@@ -413,7 +413,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	}
 
 	/**
-	 * If the binary format is set, store the data accordingly.
+	 * If the binary format is set, stores the data accordingly.
 	 * 
 	 * Call super otherwise.
 	 */
