@@ -18,7 +18,11 @@
  */
 package org.jetel.metadata;
 
+import static org.jetel.metadata.BinaryFormat.BINARY_FORMAT_PREFIX;
+
 import java.nio.ByteOrder;
+
+import org.jetel.util.string.StringUtils;
 
 /**
  * Enumeration of formats that may be used when reading
@@ -45,6 +49,26 @@ public enum BinaryFormat {
 	
 	public String getFormatString() {
 		return BINARY_FORMAT_PREFIX + this;
+	}
+	
+	public static boolean isBinaryFormat(String formatStr) {
+		if(!StringUtils.isEmpty(formatStr)) {
+			if(formatStr.toUpperCase().startsWith(BINARY_FORMAT_PREFIX.toUpperCase())) {
+				return true; 
+			}
+		}
+		return false;
+	}
+
+	public static String getBinaryFormatParams(String formatStr) {
+		if(!StringUtils.isEmpty(formatStr) && formatStr.startsWith(BINARY_FORMAT_PREFIX)) {
+			return formatStr.substring(BINARY_FORMAT_PREFIX.length());
+		}
+		return "";
+	}
+	
+	public static BinaryFormat fromFormatStr(String formatStr) {
+		return valueOf(getBinaryFormatParams(formatStr));
 	}
 }
 
