@@ -642,25 +642,29 @@ public class DataFieldMetadata implements Serializable {
 		return (size != 0);
 	}
 	
+	/**
+	 * Returns the part of the format string 
+	 * which follows after the "BINARY:" prefix.
+	 * Returns an empty string if the format is not binary.
+	 *  
+	 * @return binary format parameters
+	 */
 	public String getBinaryFormatParams() {
-		if(!StringUtils.isEmpty(formatStr) && formatStr.startsWith(BINARY_FORMAT_PREFIX)) {
-			return formatStr.substring(BINARY_FORMAT_PREFIX.length());
-		}
-		return "";
+		return BinaryFormat.getBinaryFormatParams(formatStr);
 	}
 	
 	/**
+	 * Determines whether the field is byte-based.
 	 * 
 	 * @return <code>true</code> if this data field is byte-based, <code>false</code> otherwise
 	 */
 	public boolean isByteBased() {
-		if(!StringUtils.isEmpty(formatStr)) {
-			if(formatStr.toUpperCase().startsWith(BINARY_FORMAT_PREFIX.toUpperCase())) {
-				return true; 
-			}
+		if(BinaryFormat.isBinaryFormat(formatStr)) {
+			return true; 
 		}
 		return (type == BYTE_FIELD || type == BYTE_FIELD_COMPRESSED);
 	}
+	
 	/**
 	 * Sets the position of the field in a data record (used only when dealing with fixed-size type of record).
 	 * 
