@@ -18,11 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -49,7 +46,7 @@ public class DateLib extends TLFunctionLibrary {
 		return ret;
     }
     
-	private static String LIBRARY_NAME = "Convert";
+	private static String LIBRARY_NAME = "Date";
 
 	public String getName() {
 		return LIBRARY_NAME;
