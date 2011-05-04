@@ -357,7 +357,10 @@
 			<keep name="com.applicationcraft.ac_dev.service.clover.soap.*"><field /><method /></keep>
 
 			<keep name="com.opensys.cloveretl.ctl.CTLUtils"><field access="protected public"/><method access="protected public"/></keep>
-	
+
+			<keep name="com.opensys.cloveretl.component.complexdatareader.*"><field access="protected public"/><method access="protected public"/></keep>
+
+			
 			<keep name="com.opensys.cloveretl.ctl.extensions.*Lib"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.ctl.ASTRewriter"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.ctl.BytecodeCompiler"><field access="protected public"/><method access="protected public"/></keep>
