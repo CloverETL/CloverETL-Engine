@@ -394,7 +394,7 @@ public class ExtXmlWriter extends Node {
 	private void readRemainingData() {
 		List<InputReader> readers = new ArrayList<InputReader>();
 		for (InputPort inPort : inPorts.values()) {
-			if (inPort.hasData()) {
+			if (!inPort.isEOF()) {
 				readers.add(new InputReader(inPort));
 			}
 		}
