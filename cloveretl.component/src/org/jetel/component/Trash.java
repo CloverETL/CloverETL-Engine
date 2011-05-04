@@ -31,6 +31,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
@@ -38,7 +40,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
-import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.LogOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileURLParser;
@@ -127,7 +128,7 @@ public class Trash extends Node {
 	private boolean mkDir;
 
 	/**
-	 *Constructor for the Trash object
+	 * Constructor for the Trash object
 	 *
 	 * @param  id  Description of the Parameter
 	 */
@@ -137,62 +138,99 @@ public class Trash extends Node {
 		debugFilename = null;
 		this.mode = Mode.PERFORMANCE;
 	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
 
+		if (!checkInputPorts(status, 1, Integer.MAX_VALUE) || !checkOutputPorts(status, 0, 1)) {
+			return status;
+		}
 
-	/**
-	 *  Switches on/off printing of incoming records
-	 *
-	 * @param  print  The new debugPrint value
-	 * @since         April 4, 2002
-	 */
-	public void setDebugPrint(boolean print) {
-		debugPrint = print;
+		if (debugPrint && debugFilename != null) {
+			if (inPorts.size() > 1) {
+				status.add("Debug printing is supported with only one input port connected.", Severity.WARNING, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+			} else {
+				try {
+					FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, mkDir);
+				} catch (ComponentNotReadyException e) {
+					status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
+				}
+
+				try {
+					if (debugAppend && FileURLParser.isArchiveURL(debugFilename) && FileURLParser.isServerURL(debugFilename)) {
+						status.add("Append true is not supported on remote archive files.", Severity.WARNING, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+					}
+				} catch (MalformedURLException e) {
+					status.add(e.toString(), Severity.ERROR, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+				}
+			}
+		}
+
+		return status;
+	}
+	
+	public void init() throws ComponentNotReadyException {
+		if (isInitialized()) {
+			return;
+		}
+		
+		super.init();
+		TransformationGraph graph = getGraph();
+
+		// creates necessary directories
+		if (mkDir) {
+			FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
+		}
+		
+		if (debugPrint && inPorts.size() <= 1) {
+			if (debugFilename != null) {
+				formatter = new TextTableFormatter(charSet);
+				try {
+					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(FileUtils.getWritableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, debugFilename, debugAppend, compressLevel)));
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(this, "Output file '" + debugFilename + "' does not exist.", e);
+				}
+			} else if (writableByteChannel == null) {
+				formatter = new TextTableFormatter(charSet);
+				writableByteChannel = new LogOutByteChannel(logger, charSet);
+				writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+			}
+			if (writer != null) {
+				writer.setAppendData(debugAppend);
+				writer.setDictionary(graph.getDictionary());
+				writer.setOutputPort(getOutputPort(OUTPUT_PORT)); // for port protocol: target file writes data
+			}
+		}
 	}
 
-    public boolean isDebugPrint() {
-        return debugPrint;
-    }
-
-	/**
-	 *  Sets the debugFile attribute of the Trash object
-	 *
-	 * @param  filename  The new debugFile value
-	 */
-	public void setDebugFile(String filename) {
-		debugFilename = filename;
-	}
-
-    @Override
-    public void preExecute() throws ComponentNotReadyException {
-    	super.preExecute();
-    	if (writer!=null) {
-	    	if (firstRun()) {//a phase-dependent part of initialization
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		if (writer != null) {
+			if (firstRun()) {// a phase-dependent part of initialization
 				writer.init(getInputPort(READ_FROM_PORT).getMetadata());
-            	formatter.showCounter("Record", "# ");
-            	if (printTrashID) formatter.showTrashID("Trash ID ", getId());
-	    	}
-	    	else {
+				formatter.showCounter("Record", "# ");
+				if (printTrashID)
+					formatter.showTrashID("Trash ID ", getId());
+			} else {
 				if (debugPrint) {
-		            if(debugFilename != null) {
-		       	        try {
-							writer.setChannels( new WritableByteChannelIterator(
-									FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
-											debugFilename, debugAppend, compressLevel)
-							));
+					if (debugFilename != null) {
+						try {
+							writer.setChannels(new WritableByteChannelIterator(FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, debugAppend, compressLevel)));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-		            } else {
-		       	        writer.setChannels(new WritableByteChannelIterator(writableByteChannel));
-		            }
+					} else {
+						writer.setChannels(new WritableByteChannelIterator(writableByteChannel));
+					}
 				}
 				writer.reset();
-	    	}
-    	}
-    }    
+			}
+		}
+	}
 
-
-	
 	@Override
 	public Result execute() throws Exception {
 		if (writer != null) {
@@ -201,292 +239,245 @@ public class Trash extends Node {
 			return executeWithoutWriter();
 		}
 	}
-    @Override
-    public void postExecute() throws ComponentNotReadyException {
-    	super.postExecute();
-    	
-    	try {
-    		if (writer!=null) {
-    			writer.close();
-    		}
-    	}
-    	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-    	}
-    }
-
+	
 	private Result executeWithWriter() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-//		int count = 0;
+		
 		while ((record = inPort.readRecord(record)) != null && runIt) {
 			writer.write(record);
-//				if (debugFilename == null) {
-//					if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
-//						formatter.flush(); // if we debug into stdout
-//				}
-//				count++;
-			SynchronizeUtils.cloverYield();
 		}
+		
 		writer.finish();
 		writer.close();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-	
-	private Result executeWithoutWriter() throws Exception {
-		InputPortDirect inPort = getInputPortDirect(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
-		ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if(mode.equals(Mode.FULL_DESERIALIZE))
-			record.init();
-
-		while (inPort.readRecordDirect(recordBuffer) && runIt) {
-			if(mode.equals(Mode.FULL_DESERIALIZE)) {
-				record.deserialize(recordBuffer);
-			}
-			
-			SynchronizeUtils.cloverYield();
-
-		}
-			
 		
-		if (debugFilename != null && debugPrint){
-			formatter.finish();
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	private Result executeWithoutWriter() throws Exception {
+		InputReader[] readers = new InputReader[inPorts.size()];
+		int i = 0;
+		for (InputPort inPort : inPorts.values()) {
+			InputReader reader = new InputReader((InputPortDirect) inPort);
+			reader.start();
+			readers[i++] = reader;
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		
+		boolean killIt = false;
+		for (InputReader inputReader : readers) {
+			while (inputReader.getState() != Thread.State.TERMINATED) {
+				if (killIt) {
+					inputReader.interrupt();
+					break;
+				}
+				killIt = !runIt;
+				try {
+					inputReader.join(1000);
+				} catch (InterruptedException e) {
+					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					killIt = true;
+				}
+			}
+		}
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+
+		try {
+			if (writer != null) {
+				writer.close();
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (writer != null) 
+		
+		if (writer != null) {
 			try {
 				writer.close();
-			} catch(Throwable t) {
+			} catch (Throwable t) {
 				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
 			}
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
-	 */
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-		TransformationGraph graph = getGraph();
-		
-    	// creates necessary directories
-        if (mkDir) FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, 
-        		new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
-
-		if (debugPrint) {
-            if(debugFilename != null) {
-        		formatter = new TextTableFormatter(charSet);
-       	        try {
-					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, debugFilename, 
-									debugAppend, compressLevel )
-					));
-				} catch (IOException e) {
-					throw new ComponentNotReadyException(this, "Output file '" + debugFilename + "' does not exist.", e);
-				}
-            } else {
-    			if (writableByteChannel == null) {
-    				formatter = new TextTableFormatter(charSet);
-    		        writableByteChannel = new LogOutByteChannel(logger, charSet);
-        	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
-    			}
-            }
-            if (writer != null) {
-    	        writer.setAppendData(debugAppend);
-    	        writer.setDictionary(graph.getDictionary());
-    	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
-            }
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
 		xmlElement.setAttribute(XML_DEBUGPRINT_ATTRIBUTE, String.valueOf(this.debugPrint));
 		if (debugFilename != null) {
-			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE,this.debugFilename);
+			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE, this.debugFilename);
 		}
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-		if (compressLevel > -1){
-			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
+		if (compressLevel > -1) {
+			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE, String.valueOf(compressLevel));
 		}
-		if( mode != null || mode.equals(Mode.PERFORMANCE)) {
-			xmlElement.setAttribute(XML_MODE, PERFORMANCE);
-		}
-		else if(mode.equals(Mode.FULL_DESERIALIZE)) {
-			xmlElement.setAttribute(XML_MODE, FULL_DESERIALIZE);
+		if (mode != null) {
+			if (mode.equals(Mode.PERFORMANCE)) {
+				xmlElement.setAttribute(XML_MODE, PERFORMANCE);
+			} else if (mode.equals(Mode.FULL_DESERIALIZE)) {
+				xmlElement.setAttribute(XML_MODE, FULL_DESERIALIZE);
+			}
 		}
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of Parameter
-	 * @return          Description of the Returned Value
-	 * @since           May 21, 2002
-	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Trash trash;
 
 		try {
 			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
-		
+
 			if (xattribs.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
 				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
-				trash.setDebugFile(xattribs.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+				trash.setDebugFile(xattribs.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
-				trash.setDebugAppend( xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE) );
+				trash.setDebugAppend(xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				trash.setCharset( xattribs.getString(XML_CHARSET_ATTRIBUTE) );
+				trash.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
-			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 				trash.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
+			}
+			if (xattribs.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
 				trash.setPrintTrashID(xattribs.getBoolean(XML_PRINT_TRASH_ID_ATTRIBUTE));
-            }
+			}
 			if (xattribs.exists(XML_MODE)) {
 				trash.setMode(xattribs.getString(XML_MODE));
+			} else {
+				trash.setMode(PERFORMANCE);
 			}
-			else trash.setMode(PERFORMANCE);
-			
-			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
-			
+
+			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE, -1));
+
 		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 		return trash;
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Return Value
-	 */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-    		super.checkConfig(status);
-   		 
-    		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 0, 1)) {
-    			return status;
-    		}
-
-            if (debugPrint && debugFilename != null) {
-                try {
-                	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, mkDir);
-                } catch (ComponentNotReadyException e) {
-	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
-	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
-				}
-                
-                try {
-					if (debugAppend && FileURLParser.isArchiveURL(debugFilename) && FileURLParser.isServerURL(debugFilename)) {
-					    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-					    		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
-					}
-				} catch (MalformedURLException e) {
-	                status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this, 
-	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
-				}
-    		}
-            
-    		return status;
-        }
-	
-	public String getType(){
+	public String getType() {
 		return COMPONENT_TYPE;
 	}
-
 
 	public boolean isDebugAppend() {
 		return debugAppend;
 	}
 
-
 	public void setDebugAppend(boolean debugAppend) {
 		this.debugAppend = debugAppend;
 	}
-	
+
 	public void setCharset(String charSet) {
 		this.charSet = charSet;
 	}
-
 
 	public int getCompressLevel() {
 		return compressLevel;
 	}
 
-
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
 	}
-	
-	
+
+	/**
+	 * Switches on/off printing of incoming records
+	 * 
+	 * @param print The new debugPrint value
+	 * @since April 4, 2002
+	 */
+	public void setDebugPrint(boolean print) {
+		debugPrint = print;
+	}
+
+	public boolean isDebugPrint() {
+		return debugPrint;
+	}
+
+	/**
+	 * Sets the debugFile attribute of the Trash object
+	 * 
+	 * @param filename The new debugFile value
+	 */
+	public void setDebugFile(String filename) {
+		debugFilename = filename;
+	}
+
 	/**
 	 * Sets make directory.
-	 * @param mkDir - true - creates output directories for output file
+	 * 
+	 * @param mkDir - if true creates output directories for output file
 	 */
 	private void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
 	}
-	
+
 	/**
 	 * Sets whether print trash ID.
+	 * 
 	 * @param printTrashID
 	 */
 	private void setPrintTrashID(boolean printTrashID) {
 		this.printTrashID = printTrashID;
 	}
-	
+
 	/**
 	 * Sets mode
+	 * 
 	 * @param mode
 	 */
-	 private void setMode(String mode) {
-		 if(mode == null || mode.equalsIgnoreCase(PERFORMANCE))
-			 this.mode = Mode.PERFORMANCE;
-		 else if(mode.equalsIgnoreCase(FULL_DESERIALIZE))
-			 this.mode = Mode.FULL_DESERIALIZE;
-	 }
-}
+	private void setMode(String mode) {
+		if (mode == null || mode.equalsIgnoreCase(PERFORMANCE)) {
+			this.mode = Mode.PERFORMANCE;
+		} else if (mode.equalsIgnoreCase(FULL_DESERIALIZE)) {
+			this.mode = Mode.FULL_DESERIALIZE;
+		}
+	}
+	
 
+	private class InputReader extends Thread {
+		private InputPortDirect inPort;
+
+		public InputReader(InputPortDirect inPort) {
+			super(Thread.currentThread().getName() + ".InputThread#" + inPort.getInputPortNumber());
+			this.inPort = inPort;
+		}
+
+		public void run() {
+			DataRecord record = new DataRecord(inPort.getMetadata());
+			ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+			if (mode.equals(Mode.FULL_DESERIALIZE)) {
+				record.init();
+			}
+
+			try {
+				while (inPort.readRecordDirect(recordBuffer) && runIt) {
+					if (mode.equals(Mode.FULL_DESERIALIZE)) {
+						record.deserialize(recordBuffer);
+					}
+				}
+			} catch (InterruptedException e) {
+				logger.error(getId() + ": thread forcibly aborted", e);
+				return;
+			} catch (IOException e) {
+				logger.error(getId() + ": thread failed", e);
+				return;
+			}
+		}
+	}
+}
