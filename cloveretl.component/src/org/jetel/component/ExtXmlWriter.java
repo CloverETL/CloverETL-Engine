@@ -349,13 +349,62 @@ public class ExtXmlWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		loadDataToCache();
+		
+		// preExecute code must be placed into execute, as header might contain data from records
+		if (firstRun()) {
+			if (engineMapping.getPartitionElement() != null) {
+				writer.init(inPorts.get(engineMapping.getPartitionElement().getPortIndex()).getMetadata());
+			} else {
+				//Dummy, but valid metadata
+				writer.init(inPorts.firstEntry().getValue().getMetadata());
+			}
+		} else {
+			writer.reset();
+		}
+		
+		if (engineMapping.getPartitionElement() != null) {
+			DataIterator iterator = engineMapping.getPartitionElement().getPortData().iterator(null, null, null, null);
+			engineMapping.getPartitionElement().setIterator(iterator);
+			while (iterator.hasNext()) {
+				writer.write(iterator.next());
+			}
+			// postExecute code must be placed into execute, as footer might contain data from records
+			writer.finish();
+		} else {
+			writer.write(null);
+		}
+
+		readRemainingData();
+		
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	private void loadDataToCache() {
 		List<InputReader> readers = new ArrayList<InputReader>();
 		for (PortData portData : portDataMap.values()) {
 			if (portData.readInputPort()) {
-				InputReader reader = new InputReader(portData);
-				reader.start();
-				readers.add(reader);
+				readers.add(new InputReader(portData));
 			}
+		}
+		
+		manageReaders(readers);
+	}
+	
+	private void readRemainingData() {
+		List<InputReader> readers = new ArrayList<InputReader>();
+		for (InputPort inPort : inPorts.values()) {
+			if (inPort.hasData()) {
+				readers.add(new InputReader(inPort));
+			}
+		}
+		
+		manageReaders(readers);
+	}
+	
+	private void manageReaders(List<InputReader> readers) {
+		for (InputReader reader : readers) {
+			reader.start();
 		}
 		boolean killIt = false;
 		for (Iterator<InputReader> iterator = readers.iterator(); iterator.hasNext();) {
@@ -374,57 +423,6 @@ public class ExtXmlWriter extends Node {
 				}
 			}
 		}
-		readers.clear();
-		
-		if (firstRun()) {
-			if (engineMapping.getPartitionElement() != null) {
-				writer.init(inPorts.get(engineMapping.getPartitionElement().getPortIndex()).getMetadata());
-			} else {
-				//Dummy, but valid metadata
-				writer.init(inPorts.firstEntry().getValue().getMetadata());
-			}
-		} else {
-			writer.reset();
-		}
-		
-		if (engineMapping.getPartitionElement() != null) {
-			DataIterator iterator = engineMapping.getPartitionElement().getPortData().iterator(null, null, null, null);
-			engineMapping.getPartitionElement().setIterator(iterator);
-			while (iterator.hasNext()) {
-				writer.write(iterator.next());
-			}
-			writer.finish();
-		} else {
-			writer.write(null);
-		}		
-		
-		//Read all remaining data
-		for (InputPort inPort : inPorts.values()) {
-			if (inPort.hasData()) {
-				InputReader reader = new InputReader(inPort);
-				reader.start();
-				readers.add(reader);
-			}
-		}
-		for (Iterator<InputReader> iterator = readers.iterator(); iterator.hasNext();) {
-			InputReader inputReader = iterator.next();
-			while (inputReader.getState() != Thread.State.TERMINATED) {
-				if (killIt) {
-					inputReader.interrupt();
-					break;
-				}
-				killIt = !runIt;
-				try {
-					inputReader.join(1000);
-				} catch (InterruptedException e) {
-					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
-					killIt = true;
-				}
-			}
-		}
-		
-		
-		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	@Override
