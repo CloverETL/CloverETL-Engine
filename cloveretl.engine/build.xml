@@ -482,6 +482,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.joinKey.JoinKeyUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.joinKey.OrderedKey"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.key.KeyTokenizer"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.key.RecordKeyTokens"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.compile.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.bytes.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.crypto.Enigma"><field access="public"/><method access="public"/></keep>
