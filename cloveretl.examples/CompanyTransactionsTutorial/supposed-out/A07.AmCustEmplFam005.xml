@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<transactions>
-  <AmountID>6</AmountID>
-  <Amount>759.13</Amount>
-  <customers>
-    <CustomerID>6</CustomerID>
-    <CustomerState>Nevada</CustomerState>
-    <CustomerSurname>Bliss</CustomerSurname>
-    <CustomerFirstname>Marinell</CustomerFirstname>
-  </customers>
-  <employees>
-    <EmployeeID>6</EmployeeID>
-    <EmployeeSurname>Hills</EmployeeSurname>
-    <EmployeeFirstname>Anthony</EmployeeFirstname>
-    <spouse>
-      <SpouseName>Jacqueline</SpouseName>
-    </spouse>
-    <children>
-      <ChildName>Arnold</ChildName>
-    </children>
-    <children>
-      <ChildName>Frank</ChildName>
-    </children>
-    <children>
-      <ChildName>Stanley</ChildName>
-    </children>
-  </employees>
-</transactions>
+<Amounts>
+  <amount>
+    <AmountID>6</AmountID>
+    <Amount>759.13</Amount>
+    <customer>
+      <CustomerID>6</CustomerID>
+      <CustomerState>Nevada</CustomerState>
+      <CustomerSurname>Bliss</CustomerSurname>
+      <CustomerFirstname>Marinell</CustomerFirstname>
+    </customer>
+    <employee>
+      <EmployeeID>6</EmployeeID>
+      <EmployeeSurname>Hills</EmployeeSurname>
+      <EmployeeFirstname>Anthony</EmployeeFirstname>
+      <spouse>
+        <SpouseName>Jacqueline</SpouseName>
+      </spouse>
+      <children>
+        <ChildName>Frank</ChildName>
+        <ChildName>Arnold</ChildName>
+        <ChildName>Stanley</ChildName>
+      </children>
+    </employee>
+  </amount>
+</Amounts>
