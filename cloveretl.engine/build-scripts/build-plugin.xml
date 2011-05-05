@@ -360,6 +360,9 @@
 
 			<keep name="com.opensys.cloveretl.component.complexdatareader.*"><field access="protected public"/><method access="protected public"/></keep>
 
+			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.*"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.mapping.element.AddressObjectMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.mapping.provider.ADMappingElementProvider"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.ctl.extensions.*Lib"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.ctl.ASTRewriter"><field access="public"/><method access="public"/></keep>
