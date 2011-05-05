@@ -164,11 +164,7 @@ public class ReadableChannelIterator {
         try {
 			files = pat.filenames();
 		} catch (IOException e) {
-			for(StackTraceElement trace : e.getStackTrace()) {
-				defaultLogger.error("\t"+trace);
-				System.out.println("\t"+trace);
-			}
-			throw new ComponentNotReadyException(e);
+			throw new ComponentNotReadyException("Can't prepare file list from wildcard URL", e);
 		}
         firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);
         firstDictProtocolPosition = getFirstProtocolPosition(files, DICT);
