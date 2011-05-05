@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="ChildrenWithID" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ParentID" type="integer"/>
+<Field name="ChildName" type="string"/>
+<Field name="ChildNo" type="integer"/>
+</Record>
