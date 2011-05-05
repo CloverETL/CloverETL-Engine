@@ -242,6 +242,7 @@
 			shrink="false" 
 			verbose="true"
 			optimize="false" 
+			usemixedcaseclassnames="false"
 			skipnonpubliclibraryclasses="false"
 			skipnonpubliclibraryclassmembers="false"
 			applymapping="${apply.mapping}"
