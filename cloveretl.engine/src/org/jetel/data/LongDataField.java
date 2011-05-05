@@ -58,7 +58,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	
 	private final static int FIELD_SIZE_BYTES = 8; // standard size of field
 	
-	private BinaryFormat binaryFormat;
+	private BinaryFormat binaryFormat = null;
 
 	/**
 	 *  Constructor for the NumericDataField object
@@ -87,7 +87,14 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 				throw new JetelRuntimeException("Invalid binary format: " + typeStr, iae);
 			}
     		switch(binaryFormat) {
-			case BIG_ENDIAN: case LITTLE_ENDIAN: case PACKED_DECIMAL:
+			case BIG_ENDIAN: case LITTLE_ENDIAN:
+				if(metadata.getSize() < FIELD_SIZE_BYTES) {
+					throw new BadDataFormatException(String.format("The size of the field is less than %d bytes", FIELD_SIZE_BYTES));
+				} else if(metadata.getSize() > FIELD_SIZE_BYTES) {
+					throw new BadDataFormatException(String.format("The size of the field is more than %d bytes", FIELD_SIZE_BYTES));
+				}
+				break;
+			case PACKED_DECIMAL:
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid binary format: " + binaryFormat);
@@ -406,18 +413,12 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 */
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		if(metadata.isByteBased()) {
-			// format string starts with "BINARY:" 
+		if(binaryFormat != null) {
 			switch (binaryFormat) {
 			case PACKED_DECIMAL:
 				putPackedDecimal(dataBuffer, this.value);
 				break;
 			case BIG_ENDIAN: case LITTLE_ENDIAN:
-				if (metadata.getSize() < FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is less than %d bytes", FIELD_SIZE_BYTES));
-				} else if (metadata.getSize() > FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is more than %d bytes", FIELD_SIZE_BYTES));
-				}
 				ByteOrder originalByteOrder = dataBuffer.order();
 				dataBuffer.order(binaryFormat.byteOrder); // set the field's byte order
 				try {
@@ -429,7 +430,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 				}
 				break;
 			default:
-				super.toByteBuffer(dataBuffer, encoder);
+				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
 			}
 		} else {
 			super.toByteBuffer(dataBuffer, encoder);
@@ -458,17 +459,12 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 */
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		if(metadata.isByteBased()) {
+		if(binaryFormat != null) {
 			switch(binaryFormat) {
 			case PACKED_DECIMAL:
 				this.value = getPackedDecimal(dataBuffer);
 				break;
 			case BIG_ENDIAN: case LITTLE_ENDIAN:
-				if(metadata.getSize() < FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is less than %d bytes", FIELD_SIZE_BYTES));
-				} else if(metadata.getSize() > FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is more than %d bytes", FIELD_SIZE_BYTES));
-				}
 				ByteOrder originalByteOrder = dataBuffer.order();
 				dataBuffer.order(binaryFormat.byteOrder); //set the field's byte order
 				try {
@@ -483,7 +479,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 				}
 				break;
 			default: 
-				super.fromByteBuffer(dataBuffer, decoder);
+				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
 			}
 		} else {
 			super.fromByteBuffer(dataBuffer, decoder);
