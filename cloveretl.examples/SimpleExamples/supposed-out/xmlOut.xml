@@ -1,0 +1,1831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <customer CUSTOMERID="ALFKI">
+    <CUSTOMERID>ALFKI</CUSTOMERID>
+    <Representative>Maria Anders</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Obere Str. 57</Address>
+    <City>Berlin</City>
+    <PostCode>12209</PostCode>
+    <Country>Germany</Country>
+    <Phone>030-0074321</Phone>
+    <Fax>030-0076545</Fax>
+  </customer>
+  <customer CUSTOMERID="ANATR">
+    <CUSTOMERID>ANATR</CUSTOMERID>
+    <Representative>Ana Trujillo</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Avda. de la Constituciï¿½ 2222</Address>
+    <City>Mï¿½ico D.F.</City>
+    <PostCode>05021</PostCode>
+    <Country>Mexico</Country>
+    <Phone>(5) 555-4729</Phone>
+    <Fax>(5) 555-3745</Fax>
+  </customer>
+  <customer CUSTOMERID="ANTON">
+    <CUSTOMERID>ANTON</CUSTOMERID>
+    <Representative>Antonio Moreno</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Mataderos  2312</Address>
+    <City>Mï¿½ico D.F.</City>
+    <PostCode>05023</PostCode>
+    <Country>Mexico</Country>
+    <Phone>(5) 555-3932</Phone>
+  </customer>
+  <customer CUSTOMERID="AROUT">
+    <CUSTOMERID>AROUT</CUSTOMERID>
+    <Representative>Thomas Hardy</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>120 Hanover Sq.</Address>
+    <City>London</City>
+    <PostCode>WA1 1DP</PostCode>
+    <Country>UK</Country>
+    <Phone>(171) 555-7788</Phone>
+    <Fax>(171) 555-6750</Fax>
+  </customer>
+  <customer CUSTOMERID="BERGS">
+    <CUSTOMERID>BERGS</CUSTOMERID>
+    <Representative>Christina Berglund</Representative>
+    <JobTitle>Order Administrator</JobTitle>
+    <Address>Berguvsvï¿½en  8</Address>
+    <City>Lulea</City>
+    <PostCode>S-958 22</PostCode>
+    <Country>Sweden</Country>
+    <Phone>0921-12 34 65</Phone>
+    <Fax>0921-12 34 67</Fax>
+    <order OrderID="10278">
+      <OrderID>10278</OrderID>
+      <CustomerID>BERGS</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>12.08.1996 00:00:00</OrderDate>
+      <RequiredDate>09.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>16.08.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>93</Freight>
+      <ShipName>Berglunds snabbköp</ShipName>
+      <ShipAddress>Berguvsvägen  8</ShipAddress>
+      <ShipCity>Luleå</ShipCity>
+      <ShipPostalCode>S-958 22</ShipPostalCode>
+      <ShipCountry>Sweden</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10280">
+      <OrderID>10280</OrderID>
+      <CustomerID>BERGS</CustomerID>
+      <EmployeeID>2</EmployeeID>
+      <OrderDate>14.08.1996 00:00:00</OrderDate>
+      <RequiredDate>11.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>12.09.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>9</Freight>
+      <ShipName>Berglunds snabbköp</ShipName>
+      <ShipAddress>Berguvsvägen  8</ShipAddress>
+      <ShipCity>Luleå</ShipCity>
+      <ShipPostalCode>S-958 22</ShipPostalCode>
+      <ShipCountry>Sweden</ShipCountry>
+      <employee>
+        <EmployeeID>2</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="BLAUS">
+    <CUSTOMERID>BLAUS</CUSTOMERID>
+    <Representative>Hanna Moos</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Forsterstr. 57</Address>
+    <City>Mannheim</City>
+    <PostCode>68306</PostCode>
+    <Country>Germany</Country>
+    <Phone>0621-08460</Phone>
+    <Fax>0621-08924</Fax>
+  </customer>
+  <customer CUSTOMERID="BLONP">
+    <CUSTOMERID>BLONP</CUSTOMERID>
+    <Representative>Frï¿½ï¿½ique Citeaux</Representative>
+    <JobTitle>Marketing Manager</JobTitle>
+    <Address>24, place Klï¿½er</Address>
+    <City>Strasbourg</City>
+    <PostCode>67000</PostCode>
+    <Country>France</Country>
+    <Phone>88.60.15.31</Phone>
+    <Fax>88.60.15.32</Fax>
+    <order OrderID="10265">
+      <OrderID>10265</OrderID>
+      <CustomerID>BLONP</CustomerID>
+      <EmployeeID>2</EmployeeID>
+      <OrderDate>25.07.1996 00:00:00</OrderDate>
+      <RequiredDate>22.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>12.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>55</Freight>
+      <ShipName>Blondel père et fils</ShipName>
+      <ShipAddress>24, place Kléber</ShipAddress>
+      <ShipCity>Strasbourg</ShipCity>
+      <ShipPostalCode>67000</ShipPostalCode>
+      <ShipCountry>France</ShipCountry>
+      <employee>
+        <EmployeeID>2</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="BOLID">
+    <CUSTOMERID>BOLID</CUSTOMERID>
+    <Representative>Martï¿½ Sommer</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>C/ Araquil, 67</Address>
+    <City>Madrid</City>
+    <PostCode>28023</PostCode>
+    <Country>Spain</Country>
+    <Phone>(91) 555 22 82</Phone>
+    <Fax>(91) 555 91 99</Fax>
+  </customer>
+  <customer CUSTOMERID="BONAP">
+    <CUSTOMERID>BONAP</CUSTOMERID>
+    <Representative>Laurence Lebihan</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>12, rue des Bouchers</Address>
+    <City>Marseille</City>
+    <PostCode>13008</PostCode>
+    <Country>France</Country>
+    <Phone>91.24.45.40</Phone>
+    <Fax>91.24.45.41</Fax>
+  </customer>
+  <customer CUSTOMERID="BOTTM">
+    <CUSTOMERID>BOTTM</CUSTOMERID>
+    <Representative>Elizabeth Lincoln</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>23 Tsawassen Blvd.</Address>
+    <City>Tsawassen</City>
+    <PostCode>T2F 8M4</PostCode>
+    <Country>Canada</Country>
+    <Phone>(604) 555-4729</Phone>
+    <Fax>(604) 555-3745</Fax>
+  </customer>
+  <customer CUSTOMERID="BSBEV">
+    <CUSTOMERID>BSBEV</CUSTOMERID>
+    <Representative>Victoria Ashworth</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Fauntleroy Circus</Address>
+    <City>London</City>
+    <PostCode>EC2 5NT</PostCode>
+    <Country>UK</Country>
+    <Phone>(171) 555-1212</Phone>
+    <order OrderID="10289">
+      <OrderID>10289</OrderID>
+      <CustomerID>BSBEV</CustomerID>
+      <EmployeeID>7</EmployeeID>
+      <OrderDate>26.08.1996 00:00:00</OrderDate>
+      <RequiredDate>23.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>28.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>23</Freight>
+      <ShipName>B's Beverages</ShipName>
+      <ShipAddress>Fauntleroy Circus</ShipAddress>
+      <ShipCity>London</ShipCity>
+      <ShipPostalCode>EC2 5NT</ShipPostalCode>
+      <ShipCountry>UK</ShipCountry>
+      <employee>
+        <EmployeeID>7</EmployeeID>
+        <LastName>King</LastName>
+        <FirstName>Robert</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>29/05/1960 00:00:00</BirthDate>
+        <HireDate>02/01/1994 00:00:00</HireDate>
+        <Address>Edgeham Hollow Winchester Way</Address>
+        <City>London</City>
+        <PostalCode>RG1 9SP</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-5598</Phone>
+        <Extension>465</Extension>
+        <Memo>Robert King served in the Peace Corps and traveled extensively before completing his degree in English at the University of Michigan and then joining the company.  After completing a course entitled "Selling in Europe," he was transferred to the London office.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="CACTU">
+    <CUSTOMERID>CACTU</CUSTOMERID>
+    <Representative>Patricio Simpson</Representative>
+    <JobTitle>Sales Agent</JobTitle>
+    <Address>Cerrito 333</Address>
+    <City>Buenos Aires</City>
+    <PostCode>1010</PostCode>
+    <Country>Argentina</Country>
+    <Phone>(1) 135-5555</Phone>
+    <Fax>(1) 135-4892</Fax>
+  </customer>
+  <customer CUSTOMERID="CENTC">
+    <CUSTOMERID>CENTC</CUSTOMERID>
+    <Representative>Francisco Chang</Representative>
+    <JobTitle>Marketing Manager</JobTitle>
+    <Address>Sierras de Granada 9993</Address>
+    <City>Mï¿½ico D.F.</City>
+    <PostCode>05022</PostCode>
+    <Country>Mexico</Country>
+    <Phone>(5) 555-3392</Phone>
+    <Fax>(5) 555-7293</Fax>
+    <order OrderID="10259">
+      <OrderID>10259</OrderID>
+      <CustomerID>CENTC</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>18.07.1996 00:00:00</OrderDate>
+      <RequiredDate>15.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>25.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>3</Freight>
+      <ShipName>Centro comercial Moctezuma</ShipName>
+      <ShipAddress>Sierras de Granada 9993</ShipAddress>
+      <ShipCity>México D.F.</ShipCity>
+      <ShipPostalCode>05022</ShipPostalCode>
+      <ShipCountry>Mexico</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="COMMI">
+    <CUSTOMERID>COMMI</CUSTOMERID>
+    <Representative>Pedro Afonso</Representative>
+    <JobTitle>Sales Associate</JobTitle>
+    <Address>Av. dos Lusï¿½das, 23</Address>
+    <City>Sao Paulo</City>
+    <PostCode>05432-043</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(11) 555-7647</Phone>
+    <order OrderID="10290">
+      <OrderID>10290</OrderID>
+      <CustomerID>COMMI</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>27.08.1996 00:00:00</OrderDate>
+      <RequiredDate>24.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>03.09.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>80</Freight>
+      <ShipName>Comércio Mineiro</ShipName>
+      <ShipAddress>Av. dos Lusíadas, 23</ShipAddress>
+      <ShipCity>São Paulo</ShipCity>
+      <ShipRegion>SP</ShipRegion>
+      <ShipPostalCode>05432-043</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="CONSH">
+    <CUSTOMERID>CONSH</CUSTOMERID>
+    <Representative>Elizabeth Brown</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Berkeley Gardens 12  Brewery </Address>
+    <City>London</City>
+    <PostCode>WX1 6LT</PostCode>
+    <Country>UK</Country>
+    <Phone>(171) 555-2282</Phone>
+    <Fax>(171) 555-9199</Fax>
+  </customer>
+  <customer CUSTOMERID="DRACD">
+    <CUSTOMERID>DRACD</CUSTOMERID>
+    <Representative>Sven Ottlieb</Representative>
+    <JobTitle>Order Administrator</JobTitle>
+    <Address>Walserweg 21</Address>
+    <City>Aachen</City>
+    <PostCode>52066</PostCode>
+    <Country>France</Country>
+    <Phone>0241-039123</Phone>
+    <Fax>0241-059428</Fax>
+  </customer>
+  <customer CUSTOMERID="DUMON">
+    <CUSTOMERID>DUMON</CUSTOMERID>
+    <Representative>Janine Labrune</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>67, rue des Cinquante Otages</Address>
+    <City>Nantes</City>
+    <PostCode>44000</PostCode>
+    <Country>France</Country>
+    <Phone>40.67.88.88</Phone>
+    <Fax>40.67.89.89</Fax>
+  </customer>
+  <customer CUSTOMERID="EASTC">
+    <CUSTOMERID>EASTC</CUSTOMERID>
+    <Representative>Ann Devon</Representative>
+    <JobTitle>Sales Agent</JobTitle>
+    <Address>35 King George</Address>
+    <City>London</City>
+    <PostCode>WX3 6FW</PostCode>
+    <Country>UK</Country>
+    <Phone>(171) 555-0297</Phone>
+    <Fax>(171) 555-3373</Fax>
+  </customer>
+  <customer CUSTOMERID="ERNSH">
+    <CUSTOMERID>ERNSH</CUSTOMERID>
+    <Representative>Roland Mendel</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>Kirchgasse 6</Address>
+    <City>Graz</City>
+    <PostCode>8010</PostCode>
+    <Country>Austria</Country>
+    <Phone>7675-3425</Phone>
+    <Fax>7675-3426</Fax>
+    <order OrderID="10258">
+      <OrderID>10258</OrderID>
+      <CustomerID>ERNSH</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>17.07.1996 00:00:00</OrderDate>
+      <RequiredDate>14.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>23.07.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>141</Freight>
+      <ShipName>Ernst Handel</ShipName>
+      <ShipAddress>Kirchgasse 6</ShipAddress>
+      <ShipCity>Graz</ShipCity>
+      <ShipPostalCode>8010</ShipPostalCode>
+      <ShipCountry>Austria</ShipCountry>
+      <employee>
+        <EmployeeID>1</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10263">
+      <OrderID>10263</OrderID>
+      <CustomerID>ERNSH</CustomerID>
+      <EmployeeID>9</EmployeeID>
+      <OrderDate>23.07.1996 00:00:00</OrderDate>
+      <RequiredDate>20.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>31.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>146</Freight>
+      <ShipName>Ernst Handel</ShipName>
+      <ShipAddress>Kirchgasse 6</ShipAddress>
+      <ShipCity>Graz</ShipCity>
+      <ShipPostalCode>8010</ShipPostalCode>
+      <ShipCountry>Austria</ShipCountry>
+      <employee>
+        <EmployeeID>9</EmployeeID>
+        <LastName>Dodsworth</LastName>
+        <FirstName>Anne</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>02/07/1969 00:00:00</BirthDate>
+        <HireDate>15/11/1994 00:00:00</HireDate>
+        <Address>7 Houndstooth Rd.</Address>
+        <City>London</City>
+        <PostalCode>WG2 7LT</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-4444</Phone>
+        <Extension>452</Extension>
+        <Memo>Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="FAMIA">
+    <CUSTOMERID>FAMIA</CUSTOMERID>
+    <Representative>Aria Cruz</Representative>
+    <JobTitle>Marketing Assistant</JobTitle>
+    <Address>Rua Orï¿½, 92</Address>
+    <City>Sao Paulo</City>
+    <PostCode>05442-030</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(11) 555-9857</Phone>
+  </customer>
+  <customer CUSTOMERID="FISSA">
+    <CUSTOMERID>FISSA</CUSTOMERID>
+    <Representative>Diego Roel</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>C/ Moralzarzal, 86</Address>
+    <City>Madrid</City>
+    <PostCode>28034</PostCode>
+    <Country>Spain</Country>
+    <Phone>(91) 555 94 44</Phone>
+    <Fax>(91) 555 55 93</Fax>
+  </customer>
+  <customer CUSTOMERID="FOLKO">
+    <CUSTOMERID>FOLKO</CUSTOMERID>
+    <Representative>Maria Larsson</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Akergatan 24</Address>
+    <City>Brï¿½ke</City>
+    <PostCode>S-844 67</PostCode>
+    <Country>Sweden</Country>
+    <Phone>0695-34 67 21</Phone>
+    <order OrderID="10264">
+      <OrderID>10264</OrderID>
+      <CustomerID>FOLKO</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>24.07.1996 00:00:00</OrderDate>
+      <RequiredDate>21.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>23.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>4</Freight>
+      <ShipName>Folk och fä HB</ShipName>
+      <ShipAddress>Åkergatan 24</ShipAddress>
+      <ShipCity>Bräcke</ShipCity>
+      <ShipPostalCode>S-844 67</ShipPostalCode>
+      <ShipCountry>Sweden</ShipCountry>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="OLDWO">
+    <CUSTOMERID>OLDWO</CUSTOMERID>
+    <Representative>Rene Phillips</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>2743 Bering St.</Address>
+    <City>Anchorage</City>
+    <PostCode>99508</PostCode>
+    <Country>USA</Country>
+    <Phone>(907) 555-7584</Phone>
+    <Fax>(907) 555-2880</Fax>
+  </customer>
+  <customer CUSTOMERID="OTTIK">
+    <CUSTOMERID>OTTIK</CUSTOMERID>
+    <Representative>Henriette Pfalzheim</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Mehrheimerstr. 369</Address>
+    <City>Kï¿½n</City>
+    <PostCode>50739</PostCode>
+    <Country>Germany</Country>
+    <Phone>0221-0644327</Phone>
+    <Fax>0221-0765721</Fax>
+    <order OrderID="10260">
+      <OrderID>10260</OrderID>
+      <CustomerID>OTTIK</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>19.07.1996 00:00:00</OrderDate>
+      <RequiredDate>16.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>29.07.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>55</Freight>
+      <ShipName>Ottilies Käseladen</ShipName>
+      <ShipAddress>Mehrheimerstr. 369</ShipAddress>
+      <ShipCity>Köln</ShipCity>
+      <ShipPostalCode>50739</ShipPostalCode>
+      <ShipCountry>Germany</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="PARIS">
+    <CUSTOMERID>PARIS</CUSTOMERID>
+    <Representative>Marie Bertrand</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>265, boulevard Charonne</Address>
+    <City>Paris</City>
+    <PostCode>75012</PostCode>
+    <Country>France</Country>
+    <Phone>(1) 42.34.22.66</Phone>
+    <Fax>(1) 42.34.22.77</Fax>
+  </customer>
+  <customer CUSTOMERID="PERIC">
+    <CUSTOMERID>PERIC</CUSTOMERID>
+    <Representative>Guillermo Fernï¿½dez</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Calle Dr. Jorge Cash 321</Address>
+    <City>Mï¿½ico D.F.</City>
+    <PostCode>05033</PostCode>
+    <Country>Mexico</Country>
+    <Phone>(5) 552-3745</Phone>
+    <Fax>(5) 545-3745</Fax>
+  </customer>
+  <customer CUSTOMERID="PICCO">
+    <CUSTOMERID>PICCO</CUSTOMERID>
+    <Representative>Georg Pipps</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>Geislweg 14</Address>
+    <City>Salzburg</City>
+    <PostCode>5020</PostCode>
+    <Country>Slovakia</Country>
+    <Phone>6562-9722</Phone>
+    <Fax>6562-9723</Fax>
+  </customer>
+  <customer CUSTOMERID="PRINI">
+    <CUSTOMERID>PRINI</CUSTOMERID>
+    <Representative>Isabel de Castro</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Estrada da sade n. 58</Address>
+    <City>Lisboa</City>
+    <PostCode>1756</PostCode>
+    <Country>Portugal</Country>
+    <Phone>(1) 356-5634</Phone>
+  </customer>
+  <customer CUSTOMERID="QUEDE">
+    <CUSTOMERID>QUEDE</CUSTOMERID>
+    <Representative>Bernardo Batista</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>Rua da Panificadora, 12</Address>
+    <City>Rio de Janeiro</City>
+    <PostCode>02389-673</PostCode>
+    <Country>Hungary</Country>
+    <Phone>(21) 555-4252</Phone>
+    <Fax>(21) 555-4545</Fax>
+    <order OrderID="10261">
+      <OrderID>10261</OrderID>
+      <CustomerID>QUEDE</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>19.07.1996 00:00:00</OrderDate>
+      <RequiredDate>16.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>30.07.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>3</Freight>
+      <ShipName>Que Delícia</ShipName>
+      <ShipAddress>Rua da Panificadora, 12</ShipAddress>
+      <ShipCity>Rio de Janeiro</ShipCity>
+      <ShipRegion>RJ</ShipRegion>
+      <ShipPostalCode>02389-673</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10291">
+      <OrderID>10291</OrderID>
+      <CustomerID>QUEDE</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>27.08.1996 00:00:00</OrderDate>
+      <RequiredDate>24.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>04.09.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>6</Freight>
+      <ShipName>Que Delícia</ShipName>
+      <ShipAddress>Rua da Panificadora, 12</ShipAddress>
+      <ShipCity>Rio de Janeiro</ShipCity>
+      <ShipRegion>RJ</ShipRegion>
+      <ShipPostalCode>02389-673</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="QUEEN">
+    <CUSTOMERID>QUEEN</CUSTOMERID>
+    <Representative>Lcia Carvalho</Representative>
+    <JobTitle>Marketing Assistant</JobTitle>
+    <Address>Alameda dos Canarios, 891</Address>
+    <City>Sao Paulo</City>
+    <PostCode>05487-020</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(11) 555-1189</Phone>
+  </customer>
+  <customer CUSTOMERID="QUICK">
+    <CUSTOMERID>QUICK</CUSTOMERID>
+    <Representative>Horst Kloss</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>Taucherstraï¿½ 10</Address>
+    <City>Cunewalde</City>
+    <PostCode>01307</PostCode>
+    <Country>Germany</Country>
+    <Phone>0372-035188</Phone>
+    <order OrderID="10273">
+      <OrderID>10273</OrderID>
+      <CustomerID>QUICK</CustomerID>
+      <EmployeeID>3</EmployeeID>
+      <OrderDate>05.08.1996 00:00:00</OrderDate>
+      <RequiredDate>02.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>12.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>76</Freight>
+      <ShipName>QUICK-Stop</ShipName>
+      <ShipAddress>Taucherstraße 10</ShipAddress>
+      <ShipCity>Cunewalde</ShipCity>
+      <ShipPostalCode>01307</ShipPostalCode>
+      <ShipCountry>Germany</ShipCountry>
+      <employee>
+        <EmployeeID>3</EmployeeID>
+        <LastName>Leverling</LastName>
+        <FirstName>Janet</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>30/08/1963 00:00:00</BirthDate>
+        <HireDate>01/04/1992 00:00:00</HireDate>
+        <Address>722 Moss Bay Blvd.</Address>
+        <City>Kirkland</City>
+        <Region>WA</Region>
+        <PostalCode>98033</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-3412</Phone>
+        <Extension>3355</Extension>
+        <Memo>Janet has a BS degree in chemistry from Boston College).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate and was promoted to sales representative.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10285">
+      <OrderID>10285</OrderID>
+      <CustomerID>QUICK</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>20.08.1996 00:00:00</OrderDate>
+      <RequiredDate>17.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>26.08.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>77</Freight>
+      <ShipName>QUICK-Stop</ShipName>
+      <ShipAddress>Taucherstraße 10</ShipAddress>
+      <ShipCity>Cunewalde</ShipCity>
+      <ShipPostalCode>01307</ShipPostalCode>
+      <ShipCountry>Germany</ShipCountry>
+      <employee>
+        <EmployeeID>1</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10286">
+      <OrderID>10286</OrderID>
+      <CustomerID>QUICK</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>21.08.1996 00:00:00</OrderDate>
+      <RequiredDate>18.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>30.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>229</Freight>
+      <ShipName>QUICK-Stop</ShipName>
+      <ShipAddress>Taucherstraße 10</ShipAddress>
+      <ShipCity>Cunewalde</ShipCity>
+      <ShipPostalCode>01307</ShipPostalCode>
+      <ShipCountry>Germany</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="RANCH">
+    <CUSTOMERID>RANCH</CUSTOMERID>
+    <Representative>Sergio Gutiï¿½rez</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Av. del Libertador 900</Address>
+    <City>Buenos Aires</City>
+    <PostCode>1010</PostCode>
+    <Country>Argentina</Country>
+    <Phone>(1) 123-5555</Phone>
+    <Fax>(1) 123-5556</Fax>
+  </customer>
+  <customer CUSTOMERID="RATTC">
+    <CUSTOMERID>RATTC</CUSTOMERID>
+    <Representative>Paula Wilson</Representative>
+    <JobTitle>Assistant Sales Representative</JobTitle>
+    <Address>2817 Milton Dr.</Address>
+    <City>Albuquerque</City>
+    <PostCode>87110</PostCode>
+    <Country>USA</Country>
+    <Phone>(505) 555-5939</Phone>
+    <Fax>(505) 555-3620</Fax>
+    <order OrderID="10262">
+      <OrderID>10262</OrderID>
+      <CustomerID>RATTC</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>22.07.1996 00:00:00</OrderDate>
+      <RequiredDate>19.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>25.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>48</Freight>
+      <ShipName>Rattlesnake Canyon Grocery</ShipName>
+      <ShipAddress>2817 Milton Dr.</ShipAddress>
+      <ShipCity>Albuquerque</ShipCity>
+      <ShipRegion>NM</ShipRegion>
+      <ShipPostalCode>87110</ShipPostalCode>
+      <ShipCountry>USA</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10272">
+      <OrderID>10272</OrderID>
+      <CustomerID>RATTC</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>02.08.1996 00:00:00</OrderDate>
+      <RequiredDate>30.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>06.08.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>98</Freight>
+      <ShipName>Rattlesnake Canyon Grocery</ShipName>
+      <ShipAddress>2817 Milton Dr.</ShipAddress>
+      <ShipCity>Albuquerque</ShipCity>
+      <ShipRegion>NM</ShipRegion>
+      <ShipPostalCode>87110</ShipPostalCode>
+      <ShipCountry>USA</ShipCountry>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10294">
+      <OrderID>10294</OrderID>
+      <CustomerID>RATTC</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>30.08.1996 00:00:00</OrderDate>
+      <RequiredDate>27.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>05.09.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>147</Freight>
+      <ShipName>Rattlesnake Canyon Grocery</ShipName>
+      <ShipAddress>2817 Milton Dr.</ShipAddress>
+      <ShipCity>Albuquerque</ShipCity>
+      <ShipRegion>NM</ShipRegion>
+      <ShipPostalCode>87110</ShipPostalCode>
+      <ShipCountry>USA</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="REGGC">
+    <CUSTOMERID>REGGC</CUSTOMERID>
+    <Representative>Maurizio Moroni</Representative>
+    <JobTitle>Sales Associate</JobTitle>
+    <Address>Strada Provinciale 124</Address>
+    <City>Reggio Emilia</City>
+    <PostCode>42100</PostCode>
+    <Country>Italy</Country>
+    <Phone>0522-556721</Phone>
+    <Fax>0522-556722</Fax>
+    <order OrderID="10288">
+      <OrderID>10288</OrderID>
+      <CustomerID>REGGC</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>23.08.1996 00:00:00</OrderDate>
+      <RequiredDate>20.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>03.09.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>7</Freight>
+      <ShipName>Reggiani Caseifici</ShipName>
+      <ShipAddress>Strada Provinciale 124</ShipAddress>
+      <ShipCity>Reggio Emilia</ShipCity>
+      <ShipPostalCode>42100</ShipPostalCode>
+      <ShipCountry>Italy</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="RICAR">
+    <CUSTOMERID>RICAR</CUSTOMERID>
+    <Representative>Janete Limeira</Representative>
+    <JobTitle>Assistant Sales Agent</JobTitle>
+    <Address>Av. Copacabana, 267</Address>
+    <City>Rio de Janeiro</City>
+    <PostCode>02389-890</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(21) 555-3412</Phone>
+    <order OrderID="10287">
+      <OrderID>10287</OrderID>
+      <CustomerID>RICAR</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>22.08.1996 00:00:00</OrderDate>
+      <RequiredDate>19.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>28.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>13</Freight>
+      <ShipName>Ricardo Adocicados</ShipName>
+      <ShipAddress>Av. Copacabana, 267</ShipAddress>
+      <ShipCity>Rio de Janeiro</ShipCity>
+      <ShipRegion>RJ</ShipRegion>
+      <ShipPostalCode>02389-890</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="RICSU">
+    <CUSTOMERID>RICSU</CUSTOMERID>
+    <Representative>Michael Holz</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>Grenzacherweg 237</Address>
+    <City>Geneve</City>
+    <PostCode>1203</PostCode>
+    <Country>Switzerland</Country>
+    <Phone>0897-034214</Phone>
+    <order OrderID="10255">
+      <OrderID>10255</OrderID>
+      <CustomerID>RICSU</CustomerID>
+      <EmployeeID>9</EmployeeID>
+      <OrderDate>12.07.1996 00:00:00</OrderDate>
+      <RequiredDate>09.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>15.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>148</Freight>
+      <ShipName>Richter Supermarkt</ShipName>
+      <ShipAddress>Starenweg 5</ShipAddress>
+      <ShipCity>Genève</ShipCity>
+      <ShipPostalCode>1204</ShipPostalCode>
+      <ShipCountry>Switzerland</ShipCountry>
+      <address AddressID="8"/>
+      <employee>
+        <EmployeeID>9</EmployeeID>
+        <LastName>Dodsworth</LastName>
+        <FirstName>Anne</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>02/07/1969 00:00:00</BirthDate>
+        <HireDate>15/11/1994 00:00:00</HireDate>
+        <Address>7 Houndstooth Rd.</Address>
+        <City>London</City>
+        <PostalCode>WG2 7LT</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-4444</Phone>
+        <Extension>452</Extension>
+        <Memo>Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="ROMEY">
+    <CUSTOMERID>ROMEY</CUSTOMERID>
+    <Representative>Alejandra Camino</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>Gran Vï¿½, 1</Address>
+    <City>Madrid</City>
+    <PostCode>28001</PostCode>
+    <Country>Spain</Country>
+    <Phone>(91) 745 6200</Phone>
+    <Fax>(91) 745 6210</Fax>
+    <order OrderID="10281">
+      <OrderID>10281</OrderID>
+      <CustomerID>ROMEY</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>14.08.1996 00:00:00</OrderDate>
+      <RequiredDate>28.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>21.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>3</Freight>
+      <ShipName>Romero y tomillo</ShipName>
+      <ShipAddress>Gran Vía, 1</ShipAddress>
+      <ShipCity>Madrid</ShipCity>
+      <ShipPostalCode>28001</ShipPostalCode>
+      <ShipCountry>Spain</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10282">
+      <OrderID>10282</OrderID>
+      <CustomerID>ROMEY</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>15.08.1996 00:00:00</OrderDate>
+      <RequiredDate>12.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>21.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>13</Freight>
+      <ShipName>Romero y tomillo</ShipName>
+      <ShipAddress>Gran Vía, 1</ShipAddress>
+      <ShipCity>Madrid</ShipCity>
+      <ShipPostalCode>28001</ShipPostalCode>
+      <ShipCountry>Spain</ShipCountry>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="SANTG">
+    <CUSTOMERID>SANTG</CUSTOMERID>
+    <Representative>Jonas Bergulfsen</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Erling Skakkes gate 78</Address>
+    <City>Stavern</City>
+    <PostCode>4110</PostCode>
+    <Country>Norway</Country>
+    <Phone>07-98 92 35</Phone>
+    <Fax>07-98 92 47</Fax>
+  </customer>
+  <customer CUSTOMERID="SAVEA">
+    <CUSTOMERID>SAVEA</CUSTOMERID>
+    <Representative>Jose Pavarotti</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>187 Suffolk Ln.</Address>
+    <City>Boise</City>
+    <PostCode>83720</PostCode>
+    <Country>USA</Country>
+    <Phone>(208) 555-8097</Phone>
+  </customer>
+  <customer CUSTOMERID="SEVES">
+    <CUSTOMERID>SEVES</CUSTOMERID>
+    <Representative>Hari Kumar</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>90 Wadhurst Rd.</Address>
+    <City>London</City>
+    <PostCode>OX15 4NB</PostCode>
+    <Country>UK</Country>
+    <Phone>(171) 555-1717</Phone>
+    <Fax>(171) 555-5646</Fax>
+  </customer>
+  <customer CUSTOMERID="SIMOB">
+    <CUSTOMERID>SIMOB</CUSTOMERID>
+    <Representative>Jytte Petersen</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Vinbaltet 34</Address>
+    <City>Kobenhavn</City>
+    <PostCode>1734</PostCode>
+    <Country>Denmark</Country>
+    <Phone>31 12 34 56</Phone>
+    <Fax>31 13 35 57</Fax>
+  </customer>
+  <customer CUSTOMERID="SPECD">
+    <CUSTOMERID>SPECD</CUSTOMERID>
+    <Representative>Dominique Perrier</Representative>
+    <JobTitle>Marketing Manager</JobTitle>
+    <Address>25, rue Lauriston</Address>
+    <City>Paris</City>
+    <PostCode>75016</PostCode>
+    <Country>France</Country>
+    <Phone>(1) 47.55.60.10</Phone>
+    <Fax>(1) 47.55.60.20</Fax>
+  </customer>
+  <customer CUSTOMERID="SPLIR">
+    <CUSTOMERID>SPLIR</CUSTOMERID>
+    <Representative>Art Braunschweiger</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>P.O. Box 555</Address>
+    <City>Lander</City>
+    <PostCode>82520</PostCode>
+    <Country>USA</Country>
+    <Phone>(307) 555-4680</Phone>
+    <Fax>(307) 555-6525</Fax>
+    <order OrderID="10271">
+      <OrderID>10271</OrderID>
+      <CustomerID>SPLIR</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>01.08.1996 00:00:00</OrderDate>
+      <RequiredDate>29.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>30.08.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>5</Freight>
+      <ShipName>Split Rail Beer &amp; Ale</ShipName>
+      <ShipAddress>P.O. Box 555</ShipAddress>
+      <ShipCity>Lander</ShipCity>
+      <ShipRegion>WY</ShipRegion>
+      <ShipPostalCode>82520</ShipPostalCode>
+      <ShipCountry>USA</ShipCountry>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="SUPRD">
+    <CUSTOMERID>SUPRD</CUSTOMERID>
+    <Representative>Pascale Cartrain</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>Boulevard Tirou, 255</Address>
+    <City>Charleroi</City>
+    <PostCode>B-6000</PostCode>
+    <Country>Belgium</Country>
+    <Phone>(071) 23 67 22 20</Phone>
+    <Fax>(071) 23 67 22 21</Fax>
+    <order OrderID="10252">
+      <OrderID>10252</OrderID>
+      <CustomerID>SUPRD</CustomerID>
+      <EmployeeID>4</EmployeeID>
+      <OrderDate>09.07.1996 00:00:00</OrderDate>
+      <RequiredDate>06.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>11.07.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>51</Freight>
+      <ShipName>Suprêmes délices</ShipName>
+      <ShipAddress>Boulevard Tirou, 255</ShipAddress>
+      <ShipCity>Charleroi</ShipCity>
+      <ShipPostalCode>B-6000</ShipPostalCode>
+      <ShipCountry>Belgium</ShipCountry>
+      <address AddressID="5"/>
+      <employee>
+        <EmployeeID>4</EmployeeID>
+        <LastName>Peacock</LastName>
+        <FirstName>Margaret</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mrs.</TitleInCourtesy>
+        <BirthDate>19/09/1958 00:00:00</BirthDate>
+        <HireDate>03/05/1993 00:00:00</HireDate>
+        <Address>4110 Old Redmond Rd.</Address>
+        <City>Redmond</City>
+        <Region>WA</Region>
+        <PostalCode>98052</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-8122</Phone>
+        <Extension>5176</Extension>
+        <Memo>Margaret holds a BA in English literature from Concordia College and an MA from the American Institute of Culinary Arts. She was temporarily assigned to the London office before returning to her permanent post in Seattle.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="THEBI">
+    <CUSTOMERID>THEBI</CUSTOMERID>
+    <Representative>Liz Nixon</Representative>
+    <JobTitle>Marketing Manager</JobTitle>
+    <Address>89 Jefferson Way Suite 2</Address>
+    <City>Portland</City>
+    <PostCode>97201</PostCode>
+    <Country>USA</Country>
+    <Phone>(503) 555-3612</Phone>
+  </customer>
+  <customer CUSTOMERID="THECR">
+    <CUSTOMERID>THECR</CUSTOMERID>
+    <Representative>Liu Wong</Representative>
+    <JobTitle>Marketing Assistant</JobTitle>
+    <Address>55 Grizzly Peak Rd.</Address>
+    <City>Butte</City>
+    <PostCode>59801</PostCode>
+    <Country>USA</Country>
+    <Phone>(406) 555-5834</Phone>
+    <Fax>(406) 555-8083</Fax>
+  </customer>
+  <customer CUSTOMERID="TOMSP">
+    <CUSTOMERID>TOMSP</CUSTOMERID>
+    <Representative>Karin Josephs</Representative>
+    <JobTitle>Marketing Manager</JobTitle>
+    <Address>Luisenstr. 48</Address>
+    <City>Mnster</City>
+    <PostCode>44087</PostCode>
+    <Country>Germany</Country>
+    <Phone>0251-031259</Phone>
+    <Fax>0251-035695</Fax>
+    <order OrderID="10249">
+      <OrderID>10249</OrderID>
+      <CustomerID>TOMSP</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>05.07.1996 00:00:00</OrderDate>
+      <RequiredDate>16.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>10.07.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>12</Freight>
+      <ShipName>Toms Spezialitäten</ShipName>
+      <ShipAddress>Luisenstr. 48</ShipAddress>
+      <ShipCity>Münster</ShipCity>
+      <ShipPostalCode>44087</ShipPostalCode>
+      <ShipCountry>Germany</ShipCountry>
+      <address AddressID="2"/>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="TORTU">
+    <CUSTOMERID>TORTU</CUSTOMERID>
+    <Representative>Miguel Angel Paolino</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>Avda. Azteca 123</Address>
+    <City>Mï¿½ico D.F.</City>
+    <PostCode>05033</PostCode>
+    <Country>Mexico</Country>
+    <Phone>(5) 555-2933</Phone>
+    <order OrderID="10276">
+      <OrderID>10276</OrderID>
+      <CustomerID>TORTU</CustomerID>
+      <EmployeeID>8</EmployeeID>
+      <OrderDate>08.08.1996 00:00:00</OrderDate>
+      <RequiredDate>22.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>14.08.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>14</Freight>
+      <ShipName>Tortuga Restaurante</ShipName>
+      <ShipAddress>Avda. Azteca 123</ShipAddress>
+      <ShipCity>México D.F.</ShipCity>
+      <ShipPostalCode>05033</ShipPostalCode>
+      <ShipCountry>Mexico</ShipCountry>
+      <employee>
+        <EmployeeID>8</EmployeeID>
+        <LastName>Callahan</LastName>
+        <FirstName>Laura</FirstName>
+        <Title>Inside Sales Coordinator</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>09/01/1958 00:00:00</BirthDate>
+        <HireDate>05/03/1994 00:00:00</HireDate>
+        <Address>4726 - 11th Ave. N.E.</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98105</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-1189</Phone>
+        <Extension>2344</Extension>
+        <Memo>Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10293">
+      <OrderID>10293</OrderID>
+      <CustomerID>TORTU</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>29.08.1996 00:00:00</OrderDate>
+      <RequiredDate>26.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>11.09.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>21</Freight>
+      <ShipName>Tortuga Restaurante</ShipName>
+      <ShipAddress>Avda. Azteca 123</ShipAddress>
+      <ShipCity>México D.F.</ShipCity>
+      <ShipPostalCode>05033</ShipPostalCode>
+      <ShipCountry>Mexico</ShipCountry>
+      <employee>
+        <EmployeeID>1</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="TRADH">
+    <CUSTOMERID>TRADH</CUSTOMERID>
+    <Representative>Anabela Domingues</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Av. Ines de Castro, 414</Address>
+    <City>Sao Paulo</City>
+    <PostCode>05634-030</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(11) 555-2167</Phone>
+    <Fax>(11) 555-2168</Fax>
+    <order OrderID="10292">
+      <OrderID>10292</OrderID>
+      <CustomerID>TRADH</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>28.08.1996 00:00:00</OrderDate>
+      <RequiredDate>25.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>02.09.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>1</Freight>
+      <ShipName>Tradição Hipermercados</ShipName>
+      <ShipAddress>Av. Inês de Castro, 414</ShipAddress>
+      <ShipCity>São Paulo</ShipCity>
+      <ShipRegion>SP</ShipRegion>
+      <ShipPostalCode>05634-030</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <employee>
+        <EmployeeID>1</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="TRAIH">
+    <CUSTOMERID>TRAIH</CUSTOMERID>
+    <Representative>Helvetius Nagy</Representative>
+    <JobTitle>Sales Associate</JobTitle>
+    <Address>722 DaVinci Blvd.</Address>
+    <City>Kirkland</City>
+    <PostCode>98034</PostCode>
+    <Country>USA</Country>
+    <Phone>(206) 555-8257</Phone>
+    <Fax>(206) 555-2174</Fax>
+  </customer>
+  <customer CUSTOMERID="VAFFE">
+    <CUSTOMERID>VAFFE</CUSTOMERID>
+    <Representative>Palle Ibsen</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>Smagsloget 45</Address>
+    <City>Arhus</City>
+    <PostCode>8200</PostCode>
+    <Country>Denmark</Country>
+    <Phone>86 21 32 43</Phone>
+    <Fax>86 22 33 44</Fax>
+  </customer>
+  <customer CUSTOMERID="VICTE">
+    <CUSTOMERID>VICTE</CUSTOMERID>
+    <Representative>Mary Saveley</Representative>
+    <JobTitle>Sales Agent</JobTitle>
+    <Address>2, rue du Commerce</Address>
+    <City>Lyon</City>
+    <PostCode>69004</PostCode>
+    <Country>France</Country>
+    <Phone>78.32.54.86</Phone>
+    <Fax>78.32.54.87</Fax>
+    <order OrderID="10251">
+      <OrderID>10251</OrderID>
+      <CustomerID>VICTE</CustomerID>
+      <EmployeeID>3</EmployeeID>
+      <OrderDate>08.07.1996 00:00:00</OrderDate>
+      <RequiredDate>05.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>15.07.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>41</Freight>
+      <ShipName>Victuailles en stock</ShipName>
+      <ShipAddress>2, rue du Commerce</ShipAddress>
+      <ShipCity>Lyon</ShipCity>
+      <ShipPostalCode>69004</ShipPostalCode>
+      <ShipCountry>France</ShipCountry>
+      <address AddressID="4"/>
+      <employee>
+        <EmployeeID>3</EmployeeID>
+        <LastName>Leverling</LastName>
+        <FirstName>Janet</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>30/08/1963 00:00:00</BirthDate>
+        <HireDate>01/04/1992 00:00:00</HireDate>
+        <Address>722 Moss Bay Blvd.</Address>
+        <City>Kirkland</City>
+        <Region>WA</Region>
+        <PostalCode>98033</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-3412</Phone>
+        <Extension>3355</Extension>
+        <Memo>Janet has a BS degree in chemistry from Boston College).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate and was promoted to sales representative.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="VINET">
+    <CUSTOMERID>VINET</CUSTOMERID>
+    <Representative>Paul Henriot</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>59 rue de l'Abbaye</Address>
+    <City>Reims</City>
+    <PostCode>51100</PostCode>
+    <Country>France</Country>
+    <Phone>26.47.15.10</Phone>
+    <Fax>26.47.15.11</Fax>
+    <order OrderID="10248">
+      <OrderID>10248</OrderID>
+      <CustomerID>VINET</CustomerID>
+      <EmployeeID>5</EmployeeID>
+      <OrderDate>04.07.1996 00:00:00</OrderDate>
+      <RequiredDate>01.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>16.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>32</Freight>
+      <ShipName>Vins et alcools Chevalier</ShipName>
+      <ShipAddress>59 rue de l'Abbaye</ShipAddress>
+      <ShipCity>Reims</ShipCity>
+      <ShipPostalCode>51100</ShipPostalCode>
+      <ShipCountry>France</ShipCountry>
+      <address AddressID="1"/>
+    </order>
+    <order OrderID="10274">
+      <OrderID>10274</OrderID>
+      <CustomerID>VINET</CustomerID>
+      <EmployeeID>6</EmployeeID>
+      <OrderDate>06.08.1996 00:00:00</OrderDate>
+      <RequiredDate>03.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>16.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>6</Freight>
+      <ShipName>Vins et alcools Chevalier</ShipName>
+      <ShipAddress>59 rue de l'Abbaye</ShipAddress>
+      <ShipCity>Reims</ShipCity>
+      <ShipPostalCode>51100</ShipPostalCode>
+      <ShipCountry>France</ShipCountry>
+      <employee>
+        <EmployeeID>6</EmployeeID>
+        <LastName>Suyama</LastName>
+        <FirstName>Michael</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Mr.</TitleInCourtesy>
+        <BirthDate>02/07/1963 00:00:00</BirthDate>
+        <HireDate>17/10/1993 00:00:00</HireDate>
+        <Address>Coventry HouseMiner Rd.</Address>
+        <City>London</City>
+        <PostalCode>EC2 7JR</PostalCode>
+        <Country>UK</Country>
+        <Phone>(71) 555-7773</Phone>
+        <Extension>428</Extension>
+        <Memo>Michael is a graduate of Sussex University (MA, economics) and the University of California at Los Angeles (MBA, marketing).  He has also taken the courses "Multi-Cultural Selling" and "Time Management for the Sales Professional."  He is fluent in Japanese and can read and write French, Portuguese, and Spanish.</Memo>
+        <ReportsTo>5</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10295">
+      <OrderID>10295</OrderID>
+      <CustomerID>VINET</CustomerID>
+      <EmployeeID>2</EmployeeID>
+      <OrderDate>02.09.1996 00:00:00</OrderDate>
+      <RequiredDate>30.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>10.09.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>1</Freight>
+      <ShipName>Vins et alcools Chevalier</ShipName>
+      <ShipAddress>59 rue de l'Abbaye</ShipAddress>
+      <ShipCity>Reims</ShipCity>
+      <ShipPostalCode>51100</ShipPostalCode>
+      <ShipCountry>France</ShipCountry>
+      <employee>
+        <EmployeeID>2</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="WANDK">
+    <CUSTOMERID>WANDK</CUSTOMERID>
+    <Representative>Rita Mller</Representative>
+    <JobTitle>Sales Representative</JobTitle>
+    <Address>Adenauerallee 900</Address>
+    <City>Stuttgart</City>
+    <PostCode>70563</PostCode>
+    <Country>Germany</Country>
+    <Phone>0711-020361</Phone>
+    <Fax>0711-035428</Fax>
+  </customer>
+  <customer CUSTOMERID="WARTH">
+    <CUSTOMERID>WARTH</CUSTOMERID>
+    <Representative>Pirkko Koskitalo</Representative>
+    <JobTitle>Accounting Manager</JobTitle>
+    <Address>Torikatu 38</Address>
+    <City>Oulu</City>
+    <PostCode>90110</PostCode>
+    <Country>Finland</Country>
+    <Phone>981-443655</Phone>
+    <Fax>981-443655</Fax>
+    <order OrderID="10266">
+      <OrderID>10266</OrderID>
+      <CustomerID>WARTH</CustomerID>
+      <EmployeeID>3</EmployeeID>
+      <OrderDate>26.07.1996 00:00:00</OrderDate>
+      <RequiredDate>06.09.1996 00:00:00</RequiredDate>
+      <ShippedDate>31.07.1996 00:00:00</ShippedDate>
+      <ShipVia>3</ShipVia>
+      <Freight>26</Freight>
+      <ShipName>Wartian Herkku</ShipName>
+      <ShipAddress>Torikatu 38</ShipAddress>
+      <ShipCity>Oulu</ShipCity>
+      <ShipPostalCode>90110</ShipPostalCode>
+      <ShipCountry>Finland</ShipCountry>
+      <employee>
+        <EmployeeID>3</EmployeeID>
+        <LastName>Leverling</LastName>
+        <FirstName>Janet</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>30/08/1963 00:00:00</BirthDate>
+        <HireDate>01/04/1992 00:00:00</HireDate>
+        <Address>722 Moss Bay Blvd.</Address>
+        <City>Kirkland</City>
+        <Region>WA</Region>
+        <PostalCode>98033</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-3412</Phone>
+        <Extension>3355</Extension>
+        <Memo>Janet has a BS degree in chemistry from Boston College).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate and was promoted to sales representative.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+    <order OrderID="10270">
+      <OrderID>10270</OrderID>
+      <CustomerID>WARTH</CustomerID>
+      <EmployeeID>1</EmployeeID>
+      <OrderDate>01.08.1996 00:00:00</OrderDate>
+      <RequiredDate>29.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>02.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>137</Freight>
+      <ShipName>Wartian Herkku</ShipName>
+      <ShipAddress>Torikatu 38</ShipAddress>
+      <ShipCity>Oulu</ShipCity>
+      <ShipPostalCode>90110</ShipPostalCode>
+      <ShipCountry>Finland</ShipCountry>
+      <employee>
+        <EmployeeID>1</EmployeeID>
+        <LastName>Davolio</LastName>
+        <FirstName>Nancy</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>08/12/1968 00:00:00</BirthDate>
+        <HireDate>01/05/1992 00:00:00</HireDate>
+        <Address>507 - 20th Ave. E.Apt. 2A</Address>
+        <City>Seattle</City>
+        <Region>WA</Region>
+        <PostalCode>98122</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-9857</Phone>
+        <Extension>5467</Extension>
+        <Memo>Education includes a BA in psychology from Colorado State University.  She also completed "The Art of the Cold Call."  Nancy is a member of Toastmasters International.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="WELLI">
+    <CUSTOMERID>WELLI</CUSTOMERID>
+    <Representative>Paula Parente</Representative>
+    <JobTitle>Sales Manager</JobTitle>
+    <Address>Rua do Mercado, 12</Address>
+    <City>Resende</City>
+    <PostCode>08737-363</PostCode>
+    <Country>Brazil</Country>
+    <Phone>(14) 555-8122</Phone>
+    <order OrderID="10256">
+      <OrderID>10256</OrderID>
+      <CustomerID>WELLI</CustomerID>
+      <EmployeeID>3</EmployeeID>
+      <OrderDate>15.07.1996 00:00:00</OrderDate>
+      <RequiredDate>12.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>17.07.1996 00:00:00</ShippedDate>
+      <ShipVia>2</ShipVia>
+      <Freight>14</Freight>
+      <ShipName>Wellington Importadora</ShipName>
+      <ShipAddress>Rua do Mercado, 12</ShipAddress>
+      <ShipCity>Resende</ShipCity>
+      <ShipRegion>SP</ShipRegion>
+      <ShipPostalCode>08737-363</ShipPostalCode>
+      <ShipCountry>Brazil</ShipCountry>
+      <address AddressID="9"/>
+      <employee>
+        <EmployeeID>3</EmployeeID>
+        <LastName>Leverling</LastName>
+        <FirstName>Janet</FirstName>
+        <Title>Sales Representative</Title>
+        <TitleInCourtesy>Ms.</TitleInCourtesy>
+        <BirthDate>30/08/1963 00:00:00</BirthDate>
+        <HireDate>01/04/1992 00:00:00</HireDate>
+        <Address>722 Moss Bay Blvd.</Address>
+        <City>Kirkland</City>
+        <Region>WA</Region>
+        <PostalCode>98033</PostalCode>
+        <Country>USA</Country>
+        <Phone>(206) 555-3412</Phone>
+        <Extension>3355</Extension>
+        <Memo>Janet has a BS degree in chemistry from Boston College).  She has also completed a certificate program in food retailing management.  Janet was hired as a sales associate and was promoted to sales representative.</Memo>
+        <ReportsTo>2</ReportsTo>
+      </employee>
+    </order>
+  </customer>
+  <customer CUSTOMERID="WHITC">
+    <CUSTOMERID>WHITC</CUSTOMERID>
+    <Representative>Karl Jablonski</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>305 - 14th Ave. S. Suite 3B</Address>
+    <City>Seattle</City>
+    <PostCode>98128</PostCode>
+    <Country>USA</Country>
+    <Phone>(206) 555-4112</Phone>
+    <Fax>(206) 555-4115</Fax>
+    <order OrderID="10269">
+      <OrderID>10269</OrderID>
+      <CustomerID>WHITC</CustomerID>
+      <EmployeeID>5</EmployeeID>
+      <OrderDate>31.07.1996 00:00:00</OrderDate>
+      <RequiredDate>14.08.1996 00:00:00</RequiredDate>
+      <ShippedDate>09.08.1996 00:00:00</ShippedDate>
+      <ShipVia>1</ShipVia>
+      <Freight>5</Freight>
+      <ShipName>White Clover Markets</ShipName>
+      <ShipAddress>1029 - 12th Ave. S.</ShipAddress>
+      <ShipCity>Seattle</ShipCity>
+      <ShipRegion>WA</ShipRegion>
+      <ShipPostalCode>98124</ShipPostalCode>
+      <ShipCountry>USA</ShipCountry>
+    </order>
+  </customer>
+  <customer CUSTOMERID="WILMK">
+    <CUSTOMERID>WILMK</CUSTOMERID>
+    <Representative>Matti Karttunen</Representative>
+    <JobTitle>Owner/Marketing Assistant</JobTitle>
+    <Address>Keskuskatu 45</Address>
+    <City>Helsinki</City>
+    <PostCode>21240</PostCode>
+    <Country>Finland</Country>
+    <Phone>90-224 8858</Phone>
+    <Fax>90-224 8858</Fax>
+  </customer>
+  <customer CUSTOMERID="WOLZA">
+    <CUSTOMERID>WOLZA</CUSTOMERID>
+    <Representative>Zbyszek Piestrzeniewicz</Representative>
+    <JobTitle>Owner</JobTitle>
+    <Address>ul. Filtrowa 68</Address>
+    <City>Warszawa</City>
+    <PostCode>01-012</PostCode>
+    <Country>Poland</Country>
+    <Phone>(26) 642-7012</Phone>
+    <Fax>(26) 642-7012</Fax>
+  </customer>
+</root>
