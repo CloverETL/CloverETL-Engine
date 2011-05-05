@@ -112,10 +112,6 @@
 	 	<FlatFile outputFile="data-out/customersXMLExtract.txt" supposedFile="supposed-out/A10.customersXMLExtract.txt"/>
 	 	<FlatFile outputFile="data-out/employeesXMLExtract.txt" supposedFile="supposed-out/A10.employeesXMLExtract.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLExtract.txt" supposedFile="supposed-out/A10.spousesXMLExtract.txt"/>
-        <DeleteFile file="data-out/childrenXMLExtract.txt"/>
-        <DeleteFile file="data-out/customersXMLExtract.txt"/>
-        <DeleteFile file="data-out/employeesXMLExtract.txt"/>
-        <DeleteFile file="data-out/spousesXMLExtract.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A11" graphFile="graph/A11_XMLExtractAmCustEmplFam.grf">
@@ -124,18 +120,12 @@
 	 	<FlatFile outputFile="data-out/customersXMLExtractWithAmID.txt" supposedFile="supposed-out/A11.customersXMLExtractWithAmID.txt"/>
 	 	<FlatFile outputFile="data-out/employeesXMLExtractWithAmountID.txt" supposedFile="supposed-out/A11.employeesXMLExtractWithAmountID.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLExtract.txt" supposedFile="supposed-out/A11.spousesXMLExtract.txt"/>
-        <DeleteFile file="data-out/amountsXMLExtract.txt"/>
-        <DeleteFile file="data-out/childrenXMLExtract.txt"/>
-        <DeleteFile file="data-out/spousesXMLExtract.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A12" graphFile="graph/A12_XMLExtractTransactionsFamily.grf">
 	 	<FlatFile outputFile="data-out/childrenXMLExtract.txt" supposedFile="supposed-out/A12.childrenXMLExtract.txt"/>
 	 	<FlatFile outputFile="data-out/transactionsXMLExtract.txt" supposedFile="supposed-out/A12.transactionsXMLExtract.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLExtract.txt" supposedFile="supposed-out/A12.spousesXMLExtract.txt"/>
-        <DeleteFile file="data-out/childrenXMLExtract.txt"/>
-        <DeleteFile file="data-out/transactionsXMLExtract.txt"/>
-        <DeleteFile file="data-out/spousesXMLExtract.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A13" graphFile="graph/A13_XMLXPathEmplFamCustAm.grf">
@@ -144,10 +134,6 @@
 	 	<FlatFile outputFile="data-out/customersXMLXPath.txt" supposedFile="supposed-out/A13.customersXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/employeesXMLXPath.txt" supposedFile="supposed-out/A13.employeesXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="supposed-out/A13.spousesXMLXPath.txt"/>
-        <DeleteFile file="data-out/childrenXMLXPath.txt"/>
-        <DeleteFile file="data-out/customersXMLXPath.txt"/>
-        <DeleteFile file="data-out/employeesXMLXPath.txt"/>
-        <DeleteFile file="data-out/spousesXMLXPath.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A14" graphFile="graph/A14_XMLXPathCustEmplFamAm.grf">
@@ -156,10 +142,6 @@
 	 	<FlatFile outputFile="data-out/customersXMLXPath.txt" supposedFile="supposed-out/A14.customersXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/employeesXMLXPath.txt" supposedFile="supposed-out/A14.employeesXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="supposed-out/A14.spousesXMLXPath.txt"/>
-        <DeleteFile file="data-out/childrenXMLXPath.txt"/>
-        <DeleteFile file="data-out/customersXMLXPath.txt"/>
-        <DeleteFile file="data-out/employeesXMLXPath.txt"/>
-        <DeleteFile file="data-out/spousesXMLXPath.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A15" graphFile="graph/A15_XMLXPathAmCustEmplFam.grf">
@@ -168,18 +150,12 @@
 	 	<FlatFile outputFile="data-out/amountsXMLXPath.txt" supposedFile="supposed-out/A15.amountsXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/employeesXMLXPathWithAmountID.txt" supposedFile="supposed-out/A15.employeesXMLXPathWithAmountID.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="supposed-out/A15.spousesXMLXPath.txt"/>
-        <DeleteFile file="data-out/amountsXMLXPath.txt"/>
-        <DeleteFile file="data-out/childrenXMLXPath.txt"/>
-        <DeleteFile file="data-out/spousesXMLExtract.txt"/>                        
 	</FunctionalTest>
 	
 	<FunctionalTest ident="A16" graphFile="graph/A16_XMLXPathTransactionsFamily.grf">
 	 	<FlatFile outputFile="data-out/transactionsXMLXPath.txt" supposedFile="supposed-out/A16.transactionsXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/childrenXMLXPath.txt" supposedFile="supposed-out/A16.childrenXMLXPath.txt"/>
 	 	<FlatFile outputFile="data-out/spousesXMLXPath.txt" supposedFile="supposed-out/A16.spousesXMLXPath.txt"/>
-        <DeleteFile file="data-out/childrenXMLXPath.txt"/>
-        <DeleteFile file="data-out/transactionsXMLXPath.txt"/>
-        <DeleteFile file="data-out/spousesXMLXPath.txt"/>                        
-        <DeleteFile file="data-tmp/EmployeesWithFamily.xls"/>
 	</FunctionalTest>
+
 </TestScenario>
