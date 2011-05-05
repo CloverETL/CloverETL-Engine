@@ -519,14 +519,18 @@
 </FunctionalTest>
 
 <FunctionalTest ident="XmlWriter" graphFile="graph/graphXmlWriter.grf">
-     
+
+   <FlatFile outputFile="data-out/xmlOut.xml" supposedFile="supposed-out/xmlOut.xml"/>
+
+<!--     
 		<DeleteFile file="data-out/xmlOut_00.zip"/>
 		<DeleteFile file="data-out/xmlOut_01.zip"/>
 		<DeleteFile file="data-out/xmlOut_02.zip"/>
 		<DeleteFile file="data-out/xmlOut_03.zip"/>
 		<DeleteFile file="data-out/xmlOut_04.zip"/>
 		<DeleteFile file="seq/seqkey.seq"/>
-	
+-->	
+
 </FunctionalTest>
 
 <FunctionalTest ident="XMLExtractXsd" graphFile="graph/graphXMLExtractXsd.grf">
