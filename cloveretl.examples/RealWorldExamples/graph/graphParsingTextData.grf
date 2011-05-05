@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu Apr 28 14:17:15 CEST 2011" modifiedBy="avackova" name="graphParsingTextData" revision="1.86" showComponentDetails="true">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu May 05 08:46:43 CEST 2011" modifiedBy="cloveruser" name="graphParsingTextData" revision="1.90" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -20,18 +20,18 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="98" guiName="XMLWriter" guiWidth="128" guiX="463" guiY="95" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
+<Node enabled="enabled" fileUrl="${DATAOUT_DIR}/people.xml" guiHeight="94" guiName="XMLWriter" guiWidth="128" guiX="463" guiY="95" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <person clover:inPort="0">
     <clover:elements clover:include="$0.*" clover:exclude="$0.id"/>
-    <spouse clover:inPort="1" clover:key="id" clover:parentKey="id" clover:include="$1.*" clover:exclude="$1.id;$1.relationship"/>
-    <child clover:inPort="2" clover:key="id" clover:parentKey="id" clover:include="$2.*" clover:exclude="$2.id;$2.relationship"/>
+    <spouse clover:inPort="1" clover:key="id" clover:parentKey="id" clover:include="$1.name"/>
+    <child clover:inPort="2" clover:key="id" clover:parentKey="id" clover:include="$2.name"/>
   </person>
 </persons>]]></attr>
 <attr name="guiDescription"><![CDATA[Joins person with her/his spouse and children and formats the data into xml file]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="98" guiName="MultiLevelReader" guiWidth="158" guiX="13" guiY="93" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" type="MULTI_LEVEL_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="94" guiName="MultiLevelReader" guiWidth="129" guiX="13" guiY="93" id="MULTI_LEVEL_READER0" selectorProperties="children\:=2&#10;spouse\:=1&#10;" type="MULTI_LEVEL_READER">
 <attr name="selectorCode"><![CDATA[import java.nio.CharBuffer;
 
 import org.jetel.data.DataRecord;
@@ -65,7 +65,7 @@ public class SelectPerson extends PrefixMultiLevelSelector {
 }]]></attr>
 <attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  In postProcess method (see trans/SelectPerson.java), we add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Normalizer" guiWidth="128" guiX="258" guiY="155" id="NORMALIZER0" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="94" guiName="Normalizer" guiWidth="128" guiX="258" guiY="155" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
