@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Fri Apr 29 15:25:50 CEST 2011" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.112" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Thu May 05 05:53:27 CEST 2011" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.115" showComponentDetails="true">
 <Global>
 <Metadata fileURL="meta/Amounts.fmt" id="Metadata3"/>
 <Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="meta/ChildrenWithID.fmt" id="Metadata6"/>
 <Metadata fileURL="meta/CustomersWithAmountID.fmt" id="Metadata2"/>
 <Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
 <Metadata fileURL="meta/EmployeesWithAmountID.fmt" id="Metadata0"/>
@@ -19,25 +20,55 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLExtractWithAmountID.txt" guiHeight="98" guiName="employeesWithAmIDDelimited" guiWidth="253" guiX="860" guiY="238" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLExtract.txt" guiHeight="98" guiName="childrenDelimited" guiWidth="159" guiX="860" guiY="354" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLExtractWithAmID.txt" guiHeight="98" guiName="customersWithAmIDDelimited" guiWidth="249" guiX="860" guiY="583" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLExtract.txt" guiHeight="98" guiName="amountsDelimited" guiWidth="163" guiX="860" guiY="696" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLExtract.txt" guiHeight="98" guiName="spousesDelimited" guiWidth="158" guiX="860" guiY="469" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLExtractWithAmountID.txt" guiHeight="94" guiName="employeesWithAmIDDelimited" guiWidth="204" guiX="860" guiY="238" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLExtract.txt" guiHeight="94" guiName="childrenDelimited" guiWidth="130" guiX="860" guiY="354" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLExtractWithAmID.txt" guiHeight="94" guiName="customersWithAmIDDelimited" guiWidth="202" guiX="860" guiY="583" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLExtract.txt" guiHeight="94" guiName="amountsDelimited" guiWidth="133" guiX="860" guiY="696" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLExtract.txt" guiHeight="94" guiName="spousesDelimited" guiWidth="128" guiX="860" guiY="469" id="DATA_WRITER4" outputFieldNames="true" type="DATA_WRITER"/>
 <Node dedupKey="EmployeeID;SpouseName" enabled="enabled" guiHeight="64" guiName="Dedup" guiWidth="128" guiX="625" guiY="469" id="DEDUP0" keep="first" type="DEDUP"/>
-<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="64" guiName="Dedup" guiWidth="128" guiX="625" guiY="354" id="DEDUP2" keep="first" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="81" guiName="ExtSort" guiWidth="128" guiX="468" guiY="696" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="471" guiY="238" id="EXT_SORT1" sortKey="EmployeeID(a);AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="471" guiY="583" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="471" guiY="354" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="471" guiY="469" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="84" guiName="AmountsCustomersEmployees" guiWidth="250" guiX="52" guiY="327" id="XML_EXTRACT0" sourceUri="${DATATMP_DIR}/AmCustEmplFam*.xml" type="XML_EXTRACT" useNestedNodes="true">
+<Node dedupKey="ParentID;ChildName" enabled="enabled" guiHeight="64" guiName="Dedup" guiWidth="128" guiX="704" guiY="354" id="DEDUP2" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="79" guiName="ExtSort" guiWidth="128" guiX="468" guiY="696" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="94" guiName="ExtSort" guiWidth="128" guiX="471" guiY="238" id="EXT_SORT1" sortKey="EmployeeID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="94" guiName="ExtSort" guiWidth="128" guiX="471" guiY="583" id="EXT_SORT2" sortKey="CustomerID(a);AmountID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="94" guiName="ExtSort" guiWidth="128" guiX="552" guiY="343" id="EXT_SORT3" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="94" guiName="ExtSort" guiWidth="128" guiX="471" guiY="469" id="EXT_SORT4" sortKey="EmployeeID(a);SpouseName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="Reformat" guiWidth="128" guiX="399" guiY="337" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.ParentID = $0.ParentID;
+	$0.ChildName = $0.ChildName;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="84" guiName="AmountsCustomersEmployees" guiWidth="198" guiX="33" guiY="383" id="XML_EXTRACT0" sourceUri="${DATATMP_DIR}/AmCustEmplFam*.xml" type="XML_EXTRACT" useNestedNodes="true">
 <attr name="mapping"><![CDATA[<Mappings>
-  <Mapping element="transactions" outPort="4">
-    <Mapping element="customers" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
-    <Mapping element="employees" outPort="0" parentKey="AmountID" generatedKey="AmountID">
+  <Mapping element="amount" outPort="4">
+    <Mapping element="customer" outPort="3" parentKey="AmountID" generatedKey="AmountID"/>
+    <Mapping element="employee" outPort="0" parentKey="AmountID" generatedKey="AmountID">
       <Mapping element="spouse" outPort="2" parentKey="EmployeeID" generatedKey="EmployeeID"/>
-      <Mapping element="children" outPort="1" parentKey="EmployeeID" generatedKey="ParentID"/>
+      <Mapping element="ChildName" outPort="1" parentKey="EmployeeID" generatedKey="ParentID" sequenceField="ChildNo"/>
     </Mapping>
   </Mapping>
 </Mappings>
@@ -50,10 +81,11 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:1" guiBendpoints="156:0:-13:-23:0.5|156:23:-13:0:0.5" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="EXT_SORT3:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:2" guiBendpoints="131:0:-38:-126:0.5|131:126:-38:0:0.5" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 2 (out)" toNode="EXT_SORT4:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:3" guiBendpoints="114:0:-55:-228:0.5|114:228:-55:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 3 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:1" guiBendpoints="127:0:-41:50:0.5|127:-50:-41:0:0.5" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 1 (out)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:2" guiBendpoints="174:0:-66:-70:0.5|174:70:-66:0:0.5" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 2 (out)" toNode="EXT_SORT4:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:3" guiBendpoints="157:0:-83:-172:0.5|157:172:-83:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 3 (out)" toNode="EXT_SORT2:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XML_EXTRACT0:4" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 4 (out)" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>
