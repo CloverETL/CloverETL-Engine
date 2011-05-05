@@ -511,7 +511,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.ErrorMessage"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ErrorMessageException"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.NavigatingVisitor"><field access="public"/><method access="public"/></keep>
-			<keep name="org.jetel.ctl.ITLCompiler"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ITLCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.ctl.TLCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.ctl.TLCompilerFactory"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangExecutor"><field access="public"/><method access="public"/></keep>
