@@ -1,28 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<transactions>
-  <AmountID>7</AmountID>
-  <Amount>713.63</Amount>
-  <customers>
-    <CustomerID>7</CustomerID>
-    <CustomerState>Tennessee</CustomerState>
-    <CustomerSurname>Pumphrey</CustomerSurname>
-    <CustomerFirstname>Mandi</CustomerFirstname>
-  </customers>
-  <employees>
-    <EmployeeID>7</EmployeeID>
-    <EmployeeSurname>Salazar</EmployeeSurname>
-    <EmployeeFirstname>Jacqueline</EmployeeFirstname>
-    <spouse>
-      <SpouseName>Rowan</SpouseName>
-    </spouse>
-    <children>
-      <ChildName>Daniel</ChildName>
-    </children>
-    <children>
-      <ChildName>Stanley</ChildName>
-    </children>
-    <children>
-      <ChildName>Zoe</ChildName>
-    </children>
-  </employees>
-</transactions>
+<Amounts>
+  <amount>
+    <AmountID>7</AmountID>
+    <Amount>713.63</Amount>
+    <customer>
+      <CustomerID>7</CustomerID>
+      <CustomerState>Tennessee</CustomerState>
+      <CustomerSurname>Pumphrey</CustomerSurname>
+      <CustomerFirstname>Mandi</CustomerFirstname>
+    </customer>
+    <employee>
+      <EmployeeID>7</EmployeeID>
+      <EmployeeSurname>Salazar</EmployeeSurname>
+      <EmployeeFirstname>Jacqueline</EmployeeFirstname>
+      <spouse>
+        <SpouseName>Rowan</SpouseName>
+      </spouse>
+      <children>
+        <ChildName>Zoe</ChildName>
+        <ChildName>Daniel</ChildName>
+        <ChildName>Stanley</ChildName>
+      </children>
+    </employee>
+  </amount>
+</Amounts>

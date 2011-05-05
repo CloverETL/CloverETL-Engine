@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<transactions>
-  <AmountID>4</AmountID>
-  <Amount>643.40</Amount>
-  <CustomerID>4</CustomerID>
-  <CustomerState>Pennsylvania</CustomerState>
-  <CustomerSurname>Dare</CustomerSurname>
-  <CustomerFirstname>Annabelle</CustomerFirstname>
-  <EmployeeID>4</EmployeeID>
-  <EmployeeSurname>Harbison</EmployeeSurname>
-  <EmployeeFirstname>Gabriel</EmployeeFirstname>
-  <spouse>
-    <SpouseName>Tiara</SpouseName>
-  </spouse>
-  <children>
-    <ChildName/>
-  </children>
-</transactions>
+<Transactions>
+  <transaction>
+    <AmountID>4</AmountID>
+    <Amount>643.40</Amount>
+    <CustomerID>4</CustomerID>
+    <CustomerState>Pennsylvania</CustomerState>
+    <CustomerSurname>Dare</CustomerSurname>
+    <CustomerFirstname>Annabelle</CustomerFirstname>
+    <employee>
+      <EmployeeID>4</EmployeeID>
+      <EmployeeSurname>Harbison</EmployeeSurname>
+      <EmployeeFirstname>Gabriel</EmployeeFirstname>
+      <spouse>
+        <SpouseName>Tiara</SpouseName>
+      </spouse>
+      <children>
+        <ChildName></ChildName>
+      </children>
+    </employee>
+  </transaction>
+</Transactions>

@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<transactions>
-  <AmountID>12</AmountID>
-  <Amount>291.93</Amount>
-  <customers>
-    <CustomerID>12</CustomerID>
-    <CustomerState>Wisconsin</CustomerState>
-    <CustomerSurname>Mc Gary</CustomerSurname>
-    <CustomerFirstname>Marliyn</CustomerFirstname>
-  </customers>
-  <employees>
-    <EmployeeID>12</EmployeeID>
-    <EmployeeSurname>Schmidt</EmployeeSurname>
-    <EmployeeFirstname>Daniel</EmployeeFirstname>
-    <spouse>
-      <SpouseName>Rosemary</SpouseName>
-    </spouse>
-    <children>
-      <ChildName/>
-    </children>
-  </employees>
-</transactions>
+<Amounts>
+  <amount>
+    <AmountID>12</AmountID>
+    <Amount>291.93</Amount>
+    <customer>
+      <CustomerID>12</CustomerID>
+      <CustomerState>Wisconsin</CustomerState>
+      <CustomerSurname>Mc Gary</CustomerSurname>
+      <CustomerFirstname>Marliyn</CustomerFirstname>
+    </customer>
+    <employee>
+      <EmployeeID>12</EmployeeID>
+      <EmployeeSurname>Schmidt</EmployeeSurname>
+      <EmployeeFirstname>Daniel</EmployeeFirstname>
+      <spouse>
+        <SpouseName>Rosemary</SpouseName>
+      </spouse>
+      <children>
+        <ChildName></ChildName>
+      </children>
+    </employee>
+  </amount>
+</Amounts>
