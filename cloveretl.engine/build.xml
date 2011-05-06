@@ -405,6 +405,7 @@ defined.version.suffix=release
 			<keep extends="org.jetel.ctl.data.TLTypePrimitive"><field access="public"/><method access="public"/></keep>
 			
 			<keepclassmembernames implements="org.jetel.graph.IGraphElement"><method name="fromXML" /></keepclassmembernames>
+			<keep extends="org.jetel.ctl.data.TLType"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.data.Defaults"></keep>
 			<keep name="org.jetel.plugin.PluginDescriptor"><field access="public"/><method access="public"/></keep>
