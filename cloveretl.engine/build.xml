@@ -762,7 +762,7 @@ defined.version.suffix=release
 		</if>
 	</target>
 	
-	<target name="init" depends="init-user-property, clean">
+	<target name="init" depends="init-user-property">
 		<if>
 			<isset property="defined.version.suffix"/>
 			<then>
