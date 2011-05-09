@@ -518,6 +518,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.TransformLangExecutor"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangExecutorRuntimeException"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangParserVisitor"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.ProblemReporter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ASTnode.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.data.TLType"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.data.TLTypePrimitive"><field access="public"/><method access="public"/></keep>
