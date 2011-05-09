@@ -113,10 +113,11 @@ public class MappingTagger extends AbstractVisitor {
 	}
 	
 	private boolean inPartition(Element element) {
-		if (partitionElement != null || partitionElementCandidate != null) {
+		Element partition = getPartitionElement();
+		if (partition != null) {
 			Element parent = element;
 			while (parent != null) {
-				if (parent.isPartition()) {
+				if (parent == partition) {
 					return true;
 				}
 				parent = getRecurringParent(parent);
