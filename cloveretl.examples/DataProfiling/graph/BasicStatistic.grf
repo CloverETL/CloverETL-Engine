@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Mon Jun 07 16:12:02 CEST 2010" modifiedBy="avackova" name="DataProfiling" revision="1.324">
+<Graph author="avackova" created="Mon Dec 07 09:19:45 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260188038200" licenseType="Evaluation Devel" modified="Mon May 09 17:30:03 CEST 2011" modifiedBy="avackova" name="DataProfiling" revision="1.327" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -76,32 +76,24 @@ input_file - data file for analysis (attached two example files: ${DATAIN_DIR}/O
 metadata - shared metadata corresponding to input file (for above example files use ${META_DIR}/orders.fmt and ${META_DIR}/employees.fmt respectively)
 This graph has its own parameter also. It is output_file, that defines file for data statistc.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="221" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Normalizing data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="115" y="354">
-<attr name="text"><![CDATA[This component creates "normalized" records from each input record. Such "normalized" record consists of three basic fields: original field name, field type  and "normalized" value, which is original value for numeric fields, time in milliseconds for date fields and data length for string or byte fields.
-This component collects basic information about string data also: finds first not null value, checks if string contains only Ascii characters and if it can be converted to number.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="219" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating statistic" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="177" x="363" y="355">
-<attr name="text"><![CDATA[Statistic is created by Rollup component. This component, for each group of records (defined by original field name), calculates minimum, maximum and average value. It also propagates first not null value, checks if all isAscii and isNumber fields are not false and sets proper value for whole group.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="219" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Converting to string" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="146" x="549" y="355">
-<attr name="text"><![CDATA[Purpose of this component is to convert date data from miliseconds to the value pellucid to user. For data of all other types, there is used default to string transform.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="218" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Storing statistic in file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="194" x="704" y="354">
-<attr name="text"><![CDATA[Data statistic can be stored in an output file of any type or be printed out to console. This example is configured to create a simple html page, that contains table with cretaed basic statistic. Changing WRITER_TYPE to XLS_WRITER results in creating xls file with data statistic in "Statistic" sheet. To print out statistic on the console set WRITER_TYPE to TRASH.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="78" guiY="282" id="DATA_READER0" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="81" guiName="DataReader" guiWidth="128" guiX="78" guiY="282" id="DATA_READER0" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${input_file}]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="675" guiY="282" id="EXT_SORT0" sortKey="fieldName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="225" guiY="282" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer.java" type="NORMALIZER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ToStringValue" guiWidth="0" guiX="523" guiY="282" id="REFORMAT0" transformURL="${TRANS_DIR}/StatNormalizer.java" type="REFORMAT"/>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="0" guiName="Statistic" guiWidth="0" guiX="379" guiY="282" id="ROLLUP0" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" guiHeight="81" guiName="ExtSort" guiWidth="128" guiX="675" guiY="282" id="EXT_SORT0" sortKey="fieldName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="98" guiName="Normalizer" guiWidth="128" guiX="225" guiY="282" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer.java" type="NORMALIZER">
+<attr name="guiDescription"><![CDATA[Creates "normalized" records from each input record. Such "normalized" record consists of three basic fields: original field name, field type  and "normalized" value, which is original value for numeric fields, time in milliseconds for date fields and data length for string or byte fields.
+This component collects basic information about string data also: finds first not null value, checks if string contains only Ascii characters and if it can be converted to number.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="ToStringValue" guiWidth="132" guiX="523" guiY="282" id="REFORMAT0" transformURL="${TRANS_DIR}/StatNormalizer.java" type="REFORMAT">
+<attr name="guiDescription"><![CDATA[Convert date data from miliseconds to the value pellucid to user. For data of all other types, there is used default toString transformation.]]></attr>
+</Node>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="98" guiName="Statistic" guiWidth="128" guiX="379" guiY="282" id="ROLLUP0" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 
 // Called for the first data record in a new group. Starts the parsing of the new group.
@@ -190,47 +182,14 @@ function transform(counter, groupAccumulator) {
 // }
 
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Calculates minimum, maximum and average value for each group of records (defined by original field name). It also propagates first not null value, checks if all isAscii and isNumber fields are not false and sets proper value for whole group.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="830" guiY="282" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
-<attr name="mask"><![CDATA[	<TR>
-		<TD>
-			$fieldName
-		</TD>
-		<TD ALIGN=CENTER>
-			$type
-		</TD>
-		<TD>
-			$min
-		</TD>
-		<TD>
-			$max
-		</TD>
-		<TD>
-			$average
-		</TD>
-		<TD >
-			$count
-		</TD>
-		<TD >
-			$countNotNull
-		</TD>
-		<TD >
-			$countNull
-		</TD>
-		<TD >
-			$firstNotNull
-		</TD>
-		<TD >
-			$isAscii
-		</TD>
-		<TD >
-			$isNumber
-		</TD>
-	</TR>]]></attr>
-<attr name="fileURL"><![CDATA[${output_file}]]></attr>
-<attr name="debugPrint"><![CDATA[true]]></attr>
+<Node enabled="enabled" guiHeight="98" guiName="DataWriter" guiWidth="128" guiX="830" guiY="282" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Statistic]]></attr>
-<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="guiDescription"><![CDATA[Data statistic can be stored in an output file of any type or be printed out to console. This example is configured to create a simple html page, that contains table with cretaed basic statistic. Changing WRITER_TYPE to XLS_WRITER results in creating xls file with data statistic in "Statistic" sheet. To print out statistic on the console set WRITER_TYPE to TRASH.]]></attr>
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
 <attr name="header"><![CDATA[<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
@@ -275,15 +234,50 @@ function transform(counter, groupAccumulator) {
 			is number
 		</TH>
 	</TR>]]></attr>
-<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
 <attr name="footer"><![CDATA[</TABLE>
 </BODY>
 </HTML>]]></attr>
+<attr name="mask"><![CDATA[	<TR>
+		<TD>
+			$fieldName
+		</TD>
+		<TD ALIGN=CENTER>
+			$type
+		</TD>
+		<TD>
+			$min
+		</TD>
+		<TD>
+			$max
+		</TD>
+		<TD>
+			$average
+		</TD>
+		<TD >
+			$count
+		</TD>
+		<TD >
+			$countNotNull
+		</TD>
+		<TD >
+			$countNull
+		</TD>
+		<TD >
+			$firstNotNull
+		</TD>
+		<TD >
+			$isAscii
+		</TD>
+		<TD >
+			$isNumber
+		</TD>
+	</TR>]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="NORMALIZER0:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="NORMALIZER0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (out)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
 </Phase>
 </Graph>
