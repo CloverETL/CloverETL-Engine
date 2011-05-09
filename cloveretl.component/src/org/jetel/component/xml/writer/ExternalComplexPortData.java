@@ -64,6 +64,7 @@ public class ExternalComplexPortData extends PortData {
 	private ByteBuffer indexBuffer;
 	
 	private long cacheSize;
+	private long counter = 0;
 		
 	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
 		super(inPort, keys, tempDirectory);
@@ -161,7 +162,7 @@ public class ExternalComplexPortData extends PortData {
 			database.put(null, databaseKey, databaseValue);
 		}
 		if (nullKey) {
-			DatabaseEntry databaseKey = new DatabaseEntry(new byte[0]);
+			DatabaseEntry databaseKey = new DatabaseEntry(toByteArray(counter++));
 			Database database = dataMap.get(NULL_INDEX_NAME);
 			database.put(null, databaseKey, databaseValue);
 		}
