@@ -55,6 +55,8 @@ public class ExternalSimplePortData extends PortData {
 	
 	private long cacheSize;
 	
+	private long counter = 0;
+	
 	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
 		super(inPort, keys, tempDirectory);
 		this.cacheSize = cacheSize; 
@@ -110,8 +112,7 @@ public class ExternalSimplePortData extends PortData {
 		
 		DatabaseEntry databaseKey;
 		if (nullKey) {
-			databaseKey = new DatabaseEntry(new byte[0]);
-			database.put(null, databaseKey, databaseValue);
+			database.put(null, new DatabaseEntry(toByteArray(counter++)), databaseValue);
 		} else {
 			int[] key = primaryKey[0];
 		
@@ -263,5 +264,4 @@ public class ExternalSimplePortData extends PortData {
 			return next;
 		}
 	}
-
 }
