@@ -308,7 +308,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * 
      * @param configProperties
      */
-	private void fromProperties(Properties properties) {
+	protected void fromProperties(Properties properties) {
 		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
 
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
@@ -480,7 +480,7 @@ public class DBConnection extends GraphElement implements IConnection {
         return connection;
     }
 
-    private Connection connect(OperationType operationType) throws JetelException {
+    protected Connection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
         	try {
             	Context initContext = new InitialContext();
