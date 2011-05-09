@@ -425,7 +425,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	}
 	
 	public DataRecordMetadata parseRecordMetadata(org.w3c.dom.Node topNode) throws DOMException {
-		if (!topNode.getNodeName().equals(RECORD_ELEMENT)) {
+		if (topNode == null || !RECORD_ELEMENT.equals(topNode.getNodeName())) {
 			throw new DOMException(DOMException.NOT_FOUND_ERR,
 					"Root node is not of type " + RECORD_ELEMENT);
 		}
