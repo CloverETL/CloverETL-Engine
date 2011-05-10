@@ -18,43 +18,22 @@
  */
 package org.jetel.component.xml.writer.model;
 
-import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jetel.component.xml.writer.XmlFormatter;
-import org.jetel.component.xml.writer.model.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
 
 /**
- * class representing xml comment
+ * Interface for value representation.
  * 
- * @author tkramolis (info@cloveretl.com)
+ * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 31 Mar 2011
+ * @created 10.5.2011
  */
-public class WritableComment implements Writable {
-
-	private WritableValue value;
+public interface TextValue {
 	
-	public WritableComment(WritableValue value) {
-		this.value = value;
-	}
-
-	@Override
-	public void write(XmlFormatter formatter, Map<Integer, DataRecord> availableData) 
-	throws XMLStreamException, IOException {
-		MappingWriteState state = formatter.getMapping().getState();
-		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
-			formatter.getWriter().writeComment(value.getText(availableData));
-		}
-	}
-
-	@Override
-	public boolean isEmpty(Map<Integer, DataRecord> availableData) {
-		return false;
-	}
+	public String getText(Map<Integer, DataRecord> availableData);
 	
+	public boolean isEmpty(Map<Integer, DataRecord> availableData);
+
 }

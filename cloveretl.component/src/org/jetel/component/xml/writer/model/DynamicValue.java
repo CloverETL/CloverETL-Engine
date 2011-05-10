@@ -20,9 +20,6 @@ package org.jetel.component.xml.writer.model;
 
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jetel.component.xml.writer.XmlFormatter;
 import org.jetel.data.DataRecord;
 
 /**
@@ -33,7 +30,7 @@ import org.jetel.data.DataRecord;
  *
  * @created 20 Dec 2010
  */
-public class DynamicValue implements Writable {
+public class DynamicValue implements TextValue {
 	
 	private final int port;
 	private final int fieldIndex;
@@ -41,11 +38,6 @@ public class DynamicValue implements Writable {
 	public DynamicValue(int port, int fieldIndex) {
 		this.port = port;
 		this.fieldIndex = fieldIndex;
-	}
-
-	@Override
-	public void write(XmlFormatter formatter, Map<Integer, DataRecord> availableData) throws XMLStreamException {
-		throw new UnsupportedOperationException("Use WritableValue instead!");
 	}
 
 	@Override

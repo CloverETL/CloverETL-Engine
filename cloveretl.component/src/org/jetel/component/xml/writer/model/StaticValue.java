@@ -20,9 +20,6 @@ package org.jetel.component.xml.writer.model;
 
 import java.util.Map;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jetel.component.xml.writer.XmlFormatter;
 import org.jetel.data.DataRecord;
 
 /**
@@ -33,17 +30,12 @@ import org.jetel.data.DataRecord;
  *
  * @created 20 Dec 2010
  */
-public class StaticValue implements Writable {
+public class StaticValue implements TextValue {
 	
 	private final String value;
 	
 	public StaticValue(String value) {
 		this.value = value;
-	}
-
-	@Override
-	public void write(XmlFormatter formatter, Map<Integer, DataRecord> availableData) throws XMLStreamException {
-		throw new UnsupportedOperationException("Writable value should be used instead!");
 	}
 
 	@Override

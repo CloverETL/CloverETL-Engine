@@ -32,19 +32,19 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.jetel.component.xml.writer.MappingTagger.Tag;
-import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.WildcardElement;
+import org.jetel.component.xml.writer.mapping.AbstractElement;
 import org.jetel.component.xml.writer.mapping.Attribute;
 import org.jetel.component.xml.writer.mapping.Comment;
 import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.Namespace;
-import org.jetel.component.xml.writer.mapping.AbstractElement;
-import org.jetel.component.xml.writer.mapping.Value;
 import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.Value;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
 import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.component.xml.writer.model.DynamicValue;
 import org.jetel.component.xml.writer.model.StaticValue;
-import org.jetel.component.xml.writer.model.Writable;
+import org.jetel.component.xml.writer.model.TextValue;
 import org.jetel.component.xml.writer.model.WritableAttribute;
 import org.jetel.component.xml.writer.model.WritableComment;
 import org.jetel.component.xml.writer.model.WritableElement;
@@ -204,7 +204,7 @@ public class MappingCompiler extends AbstractVisitor {
 		
 		if (element.isElement()) {
 			for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
-				WritableValue value = WritableValue.newInstance(new Writable[] {new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex)});
+				WritableValue value = WritableValue.newInstance(new TextValue[] {new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex)});
 				WritableElement subElement = new WritableElement(dataFieldWrapper.dataFieldMetadata.getName(),
 						dataFieldWrapper.namespace, writeNullSet.contains(dataFieldWrapper));
 				subElement.addChild(value);
@@ -212,7 +212,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		} else {
 			for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
-				WritableValue value = WritableValue.newInstance(new Writable[] {new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex)});				
+				WritableValue value = WritableValue.newInstance(new TextValue[] {new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex)});				
 				WritableAttribute attribute = new WritableAttribute(dataFieldWrapper.dataFieldMetadata.getName(),
 						dataFieldWrapper.namespace, value, writeNullSet.contains(dataFieldWrapper));
 				currentParent.addAttribute(attribute);
@@ -391,10 +391,10 @@ public class MappingCompiler extends AbstractVisitor {
 	
 	private WritableValue parseValue(String inputValue) {
 		if (inputValue == null) {
-			return WritableValue.newInstance(new Writable[0]);
+			return WritableValue.newInstance(new TextValue[0]);
 		}
 		
-		List<Writable> value = new LinkedList<Writable>();
+		List<TextValue> value = new LinkedList<TextValue>();
 		String valueToProcess = inputValue.trim();
 		
 		Matcher matcher = XmlMapping.DATA_REFERENCE.matcher(valueToProcess);
@@ -442,7 +442,7 @@ public class MappingCompiler extends AbstractVisitor {
 			staticValue = staticValue.replaceAll(XmlMapping.ESCAPED_PORT_REGEX, XmlMapping.PORT_IDENTIFIER);
 			value.add(new StaticValue(staticValue));
 		}
-		return WritableValue.newInstance(value.toArray(new Writable[value.size()]));
+		return WritableValue.newInstance(value.toArray(new TextValue[value.size()]));
 	}
 	
 	private static class ParsedName {
