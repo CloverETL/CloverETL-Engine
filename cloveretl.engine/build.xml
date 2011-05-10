@@ -437,6 +437,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.PluginableItemDescription"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.parser.*Parser*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.parser.CharByteInputReader$DoubleMarkCharByteInputReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.DriverReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.InputReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.SlaveReader"><field access="public"/><method access="public"/></keep>
@@ -516,6 +517,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.ctl.TLCompiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.ctl.TLCompilerFactory"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangExecutor"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.TLUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangExecutorRuntimeException"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.TransformLangParserVisitor"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.ProblemReporter"><field access="public"/><method access="public"/></keep>
