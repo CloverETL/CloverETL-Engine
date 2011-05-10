@@ -258,6 +258,10 @@ public class NodeTrackingDetail implements NodeTracking {
 	public void setNodeId(String nodeId) {
 		this.nodeId = nodeId;
 	}
+	
+	public void setNodeName(String nodeName) {
+		this.nodeName = nodeName;
+	}
 
 	public void setTotalCPUTime(long totalCPUTime) {
 		this.totalCPUTime = totalCPUTime;
