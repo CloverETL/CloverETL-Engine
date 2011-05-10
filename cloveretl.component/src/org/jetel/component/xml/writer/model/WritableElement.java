@@ -125,9 +125,5 @@ public class WritableElement implements Writable {
 		newArray[namespaces.length] = element;
 		namespaces = newArray;
 	}
-
-	@Override
-	public String getText(Map<Integer, DataRecord> availableData) {
-		throw new UnsupportedOperationException();
-	}
+	
 }

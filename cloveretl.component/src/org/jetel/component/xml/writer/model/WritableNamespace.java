@@ -52,9 +52,5 @@ public class WritableNamespace implements Writable {
 	public boolean isEmpty(Map<Integer, DataRecord> availableData) {
 		return false;
 	}
-
-	@Override
-	public String getText(Map<Integer, DataRecord> availableData) {
-		throw new UnsupportedOperationException();
-	}
+	
 }

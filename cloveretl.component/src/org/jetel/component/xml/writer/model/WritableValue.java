@@ -36,7 +36,7 @@ import org.jetel.data.DataRecord;
  */
 public abstract class WritableValue implements Writable {
 	
-	public static WritableValue newInstance(Writable[] value) {
+	public static WritableValue newInstance(TextValue[] value) {
 		if (value == null) {
 			throw new NullPointerException("value");
 		}
@@ -58,21 +58,19 @@ public abstract class WritableValue implements Writable {
 	@Override
 	public abstract boolean isEmpty(Map<Integer, DataRecord> availableData);
 
-	@Override
 	public abstract String getText(Map<Integer, DataRecord> availableData);
-	
 	
 	private static class WritableComplexValue extends WritableValue {
 
-		private final Writable[] value;
+		private final TextValue[] value;
 		
-		WritableComplexValue(Writable[] value) {
+		WritableComplexValue(TextValue[] value) {
 			this.value = value;
 		}
 
 		@Override
 		public boolean isEmpty(Map<Integer, DataRecord> availableData) {
-			for (Writable element : value) {
+			for (TextValue element : value) {
 				if (!element.isEmpty(availableData)) {
 					return false;
 				}
@@ -83,7 +81,7 @@ public abstract class WritableValue implements Writable {
 		@Override
 		public String getText(Map<Integer, DataRecord> availableData) {
 			StringBuilder builder = new StringBuilder();
-			for (Writable part : value) {
+			for (TextValue part : value) {
 				builder.append(part.getText(availableData));
 			}
 			return builder.toString();
@@ -92,9 +90,9 @@ public abstract class WritableValue implements Writable {
 	
 	private static class WritableSimpleValue extends WritableValue {
 		
-		private final Writable value;
+		private final TextValue value;
 		
-		WritableSimpleValue(Writable value) {
+		WritableSimpleValue(TextValue value) {
 			this.value = value;
 		}
 

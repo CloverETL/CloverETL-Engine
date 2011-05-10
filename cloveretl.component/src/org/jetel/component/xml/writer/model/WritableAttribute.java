@@ -60,10 +60,5 @@ public class WritableAttribute implements Writable {
 	public boolean isEmpty(Map<Integer, DataRecord> availableData) {
 		return !writeNull && value.isEmpty(availableData);
 	}
-
-	@Override
-	public String getText(Map<Integer, DataRecord> availableData) {
-		throw new UnsupportedOperationException();
-	}
 	
 }

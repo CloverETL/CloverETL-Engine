@@ -27,7 +27,7 @@ import org.jetel.component.xml.writer.XmlFormatter;
 import org.jetel.data.DataRecord;
 
 /**
- * Interface for xml writer engine model.
+ * Interface for xml writer engine model elements.
  * 
  * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -40,6 +40,4 @@ public interface Writable {
 	
 	public boolean isEmpty(Map<Integer, DataRecord> availableData);
 	
-	public String getText(Map<Integer, DataRecord> availableData);
-
 }
