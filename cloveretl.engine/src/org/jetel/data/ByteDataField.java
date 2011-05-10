@@ -159,7 +159,9 @@ public class ByteDataField extends DataField implements Comparable<Object> {
             }
             setValue(result);
 		}else {
-		    throw new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
+			BadDataFormatException ex = new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
+        	ex.setFieldNumber(getMetadata().getNumber());
+        	throw ex;
 		}
 	}
 

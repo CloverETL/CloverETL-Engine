@@ -167,7 +167,9 @@ public class DateDataField extends DataField implements Comparable<Object> {
 		}else if (_value instanceof Number){
 			setValue(((Number)_value).longValue());
 		}else {
-		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
+			BadDataFormatException ex = new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
+        	ex.setFieldNumber(getMetadata().getNumber());
+        	throw ex;
 		}
 	}
 	

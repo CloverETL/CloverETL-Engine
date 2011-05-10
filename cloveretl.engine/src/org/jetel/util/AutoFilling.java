@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.data.DataRecord;
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -208,37 +210,48 @@ public class AutoFilling {
             globalCounter++;
         	return;
         }
-        
-       	for (int i : autoFillingData.globalRowCount) {
-       		rec.getField(i).setValue(globalCounter);
-       	}
-       	for (int i : autoFillingData.sourceRowCount) {
-       		rec.getField(i).setValue(sourceCounter);
-       	}
-       	for (int i : autoFillingData.metadataRowCount) {
-       		rec.getField(i).setValue(autoFillingData.counter);
-       	}
-       	for (int i : autoFillingData.metadataSourceRowCount) {
-       		rec.getField(i).setValue(autoFillingData.sourceCounter);
-       	}
-       	for (int i : autoFillingData.sourceName) {
-       		rec.getField(i).setValue(filename);
-       	}
-       	for (int i : autoFillingData.sourceTimestamp) {
-       		rec.getField(i).setValue(fileTimestamp);
-       	}
-       	for (int i : autoFillingData.sourceSize) {
-       		rec.getField(i).setValue(fileSize);
-       	}
-       	for (int i : autoFillingData.defaultValue) {
-       		rec.getField(i).setToDefaultValue();
-       	}
-       	for (int i : autoFillingData.readerTimestamp) {
-       		rec.getField(i).setValue(readerTimestamp == null ? readerTimestamp = new Date() : readerTimestamp);
-       	}
-       	for (int i : autoFillingData.rowTimestamp) {
-       		rec.getField(i).setValue(new Date());
-       	}
+        try {
+	       	for (int i : autoFillingData.globalRowCount) {
+	       		rec.getField(i).setValue(globalCounter);
+	       	}
+	       	for (int i : autoFillingData.sourceRowCount) {
+	       		rec.getField(i).setValue(sourceCounter);
+	       	}
+	       	for (int i : autoFillingData.metadataRowCount) {
+	       		rec.getField(i).setValue(autoFillingData.counter);
+	       	}
+	       	for (int i : autoFillingData.metadataSourceRowCount) {
+	       		rec.getField(i).setValue(autoFillingData.sourceCounter);
+	       	}
+	       	for (int i : autoFillingData.sourceName) {
+	       		rec.getField(i).setValue(filename);
+	       	}
+	       	for (int i : autoFillingData.sourceTimestamp) {
+	       		rec.getField(i).setValue(fileTimestamp);
+	       	}
+	       	for (int i : autoFillingData.sourceSize) {
+	       		rec.getField(i).setValue(fileSize);
+	       	}
+	       	for (int i : autoFillingData.defaultValue) {
+	       		rec.getField(i).setToDefaultValue();
+	       	}
+	       	for (int i : autoFillingData.readerTimestamp) {
+	       		rec.getField(i).setValue(readerTimestamp == null ? readerTimestamp = new Date() : readerTimestamp);
+	       	}
+	       	for (int i : autoFillingData.rowTimestamp) {
+	       		rec.getField(i).setValue(new Date());
+	       	}
+	       	//Field 'source_size' (string) cannot be populated with autofilling value reader_timestamp (java.lang.Long) because of incompatible data types.
+        } catch (BadDataFormatException ex) {
+        	int fieldNumber = ex.getFieldNumber();
+        	if(fieldNumber < 0)
+        		throw ex;
+        	DataFieldMetadata meta = rec.getField(fieldNumber).getMetadata();
+        	String message = "Field '"+meta.getName()+"' ("+meta.getTypeAsString()
+        						+") cannot be populated with autofilling value ("+meta.getAutoFilling()
+        							+") because of incompatible data types";
+        	throw new BadDataFormatException(message, ex.getOffendingValue(), ex.getCause());
+        }
         globalCounter++;
         sourceCounter++;
         l3Counter++;

@@ -57,12 +57,12 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         super(message, cause);
     }
     
-	public BadDataFormatException(String message, String offendingValue) {
+	public BadDataFormatException(String message, CharSequence offendingValue) {
 		super(message);
 		this.offendingValue = offendingValue;
 	}
     
-    public BadDataFormatException(String message, String offendingValue, Throwable cause) {
+    public BadDataFormatException(String message, CharSequence offendingValue, Throwable cause) {
         super(message, cause);
         this.offendingValue = offendingValue;
     }

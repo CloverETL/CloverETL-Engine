@@ -189,7 +189,9 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
         } else if (_value instanceof Decimal) {
             setValue((Decimal) _value);
 		} else {
-		    throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
+			BadDataFormatException ex = new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
+        	ex.setFieldNumber(getMetadata().getNumber());
+        	throw ex;
 		}
 	}
 
