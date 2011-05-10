@@ -106,7 +106,9 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 			value = Boolean.valueOf( (String)_value );
 			setNull(false);
 		}else {
-		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
+			BadDataFormatException ex = new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
+        	ex.setFieldNumber(getMetadata().getNumber());
+        	throw ex;
 		}
 	}
 	
