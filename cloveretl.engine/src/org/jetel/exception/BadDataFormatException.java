@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+
 /**
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
@@ -61,12 +64,22 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		super(message);
 		this.offendingValue = offendingValue;
 	}
+	
+	public BadDataFormatException(String message, String offendingValue) {
+		super(message);
+		this.offendingValue = offendingValue;
+	}
     
     public BadDataFormatException(String message, CharSequence offendingValue, Throwable cause) {
         super(message, cause);
         this.offendingValue = offendingValue;
     }
 
+    public BadDataFormatException(String message, String offendingValue, Throwable cause) {
+        super(message, cause);
+        this.offendingValue = offendingValue;
+    }
+    
     public synchronized void setNextException(BadDataFormatException next){
     	BadDataFormatException theEnd = this;
     	while (theEnd.next != null) {
@@ -171,6 +184,10 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 			ex = ex.next;
 		}while (ex != null);
 		return exceptions.iterator();
+	}    
+	
+	public static void main(String arg) {
+		DataFieldMetadata metadata = null;
+		throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
 	}
-    
 }
