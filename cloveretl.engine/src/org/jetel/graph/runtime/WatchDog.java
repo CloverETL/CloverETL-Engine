@@ -116,8 +116,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		currentPhase = null;
 		watchDogStatus = Result.N_A;
         
-        inMsgQueue=new LinkedBlockingQueue<Message<?>>();
-        outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
+		inMsgQueue = new LinkedBlockingQueue<Message<?>>();
+		outMsgMap = new DuplicateKeyMap(Collections.synchronizedMap(new HashMap<GraphElement, Message<?>>()));
         
         //is JMX turned on?
         provideJMX = runtimeContext.useJMX();
@@ -323,6 +323,17 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    			} catch (InterruptedException e) {
 						throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
 	    			}
+	           	}
+	           	if (!cloverJMX.canCloseServer()) {
+		           	// give client one last chance to react to final notification and to send close signal before cloverJMX is unregistering
+	           		try {
+	    				cloverJMX.wait(100);
+	    			} catch (InterruptedException e) {
+						throw new RuntimeException("WatchDog was interrupted while was waiting for close signal.");
+	    			}
+		           	if (!cloverJMX.canCloseServer()) {
+		           		logger.debug("JMX server close signal timeout; client may have missed final notification");
+		           	}
 	           	}
        		}
        	}
@@ -633,12 +644,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return phaseStatus;
 	}
 
-	public void sendMessage(Message msg) {
+	public void sendMessage(Message<?> msg) {
         inMsgQueue.add(msg);
     }
 
-    public Message[] receiveMessage(GraphElement recipient, @SuppressWarnings("unused") final long wait) {
-        Message[] msg = null;
+    public Message<?>[] receiveMessage(GraphElement recipient, final long wait) {
+        Message<?>[] msg = null;
         synchronized (_MSG_LOCK) {
             msg=(Message[])outMsgMap.getAll(recipient, new Message[0]);
             if (msg!=null) {
