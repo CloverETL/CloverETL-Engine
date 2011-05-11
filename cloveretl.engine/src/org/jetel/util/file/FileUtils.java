@@ -121,6 +121,19 @@ public class FileUtils {
     public static URL getFileURL(String contextURL, String fileURL) throws MalformedURLException {
     	return getFileURL(getFileURL((URL) null, contextURL), fileURL);
     }
+    /**
+    * Creates URL object based on specified fileURL string. Handles
+    * situations when <code>fileURL</code> contains only path to file
+    * <i>(without "file:" string)</i>. 
+    * 
+    * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
+    * @param fileURL   string containing file URL
+    * @return  URL object or NULL if object can't be created (due to Malformed URL)
+    * @throws MalformedURLException  
+    */
+    public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+    	return getFileURL(contextURL, fileURL, false);
+    }
     
     /**
      * Creates URL object based on specified fileURL string. Handles
@@ -132,7 +145,7 @@ public class FileUtils {
      * @return  URL object or NULL if object can't be created (due to Malformed URL)
      * @throws MalformedURLException  
      */
-    public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+    public static URL getFileURL(URL contextURL, String fileURL, boolean addStrokePrefix) throws MalformedURLException {
     	// remove mark for absolute path
     	if (contextURL != null && fileURL.startsWith(FILE_PROTOCOL_ABSOLUTE_MARK)) {
     		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
@@ -164,7 +177,7 @@ public class FileUtils {
         
         // file url
 		String prefix = FILE_PROTOCOL + ":";
-		if (new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
+		if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
 			prefix += "/";
 		}
         return new URL(contextURL, prefix + fileURL);
