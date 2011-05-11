@@ -97,8 +97,14 @@ public class TLCompiler implements ITLCompiler {
 		this.problemReporter = new ProblemReporter();
 		this.logger = LogFactory.getLog(TLCompiler.class);
 	}
-
 	
+	/**
+	 * @param inMetadata the inMetadata to set
+	 */
+	public void setInMetadata(DataRecordMetadata[] inMetadata) {
+		this.inMetadata = inMetadata;
+	}
+
 	/**
 	 * Validate given (Filter) expression. 
 	 * Result of this method is identical to {@link #validate(InputStream)} with UTF-8 encoding
