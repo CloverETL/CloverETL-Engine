@@ -75,12 +75,11 @@ public class ExternalSimplePortData extends PortData {
 		envConfig.setSharedCache(true);
 		Environment dbEnvironment;
 		try {
-			File f;
-			if (tempDirectory != null) {
-				f = new File(tempDirectory);
-			} else {
-				f = new File(System.getProperty("java.io.tmpdir"));
-			}
+			File f = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
+			f.delete();
+			f.mkdir();
+			f.deleteOnExit();
+			
 			dbEnvironment = new Environment(f, envConfig);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
