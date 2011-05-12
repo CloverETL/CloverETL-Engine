@@ -292,6 +292,7 @@
 			<keep name="org.jetel.component.normalize.DataRecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.denormalize.RecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.denormalize.DataRecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.CTLRecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.JavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.BasicJavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.RecordTransform"><field access="protected public"/><method access="protected public"/></keep>
