@@ -18,8 +18,6 @@
  */
 package org.jetel.metadata;
 
-import static org.jetel.metadata.BinaryFormat.BINARY_FORMAT_PREFIX;
-
 import java.nio.ByteOrder;
 
 import org.jetel.util.string.StringUtils;
@@ -35,16 +33,32 @@ import org.jetel.util.string.StringUtils;
  */
 public enum BinaryFormat {
 
-	BIG_ENDIAN(ByteOrder.BIG_ENDIAN),
-	LITTLE_ENDIAN(ByteOrder.LITTLE_ENDIAN),
-	PACKED_DECIMAL(null);
+	BIG_ENDIAN("Big-endian, variable length", ByteOrder.BIG_ENDIAN),
+	LITTLE_ENDIAN("Little-endian, variable length", ByteOrder.LITTLE_ENDIAN),
+	PACKED_DECIMAL("Packed decimal, variable length. May be used with implicit decimal point."),
+	DOUBLE_BIG_ENDIAN("Double, big-endian (8 bytes)", ByteOrder.BIG_ENDIAN, 8),
+	DOUBLE_LITTLE_ENDIAN("Double, little-endian (8 bytes)", ByteOrder.LITTLE_ENDIAN, 8),
+	FLOAT_BIG_ENDIAN("Float, big-endian (4 bytes)", ByteOrder.BIG_ENDIAN, 4),
+	FLOAT_LITTLE_ENDIAN("Float, little-endian (4 bytes)", ByteOrder.LITTLE_ENDIAN, 4);
 	
 	public static final String BINARY_FORMAT_PREFIX = "BINARY:";
 
+	public final String description;
 	public final ByteOrder byteOrder;
+	public final Integer size;
 	
-	private BinaryFormat(ByteOrder byteOrder) {
+	private BinaryFormat(String description) {
+		this(description, null);
+	}
+	
+	private BinaryFormat(String description, ByteOrder byteOrder) {
+		this(description, byteOrder, null);
+	}
+	
+	private BinaryFormat(String description, ByteOrder byteOrder, Integer size) {
+		this.description = description;
 		this.byteOrder = byteOrder;
+		this.size = size;
 	}
 	
 	public String getFormatString() {

@@ -85,19 +85,17 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	public NumericDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
 
-		if(_metadata.isByteBased()) {
+		if (_metadata.isByteBased()) {
     		String typeStr = _metadata.getBinaryFormatParams();
     		try {
 				binaryFormat = BinaryFormat.valueOf(typeStr);
 			} catch (IllegalArgumentException iae) {
 				throw new JetelRuntimeException("Invalid binary format: " + typeStr, iae);
 			}
-			switch(binaryFormat) {
-			case BIG_ENDIAN: case LITTLE_ENDIAN:
-				if(metadata.getSize() < FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is less than %d bytes", FIELD_SIZE_BYTES));
-				} else if(metadata.getSize() > FIELD_SIZE_BYTES) {
-					throw new BadDataFormatException(String.format("The size of the field is more than %d bytes", FIELD_SIZE_BYTES));
+			switch (binaryFormat) {
+			case FLOAT_BIG_ENDIAN: case FLOAT_LITTLE_ENDIAN: case DOUBLE_BIG_ENDIAN: case DOUBLE_LITTLE_ENDIAN:
+				if (_metadata.getSize() != binaryFormat.size) {
+					throw new BadDataFormatException(String.format("The size of the field must be %d bytes", binaryFormat.size));
 				}
 				break;
 			default:
@@ -426,13 +424,20 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 */
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		if(binaryFormat != null) {
+		if (binaryFormat != null) {
 			switch (binaryFormat) {
-			case BIG_ENDIAN: case LITTLE_ENDIAN:
+			case DOUBLE_BIG_ENDIAN: 
+			case DOUBLE_LITTLE_ENDIAN: 
+			case FLOAT_BIG_ENDIAN: 
+			case FLOAT_LITTLE_ENDIAN:
 				ByteOrder originalByteOrder = dataBuffer.order();
 				dataBuffer.order(binaryFormat.byteOrder); // set the field's byte order
 				try {
-					dataBuffer.putDouble(this.value);
+					if (binaryFormat.size == 4) {
+						dataBuffer.putFloat((float) this.value);
+					} else if(binaryFormat.size == 8) {
+						dataBuffer.putDouble(this.value);
+					}
 				} catch (BufferOverflowException boe) {
 					throw new BadDataFormatException("Failed to store the data, the buffer is full", boe);
 				} finally {
@@ -469,18 +474,22 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 */
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		if(binaryFormat != null) {
-			switch(binaryFormat) {
-			case BIG_ENDIAN: case LITTLE_ENDIAN:
+		if (binaryFormat != null) {
+			switch (binaryFormat) {
+			case DOUBLE_BIG_ENDIAN: 
+			case DOUBLE_LITTLE_ENDIAN: 
+			case FLOAT_BIG_ENDIAN: 
+			case FLOAT_LITTLE_ENDIAN:
 				ByteOrder originalByteOrder = dataBuffer.order();
 				dataBuffer.order(binaryFormat.byteOrder); //set the field's byte order
 				try {
-					this.value = dataBuffer.getDouble();
-					if(dataBuffer.hasRemaining()) {
-						throw new BadDataFormatException(String.format("The buffer contains more than %d bytes", FIELD_SIZE_BYTES));
+					if (binaryFormat.size == 4) {
+						this.value = dataBuffer.getFloat();
+					} else if(binaryFormat.size == 8) {
+						this.value = dataBuffer.getDouble();
 					}
 				} catch(BufferUnderflowException bue) {
-					throw new BadDataFormatException(String.format("The buffer contains less than %d bytes", FIELD_SIZE_BYTES), bue);
+					throw new BadDataFormatException(String.format("The buffer contains less than %d bytes", binaryFormat.size), bue);
 				} finally {
 					dataBuffer.order(originalByteOrder); // restore the original byte order
 				}

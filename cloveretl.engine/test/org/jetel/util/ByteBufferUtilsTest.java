@@ -23,7 +23,10 @@
  */
 package org.jetel.util;
 
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -31,7 +34,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
 public class ByteBufferUtilsTest extends CloverTestCase {
 
     ByteBuffer buffer;
-    
+
     protected void setUp() throws Exception {
         super.setUp();
         buffer=ByteBuffer.allocateDirect(512);
@@ -64,6 +67,67 @@ public class ByteBufferUtilsTest extends CloverTestCase {
         assertEquals(2, ByteBufferUtils.lengthEncoded(256));
         assertEquals(3, ByteBufferUtils.lengthEncoded(2097151));
         assertEquals(4, ByteBufferUtils.lengthEncoded(268435455));
+    }
+    
+    private void check_encodeValue(long value, ByteOrder byteOrder, byte[] expected) {
+    	ByteBuffer byteBuffer = ByteBuffer.allocate(expected.length);
+    	int length = ByteBufferUtils.encodeValue(byteBuffer, BigInteger.valueOf(value), byteOrder, expected.length);
+    	assertEquals(expected.length, length);
+    	assertTrue(Arrays.equals(expected, byteBuffer.array()));
+    }
+    
+    private void check_decodeValue(byte[] bytes, ByteOrder byteOrder, long expected) {
+    	assertEquals(expected, ByteBufferUtils.decodeValue(ByteBuffer.wrap(bytes), byteOrder).longValue());
+    }
+    
+    public void test_decodeValue() {
+        final byte[] bytes1 = {0x12, 0x34, 0x56, 0x78};
+        final byte[] bytes2 = {(byte) 0x87, 0x65, 0x43, 0x21};
+        final byte[] bytes3 = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFE};
+        final byte[] bytes4 = {(byte) 0xFE, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
+        final byte[] bytes5 = {0x00, 0x02};
+        final byte[] bytes6 = {0x02, 0x00, 0x00};
+        
+		// big endian
+		check_decodeValue(bytes1, ByteOrder.BIG_ENDIAN, 305419896);
+		check_decodeValue(bytes2, ByteOrder.BIG_ENDIAN, -2023406815);
+		check_decodeValue(bytes3, ByteOrder.BIG_ENDIAN, -2);
+		check_decodeValue(bytes4, ByteOrder.BIG_ENDIAN, -16777217);
+		check_decodeValue(bytes5, ByteOrder.BIG_ENDIAN, 2);
+		check_decodeValue(bytes6, ByteOrder.BIG_ENDIAN, 131072);
+		
+		// little endian
+		check_decodeValue(bytes1, ByteOrder.LITTLE_ENDIAN, 2018915346);
+		check_decodeValue(bytes2, ByteOrder.LITTLE_ENDIAN, 558065031);
+		check_decodeValue(bytes3, ByteOrder.LITTLE_ENDIAN, -16777217);
+		check_decodeValue(bytes4, ByteOrder.LITTLE_ENDIAN, -2);
+		check_decodeValue(bytes5, ByteOrder.LITTLE_ENDIAN, 512);
+		check_decodeValue(bytes6, ByteOrder.LITTLE_ENDIAN, 2);
+    }
+    
+    public void test_encodeValue() {
+        final byte[] bytes1 = {0x12, 0x34, 0x56, 0x78};
+        final byte[] bytes2 = {(byte) 0x87, 0x65, 0x43, 0x21};
+        final byte[] bytes3 = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFE};
+        final byte[] bytes4 = {(byte) 0xFE, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
+        final byte[] bytes5 = {0x00, 0x02};
+        final byte[] bytes6 = {0x02, 0x00, 0x00};
+        
+        // big endian
+		check_encodeValue(305419896, ByteOrder.BIG_ENDIAN, bytes1);
+		check_encodeValue(-2023406815, ByteOrder.BIG_ENDIAN, bytes2);
+		check_encodeValue(-2, ByteOrder.BIG_ENDIAN, bytes3);
+		check_encodeValue(-16777217, ByteOrder.BIG_ENDIAN, bytes4);
+		check_encodeValue(2, ByteOrder.BIG_ENDIAN, bytes5);
+		check_encodeValue(131072, ByteOrder.BIG_ENDIAN, bytes6);
+		
+		// little endian
+		check_encodeValue(2018915346, ByteOrder.LITTLE_ENDIAN, bytes1);
+		check_encodeValue(558065031, ByteOrder.LITTLE_ENDIAN, bytes2);
+		check_encodeValue(-16777217, ByteOrder.LITTLE_ENDIAN, bytes3);
+		check_encodeValue(-2, ByteOrder.LITTLE_ENDIAN, bytes4);
+		check_encodeValue(512, ByteOrder.LITTLE_ENDIAN, bytes5);
+		check_encodeValue(2, ByteOrder.LITTLE_ENDIAN, bytes6);
     }
 
 }

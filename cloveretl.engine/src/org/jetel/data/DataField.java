@@ -25,8 +25,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.NullDataFormatException;
@@ -266,83 +264,6 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		fromString(decoder.decode(dataBuffer));
 	}
-	
-	/**
-	 * Reads bytes from a provided ByteBuffer,
-	 * interprets them as a packed decimal and converts
-	 * it to a long.
-	 * 
-	 * @see http://www.simotime.com/datapk01.htm
-	 * 
-	 * @param dataBuffer ByteBuffer containing a packed decimal
-	 * @return value of the packed decimal
-	 */
-	protected static long getPackedDecimal(ByteBuffer dataBuffer) {
-		long result = 0;
-		int aByte = 0;
-		int firstNibble = 0;
-		int secondNibble = 0;
-		while (dataBuffer.hasRemaining()) {
-			aByte = dataBuffer.get() & 0xFF; // use mask to erase non-relevant bits
-			firstNibble = aByte >> 4;
-			secondNibble = aByte & 0x0F;
-			if (dataBuffer.hasRemaining()) {
-				result = result * 10 + firstNibble;
-				result = result * 10 + secondNibble;
-			} else { // last byte
-				result = result * 10 + firstNibble;
-				if (secondNibble == 0x0D || secondNibble == 0x0B) {
-					result = -result; // last nibble D denotes negative value
-				} 
-				// TODO report an error for invalid sign?
-			}
-		}
-		return result;
-	}
-	
-	/**
-	 * Puts the value into the ByteBuffer as a packed decimal.
-	 * 
-	 * @see http://www.simotime.com/datapk01.htm
-	 * 
-	 * @param dataBuffer
-	 * @param value
-	 */
-	protected static void putPackedDecimal(ByteBuffer dataBuffer, long value) {
-		int firstNibble = 0; // upper half byte
-		int secondNibble = 0; // lower half byte
-		int digit = 0; // a decimal digit
-		byte aByte = 0; // a byte (firstNibble and secondNibble combined)
-		List<Byte> bytes = new ArrayList<Byte>(10); // 10 should be enough even for a long
-		
-		int sign = (value < 0) ? 0x0D : 0x0C; // extract the sign nibble
-		long remainingDigits = Math.abs(value);
-		secondNibble = sign;
-		
-		digit = (int) (remainingDigits % 10); // extract the last digit
-		remainingDigits = remainingDigits / 10;
-		firstNibble = digit << 4;
-		
-		aByte = (byte) ((firstNibble | secondNibble) & 0xFF); // combine to create the last byte
-		bytes.add(aByte);
-		
-		while (remainingDigits != 0) { // extract remaining digits from last to first, two at a time
-			digit = (int) (remainingDigits % 10);
-			secondNibble = digit;
-			remainingDigits = remainingDigits / 10;
-			digit = (int) (remainingDigits % 10);
-			firstNibble = digit << 4;
-			remainingDigits = remainingDigits / 10;
-			aByte = (byte) (firstNibble | secondNibble);
-			bytes.add(aByte);
-		}
-		
-		// write the bytes in reverse order
-		for (int i = bytes.size() - 1; i >= 0; i--) {
-			dataBuffer.put(bytes.get(i));
-		}
-	}
-	
 
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.

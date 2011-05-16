@@ -20,6 +20,8 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.util.Arrays;
 
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
@@ -141,6 +143,61 @@ public void test_1_NumericDataField() {
 		aNumericDataField1.setValue(19.45);
 		assertEquals("toString() failed",aNumericDataField1.toString(), "19.45");
 	}
+	
+	private void checkToByteBuffer(DataFieldMetadata metadata, double value, byte[] expected) throws CharacterCodingException {
+		NumericDataField binaryField = new NumericDataField(metadata);
+		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		binaryField.setValue(value);
+		System.out.println(binaryField.getValue());
+		binaryField.toByteBuffer(dataBuffer, null);
+		byte[] resultBytes = new byte[dataBuffer.position()];
+		dataBuffer.rewind();
+		dataBuffer.get(resultBytes);
+		assertTrue(Arrays.equals(expected, resultBytes));
+	}
+
+	/**
+	 * Test for {@link org.jetel.data.NumericDataField#toByteBuffer(ByteBuffer, java.nio.charset.CharsetDecoder)}
+	 * 
+	 * Only float and double (big endian, little endian) binary formats are tested.
+	 */
+	public void test_toByteBuffer() throws CharacterCodingException {
+		final byte[] floatBytes1 = {0x43, (byte) 0x9A, (byte) 0x84, 0x00};
+		final byte[] floatBytes2 = {(byte) 0xC2, (byte) 0x9E, 0x08, 0x00};
+		final byte[] floatBytes3 = {0x00, 0x20, 0x10, (byte) 0xC1};
+		final byte[] floatBytes4 = {0x00, 0x00, (byte) 0x80, 0x3B};
+		
+		final byte[] doubleBytes1 = {0x40, 0x09, 0x21, (byte) 0xFB, 0x53, (byte) 0xC8, (byte) 0xD4, (byte) 0xF1};
+		final byte[] doubleBytes2 = {0x3F, (byte) 0xF3, (byte) 0xC0, (byte) 0xCA, 0x42, (byte) 0x8C, 0x59, (byte) 0xFB};
+		final byte[] doubleBytes3 = {0x13, 0x72, (byte) 0x91, 0x45, (byte) 0xCA, (byte) 0xC0, 0x23, (byte) 0xC0};
+		final byte[] doubleBytes4 = {0x47, 0x0F, (byte) 0xC6, (byte) 0xA6, (byte) 0x83, (byte) 0x98, 0x0C, (byte) 0xC1};
+		
+		DataFieldMetadata bigEndianFloatMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		bigEndianFloatMetadata.setFormatStr("BINARY:FLOAT_BIG_ENDIAN");
+		DataFieldMetadata littleEndianFloatMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		littleEndianFloatMetadata.setFormatStr("BINARY:FLOAT_LITTLE_ENDIAN");
+
+		DataFieldMetadata bigEndianDoubleMetadata = new DataFieldMetadata("Field", 'i', (short) 8);
+		bigEndianDoubleMetadata.setFormatStr("BINARY:DOUBLE_BIG_ENDIAN");
+		DataFieldMetadata littleEndianDoubleMetadata = new DataFieldMetadata("Field", 'i', (short) 8);
+		littleEndianDoubleMetadata.setFormatStr("BINARY:DOUBLE_LITTLE_ENDIAN");
+		
+		// big endian float
+		checkToByteBuffer(bigEndianFloatMetadata, 309.03125, floatBytes1);
+		checkToByteBuffer(bigEndianFloatMetadata, -79.015625, floatBytes2);
+		
+		// little endian float
+		checkToByteBuffer(littleEndianFloatMetadata, -9.0078125, floatBytes3);
+		checkToByteBuffer(littleEndianFloatMetadata, 0.00390625, floatBytes4);
+		
+		// big endian double
+		checkToByteBuffer(bigEndianDoubleMetadata, 3.14159265, doubleBytes1);
+		checkToByteBuffer(bigEndianDoubleMetadata, 1.2345678901234567, doubleBytes2);
+		
+		// little endian double
+		checkToByteBuffer(littleEndianDoubleMetadata, -9.876543210987654, doubleBytes3);
+		checkToByteBuffer(littleEndianDoubleMetadata, -234256.45643245635, doubleBytes4);
+	}
 
 	/**
 	 *  Test for @link org.jetel.data.NumericDataField.fromString(String valueStr)
@@ -177,7 +234,55 @@ public void test_1_NumericDataField() {
 		} catch (BadDataFormatException e){	}
 	}
 	
+	private void checkFromByteBuffer(DataFieldMetadata metadata, byte[] bytes, double expected) throws CharacterCodingException {
+		NumericDataField binaryField = new NumericDataField(metadata);
+		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes), null);
+		assertEquals(expected, binaryField.getDouble());
+	}
 	
+	/**
+	 * Test for {@link org.jetel.data.NumericDataField#fromByteBuffer(ByteBuffer, java.nio.charset.CharsetDecoder)}
+	 * 
+	 * Only float and double (big endian, little endian) binary formats are tested.
+	 */
+	public void test_fromByteBuffer() throws CharacterCodingException {
+		final byte[] floatBytes1 = {0x43, (byte) 0x9A, (byte) 0x84, 0x00};
+		final byte[] floatBytes2 = {(byte) 0xC2, (byte) 0x9E, 0x08, 0x00};
+		final byte[] floatBytes3 = {0x00, 0x20, 0x10, (byte) 0xC1};
+		final byte[] floatBytes4 = {0x00, 0x00, (byte) 0x80, 0x3B};
+		
+		final byte[] doubleBytes1 = {0x40, 0x09, 0x21, (byte) 0xFB, 0x53, (byte) 0xC8, (byte) 0xD4, (byte) 0xF1};
+		final byte[] doubleBytes2 = {0x3F, (byte) 0xF3, (byte) 0xC0, (byte) 0xCA, 0x42, (byte) 0x8C, 0x59, (byte) 0xFB};
+		final byte[] doubleBytes3 = {0x13, 0x72, (byte) 0x91, 0x45, (byte) 0xCA, (byte) 0xC0, 0x23, (byte) 0xC0};
+		final byte[] doubleBytes4 = {0x47, 0x0F, (byte) 0xC6, (byte) 0xA6, (byte) 0x83, (byte) 0x98, 0x0C, (byte) 0xC1};
+		
+		DataFieldMetadata bigEndianFloatMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		bigEndianFloatMetadata.setFormatStr("BINARY:FLOAT_BIG_ENDIAN");
+		DataFieldMetadata littleEndianFloatMetadata = new DataFieldMetadata("Field", 'i', (short) 4);
+		littleEndianFloatMetadata.setFormatStr("BINARY:FLOAT_LITTLE_ENDIAN");
+
+		DataFieldMetadata bigEndianDoubleMetadata = new DataFieldMetadata("Field", 'i', (short) 8);
+		bigEndianDoubleMetadata.setFormatStr("BINARY:DOUBLE_BIG_ENDIAN");
+		DataFieldMetadata littleEndianDoubleMetadata = new DataFieldMetadata("Field", 'i', (short) 8);
+		littleEndianDoubleMetadata.setFormatStr("BINARY:DOUBLE_LITTLE_ENDIAN");
+		
+		// big endian float
+		checkFromByteBuffer(bigEndianFloatMetadata, floatBytes1, 309.03125);
+		checkFromByteBuffer(bigEndianFloatMetadata, floatBytes2, -79.015625);
+		
+		// little endian float
+		checkFromByteBuffer(littleEndianFloatMetadata, floatBytes3, -9.0078125);
+		checkFromByteBuffer(littleEndianFloatMetadata, floatBytes4, 0.00390625);
+		
+		// big endian double
+		checkFromByteBuffer(bigEndianDoubleMetadata, doubleBytes1, 3.14159265);
+		checkFromByteBuffer(bigEndianDoubleMetadata, doubleBytes2, 1.2345678901234567);
+		
+		// little endian double
+		checkFromByteBuffer(littleEndianDoubleMetadata, doubleBytes3, -9.876543210987654);
+		checkFromByteBuffer(littleEndianDoubleMetadata, doubleBytes4, -234256.45643245635);
+	}
+
 	/**
 	 *  Test for @link org.jetel.data.NumericDataField.deserialize(ByteBuffer buffer)
 	 *           @link org.jetel.data.NumericDataField.serialize(ByteBuffer buffer)
