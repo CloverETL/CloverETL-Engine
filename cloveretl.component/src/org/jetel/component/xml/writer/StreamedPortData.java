@@ -256,7 +256,9 @@ class StreamedPortData extends PortData {
 			} catch (InterruptedException e) {
 				throw new IOException(e);
 			}
-			cacheData.flushBuffer();
+			if (saveToCache) {
+				cacheData.flushBuffer();
+			}
 			return false;
 		}
 
