@@ -1679,12 +1679,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_sequence(){
 		doCompile("test_sequence");
-		check("intRes", Arrays.asList(1,2,3));
-		check("longRes", Arrays.asList(Long.valueOf(1),Long.valueOf(2),Long.valueOf(3)));
-		check("stringRes", Arrays.asList("1","2","3"));
-		check("intCurrent", Integer.valueOf(3));
-		check("longCurrent", Long.valueOf(3));
-		check("stringCurrent", "3");
+		check("intRes", Arrays.asList(0,1,2));
+		check("longRes", Arrays.asList(Long.valueOf(0),Long.valueOf(1),Long.valueOf(2)));
+		check("stringRes", Arrays.asList("0","1","2"));
+		check("intCurrent", Integer.valueOf(2));
+		check("longCurrent", Long.valueOf(2));
+		check("stringCurrent", "2");
 	}
 	
 	//TODO: If this test fails please double check whether the test is correct?
