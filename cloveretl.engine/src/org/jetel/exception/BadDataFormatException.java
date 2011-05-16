@@ -64,18 +64,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		super(message);
 		this.offendingValue = offendingValue;
 	}
-	
-	public BadDataFormatException(String message, String offendingValue) {
-		super(message);
-		this.offendingValue = offendingValue;
-	}
     
     public BadDataFormatException(String message, CharSequence offendingValue, Throwable cause) {
-        super(message, cause);
-        this.offendingValue = offendingValue;
-    }
-
-    public BadDataFormatException(String message, String offendingValue, Throwable cause) {
         super(message, cause);
         this.offendingValue = offendingValue;
     }
@@ -185,9 +175,4 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		}while (ex != null);
 		return exceptions.iterator();
 	}    
-	
-	public static void main(String arg) {
-		DataFieldMetadata metadata = null;
-		throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
-	}
 }
