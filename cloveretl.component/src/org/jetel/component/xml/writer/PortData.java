@@ -72,6 +72,7 @@ public abstract class PortData {
 	
 	PortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
 		this.inPort = inPort;
+		this.tempDirectory = tempDirectory;
 		DataRecordMetadata metadata = inPort.getMetadata();
 		
 		nullKey = keys.contains(null);
