@@ -304,7 +304,9 @@ public class XLSXDataParser extends XLSParser {
 
 			int cellType = (dataCell != null) ? dataCell.getCellType() : Cell.CELL_TYPE_STRING;
 
-			if (namesRow != dataRow && nameCell.getCellType() == Cell.CELL_TYPE_BLANK && cellType == Cell.CELL_TYPE_BLANK) {
+			if (namesRow != dataRow
+					&& (nameCell == null || nameCell.getCellType() == Cell.CELL_TYPE_BLANK)
+					&& (dataCell == null || cellType == Cell.CELL_TYPE_BLANK)) {
 				continue;
 			}
 
