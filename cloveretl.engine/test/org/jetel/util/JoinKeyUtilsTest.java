@@ -16,15 +16,20 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 	private final static int SLAVE = 1;
 	
 	List<DataRecordMetadata> metadata = new ArrayList<DataRecordMetadata>();
-	DataRecordMetadata meta1 = new DataRecordMetadata("master");
-	DataRecordMetadata meta2 = new DataRecordMetadata("slave1");
-	DataRecordMetadata meta3 = new DataRecordMetadata("slave2");
-	DataRecordMetadata meta4 = new DataRecordMetadata("slave3");
+	DataRecordMetadata meta1;
+	DataRecordMetadata meta2;
+	DataRecordMetadata meta3;
+	DataRecordMetadata meta4;
 	
-	protected void setUp() throws Exception {
+	public JoinKeyUtilsTest() {
 		initEngine();
-	    
-    	EngineInitializer.initEngine((String) null, null, null);
+		meta1 = new DataRecordMetadata("master");
+		meta2 = new DataRecordMetadata("slave1");
+		meta3 = new DataRecordMetadata("slave2");
+		meta4 = new DataRecordMetadata("slave3");
+	}
+
+	protected void setUp() throws Exception {
     	DataFieldMetadata f1 = new DataFieldMetadata("field1",";");
     	DataFieldMetadata f2 = new DataFieldMetadata("field2",";");
     	DataFieldMetadata f3 = new DataFieldMetadata("field3",";");
