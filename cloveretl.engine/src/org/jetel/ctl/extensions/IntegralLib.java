@@ -39,7 +39,8 @@ public class IntegralLib extends TLFunctionLibrary {
     throws IllegalArgumentException {
     	TLFunctionPrototype ret = 
     		"copyByName".equals(functionName) ? new CopyByNameFunction() :
-    		"copyByPosition".equals(functionName) ? new CopyByPositionFunction() : null; 
+       		"copyByPosition".equals(functionName) ? new CopyByPositionFunction() : 
+       		"resetRecord".equals(functionName) ? new ResetRecordFunction() : null; 
 
     	if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -110,6 +111,26 @@ public class IntegralLib extends TLFunctionLibrary {
 			DataRecord to = stack.popRecord();
 
 			copyByPosition(context, to, from);
+		}
+	}
+
+	// RESET RECORD
+	@TLFunctionAnnotation("Resets the given record. All fields are set to null or default value in case non-nullable fields.")
+	public static final void resetRecord(TLFunctionCallContext context, DataRecord record) {
+		record.reset();
+	}
+	
+	class ResetRecordFunction implements TLFunctionPrototype {
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			DataRecord record = stack.popRecord();
+
+			resetRecord(context, record);
 		}
 	}
 
