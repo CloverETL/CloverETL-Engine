@@ -18,13 +18,50 @@
  */
 package org.jetel.util.bytes;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class PackedDecimal {
 
+	final static int HexA = 0x0A; // Plus A sign
+	final static int HexB = 0x0B; // Minus B sign
 	final static int PlusSign = 0x0C; // Plus sign
 	final static int MinusSign = 0x0D; // Minus
+	final static int HexE = 0x0E; // Plus E sign
 	final static int NoSign = 0x0F; // Unsigned
+
+	/**
+	 * Such value n that ((n * 100) + 99)
+	 * will certainly fit into Long range.
+	 */
+	private static final long SAFE_LONG = (Long.MAX_VALUE / 100) - 1;
+	
+	private static final BigInteger[] digits = {
+		BigInteger.ZERO,
+		BigInteger.ONE,
+		BigInteger.valueOf(2),
+		BigInteger.valueOf(3),
+		BigInteger.valueOf(4),
+		BigInteger.valueOf(5),
+		BigInteger.valueOf(6),
+		BigInteger.valueOf(7),
+		BigInteger.valueOf(8),
+		BigInteger.valueOf(9)
+	};
+	
+	private static final BigInteger LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
+	private static final BigInteger LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
+	
+	private static final BigInteger ONE_HUNDRED = BigInteger.valueOf(100);
+	
+	public static BigInteger parseBigInteger(ByteBuffer dataBuffer) {
+		byte[] bytes = new byte[dataBuffer.remaining()];
+		dataBuffer.get(bytes);
+		return parseBigInteger(bytes);
+	}
 
 	/**
 	 * Convert packed decimal encoded value into long
@@ -33,38 +70,85 @@ public class PackedDecimal {
 	 * @return
 	 */
 	public static long parse(byte[] input) {
-		// Convert packed decimal to long
+		return parseBigInteger(input).longValue();
+	}
+	
+	/**
+	 * Reads bytes from a provided byte array,
+	 * interprets them as a packed decimal and converts
+	 * it to a number.
+	 * 
+	 * @see http://www.simotime.com/datapk01.htm
+	 * 
+	 * @param input byte array containing a packed decimal
+	 * @return value of the packed decimal
+	 */
+	public static BigInteger parseBigInteger(byte[] input) {
 		final int DropHO = 0xFF; // AND mask to drop HO sign bits
 		final int GetLO = 0x0F; // Get only LO digit
-		long val = 0; // Value to return
-		boolean signOK=false;
 
-		loop:
-		for (int i = 0; i < input.length; i++) {
-			int aByte = input[i] & DropHO; // Get next 2 digits & drop sign bits
-			int digit = aByte >> 4; // First get high digit
-			val = val * 10 + digit;
+		int digit = 0;
+		long resultLong = 0;
+		int aByte = 0;
+		int idx = 0;
+		
+		for ( ; (idx < input.length) && (resultLong <= SAFE_LONG); idx++) {
+			aByte = input[idx] & DropHO; // Get next 2 digits & drop HO sign bits
+			digit = aByte >> 4; // First get high digit
+			resultLong = resultLong * 10 + digit;
 			digit = aByte & GetLO; // now LOW digit or sign
 			
 			switch(digit){
 			case PlusSign:
 			case NoSign:
-						signOK=true;
-						break loop;
+			case HexA:
+			case HexE:
+				return BigInteger.valueOf(resultLong);
 			case MinusSign:
-					val=-val;
-						signOK=true;
-						break loop;
+			case HexB:
+				resultLong = -resultLong;
+				return BigInteger.valueOf(resultLong);
 			default: // no sign
-				val = val * 10 + digit;
+				resultLong = resultLong * 10 + digit;
 			}
 		}
-		if (!signOK) { // last digit and no sign ?
-			throw new IllegalArgumentException("Invalid (missing) Sign in packed decimal representation: "+Arrays.toString(input));
+
+		// convert current result value to a BigInteger 
+		BigInteger resultBI = BigInteger.valueOf(resultLong);
+
+		// continue parsing if there are remaining bytes in the buffer
+		for ( ; idx < input.length; idx++) {
+			aByte = input[idx] & DropHO; // Get next 2 digits & drop HO sign bits
+			digit = aByte >> 4; // First get high digit
+			resultBI = resultBI.multiply(BigInteger.TEN).add(digits[digit]);
+			digit = aByte & GetLO; // now LOW digit or sign
+			
+			switch(digit){
+			case PlusSign:
+			case NoSign:
+			case HexA:
+			case HexE:
+				return resultBI;
+			case MinusSign:
+			case HexB:
+				resultBI = resultBI.negate();
+				return resultBI;
+			default: // no sign
+				resultBI = resultBI.multiply(BigInteger.TEN).add(digits[digit]);
+			}
 		}
-		return val;
+		
+		// TODO maybe check only last position for a sign, but then right alignment is required
+		
+		// last digit and no sign (otherwise we would have reached one of the return statements)
+		throw new IllegalArgumentException("Invalid (missing) Sign in packed decimal representation: "
+				+ new BigInteger(input).toString(16));
 	}
 
+	/*
+	 * Milan Krivanek: uses left alignment with right padding,
+	 * which may not yield standard-compliant packed decimals.
+	 */
 	public static byte[] format(long value){
 		byte[] result = new byte[16];
 		int length=format(value,result);
@@ -72,6 +156,11 @@ public class PackedDecimal {
 		return result;
 	}
 	
+	/*
+	 * Redundant method optimized for "long" input values
+	 * and at most 16 bytes output,
+	 * retained for performance reasons.
+	 */
 	/**
 	 * Convert long value into packed decimal representation
 	 * 
@@ -125,5 +214,95 @@ public class PackedDecimal {
 		 pd = new byte[] {(byte)0x98, 0x44, 0x32, (byte)0x89}; //invalid sign
 		 System.out.println(PackedDecimal.parse(pd)); 
 	}*/
+
+	/**
+	 * Convenience method, see {@link #putPackedDecimal(ByteBuffer, BigInteger)}.
+	 */
+	public static int putPackedDecimal(ByteBuffer dataBuffer, long value, int minLength) {
+		return putPackedDecimal(dataBuffer, BigInteger.valueOf(value), minLength);
+	}
+		
+	/**
+	 * Puts the value into the ByteBuffer as a packed decimal.
+	 * Set <code>minLength</code> to 0 to disable padding.
+	 * 
+	 * @see http://www.simotime.com/datapk01.htm
+	 * 
+	 * @param dataBuffer
+	 * @param value
+	 * @param minLength minimum length (used for padding)
+	 * 
+	 * @return number of produced bytes
+	 */
+	public static int putPackedDecimal(ByteBuffer dataBuffer, BigInteger value, int minLength) {
+		byte aByte = 0;
+		// 16 is commonly used as maximum length, hence usually no reallocation
+		List<Byte> bytes = new ArrayList<Byte>(16);
+		
+		// the value fits into a long
+		if ((LONG_MIN_VALUE.compareTo(value) <= 0)
+				&& (value.compareTo(LONG_MAX_VALUE) <= 0)) {
+			long remainingDigits = 0;
+			
+			if(value.signum() < 0) {
+				aByte = MinusSign;
+				remainingDigits = -value.longValue();  
+			} else {
+				aByte = PlusSign;
+				remainingDigits = value.longValue();
+			}
+			
+			aByte = (byte) (aByte | ((remainingDigits % 10) << 4));
+			remainingDigits /= 10;
+			bytes.add(aByte);
+			
+			while (remainingDigits != 0) {
+				aByte = (byte) (remainingDigits % 10);
+				remainingDigits /= 10;
+				aByte = (byte) (aByte | ((remainingDigits % 10) << 4));
+				remainingDigits /= 10;
+				bytes.add(aByte);
+			}
+		} else {
+			BigInteger[] quotientAndRemainder = null;
+			BigInteger remainingDigits = null;
+			
+			if(value.signum() < 0) {
+				aByte = MinusSign;
+				remainingDigits = value.negate();  
+			} else {
+				aByte = PlusSign;
+				remainingDigits = value;
+			}
+
+			quotientAndRemainder = remainingDigits.divideAndRemainder(BigInteger.TEN);
+			aByte = (byte) (aByte | ((quotientAndRemainder[1].intValue()) << 4)); // remainder
+			remainingDigits = quotientAndRemainder[0]; // quotient
+			bytes.add(aByte);
+
+			int lastTwoDigits = 0;
+			while (remainingDigits.signum() != 0) {
+				quotientAndRemainder = remainingDigits.divideAndRemainder(ONE_HUNDRED);
+				lastTwoDigits = quotientAndRemainder[1].intValue(); // remainder
+				remainingDigits = quotientAndRemainder[0]; // quotient
+				
+				aByte = (byte) (lastTwoDigits % 10); // second
+				aByte = (byte) (aByte | ((lastTwoDigits / 10) << 4)); // first
+				bytes.add(aByte);
+			}
+		}
+		
+		// left padding by zeros
+		for (int i = bytes.size(); i < minLength; i++) {
+			dataBuffer.put((byte) 0x00);
+		}
+		
+		// write the bytes in reverse order
+		for (int i = bytes.size() - 1; i >= 0; i--) {
+			dataBuffer.put(bytes.get(i));
+		}
+		
+		return Math.max(bytes.size(), minLength);
+	}
 	
 }

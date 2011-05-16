@@ -21,7 +21,9 @@ package org.jetel.util.bytes;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -193,6 +195,75 @@ public final class ByteBufferUtils {
                 length = length >> 7;
             } while (length > 0);
         return count;
+    }
+    
+    /**
+     * Decodes the value stored in the byte buffer using the specified byte order.
+     * 
+     * @param byteBuffer source buffer
+     * @param byteOrder
+     * 
+     * @return decoded value of the byte buffer
+     */
+    public static BigInteger decodeValue(ByteBuffer byteBuffer, ByteOrder byteOrder) {
+    	byte[] bytes = new byte[byteBuffer.remaining()];
+		if (byteOrder == ByteOrder.BIG_ENDIAN) {
+			 // no backing array, read all the remaining bytes
+			byteBuffer.get(bytes);
+		} else {
+			// read the bytes backwards
+			int lastPosition = byteBuffer.limit() - 1;
+			for(int i = 0; i < bytes.length; i++) {
+				bytes[i] = byteBuffer.get(lastPosition - i);
+			}
+		}
+    	
+    	return new BigInteger(bytes);
+    }
+    
+    /**
+     * Convenience method, see {@link #encodeValue(ByteBuffer, BigInteger, ByteOrder, int)}. 
+     */
+    public static int encodeValue(ByteBuffer byteBuffer, long value, ByteOrder byteOrder, int minLength) {
+    	return encodeValue(byteBuffer, BigInteger.valueOf(value), byteOrder, minLength);
+    }
+    
+    /**
+     * Encodes the value into the byte buffer using the specified byte order.
+     * <code>minLength</code> can be used to specify padding, otherwise set it to 0.
+     * No check for maximum length is performed. 
+     * 
+     * @param byteBuffer target buffer
+     * @param value the value to convert to bytes
+     * @param byteOrder {@link ByteOrder#BIG_ENDIAN} or {@link ByteOrder#LITTLE_ENDIAN}
+     * @param minLength minimum length, used for padding 
+     * 
+     * @return number of bytes encoding the value
+     */
+    public static int encodeValue(ByteBuffer byteBuffer, BigInteger value, ByteOrder byteOrder, int minLength) {
+    	byte[] bytes = value.toByteArray();
+    	
+    	byte paddingByte = (value.signum() < 0) ? (byte) 0xFF : 0x00;
+    	
+    	if (byteOrder == ByteOrder.BIG_ENDIAN) {
+    		// padding bits first
+    		for (int i = bytes.length; i < minLength; i++) {
+    			byteBuffer.put(paddingByte);
+    		}
+    		// then value bits
+    		byteBuffer.put(bytes);
+    	} else {
+    		// value bits first 
+    		for (int i = bytes.length - 1; i >= 0; i--) {
+    			byteBuffer.put(bytes[i]);
+    		}
+    		// then padding bits
+    		for (int i = bytes.length; i < minLength; i++) {
+    			byteBuffer.put(paddingByte);
+    		}
+    	}
+    	
+    	return Math.max(minLength, bytes.length); 
     }
     
 }

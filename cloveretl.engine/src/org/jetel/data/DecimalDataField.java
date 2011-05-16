@@ -19,14 +19,24 @@
 package org.jetel.data;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
@@ -48,7 +58,9 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	private int scale;
 	private final NumericFormatter numericFormatter;
 
-    
+	private BinaryFormat binaryFormat = null;
+	private Integer minLength = null;
+	    
     /**
      * Constructor
      * 
@@ -70,7 +82,33 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 */
 	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale, boolean plain) {
 		super(_metadata);
-        if (plain) {
+		
+		if (_metadata.isByteBased()) {
+    		String typeStr = _metadata.getBinaryFormatParams();
+    		try {
+				binaryFormat = BinaryFormat.valueOf(typeStr);
+			} catch (IllegalArgumentException iae) {
+				throw new JetelRuntimeException("Invalid binary format: " + typeStr, iae);
+			}
+			switch (binaryFormat) {
+			case BIG_ENDIAN: case LITTLE_ENDIAN: case PACKED_DECIMAL:
+				if (_metadata.isFixed()) {
+					this.minLength = (int) _metadata.getSize();
+				} else {
+					this.minLength = 0;
+				}
+				break;
+			case DOUBLE_BIG_ENDIAN:
+			case DOUBLE_LITTLE_ENDIAN:
+			case FLOAT_BIG_ENDIAN:
+			case FLOAT_LITTLE_ENDIAN:
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid binary format: " + binaryFormat);
+    		}
+    	}
+
+		if (plain || _metadata.isByteBased()) {
         	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
         	numericFormatter = NumericFormatterFactory.getDecimalFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
@@ -117,6 +155,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	public DataField duplicate() {
 	    DecimalDataField newField = new DecimalDataField(metadata, value, numericFormatter, precision, scale);
 	    newField.setNull(isNull());
+		newField.binaryFormat = this.binaryFormat;
+		newField.minLength = this.minLength;
 	    return newField;
 	}
 	
@@ -367,6 +407,48 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		return value.toString(numericFormatter);
 	}
 
+	/**
+	 * If the binary format is set, stores the data accordingly.
+	 * 
+	 * Call super otherwise.
+	 */
+	@Override
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		if (binaryFormat != null) {
+			BigInteger unscaledValue = this.getBigDecimal().unscaledValue();
+			switch (binaryFormat) {
+			case BIG_ENDIAN: case LITTLE_ENDIAN:
+				ByteBufferUtils.encodeValue(dataBuffer, unscaledValue, binaryFormat.byteOrder, minLength);
+				break;
+			case PACKED_DECIMAL:
+				PackedDecimal.putPackedDecimal(dataBuffer, unscaledValue, minLength);
+				break;
+			case DOUBLE_BIG_ENDIAN: 
+			case DOUBLE_LITTLE_ENDIAN: 
+			case FLOAT_BIG_ENDIAN: 
+			case FLOAT_LITTLE_ENDIAN:
+				ByteOrder originalByteOrder = dataBuffer.order();
+				dataBuffer.order(binaryFormat.byteOrder); // set the field's byte order
+				try {
+					if (binaryFormat.size == 4) {
+						dataBuffer.putFloat(getBigDecimal().floatValue());
+					} else if(binaryFormat.size == 8) {
+						dataBuffer.putDouble(getBigDecimal().doubleValue());
+					}
+				} catch (BufferOverflowException boe) {
+					throw new BadDataFormatException("Failed to store the data, the buffer is full", boe);
+				} finally {
+					dataBuffer.order(originalByteOrder); // restore the original byte order
+				}
+				break;
+			default:
+				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
+			}
+		} else {
+			super.toByteBuffer(dataBuffer, encoder);
+		}
+	}
+
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -379,6 +461,48 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
 							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()), seq.toString());
+		}
+	}
+	
+	/**
+	 * If the binary format is set, interpret the data accordingly.
+	 * 
+	 * Call super otherwise.
+	 */
+	@Override
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+		if (binaryFormat != null) {
+			switch (binaryFormat) {
+			case BIG_ENDIAN: case LITTLE_ENDIAN:
+				setValue(new BigDecimal(ByteBufferUtils.decodeValue(dataBuffer, binaryFormat.byteOrder), scale));
+				break;
+			case PACKED_DECIMAL:
+				setValue(new BigDecimal(PackedDecimal.parseBigInteger(dataBuffer), scale));
+				break;
+			case DOUBLE_BIG_ENDIAN: 
+			case DOUBLE_LITTLE_ENDIAN: 
+			case FLOAT_BIG_ENDIAN: 
+			case FLOAT_LITTLE_ENDIAN:
+				ByteOrder originalByteOrder = dataBuffer.order();
+				dataBuffer.order(binaryFormat.byteOrder); //set the field's byte order
+				try {
+					if (binaryFormat.size == 4) {
+						setValue(dataBuffer.getFloat());
+					} else if(binaryFormat.size == 8) {
+						setValue(dataBuffer.getDouble());
+					}
+				} catch (BufferUnderflowException bue) {
+					throw new BadDataFormatException(String.format("The buffer contains less than %d bytes", binaryFormat.size), bue);
+				} finally {
+					dataBuffer.order(originalByteOrder); // restore the original byte order
+				}
+				break;
+			default:
+				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
+			}
+			
+		} else {
+			super.fromByteBuffer(dataBuffer, decoder);
 		}
 	}
 
