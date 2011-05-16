@@ -51,8 +51,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
 		in = new FileInputStream("data/in/good/FL28_NL.txt");
 		
-		in2 = new FileInputStream("C:\\projects\\workspace\\cloveretl.engine\\data\\in\\bad\\FL28_NL_nulls.txt");
-//		in2 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
+		in2 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	
 		aParser2 = new FixLenCharDataParser(metadata);
 
