@@ -31,6 +31,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
+import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
@@ -73,6 +74,7 @@ public class ExternalSimplePortData extends PortData {
 		envConfig.setLocking(false);
 		envConfig.setTransactional(false);
 		envConfig.setSharedCache(true);
+		envConfig.setCacheMode(CacheMode.MAKE_COLD);
 		Environment dbEnvironment;
 		try {
 			File f = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
@@ -169,7 +171,6 @@ public class ExternalSimplePortData extends PortData {
 			
 			next = new DataRecord(metadata);
 			next.init();
-			
 			ByteBuffer keyBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 			keyData.serialize(keyBuffer, parentKey);
 			int dataLength = keyBuffer.position();
