@@ -1470,7 +1470,11 @@ public class XMLExtract extends Node {
 		super.preExecute();
 
 		if (firstRun()) {
-			//all necessary for the first run has been done in init()
+			// sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
+	        if (inputFile != null) {
+	        	createReadableChannelIterator();
+	        	this.readableChannelIterator.init();
+	        }
 		} else {
 			autoFilling.reset();
 			this.readableChannelIterator.reset();
@@ -1651,11 +1655,6 @@ public class XMLExtract extends Node {
                     + ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
         }
         
-        // sets input file to readableChannelIterator and sets its settings (directory, charset, input port,...)
-        if (inputFile != null) {
-        	createReadableChannelIterator();
-        	this.readableChannelIterator.init();
-        }
     }
 	
     private void createReadableChannelIterator() throws ComponentNotReadyException {
