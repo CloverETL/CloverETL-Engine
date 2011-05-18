@@ -267,6 +267,7 @@
 
 			<keepattribute name="InnerClasses" />
 			<keepattribute name="Exceptions" />
+			<keepattributes filter="*Annotation*" />
 			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
 			
 			<keep extends="java.io.Serializable">
