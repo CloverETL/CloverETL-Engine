@@ -57,6 +57,7 @@
 <FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf" assertion="false">
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
 	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
+	 <FlatFile outputFile="data-out/allCustomersStrict.txt" supposedFile="supposed-out/allCustomers.DataPolicy.Strict.txt"/>
 		<RegEx expression="org.jetel.exception.BadDataFormatException: account_num \(long\) cannot be set to &quot;8747577056D&quot; - doesn't match defined format &quot;&quot; with reason &quot;Incomplete parsing&quot; in field # 2 of record # 3, value: '8747577056D'" occurences="1"/>
 </FunctionalTest>
 
