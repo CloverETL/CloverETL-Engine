@@ -277,7 +277,7 @@ public class XMLExtract extends Node {
     // from which input port to read
 	private final static int INPUT_PORT = 0;
 
-	public static final String PARENT_MAPPING_REFERENCE_PREFIX = "^";
+	public static final String PARENT_MAPPING_REFERENCE_PREFIX = "../";
 	
     // Map of elementName => output port
     private Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
