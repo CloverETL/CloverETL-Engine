@@ -18,7 +18,6 @@
  */
 package org.jetel.component.xml.writer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -31,13 +30,10 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.OperationStatus;
 
 /**
@@ -48,53 +44,30 @@ import com.sleepycat.je.OperationStatus;
  * 
  * @created 11 Mar 2011
  */
-public class ExternalSimplePortData extends PortData {
+public class ExternalSimplePortData extends ExternalPortData {
 
+	private Environment environment;
 	private Database database;
 
 	private ByteBuffer recordBuffer;
 	
-	private long cacheSize;
-	
 	private long counter = 0;
 	
 	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
-		super(inPort, keys, tempDirectory);
-		this.cacheSize = cacheSize; 
+		super(inPort, keys, tempDirectory, cacheSize);
 	}
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		
-		EnvironmentConfig envConfig = new EnvironmentConfig();
-		envConfig.setCacheSize(cacheSize);
-		envConfig.setAllowCreate(true);
-		envConfig.setLocking(false);
-		envConfig.setTransactional(false);
-		envConfig.setSharedCache(true);
-		envConfig.setCacheMode(CacheMode.MAKE_COLD);
-		Environment dbEnvironment;
-		try {
-			File f = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
-			f.delete();
-			f.mkdir();
-			f.deleteOnExit();
-			
-			dbEnvironment = new Environment(f, envConfig);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(e);
-		}
-		
-		DatabaseConfig dbConfig = new DatabaseConfig();
-		dbConfig.setAllowCreate(true);
-		dbConfig.setTemporary(true);
-		dbConfig.setSortedDuplicates(true);
-		dbConfig.setTransactional(false);
-		dbConfig.setExclusiveCreate(true);
-		
-		database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), dbConfig);
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		environment = getEnvironment();
+		database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
 	}
 
 	@Override
@@ -138,8 +111,11 @@ public class ExternalSimplePortData extends PortData {
 	}
 
 	@Override
-	public boolean readInputPort() {
-		return true;
+	public void postExecute() throws ComponentNotReadyException {
+		database.close();
+		environment.close();
+		
+		super.postExecute();
 	}
 	
 	private void readData(DatabaseEntry foundValue, DataRecord record) throws IOException {
@@ -180,10 +156,12 @@ public class ExternalSimplePortData extends PortData {
 
 			databaseKey = new DatabaseEntry(serializedKey);
 			
-			if (cursor.getSearchKey(databaseKey, foundValue, null) != OperationStatus.SUCCESS) {
-				next = null;
-			} else {
+			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
+			} else {
+				cursor.close();
+				next = null;
+				
 			}
 		}
 
@@ -196,6 +174,7 @@ public class ExternalSimplePortData extends PortData {
 			if (cursor.getNextDup(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 			return current;
@@ -236,6 +215,7 @@ public class ExternalSimplePortData extends PortData {
 			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 		}
@@ -249,6 +229,7 @@ public class ExternalSimplePortData extends PortData {
 			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 			return current;

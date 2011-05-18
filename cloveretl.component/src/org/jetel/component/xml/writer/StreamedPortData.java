@@ -70,16 +70,31 @@ class StreamedPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		try {
-			cacheData = new DirectDynamicRecordBuffer(tempDirectory);
-			cacheData.init();
+		next = new DataRecord(inPort.getMetadata());
+		next.init();
+		current = new DataRecord(inPort.getMetadata());
+		current.init();
+		unused = new DataRecord(inPort.getMetadata());
+		unused.init();
+	}
 
-			next = new DataRecord(inPort.getMetadata());
-			next.init();
-			current = new DataRecord(inPort.getMetadata());
-			current.init();
-			unused = new DataRecord(inPort.getMetadata());
-			unused.init();
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		cacheData = new DirectDynamicRecordBuffer(tempDirectory);
+		try {
+			cacheData.init();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		cacheKey = null;
+		try {
+			cacheData.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
