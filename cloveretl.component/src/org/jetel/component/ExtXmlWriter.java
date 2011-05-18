@@ -348,6 +348,14 @@ public class ExtXmlWriter extends Node {
 	}
 
 	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		for (PortData portData : portDataMap.values()) {
+			portData.preExecute();
+		}
+	}
+
+	@Override
 	public Result execute() throws Exception {
 		loadDataToCache();
 		
@@ -435,6 +443,14 @@ public class ExtXmlWriter extends Node {
 			writer.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public synchronized void free() {
+		super.free();
+		for (PortData portData : portDataMap.values()) {
+			portData.free();
 		}
 	}
 

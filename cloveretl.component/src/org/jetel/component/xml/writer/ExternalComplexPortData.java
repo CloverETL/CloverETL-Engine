@@ -18,7 +18,6 @@
  */
 package org.jetel.component.xml.writer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -32,13 +31,10 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
 import com.sleepycat.je.OperationStatus;
 
 /**
@@ -50,11 +46,12 @@ import com.sleepycat.je.OperationStatus;
  * @created 11 Mar 2011
  */
 
-public class ExternalComplexPortData extends PortData {
+public class ExternalComplexPortData extends ExternalPortData {
 	
 	public static final String NULL_INDEX_NAME = "$NULL_INDEX";
 	
 	private DirectDynamicRecordBuffer dataStorage;
+	private Environment environment;
 	private Map<String, Database> dataMap;
 
 	private String[] stringKeys;
@@ -64,12 +61,10 @@ public class ExternalComplexPortData extends PortData {
 	private ByteBuffer recordBuffer;
 	private ByteBuffer indexBuffer;
 	
-	private long cacheSize;
 	private long counter = 0;
 		
 	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
-		super(inPort, keys, tempDirectory);
-		this.cacheSize = cacheSize;
+		super(inPort, keys, tempDirectory, cacheSize);
 	}
 	
 	@Override
@@ -88,48 +83,26 @@ public class ExternalComplexPortData extends PortData {
 		 
 		dataMap = new HashMap<String, Database>();
 		
+	}
+	
+		@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
 		DataRecordMetadata metadata = inPort.getMetadata();
 		
-		EnvironmentConfig envConfig = new EnvironmentConfig();
-		envConfig.setCacheSize(cacheSize);
-		envConfig.setAllowCreate(true);
-		envConfig.setLocking(false);
-		envConfig.setTransactional(false);
-		envConfig.setSharedCache(true);
-		envConfig.setCacheMode(CacheMode.MAKE_COLD);
-		Environment dbEnvironment;
-		try {
-			File f = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
-			f.delete();
-			f.mkdir();
-			f.deleteOnExit();
-			
-			dbEnvironment = new Environment(f, envConfig);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(e);
-		}
+		environment = getEnvironment();
 		
 		stringKeys = new String[primaryKey.length];
 		for (int outer = 0; outer < primaryKey.length; outer++) {
 			int[] key = primaryKey[outer];
 			stringKeys[outer] = generateKey(metadata, key);
-			Database database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
+			Database database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
 			dataMap.put(stringKeys[outer], database);
 		}
 		if (nullKey) {
-			Database database = dbEnvironment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
+			Database database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
 			dataMap.put(NULL_INDEX_NAME, database);
 		}
-	}
-	
-	private DatabaseConfig getDbConfig() {
-		DatabaseConfig dbConfig = new DatabaseConfig();
-		dbConfig.setAllowCreate(true);
-		dbConfig.setTemporary(true);
-		dbConfig.setSortedDuplicates(true);
-		dbConfig.setTransactional(false);
-		dbConfig.setExclusiveCreate(true);
-		return dbConfig;
 	}
 
 	@Override
@@ -179,18 +152,19 @@ public class ExternalComplexPortData extends PortData {
 	}
 
 	@Override
-	public boolean readInputPort() {
-		return true;
-	}
-
-	@Override
 	public void postExecute() throws ComponentNotReadyException{
-		super.postExecute();
 		try {
 			dataStorage.close();
+			for (Database database : dataMap.values()) {
+				database.close();
+			}
+			dataStorage.clear();
+			environment.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
+		
+		super.postExecute();
 	}
 	
 	private String generateKey(DataRecordMetadata metadata, int[] key) {
@@ -253,10 +227,11 @@ public class ExternalComplexPortData extends PortData {
 
 			databaseKey = new DatabaseEntry(serializedKey);
 			
-			if (cursor.getSearchKey(databaseKey, foundValue, null) != OperationStatus.SUCCESS) {
-				next = null;
-			} else {
+			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
+			} else {
+				cursor.close();
+				next = null;
 			}
 		}
 
@@ -269,6 +244,7 @@ public class ExternalComplexPortData extends PortData {
 			if (cursor.getNextDup(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 			return current;
@@ -310,6 +286,7 @@ public class ExternalComplexPortData extends PortData {
 			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 		}
@@ -323,6 +300,7 @@ public class ExternalComplexPortData extends PortData {
 			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
 			} else {
+				cursor.close();
 				next = null;
 			}
 			return current;

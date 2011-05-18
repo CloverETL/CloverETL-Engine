@@ -94,6 +94,9 @@ public abstract class PortData {
 	public void postExecute() throws ComponentNotReadyException {		
 	}
 	
+	public void free() {		
+	}
+	
 	public abstract boolean readInputPort();
 	
 	public abstract void put(DataRecord record) throws IOException;
