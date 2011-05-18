@@ -449,8 +449,10 @@ public class ExtXmlWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		for (PortData portData : portDataMap.values()) {
-			portData.free();
+		if (portDataMap != null) {
+			for (PortData portData : portDataMap.values()) {
+				portData.free();
+			}
 		}
 	}
 
