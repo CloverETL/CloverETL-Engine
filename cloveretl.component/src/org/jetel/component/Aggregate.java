@@ -178,7 +178,8 @@ public class Aggregate extends Node {
 				recordCount++;
 				if (!firstLoop) {
 					if (currentRecord == null || 
-							(currentSortDirection = recordKey.compare(currentRecord, previousRecord)) != 0) { 
+							((currentSortDirection = recordKey.compare(currentRecord, previousRecord)) != 0
+								&& /* fix of CL-1753 */ !recordKey.isComparedNulls())) { 
 						// next group founded
 						
 						// check sort direction whether it is still the same
