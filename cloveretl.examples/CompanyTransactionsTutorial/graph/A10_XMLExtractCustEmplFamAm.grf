@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Thu May 05 05:50:11 CEST 2011" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.92" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/AmountsWithCustIDWithEmplID.fmt" id="Metadata3"/>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/ChildrenWithID.fmt" id="Metadata6"/>
-<Metadata fileURL="meta/Customers.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
-<Metadata fileURL="meta/EmployeesWithCustomerID.fmt" id="Metadata0"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/AmountsWithCustIDWithEmplID.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/ChildrenWithID.fmt" id="Metadata6"/>
+<Metadata fileURL="${META_DIR}/Customers.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/EmployeesWithCustomerID.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata5"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tenth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1058" x="48" y="54">
 <attr name="text"><![CDATA[

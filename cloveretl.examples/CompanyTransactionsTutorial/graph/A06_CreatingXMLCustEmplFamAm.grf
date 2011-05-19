@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu May 05 05:36:33 CEST 2011" modifiedBy="cloveruser" name="CreatingXML" revision="1.220" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Amounts.fmt" id="Metadata4"/>
-<Metadata fileURL="meta/AmountsWithCustIDWithEmplID.fmt" id="Metadata6"/>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/CustomersFixed.fmt" id="Metadata0"/>
-<Metadata fileURL="meta/Employees.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/EmployeesWithCustomerID.fmt" id="Metadata5"/>
-<Metadata fileURL="meta/Family.fmt" id="Metadata8"/>
-<Metadata fileURL="meta/IDs.fmt" id="Metadata3"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata7"/>
+<Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/AmountsWithCustIDWithEmplID.fmt" id="Metadata6"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/CustomersFixed.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/EmployeesWithCustomerID.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/Family.fmt" id="Metadata8"/>
+<Metadata fileURL="${META_DIR}/IDs.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata7"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sixth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="42" y="48">
 <attr name="text"><![CDATA[
@@ -69,7 +69,7 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="94" guiName="ExtSort" guiWidth="128" guiX="727" guiY="412" id="EXT_SORT1" sortKey="CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
-<Node charset="UTF-8" enabled="enabled" fileUrl="${DATATMP_DIR}/CustEmplFamAm$$$.xml" guiHeight="84" guiName="CustomersEmployeesAmounts" guiWidth="198" guiX="1070" guiY="412" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/CustEmplFamAm$$$.xml" guiHeight="84" guiName="CustomersEmployeesAmounts" guiWidth="198" guiX="1070" guiY="412" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <Customers xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <customer clover:inPort="0">

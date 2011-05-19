@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232020084671" licenseType="Evaluation Devel" modified="Fri Apr 29 10:03:10 CEST 2011" modifiedBy="avackova" name="CreatingXLSEmplChild" revision="1.44" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/Employees.fmt" id="Metadata0"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="197" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Second graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="876" x="56" y="52">
 <attr name="text"><![CDATA[

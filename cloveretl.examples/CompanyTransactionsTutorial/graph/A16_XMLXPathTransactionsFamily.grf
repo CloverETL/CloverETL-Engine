@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Thu May 05 06:14:57 CEST 2011" modifiedBy="cloveruser" name="ReadingXMLExtract" revision="1.186" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/ChildrenWithID.fmt" id="Metadata4"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/ChildrenWithID.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Sequence cached="1" fileURL="seq.seq" id="Sequence0" name="seq" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="155" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sixteenth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1000" x="39" y="52">

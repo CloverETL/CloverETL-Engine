@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu May 05 05:39:21 CEST 2011" modifiedBy="cloveruser" name="CreatingXML" revision="1.194" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Eighth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="828" x="52" y="32">
 <attr name="text"><![CDATA[
@@ -27,7 +27,7 @@ More detailed information about this graph can be found in the "readme.html" fil
 <attr name="guiDescription"><![CDATA[Spouses]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="79" guiName="AlphabeticalSorting" guiWidth="139" guiX="274" guiY="386" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node charset="UTF-8" enabled="enabled" fileUrl="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="80" guiName="TransactionsFamily" guiWidth="134" guiX="557" guiY="365" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="80" guiName="TransactionsFamily" guiWidth="134" guiX="557" guiY="365" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <Transactions xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <transaction clover:inPort="0">
