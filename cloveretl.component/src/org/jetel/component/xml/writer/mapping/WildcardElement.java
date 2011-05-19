@@ -65,7 +65,15 @@ public class WildcardElement extends AbstractElement {
 
 	@Override
 	public String getSimpleContent() {
-		return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("Include: '").append(getProperty(MappingProperty.INCLUDE)).append("'");
+		
+		String property = getProperty(MappingProperty.EXCLUDE);
+		if (property != null) {
+			sb.append(" Exclude: ").append(property).append("'");
+		}
+		
+		return sb.toString();
 	}
 
 	@Override
@@ -80,5 +88,10 @@ public class WildcardElement extends AbstractElement {
 	@Override
 	public short getType() {
 		return isElement ? AbstractElement.AGGREGATE_ELEMENT : AbstractElement.AGGREGATE_ATTRIBUTE;
+	}
+
+	@Override
+	public String getDescription() {
+		return "A construct used for mapping multiple clover fields to XML " + (isElement ? "elements": "attributes");
 	}
 }

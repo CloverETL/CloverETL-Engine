@@ -30,9 +30,7 @@ import org.jetel.component.xml.writer.MappingVisitor;
  */
 public class Comment extends AbstractElement {
 
-	// FIXME something more self-explanatory then INCLUDE?
-	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.INCLUDE, MappingProperty.VALUE};
-	public static final String INCLUDE_MARK = "clover:include";
+	public static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.WRITE, MappingProperty.VALUE};
 
 	public Comment(Element parent) {
 		super(parent, true);
@@ -50,7 +48,7 @@ public class Comment extends AbstractElement {
 
 	@Override
 	public String getDisplayName() {
-		return "comment";
+		return "Comment";
 	}
 
 	@Override
@@ -61,6 +59,11 @@ public class Comment extends AbstractElement {
 	@Override
 	public short getType() {
 		return AbstractElement.COMMENT;
+	}
+
+	@Override
+	public String getDescription() {
+		return "An XML comment. Example: <!-- comment -->";
 	}
 
 }

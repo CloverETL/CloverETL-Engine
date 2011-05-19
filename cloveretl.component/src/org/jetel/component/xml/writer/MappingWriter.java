@@ -169,9 +169,9 @@ public class MappingWriter implements MappingVisitor {
 	@Override
 	public void visit(Comment objectComment) throws Exception {
 		StringBuilder comment = new StringBuilder();
-		if (Boolean.valueOf(objectComment.getProperty(MappingProperty.INCLUDE))) {
+		if (Boolean.valueOf(objectComment.getProperty(MappingProperty.WRITE))) {
 			comment.append(" ");
-			comment.append(XmlMapping.MAPPING_INCLUDE_COMMENT);
+			comment.append(XmlMapping.MAPPING_WRITE_COMMENT);
 		}
 		String value = objectComment.getProperty(MappingProperty.VALUE);
 		if (value != null) {

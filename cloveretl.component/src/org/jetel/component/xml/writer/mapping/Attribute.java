@@ -67,4 +67,9 @@ public class Attribute extends AbstractElement {
 	public short getType() {
 		return AbstractElement.ATTRIBUTE;
 	}
+
+	@Override
+	public String getDescription() {
+		return "An XML attribute. Example: <element0 attribute=\"value\">";
+	}
 }
