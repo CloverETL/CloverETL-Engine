@@ -76,7 +76,7 @@ public class ExtXmlWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "EXT_XML_WRITER";
 	
-	public static final String XML_FILE_URL_ATTRIBUTE = "fileUrl";
+	public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
