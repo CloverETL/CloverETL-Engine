@@ -474,7 +474,7 @@ public class MappingCompiler extends AbstractVisitor {
 	
 	@Override
 	public void visit(Comment element) throws Exception {
-		if (Boolean.valueOf(element.getProperty(MappingProperty.INCLUDE))) { 
+		if (Boolean.valueOf(element.getProperty(MappingProperty.WRITE))) { 
 			WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 			currentParent.addChild(new WritableComment(value));
 		}

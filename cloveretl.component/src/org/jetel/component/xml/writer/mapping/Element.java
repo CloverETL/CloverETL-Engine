@@ -313,4 +313,9 @@ public class Element extends AbstractElement {
 	public short getType() {
 		return template ? AbstractElement.TEMPLATE : AbstractElement.ELEMENT;
 	}
+
+	@Override
+	public String getDescription() {
+		return template ? "Template declaration" : "An XML element. Example: <element0>";
+	}
 }

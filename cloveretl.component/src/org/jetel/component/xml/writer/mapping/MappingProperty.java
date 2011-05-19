@@ -44,6 +44,7 @@ public enum MappingProperty {
 	TEMPLATE_NAME("name"),
 	TEMPLATE("template"),
 	VALUE("value"),
+	WRITE("write"),
 	
 	OMIT_NULL_ATTRIBUTE("omitNullAttribute"),
 	WRITE_NULL_ATTRIBUTE("writeNullAttribute"),
@@ -51,6 +52,7 @@ public enum MappingProperty {
 	WRITE_NULL_ELEMENT("writeNullElement"), //True|False it's property of ObjectElement
 	
 	PATH("path"), //read-only property
+	DESCRIPTION("description"), //read-only property
 	UNKNOWN("unknown");
 
 	private static final Map<String, MappingProperty> lookup = new HashMap<String, MappingProperty>();

@@ -62,7 +62,7 @@ public class Relation extends AbstractElement {
 
 	@Override
 	public String getDisplayName() {
-		return "Relation";
+		return "Binding";
 	}
 
 	@Override
@@ -73,5 +73,10 @@ public class Relation extends AbstractElement {
 	@Override
 	public short getType() {
 		return AbstractElement.RELATION;
+	}
+
+	@Override
+	public String getDescription() {
+		return "A binding between input port and element";
 	}
 }

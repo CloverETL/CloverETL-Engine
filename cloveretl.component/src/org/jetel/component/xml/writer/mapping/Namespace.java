@@ -59,5 +59,10 @@ public class Namespace extends AbstractElement {
 	@Override
 	public short getType() {
 		return AbstractElement.NAMESPACE;
-	}	
+	}
+
+	@Override
+	public String getDescription() {
+		return "An XML namespace declaration. Example: <element0 xmlns:namespace=\"http://your.namespace.url\">";
+	}
 }

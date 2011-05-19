@@ -47,7 +47,7 @@ public class Value extends AbstractElement {
 
 	@Override
 	public String getDisplayName() {
-		return null;
+		return "Text node";
 	}
 
 	@Override
@@ -63,5 +63,10 @@ public class Value extends AbstractElement {
 	@Override
 	public short getType() {
 		return AbstractElement.VALUE;
+	}
+
+	@Override
+	public String getDescription() {
+		return "An XML text node. Example: <element0>text node value</element0>";
 	}
 }

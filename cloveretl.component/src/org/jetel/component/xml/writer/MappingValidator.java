@@ -447,7 +447,7 @@ public class MappingValidator extends AbstractVisitor {
 		if (!runIt) {
 			return;
 		}
-		checkCorrectBooleanValue(element, MappingProperty.INCLUDE);
+		checkCorrectBooleanValue(element, MappingProperty.WRITE);
 		validateValue(element);
 	}
 

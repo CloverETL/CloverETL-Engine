@@ -77,4 +77,9 @@ public class TemplateEntry extends AbstractElement {
 	public short getType() {
 		return AbstractElement.TEMPLATE_ENTRY;
 	}
+
+	@Override
+	public String getDescription() {
+		return "Point of template insertion";
+	}
 }

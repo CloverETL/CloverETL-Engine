@@ -68,6 +68,8 @@ public abstract class AbstractElement {
 	public String getProperty(MappingProperty property) {
 		if (property == MappingProperty.PATH) {
 			return getPath();
+		} else if (property == MappingProperty.DESCRIPTION) {
+			return getDescription();
 		}
 		for (MappingProperty availableProperty : getAvailableProperties()) {
 			if (property == availableProperty) {
@@ -101,6 +103,7 @@ public abstract class AbstractElement {
 	
 	public abstract String getSimpleContent();
 	public abstract String getDisplayName();
+	public abstract String getDescription();
 	
 	abstract MappingProperty[] getAvailableProperties();
 	
