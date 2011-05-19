@@ -458,7 +458,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.xsd.ConvertorRegistry"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.xsd.IGenericConvertor"><field access="public"/><method access="public"/></keep>
 						
-			<keep name="org.jetel.exception.BadDataFormatException"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.exception.BadDataFormatException"><field access="public protected"/><method access="public protected"/></keep>
 			<keep name="org.jetel.main.runGraph"><field access="public"/><method access="public"/></keep>
 			
 			<!-- keep classes usualy used in trasformation -->
