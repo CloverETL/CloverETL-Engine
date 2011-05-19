@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232023819125" licenseType="Evaluation Devel" modified="Fri Apr 29 10:06:22 CEST 2011" modifiedBy="avackova" name="CreatingFixedMixedCust" revision="1.36" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Customers.fmt" id="Metadata0"/>
-<Metadata fileURL="meta/CustomersFixed.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/CustomersFixed.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Third graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="734" x="37" y="40">
 <attr name="text"><![CDATA[

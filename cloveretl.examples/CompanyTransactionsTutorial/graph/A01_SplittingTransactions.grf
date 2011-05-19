@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation Devel" modified="Fri Apr 29 10:00:11 CEST 2011" modifiedBy="avackova" name="Splitting" revision="1.63" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Amounts.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/Customers.fmt" id="Metadata3"/>
-<Metadata fileURL="meta/Employees.fmt" id="Metadata4"/>
-<Metadata fileURL="meta/IDs.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/Transactions.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Customers.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/IDs.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="228" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="First graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="930" x="46" y="44">
 <attr name="text"><![CDATA[

@@ -23,7 +23,7 @@ In this example, customers are used as the highest level element, the orders mad
 <Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="64" guiName="Employees" guiWidth="128" guiX="23" guiY="103" id="INPUT2" quotedStrings="true" type="DATA_READER"/>
 <Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="64" guiName="Customers" guiWidth="128" guiX="24" guiY="182" id="INPUT3" quotedStrings="true" type="DATA_READER"/>
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="64" guiName="Addresses" guiWidth="128" guiX="50" guiY="264" id="INPUT4" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileUrl="${DATAOUT_DIR}/xmlOut.xml" guiHeight="84" guiName="XMLWriter" guiWidth="128" guiX="296" guiY="95" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/xmlOut.xml" guiHeight="84" guiName="XMLWriter" guiWidth="128" guiX="296" guiY="95" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <root xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <customer clover:inPort="2" clover:include="$2.CUSTOMERID">

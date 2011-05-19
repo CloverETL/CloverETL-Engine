@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu May 05 05:37:59 CEST 2011" modifiedBy="cloveruser" name="CreatingXML" revision="1.184" showComponentDetails="true">
 <Global>
-<Metadata fileURL="meta/Amounts.fmt" id="Metadata0"/>
-<Metadata fileURL="meta/Children.fmt" id="Metadata1"/>
-<Metadata fileURL="meta/CustomersFixed.fmt" id="Metadata5"/>
-<Metadata fileURL="meta/CustomersWithAmountID.fmt" id="Metadata3"/>
-<Metadata fileURL="meta/Employees.fmt" id="Metadata2"/>
-<Metadata fileURL="meta/EmployeesWithAmountID.fmt" id="Metadata8"/>
-<Metadata fileURL="meta/IDs.fmt" id="Metadata4"/>
-<Metadata fileURL="meta/Spouses.fmt" id="Metadata6"/>
+<Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/CustomersFixed.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/CustomersWithAmountID.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/EmployeesWithAmountID.fmt" id="Metadata8"/>
+<Metadata fileURL="${META_DIR}/IDs.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata6"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="169" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Seventh graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="944" x="48" y="46">
 <attr name="text"><![CDATA[
@@ -68,7 +68,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileUrl="${DATATMP_DIR}/AmCustEmplFam$$$.xml" guiHeight="84" guiName="AmountsCustomersChildren" guiWidth="185" guiX="879" guiY="393" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/AmCustEmplFam$$$.xml" guiHeight="84" guiName="AmountsCustomersChildren" guiWidth="185" guiX="879" guiY="393" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <Amounts xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <amount clover:inPort="0">
