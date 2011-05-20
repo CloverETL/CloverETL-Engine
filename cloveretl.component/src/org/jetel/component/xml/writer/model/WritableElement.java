@@ -60,7 +60,7 @@ public class WritableElement implements Writable {
 			for (Writable child : children) {
 				child.write(formatter, availableData);
 			}
-		} else if (writeNull || !isEmpty(availableData)) {
+		} else if (!isEmpty(availableData)) {
 			MappingWriteState state = formatter.getMapping().getState();
 			if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 				if (children.length == 0) {
@@ -89,6 +89,9 @@ public class WritableElement implements Writable {
 
 	@Override
 	public boolean isEmpty(Map<Integer, DataRecord> availableData) {
+		if (writeNull) {
+			return false;
+		}
 		if (namespaces.length == 0) {
 			for (Writable child : children) {
 				if (!child.isEmpty(availableData)) {
