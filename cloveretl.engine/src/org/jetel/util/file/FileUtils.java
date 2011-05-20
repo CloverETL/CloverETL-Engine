@@ -1340,6 +1340,8 @@ public class FileUtils {
 				return new File(url.toURI());
 			} catch(URISyntaxException e) {
 				return new File(url.getPath());
+			} catch(IllegalArgumentException e2) {
+				return new File(url.getPath());
 			}
 		} else {
 			throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
