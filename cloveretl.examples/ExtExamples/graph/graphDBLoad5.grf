@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jan 24 09:02:52 CET 2007" description="This graph illustrates usage of dbFields and cloverFields parameters of&#10;DB_OUTPUT_TABLE component.&#10;Parameter dbFields allows to specify that only certain fields of target DB table&#10;will be populated.&#10;Parameter cloverFields allows to specify which input/Clover fields are used&#10;for populating target fields.&#10;The final mapping is determined by the order in which Clover fields and DB fields appear&#10;in the parameters.&#10;Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and&#10;input field FIRST_NAME onto LAST_NAME in DB.&#10;Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works&#10;only with DBs/JDBC drivers which support this feature (e.g. Oracle).&#10;" guiVersion="0.0.0.devel" id="1204557480788" licenseType="Evaluation Devel" modified="Thu Apr 15 11:54:21 CEST 2010" modifiedBy="avackova" name="TestingDBOutputTable" revision="1.43">
+<Graph author="avackova" created="Wed Jan 24 09:02:52 CET 2007" description="This graph illustrates usage of dbFields and cloverFields parameters of&#10;DB_OUTPUT_TABLE component.&#10;Parameter dbFields allows to specify that only certain fields of target DB table&#10;will be populated.&#10;Parameter cloverFields allows to specify which input/Clover fields are used&#10;for populating target fields.&#10;The final mapping is determined by the order in which Clover fields and DB fields appear&#10;in the parameters.&#10;Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and&#10;input field FIRST_NAME onto LAST_NAME in DB.&#10;Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works&#10;only with DBs/JDBC drivers which support this feature (e.g. Oracle).&#10;" guiVersion="0.0.0.devel" id="1204557480788" licenseType="Evaluation Devel" modified="Mon May 02 13:02:19 CEST 2011" modifiedBy="avackova" name="TestingDBOutputTable" revision="1.46" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
@@ -14,20 +14,21 @@ In phase 1, records that are read by UniversalDataReader are received by DBOutpu
 
 The Field mapping defines what Clover fields should be mapped to what db fields.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="79" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DBOutputTable" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="194" x="463" y="119">
-<attr name="text"><![CDATA[
-DB table and Field mapping are specified]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="176" y="24">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="195" y="23">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection2" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="DB Table Creation" guiWidth="0" guiX="24" guiY="24" id="DB_EXECUTE0" sqlQuery="create table EMPLOYEE_TMP (&#10;&#9;EMP_NO INTEGER,&#10;&#9;FIRST_NAME VARCHAR(80),&#10;&#9;LAST_NAME VARCHAR(80),&#10;&#9;PHONE_EXT VARCHAR(80),&#10;&#9;HIRE_DATE DATE,&#10;&#9;DEPT_NO VARCHAR(80),&#10;&#9;JOB_CODE VARCHAR(80),&#10;&#9;JOB_GRADE NUMERIC,&#10;&#9;JOB_COUNTRY VARCHAR(80),&#10;&#9;SALARY NUMERIC,&#10;&#9;FULL_NAME VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE"/>
+<Node dbConnection="Connection2" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="64" guiName="DB Table Creation" guiWidth="160" guiX="24" guiY="24" id="DB_EXECUTE0" sqlQuery="create table EMPLOYEE_TMP (&#10;&#9;EMP_NO INTEGER,&#10;&#9;FIRST_NAME VARCHAR(80),&#10;&#9;LAST_NAME VARCHAR(80),&#10;&#9;PHONE_EXT VARCHAR(80),&#10;&#9;HIRE_DATE DATE,&#10;&#9;DEPT_NO VARCHAR(80),&#10;&#9;JOB_CODE VARCHAR(80),&#10;&#9;JOB_GRADE NUMERIC,&#10;&#9;JOB_COUNTRY VARCHAR(80),&#10;&#9;SALARY NUMERIC,&#10;&#9;FULL_NAME VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="25" guiName="List of Employees" guiWidth="50" guiX="24" guiY="119" id="INPUT" type="DATA_READER"/>
-<Node batchMode="false" commit="300" dbConnection="Connection2" dbTable="employee_tmp" enabled="enabled" fieldMap="$FIRST_NAME:=first_name;$LAST_NAME:=last_name;" guiHeight="25" guiName="Table Filling" guiWidth="50" guiX="316" guiY="119" id="OUTPUT" type="DB_OUTPUT_TABLE"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="OUTPUT:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="98" guiName="List of Employees" guiWidth="157" guiX="24" guiY="119" id="INPUT" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Data to be loaded to datbase.]]></attr>
+</Node>
+<Node batchMode="false" commit="300" dbConnection="Connection2" dbTable="employee_tmp" enabled="enabled" fieldMap="$FIRST_NAME:=first_name;$LAST_NAME:=last_name;" guiHeight="98" guiName="Table Filling" guiWidth="128" guiX="371" guiY="119" id="OUTPUT" type="DB_OUTPUT_TABLE">
+<attr name="guiDescription"><![CDATA[DB table and Field mapping are specified]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

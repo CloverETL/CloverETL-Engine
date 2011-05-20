@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation Devel" modified="Tue Jul 13 15:09:49 CEST 2010" modifiedBy="avackova" name="graphSystemExecute" revision="1.70">
+<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation Devel" modified="Tue May 03 15:52:27 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.73" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata1"/>
 <Metadata id="Metadata0">
@@ -27,73 +27,38 @@
 </Metadata>
 <Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="140" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="416" y="171"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="325" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="JMS Components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="217" x="180" y="-96">
-<attr name="text"><![CDATA[
-- Clover data record -> JMS message
-(DataRecord2JmsMsg interface)
-
-
-
-
-
-
-
-
-- JMS message -> Clover data record
-(JmsMsg2DataRecord interface)]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="49" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of JMS Components (JMSReader and JMSWriter)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="360" x="420" y="-96"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="182" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="362" x="419" y="-25">
-<attr name="text"><![CDATA[
-UniversalDataReader reads an XML file with customer data as a simple flat file. 
-
-JMSWriter receives this file as one string field on its input. 
-
-It uses the default implementation of DataRecord2JmsMsg interface (DataRecord2JmsMsgProperties) to convert data record to JMS message and send the message out.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="313" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="362" x="12" y="240">
-<attr name="text"><![CDATA[
-JMSReader receives JMS message, converts it to Clover data record and sends this record to the output port. 
-
-It uses the default implementation of JmsMsg2DataRecord interface (JmsMsg2DataRecordProperties).
-
-The timeout is set to 4000 milliseconds. If this time elapsed, process would terminate.
-
-Reformat gets this record and processes its value as an XML file. 
-
-XPath mapping is defined in the Transform attribute of Reformat.
-
-If xml message can't be parsed, the error is thrown or the record is skipped depending on the value of custom skip_on_error attribute (see transformOnError method).
-
-Information about the Customer is sent to the first output port and that about Order made by this Customer is sent to the second output port of Reformat.
-
-Two UniversalDataWriters are used to write the data to output files.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="156" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Encoding" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="156" x="13" y="72">
-<attr name="text"><![CDATA[
-Input XML file uses UTF-8 encoding. For this reason, we set the charset to UTF-8 and also specify this UTF-8 in the transformation definition in Reformat.]]></attr>
-</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="49" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of JMS Components (JMSReader and JMSWriter)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="460" x="15" y="-90"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="25" guiName="XML (Customers with Orders)" guiWidth="50" guiX="12" guiY="-12" id="Input" type="DATA_READER"/>
-<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsWriter" guiWidth="50" guiX="228" guiY="-12" id="JmsWriter" type="JMS_WRITER">
-<attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="98" guiName="XML (Customers with Orders)" guiWidth="253" guiX="12" guiY="-12" id="Input" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads an XML file with customer data as a simple flat file. ]]></attr>
 </Node>
-<Edge fromNode="Input:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
+<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="98" guiName="JmsWriter" guiWidth="128" guiX="350" guiY="-12" id="JmsWriter" type="JMS_WRITER">
+<attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
+<attr name="guiDescription"><![CDATA[Uses the default implementation of DataRecord2JmsMsg interface (DataRecord2JmsMsgProperties) to convert data record to JMS message.]]></attr>
+</Node>
+<Edge fromNode="Input:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
 </Phase>
 <Phase number="1">
-<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="25" guiName="JmsReader" guiWidth="50" guiX="228" guiY="144" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
+<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="98" guiName="JmsReader" guiWidth="128" guiX="12" guiY="175" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
 <attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
+<attr name="guiDescription"><![CDATA[Converts jms message to Clover data record and sends this record to the output port. 
+Uses the default implementation of JmsMsg2DataRecord interface (JmsMsg2DataRecordProperties).
+The timeout is set to 4000 milliseconds. If this time elapsed, process would terminate.]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="25" guiName="customer" guiWidth="50" guiX="647" guiY="226" id="OutCustomer" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="25" guiName="customer/order" guiWidth="50" guiX="648" guiY="307" id="OutOrder" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="25" guiName="XPath Parser" guiWidth="50" guiX="431" guiY="228" id="XPathTransform" transformURL="${TRANS_DIR}/ReformatOrders.java" type="REFORMAT">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="98" guiName="customer" guiWidth="128" guiX="350" guiY="121" id="OutCustomer" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Information about the Customer.]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="98" guiName="customer/order" guiWidth="147" guiX="331" guiY="259" id="OutOrder" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Information about Order made by above Customer]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="XPath Parser" guiWidth="129" guiX="160" guiY="176" id="XPathTransform" transformURL="${TRANS_DIR}/ReformatOrders.java" type="REFORMAT">
+<attr name="guiDescription"><![CDATA[Parses body of jms  message as an XML file. If xml message can't be parsed, the error is thrown or the record is skipped depending on the value of custom skip_on_error attribute (see transformOnError method).]]></attr>
 <attr name="skip_on_error"><![CDATA[true]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="JmsReader:0" guiBendpoints="" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="XPathTransform:0"/>
-<Edge debugMode="false" fromNode="XPathTransform:0" guiBendpoints="" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OutCustomer:0"/>
-<Edge debugMode="false" fromNode="XPathTransform:1" guiBendpoints="" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="OutOrder:0"/>
+<Edge debugMode="true" fromNode="JmsReader:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="XPathTransform:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OutCustomer:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:1" guiBendpoints="" guiRouter="Manhattan" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="OutOrder:0"/>
 </Phase>
 </Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Mon Apr 19 12:12:02 CEST 2010" modifiedBy="avackova" name="TestingDB2" revision="1.298">
+<Graph author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Mon May 02 11:30:46 CEST 2011" modifiedBy="avackova" name="TestingDB2" revision="1.300" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="city" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -44,14 +44,15 @@ Both the input parameters and the fields for the result output set are specified
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="182" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Strored procedures&#10;in Derby database" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="242" x="351" y="-88">
 <attr name="text"><![CDATA[Derby supports procedures written in the Java programming language. The class that defines the stored procedure created by "Procedure creation" component is located in ${TRANS_DIR} directory (DerbyStoredProc.cityInfo(int, ResultSet[])).  This class was packed into the jar file and installed to database.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="Procedure creation" guiWidth="0" guiX="18" guiY="26" id="DB_EXECUTE1" printStatements="true" sqlQuery="CREATE PROCEDURE get_city_info(city_id INTEGER)&#13;&#10;PARAMETER STYLE JAVA&#13;&#10;LANGUAGE JAVA&#13;&#10;READS SQL DATA&#13;&#10;DYNAMIC RESULT SETS 1&#13;&#10;EXTERNAL NAME 'DerbyStoredProc.cityInfo'" sqlStatementDelimiter="#" type="DB_EXECUTE"/>
-<Node charset="UTF-8" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Error info" guiWidth="0" guiX="207" guiY="26" id="TRASH0" type="TRASH"/>
-<Edge debugMode="false" fromNode="DB_EXECUTE1:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="64" guiName="Procedure creation" guiWidth="166" guiX="18" guiY="26" id="DB_EXECUTE1" printStatements="true" sqlQuery="CREATE PROCEDURE get_city_info(city_id INTEGER)&#13;&#10;PARAMETER STYLE JAVA&#13;&#10;LANGUAGE JAVA&#13;&#10;READS SQL DATA&#13;&#10;DYNAMIC RESULT SETS 1&#13;&#10;EXTERNAL NAME 'DerbyStoredProc.cityInfo'" sqlStatementDelimiter="#" type="DB_EXECUTE"/>
+<Node charset="UTF-8" debugPrint="true" enabled="enabled" guiHeight="64" guiName="Error info" guiWidth="128" guiX="207" guiY="26" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="DB_EXECUTE1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="0" guiName="ID-s generator" guiWidth="0" guiX="18" guiY="106" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR">
+<Node enabled="enabled" guiHeight="64" guiName="ID-s generator" guiWidth="134" guiX="18" guiY="106" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#TL
 
 // Generates output record.
@@ -68,9 +69,9 @@ function generate() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="384" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="207" guiY="106" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" sqlQuery="{call get_city_info(?)}" type="DB_EXECUTE"/>
-<Edge fromNode="DATA_GENERATOR3:0" guiBendpoints="" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
-<Edge debugMode="false" fromNode="DB_EXECUTE2:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/cities.txt" guiHeight="98" guiName="Procedure output" guiWidth="157" guiX="527" guiY="106" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="64" guiName="Procedure call" guiWidth="132" guiX="207" guiY="106" id="DB_EXECUTE2" inParameters="1:=$id;" outputFields="id;city;country" sqlQuery="{call get_city_info(?)}" type="DB_EXECUTE"/>
+<Edge fromNode="DATA_GENERATOR3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_EXECUTE2:0"/>
+<Edge debugMode="false" fromNode="DB_EXECUTE2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

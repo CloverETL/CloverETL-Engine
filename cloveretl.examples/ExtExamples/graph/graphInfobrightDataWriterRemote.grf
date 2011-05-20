@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Nov 16 09:49:05 GMT+01:00 2009" guiVersion="2.9.1" id="1258363737992" licenseCode="javlinconsulting" licenseType="Commercial Pro" modified="Mon Mar 08 17:19:15 CET 2010" modifiedBy="cloveruser" name="graphInfobrightDataWriter" revision="1.78">
+<Graph author="avackova" created="Mon Nov 16 09:49:05 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1258363737992" licenseType="Evaluation Devel" modified="Mon May 02 13:25:45 CEST 2011" modifiedBy="avackova" name="graphInfobrightDataWriter" revision="1.81" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="," name="output" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n\\|\r\n" recordSize="-1" type="delimited">
@@ -25,22 +25,31 @@
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/infobright.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Loading data to remote Infobright server" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="427" x="180" y="-12">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="162" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Loading data to remote Infobright server" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="453" x="180" y="-12">
 <attr name="text"><![CDATA[If loading to a remote server, then remote load agent on the server, where Infobright is running, must be started. agentPort attribute on component defines the port, the agent on the server is listenning on. 
 Output metadata has to meet certain conditions:
     * comma as a field delimiter
     * system new line ('\n' for Linux, '\r\n' for Windows) as a record delimiter - we can use alternative delimiter (\n\\|\r\n) to make the graph running on both systems
     * date/time formatting: yyyy-MM-dd HH:mm:ss (can be date only, time only or both)]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="0" guiName="DBExecute" guiWidth="0" guiX="36" guiY="108" id="DB_EXECUTE0" sqlQuery="drop table test;&#10;create table test (&#10;&#9;boolField TINYINT(1),&#10;&#9;dateField DATE,&#10;&#9;decimalField DECIMAL(8,2),&#10;&#9;stringField VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="98" guiName="DBExecute" guiWidth="128" guiX="36" guiY="-12" id="DB_EXECUTE0" sqlQuery="drop table test;&#10;create table test (&#10;&#9;boolField TINYINT(1),&#10;&#9;dateField DATE,&#10;&#9;decimalField DECIMAL(8,2),&#10;&#9;stringField VARCHAR(80)&#10;)&#10;" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Create database table]]></attr>
+</Node>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/infobright.dat" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="36" guiY="228" id="DATA_READER0" type="DATA_READER"/>
-<Node agentPort="6666" cloverFields="boolField;dateField;decimalField;stringField" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="InfobrigtDataWriter" guiWidth="0" guiX="240" guiY="228" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/infobright_out.xml" footer="&lt;/dataset&gt;" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="444" guiY="228" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;dataset&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;test boolField=&quot;$boolField&quot; dateField=&quot;$dateField&quot; decimalField=&quot;$decimalField&quot; stringField=&quot;$stringField&quot;/&gt;&#10;" type="STRUCTURE_WRITER"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="INFOBRIGHT_DATA_WRITER0:0"/>
-<Edge fromNode="INFOBRIGHT_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (Body port)" metadata="Metadata2" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/infobright.dat" guiHeight="81" guiName="UniversalDataReader" guiWidth="181" guiX="36" guiY="176" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read data from a flat file]]></attr>
+</Node>
+<Node agentPort="6666" cloverFields="boolField;dateField;decimalField;stringField" dbConnection="Connection0" enabled="enabled" guiHeight="81" guiName="InfobrigtDataWriter" guiWidth="174" guiX="240" guiY="176" id="INFOBRIGHT_DATA_WRITER0" table="test" type="INFOBRIGHT_DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Load data to datbase]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/infobright_out.xml" footer="&lt;/dataset&gt;" guiHeight="98" guiName="StructuredDataWriter" guiWidth="188" guiX="444" guiY="176" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#10;&lt;dataset&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;test boolField=&quot;$boolField&quot; dateField=&quot;$dateField&quot; decimalField=&quot;$decimalField&quot; stringField=&quot;$stringField&quot;/&gt;&#10;" type="STRUCTURE_WRITER">
+<attr name="guiDescription"><![CDATA[Save data, that was sent to database, to a xml file]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="INFOBRIGHT_DATA_WRITER0:0"/>
+<Edge fromNode="INFOBRIGHT_DATA_WRITER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (Body port)" metadata="Metadata2" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
 </Phase>
 </Graph>

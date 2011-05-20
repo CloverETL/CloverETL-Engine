@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Mira Haupt" created="Fri Mar 21 12:32:53 CET 2008" guiVersion="0.0.0.devel" id="1206099302913" licenseType="Evaluation Devel" modified="Thu Oct 01 14:25:54 CEST 2009" modifiedBy="avackova" name="OracleDataWriter" revision="1.121">
+<Graph author="Mira Haupt" created="Fri Mar 21 12:32:53 CET 2008" guiVersion="0.0.0.devel" id="1206099302913" licenseType="Evaluation Devel" modified="Thu May 19 16:05:55 CEST 2011" modifiedBy="avackova" name="OracleDataWriter" revision="1.124" showComponentDetails="true">
 <Global>
 <Metadata id="FixMetadata1">
 <Record name="FixMetadata1" recordDelimiter="\n" type="fixed">
@@ -14,31 +14,52 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="55" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DELIMITED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="111" x="675" y="107"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="55" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="FIXED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="111" x="649" y="330"/>
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="254" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DELIMITED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="655" x="11" y="-7"/>
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="251" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="FIXED" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="655" x="12" y="256"/>
+<Dictionary/>
 </Global>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="32" guiY="24" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad0Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="474" guiY="24" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node append="append" enabled="enabled" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="261" guiY="24" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="writer_test" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="81" guiName="Data Reader" guiWidth="128" guiX="32" guiY="24" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Input data]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad0Port.bad" guiHeight="98" guiName="UniversalDataWriter" guiWidth="176" guiX="474" guiY="24" id="DATA_WRITER1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Data not sent to Oracle database (invalid records)]]></attr>
+</Node>
+<Node append="append" enabled="enabled" guiHeight="98" guiName="Oracle Data Writer" guiWidth="165" guiX="259" guiY="24" id="ORACLE_DATA_WRITER0" log="${DATAOUT_DIR}/log0.txt" password="test" sqlldr="sqlldr" table="writer_test" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Receiving data through input port.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad1Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="261" guiY="140" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="insert" bad="${DATAOUT_DIR}/bad1.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE writer_test&#13;&#10;append&#13;&#10;(&#13;&#10;&#9;name TERMINATED BY ';',&#13;&#10;&#9;value TERMINATED BY '\n'&#13;&#10;)" discard="${DATAOUT_DIR}/discard.kkk" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="32" guiY="140" id="ORACLE_DATA_WRITER1" log="${DATAOUT_DIR}/log1.txt" password="test" sqlldr="sqlldr" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test"/>
-<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad1Port.bad" guiHeight="98" guiName="UniversalDataWriter" guiWidth="176" guiX="259" guiY="140" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Data not sent to Oracle database (invalid records)]]></attr>
+</Node>
+<Node append="insert" bad="${DATAOUT_DIR}/bad1.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE writer_test&#13;&#10;append&#13;&#10;(&#13;&#10;&#9;name TERMINATED BY ';',&#13;&#10;&#9;value TERMINATED BY '\n'&#13;&#10;)" discard="${DATAOUT_DIR}/discard.kkk" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/oracle.dat" guiHeight="98" guiName="Oracle Data Writer" guiWidth="165" guiX="32" guiY="140" id="ORACLE_DATA_WRITER1" log="${DATAOUT_DIR}/log1.txt" password="test" sqlldr="sqlldr" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Reading data from the file specified.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="3">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="0" guiName="Data Reader" guiWidth="0" guiX="32" guiY="252" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad2Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="474" guiY="252" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node append="append" enabled="enabled" guiHeight="25" guiName="Oracle Data Writer" guiWidth="50" guiX="261" guiY="252" id="ORACLE_DATA_WRITER2" log="${DATAOUT_DIR}/log2.txt" password="test" sqlldr="sqlldr" table="writer_test" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test"/>
-<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER2:0"/>
-<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="81" guiName="Data Reader" guiWidth="128" guiX="31" guiY="285" id="DATA_READER1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Input data]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad2Port.bad" guiHeight="98" guiName="UniversalDataWriter" guiWidth="176" guiX="473" guiY="285" id="DATA_WRITER2" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Data not sent to Oracle database (invalid records)]]></attr>
+</Node>
+<Node append="append" enabled="enabled" guiHeight="98" guiName="Oracle Data Writer" guiWidth="165" guiX="258" guiY="285" id="ORACLE_DATA_WRITER2" log="${DATAOUT_DIR}/log2.txt" password="test" sqlldr="sqlldr" table="writer_test" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Receiving data through input port.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (output)" toNode="ORACLE_DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
 </Phase>
 <Phase number="4">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad3Port.bad" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="261" guiY="347" id="DATA_WRITER3" type="DATA_WRITER"/>
-<Node append="insert" bad="${DATAOUT_DIR}/bad2.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE writer_test&#13;&#10;append&#13;&#10;(name POSITION (1:6),&#13;&#10;value POSITION (7:11))" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="0" guiName="Oracle Data Writer" guiWidth="0" guiX="32" guiY="347" id="ORACLE_DATA_WRITER3" log="${DATAOUT_DIR}/log3.txt" password="test" sqlldr="sqlldr" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test"/>
-<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER3:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/bad3Port.bad" guiHeight="98" guiName="UniversalDataWriter" guiWidth="176" guiX="258" guiY="394" id="DATA_WRITER3" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Data not sent to Oracle database (invalid records)]]></attr>
+</Node>
+<Node append="insert" bad="${DATAOUT_DIR}/bad2.kkk" control="LOAD DATA&#13;&#10;INFILE *&#13;&#10;INTO TABLE writer_test&#13;&#10;append&#13;&#10;(name POSITION (1:6),&#13;&#10;value POSITION (7:11))" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/oracle.dat" guiHeight="98" guiName="Oracle Data Writer" guiWidth="165" guiX="31" guiY="394" id="ORACLE_DATA_WRITER3" log="${DATAOUT_DIR}/log3.txt" password="test" sqlldr="sqlldr" tnsname="orcl" type="ORACLE_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Reading data from the file specified.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="ORACLE_DATA_WRITER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="FixMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER3:0"/>
 </Phase>
 </Graph>
