@@ -57,7 +57,7 @@ public class XmlMapping {
 
 	public static final String MAPPING_KEYWORDS_NAMESPACEURI = "http://www.cloveretl.com/ns/xmlmapping";
 	public static final String MAPPING_KEYWORDS_PREFIX = "clover";
-	public static final String MAPPING_WRITE_COMMENT = MAPPING_KEYWORDS_PREFIX + ":include";
+	public static final String MAPPING_WRITE_COMMENT = MAPPING_KEYWORDS_PREFIX + ":write";
 	public static final String DELIMITER = ";";
 	public static final char WILDCARD = '*';
 
