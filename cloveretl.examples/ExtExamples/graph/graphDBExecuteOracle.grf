@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph autFhor="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Tue Mar 30 09:22:02 CEST 2010" modifiedBy="avackova" name="TestingDBExecuteOracle" revision="1.242">
+<Graph autFhor="avackova" author="avackova" created="Tue Dec 04 10:38:50 CET 2007" guiVersion="0.0.0.devel" id="1196767470169" licenseType="Evaluation Devel" modified="Mon May 02 11:33:53 CEST 2011" modifiedBy="avackova" name="TestingDBExecuteOracle" revision="1.244" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -15,10 +15,15 @@
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/oracle.cfg" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/countries.txt" guiHeight="0" guiName="Procedure output" guiWidth="0" guiX="251" guiY="30" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="Procedure call" guiWidth="0" guiX="37" guiY="30" id="DB_EXECUTE1" outParameters="result_set" outputFields="COUNTRY_CODE;COUNTRY_NAME" printStatements="true" sqlQuery="{call test.get_list(?)}" type="DB_EXECUTE"/>
-<Edge fromNode="DB_EXECUTE1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/countries.txt" guiHeight="98" guiName="Procedure output" guiWidth="157" guiX="251" guiY="30" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="Procedure call" guiWidth="132" guiX="37" guiY="30" id="DB_EXECUTE1" outParameters="result_set" outputFields="COUNTRY_CODE;COUNTRY_NAME" printStatements="true" sqlQuery="{call test.get_list(?)}" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[PROCEDURE GET_LIST ( p_cursor OUT untyped_cursor) AS BEGIN
+	OPEN p_cursor FOR SELECT country_code, country_name FROM rt_countries ORDER BY country_name;
+END; ]]></attr>
+</Node>
+<Edge fromNode="DB_EXECUTE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (procedure output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
