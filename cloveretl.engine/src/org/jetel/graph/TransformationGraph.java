@@ -386,20 +386,26 @@ public final class TransformationGraph extends GraphElement {
 			// initialize connections
 			for (IConnection connection : connections.values()) {
 				logger.info("Initializing connection:");
+				ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
+					Thread.currentThread().setContextClassLoader(connection.getClass().getClassLoader());
 					connection.init();
 					logger.info(connection + " ... OK");
 				} catch (ComponentNotReadyException e) {
 					throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
 				} catch (Exception e) {
 					throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
+				} finally {
+					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
 			}
 
 			// initialize sequences
 			for (Sequence sequence : sequences.values()) {
 				logger.info("Initializing sequence:");
+				ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
+					Thread.currentThread().setContextClassLoader(sequence.getClass().getClassLoader());
 					if (sequence.isShared()) {
 						sequence = getAuthorityProxy().getSharedSequence(sequence);
 						sequences.put(sequence.getId(), sequence);
@@ -410,19 +416,25 @@ public final class TransformationGraph extends GraphElement {
 					throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
 				} catch (Exception e) {
 					throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
+				} finally {
+					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
 			}
 
 			// initialize lookup tables
 			for (LookupTable lookupTable : lookupTables.values()) {
 				logger.info("Initializing lookup table:");
+				ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
+					Thread.currentThread().setContextClassLoader(lookupTable.getClass().getClassLoader());
 					lookupTable.init();
 					logger.info(lookupTable + " ... OK");
 				} catch (ComponentNotReadyException e) {
 					throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
 				} catch (Exception e) {
 					throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+				} finally {
+					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
 			}
 

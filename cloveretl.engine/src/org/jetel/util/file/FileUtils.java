@@ -1326,7 +1326,8 @@ public class FileUtils {
 	public static void addCustomPathResolver(CustomPathResolver customPathResolver) {
 		customPathResolvers.add(customPathResolver);
 	}
-	
+
+
 	/**
 	 * Converts the given URL to File.
 	 * @param url

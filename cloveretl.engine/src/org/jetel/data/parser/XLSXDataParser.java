@@ -430,9 +430,9 @@ public class XLSXDataParser extends XLSParser {
 			return null;
 		}
          
-	    Row row = sheet.getRow(currentRow);
-        if(row != null) {
-        	for (short i = 0; i < fieldNumber.length; i++) {
+		Row row = sheet.getRow(currentRow);
+		if (row != null) {
+			for (short i = 0; i < fieldNumber.length; i++) {
     			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
     			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
     			// skip fields that are internally filled 
@@ -444,8 +444,13 @@ public class XLSXDataParser extends XLSParser {
     			Cell cell = row.getCell(xlsFieldIndex);
 
     			if (cell == null) {
-    				record.getField(cloverFieldIndex).setNull(true);
-    				continue;
+    				try {
+    					record.getField(cloverFieldIndex).setNull(true);
+    					continue;
+    				} catch (BadDataFormatException e) {
+    					handleException(new BadDataFormatException("There is no data cell for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null);
+    					continue;
+					}
     			}
 
     			char type = metadata.getField(cloverFieldIndex).getType();
@@ -470,36 +475,41 @@ public class XLSXDataParser extends XLSParser {
     						record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
     						break;
     				}
-    			} catch (RuntimeException exception) {// exception when trying get date or number from a different cell type
+    			} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
     				try {
     					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
     				} catch (Exception ex) {
-    					BadDataFormatException bdfe = new BadDataFormatException(exception.getMessage());
-    					bdfe.setRecordNumber(currentRow + 1);
-    					bdfe.setFieldNumber(cloverFieldIndex);
-
-    					if (exceptionHandler != null) { // use handler only if configured
-    						exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-    								cloverFieldIndex), record, currentRow + 1, cloverFieldIndex,
-    								cell.getStringCellValue(), bdfe);
-    					} else {
-    						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1,
-    								cloverFieldIndex));
-    					}
+    					handleException(new BadDataFormatException(ex.getMessage()), record, cloverFieldIndex, cell.getStringCellValue());
     				}
     			}
     		}
 
-        }  else  {
-           for(int i = 0; i < record.getNumFields(); i++) {
-        	   record.getField(i).setNull(true);
-           }
-        }
-		
+		} else {
+			for (int i = 0; i < record.getNumFields(); i++) {
+				try {
+					record.getField(i).setNull(true);
+				} catch (BadDataFormatException e) {
+					handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, i, null);
+				}
+			}
+		}
+
 		currentRow++;
 		recordCounter++;
 
 		return record;
+	}
+	
+	private void handleException(BadDataFormatException bdfe, DataRecord record, int cloverFieldIndex, String cellValue) {
+		bdfe.setRecordNumber(currentRow + 1);
+		bdfe.setFieldNumber(cloverFieldIndex);
+
+		if (exceptionHandler != null) { // use handler only if configured
+			exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
+					cloverFieldIndex), record, currentRow + 1, cloverFieldIndex, cellValue, bdfe);
+		} else {
+			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1, cloverFieldIndex));
+		}
 	}
 
 	@Override

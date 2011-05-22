@@ -18,8 +18,10 @@
  */
 package org.jetel.util;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -156,6 +158,49 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 
 	public static String[] parseAlternatives(String s) {
 		return s != null ? s.split(VALUE_SEPARATOR_REGEX) : null;
+	}
+	
+	public void setProperties(String value) throws IOException{
+		Properties p = new Properties();
+		String propName="", propValue="";
+		String currentLine, prevLine="";
+		String[] parts;
+		ArrayList<String> values;
+		boolean multiline = false;
+		
+		BufferedReader reader = new BufferedReader(new StringReader(value));
+		while( (currentLine = reader.readLine()) !=null) {
+			if(currentLine.indexOf("=")==-1) {
+				propValue += "\n" + currentLine;
+				multiline = true;
+			} 
+			if(prevLine!=null && ( (multiline || prevLine.indexOf("=")!=-1) && currentLine.indexOf("=")!=-1)) {
+					p.put(propName, propValue);
+					multiline = false;
+			} if(currentLine.indexOf("=")!=-1){
+				propName = currentLine.substring(0, currentLine.indexOf("="));
+				propValue = currentLine.substring(currentLine.indexOf("=")+1);
+			}
+			prevLine = currentLine;
+		}
+		if(prevLine.indexOf("=")!=-1){
+			p.put(propName, propValue);
+		}	
+	
+		for (Enumeration enu = p.propertyNames(); enu.hasMoreElements();) {
+			propName = (String) enu.nextElement();
+			parts = ExProperties.parseAlternatives(p.getProperty(propName));
+			
+			values = getValues(propName);
+			if (values == null) {
+				values = new ArrayList<String>();
+				super.put(propName, values);
+			}
+
+			for (String part : parts) {
+				values.add(deEscape(part));
+			}
+		}
 	}
 	
 	public String toString() {

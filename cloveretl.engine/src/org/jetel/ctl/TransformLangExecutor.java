@@ -98,6 +98,8 @@ import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLDateField;
 import org.jetel.ctl.data.TLType.TLLogLevel;
+import org.jetel.ctl.data.TLType.TLTypeList;
+import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.IntegralLib;
@@ -1543,7 +1545,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				final int index = stack.popInt();
 
 				value = evaluateRHS(data, lhs, rhs);
-
 				
 				if (index < list.size()) {
 					list.set(index, value);
@@ -1590,45 +1591,75 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			}
 			break;
 		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
-			lhs.jjtGetChild(0).jjtAccept(this,data);
 			
 			final CLVFMemberAccessExpression memberAccNode = (CLVFMemberAccessExpression)lhs;
 			final SimpleNode firstChild = (SimpleNode)lhs.jjtGetChild(0);
 			
 			// left hand of assignment is a dictionary
-			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
-				rhs.jjtAccept(this,data);
-				try {
-					graph.getDictionary().setValue(memberAccNode.getName(), stack.pop() );
-				} catch (ComponentNotReadyException e) {
-					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
-				}
-				
-			// left hand of assignment is a record
-			} else {
-				final DataRecord varRecord = stack.popRecord();
-				if (memberAccNode.isWildcard()) {
-					// $myVar.* = $other.*   allows copying by position
-					
-					rhs.jjtAccept(this, data);
-					value = stack.pop();
-					if (value != null) {
-						// RHS must be a record -> copy fields by value
-						//this context is prepared only for 'record1.* = record2.*' assignment expression
-						//when the metadata are different - then the records are copied based on field names
-						//integral function copyByName is used for this copying 
-						if (node.getCopyByNameCallContext() == null) {
-							varRecord.copyFieldsByPosition((DataRecord) value);
-						} else {
-							IntegralLib.copyByName(node.getCopyByNameCallContext(), varRecord, (DataRecord) value);
-						}
-					} else {
-						// RHS is null -> set all fields to null
-						varRecord.reset();
+			switch (firstChild.getId()) {
+			case TransformLangParserTreeConstants.JJTDICTIONARYNODE: {
+					lhs.jjtGetChild(0).jjtAccept(this,data);
+					rhs.jjtAccept(this,data);
+					try {
+						graph.getDictionary().setValue(memberAccNode.getName(), stack.pop() );
+					} catch (ComponentNotReadyException e) {
+						throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
 					}
-				} else {
-					value = evaluateRHS(data, lhs, rhs);
-					varRecord.getField(memberAccNode.getFieldId()).setValue(value);
+					
+					// left hand of assignment is a record	
+				} break;
+			case TransformLangParserTreeConstants.JJTIDENTIFIER:
+				{
+					lhs.jjtGetChild(0).jjtAccept(this,data);
+					final DataRecord varRecord = stack.popRecord();
+					value = processMemberAccess (varRecord, node, data, lhs, rhs);
+				} break; // Inside JJTMEMBERACCESS
+			case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
+				{
+					final SimpleNode arrNode = (SimpleNode)firstChild.jjtGetChild(0);
+					arrNode.jjtAccept(this, data);
+					
+					if (arrNode.getType().isList()) {
+						// accessing list
+						final List<Object> list = (List<Object>)stack.popList();
+						firstChild.jjtGetChild(1).jjtAccept(this, data);
+						final int index = stack.popInt();
+
+						final TLType varType = ((TLTypeList)arrNode.getType()).getElementType();
+						
+						while (list.size() <= index) { // if we are trying to write past the of the array
+							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
+							final DataRecord blankRecord = new DataRecord(metaData);
+							blankRecord.init();
+							blankRecord.reset();
+
+							list.add(blankRecord);
+						}
+						
+						DataRecord varRecord = (DataRecord) list.get(index);
+						
+						value = processMemberAccess (varRecord, node, data, lhs, rhs);
+						
+					} else {
+						// accessing map
+						final Map<Object,Object> map = (Map<Object,Object>)stack.popMap();
+						firstChild.jjtGetChild(1).jjtAccept(this, data);
+						final Object index = stack.pop();
+						
+						DataRecord varRecord = (DataRecord)map.get(index);
+						final TLType varType = ((TLTypeMap)arrNode.getType()).getValueType();
+
+						if (varRecord == null) {
+							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
+							varRecord = new DataRecord(metaData);
+							varRecord.init();
+							varRecord.reset();
+							map.put(index, varRecord);
+						}
+						
+						value = processMemberAccess (varRecord, node, data, lhs, rhs);
+
+					}
 				}
 			}
 			break;
@@ -1640,6 +1671,40 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		stack.push(value);
 		
 		return data;
+	}
+
+	/**
+	 * @param varRecord
+	 */
+	private Object processMemberAccess(DataRecord varRecord, CLVFAssignment node, Object data, SimpleNode lhs, SimpleNode rhs) {
+		Object returnValue;
+		
+		final CLVFMemberAccessExpression memberAccNode = (CLVFMemberAccessExpression)lhs;
+		
+		if (memberAccNode.isWildcard()) {
+			// $myVar.* = $other.*   allows copying by position
+			
+			rhs.jjtAccept(this, data);
+			returnValue = stack.pop();
+			if (returnValue != null) {
+				// RHS must be a record -> copy fields by value
+				//this context is prepared only for 'record1.* = record2.*' assignment expression
+				//when the metadata are different - then the records are copied based on field names
+				//integral function copyByName is used for this copying 
+				if (node.getCopyByNameCallContext() == null) {
+					varRecord.copyFieldsByPosition((DataRecord) returnValue);
+				} else {
+					IntegralLib.copyByName(node.getCopyByNameCallContext(), varRecord, (DataRecord) returnValue);
+				}
+			} else {
+				// RHS is null -> set all fields to null
+				varRecord.reset();
+			}
+		} else {
+			returnValue = evaluateRHS(data, lhs, rhs);
+			varRecord.getField(memberAccNode.getFieldId()).setValue(returnValue);
+		}
+		return returnValue;
 	}
 
 	private Object evaluateRHS(Object data, SimpleNode lhs, SimpleNode rhs) {

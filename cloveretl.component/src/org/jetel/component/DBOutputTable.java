@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -261,8 +262,10 @@ public class DBOutputTable extends Node {
 	private int recCount = 0;
 	private int errorCodeFieldNum;
 	private int errMessFieldNum;
+	private int failedBatches;
+	private Savepoint savepoint;
+	private static final String SAVEPOINT_NAME = "svpnt";
 	
-	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
 	private final static int READ_FROM_PORT = 0;
@@ -677,24 +680,35 @@ public class DBOutputTable extends Node {
 	private void runInNormalMode() throws SQLException,InterruptedException,IOException, JetelException{
 		String errmes = "";
 		SQLException exception = null;
+		boolean useSavepoints = connection.getJdbcSpecific().useSavepoints();
+		
 		while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 			if (keysRecord != null){
 				keysRecord.reset();
 			}
 			//execute all statements
 			for (int i=0; i<statement.length; i++) {
-				try{
+				try {
+					// Fix of issue #5711; For PostgresSQL we need to set SAVEPOINT for partial rollback in case of SQL exception
+					if (useSavepoints && !atomicSQL) {
+						try {
+							savepoint = connection.getSqlConnection().setSavepoint(SAVEPOINT_NAME);
+						} catch (SQLException e) {
+							logger.warn("Failed to set SAVEPOINT; rest of transaction may be lost", e);
+						}
+					}
+
 					statement[i].executeUpdate(returnResult[i] ? keysRecord : null);
-				}catch(SQLException ex) {
+				} catch(SQLException ex) {
 					countError++;
 					exception = ex;
 					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ex.getMessage();
 					SQLException chain = ex.getNextException();
-					while(chain!=null) {
-              errmes += "\n  Caused by: "+chain.getMessage();
-              chain = chain.getNextException();
+					while (chain != null) {
+						errmes += "\n  Caused by: " + chain.getMessage();
+						chain = chain.getNextException();
 					}
-					
+
 					if (rejectedPort != null) {
 						rejectedRecord.copyFieldsByName(inRecord);
 						if (errMessFieldNum != -1) {
@@ -710,11 +724,14 @@ public class DBOutputTable extends Node {
 					}else if (countError == MAX_WARNINGS + 1){
 						logger.warn("more errors...");
 					}
-					 //if atomicity of all sql statements is required, rollback current transaction and cancel executing following statements of this record
-					if(atomicSQL) {  
-		        connection.getSqlConnection().rollback();
-	          logger.info("AtomicSQL is true. Rollback performed.");
-					  break;
+					// if atomicity of all sql statements is required, rollback current transaction and cancel executing following statements of this record
+					if (atomicSQL) {
+						connection.getSqlConnection().rollback();
+						logger.info("AtomicSQL is true. Rollback performed.");
+						break;
+					} else if (useSavepoints && savepoint != null) {
+						// Fix of issue #5711; For PostgresSQL rollback to last SAVEPOINT (which was set after last successful statement)
+						connection.getSqlConnection().rollback(savepoint);
 					}
 					
 				}
@@ -770,10 +787,7 @@ public class DBOutputTable extends Node {
 	    	rejectedMetadata = rejectedPort.getMetadata();
 	    }
 	    DataRecord[][] dataRecordHolder;
-	    DataRecord[] updatedRecord = null;
 	    int holderCount= -1;
-		BatchUpdateException[] exceptions = new BatchUpdateException[statement.length];
-		boolean exThrown;
 	    
         // first, we set transMap to batchUpdateMode
 		for (SQLCloverStatement eachStatement : statement) {
@@ -847,145 +861,44 @@ public class DBOutputTable extends Node {
             }
 			
             // shall we execute batch ?
-	        if ((++batchCount % batchSize == 0) || atomicSQL) { 
-	        	exThrown = false;
-				for (statementCount = 0; statementCount < statement.length; statementCount++) {
-		            try {
-						statement[statementCount].executeBatch();
-						updatedRecord = statement[statementCount].getBatchResult();
-						statement[statementCount].clearBatch();
-		            } catch (BatchUpdateException ex) {
-						updatedRecord = statement[statementCount].getBatchResult();
-		                statement[statementCount].clearBatch();
-		                exceptions[statementCount] = ex;
-		                exception = ex;
-		                errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage();
-		                exThrown = true;
-		            }
-		            for (int i = 0 ; i < updatedRecord.length; i++) {
-		            	keysPort.writeRecord(updatedRecord[i]);
-		            }
-		        }
-				//all statements executed, some of them could fail
-				if (exThrown) {
-					flushErrorRecords(dataRecordHolder, holderCount, exceptions, rejectedPort);
-					if(atomicSQL) {
-            connection.getSqlConnection().rollback();
-            logger.info("Atomic SQL is true. Rollback performed.");
-					}
-					if (countError>maxErrors && maxErrors!=-1){
-						errorAction.perform(connection.getSqlConnection());
-						if (errorAction == ConnectionAction.ROLLBACK) {
-							logger.info("Rollback performed.");
-							logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
-//							logger.info("Last " + batchCount + " records not commited");
-						}else if (errorAction == ConnectionAction.COMMIT){
-							logger.info("Number of commited records: " + ++recCount);
-						}
-	                    throw new JetelException("Maximum # of errors exceeded when executing batch. " + errmes, exception);
-	                }
-				}
-	            batchCount = 0;
-	            holderCount=-1;
+			if ((++batchCount % batchSize == 0) || atomicSQL) {
+				executeBatch(dataRecordHolder, holderCount);
+				batchCount = 0;
+				holderCount = -1;
 			}
-	        if ((++recCount % recordsInCommit == 0) || atomicSQL) {
-	            if (batchCount!=0){
-	            	exThrown = false;
-					for (statementCount = 0; statementCount < statement.length; statementCount++) {
-			            try {
-			            	statement[statementCount].executeBatch();
-							updatedRecord = statement[statementCount].getBatchResult();
-							statement[statementCount].clearBatch();
-			            } catch (BatchUpdateException ex) {
-							updatedRecord = statement[statementCount].getBatchResult();
-			                statement[statementCount].clearBatch();
-			                exceptions[statementCount] = ex;
-			                exception = ex;
-			                errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage();
-			                exThrown = true;
-			            }
-			            for (int i = 0 ; i < updatedRecord.length; i++) {
-			            	keysPort.writeRecord(updatedRecord[i]);
-			            }
-			        }
-					//all statements executed, some of them could fail
-					if (exThrown){
-						flushErrorRecords(dataRecordHolder, holderCount, exceptions, rejectedPort);
-	          if(atomicSQL) {
-	            connection.getSqlConnection().rollback();
-	            logger.info("Atomic SQL is true. Rollback performed.");
-	          }
-
-						if (countError>maxErrors && maxErrors!=-1){
-							errorAction.perform(connection.getSqlConnection());
-							if (errorAction == ConnectionAction.ROLLBACK) {
-								logger.info("Rollback performed.");
-								logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
-//								logger.info("Last " + recCount % recordsInCommit + " records not commited");
-							}else if (errorAction == ConnectionAction.COMMIT){
-								logger.info("Number of commited records: " + recCount);
-							}
-		                    throw new JetelException("Maximum # of errors exceeded when executing batch. " + errmes, 
-		                    		exception);
-		                }
-					}
-		            batchCount = 0;
-		            holderCount=-1;
-	            }
-	            connection.getSqlConnection().commit();
-		    }
-            SynchronizeUtils.cloverYield();
-	    }
+			if ((++recCount % recordsInCommit == 0) || atomicSQL) {
+				if (batchCount != 0) {
+					executeBatch(dataRecordHolder, holderCount);
+					batchCount = 0;
+					holderCount = -1;
+				}
+				connection.getSqlConnection().commit();
+			}
+		}
 	    
 		// final commit (if anything is left in batch)
-	    exThrown = false;
-	    for (statementCount = 0; statementCount < statement.length; statementCount++) {
-			try {
-				statement[statementCount].executeBatch();
-			} catch (BatchUpdateException ex) {
-                exceptions[statementCount] = ex;
-                exception = ex;
-                errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage();
-                exThrown = true;
-			}finally{
-				updatedRecord = statement[statementCount].getBatchResult();
-			}
-            for (int i = 0 ; i < updatedRecord.length; i++) {
-            	keysPort.writeRecord(updatedRecord[i]);
-            }
-		}
-		//all statements executed, some of them could fail
-		if (exThrown) {
-			flushErrorRecords(dataRecordHolder, holderCount, exceptions, rejectedPort);
-			if (countError > maxErrors && maxErrors != -1) {
-//			    if (dataRecordHolder!=null) {
-//			        Arrays.fill(dataRecordHolder,null);
-//		        	Arrays.fill(exeptions, null);
-//			    }
-				errorAction.perform(connection.getSqlConnection());
-				if (errorAction == ConnectionAction.ROLLBACK) {
-					logger.info("Rollback performed.");
-					logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
-//					logger.info("Last " + recCount % recordsInCommit + " records not commited");
-				}else if (errorAction == ConnectionAction.COMMIT){
-					logger.info("Number of commited records: " + recCount);
-				}
-				throw new JetelException("Maximum # of errors exceeded when executing batch. " + errmes, exception);
-			}
-		}
+	    if (batchCount > 0) {
+	    	executeBatch(dataRecordHolder, holderCount);
+	    }
+	    
 		// unless we have option never to commit, commit at the end of processing
-	    if (runIt && recordsInCommit!=Integer.MAX_VALUE){
-	    	connection.getSqlConnection().commit();
-	    }else if (!runIt) {
+		if (runIt && recordsInCommit != Integer.MAX_VALUE) {
+			connection.getSqlConnection().commit();
+			if (failedBatches > 0) {
+				logger.warn("Number of failed batches: " + failedBatches);
+			}
+		} else if (!runIt) {
 			errorAction.perform(connection.getSqlConnection());
 			if (errorAction == ConnectionAction.ROLLBACK) {
 				logger.info("Rollback performed.");
-				logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
-//				logger.info("Last " + recCount % recordsInCommit + " records not commited");
-			}else if (errorAction == ConnectionAction.COMMIT){
+				logger.info("Number of commited records: " + (recCount / recordsInCommit) * recordsInCommit);
+				logger.info("Number of failed batches: " + failedBatches);
+				// logger.info("Last " + recCount % recordsInCommit + " records not commited");
+			} else if (errorAction == ConnectionAction.COMMIT) {
 				logger.info("Number of commited records: " + recCount);
+				logger.info("Number of failed batches: " + failedBatches);
 			}
-	    }
+		}
 //	    if (dataRecordHolder!=null) {
 //	        Arrays.fill(dataRecordHolder,null);
 //        	Arrays.fill(exeptions, null);
@@ -993,6 +906,82 @@ public class DBOutputTable extends Node {
 	}
 	
     
+	private void executeBatch(DataRecord[][] dataRecordHolder, int holderCount)
+	throws SQLException, IOException, InterruptedException, JetelException {
+		boolean exThrown = false;
+		String errmes = "";
+		DataRecord[] updatedRecord = null;
+		BatchUpdateException exception = null;
+		BatchUpdateException[] exceptions = new BatchUpdateException[statement.length];
+		boolean useSavepoints = connection.getJdbcSpecific().useSavepoints();
+
+		for (int statementCount = 0; statementCount < statement.length; statementCount++) {
+			try {
+				// Fix of issue #5711
+				if (useSavepoints && !atomicSQL) {
+					try {
+						savepoint = connection.getSqlConnection().setSavepoint(SAVEPOINT_NAME);
+					} catch (SQLException e) {
+						logger.warn("Failed to set SAVEPOINT; rest of transaction may be lost", e);
+					}
+				}
+
+				statement[statementCount].executeBatch();
+				
+				updatedRecord = statement[statementCount].getBatchResult();
+				statement[statementCount].clearBatch();
+			} catch (BatchUpdateException ex) {
+				updatedRecord = statement[statementCount].getBatchResult();
+				statement[statementCount].clearBatch();
+				exceptions[statementCount] = ex;
+				exception = ex;
+				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage() + "\n";
+				if (ex.getNextException() != null) {
+					// With PostgreSQL, 1. exception is good for nothing, append next one
+					errmes += "  Caused by: " + ex.getNextException().getMessage();
+				}
+				exThrown = true;
+				
+				if (useSavepoints && savepoint != null) {
+					connection.getSqlConnection().rollback(savepoint);
+				}
+			}
+			for (int i = 0; i < updatedRecord.length; i++) {
+				keysPort.writeRecord(updatedRecord[i]);
+			}
+		}
+		// all statements executed, some of them could fail
+		if (exThrown) {
+			failedBatches++;
+			countError++;
+			if (countError <= MAX_WARNINGS) {
+				logger.warn(errmes);
+			} else if (countError == MAX_WARNINGS + 1) {
+				logger.warn("more errors...");
+			}
+
+			flushErrorRecords(dataRecordHolder, holderCount, exceptions, rejectedPort);
+			if (atomicSQL) {
+				connection.getSqlConnection().rollback();
+				logger.info("Atomic SQL is true. Rollback performed.");
+			}
+			if (countError > maxErrors && maxErrors != -1) {
+				errorAction.perform(connection.getSqlConnection());
+				if (errorAction == ConnectionAction.ROLLBACK) {
+					logger.info("Rollback performed.");
+					logger.info("Number of commited records: " + (recCount / recordsInCommit) * recordsInCommit);
+					logger.info("Number of failed batches: " + failedBatches);
+					// logger.info("Last " + batchCount + " records not commited");
+				} else if (errorAction == ConnectionAction.COMMIT) {
+					logger.info("Number of commited records: " + ++recCount);
+					logger.info("Number of failed batches: " + failedBatches);
+				}
+				throw new JetelException("Maximum # of errors exceeded when executing batch. " + errmes, exception);
+			}
+		}
+
+	}
+	
     /**
      * This method sends error records to output and counts errors. If array <i>records</i> is null, only counting of errors is performed  
      * 
@@ -1355,9 +1344,14 @@ public class DBOutputTable extends Node {
 						throw new ComponentAlmostNotReadyException(this, e);
 					}
 					try {
-						keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
-						statement.checkConfig(status, keysPort == null ? null
-								: keysPort.getMetadata());
+						try {
+							keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
+							statement.checkConfig(status, keysPort == null ? null
+									: keysPort.getMetadata());
+                        } finally {
+                            // make sure we do not leak statements
+                            statement.close();
+                        }
 					} catch (SQLException e) {
 						//issue #5397
 						//following piece of code was commented due confusing warning on DBOutputTable component for MySQL database
@@ -1368,7 +1362,7 @@ public class DBOutputTable extends Node {
 						//		ConfigurationStatus.Priority.NORMAL);
 						//status.add(problem);
 						logger.debug("CheckConfig warning: " + e.getMessage(), e);
-					}
+					}                        
 				}
 			}
 

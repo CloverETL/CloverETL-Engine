@@ -288,5 +288,15 @@ public interface JdbcSpecific {
 	 * @return list of constants for types. Constants are from java.sql.Types
 	 * @throws SQLException
 	 */
-	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException;	
+	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException;
+	
+	/**
+	 * Indicates whether to set SAVEPOINT after each successfully executed statement in a transaction.
+	 * This method was added thanks to PostgreSQL transaction handling, where transaction is aborted if exception occurs in it.
+	 * For other DBs, this method should most likely return false.
+	 * @return true if SAVEPOINTs should be set after each successful statement execution in a transaction,
+	 * thus enabling partial rollback to last savepoint if next statement fails.
+	 */
+	public boolean useSavepoints();
+
 }

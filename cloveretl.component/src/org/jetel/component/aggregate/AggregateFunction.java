@@ -46,6 +46,8 @@ public abstract class AggregateFunction {
 	
 	/** Metadata of the field in input which is used as a parameter for this aggregation function. */
 	protected DataFieldMetadata inputFieldMetadata;
+	/** Metadata of the field in which result of this aggregation function will be placed. */
+	protected DataFieldMetadata outputFieldMetadata;
 
 	/** Is the input data sorted? */
 	protected boolean sorted;
@@ -132,6 +134,14 @@ public abstract class AggregateFunction {
 
 	public void setInputFieldMetadata(DataFieldMetadata inputFieldMetadata) {
 		this.inputFieldMetadata = inputFieldMetadata;
+	}
+	
+	public DataFieldMetadata getOutputFieldMetadata() {
+		return outputFieldMetadata;
+	}
+	
+	public void setOutputFieldMetadata(DataFieldMetadata outputFieldMetadata) {
+		this.outputFieldMetadata = outputFieldMetadata;
 	}
 
 	public RecordKey getRecordKey() {

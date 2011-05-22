@@ -194,9 +194,9 @@ public class LdapParser implements Parser {
 			}
 		} catch (SizeLimitExceededException e) {
 			if( LIMIT == 0 || i < LIMIT) {
-				if(logger.isInfoEnabled()) {logger.info(" WARNING ! Ldap Search request reach server size limit !"); };
+				if(logger.isInfoEnabled()) {logger.info(" WARNING ! Ldap Search request reach server size limit !", e); };
 			} else {
-				if(logger.isInfoEnabled()) {logger.info(" WARNING ! Ldap Search request reach client size limit !"); };
+				if(logger.isInfoEnabled()) {logger.info(" WARNING ! Ldap Search request reach client size limit !", e); };
 			}
 		} catch (NamingException e1) {
 			throw new ComponentNotReadyException(e1);
@@ -205,6 +205,7 @@ public class LdapParser implements Parser {
 				ne.close();
 			} catch (NamingException e) {
 				// nothing to do
+				logger.debug("Failed to close naming enumeration", e);
 			}
 		}
 		
@@ -221,7 +222,7 @@ public class LdapParser implements Parser {
 	        		initTransMap((String)dnList.get(0));
 	        	}
 			} catch (Exception e) {
-				throw new ComponentNotReadyException("Bad metadata name in LdapReader component");
+				throw new ComponentNotReadyException("Bad metadata name in LdapReader component", e);
 			}
 		} 
 	}
@@ -244,6 +245,7 @@ public class LdapParser implements Parser {
 			ldapManager.close();
 		} catch (NamingException e) {
 			//nothing to do ?
+			logger.warn("Failed to close LdapManager", e);
 		}
 	}
 
@@ -307,7 +309,7 @@ public class LdapParser implements Parser {
 		} catch (NamingException e) {
 			throw new JetelException (
 					"Error when trying to get datas from Ldap directory entry :"
-					+ dn + " ");
+					+ dn + " ", e);
 		}
 
 		/*
@@ -325,11 +327,11 @@ public class LdapParser implements Parser {
 							i, bdfe.getOffendingValue().toString(), bdfe);
 				} else {
 					throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
-							recordCounter, i));
+							recordCounter, i), bdfe);
 				}
 			} catch (Exception ex) {
 				throw new RuntimeException(ex.getClass().getName() + ":"
-						+ ex.getMessage());
+						+ ex.getMessage(), ex);
 			}
 		}
 		

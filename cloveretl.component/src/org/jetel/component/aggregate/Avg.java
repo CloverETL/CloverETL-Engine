@@ -106,7 +106,10 @@ public class Avg extends AggregateFunction {
 			return;
 		}
 		if (sum == null) {
-			sum = input.duplicateNumeric();
+			// Fix of CL-1509: Devise field type from output field metadata -> overflow could possibly be avoided
+			// Fix of CL-1508: Factory creates overflow checking Numerics
+			sum = (Numeric) AggregateNumericFactory.createDataField(outputFieldMetadata);
+			sum.setValue(input);
 		} else {
 			sum.add(input);
 		}

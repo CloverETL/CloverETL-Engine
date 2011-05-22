@@ -31,10 +31,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.JetelException;
 
 
 /**
@@ -155,7 +155,9 @@ public class Phase extends GraphElement implements Comparable {
 		// iterate through all nodes and initialize them
 		logger.debug(" initializing nodes: ");
 		for(Node node : nodes.values()) {
+			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 			try {
+				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
                 // is it a leaf node ?
                 if (node.isLeaf() || node.isPhaseLeaf()) {
                     leafNodes.add(node);
@@ -174,6 +176,8 @@ public class Phase extends GraphElement implements Comparable {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
 				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), new JetelException(ex.getMessage(), ex));
+			} finally {
+				Thread.currentThread().setContextClassLoader(formerClassLoader);
 			}
 		}
         

@@ -277,6 +277,7 @@ public class AggregateProcessor {
 		if (inputField != null) {
 			f.setInputFieldMetadata(inMetadata.getField(inputField));
 		}
+		f.setOutputFieldMetadata(outMetadata.getField(outputField));
 		
 		functionMapping.add(new FunctionMappingItem(functionName, inputField, outputField));
 	}
@@ -414,6 +415,7 @@ public class AggregateProcessor {
 				function.setInputFieldIndex(mapping.getInputFieldIndex());
 				function.setInputFieldMetadata(inMetadata.getField(mapping.getInputFieldIndex()));
 				function.setOutputFieldIndex(mapping.getOutputFieldIndex());
+				function.setOutputFieldMetadata(outMetadata.getField(mapping.getOutputFieldIndex()));
 				
 				functions[i] = function;
 			}
@@ -421,7 +423,13 @@ public class AggregateProcessor {
 		
 		public void update(DataRecord inputRecord) throws Exception {
 			for (AggregateFunction function : functions) {
-				function.update(inputRecord);
+				try {
+					function.update(inputRecord);
+				} catch (Exception e) {
+					// report failed function and field
+					throw new RuntimeException("Exception in aggregate function '" + function.getName() +
+							"' on field '" + function.getInputFieldMetadata().getName() + "': " + e.getMessage(), e);
+				}
 			}
 		}
 		
@@ -429,7 +437,14 @@ public class AggregateProcessor {
 			applyFieldMapping(outRecord);
 			applyConstantMapping(outRecord);
 			for (AggregateFunction function : functions) {
-				function.storeResult(outRecord.getField(function.getOutputFieldIndex()));
+				try {
+					function.storeResult(outRecord.getField(function.getOutputFieldIndex()));
+				} catch (Exception e) {
+					// report failed function and fields
+					throw new RuntimeException("Failed to store result of aggregate function '" + function.getName() +
+							"' of field '" + function.getInputFieldMetadata().getName() +
+							"' into field '" + function.getOutputFieldMetadata().getName() + "': " + e.getMessage(), e);
+				}
 			}
 		}
 		

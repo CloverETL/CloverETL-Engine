@@ -31,9 +31,9 @@ import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -47,6 +47,7 @@ import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -113,6 +114,7 @@ public class DataWriter extends Node {
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
+	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -125,6 +127,7 @@ public class DataWriter extends Node {
     private int skip;
 	private int numRecords;
 	private boolean quotedStrings;
+	private Character quoteChar = '\"';
 	private String charset;	
 	
 	private String partition;
@@ -205,6 +208,7 @@ public class DataWriter extends Node {
 		//prepare formatter provider
 		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		formatterProvider.setQuotedStrings(quotedStrings);
+		formatterProvider.setQuoteChar(quoteChar);
 		
 		initLookupTable();
 
@@ -408,6 +412,9 @@ public class DataWriter extends Node {
             }
             if(xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)) {
                 aDataWriter.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
+            	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
             }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -613,6 +620,10 @@ public class DataWriter extends Node {
     public void setQuotedStrings(boolean quotedStrings) {
     	this.quotedStrings = quotedStrings;
     }
+    
+	public void setQuoteChar(Character quoteChar) {
+		this.quoteChar = quoteChar;
+	}
     
     public boolean getQuotedStrings() {
     	return quotedStrings;

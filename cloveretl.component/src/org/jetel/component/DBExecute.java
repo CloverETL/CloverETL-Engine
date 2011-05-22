@@ -495,7 +495,7 @@ public class DBExecute extends Node {
 		try {
 			// prepare statements if are not read from file or port
 			if (procedureCall) {
-				int resultSetType = dbConnection.getJdbcDriver().getResultSetType();
+				int resultSetType = dbConnection.getResultSetType();
 
 				if (dbSQL != null) {
 					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
@@ -638,7 +638,7 @@ public class DBExecute extends Node {
     					try {
     						if (procedureCall) {
     							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
-    									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getJdbcDriver().getResultSetType());
+    									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getResultSetType());
     							callableStatement[0].prepareCall();
     							executeCall(callableStatement[0], index);
     						}else{

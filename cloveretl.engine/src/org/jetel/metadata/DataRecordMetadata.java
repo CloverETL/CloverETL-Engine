@@ -32,9 +32,9 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -1164,6 +1164,18 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return false;
 	}
 
+	/**
+	 * Returns true if metadata contains at least one field of unknown type.
+	 */
+	public boolean hasFieldOfUnknownType() {
+		for (DataFieldMetadata dataFieldMetadata : getFields()) {
+			if (dataFieldMetadata.getType() == DataFieldMetadata.UNKNOWN_FIELD) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Set collator sensitivity string as a default value for all string data fields.	
 	 * @param collatorSensitivity

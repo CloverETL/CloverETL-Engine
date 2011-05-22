@@ -588,4 +588,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return SQLUtil.getFieldTypes(resultSetMetadata);
 	}
 
+	@Override
+	public boolean useSavepoints() {
+		return false;
+	}
 }

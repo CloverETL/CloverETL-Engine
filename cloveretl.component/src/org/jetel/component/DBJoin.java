@@ -39,10 +39,10 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -528,9 +528,10 @@ public class DBJoin extends Node {
 		    transformation.postExecute();
 		    transformation.finished();
 		}
-		
-		lookup.getLookupTable().postExecute();
-		lookup = null;
+		if (lookup != null) {
+			lookup.getLookupTable().postExecute();
+			lookup = null;
+		}
 		try {
     	    if (errorLog != null){
     			errorLog.close();

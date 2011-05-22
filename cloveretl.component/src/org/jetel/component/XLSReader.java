@@ -37,11 +37,11 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -609,12 +609,14 @@ public class XLSReader extends Node {
                 }
             } catch (BadDataFormatException bdfe) {
                 if (policyType == PolicyType.STRICT) {
+                    broadcastEOF();
                     throw bdfe;
                 } else {
                     logger.info(bdfe.getMessage());
                     if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
                         logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-                        break;
+                        broadcastEOF();
+                        throw bdfe;
                     }
                 }
             }

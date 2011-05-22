@@ -66,7 +66,7 @@ public class DataFormatter implements Formatter {
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;
 
-	private QuotingDecoder quotingDecoder;
+	private QuotingDecoder quotingDecoder = new QuotingDecoder();
 	
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
@@ -143,8 +143,6 @@ public class DataFormatter implements Formatter {
 			delimiterLength[lastIncludedFieldIndex] = delimiterLength[lastFieldIndex];
 			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
 		}
-		
-		quotingDecoder = new QuotingDecoder();
 	}
 
 	public void reset() {
@@ -340,4 +338,7 @@ public class DataFormatter implements Formatter {
     	return quotedStrings;
     }
     
+    public void setQuoteChar(Character quoteChar) {
+    	quotingDecoder.setQuoteChar(quoteChar);
+    }
 }

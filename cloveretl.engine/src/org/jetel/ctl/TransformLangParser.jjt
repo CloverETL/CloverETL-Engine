@@ -575,8 +575,7 @@ TOKEN :
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
- |  <BYTE_VAR: "byte" >
- |  <CBYTE_VAR: "cbyte" > 
+ |  <BYTE_VAR: "byte" | "cbyte">
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >
@@ -1047,15 +1046,6 @@ void PrimitiveType() #Type:
     	 	} 
     	 )
 		|
-		 ( <CBYTE_VAR>
-		 	{ 
-    	 		jjtThis.begin(token.beginLine,token.beginColumn);
-    	 		jjtThis.end(token.endLine,token.endColumn);  
-    	 		jjtThis.setKind(CBYTE_VAR);
-    	 	} 
-    	 ) 
-    	  
-		|
 		 ( <BOOLEAN_VAR>
 		 	{ 
     	 		jjtThis.begin(token.beginLine,token.beginColumn);
@@ -1073,7 +1063,7 @@ void CompositeType() #Type:
 }
 {
 	(
-	 ( "map" "[" PrimitiveType() "," PrimitiveType() "]"	
+	 ( "map" "[" PrimitiveType() "," (PrimitiveType() | CompositeType() ) "]"	
 	 	{ 
     		jjtThis.begin(token.beginLine,token.beginColumn);
     		jjtThis.end(token.endLine,token.endColumn);  
@@ -1122,10 +1112,17 @@ void VariableType() #Type(isList):
 }
 {
 	(
-	 LOOKAHEAD(2)
- 	 CompositeType()
-	 |
-	 PrimitiveType()
+	 LOOKAHEAD(2)	 CompositeType() 
+	 [
+	 	"[" "]"
+	 	{ 
+	 		isList = true;
+    		jjtThis.begin(token.beginLine,token.beginColumn);
+    		jjtThis.end(token.endLine,token.endColumn);  
+    		jjtThis.setKind(LIST_VAR);
+    	}
+	 ]
+	 | PrimitiveType()
 	 [
 	 	"[" "]"
 	 	{ 
@@ -1773,10 +1770,11 @@ void Statements() #void :
 {} 
 {
 	( 
-  		LOOKAHEAD(2)
+  		LOOKAHEAD(3)
+		VariableDeclaration() ";"
+		| 
   		Statement()
-  		|
-  		VariableDeclaration() ";" 
+ 		
   	)* 
 }
 void WhileStatement() :{}{  <WHILE>  

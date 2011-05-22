@@ -743,8 +743,8 @@ public class DBConnection extends GraphElement implements IConnection {
     		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
     	}
     	
-        Statement statement;
-        ResultSet resultSet;
+        Statement statement = null;
+        ResultSet resultSet = null;
 
         String sqlQuery = parameters.getProperty(SQL_QUERY_PROPERTY);
         if(StringUtils.isEmpty(sqlQuery)) {
@@ -765,9 +765,20 @@ public class DBConnection extends GraphElement implements IConnection {
 		} catch (JetelException e) {
 			throw new SQLException(e.getMessage());
 		}
-        statement = connection.createStatement();
-        resultSet = statement.executeQuery(sqlQuery);
-        return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
+        
+        try {
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sqlQuery);
+            return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
+        } finally {
+            // make sure we close all connection resources
+            if (resultSet != null)
+                resultSet.close();
+            if (statement != null)
+                statement.close();
+            if (connection != null)
+                connection.close();
+        }
     }
 
     public boolean isThreadSafeConnections() {
@@ -902,6 +913,34 @@ public class DBConnection extends GraphElement implements IConnection {
 			return DefaultJdbcSpecific.getInstance();
 		}
 	}
+	
+    /**
+     * @return type of associated result set
+     * @throws ComponentNotReadyException
+     */
+    public int getResultSetType() throws ComponentNotReadyException {
+		Class<?> typesClass;
+		ClassLoader classLoader;
+
+		JdbcDriver driver = getJdbcDriver();
+		if (driver != null) {
+			classLoader = driver.getClassLoader();
+		} else {
+			classLoader = DBConnection.class.getClassLoader();
+		}
+		
+		try {
+			typesClass = classLoader.loadClass(getJdbcSpecific().getTypesClassName());
+		} catch (ClassNotFoundException e) {
+			throw new ComponentNotReadyException("Invalid Types class name in jdbc specific: " + getJdbcSpecific().getTypesClassName(), e);
+		}
+		try {
+			return typesClass.getField(getJdbcSpecific().getResultSetParameterTypeField()).getInt(null);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Invalid ResultSet type field name in jdbc specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
+		}
+    }
+    
 	
 	public TypedProperties getExtraProperties() {
 		return jdbcProperties;

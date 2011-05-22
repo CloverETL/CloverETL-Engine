@@ -28,8 +28,8 @@ import java.io.InputStreamReader;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -336,6 +336,8 @@ public class SystemExecute extends Node{
             getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 			getData.start();
 			registerChildThread(getData); //register worker as a child thread of this component
+		} else {
+			process_in.close(); // Fix of issue #5725
 		}
 		//If there is output port read output from process and send it to output port
 		SendData sendData=null;

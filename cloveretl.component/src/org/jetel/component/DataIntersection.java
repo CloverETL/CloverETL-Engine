@@ -53,6 +53,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.Compare;
 import org.w3c.dom.Element;
 
 /**
@@ -444,6 +445,11 @@ public class DataIntersection extends Node {
 		OutputPort outPortB = getOutputPort(WRITE_TO_PORT_B);
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
 		
+		DataRecord prevDriverValue = new DataRecord(getInputPort(DRIVER_ON_PORT).getMetadata());
+		DataRecord prevSlaveValue = new DataRecord(getInputPort(SLAVE_ON_PORT).getMetadata());
+		prevDriverValue.init();
+		prevSlaveValue.init();
+				
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
@@ -452,6 +458,12 @@ public class DataIntersection extends Node {
 
 		// main processing loop
 		 do {
+			 if(!checkSorted(prevDriverValue, prevSlaveValue))
+					throw new Exception(COMPONENT_TYPE + ": Data inputs need to be sorted in ascending order.");
+			 if(driverReader.getSample()!=null)
+				prevDriverValue.copyFrom(driverReader.getSample());
+			 if(slaveReader.getSample()!=null)
+				prevSlaveValue.copyFrom(slaveReader.getSample());
 			switch (driverReader.compare(slaveReader)) {
 			case -1:
 				// driver lower
@@ -477,6 +489,8 @@ public class DataIntersection extends Node {
 		if (!runIt) {
 			return Result.ABORTED;
 		}
+		if(!checkSorted(prevDriverValue, prevSlaveValue))
+			throw new Exception(COMPONENT_TYPE + ": Data inputs need to be sorted in ascending order.");
 		// flush remaining driver records
 		flush(driverReader, outPortA) ;
 
@@ -490,6 +504,18 @@ public class DataIntersection extends Node {
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
+	
+	private boolean checkSorted(DataRecord prevDriver, DataRecord prevSlave) {
+		if(prevDriver!=null && driverReader.getSample()!=null) {
+			if(driverReader.getKey().compare(prevDriver, driverReader.getSample())>0)
+				return false;
+		}
+		if(prevSlave!=null && slaveReader.getSample()!=null) {
+			if(slaveReader.getKey().compare(prevSlave, slaveReader.getSample())>0)
+				return false;
+		}
+		return true;
+	}
 
     @Override
     public void postExecute() throws ComponentNotReadyException {

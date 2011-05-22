@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -413,26 +414,28 @@ public class RunGraph extends Node{
 	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
 		List<String> commandList = new ArrayList<String>();
 
-		for (String javaCommand : javaCmdLine.split(" ")) {
+		for (String javaCommand : StringUtils.split(javaCmdLine, " ")) {
 			commandList.add(javaCommand);
 		}
 		commandList.add(classPath);
 		commandList.add(cloverRunClass);
 
-		if (!cloverCommandLineArgs.contains(runGraph.PLUGINS_SWITCH)) {
+		List<String> args = Arrays.asList(StringUtils.split(cloverCommandLineArgs, " "));
+		
+		if (!args.contains(runGraph.PLUGINS_SWITCH)) {
             Concatenate pluginsDir = new Concatenate(";");
             for (PluginLocation pluginLocation : Plugins.getPluginLocations()) {
-                pluginsDir.append(pluginLocation.getLocation().getPath());
+                pluginsDir.append(StringUtils.backslashToSlash(FileUtils.convertUrlToFile(pluginLocation.getLocation()).getPath()));
             }
             commandList.add(runGraph.PLUGINS_SWITCH);
             commandList.add(pluginsDir.toString());
         }
 
-		for (String cloverCommandArg : cloverCommandLineArgs.split(" ")) {
+		for (String cloverCommandArg : args) {
 			commandList.add(cloverCommandArg);
 		}
 		
-		if (!cloverCommandLineArgs.contains("contexturl") && getGraph().getRuntimeContext().getContextURL() != null) {
+		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && getGraph().getRuntimeContext().getContextURL() != null) {
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
 			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
 		}

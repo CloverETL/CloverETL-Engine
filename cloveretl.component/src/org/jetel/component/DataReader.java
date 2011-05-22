@@ -50,6 +50,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -123,6 +124,7 @@ public class DataReader extends Node {
 	private static final String XML_NUM_SOURCE_RECORDS_ATTRIBUTE = "numSourceRecords";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
+	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
 	private static final String XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE = "treatMultipleDelimitersAsOne";
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
@@ -154,6 +156,7 @@ public class DataReader extends Node {
 	private boolean verbose;
 	private boolean treatMultipleDelimitersAsOne;
 	private boolean quotedStrings;
+	private Character quoteChar;
 	private Boolean skipLeadingBlanks;
 	private Boolean skipTrailingBlanks;
 	private Boolean trim;
@@ -365,6 +368,7 @@ public class DataReader extends Node {
 		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
         parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
         parserCfg.setQuotedStrings(quotedStrings);
+        parserCfg.setQuoteChar(quoteChar);
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTrim(trim);
@@ -494,6 +498,9 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)){
 				aDataReader.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
+				aDataReader.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
+			}
 			if (xattribs.exists(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE)){
 				aDataReader.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
 			}
@@ -522,6 +529,9 @@ public class DataReader extends Node {
 		this.quotedStrings = quotedStrings;		
 	}
 
+	public void setQuoteChar(Character quoteChar) {
+		this.quoteChar = quoteChar;		
+	}
 
 	public void setSkipFirstLine(boolean skip) {
 		skipFirstLine = skip;

@@ -178,14 +178,7 @@ public class DBFDataParser implements Parser {
             bytesProcessed = dbfAnalyzer.getNumRows() * dbfAnalyzer.getRecSize();
         	return null; 
         }
-        try {
-            if (!populateCharBuffer()) { throw new JetelException(
-                    "Data error - incomplete record read!! " +
-                    "Possible problem with encoding - " + StringUtils.quote(charSet) + " used for parsing"); 
-            }
-        } catch (IOException e) {
-            throw new JetelException(e.getMessage());
-        }
+        loadRecordIntoCharBuffer();
         // populate all data fields
         while (fieldCounter < metadata.getNumFields()) {
         	if (isAutoFilling[fieldCounter]) {
@@ -380,18 +373,29 @@ public class DBFDataParser implements Parser {
             // if no more data, return -1
             if (size == -1) return false;
             decoder.decode(buffer, charBuffer, false);
-            if (charBuffer.position() < charBuffer.limit()) { return false; // still
-                                                                            // not
-                                                                            // enough
-                                                                            // data
-                                                                            // -
-                                                                            // some
-                                                                            // problem
+            if (charBuffer.position() < charBuffer.limit()) {
+            	// still not enough data - some problem
+            	return false;
             }
         }
         charBuffer.flip();
         return true;
     }
+
+	/**
+	 * Calls {@link #populateCharBuffer()} and throws exception if it fails.
+	 * @throws JetelException if a complete record could not be read into charBuffer.
+	 */
+	private void loadRecordIntoCharBuffer() throws JetelException {
+		try {
+		    if (!populateCharBuffer()) {
+		    	throw new JetelException("Data error - incomplete record read!! " +
+		            "Possible problem with encoding - " + StringUtils.quote(charSet) + " used for parsing"); 
+		    }
+		} catch (IOException e) {
+		    throw new JetelException("Failed to read record", e);
+		}
+	}
 
     /**
      * Reads chars from right and removes all binary zeros - 0x0000. It finishes
@@ -468,11 +472,10 @@ public class DBFDataParser implements Parser {
     }
 
 	public int skip(int nRec) throws JetelException {
-        DataRecord record = new DataRecord(metadata);
-        record.init();
-
 		for (int i = 0; i < nRec; i++) {
-			getNext(record);
+			// just read record data, no parsing performed
+	        loadRecordIntoCharBuffer();
+	        recordCounter++;
 		}
 		
 		return nRec;

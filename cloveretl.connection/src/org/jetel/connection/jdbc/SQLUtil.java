@@ -128,29 +128,44 @@ public class SQLUtil {
 
 
 	/**
+	 * Same as dbMetadata2jetel(name, dbMetadata, sqlIndex, jdbcSpecific, true)
+	 */
+	public static DataFieldMetadata dbMetadata2jetel(String name, ResultSetMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+		return dbMetadata2jetel(name, dbMetadata, sqlIndex, jdbcSpecific, true);
+	}
+	
+	/**
 	 * Creates clover data field metadata compatible with database column metadata
 	 * 
 	 * @param name clover field name
 	 * @param dbMetadata result set metadata
 	 * @param sqlIndex index of result set column (1 based)
 	 * @param jdbcSpecific
+	 * @param failIfUknownType indicates whether to throw exception if there is unknown column type in DB metadata.
 	 * @return clover data field metadata compatible with database column metadata
 	 * @throws SQLException
 	 */
-	public static DataFieldMetadata dbMetadata2jetel(String name, ResultSetMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
-		return dbMetadata2jetel(name, new ResultSetDbMetadata(dbMetadata), sqlIndex, jdbcSpecific);
+	public static DataFieldMetadata dbMetadata2jetel(String name, ResultSetMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific, boolean failIfUnknownType) throws SQLException{
+		return dbMetadata2jetel(name, new ResultSetDbMetadata(dbMetadata), sqlIndex, jdbcSpecific, failIfUnknownType);
 	}
 	
 	public static DataFieldMetadata dbMetadata2jetel(String name, ParameterMetaData dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
-		return dbMetadata2jetel(name, new ParameterDbMetadata(dbMetadata), sqlIndex, jdbcSpecific);
+		return dbMetadata2jetel(name, new ParameterDbMetadata(dbMetadata), sqlIndex, jdbcSpecific, true);
 	}
 
-	public static DataFieldMetadata dbMetadata2jetel(String name, DbMetadata dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific) throws SQLException{
+	public static DataFieldMetadata dbMetadata2jetel(String name, DbMetadata dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific, boolean failIfUnknownType) throws SQLException{
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
 		
 		int type = dbMetadata.getType(sqlIndex);
+		char cloverType;
 		int precision = dbMetadata.getPrecision(sqlIndex);
-		char cloverType = jdbcSpecific.sqlType2jetel(type, precision);
+		try {
+			cloverType = jdbcSpecific.sqlType2jetel(type, precision);
+		} catch (IllegalArgumentException e) {
+			if (failIfUnknownType) throw e;
+			cloverType = DataFieldMetadata.UNKNOWN_FIELD;
+		}
+		
 		//set length and scale for decimal field
 		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
 			int scale = 0;
@@ -209,16 +224,25 @@ public class SQLUtil {
 		return fieldMetadata;
 	}
 	
+	
+	/**
+	 * Same as dbMetadata2jetel(dbMetadata, jdbcSpecific, true)
+	 */
+	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific) throws SQLException {
+		return dbMetadata2jetel(dbMetadata, jdbcSpecific, true);
+	}
+	
 	/**
 	 *  Converts SQL metadata into Clover's DataRecordMetadata
 	 *
 	 * @param  dbMetadata        SQL ResultSet metadata describing which columns are
 	 *      returned by query
+	 * @param failIfUknownType indicates whether to throw exception if there is unknown column type in DB metadata.
 	 * @return                   DataRecordMetadata which correspond to the SQL
 	 *      ResultSet
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific) throws SQLException {
+	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific, boolean failIfUknownType) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		String tableName = dbMetadata.getTableName(1);
 		if (!StringUtils.isValidObjectName(tableName)) {
@@ -234,7 +258,7 @@ public class SQLUtil {
 			if (!StringUtils.isValidObjectName(colName)) {
 				colName = StringUtils.normalizeName(colName);
 			}
-			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific);
+			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific, failIfUknownType);
 			jetelMetadata.addField(fieldMetadata);
 		}
 		return jetelMetadata;

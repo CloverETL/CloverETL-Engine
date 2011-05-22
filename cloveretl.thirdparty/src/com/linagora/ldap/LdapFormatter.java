@@ -184,12 +184,12 @@ public class LdapFormatter {
 			try {
 				this.initTransMap();
 			} catch (NamingException e) {
-				if(logger.isDebugEnabled()) {
-					e.printStackTrace();
+				if (logger.isDebugEnabled()) {
+					logger.debug(e);
 				}
-				throw new BadDataFormatException("Bad metadata name in LdapReader component");
+				throw new BadDataFormatException("Bad metadata name in LdapReader component", e);
 			}
-		} 
+		}
 		
 	}
 	
@@ -310,10 +310,9 @@ public class LdapFormatter {
 				logger.debug("<LdapFormatter> guilty record: ");
 				logger.debug("<LdapFormatter> " + record.toString());
 			}
-			e.printStackTrace();
 			throw new BadDataFormatException (
 					"Error when trying to update Ldap directory entry :"
-					+ dn + " ");
+					+ dn + " ", e);
 		}
 		
 	}
@@ -323,6 +322,7 @@ public class LdapFormatter {
 			ldapManager.close();
 		} catch (NamingException e) {
 			//nothing to do ?
+			logger.warn("Error while closing LdapManager", e);
 		}
 	}
 	

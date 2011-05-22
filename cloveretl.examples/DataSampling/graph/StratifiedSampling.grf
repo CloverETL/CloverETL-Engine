@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Tue Jan 18 15:13:31 CET 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.34">
+<Global>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/stratifiedSample.txt"/>
+<Property fileURL="parameters.prm" id="GraphParameter1"/>
+<Property fileURL="workspace.prm" id="GraphParameter10"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="86" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stratified sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="662" x="21" y="-62">
+<attr name="text"><![CDATA[If the data set embraces a number of distinct categories, the frame can be organized by these categories into separate "strata". Each stratum is then sampled as an independent sub-population, out of which individual elements can be randomly selected. It must be selected at least one record from each "stratum".]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="320" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stratified random sampling - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="665" x="20" y="107">
+<attr name="text"><![CDATA[
+DataSampling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by all project graphs:
+READER_TYPE - graphs are prepared for reading various types of data. This example is configured for reading data from flat file. For other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
+WRITER_TYPE - graphs are prepared for writing results in various formats. This example is configured, to write sample records to the flat file.
+charset - data encoding - all Readers and Writers in all graphs use the same charset
+input_file - full data set
+metadata - shared metadata corresponding to input file
+sample_size - required sample size - fraction of input data from the (0,1) interval
+sampling_field - name of field from input metadata. Data are sorted according this value, before selecting sample records. Stratified sampling method requires the data to be sorted ("stratum" is defined by the group of records with the same value on this field), so it is imposible to disable sorting data in this graph.
+timing - interval for selecting records. Do not change this, as it is calculated depending on the sample_size parameter. This graph does not use this parameter.
+sort_data - indicates if sort data before sampling. Stratified sampling method requires the data to be sorted ("stratum" is defined by the group of records with the same value on provided field - sampling_field), so it is imposible to disable sorting data in this graph.
+
+This graph has its own parameter also. It is output_file, that defines file for sample data created with this graph.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="21" guiY="30" id="DATA_READER0" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${input_file}]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="208" guiY="30" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT"/>
+<Node enabled="enabled" groupKeyFields="${sampling_field}" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="370" guiY="30" id="ROLLUP0" type="ROLLUP">
+<attr name="transform"><![CDATA[//#CTL2
+boolean recordSent;
+
+// Called for the first data record in a new group. Starts the parsing of the new group.
+function void initGroup(VoidMetadata groupAccumulator) {
+	recordSent = false;
+}
+
+// Called for each data record in the group (including the first one and the last one).
+// Implicitly returns false => updateTransform() is not called. When returns true, calls updateTransform().
+function boolean updateGroup(VoidMetadata groupAccumulator) {
+	return random() < ${sample_size};//simple sampling method
+}
+
+// Called for the last data records in all groups sequentially, but only after all incoming data records have been parsed.
+// Implicitly returns true => transform() is called for the whole group.
+function boolean finishGroup(VoidMetadata groupAccumulator) {
+	return !recordSent;//if none records were sent for current group, send the last record
+}
+
+// Called to transform data records that have been parsed so far into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function integer updateTransform(integer counter, VoidMetadata groupAccumulator) {
+	if (counter > 0) return SKIP;
+	//send current input record
+	$0.* = $0.*;
+	recordSent = true;
+	return ALL;
+}
+
+// Called to transform the whole group of incoming data record(s) into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function integer transform(integer counter, VoidMetadata groupAccumulator) {
+	if (counter > 0) return SKIP;
+	//send current (last in the group) record
+	$0.* = $0.*;
+	return ALL;
+}
+
+// Called during component initialization.
+// function void init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if initGroup(DataRecord) throws an exception.
+//function void initGroupOnError(string errorMessage, string stackTrace, VoidMetadata groupAccumulator) {
+//}
+
+// Called only if updateGroup(DataRecord) throws an exception.
+//function boolean updateGroupOnError(string errorMessage, string stackTrace, VoidMetadata groupAccumulator) {
+//}
+
+// Called only if finishGroup(DataRecord) throws an exception.
+//function boolean finishGroupOnError(string errorMessage, string stackTrace, VoidMetadata groupAccumulator) {
+//}
+
+// Called only if updateTransform(integer, DataRecord) throws an exception.
+//function integer updateTransformOnError(string errorMessage, string stackTrace, integer counter, VoidMetadata groupAccumulator) {
+//}
+
+// Called only if transform(integer, DataRecord) throws an exception.
+//function integer transformOnError(string errorMessage, string stackTrace, integer counter, VoidMetadata groupAccumulator) {
+//}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="555" guiY="30" id="WRITER0" type="${WRITER_TYPE}">
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[StratifiedSampling]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (out)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER0:0"/>
+</Phase>
+</Graph>

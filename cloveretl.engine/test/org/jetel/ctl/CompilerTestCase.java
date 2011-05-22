@@ -362,14 +362,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		print_code(expStr);
 
 		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		// *** NOTE: please don't remove this commented code. It is used for debugging
+		// ***       Uncomment the code to get the compiled Java code during test execution.
+		// ***       Please don't commit this code uncommited.
+	
+//		try {
+//			System.out.println(compiler.convertToJava(expStr, CTLRecordTransform.class, testIdentifier));
+//		} catch (ErrorMessageException e) {
+//			System.out.println("Error parsing CTL code. Unable to output Java translation.");
+//		}
+		
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 		if (compiler.errorCount() > 0) {
 			throw new AssertionFailedError("Error in execution. Check standard output for details.");
 		}
 
-		// CLVFStart parseTree = compiler.getStart();
-		// parseTree.dump("");
+		// *** NOTE: please don't remove this commented code. It is used for debugging
+		// ***       Uncomment the code to get the compiled Java code during test execution.
+		// ***       Please don't commit this code uncommited.
+
+//		CLVFStart parseTree = compiler.getStart();
+//		parseTree.dump("");
+
 
 		executeCode(compiler);
 	}
@@ -910,6 +925,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertFalse(dayInWeek.equals(dayInWeekCopy));
 	}
 	
+	public void test_type_record_list() {
+		doCompile("test_type_record_list");
+		
+		check("resultInt", 6);
+		check("resultString", "string");
+		check("resultInt2", 10);
+		check("resultString2", "string2");
+	}
+
+	public void test_type_record_map() {
+		doCompile("test_type_record_map");
+		
+		check("resultInt", 6);
+		check("resultString", "string");
+		check("resultInt2", 10);
+		check("resultString2", "string2");
+	}
+
 	public void test_type_record() {
 		doCompile("test_type_record");
 
@@ -1865,6 +1898,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("lef", "The q");
 		check("padded", "The q   ");
 		check("notPadded", "The q");
+		check("lef2", "The quick brown fox jumps over the lazy dog");
 	}
 	
 	public void test_stringlib_length() {

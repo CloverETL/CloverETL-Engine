@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276168864901" licenseType="Evaluation Devel" modified="Wed Jan 19 13:47:06 CET 2011" modifiedBy="avackova" name="SystematicSamplingOneField" revision="1.86">
+<Global>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/systematicSample.txt"/>
+<Property fileURL="parameters.prm" id="GraphParameter1"/>
+<Property id="GraphParameter10" name="rec_no" value="`random_int(1,num2num(${timing},int))`"/>
+<Property fileURL="workspace.prm" id="GraphParameter11"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="98" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Systematic sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="680" x="30" y="-70">
+<attr name="text"><![CDATA[
+Systematic sampling relies on arranging the data set according to some ordering scheme and then selecting elements at regular intervals through that ordered list. Systematic sampling involves a random start and then proceeds with the selection of every k-th element from then onwards. First element and interval depends on required sample set size.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Systematic random sampling - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="680" x="31" y="118">
+<attr name="text"><![CDATA[
+DataSampling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by all project graphs:
+READER_TYPE - graphs are prepared for reading various types of data. This example is configured for reading data from flat file. For other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
+WRITER_TYPE - graphs are prepared for writing results in various formats. This example is configured, to write sample records to the flat file.
+charset - data encoding - all Readers and Writers in all graphs use the same charset
+input_file - full data set
+metadata - shared metadata corresponding to input file
+sample_size - required sample size - fraction of input data from the (0,1) interval
+sampling_field - name of field from input metadata. Data are sorted according this value, before selecting sample records unless the parameter sort_data is set to passThrough.
+timing - interval for selecting records. First record from the interval [1, ${timing}] is selected randomly and then each ${timing}-th 	record is selected for sample. Do not change this, as it is calculated depending on the sample_size parameter. 
+sort_data - indicates if to sort data before sampling. "enabled" value for sorting and "passThrough" - to leave it unsorted.
+
+This graph has its own parameters also. They are:
+output_file - defines file for sample data created with this graph.
+rec_no - number of first record, that is chosen for sample. Do not change this, as it is selected randomly from the interval [1, ${timing}]]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="31" guiY="39" id="DATA_READER0" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${input_file}]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="${sort_data}" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="210" guiY="39" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="407" guiY="39" id="REFORMAT0" transformURL="${TRANS_DIR}/systematicSampling.ctl" type="REFORMAT"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="581" guiY="39" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[SystematicSampling]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (out)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
+</Phase>
+</Graph>
