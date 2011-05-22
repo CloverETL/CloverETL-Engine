@@ -207,26 +207,6 @@ public class Denormalizer extends Node {
 	}
 
 	/**
-	 * Creates denormalization instance using specified class.
-	 * @param denormClass
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private RecordDenormalize createDenormalizer(String denormClass) throws ComponentNotReadyException {
-		RecordDenormalize denorm;
-        try {
-            denorm =  (RecordDenormalize)Class.forName(denormClass).newInstance();
-        }catch (InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch (IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified transformation class: " + xformClass);
-        }
-		return denorm;
-	}
-
-	/**
 	 * Creates normalization instance using given Java source.
 	 * @param denormCode
 	 * @return
@@ -245,15 +225,16 @@ public class Denormalizer extends Node {
 		
 	@Override
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if (isInitialized()) return;
 		super.init();
-		
+
 		sharedInit();
-		
+
 		if (denorm == null) {
 			if (xformClass != null) {
-				denorm = createDenormalizer(xformClass);
-			}else if (xform == null && xformURL != null){
+				denorm = (RecordDenormalize) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
+						logger, xformClass, null, getGraph().getRuntimeContext().getClassPath());
+			} else if (xform == null && xformURL != null) {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
@@ -265,7 +246,7 @@ public class Denormalizer extends Node {
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
 		}
-        errorActions = ErrorAction.createMap(errorActionsString);
+		errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
 	private void sharedInit() {

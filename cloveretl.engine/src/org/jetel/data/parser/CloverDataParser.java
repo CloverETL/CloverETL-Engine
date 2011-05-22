@@ -239,7 +239,8 @@ public class CloverDataParser implements Parser {
     	try {
 			if (recordFile.read(headerBuffer) != Defaults.Component.CLOVER_DATA_HEADER_SIZE) {
 	        	//clover binary data format is definitely incompatible with current version - header is not present
-	        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
+	        	throw new ComponentNotReadyException("Source clover data file is obsolete. " +
+	        			"Data cannot be read. Header data structure is missing or invalid.");
 			}
 		} catch (IOException e) {
         	throw new ComponentNotReadyException(e);

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Tue Jan 18 15:12:12 CET 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.28">
+<Global>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/randomSample.txt"/>
+<Property fileURL="parameters.prm" id="GraphParameter11"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="105" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple random sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="16" y="7">
+<attr name="text"><![CDATA[
+Each record has an equal probability of selection. 
+Simple filtering based on double value, chosen (approximately) uniformly from the range 0.0d (inclusive) to 1.0d (exclusive): record is selected if the drown number is lower than required sample set size.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="302" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple random sampling - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="504" x="18" y="196">
+<attr name="text"><![CDATA[
+DataSampling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by all project graphs:
+READER_TYPE - graphs are prepared for reading various types of data. This example is configured for reading data from flat file. For other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
+WRITER_TYPE - graphs are prepared for writing results in various formats. This example is configured, to write sample records to the flat file.
+charset - data encoding - all Readers and Writers in all graphs use the same charset
+input_file - full data set
+metadata - shared metadata corresponding to input file
+sample_size - required sample size - fraction of input data from the (0,1) interval
+sampling_field - name of field from input metadata (not used in this graph)
+timing - interval for selecting records. Do not change this, as it is calculated depending on the sample_size parameter. This graph does not use this parameter.
+sort_data - indicates if to sort data before sampling (not used in this graph)
+
+This graph has its own parameter also. It is output_file, that defines file for sample data created with this graph.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="17" guiY="122" id="DATA_READER0" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${input_file}]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtFilter" guiWidth="0" guiX="202" guiY="122" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[random() < ${sample_size}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="394" guiY="122" id="WRITER0" type="${WRITER_TYPE}">
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[SimpleRandomSampling]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" router="Manhattan" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (out)" metadata="Metadata0" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER0:0"/>
+</Phase>
+</Graph>

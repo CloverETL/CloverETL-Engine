@@ -42,10 +42,10 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -168,26 +168,6 @@ public class Normalizer extends Node {
 	}
 
 	/**
-	 * Creates normalization instance using specified class.
-	 * @param normClass
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private RecordNormalize createNormalizer(String normClass) throws ComponentNotReadyException {
-		RecordNormalize norm;
-        try {
-            norm =  (RecordNormalize)Class.forName(normClass).newInstance();
-        }catch (InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch (IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified transformation class: " + xformClass);
-        }
-		return norm;
-	}
-
-	/**
 	 * Creates normalization instance using given Java source.
 	 * @param normCode
 	 * @return
@@ -215,7 +195,8 @@ public class Normalizer extends Node {
 
 		if (norm == null) {
 			if (xformClass != null) {
-				norm = createNormalizer(xformClass);
+				norm = (RecordNormalize) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
+						logger, xformClass, null, getGraph().getRuntimeContext().getClassPath());
 			}else if (xform == null) {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}

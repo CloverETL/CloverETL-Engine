@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.dbf.DBFDataParser;
-import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -126,7 +125,7 @@ public class DBFDataReader extends Node {
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
     private MultiFileReader reader;
-    private PolicyType policyType;
+    private PolicyType policyType; // default value set in fromXML()
 	private String fileURL;
     private int skipRows=-1; // do not skip rows by default
     private int numRecords = -1;
@@ -186,26 +185,26 @@ public class DBFDataReader extends Node {
 		// till it reaches end of data or it is stopped from outside
 		try {
 			while (record != null && runIt) {
-			    try {
-			        if((record = reader.getNext(record)) != null) {
-			            //broadcast the record to all connected Edges
-			            writeRecordBroadcast(record);
-			        }
-			    } catch(BadDataFormatException bdfe) {
-			        if(policyType == PolicyType.STRICT) {
-			            throw bdfe;
-			        } else {
-			            logger.info(bdfe.getMessage());
-			        }
-			    }
-			    SynchronizeUtils.cloverYield();
+				try {
+					if ((record = reader.getNext(record)) != null) {
+						// broadcast the record to all connected Edges
+						writeRecordBroadcast(record);
+					}
+				} catch (RuntimeException bdfe) {
+					if (policyType == PolicyType.STRICT) {
+						throw bdfe;
+					} else {
+						logger.info(bdfe.getMessage());
+					}
+				}
+				SynchronizeUtils.cloverYield();
 			}
 		} catch (Exception e) {
 			throw e;
-		}finally{
+		} finally {
 			broadcastEOF();
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	@Override
@@ -353,8 +352,10 @@ public class DBFDataReader extends Node {
 						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				dbfDataReader.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
-					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
+				dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
+			} else {
+				// default policy type
+				dbfDataReader.setPolicyType(PolicyType.STRICT);
 			}
             if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
             	dbfDataReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));

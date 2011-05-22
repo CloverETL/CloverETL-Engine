@@ -29,6 +29,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.jetel.graph.runtime.EngineInitializer;
@@ -52,6 +54,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class DBFAnalyzer {
 	
 	private static final int DBF_HEADER_SIZE_BASIC=32;
+	private static final int DBF_HEADER_SIZE_ENHANCE=68;
 	private static final int DBF_FIELD_DEF_SIZE=32;
 	private static final int DBF_FIELD_DEF_SIZE_ENHANCE=48;
     private static final byte DBF_FIELD_HEADER_TERMINATOR=0x0D;
@@ -70,7 +73,9 @@ public class DBFAnalyzer {
 	private byte dbfCodePage;
 	private Charset charset;
 	private String dbfTableName;
-    
+
+	private List<String> warnings = new ArrayList<String>(); 
+	
 	public DBFAnalyzer(){
 		reset();
 	}
@@ -90,6 +95,7 @@ public class DBFAnalyzer {
 		dbfDataOffset = -1;
 		dbfCodePage = 0;
 		dbfTableName = null;
+		warnings.clear();
 	}
 	
 	public int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
@@ -142,6 +148,18 @@ public class DBFAnalyzer {
             throw new DBFErrorException("Problem reading DBF fields directory - wrong format !");
         }
         boolean shortFieldDesc = subFieldEofMark%32 == 0;
+        boolean isDbase7 = (dbfType & 0x04) == 0x04; 
+        
+        if ((isDbase7 && shortFieldDesc) || (!isDbase7 && !shortFieldDesc)) {
+        	StringBuilder message = new StringBuilder("Problem when detrmining dbase type.");
+        	if (isDbase7) {
+        		message.append(" Using dBASE Version 7 structure.");
+        	}else{
+        		message.append(" Using basic (short) structure."); 
+        	}
+        	warnings.add(message.toString());
+        	System.err.print(message + "\n");
+        }
         
 		if (shortFieldDesc) {
 			dbfNumFields = subFieldEofMark / DBF_FIELD_DEF_SIZE;
@@ -159,8 +177,8 @@ public class DBFAnalyzer {
 	            dbfFields[i].type=charset.decode(buffer).get();
 	            buffer.limit(32+offset);
 	            dbfFields[i].offset=buffer.getInt();
-	            dbfFields[i].length=buffer.get();
-	            dbfFields[i].decPlaces=buffer.get();
+	            dbfFields[i].length=(short) (buffer.get() & 0xFF);
+	            dbfFields[i].decPlaces=(short) (buffer.get() & 0xFF);
 	            offset+=DBF_FIELD_DEF_SIZE;
 	            buffer.position(offset);
 	        }
@@ -186,9 +204,9 @@ public class DBFAnalyzer {
 	            buffer.limit(33+offset);
 	            dbfFields[i].type=charset.decode(buffer).get();
 	            buffer.limit(34+offset);
-	            dbfFields[i].length=buffer.get();
+	            dbfFields[i].length=(short) (buffer.get() & 0xFF);
 	            buffer.limit(35+offset);
-	            dbfFields[i].decPlaces=buffer.get();
+	            dbfFields[i].decPlaces=(short) (buffer.get() & 0xFF);
 	            //dbfFields[i].offset=buffer.getInt();
 	            offset+=DBF_FIELD_DEF_SIZE_ENHANCE;
 	            buffer.position(offset);
@@ -199,7 +217,8 @@ public class DBFAnalyzer {
 		try{
 			charset=Charset.forName(DBFTypes.dbfCodepage2Java(dbfCodePage));
 		}catch (Exception ex){
-			throw new DBFErrorException("Unsupported DBF codepage ID: "+dbfCodePage);
+			System.err.println("Unsupported DBF codepage ID: "+dbfCodePage + "\n");
+			warnings.add("Unsupported DBF codepage ID: "+dbfCodePage);
 		}
 		return read;
 	}
@@ -207,7 +226,13 @@ public class DBFAnalyzer {
 	private int findSubRecordEofMark(ByteBuffer buffer) {
 		int fEof;
 		int fMax = buffer.limit();
-		for (fEof = 0; fEof < fMax ;fEof+=8) {
+		buffer.position(DBF_HEADER_SIZE_BASIC + DBF_FIELD_DEF_SIZE);
+		for (fEof = 0; fEof < fMax ;fEof+=DBF_FIELD_DEF_SIZE) {
+			if (buffer.get(fEof) == DBF_FIELD_HEADER_TERMINATOR) return fEof;
+		}
+		buffer.flip();
+		buffer.position(DBF_HEADER_SIZE_ENHANCE + DBF_FIELD_DEF_SIZE_ENHANCE);
+		for (fEof = 0; fEof < fMax ;fEof+=DBF_FIELD_DEF_SIZE_ENHANCE) {
 			if (buffer.get(fEof) == DBF_FIELD_HEADER_TERMINATOR) return fEof;
 		}
 		return -1;
@@ -325,11 +350,23 @@ public class DBFAnalyzer {
 	@SuppressWarnings("DB")
 	public static char dbfFieldType2Clover(char type){
 		switch(Character.toUpperCase(type)){
-			case 'C': return DataFieldMetadata.STRING_FIELD;
-			case 'N': return DataFieldMetadata.NUMERIC_FIELD;
-			case 'D': return DataFieldMetadata.DATE_FIELD;
-			case 'L': return DataFieldMetadata.BOOLEAN_FIELD;
-			case 'M': return DataFieldMetadata.BYTE_FIELD;
+			case 'C': //Character
+				return DataFieldMetadata.STRING_FIELD;
+			case 'N': //Numeric
+			case 'O': //Double (dBase Level 7)
+				return DataFieldMetadata.NUMERIC_FIELD;
+			case 'D': //Date
+			case 'T': //DateTime
+			case '@': //Timestamp (dBase Level 7)
+				return DataFieldMetadata.DATE_FIELD;
+			case 'L': //Logical 
+				return DataFieldMetadata.BOOLEAN_FIELD;
+			case 'M': //Memo
+			case 'P': //Picture
+				return DataFieldMetadata.BYTE_FIELD;
+			case 'I': //Integer
+			case '+': //Autoincrement
+				return DataFieldMetadata.INTEGER_FIELD;
 			default: return DataFieldMetadata.STRING_FIELD;
             //throw new DBFErrorException("Unsupported DBF field type: \""+String.valueOf(type)+"\" hex: "+Integer.toHexString(type));
 		}
@@ -373,5 +410,20 @@ public class DBFAnalyzer {
 	 */
 	public int getDBFDataOffset() {
 		return dbfDataOffset;
+	}
+	
+	/**
+	 * @return the warnings
+	 */
+	public List<String> getWarnings() {
+		return warnings;
+	}
+	
+	public String getWarning(){
+		StringBuilder message = new StringBuilder();
+		for (String warn : warnings) {
+			message.append(warn).append("\n");
+		}
+		return message.length() == 0 ? null : message.substring(0, message.length() - 1);
 	}
 }

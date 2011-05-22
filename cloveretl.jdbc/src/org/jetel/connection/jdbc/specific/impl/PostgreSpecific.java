@@ -151,4 +151,15 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		return true;
 	}  
 	
+	/**
+	 * Returns true to indicate that in PostgreSQL exception aborts transaction execution and ignores all following 
+	 * statement until end of transaction block. The transaction needs to be rolled back, at least partially,
+	 * to previously set SAVEPOINT.
+	 * @return true
+	 */
+	@Override
+	public boolean useSavepoints() {
+		// introduced by fix of issue #5711
+		return true;
+	}
 }

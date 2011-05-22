@@ -36,10 +36,10 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
@@ -62,9 +62,9 @@ import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -293,9 +293,6 @@ public class HttpConnector extends Node {
 		// input port initialization
 		inPort = getInputPortDirect(IN_PORT);
 		if (inPort != null) {
-			if (inputFieldName != null) {
-				logger.warn("Input file specified will be ignored, because an input port is connected.");
-			}
 			inRecord = new DataRecord(inPort.getMetadata());
 			inRecord.init();
 			if (inputFieldName != null) {
@@ -306,9 +303,6 @@ public class HttpConnector extends Node {
 		// output port initialization
 		outPort = getOutputPortDirect(OUT_PORT);
 		if (outPort != null) {
-			if (outputFieldName != null) {
-				logger.warn("Output file specified will be ignored, because an output port is connected.");
-			}
 			outRecord = new DataRecord(outPort.getMetadata());
 			outRecord.init();
 			if (outputFieldName == null) {
@@ -630,6 +624,14 @@ public class HttpConnector extends Node {
 		
 		if (inPort == null && outPort == null && StringUtils.isEmpty(outputFileUrl)) {
 			status.add(new ConfigurationProblem("Output port isn't connected and output file is not set.", Severity.WARNING, this, Priority.NORMAL));
+		}
+
+		if (inPort != null && !StringUtils.isEmpty(inputFileUrl)) {
+			status.add(new ConfigurationProblem("'Input file URL' will be ignored because input port is connected.", Severity.WARNING, this, Priority.NORMAL));
+		}
+
+		if (outPort != null && !StringUtils.isEmpty(outputFileUrl)) {
+			status.add(new ConfigurationProblem("'Output file URL' will be ignored because output port is connected.", Severity.WARNING, this, Priority.NORMAL));
 		}
 
 		if (!StringUtils.isEmpty(getRequestContent()) && !StringUtils.isEmpty(getInputFileUrl())) {

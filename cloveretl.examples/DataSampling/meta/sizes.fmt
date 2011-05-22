@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="sizes" recordDelimiter="\n" type="delimited">
+<Field name="strata" type="string"/>
+<Field name="size" type="integer"/>
+</Record>

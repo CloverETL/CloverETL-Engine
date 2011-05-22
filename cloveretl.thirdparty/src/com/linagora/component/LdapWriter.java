@@ -199,12 +199,8 @@ public class LdapWriter extends Node {
 		// based on file mask, create/open output file
 		try {
 			formatter.open(null, getInputPort(READ_FROM_PORT).getMetadata());
-		}
-		catch (Exception ex) {
-			if(logger.isDebugEnabled()) {
-				ex.printStackTrace();
-			}
-			throw new ComponentNotReadyException(getId() + "Error: " + ex.getMessage());
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(getId() + " Error opening LdapFormater", ex);
 		}
 
 	}

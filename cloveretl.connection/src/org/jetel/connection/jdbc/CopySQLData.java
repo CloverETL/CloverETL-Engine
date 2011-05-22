@@ -1437,7 +1437,7 @@ public abstract class CopySQLData {
          */
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
             if (!field.isNull()) {
-                pStatement.setBytes(fieldSQL, ((ByteDataField) field).getByteArray());
+                pStatement.setBytes(fieldSQL, (byte[]) ((ByteDataField) field).getValueDuplicate());
             } else {
                 pStatement.setNull(fieldSQL, java.sql.Types.BINARY);
             }

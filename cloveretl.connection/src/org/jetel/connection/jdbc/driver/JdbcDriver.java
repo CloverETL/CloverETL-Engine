@@ -158,24 +158,6 @@ public class JdbcDriver {
     }
     
     /**
-     * @return type of associated result set
-     * @throws ComponentNotReadyException
-     */
-    public int getResultSetType() throws ComponentNotReadyException {
-		Class<?> typesClass;
-		try {
-			typesClass = getClassLoader().loadClass(getJdbcSpecific().getTypesClassName());
-		} catch (ClassNotFoundException e) {
-			throw new ComponentNotReadyException("Invalid Types class name in jdbc specific: " + getJdbcSpecific().getTypesClassName(), e);
-		}
-		try {
-			return typesClass.getField(getJdbcSpecific().getResultSetParameterTypeField()).getInt(null);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException("Invalid ResultSet type field name in jdbc specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
-		}
-    }
-    
-    /**
      * That is major method of this class. Returns a java.sql.Driver represented by this entity.
      */
     public Driver getDriver() {

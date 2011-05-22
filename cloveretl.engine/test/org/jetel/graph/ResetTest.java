@@ -31,6 +31,7 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/CTL1FunctionsTutorial/",
 			"../cloveretl.examples/CTL2FunctionsTutorial/",
 			"../cloveretl.examples/DataProfiling/",
+			"../cloveretl.examples/DataSampling/",
 			"../cloveretl.examples/ExtExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/",
@@ -107,7 +108,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionDouble2long.grf") // ok, is to fail
 							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail
 							&& !pathname.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
-							&& !pathname.getName().equals("mountainsInformix.grf"); // see issue 2550							
+							&& !pathname.getName().equals("mountainsInformix.grf") // see issue 2550							
+							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf"); // graph for windows					
 				}
 			});
 			

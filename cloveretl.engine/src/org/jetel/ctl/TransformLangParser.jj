@@ -1393,7 +1393,7 @@ void CompositeType()      :
         try {
 /*@egen*/
 	(
-	 ( "map" "[" PrimitiveType() "," PrimitiveType() "]"/*@bgen(jjtree)*/
+	 ( "map" "[" PrimitiveType() "," (PrimitiveType() | CompositeType() ) "]"/*@bgen(jjtree)*/
                 {
                   jjtree.closeNodeScope(jjtn000, true);
                   jjtc000 = false;
@@ -1488,10 +1488,17 @@ void VariableType()              :
         try {
 /*@egen*/
 	(
-	 LOOKAHEAD(2)
- 	 CompositeType()
-	 |
-	 PrimitiveType()
+	 LOOKAHEAD(2)	 CompositeType() 
+	 [
+	 	"[" "]"
+	 	{ 
+	 		isList = true;
+    		jjtn000.begin(token.beginLine,token.beginColumn);
+    		jjtn000.end(token.endLine,token.endColumn);  
+    		jjtn000.setKind(LIST_VAR);
+    	}
+	 ]
+	 | PrimitiveType()
 	 [
 	 	"[" "]"
 	 	{ 
@@ -3325,10 +3332,11 @@ void Statements()       :
 {} 
 {
 	( 
-  		LOOKAHEAD(2)
+  		LOOKAHEAD(3)
+		VariableDeclaration() ";"
+		| 
   		Statement()
-  		|
-  		VariableDeclaration() ";" 
+ 		
   	)* 
 }
 void WhileStatement() :{/*@bgen(jjtree) WhileStatement */

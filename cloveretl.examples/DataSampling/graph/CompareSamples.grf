@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Dec 21 08:59:00 CET 2010" guiVersion="0.0.0.devel" id="1292922970306" licenseType="Evaluation Devel" modified="Fri Jan 21 08:38:15 CET 2011" modifiedBy="avackova" name="CompareSamples" revision="1.165">
+<Global>
+<Metadata fileURL="${META_DIR}/sizes.fmt" id="Metadata1"/>
+<Metadata fileURL="${metadata}" id="Metadata0"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="aggregatedSizes" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="strata" nullable="false" type="string"/>
+<Field name="simple" type="integer"/>
+<Field name="systematic" type="integer"/>
+<Field name="stratified" type="integer"/>
+<Field name="pps" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="detailedSizes" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="strata" type="string"/>
+<Field name="simple" type="integer"/>
+<Field name="setSize1" type="integer"/>
+<Field length="6" name="simpleRatio" scale="4" type="decimal"/>
+<Field name="systematic" type="integer"/>
+<Field name="setSize2" type="integer"/>
+<Field length="6" name="systematicRatio" scale="4" type="decimal"/>
+<Field name="stratified" type="integer"/>
+<Field name="setSize3" type="integer"/>
+<Field length="6" name="stratifiedRatio" scale="4" type="decimal"/>
+<Field name="pps" type="integer"/>
+<Field name="setSize4" type="integer"/>
+<Field length="6" name="ppsRatio" scale="4" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="graph_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="graph" nullable="true" type="string"/>
+<Field name="result" nullable="true" type="string"/>
+<Field name="description" nullable="true" type="string"/>
+<Field name="message" nullable="true" type="string"/>
+<Field name="duration" nullable="true" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="header" recordDelimiter="\n" type="delimited">
+<Field name="header" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="times" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="strata" nullable="false" type="string"/>
+<Field name="simple" type="string"/>
+<Field name="systematic" type="string"/>
+<Field name="stratified" type="string"/>
+<Field name="pps" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="comparison_file" value="${DATAOUT_DIR}/comparison_${sampling_field}.html"/>
+<Property id="GraphParameter1" name="lookup_file" value="${LOOKUP_DIR}/data_info_${sampling_field}.txt"/>
+<Property id="GraphParameter2" name="max_compare_results" value="100"/>
+<Property fileURL="parameters.prm" id="GraphParameter3"/>
+<Property id="GraphParameter12" name="sorted_data" value="`&quot;${sort_data}&quot; != &quot;passThrough&quot;`"/>
+<Property fileURL="workspace.prm" id="GraphParameter13"/>
+<LookupTable id="LookupTable0" initialSize="512" key="strata" metadata="Metadata1" name="data_info" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="483" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Graph parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="533" x="504" y="-17">
+<attr name="text"><![CDATA[
+DataSampling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by all project graphs:
+READER_TYPE - Type of reader used for reading data set for sampling. Graphs are prepared for reading various types of data. This example is configured for reading data from flat file. For other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable, on Readers in all sampling graphs.
+WRITER_TYPE - Type of writer used for writing sample data. Graphs are prepared for writing results in various formats. This example is configured, to write sample records to the flat file.
+charset - data encoding - all Readers and Writers in all graphs use the same charset
+input_file - full data set
+metadata - shared metadata corresponding to input file
+sample_size - required sample size - fraction of input data from the (0,1) interval
+sampling_field - name of field from input metadata. Data are sorted according this value, before selecting sample records. Some sampling method requires the data to be sorted ("stratum" is defined by the group of records with the same value on this field).
+timing - interval for selecting records. This parameter is used by Systematic and PPS methods. For full description of parameter see proper graph. Do not change this parameter, as it is calculated depending on the sample_size parameter. 
+sort_data - indicates if sort data before sampling in systematic method. "enabled" value for sorting and "passThrough" - to leave it unsorted.
+
+This graph has its own parameters also. They are:
+comparison_file - defines file for html comparison of sample methods
+lookup_file - file for the data, that contains information about number of elements in each group (in full data set) defined by sampling_field. This file is created only once for a concrete value of sampling_field parameter to not process full data set, when executing comparison graph more times. 
+max_compare_results - maximal number of "strata" that is saved in comparison file. If data set contains more groups only some of them are saved in outup file. The rest is skipped.
+sorted_data - indicates if data are sorted before sampling in systematic method. It is used by the one of the Aggregate components. Do not change this, as it is calculated depending on the sort_data parameter. ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="151" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Graph description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="621" x="366" y="-284">
+<attr name="text"><![CDATA[
+This graph executes four graphs, that sample data with different sampling methods (see description of each graph and http://en.wikipedia.org/wiki/Sampling_%28statistics%29). Than it compares samples obtained from each method. The graph compares number of records in each "stratum" (group of records with the same key value - sampling_field) for each method and checks, how it corresponds with required sample size. The comparison result is saved as html page with comparison table. If there is more "strata" then max_compare_results only part of them is saved in resulting file. This graph has no sens if the data set can't be splited into rational number of separated strata. In such case just use proper (simple or systematic sampling) method.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="105" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Create header of comparison file" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="335" x="19" y="-207"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="39" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Create distribution of &quot;strata&quot; in full data set" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="338" x="19" y="-100"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="375" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="158" x="18" y="19">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Execute graphs, that create samples with various sampling methods]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="370" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Create distribution of &quot;strata&quot; in each sample" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="492" x="10" y="408"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="557" guiY="-104" id="AGGREGATE2" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" generateURL="${TRANS_DIR}/CreateHeader.java" guiHeight="0" guiName="Create header" guiWidth="0" guiX="31" guiY="-175" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
+<Node enabled="enabled" generateURL="${TRANS_DIR}/FullfillLookup.java" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="33" guiY="-58" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="210" guiY="-50" id="DATA_READER4" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[port:$0.header:source]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node charset="${charset}" enabled="enabled" fileURL="port:$0.header:source" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="210" guiY="42" id="DATA_READER5" type="DATA_READER"/>
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="211" guiY="-175" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${lookup_file}" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="1053" guiY="-141" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="387" guiY="-104" id="EXT_SORT1" sortKey="${sampling_field}" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="1054" guiY="-66" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="LookupTableReaderWriter" guiWidth="0" guiX="1055" guiY="34" id="LOOKUP_TABLE_READER_WRITER1" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="729" guiY="-104" id="ROLLUP0" type="ROLLUP">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Called for the first data record in a new group. Starts the parsing of the new group.
+function void initGroup(sizes groupAccumulator) {
+	groupAccumulator.size = 0;
+}
+
+// Called for each data record in the group (including the first one and the last one).
+// Implicitly returns false => updateTransform() is not called. When returns true, calls updateTransform().
+function boolean updateGroup(sizes groupAccumulator) {
+	groupAccumulator.size = groupAccumulator.size + $0.size;
+	return true;
+}
+
+// Called for the last data records in all groups sequentially, but only after all incoming data records have been parsed.
+// Implicitly returns true => transform() is called for the whole group.
+function boolean finishGroup(sizes groupAccumulator) {
+	return true;
+}
+
+// Called to transform data records that have been parsed so far into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function integer updateTransform(integer counter, sizes groupAccumulator) {
+	if (counter > 0 ) return SKIP;
+	$0.* = $0.*;
+	return ALL;
+}
+
+// Called to transform the whole group of incoming data record(s) into user-specified number of output data record(s).
+// Counter (incremented by 1 starting from 0) stores the number of previous calls to this method for the current group update.
+// Group accumulator can optionally be used.
+// Function implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL causes each data record to be sent to all output port(s).
+// Can also return a number of the output port to which individual data record should be sent.
+function integer transform(integer counter, sizes groupAccumulator) {
+	if (counter > 0) return SKIP;
+	$strata = "total";
+	$size = groupAccumulator.size;
+	return ALL;
+}
+
+// Called during component initialization.
+// function void init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if initGroup(DataRecord) throws an exception.
+//function void initGroupOnError(string errorMessage, string stackTrace, sizes groupAccumulator) {
+//}
+
+// Called only if updateGroup(DataRecord) throws an exception.
+//function boolean updateGroupOnError(string errorMessage, string stackTrace, sizes groupAccumulator) {
+//}
+
+// Called only if finishGroup(DataRecord) throws an exception.
+//function boolean finishGroupOnError(string errorMessage, string stackTrace, sizes groupAccumulator) {
+//}
+
+// Called only if updateTransform(integer, DataRecord) throws an exception.
+//function integer updateTransformOnError(string errorMessage, string stackTrace, integer counter, sizes groupAccumulator) {
+//}
+
+// Called only if transform(integer, DataRecord) throws an exception.
+//function integer transformOnError(string errorMessage, string stackTrace, integer counter, sizes groupAccumulator) {
+//}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="900" guiY="-103" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Edge fromNode="AGGREGATE2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge26" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ROLLUP0:0"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR1:0" guiBendpoints="2:0:-47:-10:0.5|2:10:-47:0:0.5" guiRouter="Manhattan" id="Edge19" inPort="Port 0 (out)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DATA_READER4:0"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR1:1" guiBendpoints="35:0:-14:-84:0.5|35:84:-14:0:0.5" guiRouter="Manual" id="Edge27" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 1 (out)" toNode="DATA_READER5:0"/>
+<Edge debugMode="false" fromNode="DATA_READER4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge24" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER5:0" guiBendpoints="10:0:-707:8:0.5|10:-86:-707:-78:0.5|706:-86:-11:-78:0.5|706:-8:-11:0:0.5" guiRouter="Manual" id="Edge28" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="LOOKUP_TABLE_READER_WRITER1:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE2:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge31" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge29" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="0" guiName="ExtMergeJoin" guiWidth="0" guiX="209" guiY="168" id="EXT_MERGE_JOIN1" joinKey="$result(a)#$result(a);#$result(a);#$result(a);" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+function string format(decimal duration){
+	decimal hours;
+	decimal min;
+	decimal sec;
+	decimal milli_sec;
+	hours = duration / 360000;
+	duration = duration % 360000;
+	min = duration / 60000;
+	duration = duration % 60000;
+	sec = duration / 1000;
+	milli_sec = duration % 1000;
+	return num2str(floor(hours), "#") + " h " + num2str(floor(min), "#") + " m " + num2str(floor(sec), "#") + " s " + num2str(floor(milli_sec), "#") + " ms";
+}
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.strata = "Sampling time";
+	$0.simple = format($0.duration);
+	$0.systematic = format($1.duration);
+	$0.stratified = format($2.duration);
+	$0.pps = format($3.duration);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" graphName="${GRAPH_DIR}/SimpleRandomSampling.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="31" guiY="32" id="RUN_GRAPH0" logFile="${DATATMP_DIR}/SimpleRandomSampling_log.txt" type="RUN_GRAPH"/>
+<Node enabled="enabled" graphName="${GRAPH_DIR}/SystematicSampling.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="31" guiY="112" id="RUN_GRAPH1" logFile="${DATATMP_DIR}/SystematicSampling_log.txt" type="RUN_GRAPH"/>
+<Node enabled="enabled" graphName="${GRAPH_DIR}/StratifiedSampling.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="31" guiY="190" id="RUN_GRAPH2" logFile="${DATATMP_DIR}/StratifiedSampling_log.txt" type="RUN_GRAPH"/>
+<Node enabled="enabled" graphName="${GRAPH_DIR}/PPSSampling.grf" guiHeight="0" guiName="RunGraph" guiWidth="0" guiX="31" guiY="265" id="RUN_GRAPH3" logFile="${DATATMP_DIR}/PPSSampling_log.txt" type="RUN_GRAPH"/>
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="366" guiY="168" id="STRUCTURE_WRITER1" mask="&lt;tr bgcolor=#FFFF99 align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$simple&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$systematic&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$stratified&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$pps&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER"/>
+<Edge fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (Body port)" metadata="Metadata6" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
+<Edge fromNode="RUN_GRAPH0:0" guiBendpoints="27:0:-23:-130:0.5|27:130:-23:0:0.5" guiRouter="Manual" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="EXT_MERGE_JOIN1:0"/>
+<Edge fromNode="RUN_GRAPH1:0" guiBendpoints="17:0:-33:-64:0.5|17:64:-33:0:0.5" guiRouter="Manual" id="Edge12" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="EXT_MERGE_JOIN1:1"/>
+<Edge fromNode="RUN_GRAPH2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 2 (slave)" metadata="Metadata4" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="EXT_MERGE_JOIN1:2"/>
+<Edge fromNode="RUN_GRAPH3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 3 (slave)" metadata="Metadata4" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="EXT_MERGE_JOIN1:3"/>
+</Phase>
+<Phase number="2">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="359" guiY="453" id="AGGREGATE0" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="1109" guiY="576" id="AGGREGATE1" mapping="$strata:=&quot;total sample size&quot;;$simple:=sum($simple);$systematic:=sum($systematic);$stratified:=sum($stratified);$pps:=sum($pps);" type="AGGREGATE"/>
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="360" guiY="530" id="AGGREGATE4" mapping="$strata:=$${sampling_field};$size:=count();" sorted="${sorted_data}" type="AGGREGATE"/>
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="360" guiY="612" id="AGGREGATE5" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE"/>
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="360" guiY="689" id="AGGREGATE6" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="29" guiY="453" id="DATA_READER0" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${DATAOUT_DIR}/randomSample.*]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="29" guiY="689" id="DATA_READER1" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${DATAOUT_DIR}/ppsSample.*]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="29" guiY="612" id="DATA_READER2" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${DATAOUT_DIR}/stratifiedSample.*]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="29" guiY="530" id="DATA_READER3" type="${READER_TYPE}">
+<attr name="fileURL"><![CDATA[${DATAOUT_DIR}/systematicSample.*]]></attr>
+<attr name="startRow"><![CDATA[2]]></attr>
+<attr name="sheetName"><![CDATA[*]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtHashJoin" guiWidth="0" guiX="508" guiY="472" id="EXT_HASH_JOIN0" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+// Transforms input record into output record.
+
+function integer transform() {
+	$0.strata = nvl($0.strata,$1.strata);
+	$0.simple = $0.size;
+	$0.systematic = $1.size;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtHashJoin" guiWidth="0" guiX="577" guiY="550" id="EXT_HASH_JOIN1" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.strata = nvl($0.strata, $1.strata);
+	$0.simple = $0.simple;
+	$0.systematic = $0.systematic;
+	$0.stratified = $1.size;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="ExtHashJoin" guiWidth="0" guiX="653" guiY="628" id="EXT_HASH_JOIN2" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.strata = nvl($0.strata, $1.strata);
+	$0.simple = $0.simple;
+	$0.systematic = $0.systematic;
+	$0.stratified = $0.stratified;
+	$0.pps = $1.size;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="194" guiY="453" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="793" guiY="576" id="EXT_SORT2" sortKey="strata(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Strata statistc" guiWidth="0" guiX="1295" guiY="493" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+decimal simple;
+decimal systematic;
+decimal stratified;
+decimal pps;
+// Transforms input record into output record.
+function integer transform() {
+	integer setSize = lookup(data_info).get($strata).size;
+	$0.strata = $0.strata;
+	$0.simple = nvl($0.simple,0);
+	$setSize1 = setSize;
+	simple = $0.simple;
+	$simpleRatio = nvl2(simple, simple/setSize, 0);
+	$0.systematic = nvl($0.systematic,0);
+	$setSize2 = setSize;
+	systematic = $0.systematic;
+	$systematicRatio = nvl2(systematic, systematic/setSize, 0);
+	$0.stratified = $0.stratified;
+	$setSize3 = setSize;
+	stratified = $0.stratified;
+	$stratifiedRatio = stratified/setSize;
+	$0.pps = nvl($0.pps,0);
+	$setSize4 = setSize;
+	pps = $0.pps;
+	$ppsRatio = nvl2(pps, pps/setSize, 0);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Total data" guiWidth="0" guiX="1295" guiY="576" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer set_size;
+decimal simple;
+decimal systematic;
+decimal stratified;
+decimal pps;
+
+// Transforms input record into output record.
+function integer transform() {
+	set_size = lookup(data_info).get("total").size;
+	$0.strata = "total";
+	$0.simple = nvl($0.simple,0);
+	$0.systematic = nvl($0.systematic,0);
+	$0.stratified = $0.stratified;
+	$0.pps = nvl($0.pps,0);
+	$0.setSize1 = set_size;
+	$0.setSize2 = set_size;
+	$0.setSize3 = set_size;
+	$0.setSize4 = set_size;
+	simple = nvl($0.simple,0);
+	$0.simpleRatio = simple/set_size;
+	systematic = nvl($0.systematic,0);
+	$0.systematicRatio = systematic/set_size;
+	stratified = $0.stratified;
+	$0.stratifiedRatio = stratified/set_size;
+	pps = nvl($0.pps,0);
+	$0.ppsRatio = pps/set_size;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="944" guiY="572" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&#10;" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="1447" guiY="493" header="&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#10;" id="STRUCTURE_WRITER0" mask="&lt;tr&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" recordCount="${max_compare_results}" type="STRUCTURE_WRITER"/>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge18" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="AGGREGATE5:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge fromNode="AGGREGATE6:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN2:1"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="AGGREGATE6:0"/>
+<Edge debugMode="true" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="AGGREGATE5:0"/>
+<Edge debugMode="true" fromNode="DATA_READER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="AGGREGATE4:0"/>
+<Edge fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN1:0"/>
+<Edge fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN2:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
+<Edge fromNode="EXT_SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge32" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge20" inPort="Port 0 (Body port)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (Body port)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER3:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="32:0:-191:77:0.5|32:-77:-191:0:0.5" guiRouter="Manual" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="AGGREGATE1:0"/>
+</Phase>
+<Phase number="3">
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&lt;tr&gt;&#10;&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&lt;/tr&gt;&#10;&lt;tr align=\&quot;center\&quot;&gt;&#10;&lt;th&gt;${sampling_field}&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;simple sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;systematic sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;stratified sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;pps sampling&lt;/th&gt;&#10;&lt;/tr&gt;" guiHeight="0" guiName="StructuredDataWriter" guiWidth="0" guiX="1447" guiY="572" header="&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr bgcolor=#FF99CC align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER"/>
+</Phase>
+</Graph>

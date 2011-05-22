@@ -102,10 +102,16 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 
 	@Override
 	public final int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
-		int result = 0;
+		return getOutputPortOnError(exception);
+	}
 
-		// only input record is accessible within the getOutputPortOnError() function
-		inputRecord = record;
+	@Override
+	public final int getOutputPortOnError(Exception exception, ByteBuffer buffer) throws TransformException {
+		return getOutputPortOnError(exception);
+	}
+
+	private int getOutputPortOnError(Exception exception) throws TransformException {
+		int result = 0;
 
 		try {
 			result = getOutputPortOnErrorDelegate(exception.getMessage(), MiscUtils.stackTraceToString(exception));

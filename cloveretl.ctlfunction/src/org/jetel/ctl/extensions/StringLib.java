@@ -178,7 +178,7 @@ public class StringLib extends TLFunctionLibrary {
 	// LEFT
 	@TLFunctionAnnotation("Returns prefix of the specified length")
 	public static final String left(TLFunctionCallContext context, String input, int length) {
-		return input.length() < length ? "" : input.substring(0, length);
+		return input.length() < length ? input : input.substring(0, length);
 	}
 
 	@TLFunctionAnnotation("Returns prefix of the specified length. If input string is shorter than specified length " +

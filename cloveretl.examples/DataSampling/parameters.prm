@@ -1,0 +1,10 @@
+#Mon Jan 17 13:17:20 CET 2011
+timing=`1.0/${sample_size}`
+sample_size=0.1
+charset=ISO-8859-1
+sort_data=enabled
+WRITER_TYPE=DATA_WRITER
+input_file=${DATAIN_DIR}/employees.txt
+metadata=${META_DIR}/employees.fmt
+READER_TYPE=DATA_READER
+sampling_field=JOB_GRADE

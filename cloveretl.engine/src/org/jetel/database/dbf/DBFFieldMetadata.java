@@ -27,7 +27,7 @@ public class DBFFieldMetadata{
 	public String name;
 	public char type;
 	public int offset;
-	public byte length;
-	public byte decPlaces;
+	public short length;
+	public short decPlaces;
 	
 }

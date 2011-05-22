@@ -38,6 +38,7 @@ public class TextParserConfiguration implements Cloneable {
 	private boolean verbose = true;
 	private boolean treatMultipleDelimitersAsOne = false;
 	private boolean quotedStrings = false;
+	private Character quoteChar = null;
 	private Boolean trim = null;
 	private Boolean skipLeadingBlanks = null;
 	private Boolean skipTrailingBlanks = null;
@@ -72,7 +73,7 @@ public class TextParserConfiguration implements Cloneable {
 	}
 
 	public TextParserConfiguration(String charset, boolean verbose, DataRecordMetadata metadata,
-			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Boolean skipLeadingBlanks,
+			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Character quoteChar, Boolean skipLeadingBlanks,
 			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, 
 			PolicyType policyType) {
 		super();
@@ -83,6 +84,7 @@ public class TextParserConfiguration implements Cloneable {
 		this.verbose = verbose;
 		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
 		this.quotedStrings = quotedStrings;
+		this.quoteChar = quoteChar;
 		this.skipLeadingBlanks = skipLeadingBlanks;
 		this.skipTrailingBlanks = skipTrailingBlanks;
 		this.trim = trim;
@@ -154,6 +156,16 @@ public class TextParserConfiguration implements Cloneable {
 		this.quotedStrings = quotedStrings;
 	}
 
+	
+	public Character getQuoteChar() {
+		return this.quoteChar;
+	}
+	
+	
+	public void setQuoteChar(Character quoteChar) {
+		this.quoteChar = quoteChar;
+	}
+	
 	/**
 	 * @return the skipLeadingBlanks
 	 */

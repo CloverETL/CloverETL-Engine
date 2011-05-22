@@ -204,9 +204,13 @@ public final class IntegerDecimal implements Decimal {
     
     @Override
     public void setValue(BigDecimal _value) {
+    	if (_value == null) {
+    		setNaN(true);
+    		return;
+    	}
         BigInteger bi = _value.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
         if(HugeDecimal.precision(bi) > precision) {
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Too many digits before decimal dot, must be " + (precision - scale) + " at most (" + _value + "); specified precision ["+precision+","+scale+"]");
         }
         value = bi.longValue();
         setNaN(false);

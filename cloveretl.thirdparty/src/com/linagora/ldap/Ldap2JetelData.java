@@ -94,7 +94,7 @@ public abstract class Ldap2JetelData {
 				} catch (NamingException e) {
 					throw new BadDataFormatException(
 							"LDAP attribute to Jetel field transformation exception : Field "
-									+ attr.getID() + ".");
+									+ attr.getID() + ".", e);
 				}
 				/*
 				 * Perhaps the attribute is multivaluated, so we add all values.
@@ -117,7 +117,7 @@ public abstract class Ldap2JetelData {
 				} catch (NamingException e) {
 					throw new BadDataFormatException(
 							"LDAP attribute to Jetel field transformation exception : Field "
-									+ attr.getID() + ".");
+									+ attr.getID() + ".", e);
 				}
 			}
 		}
@@ -145,7 +145,7 @@ public abstract class Ldap2JetelData {
 				try {
 					value = attr.get(); //only first value is taken into consideration
 				} catch (NamingException e) {
-					throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + ".");
+					throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + ".", e);
 				}
 				if (value == null) {
 					df.setNull(true);

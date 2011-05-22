@@ -350,7 +350,8 @@ public class JExcelXLSDataParser extends XLSParser {
 					record.getField(cloverFieldIndex).setValue(((BooleanCell) cell).getValue());
 					break;
 				}
-			} catch (ClassCastException bdne) {//exception when trying get date or number from diffrent cell type
+			} catch (RuntimeException bdne) { // exception when trying get date or number from different cell type, or there's incorrect format
+				// Fix of issue #5470: caught exception changed from ClassCastException to RuntimeException
 				try {
 					record.getField(cloverFieldIndex).fromString(parseString(cell));
 				} catch (Exception e) {

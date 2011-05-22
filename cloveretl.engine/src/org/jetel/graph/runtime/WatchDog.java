@@ -160,6 +160,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		CURRENT_PHASE_LOCK.lock();
 		
 		try {
+
+			//thread context classloader is preset to a reasonable classloader
+			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
 			//we have to register current watchdog's thread to context provider - from now all 
 			//ContextProvider.getGraph() invocations return proper transformation graph
 			ContextProvider.registerGraph(graph);
