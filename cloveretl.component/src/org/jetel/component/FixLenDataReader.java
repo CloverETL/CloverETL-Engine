@@ -144,6 +144,12 @@ public class FixLenDataReader extends Node {
 
 	private boolean byteMode;
 	private String charset;
+	
+	private boolean enableIncomplete = true;
+	private boolean skipEmpty = true;
+	private Boolean skipLeadingBlanks = null;
+	private Boolean skipTrailingBlanks = null;
+	private Boolean trim = null;
 
 	/**
 	 *Constructor for the FixLenDataReaderNIO object
@@ -257,6 +263,18 @@ public class FixLenDataReader extends Node {
 				new FixLenByteDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) :
 				new FixLenCharDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        
+        parser.setEnableIncomplete(enableIncomplete);
+        parser.setSkipEmpty(skipEmpty);
+        if (skipLeadingBlanks != null) {
+            parser.setSkipLeadingBlanks(skipLeadingBlanks);
+        }
+        if (skipTrailingBlanks != null) {
+            parser.setSkipTrailingBlanks(skipTrailingBlanks);
+        }
+    	if (parser instanceof FixLenCharDataParser && (trim != null)) {
+    		((FixLenCharDataParser)parser).setTrim(trim);
+    	}
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
@@ -369,16 +387,16 @@ public class FixLenDataReader extends Node {
 						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.SPEC_CHARACTERS_OFF),
 						charset, byteMode);
 			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.parser.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
+				aFixLenDataReaderNIO.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPEMPTY_ATTRIBUTE)){
-				aFixLenDataReaderNIO.parser.setSkipEmpty(xattribs.getBoolean(XML_SKIPEMPTY_ATTRIBUTE));
+				aFixLenDataReaderNIO.setSkipEmpty(xattribs.getBoolean(XML_SKIPEMPTY_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
+				aFixLenDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
             if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
                 aFixLenDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
@@ -497,9 +515,7 @@ public class FixLenDataReader extends Node {
     }
 
     public void setTrim(Boolean trim){
-    	if (parser instanceof FixLenCharDataParser){
-    		((FixLenCharDataParser)parser).setTrim(trim);
-    	}
+    	this.trim = trim;
     }
     
     public void setIncrementalFile(String incrementalFile) {
@@ -509,5 +525,22 @@ public class FixLenDataReader extends Node {
     public void setIncrementalKey(String incrementalKey) {
     	this.incrementalKey = incrementalKey;
     }
+
+	public void setEnableIncomplete(boolean enableIncomplete) {
+		this.enableIncomplete = enableIncomplete;
+	}
+
+	public void setSkipEmpty(boolean skipEmpty) {
+		this.skipEmpty = skipEmpty;
+	}
+
+	public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
+		this.skipTrailingBlanks = skipTrailingBlanks;
+	}
+    
 }
 
