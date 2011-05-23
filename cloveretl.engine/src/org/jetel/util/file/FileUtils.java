@@ -912,7 +912,7 @@ public class FileUtils {
         //open channel
         if (os == null) {
     		// create output stream
-    		if (isRemoteFile(input)) {
+    		if (isRemoteFile(input) && !isHttp(input)) {
     			// ftp output stream
     			URL url = FileUtils.getFileURL(contextURL, input);
     			URLConnection urlConnection = url.openConnection();
