@@ -92,7 +92,7 @@ import org.w3c.dom.Element;
  */
 public class Trash extends Node {
 	public enum Mode {
-		FULL_DESERIALIZE, PERFORMANCE,
+		VALIDATE_RECORDS, PERFORMANCE,
 	}
 	
 	private static Log logger = LogFactory.getLog(Trash.class);
@@ -106,7 +106,7 @@ public class Trash extends Node {
 	private static final String XML_PRINT_TRASH_ID_ATTRIBUTE = "printTrashID";
 	private static final String XML_MODE ="mode";
 	
-	private static final String FULL_DESERIALIZE="full_deserialize";
+	private static final String VALIDATE_RECORDS="validate_records";
 	private static final String PERFORMANCE = "performance";
 
 	/**  Description of the Field */
@@ -326,8 +326,8 @@ public class Trash extends Node {
 		if (mode != null) {
 			if (mode.equals(Mode.PERFORMANCE)) {
 				xmlElement.setAttribute(XML_MODE, PERFORMANCE);
-			} else if (mode.equals(Mode.FULL_DESERIALIZE)) {
-				xmlElement.setAttribute(XML_MODE, FULL_DESERIALIZE);
+			} else if (mode.equals(Mode.VALIDATE_RECORDS)) {
+				xmlElement.setAttribute(XML_MODE, VALIDATE_RECORDS);
 			}
 		}
 	}
@@ -444,8 +444,8 @@ public class Trash extends Node {
 	private void setMode(String mode) {
 		if (mode == null || mode.equalsIgnoreCase(PERFORMANCE)) {
 			this.mode = Mode.PERFORMANCE;
-		} else if (mode.equalsIgnoreCase(FULL_DESERIALIZE)) {
-			this.mode = Mode.FULL_DESERIALIZE;
+		} else if (mode.equalsIgnoreCase(VALIDATE_RECORDS)) {
+			this.mode = Mode.VALIDATE_RECORDS;
 		}
 	}
 	
@@ -461,13 +461,13 @@ public class Trash extends Node {
 		public void run() {
 			DataRecord record = new DataRecord(inPort.getMetadata());
 			ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-			if (mode.equals(Mode.FULL_DESERIALIZE)) {
+			if (mode.equals(Mode.VALIDATE_RECORDS)) {
 				record.init();
 			}
 
 			try {
 				while (inPort.readRecordDirect(recordBuffer) && runIt) {
-					if (mode.equals(Mode.FULL_DESERIALIZE)) {
+					if (mode.equals(Mode.VALIDATE_RECORDS)) {
 						record.deserialize(recordBuffer);
 					}
 				}
