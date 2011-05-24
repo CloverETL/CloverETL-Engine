@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254235145118" licenseType="Evaluation Devel" modified="Wed Oct 14 14:56:14 CEST 2009" modifiedBy="cloveruser" name="F_SALES" revision="1.27">
+<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254235145118" licenseType="Evaluation Devel" modified="Tue May 24 09:23:26 CEST 2011" modifiedBy="avackova" name="F_SALES" revision="1.29" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/D_CUSTOMER.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/D_DATE.fmt" id="Metadata8"/>
@@ -72,8 +72,8 @@
 <LookupTable charset="windows-1250" fileURL="${TABLES}/D_DATE.tbl" id="LookupTable3" initialSize="512" key="DATE" metadata="Metadata8" name="D_DATE_Lookup" type="simpleLookup"/>
 <LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_PRODUCT.tbl" id="LookupTable1" initialSize="512" key="UPC" metadata="Metadata3" name="D_PRODUCT_Lookup" type="simpleLookup"/>
 <LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_STORE.tbl" id="LookupTable2" initialSize="512" key="STORE_NUMBER" metadata="Metadata4" name="D_STORE_Lookup" type="simpleLookup"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="103" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="148" x="37" y="22"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="225" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of Sales fact table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="818" x="57" y="269">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="147" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="37" y="22"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="190" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of Sales fact table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="970" x="38" y="293">
 <attr name="text"><![CDATA[
 Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one degenerate dimension (INVOICE_NUMBER) and is linked with 4 dimension (Customer, Date, Store and Product).
 
@@ -83,14 +83,17 @@ Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one deg
 
 If the data is stored in database instead of files, the DBJoin component can be used for big dimensions instead of LookupJoin, for small dimension the ExtHashJoin component can be used instead of LookupJoin.]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Sales_24092009.csv" guiHeight="0" guiName="Sales_input" guiWidth="0" guiX="47" guiY="55" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiHeight="0" guiName="INSERT to F_SALES" guiWidth="0" guiX="660" guiY="177" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtFilter" guiWidth="0" guiX="730" guiY="56" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Sales_24092009.csv" guiHeight="103" guiName="Sales_input" guiWidth="128" guiX="47" guiY="55" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one degenerate dimension (INVOICE_NUMBER) and is linked with 4 dimension (Customer, Date, Store and Product).]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiHeight="103" guiName="INSERT to F_SALES" guiWidth="168" guiX="839" guiY="179" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="69" guiName="ExtFilter" guiWidth="128" guiX="967" guiY="55" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_STORE" guiWidth="0" guiX="389" guiY="56" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiHeight="86" guiName="Lookup ID_D_STORE" guiWidth="177" guiX="458" guiY="55" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -115,7 +118,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_CUSTOMER" guiWidth="0" guiX="564" guiY="56" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiHeight="86" guiName="Lookup ID_D_CUSTOMER" guiWidth="210" guiX="689" guiY="55" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -142,7 +145,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_PRODUCT" guiWidth="0" guiX="136" guiY="177" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiHeight="86" guiName="Lookup ID_D_PRODUCT" guiWidth="199" guiX="315" guiY="179" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -167,7 +170,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Lookup ID_D_DATE" guiWidth="0" guiX="391" guiY="177" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiHeight="103" guiName="Lookup ID_D_DATE" guiWidth="167" guiX="570" guiY="179" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -191,7 +194,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Compute TOTAL_PRICE" guiWidth="0" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="Compute TOTAL_PRICE" guiWidth="198" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -216,12 +219,12 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
-<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="LOOKUP_JOIN2:0"/>
-<Edge fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN1:0"/>
-<Edge fromNode="LOOKUP_JOIN1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (joined records)" toNode="EXT_FILTER0:0"/>
-<Edge fromNode="LOOKUP_JOIN2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN3:0"/>
-<Edge debugMode="false" fromNode="LOOKUP_JOIN3:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (joined records)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="LOOKUP_JOIN0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="9:0:789:-124:0.5|9:85:789:-39:0.5|-790:85:-10:-39:0.5|-790:124:-10:0:0.5" guiRouter="Manual" id="Edge4" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (accepted)" toNode="LOOKUP_JOIN2:0"/>
+<Edge fromNode="LOOKUP_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN1:0"/>
+<Edge fromNode="LOOKUP_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (joined records)" toNode="EXT_FILTER0:0"/>
+<Edge fromNode="LOOKUP_JOIN2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (joined records)" toNode="LOOKUP_JOIN3:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (joined records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="LOOKUP_JOIN0:0"/>
 </Phase>
 </Graph>
