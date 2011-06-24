@@ -124,9 +124,8 @@ public class MD5 extends AggregateFunction {
 		
 		dataBuffer.clear();
 		input.toByteBuffer(dataBuffer, encoder);
-		byte[] array = new byte[dataBuffer.position()];
-		System.arraycopy(dataBuffer.array(), 0, array, 0, array.length);
-		md5.update(array);
+		dataBuffer.flip();
+		md5.update(dataBuffer);
 		loopCount++;
 	}
 
