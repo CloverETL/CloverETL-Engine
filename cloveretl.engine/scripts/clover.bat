@@ -5,7 +5,10 @@ REM this script was inspired by practices gained from ant run scripts (http://an
 REM usage 
 REM clover.bat <engine_arguments> <graph_name.grf> [ - <java_arguments> ]
 REM example:
-REM clover.bat -noJMX myGraph.grf - -server -classpath c:\myTransformation
+REM clover.bat -noJMX myGraph.grf "-P:TEMP_DIR=C:/tmp" - -server -classpath c:\myTransformation
+REM NOTE: be careful with definition of additional graph parameters
+REM equal sign (=) is considered as a white character, so all these graph parameters 
+REM have to be quoted, for example "-P:paramName=value"
 
 REM split command-line arguments to two sets - clover and jvm arguments
 REM and define CLOVER_HOME variable
