@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu May 05 05:39:21 CEST 2011" modifiedBy="cloveruser" name="CreatingXML" revision="1.194" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu Jun 09 15:37:13 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.195" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata2"/>
@@ -17,17 +17,17 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="79" guiName="TransactionsDelimited" guiWidth="154" guiX="61" guiY="246" id="DATA_READER0" skipFirstLine="true" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="85" guiName="TransactionsDelimited" guiWidth="190" guiX="61" guiY="246" id="DATA_READER0" skipFirstLine="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Transactions]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="79" guiName="ChildrenDelimited" guiWidth="131" guiX="62" guiY="386" id="DATA_READER1" skipFirstLine="true" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="85" guiName="ChildrenDelimited" guiWidth="162" guiX="62" guiY="386" id="DATA_READER1" skipFirstLine="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Children]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="79" guiName="SpousesDelimited" guiWidth="130" guiX="322" guiY="518" id="DATA_READER2" skipFirstLine="true" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="85" guiName="SpousesDelimited" guiWidth="160" guiX="322" guiY="518" id="DATA_READER2" skipFirstLine="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Spouses]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="79" guiName="AlphabeticalSorting" guiWidth="139" guiX="274" guiY="386" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="80" guiName="TransactionsFamily" guiWidth="134" guiX="557" guiY="365" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<Node enabled="enabled" guiHeight="101" guiName="AlphabeticalSorting" guiWidth="174" guiX="274" guiY="386" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="101" guiName="TransactionsFamily" guiWidth="165" guiX="557" guiY="365" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <Transactions xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <transaction clover:inPort="0">
@@ -48,9 +48,9 @@ More detailed information about this graph can be found in the "readme.html" fil
   </transaction>
 </Transactions>]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:2"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="461:266|461:381" guiLocks="461|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:2"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
 </Phase>
 </Graph>

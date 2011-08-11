@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" guiVersion="0.0.0.devel" id="1204545485437" licenseType="Evaluation Devel" modified="Tue Jul 13 09:30:36 CEST 2010" modifiedBy="avackova" name="Testing Filter" revision="1.33">
+<Graph author="avackova" created="Thu Jan 25 12:46:12 CET 2007" guiVersion="0.0.0.devel" id="1204545485437" licenseType="Evaluation Devel" modified="Fri Jun 10 15:20:33 CEST 2011" modifiedBy="avackova" name="Testing Filter" revision="1.36" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Metadata id="Metadata0">
@@ -13,25 +13,11 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of ExtFilter (Both Output Ports)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="443" x="312" y="384">
-<attr name="text"><![CDATA[
-This ExtFilter component filters incoming data records. Those employees who were hired before 31 December 1993 are sent to the first output port (required). The others are sent to the second output port (optional).
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of ExtFilter (First Output Port)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="443" x="312" y="-97">
-<attr name="text"><![CDATA[
-This ExtFilter component filters incoming data records. Those employees who can speak a foreign language fluently are sent to the first output port (required). The others are not sent to the second output port (it is optional only).
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="111" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fluent and Before 31 December 1993" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="341" y="101">
-<attr name="text"><![CDATA[
-Employees who can speak a language fluently are joined with those who were hired before 31 December 1993.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="484" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Groups of Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="158" x="778" y="-94"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="511" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Groups of Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="778" y="-94"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="92" guiName="Hash Join" guiWidth="96" guiX="628" guiY="108" id="EXT_HASH_JOIN0" joinKey="$LastName=$LastName;$FirstName=$FirstName" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="101" guiName="Hash Join" guiWidth="128" guiX="628" guiY="108" id="EXT_HASH_JOIN0" joinKey="$LastName=$LastName;$FirstName=$FirstName" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[function transform() {
 $0.EmployeeID := $0.EmployeeID;
 $0.LastName := $0.LastName;
@@ -41,33 +27,45 @@ $0.HireDate := $0.HireDate;
 $0.Memo := $0.Memo;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Employees who can speak a foreign language fluently are joined with those who were hired before 31 December 1993.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="ExtFilter (HireDate)" guiWidth="50" guiX="311" guiY="311" id="FILTEREMPL1" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="ExtFilter (HireDate)" guiWidth="172" guiX="303" guiY="279" id="FILTEREMPL1" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Those employees who were hired before 31 December 1993 are sent to the first output port. The others are sent to the second output port.]]></attr>
 <attr name="filterExpression"><![CDATA[$HireDate<1993-12-31]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="ExtFilter (Fluent)" guiWidth="50" guiX="312" guiY="15" id="FILTEREMPL2" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="ExtFilter (Fluent)" guiWidth="154" guiX="302" guiY="56" id="FILTEREMPL2" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Employees who can speak a foreign language fluently are sent to the first output port]]></attr>
 <attr name="filterExpression"><![CDATA[$Memo~=".*fluent.*"]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="9" guiY="152" id="INPUT1" type="DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateLT19931231" guiHeight="25" guiName="all &amp;&amp; before" guiWidth="50" guiX="792" guiY="204" id="OUTPUT1" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateGT19931231" guiHeight="65" guiName="all &amp;&amp; after" guiWidth="124" guiX="792" guiY="300" id="OUTPUT11" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/memoFluent.dat" guiHeight="25" guiName="fluent &amp;&amp; always" guiWidth="50" guiX="792" guiY="12" id="OUTPUT2" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/fluentAndHireDateLT19931231" guiHeight="78" guiName="fluent &amp;&amp; before" guiWidth="95" guiX="792" guiY="108" id="OUTPUT3" type="DATA_WRITER">
-<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="9" guiY="152" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads employees data]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="65" guiName="Simple Copy" guiWidth="106" guiX="472" guiY="15" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="48" guiName="Simple Copy" guiWidth="104" guiX="472" guiY="232" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="187" guiY="154" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT3:0"/>
-<Edge debugMode="true" fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
-<Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected)" router="Manhattan" toNode="OUTPUT11:0"/>
-<Edge debugMode="true" fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY2:0"/>
-<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT2:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:0"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="OUTPUT1:0"/>
-<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="FILTEREMPL2:0"/>
-<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="FILTEREMPL1:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateLT19931231" guiHeight="101" guiName="before" guiWidth="128" guiX="796" guiY="173" id="OUTPUT1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Employees, that were hired before 1993-12-31 (doesn't matter if they speak any foreign language fluently)]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/HireDateGT19931231" guiHeight="101" guiName="after" guiWidth="128" guiX="796" guiY="300" id="OUTPUT11" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Employees, that were hired after 1993-12-31 (doesn't matter if they speak any foreign language fluently)]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/memoFluent.dat" guiHeight="101" guiName="fluent" guiWidth="128" guiX="796" guiY="-55" id="OUTPUT2" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Employees, that speak foreign language fluently]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/fluentAndHireDateLT19931231" guiHeight="101" guiName="fluent &amp;&amp; before" guiWidth="151" guiX="784" guiY="57" id="OUTPUT3" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Employees, that speak foreign language fluently and were hired before 1993-12-31]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="490" guiY="-13" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="487" guiY="209" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="156" guiY="153" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
+<Edge debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT3:0"/>
+<Edge debugMode="true" fromNode="FILTEREMPL1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="259:0|259:1" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected)" router="Manhattan" toNode="OUTPUT11:0"/>
+<Edge debugMode="true" fromNode="FILTEREMPL2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY2:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT2:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="625:23|625:126" guiLocks="625|null|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="764:245|764:193" guiLocks="764|null|null" guiRouter="Manual" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="OUTPUT1:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="FILTEREMPL2:0"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="294:189|294:299" guiLocks="294|null|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" router="Manhattan" toNode="FILTEREMPL1:0"/>
 </Phase>
 </Graph>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Thu Apr 28 15:05:51 CEST 2011" modifiedBy="avackova" name="WebAccessLog" revision="1.137" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Fri Jun 17 10:27:42 CEST 2011" modifiedBy="avackova" name="WebAccessLog" revision="1.142" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -39,7 +39,7 @@
 <Field name="count" type="integer"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="GET_HOSTNAME" value="1"/>
+<Property id="GraphParameter0" name="GET_HOSTNAME" value="0"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="ip_address" metadata="Metadata4" name="irrelevant_ip_addresses" type="simpleLookup"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="200" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="692" x="15" y="-113">
@@ -66,37 +66,37 @@ These lists should be sorted in order of accesses and then written to an Excel W
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="98" guiName="Irrelevant IP addresses" guiWidth="195" guiX="34" guiY="-25" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="64" guiName="LookupTableReaderWriter" guiWidth="219" guiX="448" guiY="-25" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="101" guiName="Irrelevant IP addresses" guiWidth="195" guiX="34" guiY="-25" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="69" guiName="LookupTableReaderWriter" guiWidth="219" guiX="448" guiY="-25" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="ip_address" enabled="enabled" guiHeight="98" guiName="Count IP Accesses" guiWidth="160" guiX="404" guiY="230" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE">
+<Node aggregateKey="ip_address" enabled="enabled" guiHeight="101" guiName="Count IP Accesses" guiWidth="160" guiX="404" guiY="230" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Aggregate access by performing a 'Count' so we can see how many access made by each visitor]]></attr>
 </Node>
-<Node aggregateKey="request" enabled="enabled" guiHeight="98" guiName="Count page requests" guiWidth="180" guiX="404" guiY="360" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE">
+<Node aggregateKey="request" enabled="enabled" guiHeight="101" guiName="Count page requests" guiWidth="180" guiX="404" guiY="360" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Aggregate component counts total accesses to each page]]></attr>
 </Node>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="98" guiName="ReadAccessLog" guiWidth="140" guiX="28" guiY="111" id="DATA_READER0" type="DATA_READER">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="101" guiName="ReadAccessLog" guiWidth="140" guiX="28" guiY="111" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read in the web site access log]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Filter Out Images" guiWidth="156" guiX="186" guiY="111" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Filter Out Images" guiWidth="156" guiX="186" guiY="111" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[We should ignore image type files]]></attr>
 <attr name="filterExpression"><![CDATA[NOT($0.request ~= '^.*\.(png|gif|css|zip|jpg|txt|ico|xml|tdp|swf)$')]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Sort by IP" guiWidth="128" guiX="235" guiY="230" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="Sort by IP" guiWidth="128" guiX="235" guiY="230" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sort log by IP address (for faster Aggregate that follows)]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Sort by page" guiWidth="128" guiX="233" guiY="360" id="EXT_SORT1" sortKey="request(a)" sorterInitialCapacity="10000" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="Sort by page" guiWidth="128" guiX="233" guiY="360" id="EXT_SORT1" sortKey="request(a)" sorterInitialCapacity="10000" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sort log by page accessed]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Sort by count" guiWidth="128" guiX="600" guiY="230" id="EXT_SORT2" sortKey="access_count(d)" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="Sort by count" guiWidth="128" guiX="600" guiY="230" id="EXT_SORT2" sortKey="access_count(d)" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sort this aggregated list by number of accesses]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Sort by count" guiWidth="128" guiX="623" guiY="360" id="EXT_SORT3" sortKey="count(d)" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="Sort by count" guiWidth="128" guiX="623" guiY="360" id="EXT_SORT3" sortKey="count(d)" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sort aggregated list in order to number of page accesses]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Split discard IDs" guiWidth="145" guiX="381" guiY="111" id="LOOKUP_JOIN0" joinKey="ip_address" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiHeight="101" guiName="Split discard IDs" guiWidth="145" guiX="381" guiY="111" id="LOOKUP_JOIN0" joinKey="ip_address" lookupTable="LookupTable0" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -119,7 +119,7 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Perform lookup into 'ignore ip' table we loaded in Phase 0]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="IP-&gt;Domain Lookup" guiWidth="168" guiX="768" guiY="230" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="IP-&gt;Domain Lookup" guiWidth="168" guiX="768" guiY="230" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[// automatically generated on Thu Mar 12 11:28:31 CET 2009
 import java.util.*;
 import org.jetel.data.*;
@@ -187,31 +187,31 @@ public class GetHostName extends DataRecordTransform {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Perform a Domain Lookup from IP addresses]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="SimpleCopy" guiWidth="128" guiX="26" guiY="315" id="SIMPLE_COPY0" type="SIMPLE_COPY">
+<Node enabled="enabled" guiHeight="101" guiName="SimpleCopy" guiWidth="128" guiX="26" guiY="315" id="SIMPLE_COPY0" type="SIMPLE_COPY">
 <attr name="guiDescription"><![CDATA[Split all log entries into 2 identical data streams]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Discard Unreq. IPs" guiWidth="158" guiX="572" guiY="111" id="TRASH1" type="TRASH">
+<Node enabled="enabled" guiHeight="101" guiName="Discard Unreq. IPs" guiWidth="158" guiX="572" guiY="111" id="TRASH1" type="TRASH">
 <attr name="guiDescription"><![CDATA[Discard IP addresses on the ignore list]]></attr>
 </Node>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="98" guiName="IP addresses" guiWidth="128" guiX="967" guiY="230" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="101" guiName="IP addresses" guiWidth="128" guiX="967" guiY="230" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Write results to an Excel worksheet]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
-<Edge debugMode="false" fromNode="AGGREGATE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_FILTER0:0"/>
-<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" router="Manhattan" toNode="LOOKUP_JOIN0:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE0:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE1:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER1:0"/>
-<Edge debugMode="false" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" router="Manhattan" toNode="TRASH1:0"/>
-<Edge debugMode="false" fromNode="LOOKUP_JOIN0:1" guiBendpoints="10:0:510:-182:0.5|10:72:510:-110:0.5|-510:72:-10:-110:0.5|-510:182:-10:0:0.5" guiRouter="Manual" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="AGGREGATE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" router="Manhattan" toNode="LOOKUP_JOIN0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="AGGREGATE1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER1:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" router="Manhattan" toNode="TRASH1:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:1" guiBendpoints="10:0|546:222|6:222|-510:182" guiLocks="null|null|222" guiRouter="Manual" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="2">
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="98" guiName="Requests" guiWidth="128" guiX="774" guiY="360" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="101" guiName="Requests" guiWidth="128" guiX="774" guiY="360" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Write results to an Excel worksheet]]></attr>
 </Node>
 </Phase>

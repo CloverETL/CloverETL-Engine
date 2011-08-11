@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Tue Jul 13 10:01:56 CEST 2010" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.52">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Tue May 24 12:47:39 CEST 2011" modifiedBy="avackova" name="Denormalize graph" revision="1.56" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -12,7 +12,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="333" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="567" x="31" y="122">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="256" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="868" x="21" y="129">
 <attr name="text"><![CDATA[
 Denormalizer processes groups of data records with the same value of Key. 
 
@@ -29,7 +29,8 @@ Transformation is defined in Java directly in the graph. It can be seen in the S
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="366" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="103" guiName="Denormalizer" guiWidth="128" guiX="386" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<attr name="guiDescription"><![CDATA[All customers for each employee are concatenated using white spaces and hyphens.]]></attr>
 <attr name="denormalize"><![CDATA[
 import org.jetel.component.denormalize.DataRecordDenormalize;
 import org.jetel.data.*;
@@ -62,13 +63,14 @@ public class DenormalizeTestInline extends DataRecordDenormalize {
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" guiHeight="103" guiName="ExtSort" guiWidth="128" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="103" guiName="Orders Sorted" guiWidth="132" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads input data]]></attr>
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="542" guiY="17" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="86" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="582" guiY="17" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>

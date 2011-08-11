@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Tue May 18 12:06:23 CEST 2010" modifiedBy="avackova" name="graphFixedLengthData" revision="1.178">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Fri Jun 10 15:04:54 CEST 2011" modifiedBy="avackova" name="graphFixedLengthData" revision="1.190" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -121,7 +121,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
-<Record fieldDelimiter=";" name="employee_with_key"  recordDelimiter="\n" recordSize="-1" type="delimited">
+<Record fieldDelimiter=";" name="employee_with_key" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field name="employee_id" nullable="true" shift="0" type="integer"/>
 <Field name="full_name" nullable="true" shift="0" type="string"/>
 <Field name="first_name" nullable="true" shift="0" type="string"/>
@@ -158,11 +158,11 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="510" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ApproximativeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="820" x="2" y="-504">
+<Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Sequence cached="10" fileURL="${SEQ_DIR}/id3.seq" id="Sequence3" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="640" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ApproximativeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="333" x="911" y="9">
 <attr name="text"><![CDATA[
 This graph shows the use of ApproximativeJoin.
 
@@ -193,35 +193,40 @@ In this graph, four methods are used to generate Matching key:
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Soundex" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="144" x="150" y="327"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Metaphone" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="146" x="150" y="656"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="NYSIIS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="150" y="977"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="295" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Substrings" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="143" x="146" y="11"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="144" x="437" y="85"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="140" x="442" y="403"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="159" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="440" y="734"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="149" x="439" y="1064"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Soundex" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="144" x="148" y="466"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="314" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Metaphone" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="146" x="151" y="911"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="304" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="NYSIIS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="145" x="162" y="1384"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="318" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Substrings" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="152" x="146" y="11"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="184" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="437" y="85"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="148" x="440" y="542"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="159" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="449" y="998"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="157" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ApproximativeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="149" x="457" y="1473"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence0]]></attr>
+<attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="216" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSubstring.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="621" guiY="91" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSubstring.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="259" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="216" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="12" guiY="216" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Data with employees]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSubstring.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="625" guiY="119" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSubstring.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="625" guiY="345" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="300" guiY="216" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Data with customers]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSubstring.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="10" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSubstring.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="625" guiY="9" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSubstring.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="618" guiY="171" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSubstring.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="625" guiY="230" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 string LastName;
 string FirstName;
@@ -278,8 +283,9 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 string LastName;
 string FirstName;
@@ -327,38 +333,43 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
-<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT7:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:1"/>
-<Edge debugMode="false" fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT6:0"/>
-<Edge debugMode="false" fromNode="REFORMAT6:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="594:148|594:29" guiLocks="594|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="602:164|602:139" guiLocks="602|null|null" guiRouter="Manual" id="Edge18" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="610:180|610:250" guiLocks="610|null|null" guiRouter="Manual" id="Edge19" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="12:0|12:169" guiLocks="null|null|null" guiRouter="Manual" id="Edge20" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT7:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN1:1"/>
+<Edge debugMode="false" fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT6:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="1">
-<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="447" guiY="450" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="445" guiY="589" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence1]]></attr>
+<attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="528" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSoundex.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="609" guiY="410" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="599" guiY="577" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="528" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="64" guiName="Ext ort on Key" guiWidth="95" guiX="299" guiY="366" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="10" guiY="366" id="FIXLEN_DATA_READER_NIO1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="10" guiY="667" id="DATA_READER1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Data with employees]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSoundex.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="567" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="627" guiY="784" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="298" guiY="667" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Ext ort on Key" guiWidth="132" guiX="297" guiY="505" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="8" guiY="505" id="FIXLEN_DATA_READER_NIO1" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Data with customers]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="610" guiY="489" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="628" guiY="677" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSoundex.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="599" guiY="328" id="FIXLEN_DATA_WRITER_NIO3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSoundex.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="455" id="FIXLEN_DATA_WRITER_NIO3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="159" guiY="367" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="157" guiY="505" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -397,8 +408,9 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="528" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="155" guiY="667" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -429,38 +441,43 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN2:0" guiBendpoints="" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO3:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:1" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:2" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO2:0"/>
-<Edge fromNode="APROX_MERGE_JOIN2:3" guiBendpoints="" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO3:0"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:1"/>
-<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:0"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO1:0" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
-<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN2:0" guiBendpoints="599:605|599:475" guiLocks="599|null|null" guiRouter="Manual" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:1" guiBendpoints="614:621|614:587" guiLocks="614|null|null" guiRouter="Manual" id="Edge13" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:2" guiBendpoints="616:637|616:697" guiLocks="616|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="APROX_MERGE_JOIN2:3" guiBendpoints="600:653|600:804" guiLocks="600|609|null" guiRouter="Manual" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO3:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN2:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
 </Phase>
 <Phase number="2">
-<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="773" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="454" guiY="1037" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence2]]></attr>
+<attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="852" id="DATA_READER2" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousMetaphone.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="632" guiY="735" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="610" guiY="900" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="300" guiY="852" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="301" guiY="689" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="689" id="FIXLEN_DATA_READER_NIO2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="16" guiY="1114" id="DATA_READER2" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Data with employees]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousMetaphone.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="1000" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="626" guiY="1214" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="304" guiY="1114" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="305" guiY="951" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="16" guiY="951" id="FIXLEN_DATA_READER_NIO2" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Data with customers]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersMetaphone.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="633" guiY="811" id="FIXLEN_DATA_WRITER_NIO4" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersMetaphone.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="626" guiY="1109" id="FIXLEN_DATA_WRITER_NIO4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="603" guiY="651" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="892" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="160" guiY="689" id="REFORMAT2" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="158" guiY="951" id="REFORMAT2" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -499,8 +516,9 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="852" id="REFORMAT3" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="162" guiY="1110" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -531,38 +549,43 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN3:0" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO5:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:1" guiBendpoints="" id="Edge22" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO4:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:2" guiBendpoints="" id="Edge29" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO4:0"/>
-<Edge fromNode="APROX_MERGE_JOIN3:3" guiBendpoints="" id="Edge26" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO5:0"/>
-<Edge fromNode="DATA_READER2:0" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT4:0" guiBendpoints="" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:1"/>
-<Edge debugMode="false" fromNode="EXT_SORT5:0" guiBendpoints="" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:0"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO2:0" guiBendpoints="" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT2:0"/>
-<Edge fromNode="REFORMAT2:0" guiBendpoints="" id="Edge28" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT5:0"/>
-<Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT4:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN3:0" guiBendpoints="607:1053|607:912" guiLocks="607|null|null" guiRouter="Manual" id="Edge17" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:1" guiBendpoints="616:1069|616:1020" guiLocks="616|null|null" guiRouter="Manual" id="Edge22" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:2" guiBendpoints="616:1085|616:1129" guiLocks="616|null|null" guiRouter="Manual" id="Edge29" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO4:0"/>
+<Edge fromNode="APROX_MERGE_JOIN3:3" guiBendpoints="626:1101|626:1234" guiLocks="602|null|null" guiRouter="Manual" id="Edge26" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO5:0"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT3:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge24" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT5:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge27" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN3:0"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT2:0"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge28" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT5:0"/>
+<Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT4:0"/>
 </Phase>
 <Phase number="3">
-<Node conformity="0.81" enabled="enabled" guiHeight="67" guiName="Join on Names" guiWidth="122" guiX="449" guiY="1105" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="465" guiY="1514" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence3]]></attr>
+<attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="0" guiName="employee" guiWidth="0" guiX="12" guiY="1188" id="DATA_READER3" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousNYSIIS.txt" guiHeight="79" guiName="joined - similarity less then 0.8" guiWidth="111" guiX="642" guiY="1065" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="69" guiName="employee without pair" guiWidth="118" guiX="619" guiY="1229" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="95" guiX="301" guiY="1021" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtSort on Key" guiWidth="111" guiX="301" guiY="1188" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="12" guiY="1021" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="23" guiY="1578" id="DATA_READER3" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Data with employees]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousNYSIIS.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="1443" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="628" guiY="1662" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="312" guiY="1423" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="312" guiY="1578" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="23" guiY="1423" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Data with customers]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="69" guiName="joined - similarity greater then 0.8" guiWidth="111" guiX="607" guiY="983" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="85" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="1331" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="54" guiName="customer without pair" guiWidth="123" guiX="641" guiY="1146" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="627" guiY="1554" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="159" guiY="1021" id="REFORMAT4" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="174" guiY="1423" id="REFORMAT4" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -601,8 +624,9 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Creating Key" guiWidth="0" guiX="156" guiY="1188" id="REFORMAT5" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="168" guiY="1578" id="REFORMAT5" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -633,16 +657,17 @@ function transform() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="APROX_MERGE_JOIN4:0" guiBendpoints="" id="Edge36" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO6:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:1" guiBendpoints="" id="Edge37" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO6:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:2" guiBendpoints="" id="Edge33" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO7:0"/>
-<Edge fromNode="APROX_MERGE_JOIN4:3" guiBendpoints="" id="Edge31" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO7:0"/>
-<Edge fromNode="DATA_READER3:0" guiBendpoints="" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT5:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT6:0" guiBendpoints="" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT7:0" guiBendpoints="" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:1"/>
-<Edge fromNode="FIXLEN_DATA_READER_NIO3:0" guiBendpoints="" id="Edge34" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT4:0"/>
-<Edge fromNode="REFORMAT4:0" guiBendpoints="" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT6:0"/>
-<Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT7:0"/>
+<Edge debugMode="false" fromNode="APROX_MERGE_JOIN4:0" guiBendpoints="611:1530|611:1351" guiLocks="611|null|null" guiRouter="Manual" id="Edge36" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (joined with conformity &gt; limit)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:1" guiBendpoints="620:1546|620:1463" guiLocks="620|null|null" guiRouter="Manual" id="Edge37" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (joined with conformity &lt; limit)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO6:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:2" guiBendpoints="618:1562|618:1574" guiLocks="618|null|null" guiRouter="Manual" id="Edge33" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 2 (driver with no matching slave)" router="Manhattan" toNode="FIXLEN_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="APROX_MERGE_JOIN4:3" guiBendpoints="611:1578|611:1682" guiLocks="611|null|null" guiRouter="Manual" id="Edge31" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 3 (slave with no matching driver)" router="Manhattan" toNode="DELIMITED_DATA_WRITER_NIO7:0"/>
+<Edge fromNode="DATA_READER3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT5:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT6:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge39" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT7:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge32" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="APROX_MERGE_JOIN4:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge34" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT4:0"/>
+<Edge fromNode="REFORMAT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge38" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT6:0"/>
+<Edge debugMode="false" fromNode="REFORMAT5:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge35" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT7:0"/>
 </Phase>
 </Graph>

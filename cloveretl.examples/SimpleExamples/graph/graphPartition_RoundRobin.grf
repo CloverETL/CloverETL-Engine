@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0.0.devel" id="1196682624808" licenseType="Evaluation Devel" modified="Tue Jul 13 11:12:02 CEST 2010" modifiedBy="avackova" name="Partition data" revision="1.82">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0.0.devel" id="1196682624808" licenseType="Evaluation Devel" modified="Mon Jun 13 10:21:17 CEST 2011" modifiedBy="avackova" name="Partition data" revision="1.87" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="241" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Partition Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="-121" y="252">
-<attr name="text"><![CDATA[
-Graph demonstrates the use of Partition when neither Partition, Partition URL, Partition class, Partition key, nor Ranges are defined. In this graph, records are sent to the output ports cyclically, by one to a port. When the last port receives its record, the process returns to the first port, etc.
-
-Employees are distributed into outputs using Round Robin distribution.
-
-See the other note on the right side about possible settings of the Partition component.
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="279" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible Settings of Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="496" y="25">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="279" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible Settings of Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="376" x="-114" y="133">
 <attr name="text"><![CDATA[
 There are four options how to assign a record to an output port:
 
@@ -28,18 +19,20 @@ There are four options how to assign a record to an output port:
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output3.txt" guiHeight="0" guiName="output3" guiWidth="0" guiX="348" guiY="251" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output0.txt" guiHeight="25" guiName="output0" guiWidth="50" guiX="321" guiY="23" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output1.txt" guiHeight="25" guiName="output1" guiWidth="50" guiX="348" guiY="98" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output2.txt" guiHeight="25" guiName="output2" guiWidth="50" guiX="347" guiY="174" id="DATA_WRITER3" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output4.txt" guiHeight="0" guiName="output4" guiWidth="0" guiX="329" guiY="328" id="DATA_WRITER4" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="-111" guiY="161" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="87" guiY="163" id="PARTITION" type="PARTITION"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="PARTITION:0"/>
-<Edge debugMode="false" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="false" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="false" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="PARTITION:4" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output3.txt" guiHeight="101" guiName="output3" guiWidth="128" guiX="329" guiY="311" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output0.txt" guiHeight="101" guiName="output0" guiWidth="128" guiX="329" guiY="-16" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output1.txt" guiHeight="101" guiName="output1" guiWidth="128" guiX="329" guiY="93" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output2.txt" guiHeight="101" guiName="output2" guiWidth="128" guiX="329" guiY="200" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/output4.txt" guiHeight="101" guiName="output4" guiWidth="128" guiX="329" guiY="419" id="DATA_WRITER4" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="-114" guiY="21" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="101" guiName="Round Robin" guiWidth="128" guiX="84" guiY="23" id="PARTITION" type="PARTITION">
+<attr name="guiDescription"><![CDATA[Neither Partition, Partition URL, Partition class, Partition key, nor Ranges are defined. Records are sent to the output ports cyclically, by one to a port. When the last port receives its record, the process returns to the first port, etc.]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="PARTITION:0"/>
+<Edge debugMode="false" fromNode="PARTITION:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="PARTITION:1" guiBendpoints="321:47|321:113" guiLocks="321|9937|null" guiRouter="Manual" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="PARTITION:2" guiBendpoints="308:59|308:220" guiLocks="308|null|null" guiRouter="Manual" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="false" fromNode="PARTITION:3" guiBendpoints="293:71|293:331" guiLocks="293|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="PARTITION:4" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
 </Phase>
 </Graph>

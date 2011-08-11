@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Mon Jun 28 12:59:31 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.25">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation written in Transform Language.&#10;" guiVersion="0.0.0.devel" id="1204549608934" licenseType="Evaluation Devel" modified="Fri Jun 10 16:09:47 CEST 2011" modifiedBy="avackova" name="Testing Reformat" revision="1.27" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="315" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="481" x="17" y="126">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="242" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="523" x="20" y="126">
 <attr name="text"><![CDATA[
 The graph demonstrates the use of Reformat. In this graph, transformation is defined using the Transform attribute and it is written in Clover transformation language directly in the graph. It can be seen in the Source tab.
 
@@ -18,7 +18,7 @@ All of these options are equivalent ways of defining the transformation. Most co
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="226" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CTL1 vs. CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="518" y="124">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="226" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CTL1 vs. CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="568" y="20">
 <attr name="text"><![CDATA[
 This graph still uses the older CTL1. 
 CloverETL now offers a new CTL2 transformation language, 
@@ -30,9 +30,9 @@ For the CTL2 equaivalent of this older TL syntax see  graphOrdersTLNewReformat.g
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="Orders Transformed" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="25" guiName="Reformat" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="101" guiName="Orders Transformed" guiWidth="173" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 int key;
 
@@ -58,7 +58,7 @@ function transform() {
 
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
-<Edge debugMode="false" fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
+<Edge debugMode="false" fromNode="REF:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

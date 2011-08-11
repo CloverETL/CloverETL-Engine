@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0.0.devel" id="1196682624808" licenseType="Evaluation Devel" modified="Tue Jul 13 11:09:59 CEST 2010" modifiedBy="avackova" name="Partition data" revision="1.82">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="0.0.0.devel" id="1196682624808" licenseType="Evaluation Devel" modified="Fri Jun 17 13:43:06 CEST 2011" modifiedBy="avackova" name="Partition data" revision="1.87" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="279" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible Settings of Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="496" y="25">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible Settings of Partition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="401" x="-107" y="156">
 <attr name="text"><![CDATA[
 There are four options how to assign a record to an output port:
 
@@ -17,28 +17,23 @@ There are four options how to assign a record to an output port:
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="223" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Partition Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="-133" y="253">
-<attr name="text"><![CDATA[
-Graph demonstrates the use of Partition. In it, Partition key is defined, but no Ranges are specified for it. Partition key consists of two fields (integer, date). Hash codes are calculated for these two fields (depending on the count of output ports) and records are distributed among connected output ports according to these calculated hash codes.
-
-See the other note on the right side about possible settings of the Partition component.
-]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode3.txt" guiHeight="0" guiName="HashCode3" guiWidth="0" guiX="358" guiY="245" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode0.txt" guiHeight="25" guiName="HashCode0" guiWidth="50" guiX="316" guiY="12" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode1.txt" guiHeight="25" guiName="HashCode1" guiWidth="50" guiX="358" guiY="86" id="DATA_WRITER2" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode2.txt" guiHeight="25" guiName="HashCode2" guiWidth="50" guiX="358" guiY="161" id="DATA_WRITER3" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode4.txt" guiHeight="0" guiName="HashCode4" guiWidth="0" guiX="331" guiY="330" id="DATA_WRITER4" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="-107" guiY="138" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="96" guiY="146" id="PARTITION" partitionKey="EmployeeID;BirthDate" type="PARTITION"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="PARTITION:0"/>
-<Edge debugMode="false" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="false" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="false" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="PARTITION:4" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode3.txt" guiHeight="101" guiName="HashCode3" guiWidth="128" guiX="381" guiY="334" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode0.txt" guiHeight="101" guiName="HashCode0" guiWidth="128" guiX="381" guiY="7" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode1.txt" guiHeight="101" guiName="HashCode1" guiWidth="128" guiX="381" guiY="117" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode2.txt" guiHeight="101" guiName="HashCode2" guiWidth="128" guiX="381" guiY="223" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/hashcode4.txt" guiHeight="101" guiName="HashCode4" guiWidth="128" guiX="381" guiY="442" id="DATA_WRITER4" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="-107" guiY="35" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="101" guiName="Hash" guiWidth="128" guiX="96" guiY="43" id="PARTITION" partitionKey="EmployeeID;BirthDate" type="PARTITION">
+<attr name="guiDescription"><![CDATA[Hash codes are calculated for key fields and records are distributed among connected output ports]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="PARTITION:0"/>
+<Edge debugMode="false" fromNode="PARTITION:0" guiBendpoints="243:55|243:27" guiLocks="243|274|null" guiRouter="Manual" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="PARTITION:1" guiBendpoints="307:67|307:137" guiLocks="370|null|null" guiRouter="Manual" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="PARTITION:2" guiBendpoints="359:79|359:243" guiLocks="359|345|null" guiRouter="Manual" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="false" fromNode="PARTITION:3" guiBendpoints="335:91|335:354" guiLocks="335|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="PARTITION:4" guiBendpoints="313:103|313:462" guiLocks="313|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
 </Phase>
 </Graph>

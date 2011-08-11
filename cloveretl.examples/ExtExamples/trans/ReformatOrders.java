@@ -7,6 +7,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 
@@ -24,9 +25,9 @@ public class ReformatOrders extends DataRecordTransform{
 	          	  " </Context> ";
 		
 		try {
-			Document doc = XmlXPathReader.createDocumentFromString(mapping);
+			Document doc = XmlUtils.createDocumentFromString(mapping);
 			parser = new XPathParser(doc);
-			parser.init(targetMetadata[0]);
+			parser.init();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(getNode(),e);
 		}

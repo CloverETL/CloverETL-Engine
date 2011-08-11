@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Thu Apr 28 14:49:37 CEST 2011" modifiedBy="avackova" name="EmailValidation" revision="1.46" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Tue May 31 08:58:17 CEST 2011" modifiedBy="avackova" name="EmailValidation" revision="1.47" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -29,48 +29,48 @@ In this example, we are loading a file in order to check the validity of the ema
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiHeight="98" guiName="Load Emails" guiWidth="128" guiX="107" guiY="54" id="DATA_READER0" type="DATA_READER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiHeight="101" guiName="Load Emails" guiWidth="128" guiX="107" guiY="54" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read in our email file]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_accept.txt" guiHeight="81" guiName="Accepted" guiWidth="128" guiX="529" guiY="-15" id="DATA_WRITER0" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="529" guiY="-15" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Valid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_reject.txt" guiHeight="81" guiName="Rejected" guiWidth="128" guiX="529" guiY="78" id="DATA_WRITER1" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="529" guiY="78" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_accept.txt" guiHeight="81" guiName="Accepted" guiWidth="128" guiX="531" guiY="171" id="DATA_WRITER2" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="531" guiY="171" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Valid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_reject.txt" guiHeight="81" guiName="Rejected" guiWidth="128" guiX="530" guiY="271" id="DATA_WRITER3" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="530" guiY="271" id="DATA_WRITER3" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_accept.txt" guiHeight="81" guiName="Accepted" guiWidth="128" guiX="529" guiY="374" id="DATA_WRITER4" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="529" guiY="374" id="DATA_WRITER4" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Valid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_reject.txt" guiHeight="81" guiName="Rejected" guiWidth="128" guiX="529" guiY="466" id="DATA_WRITER5" type="DATA_WRITER">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="529" guiY="466" id="DATA_WRITER5" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
 </Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="98" guiName="SYNTAX EmailFilter" guiWidth="172" guiX="331" guiY="36" id="EMAIL_FILTER0" level="syntax" statusField="status" type="EMAIL_FILTER">
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="SYNTAX EmailFilter" guiWidth="172" guiX="331" guiY="36" id="EMAIL_FILTER0" level="syntax" statusField="status" type="EMAIL_FILTER">
 <attr name="guiDescription"><![CDATA[Check basic email syntax is OK]]></attr>
 </Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="98" guiName="DOMAIN EmailFilter" guiWidth="175" guiX="331" guiY="210" id="EMAIL_FILTER1" level="domain" statusField="status" type="EMAIL_FILTER">
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="DOMAIN EmailFilter" guiWidth="175" guiX="331" guiY="210" id="EMAIL_FILTER1" level="domain" statusField="status" type="EMAIL_FILTER">
 <attr name="guiDescription"><![CDATA[Perform email Domain lookup on web]]></attr>
 </Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="98" guiName="SMTP EmailFilter" guiWidth="152" guiX="331" guiY="390" id="EMAIL_FILTER2" level="smtp" smtpGreylistAttempts="0" statusField="status" type="EMAIL_FILTER">
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="SMTP EmailFilter" guiWidth="152" guiX="331" guiY="390" id="EMAIL_FILTER2" level="smtp" smtpGreylistAttempts="0" statusField="status" type="EMAIL_FILTER">
 <attr name="guiDescription"><![CDATA[Check with SMTP server that email address exists]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="SimpleCopy" guiWidth="128" guiX="107" guiY="254" id="SIMPLE_COPY0" type="SIMPLE_COPY">
+<Node enabled="enabled" guiHeight="101" guiName="SimpleCopy" guiWidth="128" guiX="107" guiY="254" id="SIMPLE_COPY0" type="SIMPLE_COPY">
 <attr name="guiDescription"><![CDATA[Duplicates the incoming data and outputs all rows on the 3 output ports]]></attr>
 </Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="33:0:161:-196:0.5|33:130:161:-66:0.5|-173:130:-45:-66:0.5|-173:196:-45:0:0.5" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_FILTER0:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="55:0:-41:56:0.5|55:-56:-41:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_FILTER1:0"/>
-<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EMAIL_FILTER2:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER1:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
+<Edge debugMode="false" fromNode="EMAIL_FILTER2:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_FILTER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="299:286|299:230" guiLocks="299|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_FILTER1:0"/>
+<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EMAIL_FILTER2:0"/>
 </Phase>
 </Graph>

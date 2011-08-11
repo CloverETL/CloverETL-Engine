@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="0.0.0.devel" id="1305887240084" licenseType="Evaluation Devel" modified="Fri Jun 17 10:24:50 CEST 2011" modifiedBy="avackova" name="PackageDelivery" revision="1.76" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="in_batch" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="prefix" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="shipmentCount" type="integer"/>
+<Field name="totalValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="in_charge" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="prefix" type="string"/>
+<Field name="AWB" type="string"/>
+<Field name="chargeCode" type="string"/>
+<Field name="chargeValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="in_shipment" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="prefix" type="string"/>
+<Field name="AWB" type="string"/>
+<Field name="origin" type="string"/>
+<Field name="destination" type="string"/>
+<Field name="customer" type="string"/>
+<Field name="baseValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="in_station" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="prefix" type="string"/>
+<Field name="stationCode" type="string"/>
+<Field name="batchCount" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="out_batch" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="stationCode" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="shipmentCount" type="integer"/>
+<Field name="totalValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+<Field name="aggregateValue" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="out_charge" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="stationCode" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="AWB" type="string"/>
+<Field name="chargeCode" type="string"/>
+<Field name="chargeValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="out_shipment" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="stationCode" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="AWB" type="string"/>
+<Field name="origin" type="string"/>
+<Field name="destination" type="string"/>
+<Field name="customer" type="string"/>
+<Field name="baseValue" scale="2" type="decimal"/>
+<Field name="currencyCode" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata8">
+<Record fieldDelimiter="|" name="x_charges" recordDelimiter="\r\n" type="delimited">
+<Field name="stationCode" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="aggregateValue" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="x_shipments" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="stationCode" type="string"/>
+<Field name="batchId" type="string"/>
+<Field name="aggregateValue" type="decimal"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="106" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Advanced Validation with External Components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="178" y="18">
+<attr name="text"><![CDATA[
+
+Check if the total value of shipments plus the total value of charges matches the value from the preceding batch header using two aggregators and a joiner.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="stationCode;batchId" enabled="enabled" guiHeight="69" guiName="Sum Shipments" guiWidth="141" guiX="260" guiY="195" id="AGGREGATE0" mapping="$stationCode:=$stationCode;$batchId:=$batchId;$aggregateValue:=sum($baseValue);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="stationCode;batchId" enabled="enabled" guiHeight="69" guiName="Sum Charges" guiWidth="128" guiX="260" guiY="303" id="AGGREGATE1" mapping="$stationCode:=$stationCode;$batchId:=$batchId;$aggregateValue:=sum($chargeValue);" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/Logistics_in.txt" guiHeight="101" guiName="ComplexDataReader" guiWidth="178" guiX="27" guiY="131" id="COMPLEX_DATA_READER0" selectorProperties="*Batch|3=5&#13;&#10;*Batch|2=5&#13;&#10;*Charge|3=3&#13;&#10;*Station|3=4&#13;&#10;*Charge|2=3&#13;&#10;*Shipment|3=2&#13;&#10;*Station|2=4&#13;&#10;*Shipment|2=2&#13;&#10;" stateMetadata="Metadata0:station&#10;Metadata1:batch&#10;Metadata2:shipment&#10;Metadata3:charge&#10;:to-station&#10;:to-batch" type="COMPLEX_DATA_READER">
+<attr name="guiDescription"><![CDATA[Reading non-homogenous data with a state automaton and a selector. The automaton detects if the number of records does not match the header.]]></attr>
+<attr name="transformCode"><![CDATA[//#CTL2:COMPILE
+
+long counter0 = 0;
+long counter1 = 0;
+long counter2 = 0;
+long counter3 = 0;
+long counter4 = 0;
+long counter5 = 0;
+
+function integer initialState() {
+	return 0;
+}
+function integer finalState(integer lastState) {
+	return STOP;
+}
+
+function integer nextState_0() {
+	counter0++;
+	counter1 = 0;
+	if ($0.batchCount > 0) {
+		return 1;
+	}
+	if ($0.batchCount == 0) {
+		return 0;
+	}
+	return -1;
+}
+function integer nextOutput_0_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_0(integer seq) {
+	switch (seq) {
+		default: return nextOutput_0_default(seq);
+	}
+}
+
+function integer nextState_1() {
+	counter1++;
+	counter2 = 0;
+	if ($1.shipmentCount > 0) {
+		return 2;
+	}
+	if (counter1 < $0.batchCount) {
+		return 1;
+	}
+	if (counter1 == $0.batchCount) {
+		return 0;
+	}
+	return -1;
+}
+function integer nextOutput_1_0() {
+	$0.* = $1.*;
+	$0.stationCode = $0.stationCode;
+	return 0;
+}
+function integer nextOutput_1_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_1(integer seq) {
+	switch (seq) {
+		case 0: return nextOutput_1_0();
+		default: return nextOutput_1_default(seq);
+	}
+}
+
+function integer nextState_2() {
+	counter2++;
+	if (counter2 > $1.shipmentCount) {
+		return -1;
+	}
+	return ALL;
+}
+function integer nextOutput_2_0() {
+	$1.* = $2.*;
+	$1.stationCode = $0.stationCode;
+	$1.batchId = $1.batchId;
+	return 1;
+}
+function integer nextOutput_2_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_2(integer seq) {
+	switch (seq) {
+		case 0: return nextOutput_2_0();
+		default: return nextOutput_2_default(seq);
+	}
+}
+
+function integer nextState_3() {
+	counter3++;
+	return ALL;
+}
+function integer nextOutput_3_0() {
+	$2.* = $3.*;
+	$2.stationCode = $0.stationCode;
+	$2.batchId = $1.batchId;
+	return 2;
+}
+function integer nextOutput_3_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_3(integer seq) {
+	switch (seq) {
+		case 0: return nextOutput_3_0();
+		default: return nextOutput_3_default(seq);
+	}
+}
+
+function integer nextState_4() {
+	counter4++;
+	if (counter1 < $0.batchCount || counter2 < $1.shipmentCount) {
+		return -1;
+	}
+	return 0;
+}
+function integer nextOutput_4_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_4(integer seq) {
+	switch (seq) {
+		default: return nextOutput_4_default(seq);
+	}
+}
+
+function integer nextState_5() {
+	counter5++;
+	if (counter2 < $1.shipmentCount) {
+		return -1;
+	}
+	return 1;
+}
+function integer nextOutput_5_default(integer seq) {
+	return STOP;
+}
+function integer nextOutput_5(integer seq) {
+	switch (seq) {
+		default: return nextOutput_5_default(seq);
+	}
+}
+
+function integer nextState(integer state) {
+	switch (state) {
+		case 0: return nextState_0();
+		case 1: return nextState_1();
+		case 2: return nextState_2();
+		case 3: return nextState_3();
+		case 4: return nextState_4();
+		case 5: return nextState_5();
+		default: return ALL;
+	}
+}
+function integer nextOutput(integer state, integer seq) {
+	switch (state) {
+		case 0: return nextOutput_0(seq);
+		case 1: return nextOutput_1(seq);
+		case 2: return nextOutput_2(seq);
+		case 3: return nextOutput_3(seq);
+		case 4: return nextOutput_4(seq);
+		case 5: return nextOutput_5(seq);
+		default: return STOP;
+	}
+}
+
+//md5sum: 51B8E2D1DC559889F313F97C741DFF2F
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="69" guiName="Filter Batches" guiWidth="130" guiX="683" guiY="142" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$0.totalValue == $0.aggregateValue]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Join with Batches" guiWidth="157" guiX="471" guiY="151" id="EXT_HASH_JOIN0" joinKey="$stationCode=$stationCode;$batchId=$batchId#$stationCode=$stationCode;$batchId=$batchId" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.stationCode = $0.stationCode;
+	$0.batchId = $0.batchId;
+	$0.shipmentCount = $0.shipmentCount;
+	$0.totalValue = $0.totalValue;
+	$0.currencyCode = $0.currencyCode;
+	$0.aggregateValue = ($1.aggregateValue != null ? $1.aggregateValue : 0) + ($2.aggregateValue != null ? $2.aggregateValue : 0);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="69" guiName="Valid Batches" guiWidth="128" guiX="703" guiY="261" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="452:323|452:199" guiLocks="452|null|null" guiRouter="Manual" id="Edge6" inPort="Port 2 (slave)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:2"/>
+<Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:2" guiBendpoints="217:179|217:323" guiLocks="217|null|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 2 (out)" toNode="AGGREGATE1:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (accepted)" toNode="TRASH1:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
+</Phase>
+</Graph>

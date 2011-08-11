@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Tue Jul 13 11:14:40 CEST 2010" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.118">
+<Graph author="avackova" created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204545430039" licenseType="Evaluation Devel" modified="Mon Jun 13 10:14:09 CEST 2011" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.121" showComponentDetails="true">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0" previewAttachmentCharset="ISO-8859-1"/>
+<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0"/>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="customers_count" type="integer">
@@ -18,23 +18,42 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="185" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort order for Rollup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="256" y="272">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="468" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Output" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="343" x="874" y="-26">
 <attr name="text"><![CDATA[
-When using groupAccumulator, Rollup does not need sorted input and gives the same result (with an accuracy of  order) as Denormalizer with sorted input (phase 0).
-Unlike Denormalizer with unsorted input (phase 1) which gives different result.
 
-The phases with Denormalizers are taken from graphDenormalizeTL.grf.
 
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="123" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Output" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="689" y="20">
-<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Outputs are the same in phase 0 and phase 2. Rollup can also work with unsorted records.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="20" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="69" guiName="Denormalizer" guiWidth="128" guiX="392" guiY="20" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[string customer = "";
 int employee = 0;
 int numRec = 0;
@@ -59,17 +78,17 @@ function clean(){
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="181" guiY="20" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="181" guiY="20" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="101" guiName="Orders Sorted" guiWidth="132" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="537" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTL.out" guiHeight="85" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="888" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="25" guiName="Denormalizer" guiWidth="50" guiX="353" guiY="104" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="69" guiName="Denormalizer" guiWidth="128" guiX="392" guiY="128" id="DENORMALIZE1" key="EmployeeID" order="Ignore" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[string customer = "";
 int employee = 0;
 int numRec = 0;
@@ -94,19 +113,19 @@ function clean(){
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="23" guiY="104" id="INPUT2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="101" guiName="Orders Sorted" guiWidth="132" guiX="20" guiY="128" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="25" guiName="Customers Grouped for An Employee" guiWidth="50" guiX="537" guiY="104" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="DENORMALIZE1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
-<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="DENORMALIZE1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder.out" guiHeight="101" guiName="Customers Grouped for An Employee" guiWidth="296" guiX="888" guiY="128" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="DENORMALIZE1:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="537" guiY="190" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="23" guiY="190" id="INPUT4" type="DATA_READER">
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="646" guiY="252" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="101" guiName="Orders Sorted" guiWidth="132" guiX="20" guiY="252" id="INPUT4" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" groupKeyFields="EmployeeID" guiHeight="0" guiName="Rollup-Need not be sorted" guiWidth="0" guiX="354" guiY="190" id="ROLLUP0" inputSorted="false" type="ROLLUP">
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" groupKeyFields="EmployeeID" guiHeight="69" guiName="Rollup-Need not be sorted" guiWidth="222" guiX="392" guiY="252" id="ROLLUP0" inputSorted="false" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 
 // Called for the first data record in a group.
@@ -162,9 +181,9 @@ function transform(counter, groupAccumulator) {
 
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder_Rollup.out" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="689" guiY="190" id="WRITER3" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER3:0"/>
-<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="ROLLUP0:0"/>
-<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder_Rollup.out" guiHeight="101" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="888" guiY="252" id="WRITER3" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER3:0"/>
+<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

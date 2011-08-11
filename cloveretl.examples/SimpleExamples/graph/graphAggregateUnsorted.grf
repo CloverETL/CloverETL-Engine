@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204542338830" licenseType="Evaluation Devel" modified="Thu May 27 13:00:01 CEST 2010" modifiedBy="avackova" name="TestingSort" revision="1.42">
+<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204542338830" licenseType="Evaluation Devel" modified="Fri May 20 11:51:05 CEST 2011" modifiedBy="avackova" name="TestingSort" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="341" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Aggregate Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="590" x="20" y="112">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="291" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Aggregate Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="667" x="22" y="125">
 <attr name="text"><![CDATA[
 Aggregate processes the groups of records with the same value of Aggregate key (independently of whether these records are adjacent to each other or not) or it processes all incoming records as such a single group if Aggregate key is not specified. 
 
@@ -23,12 +23,16 @@ Order of output records is undefined. So to get always the same output, one need
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="179" guiY="18" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="355" guiY="18" id="EXT_SORT0" sortKey="ShipCountry(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="18" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="25" guiName="Orders Aggregated" guiWidth="50" guiX="517" guiY="18" id="OUTPUT" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="AGGREGATE:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="AGGREGATE:0"/>
+<Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="98" guiName="AGGREGATE" guiWidth="128" guiX="179" guiY="18" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="false" type="AGGREGATE">
+<attr name="guiDescription"><![CDATA[Only records not identical to any other one are allowed to proceed to an Aggregate input.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="355" guiY="18" id="EXT_SORT0" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="98" guiName="Orders" guiWidth="128" guiX="20" guiY="18" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads file with orders.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="98" guiName="Orders Aggregated" guiWidth="169" guiX="517" guiY="18" id="OUTPUT" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="AGGREGATE:0"/>
 </Phase>
 </Graph>

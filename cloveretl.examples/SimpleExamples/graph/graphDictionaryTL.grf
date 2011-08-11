@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jan 06 09:03:58 GMT+01:00 2010" guiVersion="0.0.0.devel" id="1262779108438" licenseType="Evaluation Devel" modified="Mon Jun 07 15:49:42 CEST 2010" modifiedBy="cloveruser" name="graphDictionaryJava" revision="1.66">
+<Graph author="avackova" created="Wed Jan 06 09:03:58 GMT+01:00 2010" guiVersion="0.0.0.devel" id="1262779108438" licenseType="Evaluation Devel" modified="Tue May 24 14:48:58 CEST 2011" modifiedBy="avackova" name="graphDictionaryJava" revision="1.87" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="data" recordDelimiter="\n" type="delimited">
@@ -8,59 +8,61 @@
 </Metadata>
 <Property id="GraphParameter0" name="MAX_VALUE" value="10000"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="190" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Dictionary usage from transform language" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="276" x="14" y="-10">
-<attr name="text"><![CDATA[This example uses dict_put_str and dict_get_str functions for working with dictionary data. DataGenerator puts generated minimum and maximum values to the dictionary in finished() method, that means after all records are processed (generated). The same is done with median value in Rollup component. We do it in transform() method (not in finished()) as this method is called only for whole group of the records (in this case - group key attribute is not set - for whole data set).]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="149" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading dictionary data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="230" x="203" y="294">
-<attr name="text"><![CDATA[Partiton component can read dictionary values after DataGenerator and Rollup have finished their work, so it works in graph phase 1. We can't read dictionary values in init() function, as it is called during graph initialization. This is the reason for creating initInternal() function.]]></attr>
-</Note>
-<Dictionary/>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="false" name="min" output="false" type="integer"/>
+<Entry id="DictionaryEntry1" input="false" name="max" output="false" type="integer"/>
+<Entry id="DictionaryEntry2" input="false" name="median" output="false" type="number"/>
+</Dictionary>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="13" guiY="192" id="DATA_GENERATOR0" recordsNumber="150" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
-int r;
-int max = 0;
-int min = ${MAX_VALUE};
+<Node enabled="enabled" guiHeight="103" guiName="DataGenerator" guiWidth="137" guiX="13" guiY="192" id="DATA_GENERATOR0" recordsNumber="150" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+integer r;
+integer max = 0;
+integer min = ${MAX_VALUE};
 // Generates output record.
-function generate() {
-	r = random_int(0,${MAX_VALUE},1);
+function integer generate() {
+	r = randomInteger(0,${MAX_VALUE});
 	if (r < min) min = r;
 	if (r > max) max = r;
-	$0.field1 := r;
+	$0.field1 = r;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
 // function getMessage() {}
 
 // Called during component initialization.
-// function init() {}
+function boolean init() {
+	setRandomSeed(10);
+	return true;
+}
 
-// Called after the component finishes.
-function finished() {
-	dict_put_str('min',num2str(min));
-	dict_put_str('max',num2str(max));
+function void postExecute(){
+	dictionary.min = min;
+	dictionary.max = max;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Generates random integer numbers and puts theirs minimum and maximum to the dictionary in postExecute() method, that means after all records are processed (generated).]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="159" guiY="192" id="ROLLUP0" type="ROLLUP">
-<attr name="transform"><![CDATA[//#TL
-list elements;
+<Node enabled="enabled" guiHeight="103" guiName="Rollup" guiWidth="128" guiX="159" guiY="192" id="ROLLUP0" type="ROLLUP">
+<attr name="transform"><![CDATA[//#CTL2
+integer[] elements;
 // Called for the first data record in a new group. Starts the parsing of the new group.
-function initGroup(groupAccumulator) {
+function void initGroup(VoidMetadata groupAccumulator) {
 }
 
 // Called for each data record in the group (including the first one and the last one).
 // Implicitly returns false => updateTransform() is not called. When returns true, calls updateTransform().
-function updateGroup(groupAccumulator) {
-	int tmp = $field1;
+function boolean updateGroup(VoidMetadata groupAccumulator) {
+	integer tmp = $field1;
 	push(elements, tmp);
 	return true;
 }
 
 // Called for the last data records in all groups sequentially, but only after all incoming data records have been parsed.
 // Implicitly returns true => transform() is called for the whole group.
-function finishGroup(groupAccumulator) {
+function boolean finishGroup(VoidMetadata groupAccumulator) {
 	return true;
 }
 
@@ -70,10 +72,10 @@ function finishGroup(groupAccumulator) {
 // Function implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL causes each data record to be sent to all output port(s).
 // Can also return a number of the output port to which individual data record should be sent.
-function updateTransform(counter, groupAccumulator) {
+function integer updateTransform(integer counter, VoidMetadata groupAccumulator) {
 	if (counter > 0) return SKIP;
-	$field1 := $field1;
-	return ALL
+	$field1 = $field1;
+	return ALL;
 }
 
 // Called to transform the whole group of incoming data record(s) into user-specified number of output data record(s).
@@ -82,12 +84,15 @@ function updateTransform(counter, groupAccumulator) {
 // Function implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL causes each data record to be sent to all output port(s).
 // Can also return a number of the output port to which individual data record should be sent.
-function transform(counter, groupAccumulator) {
-	int index = length(elements)/ 2; 
+function integer transform(integer counter, VoidMetadata groupAccumulator) {
+	integer index = length(elements)/ 2; 
 	number median;
-	sort(elements);
-	median = iif(length(elements) % 2 == 0, (elements[index - 1] + elements[index])/2, elements[index]);
-	dict_put_str('median', num2str(median));
+	elements = sort(elements);
+	number v1 = elements[index - 1];
+	number v2 = elements[index];
+	median = iif(length(elements) % 2 == 0, (v1 + v2)/2, v2);
+	dictionary.median = median;
+	return SKIP;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -103,35 +108,35 @@ function transform(counter, groupAccumulator) {
 // }
 
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Calculates and puts median value of precessed integers into the dictionary. We do it in transform() method (not in postExecute()) as this method is called only for whole group of the records (in this case - group key attribute is not set - for whole data set).]]></attr>
 </Node>
-<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
-<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="PARTITION0:0"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="PARTITION0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/smaller_half.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="884" guiY="130" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/greater_half.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="883" guiY="217" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="737" guiY="130" id="EXT_SORT0" sortKey="field1(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort" guiWidth="0" guiX="742" guiY="216" id="EXT_SORT1" sortKey="field1(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="305" guiY="192" id="PARTITION0" type="PARTITION">
-<attr name="partitionSource"><![CDATA[//#TL
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/smaller_half.txt" guiHeight="103" guiName="UniversalDataWriter" guiWidth="176" guiX="882" guiY="110" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Smaller or equal than median]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/greater_half.txt" guiHeight="86" guiName="UniversalDataWriter" guiWidth="176" guiX="882" guiY="217" id="DATA_WRITER1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Greater than median]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="86" guiName="ExtSort" guiWidth="128" guiX="737" guiY="108" id="EXT_SORT0" sortKey="field1(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="86" guiName="ExtSort" guiWidth="128" guiX="742" guiY="216" id="EXT_SORT1" sortKey="field1(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="103" guiName="Partition" guiWidth="128" guiX="305" guiY="192" id="PARTITION0" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
 // This transformation partitions input records into multiple output ports.
-boolean initialized = false;
-int min;
-int max;
+integer min;
+integer max;
 number median;
 
-function initInternal(){
-	min = str2num(dict_get_str('min'));	
-	max = str2num(dict_get_str('max'));	
-	median = str2num(dict_get_str('median'), number);	
-	initialized = true;
+function void preExecute(){
+	min = dictionary.min;	
+	max = dictionary.max;	
+	median = dictionary.median;	
 }
 
 // Returns the number of the output port where the input record will be sent.
-function getOutputPort() {
-	if (!initialized) {
-		initInternal();
-	}
+function integer getOutputPort() {
 	if ($field1 == min) return 0;
 	if ($field1 == max) return 3;
 	if ($field1 <= median) return 1;
@@ -141,24 +146,25 @@ function getOutputPort() {
 // Called during component initialization, partitionCount is the number of output ports.
 // function init(partitionCount) {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Can read dictionary values after DataGenerator and Rollup have finished their work, so it works in graph phase 1.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="459" guiY="54" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="459" guiY="289" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="596" guiY="122" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleGather" guiWidth="0" guiX="596" guiY="218" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="TrashMax" guiWidth="0" guiX="884" guiY="297" id="TRASH_MAX" printTrashID="true" type="TRASH"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="TrashMin" guiWidth="0" guiX="885" guiY="54" id="TRASH_MIN" printTrashID="true" type="TRASH"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
-<Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:0"/>
-<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:0"/>
-<Edge fromNode="PARTITION0:3" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH_MIN:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge8" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:1"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge16" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:1"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge17" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH_MAX:0"/>
-<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="457" guiY="32" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="457" guiY="310" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleGather" guiWidth="128" guiX="596" guiY="122" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleGather" guiWidth="128" guiX="596" guiY="218" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="69" guiName="TrashMax" guiWidth="128" guiX="882" guiY="313" id="TRASH_MAX" printTrashID="true" type="TRASH"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="69" guiName="TrashMin" guiWidth="128" guiX="882" guiY="32" id="TRASH_MIN" printTrashID="true" type="TRASH"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="PARTITION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:0"/>
+<Edge fromNode="PARTITION0:3" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" router="Manhattan" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH_MIN:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SIMPLE_GATHER1:1"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH_MAX:0"/>
+<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

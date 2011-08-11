@@ -54,9 +54,6 @@
     <Phone>0921-12 34 65</Phone>
     <Fax>0921-12 34 67</Fax>
     <order OrderID="10278">
-      <OrderID>10278</OrderID>
-      <CustomerID>BERGS</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>12.08.1996 00:00:00</OrderDate>
       <RequiredDate>09.09.1996 00:00:00</RequiredDate>
       <ShippedDate>16.08.1996 00:00:00</ShippedDate>
@@ -67,8 +64,7 @@
       <ShipCity>Luleå</ShipCity>
       <ShipPostalCode>S-958 22</ShipPostalCode>
       <ShipCountry>Sweden</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -87,9 +83,6 @@
       </employee>
     </order>
     <order OrderID="10280">
-      <OrderID>10280</OrderID>
-      <CustomerID>BERGS</CustomerID>
-      <EmployeeID>2</EmployeeID>
       <OrderDate>14.08.1996 00:00:00</OrderDate>
       <RequiredDate>11.09.1996 00:00:00</RequiredDate>
       <ShippedDate>12.09.1996 00:00:00</ShippedDate>
@@ -100,8 +93,7 @@
       <ShipCity>Luleå</ShipCity>
       <ShipPostalCode>S-958 22</ShipPostalCode>
       <ShipCountry>Sweden</ShipCountry>
-      <employee>
-        <EmployeeID>2</EmployeeID>
+      <employee EmployeeID="2">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -142,9 +134,6 @@
     <Phone>88.60.15.31</Phone>
     <Fax>88.60.15.32</Fax>
     <order OrderID="10265">
-      <OrderID>10265</OrderID>
-      <CustomerID>BLONP</CustomerID>
-      <EmployeeID>2</EmployeeID>
       <OrderDate>25.07.1996 00:00:00</OrderDate>
       <RequiredDate>22.08.1996 00:00:00</RequiredDate>
       <ShippedDate>12.08.1996 00:00:00</ShippedDate>
@@ -155,8 +144,7 @@
       <ShipCity>Strasbourg</ShipCity>
       <ShipPostalCode>67000</ShipPostalCode>
       <ShipCountry>France</ShipCountry>
-      <employee>
-        <EmployeeID>2</EmployeeID>
+      <employee EmployeeID="2">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -218,9 +206,6 @@
     <Country>UK</Country>
     <Phone>(171) 555-1212</Phone>
     <order OrderID="10289">
-      <OrderID>10289</OrderID>
-      <CustomerID>BSBEV</CustomerID>
-      <EmployeeID>7</EmployeeID>
       <OrderDate>26.08.1996 00:00:00</OrderDate>
       <RequiredDate>23.09.1996 00:00:00</RequiredDate>
       <ShippedDate>28.08.1996 00:00:00</ShippedDate>
@@ -231,8 +216,7 @@
       <ShipCity>London</ShipCity>
       <ShipPostalCode>EC2 5NT</ShipPostalCode>
       <ShipCountry>UK</ShipCountry>
-      <employee>
-        <EmployeeID>7</EmployeeID>
+      <employee EmployeeID="7">
         <LastName>King</LastName>
         <FirstName>Robert</FirstName>
         <Title>Sales Representative</Title>
@@ -272,9 +256,6 @@
     <Phone>(5) 555-3392</Phone>
     <Fax>(5) 555-7293</Fax>
     <order OrderID="10259">
-      <OrderID>10259</OrderID>
-      <CustomerID>CENTC</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>18.07.1996 00:00:00</OrderDate>
       <RequiredDate>15.08.1996 00:00:00</RequiredDate>
       <ShippedDate>25.07.1996 00:00:00</ShippedDate>
@@ -285,8 +266,7 @@
       <ShipCity>México D.F.</ShipCity>
       <ShipPostalCode>05022</ShipPostalCode>
       <ShipCountry>Mexico</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -315,9 +295,6 @@
     <Country>Brazil</Country>
     <Phone>(11) 555-7647</Phone>
     <order OrderID="10290">
-      <OrderID>10290</OrderID>
-      <CustomerID>COMMI</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>27.08.1996 00:00:00</OrderDate>
       <RequiredDate>24.09.1996 00:00:00</RequiredDate>
       <ShippedDate>03.09.1996 00:00:00</ShippedDate>
@@ -329,8 +306,7 @@
       <ShipRegion>SP</ShipRegion>
       <ShipPostalCode>05432-043</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -404,9 +380,6 @@
     <Phone>7675-3425</Phone>
     <Fax>7675-3426</Fax>
     <order OrderID="10258">
-      <OrderID>10258</OrderID>
-      <CustomerID>ERNSH</CustomerID>
-      <EmployeeID>1</EmployeeID>
       <OrderDate>17.07.1996 00:00:00</OrderDate>
       <RequiredDate>14.08.1996 00:00:00</RequiredDate>
       <ShippedDate>23.07.1996 00:00:00</ShippedDate>
@@ -417,8 +390,7 @@
       <ShipCity>Graz</ShipCity>
       <ShipPostalCode>8010</ShipPostalCode>
       <ShipCountry>Austria</ShipCountry>
-      <employee>
-        <EmployeeID>1</EmployeeID>
+      <employee EmployeeID="1">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -437,9 +409,6 @@
       </employee>
     </order>
     <order OrderID="10263">
-      <OrderID>10263</OrderID>
-      <CustomerID>ERNSH</CustomerID>
-      <EmployeeID>9</EmployeeID>
       <OrderDate>23.07.1996 00:00:00</OrderDate>
       <RequiredDate>20.08.1996 00:00:00</RequiredDate>
       <ShippedDate>31.07.1996 00:00:00</ShippedDate>
@@ -450,8 +419,7 @@
       <ShipCity>Graz</ShipCity>
       <ShipPostalCode>8010</ShipPostalCode>
       <ShipCountry>Austria</ShipCountry>
-      <employee>
-        <EmployeeID>9</EmployeeID>
+      <employee EmployeeID="9">
         <LastName>Dodsworth</LastName>
         <FirstName>Anne</FirstName>
         <Title>Sales Representative</Title>
@@ -500,9 +468,6 @@
     <Country>Sweden</Country>
     <Phone>0695-34 67 21</Phone>
     <order OrderID="10264">
-      <OrderID>10264</OrderID>
-      <CustomerID>FOLKO</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>24.07.1996 00:00:00</OrderDate>
       <RequiredDate>21.08.1996 00:00:00</RequiredDate>
       <ShippedDate>23.08.1996 00:00:00</ShippedDate>
@@ -513,8 +478,7 @@
       <ShipCity>Bräcke</ShipCity>
       <ShipPostalCode>S-844 67</ShipPostalCode>
       <ShipCountry>Sweden</ShipCountry>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -554,9 +518,6 @@
     <Phone>0221-0644327</Phone>
     <Fax>0221-0765721</Fax>
     <order OrderID="10260">
-      <OrderID>10260</OrderID>
-      <CustomerID>OTTIK</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>19.07.1996 00:00:00</OrderDate>
       <RequiredDate>16.08.1996 00:00:00</RequiredDate>
       <ShippedDate>29.07.1996 00:00:00</ShippedDate>
@@ -567,8 +528,7 @@
       <ShipCity>Köln</ShipCity>
       <ShipPostalCode>50739</ShipPostalCode>
       <ShipCountry>Germany</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -641,9 +601,6 @@
     <Phone>(21) 555-4252</Phone>
     <Fax>(21) 555-4545</Fax>
     <order OrderID="10261">
-      <OrderID>10261</OrderID>
-      <CustomerID>QUEDE</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>19.07.1996 00:00:00</OrderDate>
       <RequiredDate>16.08.1996 00:00:00</RequiredDate>
       <ShippedDate>30.07.1996 00:00:00</ShippedDate>
@@ -655,8 +612,7 @@
       <ShipRegion>RJ</ShipRegion>
       <ShipPostalCode>02389-673</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -675,9 +631,6 @@
       </employee>
     </order>
     <order OrderID="10291">
-      <OrderID>10291</OrderID>
-      <CustomerID>QUEDE</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>27.08.1996 00:00:00</OrderDate>
       <RequiredDate>24.09.1996 00:00:00</RequiredDate>
       <ShippedDate>04.09.1996 00:00:00</ShippedDate>
@@ -689,8 +642,7 @@
       <ShipRegion>RJ</ShipRegion>
       <ShipPostalCode>02389-673</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -728,9 +680,6 @@
     <Country>Germany</Country>
     <Phone>0372-035188</Phone>
     <order OrderID="10273">
-      <OrderID>10273</OrderID>
-      <CustomerID>QUICK</CustomerID>
-      <EmployeeID>3</EmployeeID>
       <OrderDate>05.08.1996 00:00:00</OrderDate>
       <RequiredDate>02.09.1996 00:00:00</RequiredDate>
       <ShippedDate>12.08.1996 00:00:00</ShippedDate>
@@ -741,8 +690,7 @@
       <ShipCity>Cunewalde</ShipCity>
       <ShipPostalCode>01307</ShipPostalCode>
       <ShipCountry>Germany</ShipCountry>
-      <employee>
-        <EmployeeID>3</EmployeeID>
+      <employee EmployeeID="3">
         <LastName>Leverling</LastName>
         <FirstName>Janet</FirstName>
         <Title>Sales Representative</Title>
@@ -761,9 +709,6 @@
       </employee>
     </order>
     <order OrderID="10285">
-      <OrderID>10285</OrderID>
-      <CustomerID>QUICK</CustomerID>
-      <EmployeeID>1</EmployeeID>
       <OrderDate>20.08.1996 00:00:00</OrderDate>
       <RequiredDate>17.09.1996 00:00:00</RequiredDate>
       <ShippedDate>26.08.1996 00:00:00</ShippedDate>
@@ -774,8 +719,7 @@
       <ShipCity>Cunewalde</ShipCity>
       <ShipPostalCode>01307</ShipPostalCode>
       <ShipCountry>Germany</ShipCountry>
-      <employee>
-        <EmployeeID>1</EmployeeID>
+      <employee EmployeeID="1">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -794,9 +738,6 @@
       </employee>
     </order>
     <order OrderID="10286">
-      <OrderID>10286</OrderID>
-      <CustomerID>QUICK</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>21.08.1996 00:00:00</OrderDate>
       <RequiredDate>18.09.1996 00:00:00</RequiredDate>
       <ShippedDate>30.08.1996 00:00:00</ShippedDate>
@@ -807,8 +748,7 @@
       <ShipCity>Cunewalde</ShipCity>
       <ShipPostalCode>01307</ShipPostalCode>
       <ShipCountry>Germany</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -849,9 +789,6 @@
     <Phone>(505) 555-5939</Phone>
     <Fax>(505) 555-3620</Fax>
     <order OrderID="10262">
-      <OrderID>10262</OrderID>
-      <CustomerID>RATTC</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>22.07.1996 00:00:00</OrderDate>
       <RequiredDate>19.08.1996 00:00:00</RequiredDate>
       <ShippedDate>25.07.1996 00:00:00</ShippedDate>
@@ -863,8 +800,7 @@
       <ShipRegion>NM</ShipRegion>
       <ShipPostalCode>87110</ShipPostalCode>
       <ShipCountry>USA</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -883,9 +819,6 @@
       </employee>
     </order>
     <order OrderID="10272">
-      <OrderID>10272</OrderID>
-      <CustomerID>RATTC</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>02.08.1996 00:00:00</OrderDate>
       <RequiredDate>30.08.1996 00:00:00</RequiredDate>
       <ShippedDate>06.08.1996 00:00:00</ShippedDate>
@@ -897,8 +830,7 @@
       <ShipRegion>NM</ShipRegion>
       <ShipPostalCode>87110</ShipPostalCode>
       <ShipCountry>USA</ShipCountry>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -916,9 +848,6 @@
       </employee>
     </order>
     <order OrderID="10294">
-      <OrderID>10294</OrderID>
-      <CustomerID>RATTC</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>30.08.1996 00:00:00</OrderDate>
       <RequiredDate>27.09.1996 00:00:00</RequiredDate>
       <ShippedDate>05.09.1996 00:00:00</ShippedDate>
@@ -930,8 +859,7 @@
       <ShipRegion>NM</ShipRegion>
       <ShipPostalCode>87110</ShipPostalCode>
       <ShipCountry>USA</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -961,9 +889,6 @@
     <Phone>0522-556721</Phone>
     <Fax>0522-556722</Fax>
     <order OrderID="10288">
-      <OrderID>10288</OrderID>
-      <CustomerID>REGGC</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>23.08.1996 00:00:00</OrderDate>
       <RequiredDate>20.09.1996 00:00:00</RequiredDate>
       <ShippedDate>03.09.1996 00:00:00</ShippedDate>
@@ -974,8 +899,7 @@
       <ShipCity>Reggio Emilia</ShipCity>
       <ShipPostalCode>42100</ShipPostalCode>
       <ShipCountry>Italy</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -1004,9 +928,6 @@
     <Country>Brazil</Country>
     <Phone>(21) 555-3412</Phone>
     <order OrderID="10287">
-      <OrderID>10287</OrderID>
-      <CustomerID>RICAR</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>22.08.1996 00:00:00</OrderDate>
       <RequiredDate>19.09.1996 00:00:00</RequiredDate>
       <ShippedDate>28.08.1996 00:00:00</ShippedDate>
@@ -1018,8 +939,7 @@
       <ShipRegion>RJ</ShipRegion>
       <ShipPostalCode>02389-890</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -1048,9 +968,6 @@
     <Country>Switzerland</Country>
     <Phone>0897-034214</Phone>
     <order OrderID="10255">
-      <OrderID>10255</OrderID>
-      <CustomerID>RICSU</CustomerID>
-      <EmployeeID>9</EmployeeID>
       <OrderDate>12.07.1996 00:00:00</OrderDate>
       <RequiredDate>09.08.1996 00:00:00</RequiredDate>
       <ShippedDate>15.07.1996 00:00:00</ShippedDate>
@@ -1062,8 +979,7 @@
       <ShipPostalCode>1204</ShipPostalCode>
       <ShipCountry>Switzerland</ShipCountry>
       <address AddressID="8"/>
-      <employee>
-        <EmployeeID>9</EmployeeID>
+      <employee EmployeeID="9">
         <LastName>Dodsworth</LastName>
         <FirstName>Anne</FirstName>
         <Title>Sales Representative</Title>
@@ -1092,9 +1008,6 @@
     <Phone>(91) 745 6200</Phone>
     <Fax>(91) 745 6210</Fax>
     <order OrderID="10281">
-      <OrderID>10281</OrderID>
-      <CustomerID>ROMEY</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>14.08.1996 00:00:00</OrderDate>
       <RequiredDate>28.08.1996 00:00:00</RequiredDate>
       <ShippedDate>21.08.1996 00:00:00</ShippedDate>
@@ -1105,8 +1018,7 @@
       <ShipCity>Madrid</ShipCity>
       <ShipPostalCode>28001</ShipPostalCode>
       <ShipCountry>Spain</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -1125,9 +1037,6 @@
       </employee>
     </order>
     <order OrderID="10282">
-      <OrderID>10282</OrderID>
-      <CustomerID>ROMEY</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>15.08.1996 00:00:00</OrderDate>
       <RequiredDate>12.09.1996 00:00:00</RequiredDate>
       <ShippedDate>21.08.1996 00:00:00</ShippedDate>
@@ -1138,8 +1047,7 @@
       <ShipCity>Madrid</ShipCity>
       <ShipPostalCode>28001</ShipPostalCode>
       <ShipCountry>Spain</ShipCountry>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -1223,9 +1131,6 @@
     <Phone>(307) 555-4680</Phone>
     <Fax>(307) 555-6525</Fax>
     <order OrderID="10271">
-      <OrderID>10271</OrderID>
-      <CustomerID>SPLIR</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>01.08.1996 00:00:00</OrderDate>
       <RequiredDate>29.08.1996 00:00:00</RequiredDate>
       <ShippedDate>30.08.1996 00:00:00</ShippedDate>
@@ -1237,8 +1142,7 @@
       <ShipRegion>WY</ShipRegion>
       <ShipPostalCode>82520</ShipPostalCode>
       <ShipCountry>USA</ShipCountry>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -1267,9 +1171,6 @@
     <Phone>(071) 23 67 22 20</Phone>
     <Fax>(071) 23 67 22 21</Fax>
     <order OrderID="10252">
-      <OrderID>10252</OrderID>
-      <CustomerID>SUPRD</CustomerID>
-      <EmployeeID>4</EmployeeID>
       <OrderDate>09.07.1996 00:00:00</OrderDate>
       <RequiredDate>06.08.1996 00:00:00</RequiredDate>
       <ShippedDate>11.07.1996 00:00:00</ShippedDate>
@@ -1281,8 +1182,7 @@
       <ShipPostalCode>B-6000</ShipPostalCode>
       <ShipCountry>Belgium</ShipCountry>
       <address AddressID="5"/>
-      <employee>
-        <EmployeeID>4</EmployeeID>
+      <employee EmployeeID="4">
         <LastName>Peacock</LastName>
         <FirstName>Margaret</FirstName>
         <Title>Sales Representative</Title>
@@ -1333,9 +1233,6 @@
     <Phone>0251-031259</Phone>
     <Fax>0251-035695</Fax>
     <order OrderID="10249">
-      <OrderID>10249</OrderID>
-      <CustomerID>TOMSP</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>05.07.1996 00:00:00</OrderDate>
       <RequiredDate>16.08.1996 00:00:00</RequiredDate>
       <ShippedDate>10.07.1996 00:00:00</ShippedDate>
@@ -1347,8 +1244,7 @@
       <ShipPostalCode>44087</ShipPostalCode>
       <ShipCountry>Germany</ShipCountry>
       <address AddressID="2"/>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -1376,9 +1272,6 @@
     <Country>Mexico</Country>
     <Phone>(5) 555-2933</Phone>
     <order OrderID="10276">
-      <OrderID>10276</OrderID>
-      <CustomerID>TORTU</CustomerID>
-      <EmployeeID>8</EmployeeID>
       <OrderDate>08.08.1996 00:00:00</OrderDate>
       <RequiredDate>22.08.1996 00:00:00</RequiredDate>
       <ShippedDate>14.08.1996 00:00:00</ShippedDate>
@@ -1389,8 +1282,7 @@
       <ShipCity>México D.F.</ShipCity>
       <ShipPostalCode>05033</ShipPostalCode>
       <ShipCountry>Mexico</ShipCountry>
-      <employee>
-        <EmployeeID>8</EmployeeID>
+      <employee EmployeeID="8">
         <LastName>Callahan</LastName>
         <FirstName>Laura</FirstName>
         <Title>Inside Sales Coordinator</Title>
@@ -1409,9 +1301,6 @@
       </employee>
     </order>
     <order OrderID="10293">
-      <OrderID>10293</OrderID>
-      <CustomerID>TORTU</CustomerID>
-      <EmployeeID>1</EmployeeID>
       <OrderDate>29.08.1996 00:00:00</OrderDate>
       <RequiredDate>26.09.1996 00:00:00</RequiredDate>
       <ShippedDate>11.09.1996 00:00:00</ShippedDate>
@@ -1422,8 +1311,7 @@
       <ShipCity>México D.F.</ShipCity>
       <ShipPostalCode>05033</ShipPostalCode>
       <ShipCountry>Mexico</ShipCountry>
-      <employee>
-        <EmployeeID>1</EmployeeID>
+      <employee EmployeeID="1">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -1453,9 +1341,6 @@
     <Phone>(11) 555-2167</Phone>
     <Fax>(11) 555-2168</Fax>
     <order OrderID="10292">
-      <OrderID>10292</OrderID>
-      <CustomerID>TRADH</CustomerID>
-      <EmployeeID>1</EmployeeID>
       <OrderDate>28.08.1996 00:00:00</OrderDate>
       <RequiredDate>25.09.1996 00:00:00</RequiredDate>
       <ShippedDate>02.09.1996 00:00:00</ShippedDate>
@@ -1467,8 +1352,7 @@
       <ShipRegion>SP</ShipRegion>
       <ShipPostalCode>05634-030</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
-      <employee>
-        <EmployeeID>1</EmployeeID>
+      <employee EmployeeID="1">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -1520,9 +1404,6 @@
     <Phone>78.32.54.86</Phone>
     <Fax>78.32.54.87</Fax>
     <order OrderID="10251">
-      <OrderID>10251</OrderID>
-      <CustomerID>VICTE</CustomerID>
-      <EmployeeID>3</EmployeeID>
       <OrderDate>08.07.1996 00:00:00</OrderDate>
       <RequiredDate>05.08.1996 00:00:00</RequiredDate>
       <ShippedDate>15.07.1996 00:00:00</ShippedDate>
@@ -1534,8 +1415,7 @@
       <ShipPostalCode>69004</ShipPostalCode>
       <ShipCountry>France</ShipCountry>
       <address AddressID="4"/>
-      <employee>
-        <EmployeeID>3</EmployeeID>
+      <employee EmployeeID="3">
         <LastName>Leverling</LastName>
         <FirstName>Janet</FirstName>
         <Title>Sales Representative</Title>
@@ -1565,9 +1445,6 @@
     <Phone>26.47.15.10</Phone>
     <Fax>26.47.15.11</Fax>
     <order OrderID="10248">
-      <OrderID>10248</OrderID>
-      <CustomerID>VINET</CustomerID>
-      <EmployeeID>5</EmployeeID>
       <OrderDate>04.07.1996 00:00:00</OrderDate>
       <RequiredDate>01.08.1996 00:00:00</RequiredDate>
       <ShippedDate>16.07.1996 00:00:00</ShippedDate>
@@ -1581,9 +1458,6 @@
       <address AddressID="1"/>
     </order>
     <order OrderID="10274">
-      <OrderID>10274</OrderID>
-      <CustomerID>VINET</CustomerID>
-      <EmployeeID>6</EmployeeID>
       <OrderDate>06.08.1996 00:00:00</OrderDate>
       <RequiredDate>03.09.1996 00:00:00</RequiredDate>
       <ShippedDate>16.08.1996 00:00:00</ShippedDate>
@@ -1594,8 +1468,7 @@
       <ShipCity>Reims</ShipCity>
       <ShipPostalCode>51100</ShipPostalCode>
       <ShipCountry>France</ShipCountry>
-      <employee>
-        <EmployeeID>6</EmployeeID>
+      <employee EmployeeID="6">
         <LastName>Suyama</LastName>
         <FirstName>Michael</FirstName>
         <Title>Sales Representative</Title>
@@ -1613,9 +1486,6 @@
       </employee>
     </order>
     <order OrderID="10295">
-      <OrderID>10295</OrderID>
-      <CustomerID>VINET</CustomerID>
-      <EmployeeID>2</EmployeeID>
       <OrderDate>02.09.1996 00:00:00</OrderDate>
       <RequiredDate>30.09.1996 00:00:00</RequiredDate>
       <ShippedDate>10.09.1996 00:00:00</ShippedDate>
@@ -1626,8 +1496,7 @@
       <ShipCity>Reims</ShipCity>
       <ShipPostalCode>51100</ShipPostalCode>
       <ShipCountry>France</ShipCountry>
-      <employee>
-        <EmployeeID>2</EmployeeID>
+      <employee EmployeeID="2">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -1668,9 +1537,6 @@
     <Phone>981-443655</Phone>
     <Fax>981-443655</Fax>
     <order OrderID="10266">
-      <OrderID>10266</OrderID>
-      <CustomerID>WARTH</CustomerID>
-      <EmployeeID>3</EmployeeID>
       <OrderDate>26.07.1996 00:00:00</OrderDate>
       <RequiredDate>06.09.1996 00:00:00</RequiredDate>
       <ShippedDate>31.07.1996 00:00:00</ShippedDate>
@@ -1681,8 +1547,7 @@
       <ShipCity>Oulu</ShipCity>
       <ShipPostalCode>90110</ShipPostalCode>
       <ShipCountry>Finland</ShipCountry>
-      <employee>
-        <EmployeeID>3</EmployeeID>
+      <employee EmployeeID="3">
         <LastName>Leverling</LastName>
         <FirstName>Janet</FirstName>
         <Title>Sales Representative</Title>
@@ -1701,9 +1566,6 @@
       </employee>
     </order>
     <order OrderID="10270">
-      <OrderID>10270</OrderID>
-      <CustomerID>WARTH</CustomerID>
-      <EmployeeID>1</EmployeeID>
       <OrderDate>01.08.1996 00:00:00</OrderDate>
       <RequiredDate>29.08.1996 00:00:00</RequiredDate>
       <ShippedDate>02.08.1996 00:00:00</ShippedDate>
@@ -1714,8 +1576,7 @@
       <ShipCity>Oulu</ShipCity>
       <ShipPostalCode>90110</ShipPostalCode>
       <ShipCountry>Finland</ShipCountry>
-      <employee>
-        <EmployeeID>1</EmployeeID>
+      <employee EmployeeID="1">
         <LastName>Davolio</LastName>
         <FirstName>Nancy</FirstName>
         <Title>Sales Representative</Title>
@@ -1744,9 +1605,6 @@
     <Country>Brazil</Country>
     <Phone>(14) 555-8122</Phone>
     <order OrderID="10256">
-      <OrderID>10256</OrderID>
-      <CustomerID>WELLI</CustomerID>
-      <EmployeeID>3</EmployeeID>
       <OrderDate>15.07.1996 00:00:00</OrderDate>
       <RequiredDate>12.08.1996 00:00:00</RequiredDate>
       <ShippedDate>17.07.1996 00:00:00</ShippedDate>
@@ -1759,8 +1617,7 @@
       <ShipPostalCode>08737-363</ShipPostalCode>
       <ShipCountry>Brazil</ShipCountry>
       <address AddressID="9"/>
-      <employee>
-        <EmployeeID>3</EmployeeID>
+      <employee EmployeeID="3">
         <LastName>Leverling</LastName>
         <FirstName>Janet</FirstName>
         <Title>Sales Representative</Title>
@@ -1790,9 +1647,6 @@
     <Phone>(206) 555-4112</Phone>
     <Fax>(206) 555-4115</Fax>
     <order OrderID="10269">
-      <OrderID>10269</OrderID>
-      <CustomerID>WHITC</CustomerID>
-      <EmployeeID>5</EmployeeID>
       <OrderDate>31.07.1996 00:00:00</OrderDate>
       <RequiredDate>14.08.1996 00:00:00</RequiredDate>
       <ShippedDate>09.08.1996 00:00:00</ShippedDate>

@@ -1,54 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="0.0.0.devel" id="1204550898178" licenseType="Evaluation Devel" modified="Tue Jul 13 11:16:27 CEST 2010" modifiedBy="avackova" name="TestingSort" revision="1.28">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="0.0.0.devel" id="1204550898178" licenseType="Evaluation Devel" modified="Fri Jun 17 13:45:00 CEST 2011" modifiedBy="avackova" name="TestingSort" revision="1.31" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="311" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtSort Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="446" x="38" y="182">
-<attr name="text"><![CDATA[
-This graph demonstrates the use of ExtSort. This component receives records through single input port, sorts them on the specified Sort key, and sends them to all connected output ports. 
-
-Sort key can have different fields sorted in different order. The key looks like this:
-fieldJ(a);...;fieldN(d)
-
-The "a" and "d" letters mean that records are sorted in ascending or descending order, respectively, on this field. Priority of sorting of individual fields descends to the right.
-
-All output ports get the same data records.
-
-In addition to ExtSort, also FastSort (commercial) can be used. 
-
-Also SortWithinGroups allows to sort data records that have been previously sorted according to another key.
-
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="252" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort Key (Example)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="237" x="518" y="-52">
-<attr name="text"><![CDATA[
-For example, 
-
-if Sort key looked like this:
-
-surname(a);firstname(d)
-
-The output would be the following:
-
-Brown;Peter
-Brown;John
-Smith;Thomas
-Smith;Gabriel
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="236" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Both outputs receive the same data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="273" x="234" y="-56">
-<attr name="text"><![CDATA[
-They can be written in different formats.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="ExtSort (Ship info)" guiWidth="50" guiX="195" guiY="20" id="EXT_SORT" sortKey="ShipName(a);ShipVia(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="25" guiName="Orders Sorted" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="The same output" guiWidth="0" guiX="370" guiY="112" id="TRASH0" type="TRASH"/>
-<Edge debugMode="false" fromNode="EXT_SORT:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
-<Edge debugMode="false" fromNode="EXT_SORT:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH0:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT:0"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtSort (Ship info)" guiWidth="162" guiX="195" guiY="20" id="EXT_SORT" sortKey="ShipName(a);ShipVia(a)" type="EXT_SORT">
+<attr name="guiDescription"><![CDATA[Sorts data records on the specified key, and sends them to all connected output ports. 
+Sort key can have different fields to be sorted in different order. The key looks like this:
+fieldJ(a);...;fieldN(d)
+The "a" and "d" letters mean that records are to be sorted in ascending or descending order, respectively, on this field.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiHeight="101" guiName="Orders Sorted" guiWidth="132" guiX="403" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="69" guiName="The same output" guiWidth="152" guiX="403" guiY="151" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="EXT_SORT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT:1" guiBendpoints="376:56|376:171" guiLocks="376|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT:0"/>
 </Phase>
 </Graph>

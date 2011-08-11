@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="0.0.0.devel" id="1203081182855" licenseType="Evaluation Devel" modified="Thu May 27 13:24:15 CEST 2010" modifiedBy="avackova" name="graphCLOVERData" revision="1.88">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="0.0.0.devel" id="1203081182855" licenseType="Evaluation Devel" modified="Fri Jun 17 13:35:19 CEST 2011" modifiedBy="avackova" name="graphCLOVERData" revision="1.92" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="customer" recordDelimiter="&#10;" recordSize="212" type="fixed">
@@ -31,9 +31,9 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CloverDataReader/Writer components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="354" x="576" y="17">
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="340" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CloverDataReader/Writer components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="271" x="680" y="19">
 <attr name="text"><![CDATA[
-This graph illustrates usage of CloverDataReader/Writer components. Thees components reads/writes data in clover internal format and can be used for moving data between different graphs. Reading/writing data in clover format is faster then in any other format.
+This graph illustrates usage of CloverDataReader/Writer components. These components reads/writes data in clover internal format and can be used for moving data between different graphs. Reading/writing data in clover format is faster then in any other format.
 As the data saved in clover internal format is human unreadable, CloverDataWriter can save input metadata also.
 If you expect to not read all data from resulted file, use saveIndex attribute. This index file allows fast record's skipping during the subsequent reading.
 This graph shows also how works StructureWriter component (it can be used for writing records and some additional information eg. in xml format). Here all records are used for header, body and footer of the document.]]></attr>
@@ -41,26 +41,34 @@ This graph shows also how works StructureWriter component (it can be used for wr
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="zip:(${DATATMP_DIR}/customers.zip)" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="406" guiY="64" id="CLOVER_WRITER0" saveIndex="true" saveMetadata="true" type="CLOVER_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="206" guiY="64" id="CONCATENATE0" type="CONCATENATE"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers?.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="31" guiY="19" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="zip:(${DATATMP_DIR}/customers.zip)" guiHeight="101" guiName="CLOVER Data Writer" guiWidth="178" guiX="480" guiY="62" id="CLOVER_WRITER0" saveIndex="true" saveMetadata="true" type="CLOVER_WRITER">
+<attr name="guiDescription"><![CDATA[Writes customers in Clover internal format]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="Concatenate" guiWidth="128" guiX="294" guiY="62" id="CONCATENATE0" type="CONCATENATE"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers?.dat" guiHeight="101" guiName="customer from file" guiWidth="163" guiX="28" guiY="19" id="DATA_READER0" type="DATA_READER">
 <attr name="enableIncomplete"><![CDATA[true]]></attr>
 <attr name="byteMode"><![CDATA[false]]></attr>
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[Reads customers in fixlength format]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/fixlen/customers.zip)#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="31" guiY="112" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/fixlen/customers.zip)#customers.dat;" guiHeight="101" guiName="Fixed Length Data Reader" guiWidth="216" guiX="28" guiY="139" id="DATA_READER1" type="DATA_READER">
 <attr name="enableIncomplete"><![CDATA[true]]></attr>
 <attr name="byteMode"><![CDATA[false]]></attr>
+<attr name="guiDescription"><![CDATA[Reads customers in fixlength format]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="CLOVER_WRITER0:0"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="CONCATENATE0:0"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge5" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="CONCATENATE0:1"/>
+<Edge debugMode="false" fromNode="CONCATENATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="CLOVER_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="268:39|268:80" guiLocks="268|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="CONCATENATE0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="CONCATENATE0:1"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="zip:(${DATATMP_DIR}/customers.zip)" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="31" guiY="233" id="CLOVER_READER0" skipRows="10" type="CLOVER_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/strucured_customers.txt" footer="&lt;Footer record&gt;&#10;&#9;&lt;account number = $account_num&gt;&#10;&lt;/Footer record&gt;&#10;" guiHeight="0" guiName="Structured Data Writer" guiWidth="0" guiX="406" guiY="233" header="&lt;Header record&gt;&#10;&#9;&lt;customer id = $customer_id&gt;&#10;&lt;/Header record&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;Customer id=$customer_id&gt;&#10;&#9;&lt;last name = $lname&gt;&#10;&#9;&lt;first name = $fname&gt;&#10;&lt;/Customer&gt;&#10;" type="STRUCTURE_WRITER"/>
-<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
-<Edge fromNode="CLOVER_READER0:1" guiBendpoints="" id="Edge1" inPort="Port 1 (Header port)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:1"/>
-<Edge fromNode="CLOVER_READER0:2" guiBendpoints="" id="Edge4" inPort="Port 2 (Footer port)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:2"/>
+<Node enabled="enabled" fileURL="zip:(${DATATMP_DIR}/customers.zip)" guiHeight="101" guiName="Clover Data Reader" guiWidth="170" guiX="28" guiY="258" id="CLOVER_READER0" skipRows="10" type="CLOVER_READER">
+<attr name="guiDescription"><![CDATA[Reads customers in Clover internal format]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/strucured_customers.txt" footer="&lt;Footer record&gt;&#10;&#9;&lt;account number = $account_num&gt;&#10;&lt;/Footer record&gt;&#10;" guiHeight="101" guiName="Structured Data Writer" guiWidth="196" guiX="477" guiY="256" header="&lt;Header record&gt;&#10;&#9;&lt;customer id = $customer_id&gt;&#10;&lt;/Header record&gt;&#10;" id="STRUCTURE_WRITER0" mask="&lt;Customer id=$customer_id&gt;&#10;&#9;&lt;last name = $lname&gt;&#10;&#9;&lt;first name = $fname&gt;&#10;&lt;/Customer&gt;&#10;" type="STRUCTURE_WRITER">
+<attr name="guiDescription"><![CDATA[Writes customer to structured file]]></attr>
+</Node>
+<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="CLOVER_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (Header port)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:1"/>
+<Edge fromNode="CLOVER_READER0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 2 (Footer port)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:2"/>
 </Phase>
 </Graph>

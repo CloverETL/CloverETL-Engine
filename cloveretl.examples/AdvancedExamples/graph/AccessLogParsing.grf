@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Thu Apr 28 15:23:17 CEST 2011" modifiedBy="avackova" name="AccessLogParsing" revision="1.92" showComponentDetails="true">
+<Graph author="Václav" created="Thu Mar 12 09:07:07 CET 2009" guiVersion="0.0.0.devel" id="1236845275482" licenseType="Evaluation Devel" modified="Mon Jun 20 17:12:27 CEST 2011" modifiedBy="avackova" name="AccessLogParsing" revision="1.93" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1">
 <Record name="accessLogData" previewAttachment="C:/Users/Václav/workspace-prezentace/AccessLogParsing/data-in/cloveretl${PROJECT}org-access_log" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" skipFirstLine="false" type="delimited">
@@ -53,34 +53,35 @@ If the graph parameter "GET_HOSTNAME" is set to the value "1", the graph returns
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="98" guiName="Irrelevant IP addresses" guiWidth="195" guiX="28" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="64" guiName="LookupTableReaderWriter" guiWidth="219" guiX="252" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/irrelevant_ip_addresses.txt" guiHeight="101" guiName="Irrelevant IP addresses" guiWidth="195" guiX="28" guiY="-51" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="69" guiName="LookupTableReaderWriter" guiWidth="219" guiX="252" guiY="-51" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
 <Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="ip_address" enabled="enabled" guiHeight="64" guiName="Aggregate" guiWidth="128" guiX="853" guiY="81" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE"/>
-<Node aggregateKey="request" enabled="enabled" guiHeight="64" guiName="Aggregate" guiWidth="128" guiX="855" guiY="201" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="98" guiName="ReadParseAccessLog" guiWidth="179" guiX="27" guiY="61" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="64" guiName="ExtFilter" guiWidth="128" guiX="213" guiY="62" id="EXT_FILTER0" type="EXT_FILTER">
+<Node aggregateKey="ip_address" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="853" guiY="81" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE"/>
+<Node aggregateKey="request" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="855" guiY="201" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="101" guiName="ReadParseAccessLog" guiWidth="179" guiX="27" guiY="61" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="69" guiName="ExtFilter" guiWidth="128" guiX="213" guiY="62" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[NOT($0.request ~= '^.*\.(png|gif|css|zip|jpg|txt|ico|xml|tdp|swf)$')]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="81" guiName="Sort by ip_address" guiWidth="161" guiX="684" guiY="81" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="81" guiName="Sort by request" guiWidth="142" guiX="684" guiY="201" id="EXT_SORT1" sortKey="request(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="81" guiName="Sort by count" guiWidth="128" guiX="1019" guiY="81" id="EXT_SORT2" sortKey="access_count(d)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="81" guiName="Sort by count" guiWidth="128" guiX="1020" guiY="201" id="EXT_SORT3" sortKey="count(d)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="81" guiName="LookupJoin" guiWidth="128" guiX="345" guiY="61" id="LOOKUP_JOIN0" joinKey="ip_address" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiHeight="85" guiName="Sort by ip_address" guiWidth="161" guiX="684" guiY="81" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Sort by request" guiWidth="142" guiX="684" guiY="201" id="EXT_SORT1" sortKey="request(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Sort by count" guiWidth="128" guiX="1019" guiY="81" id="EXT_SORT2" sortKey="access_count(d)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Sort by count" guiWidth="128" guiX="1020" guiY="201" id="EXT_SORT3" sortKey="count(d)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="LookupJoin" guiWidth="128" guiX="345" guiY="61" id="LOOKUP_JOIN0" joinKey="ip_address" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ip_address := $0.ip_address;
-	$0.client_identity := $0.client_identity;
-	$0.userid := $0.userid;
-	$0.time := $0.time;
-	$0.request := $0.request;
-	$0.status_code := $0.status_code;
-	$0.size := $0.size;
-	$0.rest := $0.rest;
+function integer transform() {
+	$0.ip_address = $0.ip_address;
+	$0.client_identity = $0.client_identity;
+	$0.userid = $0.userid;
+	$0.time = $0.time;
+	$0.request = $0.request;
+	$0.status_code = $0.status_code;
+	$0.size = $0.size;
+	$0.rest = $0.rest;
+	return ALL;
 }
 
 // Called during component initialization.
@@ -90,7 +91,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="64" guiName="getHostname" guiWidth="128" guiX="1189" guiY="81" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="getHostname" guiWidth="128" guiX="1189" guiY="81" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[// automatically generated on Thu Mar 12 11:28:31 CET 2009
 import java.util.*;
 import org.jetel.data.*;
@@ -158,8 +159,8 @@ public class GetHostName extends DataRecordTransform {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="516" guiY="83" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node debugFilename="${DATAOUT_DIR}/irrelevant.txt" debugPrint="true" enabled="enabled" guiHeight="64" guiName="Trash" guiWidth="128" guiX="515" guiY="1" id="TRASH0" type="TRASH"/>
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="98" guiName="IP addresses" guiWidth="128" guiX="1362" guiY="81" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER">
+<Node debugFilename="${DATAOUT_DIR}/irrelevant.txt" debugPrint="true" enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="515" guiY="1" id="TRASH0" type="TRASH"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="101" guiName="IP addresses" guiWidth="128" guiX="1362" guiY="81" id="XLS_WRITER0" namesRow="1" sheetName="IP addresses" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[IP addresses sorted by number of accesses.]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
@@ -177,7 +178,7 @@ public class GetHostName extends DataRecordTransform {
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="2">
-<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="98" guiName="Requests" guiWidth="128" guiX="1190" guiY="201" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/statistics.xls" firstDataRow="2" guiHeight="101" guiName="Requests" guiWidth="128" guiX="1190" guiY="201" id="XLS_WRITER1" namesRow="1" sheetName="Requests" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Requested pages and some documents sorted by number of accesses.]]></attr>
 </Node>
 </Phase>

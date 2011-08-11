@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Fri Mar 12 11:25:00 CET 2010" modifiedBy="cloveruser" name="graphXLSRead" revision="1.63">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Mon Jun 13 12:36:13 CEST 2011" modifiedBy="avackova" name="graphXLSRead" revision="1.66" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -38,33 +38,31 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partitoning data to many sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="264" x="389" y="17">
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Partitoning data to many sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="264" x="406" y="32">
 <attr name="text"><![CDATA[Data from all Excel files, that their names satisfy pattern ${DATAIN_DIR}/other/O*.xls are partitioned to different sheets in one Excel file depending on the value in field 'ShipCountry'.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="128" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Merging data from different excel &#10;sheets to one data flow" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="391" y="166">
+<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="128" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Merging data from different excel &#10;sheets to one data flow" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="407" y="185">
 <attr name="text"><![CDATA[XLSReader reads data from all sheets, from given excel file and fulfills field, that's name is checked by 'auto_filling' attribute, with name of current sheet.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="164" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="All orders in 1 sheet" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="158" x="11" y="-43"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="171" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Multiple sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="157" x="209" y="-46">
-<attr name="text"><![CDATA[
-One sheet for each country]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="168" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Multiple sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="162" x="10" y="152">
-<attr name="text"><![CDATA[
-One sheet for each country]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="166" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Flat file with all orders" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="207" y="155"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fieldMap="$OrderDate:=#D;$EmployeeID:=#C;$Freight:=#H;$ShipAddress:=#J;$RequiredDate:=#E;$OrderID:=#A;$ShipPostalCode:=#M;$ShippedDate:=#F;$ShipName:=#I;$ShipRegion:=#L;$CustomerID:=#B;$ShipVia:=#G;$ShipCity:=#K;$ShipCountry:=#N;" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="0" guiName="XLS (Orders)" guiWidth="0" guiX="28" guiY="32" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
-<Node enabled="enabled" excludeFields="ShipCountry" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="0" guiName="Orders by Country" guiWidth="0" guiX="224" guiY="32" id="XLS_WRITER0" namesRow="1" sheetName="$ShipCountry" type="XLS_WRITER">
-<attr name="saveNames"><![CDATA[true]]></attr>
+<Node enabled="enabled" fieldMap="$OrderDate:=#D;$EmployeeID:=#C;$Freight:=#H;$ShipAddress:=#J;$RequiredDate:=#E;$OrderID:=#A;$ShipPostalCode:=#M;$ShippedDate:=#F;$ShipName:=#I;$ShipRegion:=#L;$CustomerID:=#B;$ShipVia:=#G;$ShipCity:=#K;$ShipCountry:=#N;" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="101" guiName="XLS (Orders)" guiWidth="128" guiX="28" guiY="32" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[All orders in 1 sheet]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="XLS_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
+<Node enabled="enabled" excludeFields="ShipCountry" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="101" guiName="Orders by Country" guiWidth="162" guiX="224" guiY="32" id="XLS_WRITER0" namesRow="1" sheetName="$ShipCountry" type="XLS_WRITER">
+<attr name="saveNames"><![CDATA[true]]></attr>
+<attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="XLS_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="225" guiY="237" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="0" guiName="Orders by Country" guiWidth="0" guiX="29" guiY="237" id="XLS_READER2" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
-<Edge debugMode="true" fromNode="XLS_READER2:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiHeight="85" guiName="UniversalDataWriter" guiWidth="176" guiX="210" guiY="185" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Flat file with all orders]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xls" guiHeight="101" guiName="Orders by Country" guiWidth="162" guiX="28" guiY="185" id="XLS_READER2" metadataRow="1" sheetNumber="*" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="XLS_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
