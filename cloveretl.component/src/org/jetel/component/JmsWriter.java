@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -45,7 +43,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -158,8 +155,7 @@ public class JmsWriter extends Node {
 			if (psorClass == null && psorCode == null) {
 				psorCode = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), psorURL, charset);
 			}
-			URL[] runtimeClassPath = getGraph().getRuntimeContext().getRuntimeClassPath();
-			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass, runtimeClassPath);
+			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
 		}
 		psor.setNode(this);
 	}
@@ -209,29 +205,15 @@ public class JmsWriter extends Node {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private static DataRecord2JmsMsg createProcessor(String psorClass, URL[] runtimeClassPath) throws ComponentNotReadyException {
-		DataRecord2JmsMsg psor;
-        try {
-            psor =  (DataRecord2JmsMsg)Class.forName(psorClass, true, JmsWriter.class.getClassLoader()).newInstance();
-        }catch (InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
-        }catch (IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate msg processor class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            if (runtimeClassPath == null)
-                throw new ComponentNotReadyException( "Can't find specified transformation class: " + psorClass);
-            try {
-                URLClassLoader classLoader = ClassLoaderUtils.createClassLoader( JmsWriter.class.getClassLoader(), null, runtimeClassPath);
-                psor =  (DataRecord2JmsMsg)Class.forName(psorClass, true, classLoader).newInstance();
-            } catch (ClassNotFoundException ex1) {
-                throw new ComponentNotReadyException("Can not find class: "+ ex1);
-            } catch (Exception ex3) {
-                throw new ComponentNotReadyException(ex3.getMessage());
-            }
-        }catch (Exception ex) {
-            throw new ComponentNotReadyException("Can't create instance of msg processor class: " + psorClass + " "+ ex.getMessage(), ex);
+	private DataRecord2JmsMsg createProcessor(String psorClass) throws ComponentNotReadyException {
+    	Object psor = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
+    			psorClass, getGraph().getRuntimeContext().getClassPath());
+    	
+    	if (psor instanceof DataRecord2JmsMsg) {
+    		return (DataRecord2JmsMsg) psor;
+    	} else {
+            throw new ComponentNotReadyException("The transformation class does not implement the DataRecord2JmsMsg interface!");
         }
-		return psor;
 	}
 
 	/**

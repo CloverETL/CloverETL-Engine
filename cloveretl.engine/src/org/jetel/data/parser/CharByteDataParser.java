@@ -503,7 +503,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					if (field.isByteBased()) { // delimited byte field consumer
 						fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter);
 					} else { // delimited char field consumer
-						fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, cfg.isQuotedStrings(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter);
+						fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, cfg.isQuotedStrings(), cfg.getQuoteChar(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter);
 					}
 				}
 				idx++;
@@ -845,7 +845,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		 */
 		public DelimCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, AhoCorasick delimPatterns,
 				boolean multipleDelimiters, boolean acceptEofAsDelim, boolean acceptEndOfRecord, boolean isQuoted,
-				boolean lTrim, boolean rTrim, int shift, boolean acceptDefaultFieldDelim) {
+				Character quoteCharacter, boolean lTrim, boolean rTrim, int shift, boolean acceptDefaultFieldDelim) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.delimPatterns = delimPatterns;
@@ -855,6 +855,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.isQuoted = isQuoted;
 			if (isQuoted) {
 				qDecoder = new QuotingDecoder();
+				qDecoder.setQuoteChar(quoteCharacter);
 			} else {
 				qDecoder = null;
 			}

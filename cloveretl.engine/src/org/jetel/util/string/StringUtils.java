@@ -859,7 +859,7 @@ public class StringUtils {
 	 * @return true if the string is quoted
 	 */
 	public static final boolean isQuoted(CharSequence str) {
-		return isEmpty(str) ? false : isQuoteChar(str.charAt(0)) && str.charAt(0) == str.charAt(str.length() - 1);
+		return str != null && str.length() > 1 && isQuoteChar(str.charAt(0)) && str.charAt(0) == str.charAt(str.length() - 1);
 	}
 
 	/**
@@ -889,6 +889,55 @@ public class StringUtils {
 		return str;
 	}
 
+	/**
+	 * Modifies string so that the string quotes are ignored, in case quotes are not present doesn't do anything.
+	 * Escaped quote character is left without the backslash.
+	 * For example:
+	 * dummy -> dummy
+	 * "dummy" -> dummy
+	 * a"dummy" -> a"dummy"
+	 * "dummy"a -> "dummy"a
+	 * "I said: \"hello\"" -> I said: "hello"
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static String unquote2(String s) {
+        if (s == null) {
+            return null;
+        }
+        if (s.length() < 2) {
+            return s;
+        }
+
+        char first = s.charAt(0);
+        char last = s.charAt(s.length()-1);
+        if (first != last || (first != '"' && first != '\'')) {
+            return s;
+        }
+        
+        StringBuffer b = new StringBuffer(s.length() - 2);
+    	boolean quote = false;
+        for (int i = 1; i < s.length() - 1; i++) {
+            char c = s.charAt(i);
+
+            if (c == '\\' && !quote) {
+                quote = true;
+                continue;
+            }
+            quote = false;
+            b.append(c);
+        }
+        
+        return b.toString();
+	}
+	
+	/**
+	 * The given string is simply surrounded by quoting character. 
+	 * Quote characters already present in the given string are left unchanged. 
+	 * @param str
+	 * @return
+	 */
 	public static String quote(CharSequence str) {
 		return "\"".concat(str.toString()).concat("\"");
 	}
@@ -1846,6 +1895,31 @@ public class StringUtils {
 		String[] result = new String[str.length];
 		for (int i = 0; i < str.length; i++) {
 			result[i] = str[i].toUpperCase();
+		}
+		return result;
+	}
+	
+	/**
+	 * Counts the number of lines in the input CharSequence.
+	 * Uses universal matching pattern that prefers (\n\r or \r\n) over (\r or \n).
+	 * 
+	 * @return the number of lines
+	 */
+	public static int countLines(CharSequence input) {
+		if (input.length() == 0) {
+			return 0;
+		}
+		return countMatches(input, "\r\n|\n\r|\r|\n") + 1;
+	}
+	
+	/**
+	 * Counts the number of occurrences of the pattern in the input sequence.
+	 */
+	public static int countMatches(CharSequence input, String regex) {
+		int result = 0;
+		Matcher m = Pattern.compile(regex).matcher(input);
+		while (m.find()) {
+			result++;
 		}
 		return result;
 	}

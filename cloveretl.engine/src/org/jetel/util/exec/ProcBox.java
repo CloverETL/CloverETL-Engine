@@ -270,24 +270,4 @@ public class ProcBox {
 		}
 	}
 	
-	/**
-     * This method determine platform type.
-     * 
-     * @return          true if the platform is Windows else false
-     * @since 23.8.2007
-     */
-	public static boolean isWindowsPlatform() {
-		return System.getProperty("os.name").contains("Windows");
-	} 
-	
-	/**
-     * This method determine platform type.
-     * 
-     * @return          true if the platform is MAC OS else false
-     * @since 23.8.2007
-     */
-	public static boolean isMACPlatform() {
-		String os = System.getProperty("os.name").toLowerCase();
-	    return os.startsWith("mac os x"); 
-	}
 }

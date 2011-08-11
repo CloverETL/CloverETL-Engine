@@ -21,9 +21,9 @@
  */
 package org.jetel.component.aggregate;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -40,7 +40,7 @@ import org.jetel.metadata.DataFieldMetadata;
 public class Modus extends AggregateFunction {
 	private static String NAME = "modus";
 
-	private Map<DataField, Count> counts = new HashMap<DataField, Count>();
+	private Map<DataField, Count> counts = new LinkedHashMap<DataField, Count>();
 	
 	// Is input nullable?
 	private boolean nullableInput;
@@ -109,16 +109,15 @@ public class Modus extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		Set<DataField> keys = counts.keySet();
 		int maxCount = 0;
 		DataField mode = null;
 		
 		// find the value with most occurrences
-		for (DataField value : keys) {
-			int count = counts.get(value).getValue();
+		for (Entry<DataField, Count> countEntry : counts.entrySet()) {
+			int count = countEntry.getValue().getValue();
 			if (count > maxCount) {
 				maxCount = count;
-				mode = value;
+				mode = countEntry.getKey();
 			}
 		}
 		

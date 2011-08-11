@@ -934,6 +934,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultString2", "string2");
 	}
 
+	public void test_type_record_list_global() {
+		doCompile("test_type_record_list_global");
+		
+		check("resultInt", 6);
+		check("resultString", "string");
+		check("resultInt2", 10);
+		check("resultString2", "string2");
+	}
+
 	public void test_type_record_map() {
 		doCompile("test_type_record_map");
 		
@@ -943,6 +952,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultString2", "string2");
 	}
 
+	public void test_type_record_map_global() {
+		doCompile("test_type_record_map_global");
+		
+		check("resultInt", 6);
+		check("resultString", "string");
+		check("resultInt2", 10);
+		check("resultString2", "string2");
+	}
+
+	
 	public void test_type_record() {
 		doCompile("test_type_record");
 
@@ -2312,7 +2331,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_datelib_today() {
 		doCompile("test_datelib_today");
-		check("todayDate", new Date());
+		Date expectedDate = new Date();
+		//the returned date does not need to be exactly the same date which is in expectedData variable
+		//let say 1000ms is tolerance for equality
+		assertTrue("todayDate", Math.abs(expectedDate.getTime() - ((Date) getVariable("todayDate")).getTime()) < 1000);
 	}
 	
 	public void test_datelib_zeroDate() {

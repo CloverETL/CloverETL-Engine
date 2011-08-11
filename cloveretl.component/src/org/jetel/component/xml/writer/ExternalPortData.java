@@ -20,14 +20,18 @@ package org.jetel.component.xml.writer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.DatabaseConfig;
+import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
@@ -41,8 +45,13 @@ import com.sleepycat.je.EnvironmentConfig;
  */
 public abstract class ExternalPortData extends PortData {
 	
+	protected static final int SERIALIZED_COUNTER_LENGTH = 8;
+	
 	private File tempFile;
 	private long cacheSize;
+	
+	/** record buffer */
+	protected ByteBuffer recordBuffer;
 	
 	/**
 	 * @param inPort
@@ -57,6 +66,8 @@ public abstract class ExternalPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		// long counter is prepended, therefore + SERIALIZED_LONG_LENGTH
+		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE + SERIALIZED_COUNTER_LENGTH);
 		try {
 			tempFile = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
 			tempFile.delete();
@@ -111,5 +122,32 @@ public abstract class ExternalPortData extends PortData {
 		dbConfig.setExclusiveCreate(true);
 		return dbConfig;
 	}
+	
+	protected DatabaseEntry getDatabaseKey(DataRecord record, int[] key, DataRecord parentRecord, int[] parentKey) {
+		for (int i = 0; i < parentKey.length; i++) {
+			record.getField(key[i]).setValue(parentRecord.getField(parentKey[i]));
+		}
+		
+		record.serialize(recordBuffer, key);
+		int dataLength = recordBuffer.position();
+		recordBuffer.flip();
+		byte[] serializedKey = new byte[dataLength];
+		recordBuffer.get(serializedKey);
+		recordBuffer.clear();
 
+		return new DatabaseEntry(serializedKey);
+	}
+	
+	protected byte[] toByteArray(long data) {
+	    return new byte[] {
+	        (byte)((data >> 56) & 0xff),
+	        (byte)((data >> 48) & 0xff),
+	        (byte)((data >> 40) & 0xff),
+	        (byte)((data >> 32) & 0xff),
+	        (byte)((data >> 24) & 0xff),
+	        (byte)((data >> 16) & 0xff),
+	        (byte)((data >> 8) & 0xff),
+	        (byte)((data >> 0) & 0xff),
+	    };
+	}
 }

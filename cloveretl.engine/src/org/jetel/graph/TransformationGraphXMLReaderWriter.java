@@ -21,12 +21,14 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,9 +57,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
-import org.jetel.util.file.FileUtils;
-import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -722,22 +723,55 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void instantiateProperties(NodeList propertyElements) throws  XMLConfigurationException {
+		PropertyRefResolver propertiesRefResolver = new PropertyRefResolver();
+		List<String> unresolvedUrls = new ArrayList<String>();
 	    // loop through all property elements & create appropriate properties
 	    for (int i = 0; i < propertyElements.getLength(); i++) {
 	        Element propertyElement = (Element) propertyElements.item(i);
-	        // process property from file
+	        // process property from file, if fileURL contains property reference, skip it for now
 	        if (propertyElement.hasAttribute("fileURL")) {
 	        	String fileURL = propertyElement.getAttribute("fileURL");
+        		if (propertiesRefResolver.containsProperty(fileURL)) {
+        			unresolvedUrls.add(fileURL);
+        			continue;
+        		}
 	        	try {
 	        		graph.loadGraphPropertiesSafe(fileURL);
 	        	} catch(IOException ex) {
-	        		throw new XMLConfigurationException("Can't load property definition from " + fileURL, ex); 
+	        		throw new XMLConfigurationException("Can't load property definition from " + fileURL, ex);
 	        	}
 	        } else if (propertyElement.hasAttribute("name")) {
 	        	graph.getGraphProperties().setPropertySafe(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
 	        } else {
 	        	throw new XMLConfigurationException("Invalid property definition :" + propertyElement);
 	        }
+	    }
+	    
+	    if (unresolvedUrls.size() == 0) {
+	    	return;
+	    }
+	    
+	    // now try to resolve properties from file which have fileURL with property reference
+	    while (!unresolvedUrls.isEmpty()) {
+	    	propertiesRefResolver = new PropertyRefResolver(graph.getGraphProperties());
+	    	List<String> stillUnresolvedUrls = new ArrayList<String>();
+		    for (String url : unresolvedUrls) {
+		    	String resolvedUrl = propertiesRefResolver.resolveRef(url);
+		    	if (propertiesRefResolver.containsProperty(resolvedUrl)) {
+		    		stillUnresolvedUrls.add(resolvedUrl);
+		    	} else {
+		        	try {
+		        		graph.loadGraphPropertiesSafe(resolvedUrl);
+		        	} catch(IOException ex) {
+		        		throw new XMLConfigurationException("Can't load property definition from " + resolvedUrl, ex);
+		        	}
+		    	}
+		    }
+		    
+		    if (unresolvedUrls.size() == stillUnresolvedUrls.size()) {
+		    	throw new XMLConfigurationException("Failed to resolve following propertis file URL(s): " + StringUtils.stringArraytoString(stillUnresolvedUrls.toArray(new String[0]), ", "));
+		    }
+		    unresolvedUrls = stillUnresolvedUrls;
 	    }
 	}
 

@@ -27,7 +27,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellValue;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -244,23 +247,28 @@ public class XLSXDataParser extends XLSParser {
 	}
 
 	@Override
-	public String[] getNames() {
+	public String[] getNames() throws ComponentNotReadyException{
 		List<String> names = new ArrayList<String>();
 		Row row = (metadataRow > -1) ? sheet.getRow(metadataRow) : sheet.getRow(firstRow);
+		
+		if (row == null) {
+			throw new ComponentNotReadyException("Metadata row (" + (metadataRow > -1 ? metadataRow : firstRow) + 
+					") doesn't exist in sheet " + StringUtils.quote(sheet.getSheetName()) + "!"); 
+		}
 
+		DataFormatter formatter = new DataFormatter();
 		for (int i = 0; i < row.getLastCellNum(); i++) {
 			Cell cell = row.getCell(i);
 
 			if (cell != null) {
-				String cellValue = cell.getStringCellValue();
-				names.add(XLSFormatter.getCellCode(i) + " - "
-						+ cellValue.substring(0, Math.min(cellValue.length(), MAX_NAME_LENGTH)));
+				String cellValue = formatter.formatCellValue(cell);
+				names.add(XLSFormatter.getCellCode(i) + " - " + cellValue.substring(0, Math.min(cellValue.length(), MAX_NAME_LENGTH)));
 			}
 		}
 
 		return names.toArray(new String[names.size()]);
 	}
-
+	
 	@Override
 	public DataRecordMetadata createMetadata() {
 		if (workbook == null) {
@@ -310,7 +318,8 @@ public class XLSXDataParser extends XLSParser {
 				continue;
 			}
 
-			String cellName = (metadataRow > -1 && nameCell != null) ? nameCell.getStringCellValue() : XLSFormatter.getCellCode(i);
+			String cellName = (metadataRow > -1 && nameCell != null) ? 
+					StringUtils.normalizeName(dataFormatter.formatCellValue(nameCell)) : XLSFormatter.getCellCode(i);
 
 			if (!StringUtils.isValidObjectName(cellName)) {
 				cellName = StringUtils.normalizeName(cellName);
@@ -443,7 +452,7 @@ public class XLSXDataParser extends XLSParser {
 
     			Cell cell = row.getCell(xlsFieldIndex);
 
-    			if (cell == null) {
+    			if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
     				try {
     					record.getField(cloverFieldIndex).setNull(true);
     					continue;
@@ -463,7 +472,7 @@ public class XLSXDataParser extends XLSParser {
     						break;
     					case DataFieldMetadata.BYTE_FIELD:
     					case DataFieldMetadata.STRING_FIELD:
-    						record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
+   							record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, new FormulaEval()));
     						break;
     					case DataFieldMetadata.DECIMAL_FIELD:
     					case DataFieldMetadata.INTEGER_FIELD:
@@ -540,4 +549,38 @@ public class XLSXDataParser extends XLSParser {
     	close();
     }
 
+	
+	/** 
+	 * This class is used for the dataFormater to return cell formula cached result (stored in the cell XML), not formula itself.
+	 */
+	private static class FormulaEval implements FormulaEvaluator {
+
+		@Override
+		public void clearAllCachedResultValues() {
+		}
+
+		@Override
+		public void notifySetFormula(Cell cell) {
+		}
+
+		@Override
+		public void notifyDeleteCell(Cell cell) {
+		}
+
+		@Override
+		public CellValue evaluate(Cell cell) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int evaluateFormulaCell(Cell cell) {
+			return cell.getCachedFormulaResultType();
+		}
+
+		@Override
+		public Cell evaluateInCell(Cell cell) {
+			throw new UnsupportedOperationException();
+		}
+		
+	}
 }

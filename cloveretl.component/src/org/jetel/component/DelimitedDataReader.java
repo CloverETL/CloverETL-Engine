@@ -30,6 +30,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -124,6 +125,10 @@ public class DelimitedDataReader extends Node {
     private String incrementalFile;
     private String incrementalKey;
 	private String charset;
+	private IParserExceptionHandler exceptionHandler;
+	private Boolean trim;
+	private Boolean skipLeadingBlanks;
+	private Boolean skipTrailingBlanks;
 
 
 	/**
@@ -214,8 +219,16 @@ public class DelimitedDataReader extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		parser = new DelimitedDataParser(getInputPort(INPUT_PORT).getMetadata());
+		prepareParser();
 		prepareMultiFileReader();
+	}
+
+	private void prepareParser() {
+		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.setExceptionHandler(exceptionHandler);
+		parser.setTrim(trim);
+		parser.setSkipLeadingBlanks(skipLeadingBlanks);
+		parser.setSkipTrailingBlanks(skipTrailingBlanks);
 	}
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
@@ -304,29 +317,29 @@ public class DelimitedDataReader extends Node {
 						xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
                 aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
             }
-            if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
+            if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)) {
                 aDelimitedDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
             }
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
                 aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
-			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aDelimitedDataReaderNIO.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+			if (xattribs.exists(XML_TRIM_ATTRIBUTE)) {
+				aDelimitedDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
 				aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
-			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
 				aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aDelimitedDataReaderNIO.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)) {
+				aDelimitedDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
-				aDelimitedDataReaderNIO.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
+			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)) {
+				aDelimitedDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -348,7 +361,7 @@ public class DelimitedDataReader extends Node {
 	 */
 	public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        this.exceptionHandler = ParserExceptionHandlerFactory.getHandler(policyType);
 	}
 
 
@@ -358,7 +371,7 @@ public class DelimitedDataReader extends Node {
 	 * @see org.jetel.exception.BadDataFormatExceptionHandler
 	 */
 	public PolicyType getPolicyType() {
-		return this.parser.getPolicyType();
+		return policyType;
 	}
 	
 	/**
@@ -388,6 +401,7 @@ public class DelimitedDataReader extends Node {
         checkMetadata(status, getOutMetadata());
 
         try {
+        	prepareParser();
     		prepareMultiFileReader();
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
@@ -435,5 +449,18 @@ public class DelimitedDataReader extends Node {
     public void setIncrementalKey(String incrementalKey) {
     	this.incrementalKey = incrementalKey;
     }
+
+	public void setTrim(Boolean trim) {
+		this.trim = trim;
+	}
+
+	public void setSkipLeadingBlanks(Boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public void setSkipTrailingBlanks(Boolean skipTrailingBlanks) {
+		this.skipTrailingBlanks = skipTrailingBlanks;
+	}
+    
 }
 

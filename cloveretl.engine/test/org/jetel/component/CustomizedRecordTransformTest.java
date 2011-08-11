@@ -412,12 +412,12 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 			e.printStackTrace();
 			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
 		}
-		assertEquals(out.getField(1).getValue(), 1.0);
-		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(2.0));
+		assertEquals(out.getField(1).getValue(), 0.0);
+		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(1.0));
 //		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(3.0));
-		assertEquals(out1.getField(0).getValue().toString(), "2");
-		assertEquals(out1.getField(2).getValue().toString(), "3");
-		assertEquals(out.getField(2).getValue().toString(), "4");
+		assertEquals(out1.getField(0).getValue().toString(), "1");
+		assertEquals(out1.getField(2).getValue().toString(), "2");
+		assertEquals(out.getField(2).getValue().toString(), "3");
 	}
 	
 	public void test_parameterToField(){

@@ -90,8 +90,6 @@ public class XmlFormatter implements Formatter {
 				availableData.clear();
 				availableData.put(mapping.getPartitionElement().getPortIndex(), record);
 				mapping.getPartitionElement().writeRecord(this, availableData, record);
-			} else {
-				mapping.getRootElement().write(this, new HashMap<Integer, DataRecord>());
 			}
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
@@ -104,10 +102,8 @@ public class XmlFormatter implements Formatter {
 	public int writeHeader() throws IOException {
 		try {
 			writer.writeStartDocument(mapping.getVersion());
-			if (mapping.getPartitionElement() != null) {
-				mapping.setState(MappingWriteState.HEADER);
-				mapping.getRootElement().write(this, new HashMap<Integer, DataRecord>());
-			}
+			mapping.setState(MappingWriteState.HEADER);
+			mapping.getRootElement().write(this, new HashMap<Integer, DataRecord>());
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
 		}
@@ -117,10 +113,8 @@ public class XmlFormatter implements Formatter {
 	@Override
 	public int writeFooter() throws IOException {
 		try {
-			if (mapping.getPartitionElement() != null) {
-				mapping.setState(MappingWriteState.FOOTER);
-				mapping.getRootElement().write(this, new HashMap<Integer, DataRecord>());
-			}
+			mapping.setState(MappingWriteState.FOOTER);
+			mapping.getRootElement().write(this, new HashMap<Integer, DataRecord>());
 			writer.writeEndDocument();
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
@@ -136,6 +130,7 @@ public class XmlFormatter implements Formatter {
 	@Override
 	public void finish() throws IOException {
 		writeFooter();
+		writer.flush();
 	}
 
 	@Override

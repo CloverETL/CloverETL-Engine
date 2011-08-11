@@ -55,10 +55,6 @@ public class ExternalComplexPortData extends ExternalPortData {
 	private Map<String, Database> dataMap;
 
 	private String[] stringKeys;
-	
-	private ByteBuffer buffer;
-
-	private ByteBuffer recordBuffer;
 	private ByteBuffer indexBuffer;
 	
 	private long counter = 0;
@@ -70,8 +66,6 @@ public class ExternalComplexPortData extends ExternalPortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		buffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		indexBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		
 		dataStorage = new DirectDynamicRecordBuffer(tempDirectory);
@@ -109,13 +103,13 @@ public class ExternalComplexPortData extends ExternalPortData {
 	public void put(DataRecord record) throws IOException {
 		IndexKey value = dataStorage.writeRaw(record);
 		
-		buffer.putInt(value.getPosition());
-		buffer.putInt(value.getLength());
-		int length = buffer.position();
-		buffer.flip();
+		recordBuffer.putInt(value.getPosition());
+		recordBuffer.putInt(value.getLength());
+		int length = recordBuffer.position();
+		recordBuffer.flip();
 		byte[] serializedValue = new byte[length];
-		buffer.get(serializedValue);
-		buffer.clear();
+		recordBuffer.get(serializedValue);
+		recordBuffer.clear();
 		DatabaseEntry databaseValue = new DatabaseEntry(serializedValue);
 		
 		for (int i = 0; i < primaryKey.length; i++) {
@@ -123,12 +117,12 @@ public class ExternalComplexPortData extends ExternalPortData {
 			
 			DatabaseEntry databaseKey;
 		
-			record.serialize(buffer, key);
-			length = buffer.position();
-			buffer.flip();
+			record.serialize(recordBuffer, key);
+			length = recordBuffer.position();
+			recordBuffer.flip();
 			byte[] serializedKey = new byte[length];
-			buffer.get(serializedKey);
-			buffer.clear();
+			recordBuffer.get(serializedKey);
+			recordBuffer.clear();
 
 			databaseKey = new DatabaseEntry(serializedKey);
 			
@@ -218,14 +212,7 @@ public class ExternalComplexPortData extends ExternalPortData {
 			next = new DataRecord(metadata);
 			next.init();
 			
-			ByteBuffer keyBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-			keyData.serialize(keyBuffer, parentKey);
-			int dataLength = keyBuffer.position();
-			keyBuffer.flip();
-			byte[] serializedKey = new byte[dataLength];
-			keyBuffer.get(serializedKey);
-
-			databaseKey = new DatabaseEntry(serializedKey);
+			databaseKey = getDatabaseKey(current, key, keyData, parentKey);
 			
 			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);

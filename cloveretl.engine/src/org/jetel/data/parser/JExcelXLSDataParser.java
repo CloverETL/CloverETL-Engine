@@ -126,10 +126,16 @@ public class JExcelXLSDataParser extends XLSParser {
 	}
 
 	@Override
-	public String[] getNames() {
+	public String[] getNames() throws ComponentNotReadyException{
 		ArrayList<String> names = new ArrayList<String>();
 		if (metadataRow > -1) {
 		Cell[] row = sheet.getRow(metadataRow);
+
+		if (row.length == 0) {
+			throw new ComponentNotReadyException("Metadata row (" + (metadataRow > -1 ? metadataRow : firstRow) + 
+					") doesn't exist in sheet " + StringUtils.quote(sheet.getName()) + "!"); 
+		}
+		
 		//go through each not empty cell
 		for (int i=0;i<row.length;i++) {
 			Cell cell = row[i];
@@ -332,9 +338,13 @@ public class JExcelXLSDataParser extends XLSParser {
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
-					Date dateWronglyInUTC = ((DateCell) cell).getDate();
-					Date dateInLocalTimeZone = this.changeTimeShiftToLocal(dateWronglyInUTC);
-					record.getField(cloverFieldIndex).setValue(dateInLocalTimeZone);
+					if (cell instanceof DateCell) {
+						Date dateWronglyInUTC = ((DateCell) cell).getDate();
+						Date dateInLocalTimeZone = this.changeTimeShiftToLocal(dateWronglyInUTC);
+						record.getField(cloverFieldIndex).setValue(dateInLocalTimeZone);
+					} else {
+						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'date' data field.");
+					}
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
@@ -344,10 +354,18 @@ public class JExcelXLSDataParser extends XLSParser {
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(cloverFieldIndex).setValue(((NumberCell) cell).getValue());
+					if (cell instanceof NumberCell) {
+						record.getField(cloverFieldIndex).setValue(((NumberCell) cell).getValue());
+					} else {
+						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'numeric' data field.");
+					}
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
-					record.getField(cloverFieldIndex).setValue(((BooleanCell) cell).getValue());
+					if (cell instanceof BooleanCell) {
+						record.getField(cloverFieldIndex).setValue(((BooleanCell) cell).getValue());
+					} else {
+						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'boolean' data field.");
+					}
 					break;
 				}
 			} catch (RuntimeException bdne) { // exception when trying get date or number from different cell type, or there's incorrect format
@@ -355,7 +373,7 @@ public class JExcelXLSDataParser extends XLSParser {
 				try {
 					record.getField(cloverFieldIndex).fromString(parseString(cell));
 				} catch (Exception e) {
-					BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
+					BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage(), bdne);
 					bdfe.setRecordNumber(currentRow+1);
 					bdfe.setFieldNumber(cloverFieldIndex);
 					if (exceptionHandler != null) { // use handler only if configured

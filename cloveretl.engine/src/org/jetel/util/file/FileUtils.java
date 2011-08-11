@@ -35,6 +35,7 @@ import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -56,6 +57,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiOutFile;
@@ -107,6 +109,8 @@ public class FileUtils {
 	private static final String FILE_PROTOCOL = "file";
 	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
+    private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
+    
 	private static final Log log = LogFactory.getLog(FileUtils.class);
 	
 	/**
@@ -132,7 +136,14 @@ public class FileUtils {
     * @throws MalformedURLException  
     */
     public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
-    	return getFileURL(contextURL, fileURL, false);
+    	//default value for addStrokePrefix was changed to true
+    	//right now I am not sure if this change can have an impact to other part of project,
+    	//but it seems this changed fix relatively important issue:
+    	//
+    	//contextURL "file:/c:/project/"
+    	//fileURL "c:/otherProject/data.txt"
+    	//leads to --> "file:/c:/project/c:/otherProject/data.txt"
+    	return getFileURL(contextURL, fileURL, true);
     }
     
     /**
@@ -175,6 +186,15 @@ public class FileUtils {
             } catch(MalformedURLException e) {}
 		}
         
+		// archive url
+		if (isArchive(fileURL)) {
+			StringBuilder innerInput = new StringBuilder();
+			StringBuilder anchor = new StringBuilder();
+			ArchiveType type = getArchiveType(fileURL, innerInput, anchor);
+			URL archiveFileUrl = getFileURL(contextURL, innerInput.toString());
+			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, ARCHIVE_URL_STREAM_HANDLER);
+		}
+		
         // file url
 		String prefix = FILE_PROTOCOL + ":";
 		if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
@@ -182,7 +202,7 @@ public class FileUtils {
 		}
         return new URL(contextURL, prefix + fileURL);
     }
-
+    
     /**
      * Converts a list of file URLs to URL objects by calling {@link #getFile(URL, String)}.
      *
@@ -324,8 +344,8 @@ public class FileUtils {
         	// apply the contextURL
         	URL url = FileUtils.getFileURL(contextURL, localArchivePath.toString());
 			String absolutePath = url.getFile();
-
-        	return new de.schlichtherle.io.FileInputStream(absolutePath);
+			registerTrueZipVSFEntry(new de.schlichtherle.io.File(localArchivePath.toString()));
+			return new de.schlichtherle.io.FileInputStream(absolutePath);
         }
 
         //first we try the custom path resolvers
@@ -846,6 +866,13 @@ public class FileUtils {
 		return getLocalArchivePath(contextURL, input, false, 0, path, 0, false);
 	}
 	
+	private static void registerTrueZipVSFEntry(de.schlichtherle.io.File entry) {
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (graph != null) {
+			graph.getVfsEntries().addVFSEntry(entry);
+		}
+	}
+	
 	/**
      * Creates OutputStream from the url definition.
      * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>
@@ -873,9 +900,11 @@ public class FileUtils {
 			String absolutePath = url.getFile();
 			
         	de.schlichtherle.io.File archive = new de.schlichtherle.io.File(absolutePath);
-        	log.debug("Opening local archive entry " + archive.getAbsolutePath()
-        			+ " (mkdirs: " + archive.getParentFile().mkdirs()
+        	boolean mkdirsResult = archive.getParentFile().mkdirs();
+			log.debug("Opening local archive entry " + archive.getAbsolutePath()
+        			+ " (mkdirs: " + mkdirsResult
         			+ ", exists:" + archive.exists() + ")");
+			registerTrueZipVSFEntry(archive);
         	return new de.schlichtherle.io.FileOutputStream(absolutePath, appendData);
         }
         
@@ -1349,6 +1378,50 @@ public class FileUtils {
 		}
 	}
 	
+	/**
+	 * Tries to convert the given string to {@link File}. 
+	 * @param contextUrl context URL which is used for relative path
+	 * @param file string representing the file
+	 * @return {@link File} representation
+	 */
+	public static File getJavaFile(URL contextUrl, String file) {
+		URL fileURL;
+		try {
+			fileURL = FileUtils.getFileURL(contextUrl, file);
+		} catch (MalformedURLException e) {
+			throw new JetelRuntimeException("Invalid file URL definition.", e);
+		}
+		try {
+			return FileUtils.convertUrlToFile(fileURL);
+		} catch (MalformedURLException e) {
+			throw new JetelRuntimeException("File URL does not have 'file' protocol.", e);
+		}
+	}
+
+	
+    public static class ArchiveURLStreamHandler extends URLStreamHandler {
+    	@Override
+    	protected URLConnection openConnection(URL u) throws IOException {
+			return new ArchiveURLConnection(u);
+    	}
+    }
+    
+    private static class ArchiveURLConnection extends URLConnection {
+
+		public ArchiveURLConnection(URL url) {
+			super(url);
+		}
+    	
+		@Override
+		public void connect() throws IOException {
+		}
+		
+		@Override
+		public InputStream getInputStream() throws IOException {
+			return FileUtils.getInputStream(null, url.toString());
+		}
+    }
+
 }
 
 /*

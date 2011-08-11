@@ -31,14 +31,15 @@ import org.jetel.component.util.CommandBuilder;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -218,7 +219,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	
 	@Override
 	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
-		if (ProcBox.isWindowsPlatform()) {
+		if (PlatformUtils.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
 

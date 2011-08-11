@@ -31,6 +31,7 @@ import com.googlecode.sardine.SardineFactory;
 
 public class WebdavOutputStream extends OutputStream {
 	private OutputStream os;
+	private SardinePutThread sardineThread;
 	
 	public static String getUsername(URL url) {
 		String userInfo = url.getUserInfo();
@@ -85,8 +86,8 @@ public class WebdavOutputStream extends OutputStream {
 			outputURL = stripUserinfo(parsedUrl).toString();
 		} catch (MalformedURLException e) {}
 		
-		Thread thread = new SardinePutThread(outputURL, is, username, password);
-		thread.start();
+		sardineThread = new SardinePutThread(outputURL, is, username, password);
+		sardineThread.start();
 	}
 	
 	class SardinePutThread extends Thread {
@@ -94,6 +95,7 @@ public class WebdavOutputStream extends OutputStream {
 		private InputStream is;
 		private String username;
 		private String password;
+		private Throwable error;
 		
 		SardinePutThread(String URL, InputStream is, String username, String password) {
 			this.URL = URL;
@@ -102,20 +104,24 @@ public class WebdavOutputStream extends OutputStream {
 			this.password = password;
 		}
 		
+		public Throwable getError() {
+			return error;
+		}
+		
 		public void run() {
 			try {
 				Sardine sardine = SardineFactory.begin(username, password);
+				
+				// This is a workaround needed for example for writing to CloverETL Server.
+				// It will avoid retry on non-repeatable request error.
+				// Digest authorization will be performed on this request and then the PUT
+				// method (where retry caused by authorization would fail) is already authorized.
+				sardine.exists(URL);
+				
 				sardine.put(URL, is);
 			}
-			catch (IOException e) {
-				try {
-					// this will make the associated writer eventually crash
-					// it is necessary to prevent the graph running forever
-					is.close();
-				} catch (IOException closeException) {
-					closeException.printStackTrace();
-				}
-				throw new RuntimeException(e);
+			catch (Throwable e) {
+				error = e;
 			}
 		}
 	}
@@ -128,6 +134,15 @@ public class WebdavOutputStream extends OutputStream {
 	@Override
 	public void close() throws IOException {
 		os.close();
+		try {
+			sardineThread.join();
+			Throwable error = sardineThread.getError();
+			if (error != null) {
+				throw new IOException(error);
+			}
+		} catch (InterruptedException e) {
+			throw new IOException(e.getCause());
+		}
 	}
 	
 	@Override

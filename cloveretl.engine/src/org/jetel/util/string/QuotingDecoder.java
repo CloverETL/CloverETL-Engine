@@ -30,7 +30,7 @@ package org.jetel.util.string;
 */
 public class QuotingDecoder {
 	
-	public static final String AUTO_MODE_STRING = "auto";
+	public static final String AUTO_MODE_STRING = "both";
 	
 	private static final char DOUBLE_QUOTE = '\"';
 	private static final char SINGLE_QUOTE = '\'';

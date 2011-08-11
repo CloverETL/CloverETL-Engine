@@ -18,13 +18,9 @@
  */
 package org.jetel.component;
 
-import java.io.StringReader;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +30,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -43,13 +40,13 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 
 /**
  *  <h3>XML XPath Reader Component</h3>
@@ -216,9 +213,9 @@ public class XmlXPathReader extends Node {
     			URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
     			try {
     				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
-   					parser.setXPath(createDocumentFromChannel(ch));
+   					parser.setXPath(XmlUtils.createDocumentFromChannel(ch));
     			} catch (Exception e) {
-    				throw new ComponentNotReadyException(e);
+    				throw new ComponentNotReadyException("Mapping parameter parse error occurs.", e);
     			}
     		}
     			
@@ -348,10 +345,17 @@ public class XmlXPathReader extends Node {
 						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
 						mappingURL);
 			} else {
+				Document mappingDocument = null;
+				try {
+					mappingDocument = XmlUtils.createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE));
+				} catch (JetelException e) {
+					throw new XMLConfigurationException("Mapping parameter parse error occurs.", e);
+				}
+				
 				aXmlXPathReader = new XmlXPathReader(
 						xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-						createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE)));
+						mappingDocument);
 			}
 			
 			aXmlXPathReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
@@ -375,44 +379,6 @@ public class XmlXPathReader extends Node {
 		return aXmlXPathReader;
 	}
 
-    /**
-     * Creates org.w3c.dom.Document object from the given String.
-     * 
-     * @param inString
-     * @return
-     * @throws XMLConfigurationException
-     */
-    public static Document createDocumentFromString(String inString) throws XMLConfigurationException {
-        InputSource is = new InputSource(new StringReader(inString));
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        Document doc;
-        try {
-            doc = dbf.newDocumentBuilder().parse(is);
-        } catch (Exception e) {
-            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
-        }
-        return doc;
-    }
-
-    /**
-     * Creates org.w3c.dom.Document object from the given ReadableByteChannel.
-     * 
-     * @param readableByteChannel
-     * @return
-     * @throws XMLConfigurationException
-     */
-    public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        Document doc;
-        try {
-            doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
-        } catch (Exception e) {
-            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
-        }
-        return doc;
-    }
-
-    
     public void setPolicyType(String strPolicyType) {
         policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
     }

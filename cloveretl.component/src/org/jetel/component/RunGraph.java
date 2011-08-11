@@ -57,6 +57,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.exec.DataConsumer;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
@@ -375,7 +376,7 @@ public class RunGraph extends Node{
 			result = cloverCmdLineArgs;
 		}
 		
-		return StringUtils.backslashToSlash(result);
+		return result;
 	}
 
 	/**
@@ -432,7 +433,7 @@ public class RunGraph extends Node{
         }
 
 		for (String cloverCommandArg : args) {
-			commandList.add(cloverCommandArg);
+			commandList.add(StringUtils.unquote2(cloverCommandArg));
 		}
 		
 		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && getGraph().getRuntimeContext().getContextURL() != null) {
@@ -445,12 +446,19 @@ public class RunGraph extends Node{
 
 		commandList.add(graphName);
 
-		logger.info("Executing command: " + StringUtils.quote(commandList.toString()));
-
 		DataConsumer consumer = new OutDataConsumer(fileWriter, outputRecordData);
 		DataConsumer errConsumer = new ErrorDataConsumer(fileWriter, logger, graphName);
 
 		String[] command = commandList.toArray(new String[commandList.size()]);
+		
+		//the arguments have to be quoted on windows platform 
+		//@see http://bugs.sun.com/view_bug.do?bug_id=6468220
+		if (PlatformUtils.isWindowsPlatform()) {
+			quoteArguments(command);
+		}
+
+		logger.info("Executing command: " + StringUtils.quote(Arrays.toString(command)));
+		
 		Process process = Runtime.getRuntime().exec(command);
 		ProcBox procBox = new ProcBox(process, null, consumer, errConsumer);
 		registerChildThreads(procBox.getChildThreads()); //register workers as child threads of this component
@@ -754,7 +762,7 @@ public class RunGraph extends Node{
 				runG.setCloverRunClass(xattribs.getString(XML_GRAPH_EXEC_CLASS));
 			}	
 			if (xattribs.exists(XML_CLOVER_CMD_LINE)) {
-				runG.setCloverCmdLineArgs(xattribs.getString(XML_CLOVER_CMD_LINE));
+				runG.setCloverCmdLineArgs(xattribs.getStringEx(XML_CLOVER_CMD_LINE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
 				runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
@@ -1070,4 +1078,55 @@ public class RunGraph extends Node{
 			return line;
 		}
 	}
+	
+	/**
+	 * Quotes all given arguments if necessary.
+	 * @param arguments
+	 */
+	private static void quoteArguments(String[] arguments) {
+		int i = 0;
+		for (String arg : arguments) {
+			arguments[i++] = winQuote(arg);
+		}
+	}
+	
+	/**
+	 * This is a just workaround for windows platform. Unfortunately the JVM is not able 
+	 * to pass an argument with quoting character via Runtime.exec() method. So the arguments
+	 * has to be quoted in this way.
+	 * @param s
+	 * @return
+	 * @see http://bugs.sun.com/view_bug.do?bug_id=6468220
+	 */
+	private static String winQuote(String s) {
+		if (!needsQuoting(s))
+			return s;
+		s = s.replaceAll("([\\\\]*)\"", "$1$1\\\\\"");
+		s = s.replaceAll("([\\\\]*)\\z", "$1$1");
+		return "\"" + s + "\"";
+	}
+
+	/**
+	 * Checks whether the quoting of a command line argument is necessary.
+	 * @param s
+	 * @return
+	 * @see #winQuote(String)
+	 * @see http://bugs.sun.com/view_bug.do?bug_id=6468220
+	 */
+	private static boolean needsQuoting(String s) {
+		int len = s.length();
+		if (len == 0) // empty string have to be quoted
+			return true;
+		for (int i = 0; i < len; i++) {
+			switch (s.charAt(i)) {
+			case ' ':
+			case '\t':
+			case '\\':
+			case '"':
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

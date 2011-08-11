@@ -477,7 +477,7 @@ public class DBFDataReader extends Node {
 	 */
 	public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
     public void setIncrementalFile(String incrementalFile) {

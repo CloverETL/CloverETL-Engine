@@ -23,6 +23,7 @@ import java.sql.ParameterMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -632,8 +633,36 @@ public class SQLUtil {
 		return newQuery.toString();
 	}
 
-	
-	
+	/**
+	 * Method individually close all given JDBC instances in separate try-catch blocks or 
+	 * omit closing when given parameter is null.
+	 * @param rs ResultSet
+	 * @param stmt Statement
+	 * @param conn Connection
+	 */
+	public static void closeConnection(ResultSet rs, Statement stmt, Connection conn) {
+		if(rs != null) {
+			try {
+				rs.close();
+			} catch (SQLException ex) {
+				logger.error(ex);
+			}
+		}
+		if(stmt != null) {
+			try {
+				stmt.close();
+			} catch (SQLException ex) {
+				logger.error(ex);
+			}
+		}
+		if(conn != null) {
+			try {
+				conn.close();
+			} catch (SQLException ex) {
+				logger.error(ex);
+			}
+		}
+	}
 	
 	/**
 	 * The aim of this interface together with delegating classes {@link ResultSetMetaData} and

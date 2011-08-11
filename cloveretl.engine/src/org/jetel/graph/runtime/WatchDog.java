@@ -176,6 +176,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
     		//print graph properties
     		graph.getGraphProperties().print(logger, "Graph properties:");
     		
+    		//print out runtime context
+    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
+    		
     		//print initial dictionary content
     		graph.getDictionary().printContent(logger, "Initial dictionary content:");
     		

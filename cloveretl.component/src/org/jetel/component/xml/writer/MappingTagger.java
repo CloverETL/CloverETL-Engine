@@ -297,7 +297,7 @@ public class MappingTagger extends AbstractVisitor {
 	}
 
 	private void collectPartitionInformation(Element element) {
-		if (resolvePartition && partitionElement == null) {
+		if (partitionElement == null) {
 			if (element.isPartition()) {
 				partitionElement = element;
 			} else if (partitionElementCandidate == null) {

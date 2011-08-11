@@ -73,6 +73,8 @@ import org.w3c.dom.Element;
  * @created Dec 03, 2010
  */
 public class ExtXmlWriter extends Node {
+	
+	private final static int OUTPUT_PORT = 0;
 
 	public final static String COMPONENT_TYPE = "EXT_XML_WRITER";
 	
@@ -160,7 +162,7 @@ public class ExtXmlWriter extends Node {
 	private void validateMapping(ConfigurationStatus status) throws ComponentNotReadyException  {
 		XmlMapping mapping = initMapping();
 		Map<Integer, DataRecordMetadata> connectedPorts = prepareConnectedData();
-		MappingValidator validator = new MappingValidator(connectedPorts);
+		MappingValidator validator = new MappingValidator(connectedPorts, recordsPerFile == 1);
 		validator.setMapping(mapping);
 		validator.setMaxErrors(MAX_ERRORS_OR_WARNINGS);
 		validator.setMaxWarnings(MAX_ERRORS_OR_WARNINGS);
@@ -287,7 +289,7 @@ public class ExtXmlWriter extends Node {
 	}
 	
 	private void compileMapping(XmlMapping mapping) throws ComponentNotReadyException {
-		MappingValidator validator = new MappingValidator(prepareConnectedData());
+		MappingValidator validator = new MappingValidator(prepareConnectedData(), recordsPerFile == 1);
 		validator.setMapping(mapping);
 		validator.validate();
 		
@@ -377,12 +379,10 @@ public class ExtXmlWriter extends Node {
 			while (iterator.hasNext()) {
 				writer.write(iterator.next());
 			}
-			// postExecute code must be placed into execute, as footer might contain data from records
-			writer.finish();
-		} else {
-			writer.write(null);
 		}
-
+		
+		// postExecute code must be placed into execute, as footer might contain data from records
+		writer.finish();
 		readRemainingData();
 		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;

@@ -121,34 +121,34 @@ public class ASTBuilder extends NavigatingVisitor {
 		this.problemReporter = problemReporter;
 		this.dictionary = graph != null ? graph.getDictionary() : null;
 
-		if (graph != null) {
-			
-			// populate name -> position mappings
+		// populate name -> position mappings
 
-			// input metadata names can clash
-			if (inputMetadata != null) {
-				for (int i = 0; i < inputMetadata.length; i++) {
-					DataRecordMetadata m = inputMetadata[i];
-
+		// input metadata names can clash
+		if (inputMetadata != null) {
+			for (int i = 0; i < inputMetadata.length; i++) {
+				DataRecordMetadata m = inputMetadata[i];
+				if (m != null) {
 					if (inputRecordsMap.put(m.getName(), i) != null) {
 						ambiguousInputMetadata.add(m.getName());
 					}
 				}
 			}
-	
-			// the same for output just different error message
-			if (outputMetadata != null) {
-				for (int i = 0; i < outputMetadata.length; i++) {
-					DataRecordMetadata m = outputMetadata[i];
+		}
 
-					if (m != null) {
-						if (outputRecordsMap.put(m.getName(), i) != null) {
-							ambiguousOutputMetadata.add(m.getName());
-						}
+		// the same for output just different error message
+		if (outputMetadata != null) {
+			for (int i = 0; i < outputMetadata.length; i++) {
+				DataRecordMetadata m = outputMetadata[i];
+				if (m != null) {
+					if (outputRecordsMap.put(m.getName(), i) != null) {
+						ambiguousOutputMetadata.add(m.getName());
 					}
 				}
 			}
-	
+		}
+
+		if (graph != null) {
+			
 			// all graph metadata for resolving record-type variable declarations
 			Iterator<String> mi = graph.getDataRecordMetadata();
 			while (mi.hasNext()) {

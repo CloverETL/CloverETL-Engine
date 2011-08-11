@@ -196,7 +196,7 @@ public class Normalizer extends Node {
 		if (norm == null) {
 			if (xformClass != null) {
 				norm = (RecordNormalize) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
-						logger, xformClass, null, getGraph().getRuntimeContext().getClassPath());
+						xformClass, getGraph().getRuntimeContext().getClassPath());
 			}else if (xform == null) {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}

@@ -190,7 +190,7 @@ public class SQLIncremental {
 	}
 
 	/**
-	 * Prepares statement for reading data from database. Incremental key is substituded by its current value,
+	 * Prepares statement for reading data from database. Incremental key is substituted by its current value,
 	 * and key definition is created from its description.
 	 * 
 	 * @param dbConnection
@@ -320,7 +320,7 @@ public class SQLIncremental {
 	 */
 	private String createSelectKeyQuery() throws ComponentNotReadyException{
 		StringBuilder query = new StringBuilder(sqlQuery);
-		int whereIndex = query.indexOf("where");
+		int whereIndex = query.toString().toLowerCase().indexOf("where");
 		if (whereIndex == -1) {
 			throw new ComponentNotReadyException("\"where\" clause not found in sql query!!!");
 		}

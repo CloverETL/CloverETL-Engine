@@ -42,10 +42,10 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -55,6 +55,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -251,7 +252,7 @@ public class InformixDataWriter extends BulkLoader {
         int processExitValue = 0;
 
         if (isDataReadFromPort) {
-	        if (!StringUtils.isEmpty(dataURL) || (ProcBox.isWindowsPlatform() && !useLoadUtility)) {
+	        if (!StringUtils.isEmpty(dataURL) || (PlatformUtils.isWindowsPlatform() && !useLoadUtility)) {
 	        	// dataFile is used for exchange data
 	        	readFromPortAndWriteByFormatter();
 	            box = createProcBox();
@@ -883,8 +884,8 @@ public class InformixDataWriter extends BulkLoader {
     		getIndexesOfAddedFields();
     		checkErrPortMetadata();
     		
-    		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
     		this.dbOutMetadata = createDbOutMetadata();
+    		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
 
     		dbRecord = new DataRecord(dbOutMetadata);
     		dbRecord.init();

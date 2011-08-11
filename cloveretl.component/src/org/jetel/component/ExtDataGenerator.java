@@ -279,8 +279,7 @@ public class ExtDataGenerator extends DataGenerator {
 					if (runtimeContext == null) return;
 
 					generatorClass = (RecordGenerate) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
-							logger, generatorClassName, getGraph().getRuntimeContext().getContextURL(),
-							runtimeContext.getClassPath());
+							generatorClassName, runtimeContext.getClassPath());
 				} else if (generatorSource == null) {
 					// read source code from URL
 					generatorSource = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), generatorURL, charset);

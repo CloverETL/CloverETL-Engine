@@ -37,6 +37,7 @@ public class QuotingDecoderTest extends TestCase {
 		decoder.setQuoteChar('\"');
 		assertEquals("Hi there!", decoder.decode("\"Hi there!\"").toString());
 		assertEquals("She said: \"What she said?\"", decoder.decode("\"She said: \"\"What she said?\"\"\"").toString());
+		assertEquals("'Other qoutes musn't be removed'", decoder.decode("'Other qoutes musn't be removed'").toString());
 		decoder.setQuoteChar(null);
 		assertEquals("\"Bla'", decoder.decode("'\"Bla''").toString());
 	}

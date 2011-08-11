@@ -33,15 +33,16 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
+import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -53,7 +54,6 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.Compare;
 import org.w3c.dom.Element;
 
 /**
@@ -205,6 +205,10 @@ public class DataIntersection extends Node {
 
 	private InputReader slaveReader;
 
+	private InputOrdering driverReaderOrdering;
+	
+	private InputOrdering slaveReaderOrdering;
+	
 	private DataRecord tmp;
 
 	private String joinKey;
@@ -419,7 +423,10 @@ public class DataIntersection extends Node {
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
 		transformation.preExecute();
-
+		
+		driverReaderOrdering = InputOrdering.UNDEFINED;
+		slaveReaderOrdering = InputOrdering.UNDEFINED;
+		
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -445,25 +452,16 @@ public class DataIntersection extends Node {
 		OutputPort outPortB = getOutputPort(WRITE_TO_PORT_B);
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
 		
-		DataRecord prevDriverValue = new DataRecord(getInputPort(DRIVER_ON_PORT).getMetadata());
-		DataRecord prevSlaveValue = new DataRecord(getInputPort(SLAVE_ON_PORT).getMetadata());
-		prevDriverValue.init();
-		prevSlaveValue.init();
-				
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
 		driverReader.loadNextRun();
 		slaveReader.loadNextRun();
-
+		driverReaderOrdering = driverReader.getOrdering();
+		slaveReaderOrdering = slaveReader.getOrdering();
+		
 		// main processing loop
-		 do {
-			 if(!checkSorted(prevDriverValue, prevSlaveValue))
-					throw new Exception(COMPONENT_TYPE + ": Data inputs need to be sorted in ascending order.");
-			 if(driverReader.getSample()!=null)
-				prevDriverValue.copyFrom(driverReader.getSample());
-			 if(slaveReader.getSample()!=null)
-				prevSlaveValue.copyFrom(slaveReader.getSample());
+		do {
 			switch (driverReader.compare(slaveReader)) {
 			case -1:
 				// driver lower
@@ -479,18 +477,24 @@ public class DataIntersection extends Node {
 				slaveReader.loadNextRun();
 				break;
 			case 1:
-				// slave lover - no corresponding master
+				// slave lower - no corresponding master
 				flush(slaveReader, outPortB);
 				slaveReader.loadNextRun();
 				break;
+			}
+			//all input data has to be in ascending order
+			if (!isDriverStreamAscending()) {
+				throw new RuntimeException("Data input A is not sorted in ascending order.");
+			}
+			if (!isSlaveStreamAscending()) {
+				throw new RuntimeException("Data input B is not sorted in ascending order.");
 			}
 		}while (runIt && (driverReader.hasData() || slaveReader.hasData()));
 		 
 		if (!runIt) {
 			return Result.ABORTED;
 		}
-		if(!checkSorted(prevDriverValue, prevSlaveValue))
-			throw new Exception(COMPONENT_TYPE + ": Data inputs need to be sorted in ascending order.");
+
 		// flush remaining driver records
 		flush(driverReader, outPortA) ;
 
@@ -504,15 +508,41 @@ public class DataIntersection extends Node {
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
-	
-	private boolean checkSorted(DataRecord prevDriver, DataRecord prevSlave) {
-		if(prevDriver!=null && driverReader.getSample()!=null) {
-			if(driverReader.getKey().compare(prevDriver, driverReader.getSample())>0)
+
+	/**
+	 * This method checks whether the master input records are in ascending order.
+	 * Method driverReader.getOrdering() is used for this purpose. This method returns 
+	 * UNDEFINED order in the start of processing of input records. Then is changed to
+	 * a specific value - ASCENDING (everything is correct) and DESCENDING (invalid order).
+	 * The order flag can be changed back to UNDEFINED value that means a change of ordering
+	 * happens and it is reported as invalid ordering.
+	 */
+	private boolean isDriverStreamAscending() {
+		if (driverReader.getOrdering() != InputOrdering.ASCENDING) {
+			if (driverReaderOrdering != InputOrdering.UNDEFINED || driverReader.getOrdering() != InputOrdering.UNDEFINED) {
 				return false;
+			}
+		} else {
+			driverReaderOrdering = InputOrdering.ASCENDING;
 		}
-		if(prevSlave!=null && slaveReader.getSample()!=null) {
-			if(slaveReader.getKey().compare(prevSlave, slaveReader.getSample())>0)
+		return true;
+	}
+
+	/**
+	 * This method checks whether the master input records are in ascending order.
+	 * Method driverReader.getOrdering() is used for this purpose. This method returns 
+	 * UNDEFINED order in the start of processing of input records. Then is changed to
+	 * a specific value - ASCENDING (everything is correct) and DESCENDING (invalid order).
+	 * The order flag can be changed back to UNDEFINED value that means a change of ordering
+	 * happens and it is reported as invalid ordering.
+	 */
+	private boolean isSlaveStreamAscending() {
+		if (slaveReader.getOrdering() != InputOrdering.ASCENDING) {
+			if (slaveReaderOrdering != InputOrdering.UNDEFINED || slaveReader.getOrdering() != InputOrdering.UNDEFINED) {
 				return false;
+			}
+		} else {
+			slaveReaderOrdering = InputOrdering.ASCENDING;
 		}
 		return true;
 	}

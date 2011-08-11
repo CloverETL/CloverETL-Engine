@@ -11,7 +11,7 @@ function integer transform() {
     singleRecord.Name = "string2";
     singleRecord.Value = 10;
 
-    for (integer i = 0; i < 10; i++) {
+    for (integer i = 0; i < 5; i++) {
     	recordList[i].Name = "string";
     	recordList[i].Value = 2*i;
     }

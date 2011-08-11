@@ -64,6 +64,12 @@ public class EngineInitializer {
      *        <br>can be null
      */
     public static synchronized void initEngine(String pluginsRootDirectory, String defaultPropertiesFile, String logHost) {
+    	if(alreadyInitialized) {
+    		//clover engine is already initialized
+    		return;
+    	}
+    	alreadyInitialized = true;
+    	
     	//shared part of initialiation
     	internalInit(defaultPropertiesFile, logHost);
 	
@@ -80,6 +86,12 @@ public class EngineInitializer {
      *        <br>can be null
      */
     public static synchronized void initEngine(URL[] pluginsUrls, String defaultPropertiesFile, String logHost) {
+    	if(alreadyInitialized) {
+    		//clover engine is already initialized
+    		return;
+    	}
+    	alreadyInitialized = true;
+    	
 		//shared part of initialiation
     	internalInit(defaultPropertiesFile, logHost);
     	
@@ -100,6 +112,12 @@ public class EngineInitializer {
      *        <br>can be null
      */
     public static synchronized void initEngine(PluginRepositoryLocation[] pluginRepositories, String defaultPropertiesFile, String logHost) {
+    	if(alreadyInitialized) {
+    		//clover engine is already initialized
+    		return;
+    	}
+    	alreadyInitialized = true;
+
     	//shared part of initialiation
     	internalInit(defaultPropertiesFile, logHost);
     	
@@ -108,12 +126,6 @@ public class EngineInitializer {
     }
 
     private static void internalInit(String defaultPropertiesFile, String logHost) {
-    	if(alreadyInitialized) {
-    		//clover engine is already initialized
-    		return;
-    	}
-    	alreadyInitialized = true;
-    	
     	//init logging
     	initLogging(logHost);
 

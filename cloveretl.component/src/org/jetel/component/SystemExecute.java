@@ -170,7 +170,7 @@ public class SystemExecute extends Node{
 	private final static int ERROR_LINES=2;
 
 	public  final static long KILL_PROCESS_WAIT_TIME = 1000;
-	
+		
 	private String command;
 	private String[] cmdArray;
 	private int capturedErrorLines;
@@ -197,7 +197,6 @@ public class SystemExecute extends Node{
 	
 	protected void set(String[] cmdArray, int errorLinesNumber)
 	{
-		this.interpreter = null;
 		this.command = null;
 		this.cmdArray = cmdArray;
 		this.capturedErrorLines = errorLinesNumber;		
@@ -631,7 +630,7 @@ public class SystemExecute extends Node{
 		SystemExecute sysExec;
 		try {
 			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_INTERPRETER_ATTRIBUTE,null),
+					xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
 					xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));

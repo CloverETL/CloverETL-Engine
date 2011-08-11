@@ -46,12 +46,12 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -559,17 +559,13 @@ public class Rollup extends Node {
      * @throws ComponentNotReadyException if an error occurred during the instantiation of the transform
      */
     private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
-        try {
-            return (RecordRollup) Class.forName(className).newInstance();
-        } catch (ClassNotFoundException exception) {
-            throw new ComponentNotReadyException("Cannot find the transformation class!", exception);
-        } catch (IllegalAccessException exception) {
-            throw new ComponentNotReadyException("Cannot access the transformation class!", exception);
-        } catch (InstantiationException exception) {
-            throw new ComponentNotReadyException("Cannot instantiate the transformation class!", exception);
-        } catch (ClassCastException exception) {
-            throw new ComponentNotReadyException(
-                    "The transformation class does not implement the RecordRollup interface!", exception);
+    	Object recordRollup = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
+    			className, getGraph().getRuntimeContext().getClassPath());
+    	
+    	if (recordRollup instanceof RecordRollup) {
+    		return (RecordRollup) recordRollup;
+    	} else {
+            throw new ComponentNotReadyException("The transformation class does not implement the RecordRollup interface!");
         }
     }
 

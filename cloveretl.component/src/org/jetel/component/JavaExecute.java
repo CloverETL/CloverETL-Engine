@@ -20,8 +20,6 @@ package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -35,7 +33,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -127,9 +124,8 @@ public class JavaExecute extends Node {
         }
 		
         if (runnableClass != null) {
-        	CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
             //get runnable from link to the compiled class
-            codeToRun = JavaExecute.loadClass(logger, runnableClass, null, classPath);
+            codeToRun = loadClass(runnableClass);
         } else if (runnable == null && runnableURL != null) {
         	runnable = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), runnableURL, charset);
         }
@@ -156,34 +152,15 @@ public class JavaExecute extends Node {
      * @return
      * @throws ComponentNotReadyException
      */
-    private static JavaRunnable loadClass(Log logger,
-            String runnableClassName, URL contextURL, CloverClassPath classPath)
-            throws ComponentNotReadyException {
-        JavaRunnable codeToRun = null;
-        // try to load in runnable class & instantiate
-        try {
-            codeToRun =  (JavaRunnable)Class.forName(runnableClassName).newInstance();
-        }catch(InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate runnable class: "+ex.getMessage());
-        }catch(IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate runnable class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            // let's try to load in any additional .jar library (if specified)
-            if (classPath.getRuntimeClassPath() == null) {
-                throw new ComponentNotReadyException(
-                        "Can't find specified runnable class: "
-                                + runnableClassName);
-            }
-            try {
-                URLClassLoader classLoader = new URLClassLoader(classPath.getRuntimeClassPath(), JavaExecute.class.getClassLoader());
-                codeToRun = (JavaRunnable) Class.forName(runnableClassName, true, classLoader).newInstance();
-            } catch (ClassNotFoundException ex1) {
-                throw new ComponentNotReadyException("Can not find class: " + ex1);
-            } catch (Exception ex3) {
-                throw new ComponentNotReadyException(ex3.getMessage());
-            }
+    private JavaRunnable loadClass(String runnableClassName) throws ComponentNotReadyException {
+    	Object javaRunnable = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
+    			runnableClassName, getGraph().getRuntimeContext().getClassPath());
+    	
+    	if (javaRunnable instanceof JavaRunnable) {
+    		return (JavaRunnable) javaRunnable;
+    	} else {
+            throw new ComponentNotReadyException("The transformation class does not implement the JavaRunnable interface!");
         }
-        return codeToRun;
     }
     
     /* (non-Javadoc)

@@ -38,10 +38,10 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -49,6 +49,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -231,7 +232,7 @@ public class OracleDataWriter extends BulkLoader {
 				ProcBox box = createProcBox();
 				processExitValue = box.join();
 			} else { // data is send to process through stdin of sqlldr
-				if (ProcBox.isWindowsPlatform()) {
+				if (PlatformUtils.isWindowsPlatform()) {
 					unstableStdinIsUsed = true;
 					Process process = Runtime.getRuntime().exec(commandLine);
 		            ProcBox box = createProcBox(process);
@@ -475,7 +476,7 @@ public class OracleDataWriter extends BulkLoader {
     
     private void createFileForExchange() throws ComponentNotReadyException {
     	if (!useFileForExchange) {
-    		if (!ProcBox.isWindowsPlatform() && isDataReadFromPort) {
+    		if (!PlatformUtils.isWindowsPlatform() && isDataReadFromPort) {
     			dataFile = createTempFile(EXCHANGE_FILE_PREFIX);
     		}
    			return;
@@ -663,7 +664,7 @@ public class OracleDataWriter extends BulkLoader {
     }
     
     private boolean getDefaultUsingFileForExchange() {
-    	return ProcBox.isWindowsPlatform();
+    	return PlatformUtils.isWindowsPlatform();
     }
     
     private void setMaxErrors(int maxErrors) {

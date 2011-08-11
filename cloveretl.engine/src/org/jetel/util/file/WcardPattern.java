@@ -46,7 +46,6 @@ import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
-import com.googlecode.sardine.util.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -567,13 +566,13 @@ public class WcardPattern {
 				if (res.isDirectory()) {
 					continue;
 				}
-				if (checkName(pattern, res.getAbsoluteUrl())) {
+				if (checkName(pattern, res.getPath())) {
 					// add authorization info back
 					String fullURL = url.getProtocol() + "://" + url.getAuthority() + dir + res.getName();
 					mfiles.add(fullURL);
 				}
 			}
-		} catch (SardineException e) {
+		} catch (IOException e) {
 			// it was not possible to connect using WebDAV, let's presume it's a normal HTTP request
 			mfiles.add(url.toString());
 			return mfiles;

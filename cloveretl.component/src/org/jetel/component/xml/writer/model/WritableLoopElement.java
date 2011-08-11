@@ -63,10 +63,10 @@ public class WritableLoopElement extends WritableElement {
 	
 	private DataIterator iterator;
 
-	public WritableLoopElement(WritableLoopElement parentLoopElement, String name, String namespaceURI, boolean hidden,
-			PortData portData, int parentPort, int[] keys, int[] parentKeys, String filterExpression, TransformationGraph graph,
-			String componentId, Log logger) throws ComponentNotReadyException {
-		super(name, namespaceURI, false);
+	public WritableLoopElement(WritableLoopElement parentLoopElement, String name, String namespaceURI, boolean writeNull,
+			boolean hidden,	PortData portData, int parentPort, int[] keys, int[] parentKeys, String filterExpression,
+			TransformationGraph graph, String componentId, Log logger) throws ComponentNotReadyException {
+		super(name, namespaceURI, writeNull);
 		this.parentLoopElement = parentLoopElement;
 		this.hidden = hidden;
 		this.parentPort = parentPort;
@@ -125,24 +125,26 @@ public class WritableLoopElement extends WritableElement {
 			throw new XMLStreamException(e);
 		}
 		record.copyFrom(writeRecord);
-		if (!hidden) {
-			if (children.length == 0) {
-				formatter.getWriter().writeEmptyElement(name);
-			} else {
-				formatter.getWriter().writeStartElement(name);
+		if (!super.isEmpty(availableData)) {
+			if (!hidden) {
+				if (children.length == 0) {
+					formatter.getWriter().writeEmptyElement(name);
+				} else {
+					formatter.getWriter().writeStartElement(name);
+				}
+				for (Writable namespace : namespaces) {
+					namespace.write(formatter, availableData);
+				}
+				for (Writable attribute : attributes) {
+					attribute.write(formatter, availableData);
+				}
 			}
-			for (Writable namespace : namespaces) {
-				namespace.write(formatter, availableData);
+			for (Writable child : children) {
+				child.write(formatter, availableData);
 			}
-			for (Writable attribute : attributes) {
-				attribute.write(formatter, availableData);
+			if (!hidden && children.length != 0) {
+				formatter.getWriter().writeEndElement();
 			}
-		}
-		for (Writable child : children) {
-			child.write(formatter, availableData);
-		}
-		if (!hidden && children.length != 0) {
-			formatter.getWriter().writeEndElement();
 		}
 	}
 	

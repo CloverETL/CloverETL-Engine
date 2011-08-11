@@ -510,7 +510,7 @@ public abstract class XLSParser implements Parser {
 	 * @return array with names from row set by setMetadataRow method 
 	 * (or setFirstRow if metadata row was not been set)  
 	 */
-	public abstract String[] getNames();
+	public abstract String[] getNames() throws ComponentNotReadyException;
 	
 	/**
 	 * @return metadata created from actual file, sheet, metadata row and first data row

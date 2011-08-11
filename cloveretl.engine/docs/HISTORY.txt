@@ -2,6 +2,86 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-1-0
+---------
+* New component ComplexDataReader (commercial only)
+	- for reading structured and unstructured flat files
+	- similar to MultiLevelReader, yet more powerful and user-friendly
+* Redesigned component XMLWriter (EXT_XML_WRITER)
+	- brand new mapping (incompatible)
+	- old XMLWriter still available as a deprecated component
+	- supports disk caching for large amounts of data
+* XMLExtract improvements
+	- automatic data denormalization
+	- metadata creation out of XMLExtract dialog
+	- ability to add ports and assign metadata
+	- annotations
+	- improved error reporting
+* AddressDoctor component (commercial only)
+* Lotus Notes Domino Reader/Writer/metadata extract (commercial only)
+* New component EmailReader (commercial only)
+* New CTL2 functions - xml2json() and json2xml()
+* Support for WebDAV and Amazon S3 protocols
+* DBInputTable supports reading SQL queries from input port
++ Binary parsers for integer and long, double (little/big endian, packed decimal)
++ New component Pivot
++ New component MetaPivot
++ PervasiveDB support
++ Firebird is has now built-in support
++ Trash multiple input ports
++ Trash can simulate a writer (Performance/Validate records modes)
++ New component DataSampler
++ New attribute for Denormalizer - group size
++ Performance of CTL random* functions improved
++ Performance of CTL String.indexOf() improved
++ Fixed handling of paths with spaces
++ ParallelReader improvements
++ Performance of Concatenate improved
++ Truezip is now used for handling zip files (append, excel)
+
+
+REL 3-0-2
+---------
+* CTL2: Lists and maps of records are now possible.
+	Now you can use list of records and maps of records in your code.
+	Example:
+		// lists
+		MyDataRecord[] myList;
+		MyDataRecord a;
+		MyDataRecord b;
+		myList[2] = a;
+		b = myList[2];
+		// maps
+		map[string, MyDataRecord] myMap;
+		myMap["hello"] = a;
+	(For maps, only values can be records)
+* XMLExtract now distinguishes between null and empty strings
+	When reading XML files with XML Extract, you can encouter the need to know whether an element or attribute is present in the source
+	or just has an empty value.
+	XMLExtract now sets either "null" value whenever the element/attribute is omitted or empty value ("") 
+	when the element/attribute is present but without a value
+* Aggregate: avg() and sum() aggregate functions now perform integer overflow check
+	Now you can easily see whether the aggration function produce the integer overflow and thus you're not getting the right results.
+* Fix: DataIntersection correctly reports unsorted input now
+	DataIntersection now stops immediately when it sees the input is not sorted properly ensuring data integrity.
+* UniversalDataReader & Writer now support "Quote character" attribute for specifying
+	Quoting support in readers/writers has been around for long time but now you can even specify the quoting character. In previous CloverETL
+	versions there has been built-in quote defined as either `'` or `"` (quote or double quote).
+	Now we present more fine-grained setting where the quote character can be defined.   
++ CTL2: byte and cbyte data types can now be compared with == or != interchangeably
++ CTL1 and CTL2: Huge performance improvement in index_of() function
++ New DataSampling example project in engine examples
++ Fix in DBOutputTable when working with byte values in batch mode
++ Fixed Partition transform conversion to Java
++ DBFReader explicit "strict" data policy setting is now correct
++ XLSWriter now creates empty files correctly
++ Fixed Denormalizer issue when loading Denormalize transform specified by class name
++ Updated built-in MySQL JDBC driver to mysql-connector-java-5.1.14
++ Fixed DBExecute not working when calling stored procedure and connection defined by JNDI
++ Fixed SystemExecute running Windows PowerShell scripts
++ EmailSender: MessageBody can now be multiline
+
+
 REL 3-0-1
 ---------
 + error ports of UniversalDataReader and LDAP Reader can now have also byte/cbyte fields instead of just strings

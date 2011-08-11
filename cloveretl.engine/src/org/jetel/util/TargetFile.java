@@ -374,7 +374,7 @@ public class TargetFile {
 			// send all data to records, last record is null
     		for (int i=0; i<=repeat; i++) {
     			if (i == repeat) {
-    				size = aData.length % Defaults.PortReadingWriting.DATA_LENGTH;
+    				size = sData.length() % Defaults.PortReadingWriting.DATA_LENGTH;
     			}
     			int start = Defaults.PortReadingWriting.DATA_LENGTH*i;
    				field.setValue(sData.substring(start, start+size));

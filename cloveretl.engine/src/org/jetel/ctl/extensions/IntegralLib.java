@@ -21,6 +21,7 @@ package org.jetel.ctl.extensions;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NullRecord;
 
 /**
  * These functions have to be part of core engine plugin, since can be invoked direct from
@@ -66,7 +67,7 @@ public class IntegralLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Copies data from the second parameter to the first parameter based on field names. Returns the first argument")
 	public static final DataRecord copyByName(TLFunctionCallContext context, DataRecord to, DataRecord from) {
-		if (from == null) {
+		if (from == null || from.equals(NullRecord.NULL_RECORD)) {
 			to.reset();
 			return to;
 		}

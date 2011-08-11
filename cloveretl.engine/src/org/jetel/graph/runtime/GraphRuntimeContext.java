@@ -115,6 +115,28 @@ public class GraphRuntimeContext {
 		return ret;
 	}
 
+	public Properties getAllProperties() {
+		Properties prop = new Properties();
+		
+		prop.setProperty("additionProperties", String.valueOf(getAdditionalProperties()));
+		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
+		prop.setProperty("skipCheckConfig", Boolean.toString(isSkipCheckConfig()));
+		prop.setProperty("verboseMode", Boolean.toString(isVerboseMode()));
+		prop.setProperty("useJMX", Boolean.toString(useJMX()));
+		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
+		prop.setProperty("password", String.valueOf(getPassword()));
+		prop.setProperty("debugMode", Boolean.toString(isDebugMode()));
+		prop.setProperty("debugDirectory", String.valueOf(getDebugDirectory()));
+		prop.setProperty("runtimeClassPath", Arrays.toString(getRuntimeClassPath()));
+		prop.setProperty("compileClassPath", Arrays.toString(getCompileClassPath()));
+		prop.setProperty("synchronizedRun", Boolean.toString(isSynchronizedRun()));
+		prop.setProperty("transactionMode", Boolean.toString(isTransactionMode()));
+		prop.setProperty("batchMode", Boolean.toString(isBatchMode()));
+		prop.setProperty("contextURL", String.valueOf(getContextURL()));
+		
+		return prop;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getTrackingInterval()
 	 */

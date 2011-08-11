@@ -440,7 +440,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       label_2:
       while (true) {
         ;
-        if (jj_2_1(2)) {
+        if (jj_2_1(3)) {
           Statement();
         } else {
           switch (jj_nt.kind) {
@@ -4308,14 +4308,16 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(9, xla); }
   }
 
-  private boolean jj_3R_163() {
+  private boolean jj_3R_169() {
     if (jj_scan_token(127)) return true;
+    if (jj_3R_92()) return true;
     return false;
   }
 
-  private boolean jj_3R_156() {
+  private boolean jj_3R_162() {
     if (jj_scan_token(LOOKUP_ADMIN)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -4326,16 +4328,22 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_37() {
-    if (jj_scan_token(MAP_VAR)) return true;
-    if (jj_scan_token(127)) return true;
-    if (jj_3R_76()) return true;
+  private boolean jj_3R_171() {
+    if (jj_scan_token(MULTIPLY)) return true;
     return false;
   }
 
-  private boolean jj_3R_155() {
+  private boolean jj_3R_37() {
+    if (jj_scan_token(MAP_VAR)) return true;
+    if (jj_scan_token(127)) return true;
+    if (jj_3R_77()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_161() {
     if (jj_scan_token(LOOKUP_FOUND)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -4375,6 +4383,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_63() {
     if (jj_scan_token(BLOCK_START)) return true;
+    if (jj_3R_97()) return true;
+    if (jj_scan_token(BLOCK_END)) return true;
     return false;
   }
 
@@ -4384,13 +4394,18 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_89() {
+  private boolean jj_3R_91() {
     if (jj_scan_token(BOOLEAN_VAR)) return true;
     return false;
   }
 
   private boolean jj_3R_31() {
     if (jj_3R_55()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_170() {
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -4414,7 +4429,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_88() {
+  private boolean jj_3R_90() {
     if (jj_scan_token(BYTE_VAR)) return true;
     return false;
   }
@@ -4424,9 +4439,10 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_154() {
+  private boolean jj_3R_160() {
     if (jj_scan_token(LOOKUP_NEXT)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -4435,22 +4451,36 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_87() {
+  private boolean jj_3R_172() {
+    if (jj_scan_token(126)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_89() {
     if (jj_scan_token(DATE_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_162() {
+  private boolean jj_3R_168() {
     if (jj_scan_token(DOT)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_7()) {
+    jj_scanpos = xsp;
+    if (jj_3R_170()) {
+    jj_scanpos = xsp;
+    if (jj_3R_171()) return true;
+    }
+    }
     return false;
   }
 
-  private boolean jj_3R_161() {
+  private boolean jj_3R_167() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_162()) {
+    if (jj_3R_168()) {
     jj_scanpos = xsp;
-    if (jj_3R_163()) return true;
+    if (jj_3R_169()) return true;
     }
     return false;
   }
@@ -4492,66 +4522,74 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_159() {
-    if (jj_3R_161()) return true;
+  private boolean jj_3R_165() {
+    if (jj_3R_167()) return true;
     return false;
   }
 
-  private boolean jj_3R_133() {
-    if (jj_3R_142()) return true;
+  private boolean jj_3R_139() {
+    if (jj_3R_148()) return true;
     return false;
   }
 
-  private boolean jj_3R_86() {
+  private boolean jj_3R_88() {
     if (jj_scan_token(STRING_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_132() {
+  private boolean jj_3R_138() {
     if (jj_scan_token(OPEN_PAR)) return true;
-    if (jj_3R_66()) return true;
+    if (jj_3R_65()) return true;
+    if (jj_scan_token(CLOSE_PAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_131() {
-    if (jj_3R_141()) return true;
+  private boolean jj_3R_137() {
+    if (jj_3R_147()) return true;
     return false;
   }
 
-  private boolean jj_3R_130() {
-    if (jj_3R_140()) return true;
+  private boolean jj_3R_136() {
+    if (jj_3R_146()) return true;
     return false;
   }
 
-  private boolean jj_3R_129() {
-    if (jj_3R_139()) return true;
+  private boolean jj_3R_135() {
+    if (jj_3R_145()) return true;
     return false;
   }
 
-  private boolean jj_3R_85() {
+  private boolean jj_3R_87() {
     if (jj_scan_token(DECIMAL_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_128() {
-    if (jj_3R_138()) return true;
+  private boolean jj_3R_134() {
+    if (jj_3R_144()) return true;
     return false;
   }
 
-  private boolean jj_3R_127() {
-    if (jj_3R_137()) return true;
+  private boolean jj_3R_133() {
+    if (jj_3R_143()) return true;
     return false;
   }
 
-  private boolean jj_3R_157() {
+  private boolean jj_3R_163() {
     if (jj_scan_token(127)) return true;
-    if (jj_3R_66()) return true;
+    if (jj_3R_65()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_172()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(128)) return true;
     return false;
   }
 
-  private boolean jj_3R_153() {
+  private boolean jj_3R_159() {
     if (jj_scan_token(LOOKUP)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
@@ -4560,50 +4598,50 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_139() {
+  private boolean jj_3R_145() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_153()) {
+    if (jj_3R_159()) {
     jj_scanpos = xsp;
-    if (jj_3R_154()) {
+    if (jj_3R_160()) {
     jj_scanpos = xsp;
-    if (jj_3R_155()) {
+    if (jj_3R_161()) {
     jj_scanpos = xsp;
-    if (jj_3R_156()) return true;
+    if (jj_3R_162()) return true;
     }
     }
     }
     return false;
   }
 
-  private boolean jj_3R_84() {
+  private boolean jj_3R_86() {
     if (jj_scan_token(DOUBLE_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_152() {
-    if (jj_3R_157()) return true;
+  private boolean jj_3R_158() {
+    if (jj_3R_163()) return true;
     return false;
   }
 
-  private boolean jj_3R_123() {
+  private boolean jj_3R_129() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3_6()) {
     jj_scanpos = xsp;
-    if (jj_3R_127()) {
+    if (jj_3R_133()) {
     jj_scanpos = xsp;
-    if (jj_3R_128()) {
+    if (jj_3R_134()) {
     jj_scanpos = xsp;
-    if (jj_3R_129()) {
+    if (jj_3R_135()) {
     jj_scanpos = xsp;
-    if (jj_3R_130()) {
+    if (jj_3R_136()) {
     jj_scanpos = xsp;
-    if (jj_3R_131()) {
+    if (jj_3R_137()) {
     jj_scanpos = xsp;
-    if (jj_3R_132()) {
+    if (jj_3R_138()) {
     jj_scanpos = xsp;
-    if (jj_3R_133()) return true;
+    if (jj_3R_139()) return true;
     }
     }
     }
@@ -4613,38 +4651,34 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     }
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_159()) { jj_scanpos = xsp; break; }
+      if (jj_3R_165()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_83() {
+  private boolean jj_3R_85() {
     if (jj_scan_token(LONG_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_151() {
+  private boolean jj_3R_157() {
     if (jj_scan_token(NULL_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_82() {
+  private boolean jj_3R_84() {
     if (jj_scan_token(INT_VAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_150() {
+  private boolean jj_3R_156() {
     if (jj_scan_token(DATETIME_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_76() {
+  private boolean jj_3R_77() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_82()) {
-    jj_scanpos = xsp;
-    if (jj_3R_83()) {
-    jj_scanpos = xsp;
     if (jj_3R_84()) {
     jj_scanpos = xsp;
     if (jj_3R_85()) {
@@ -4655,7 +4689,11 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     jj_scanpos = xsp;
     if (jj_3R_88()) {
     jj_scanpos = xsp;
-    if (jj_3R_89()) return true;
+    if (jj_3R_89()) {
+    jj_scanpos = xsp;
+    if (jj_3R_90()) {
+    jj_scanpos = xsp;
+    if (jj_3R_91()) return true;
     }
     }
     }
@@ -4666,12 +4704,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_158() {
-    if (jj_3R_160()) return true;
+  private boolean jj_3R_164() {
+    if (jj_3R_166()) return true;
     return false;
   }
 
-  private boolean jj_3R_160() {
+  private boolean jj_3R_166() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(52)) {
@@ -4681,36 +4719,42 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_149() {
+  private boolean jj_3R_155() {
     if (jj_scan_token(DATE_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_114() {
-    if (jj_3R_123()) return true;
+  private boolean jj_3R_120() {
+    if (jj_3R_129()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_158()) jj_scanpos = xsp;
+    if (jj_3R_164()) jj_scanpos = xsp;
     return false;
   }
 
-  private boolean jj_3R_148() {
+  private boolean jj_3R_154() {
     if (jj_scan_token(BOOLEAN_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_140() {
+  private boolean jj_3R_146() {
     if (jj_scan_token(SEQUENCE)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  private boolean jj_3R_147() {
+  private boolean jj_3R_153() {
     if (jj_scan_token(STRING_PLAIN_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_110() {
+  private boolean jj_3R_152() {
+    if (jj_scan_token(STRING_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_116() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(47)) {
@@ -4720,14 +4764,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_146() {
-    if (jj_scan_token(STRING_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_106() {
-    if (jj_3R_110()) return true;
-    if (jj_3R_100()) return true;
+  private boolean jj_3R_112() {
+    if (jj_3R_116()) return true;
+    if (jj_3R_105()) return true;
     return false;
   }
 
@@ -4738,44 +4777,49 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_97() {
+  private boolean jj_3R_101() {
     if (jj_scan_token(RETURN_STOP)) return true;
     return false;
   }
 
-  private boolean jj_3R_96() {
+  private boolean jj_3R_100() {
     if (jj_scan_token(RETURN_ALL)) return true;
     return false;
   }
 
-  private boolean jj_3R_145() {
+  private boolean jj_3R_151() {
     if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_95() {
+  private boolean jj_3R_99() {
     if (jj_scan_token(RETURN_SKIP)) return true;
     return false;
   }
 
-  private boolean jj_3R_94() {
+  private boolean jj_3R_98() {
     if (jj_scan_token(RETURN_OK)) return true;
     return false;
   }
 
-  private boolean jj_3R_90() {
+  private boolean jj_3R_94() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_94()) {
+    if (jj_3R_98()) {
     jj_scanpos = xsp;
-    if (jj_3R_95()) {
+    if (jj_3R_99()) {
     jj_scanpos = xsp;
-    if (jj_3R_96()) {
+    if (jj_3R_100()) {
     jj_scanpos = xsp;
-    if (jj_3R_97()) return true;
+    if (jj_3R_101()) return true;
     }
     }
     }
+    return false;
+  }
+
+  private boolean jj_3R_150() {
+    if (jj_scan_token(LONG_LITERAL)) return true;
     return false;
   }
 
@@ -4784,12 +4828,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_144() {
-    if (jj_scan_token(LONG_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_115() {
+  private boolean jj_3R_121() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(52)) {
@@ -4799,59 +4838,59 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_79() {
-    if (jj_3R_90()) return true;
+  private boolean jj_3R_82() {
+    if (jj_3R_94()) return true;
     return false;
   }
 
-  private boolean jj_3R_65() {
+  private boolean jj_3R_67() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_78()) {
+    if (jj_3R_81()) {
     jj_scanpos = xsp;
-    if (jj_3R_79()) return true;
+    if (jj_3R_82()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_78() {
-    if (jj_3R_66()) return true;
+  private boolean jj_3R_81() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
-  private boolean jj_3R_143() {
+  private boolean jj_3R_149() {
     if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_109() {
-    if (jj_3R_115()) return true;
-    if (jj_3R_100()) return true;
+  private boolean jj_3R_115() {
+    if (jj_3R_121()) return true;
+    if (jj_3R_105()) return true;
     return false;
   }
 
-  private boolean jj_3R_138() {
+  private boolean jj_3R_144() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_143()) {
-    jj_scanpos = xsp;
-    if (jj_3R_144()) {
-    jj_scanpos = xsp;
-    if (jj_3R_145()) {
-    jj_scanpos = xsp;
-    if (jj_3R_146()) {
-    jj_scanpos = xsp;
-    if (jj_3R_147()) {
-    jj_scanpos = xsp;
-    if (jj_3R_148()) {
-    jj_scanpos = xsp;
     if (jj_3R_149()) {
     jj_scanpos = xsp;
     if (jj_3R_150()) {
     jj_scanpos = xsp;
     if (jj_3R_151()) {
     jj_scanpos = xsp;
-    if (jj_3R_152()) return true;
+    if (jj_3R_152()) {
+    jj_scanpos = xsp;
+    if (jj_3R_153()) {
+    jj_scanpos = xsp;
+    if (jj_3R_154()) {
+    jj_scanpos = xsp;
+    if (jj_3R_155()) {
+    jj_scanpos = xsp;
+    if (jj_3R_156()) {
+    jj_scanpos = xsp;
+    if (jj_3R_157()) {
+    jj_scanpos = xsp;
+    if (jj_3R_158()) return true;
     }
     }
     }
@@ -4864,8 +4903,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_108() {
-    if (jj_3R_114()) return true;
+  private boolean jj_3R_114() {
+    if (jj_3R_120()) return true;
     return false;
   }
 
@@ -4873,7 +4912,59 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     if (jj_scan_token(RETURN)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_65()) jj_scanpos = xsp;
+    if (jj_3R_67()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3R_111() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_114()) {
+    jj_scanpos = xsp;
+    if (jj_3R_115()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_57() {
+    if (jj_scan_token(CONTINUE)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_181() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(101)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(102)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(103)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(104)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(105)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(106)) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_56() {
+    if (jj_scan_token(BREAK)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_109() {
+    if (jj_3R_112()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_108() {
+    if (jj_3R_111()) return true;
     return false;
   }
 
@@ -4887,100 +4978,141 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_57() {
-    if (jj_scan_token(CONTINUE)) return true;
+  private boolean jj_3R_180() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(107)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(108)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(109)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(110)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(111)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(112)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(113)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(114)) return true;
+    }
+    }
+    }
+    }
+    }
+    }
+    }
     return false;
   }
 
-  private boolean jj_3R_56() {
-    if (jj_scan_token(BREAK)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_103() {
-    if (jj_3R_106()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_102() {
+  private boolean jj_3R_142() {
+    if (jj_scan_token(MODULO)) return true;
     if (jj_3R_105()) return true;
     return false;
   }
 
-  private boolean jj_3R_100() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_102()) {
-    jj_scanpos = xsp;
-    if (jj_3R_103()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_136() {
-    if (jj_scan_token(MODULO)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_135() {
+  private boolean jj_3R_141() {
     if (jj_scan_token(DIVIDE)) return true;
+    if (jj_3R_105()) return true;
     return false;
   }
 
-  private boolean jj_3R_124() {
+  private boolean jj_3R_130() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_134()) {
+    if (jj_3R_140()) {
     jj_scanpos = xsp;
-    if (jj_3R_135()) {
+    if (jj_3R_141()) {
     jj_scanpos = xsp;
-    if (jj_3R_136()) return true;
+    if (jj_3R_142()) return true;
     }
     }
     return false;
   }
 
-  private boolean jj_3R_134() {
+  private boolean jj_3R_140() {
     if (jj_scan_token(MULTIPLY)) return true;
+    if (jj_3R_105()) return true;
     return false;
   }
 
-  private boolean jj_3R_99() {
-    if (jj_3R_100()) return true;
+  private boolean jj_3R_103() {
+    if (jj_3R_105()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_124()) { jj_scanpos = xsp; break; }
+      if (jj_3R_130()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_126() {
-    if (jj_scan_token(MINUS)) return true;
+  private boolean jj_3R_179() {
+    if (jj_3R_181()) return true;
     return false;
   }
 
-  private boolean jj_3R_116() {
+  private boolean jj_3R_178() {
+    if (jj_3R_180()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_177() {
+    if (jj_3R_77()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_176() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_125()) {
+    if (jj_3R_177()) {
     jj_scanpos = xsp;
-    if (jj_3R_126()) return true;
+    if (jj_3R_178()) {
+    jj_scanpos = xsp;
+    if (jj_3R_179()) return true;
+    }
     }
     return false;
   }
 
-  private boolean jj_3R_125() {
-    if (jj_scan_token(PLUS)) return true;
+  private boolean jj_3R_132() {
+    if (jj_scan_token(MINUS)) return true;
+    if (jj_3R_103()) return true;
     return false;
   }
 
-  private boolean jj_3R_93() {
-    if (jj_3R_99()) return true;
+  private boolean jj_3R_175() {
+    if (jj_3R_176()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_122() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_131()) {
+    jj_scanpos = xsp;
+    if (jj_3R_132()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_131() {
+    if (jj_scan_token(PLUS)) return true;
+    if (jj_3R_103()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_174() {
+    if (jj_3R_92()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_96() {
+    if (jj_3R_103()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_116()) { jj_scanpos = xsp; break; }
+      if (jj_3R_122()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -4988,84 +5120,112 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_55() {
     if (jj_scan_token(DO)) return true;
     if (jj_3R_24()) return true;
+    if (jj_scan_token(WHILE)) return true;
     return false;
   }
 
-  private boolean jj_3R_121() {
+  private boolean jj_3R_127() {
     if (jj_scan_token(REGEX_EQUAL)) return true;
+    if (jj_3R_96()) return true;
     return false;
   }
 
-  private boolean jj_3R_122() {
+  private boolean jj_3R_173() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_174()) {
+    jj_scanpos = xsp;
+    if (jj_3R_175()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_128() {
     if (jj_scan_token(REGEX_CONTAINS)) return true;
+    if (jj_3R_96()) return true;
     return false;
   }
 
-  private boolean jj_3R_120() {
+  private boolean jj_3R_126() {
     if (jj_scan_token(GREATER_THAN_EQUAL)) return true;
+    if (jj_3R_96()) return true;
     return false;
   }
 
-  private boolean jj_3R_119() {
+  private boolean jj_3R_125() {
     if (jj_scan_token(LESS_THAN_EQUAL)) return true;
+    if (jj_3R_96()) return true;
     return false;
   }
 
   private boolean jj_3R_54() {
     if (jj_scan_token(FOR_EACH)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_3R_25()) return true;
     return false;
   }
 
-  private boolean jj_3R_118() {
+  private boolean jj_3R_124() {
     if (jj_scan_token(GREATER_THAN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_111() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_117()) {
-    jj_scanpos = xsp;
-    if (jj_3R_118()) {
-    jj_scanpos = xsp;
-    if (jj_3R_119()) {
-    jj_scanpos = xsp;
-    if (jj_3R_120()) {
-    jj_scanpos = xsp;
-    if (jj_3R_121()) {
-    jj_scanpos = xsp;
-    if (jj_3R_122()) return true;
-    }
-    }
-    }
-    }
-    }
+    if (jj_3R_96()) return true;
     return false;
   }
 
   private boolean jj_3R_117() {
-    if (jj_scan_token(LESS_THAN)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_123()) {
+    jj_scanpos = xsp;
+    if (jj_3R_124()) {
+    jj_scanpos = xsp;
+    if (jj_3R_125()) {
+    jj_scanpos = xsp;
+    if (jj_3R_126()) {
+    jj_scanpos = xsp;
+    if (jj_3R_127()) {
+    jj_scanpos = xsp;
+    if (jj_3R_128()) return true;
+    }
+    }
+    }
+    }
+    }
     return false;
   }
 
-  private boolean jj_3R_81() {
-    if (jj_3R_93()) return true;
+  private boolean jj_3R_123() {
+    if (jj_scan_token(LESS_THAN)) return true;
+    if (jj_3R_96()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_83() {
+    if (jj_3R_96()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_111()) { jj_scanpos = xsp; break; }
+      if (jj_3R_117()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
   private boolean jj_3R_62() {
     if (jj_scan_token(OPEN_PAR)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_173()) jj_scanpos = xsp;
+    if (jj_scan_token(CLOSE_PAR)) return true;
     return false;
   }
 
-  private boolean jj_3R_113() {
+  private boolean jj_3R_119() {
     if (jj_scan_token(NON_EQUAL)) return true;
+    if (jj_3R_83()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_66() {
+    if (jj_3R_80()) return true;
     return false;
   }
 
@@ -5075,33 +5235,35 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_107() {
+  private boolean jj_3R_113() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_112()) {
+    if (jj_3R_118()) {
     jj_scanpos = xsp;
-    if (jj_3R_113()) return true;
+    if (jj_3R_119()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_112() {
+  private boolean jj_3R_118() {
     if (jj_scan_token(EQUAL)) return true;
+    if (jj_3R_83()) return true;
     return false;
   }
 
-  private boolean jj_3R_67() {
-    if (jj_3R_81()) return true;
+  private boolean jj_3R_68() {
+    if (jj_3R_83()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_107()) { jj_scanpos = xsp; break; }
+      if (jj_3R_113()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_104() {
+  private boolean jj_3R_110() {
     if (jj_scan_token(AND)) return true;
+    if (jj_3R_68()) return true;
     return false;
   }
 
@@ -5113,25 +5275,35 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_53() {
     if (jj_scan_token(FOR)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_66()) jj_scanpos = xsp;
+    if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
 
   private boolean jj_3R_60() {
-    if (jj_3R_67()) return true;
+    if (jj_3R_68()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_104()) { jj_scanpos = xsp; break; }
+      if (jj_3R_110()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_101() {
-    if (jj_scan_token(OR)) return true;
+  private boolean jj_3R_93() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
-  private boolean jj_3R_137() {
+  private boolean jj_3R_107() {
+    if (jj_scan_token(OR)) return true;
+    if (jj_3R_60()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_143() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
@@ -5147,12 +5319,22 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
+  private boolean jj_3R_80() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3_10()) {
+    jj_scanpos = xsp;
+    if (jj_3R_93()) return true;
+    }
+    return false;
+  }
+
   private boolean jj_3R_41() {
     if (jj_3R_60()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_101()) { jj_scanpos = xsp; break; }
+      if (jj_3R_107()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -5165,7 +5347,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_91() {
+  private boolean jj_3R_92() {
     if (jj_3R_21()) return true;
     Token xsp;
     while (true) {
@@ -5175,47 +5357,73 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
+  private boolean jj_3R_106() {
+    if (jj_3R_17()) return true;
+    return false;
+  }
+
   private boolean jj_3_9() {
     if (jj_3R_25()) return true;
     if (jj_scan_token(SEMICOLON)) return true;
     return false;
   }
 
-  private boolean jj_3R_52() {
-    if (jj_scan_token(WHILE)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_98() {
-    if (jj_scan_token(MAPPING)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_92() {
+  private boolean jj_3R_104() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(55)) {
+    if (jj_3_9()) {
     jj_scanpos = xsp;
-    if (jj_3R_98()) return true;
+    if (jj_3R_106()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_80() {
-    if (jj_3R_91()) return true;
+  private boolean jj_3R_52() {
+    if (jj_scan_token(WHILE)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_3R_65()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_97() {
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_104()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_102() {
+    if (jj_scan_token(MAPPING)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_95() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_92()) jj_scanpos = xsp;
+    if (jj_scan_token(55)) {
+    jj_scanpos = xsp;
+    if (jj_3R_102()) return true;
+    }
+    if (jj_3R_79()) return true;
     return false;
   }
 
-  private boolean jj_3R_66() {
-    if (jj_3R_80()) return true;
+  private boolean jj_3R_79() {
+    if (jj_3R_92()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_95()) jj_scanpos = xsp;
     return false;
   }
 
-  private boolean jj_3R_142() {
+  private boolean jj_3R_65() {
+    if (jj_3R_79()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_148() {
     if (jj_scan_token(FIELD_ACCESS_OPERATOR)) return true;
     if (jj_scan_token(FIELD_IDENTIFIER)) return true;
     return false;
@@ -5226,49 +5434,49 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_75() {
+  private boolean jj_3R_76() {
     if (jj_scan_token(RAISE_ERROR)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_74() {
+  private boolean jj_3R_75() {
     if (jj_scan_token(PRINT_STACK)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_73() {
+  private boolean jj_3R_74() {
     if (jj_scan_token(PRINT_LOG)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_72() {
+  private boolean jj_3R_73() {
     if (jj_scan_token(PRINT_ERR)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_71() {
+  private boolean jj_3R_72() {
     if (jj_scan_token(IIF)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_70() {
+  private boolean jj_3R_71() {
     if (jj_scan_token(NVL2)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_69() {
+  private boolean jj_3R_70() {
     if (jj_scan_token(NVL)) return true;
     if (jj_3R_62()) return true;
     return false;
   }
 
-  private boolean jj_3R_68() {
+  private boolean jj_3R_69() {
     if (jj_scan_token(ISNULL)) return true;
     if (jj_3R_62()) return true;
     return false;
@@ -5277,8 +5485,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_61() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_68()) {
-    jj_scanpos = xsp;
     if (jj_3R_69()) {
     jj_scanpos = xsp;
     if (jj_3R_70()) {
@@ -5291,7 +5497,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     jj_scanpos = xsp;
     if (jj_3R_74()) {
     jj_scanpos = xsp;
-    if (jj_3R_75()) return true;
+    if (jj_3R_75()) {
+    jj_scanpos = xsp;
+    if (jj_3R_76()) return true;
     }
     }
     }
@@ -5316,7 +5524,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_77() {
+  private boolean jj_3R_78() {
     if (jj_scan_token(127)) return true;
     if (jj_scan_token(128)) return true;
     return false;
@@ -5325,14 +5533,15 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_51() {
     if (jj_scan_token(SWITCH)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_3R_65()) return true;
     return false;
   }
 
   private boolean jj_3R_64() {
-    if (jj_3R_76()) return true;
+    if (jj_3R_77()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_77()) jj_scanpos = xsp;
+    if (jj_3R_78()) jj_scanpos = xsp;
     return false;
   }
 
@@ -5393,7 +5602,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     return false;
   }
 
-  private boolean jj_3R_141() {
+  private boolean jj_3R_147() {
     if (jj_scan_token(DICTIONARY)) return true;
     return false;
   }
@@ -5436,6 +5645,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   private boolean jj_3R_50() {
     if (jj_scan_token(IF)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    if (jj_3R_65()) return true;
     return false;
   }
 
@@ -5445,7 +5655,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   }
 
   private boolean jj_3R_59() {
-    if (jj_3R_66()) return true;
+    if (jj_3R_65()) return true;
     return false;
   }
 

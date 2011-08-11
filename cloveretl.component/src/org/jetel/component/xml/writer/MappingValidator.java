@@ -31,23 +31,23 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import org.jetel.component.xml.writer.mapping.MappingProperty;
-import org.jetel.component.xml.writer.mapping.WildcardElement;
+import net.sf.saxon.om.XMLChar;
+
+import org.jetel.component.xml.writer.mapping.AbstractElement;
 import org.jetel.component.xml.writer.mapping.Attribute;
 import org.jetel.component.xml.writer.mapping.Comment;
 import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.Namespace;
-import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.Relation;
 import org.jetel.component.xml.writer.mapping.TemplateEntry;
 import org.jetel.component.xml.writer.mapping.Value;
-import org.jetel.component.xml.writer.mapping.Relation;
+import org.jetel.component.xml.writer.mapping.WildcardElement;
 import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
-
-import com.sun.org.apache.xml.internal.utils.XMLChar;
 
 /**
  * Visitor which validates xml mapping.
@@ -75,9 +75,12 @@ public class MappingValidator extends AbstractVisitor {
 	private int errorsCount;
 	private int warningsCount;
 	private boolean runIt = true;
+	
+	private boolean oneRecordPerFile = false;
 
-	public MappingValidator(Map<Integer, DataRecordMetadata> inPorts) {
+	public MappingValidator(Map<Integer, DataRecordMetadata> inPorts, boolean oneRecordPerFile) {
 		this.inPorts = inPorts;
+		this.oneRecordPerFile = oneRecordPerFile;
 	}
 
 	public void validate() {
@@ -340,9 +343,8 @@ public class MappingValidator extends AbstractVisitor {
 			}
 		}
 
-		if (element.getParent().getParent() == null && recurringInfo != null) {
-			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Root element cannot be a loop element", Severity.ERROR));
-			return;
+		if (element.getParent().getParent() == null && recurringInfo != null && !oneRecordPerFile) {
+			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Set 'Records per file' component attribute to '1' and adjust file URL. Well-formed XML must have one root element", Severity.WARNING));
 		}
 		if (element.getWildcardAttribute() == null) {
 			String writeNull = element.getProperty(MappingProperty.WRITE_NULL_ATTRIBUTE);

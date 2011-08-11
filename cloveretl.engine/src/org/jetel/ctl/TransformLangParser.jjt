@@ -750,7 +750,7 @@ void CompilationUnit() #void :
 
 	try {
    (
-	   LOOKAHEAD(2)
+	   LOOKAHEAD(3)
        Statement()     |
        VariableDeclaration() ";"     |
        FunctionDeclaration()

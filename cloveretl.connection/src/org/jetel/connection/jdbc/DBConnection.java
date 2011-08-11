@@ -772,12 +772,7 @@ public class DBConnection extends GraphElement implements IConnection {
             return SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
         } finally {
             // make sure we close all connection resources
-            if (resultSet != null)
-                resultSet.close();
-            if (statement != null)
-                statement.close();
-            if (connection != null)
-                connection.close();
+        	SQLUtil.closeConnection(resultSet, statement, connection);
         }
     }
 
