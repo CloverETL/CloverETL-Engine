@@ -1,46 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="0.0.0.devel" id="1198081350738" licenseType="Evaluation Devel" modified="Thu May 05 08:33:06 CEST 2011" modifiedBy="cloveruser" name="Testing XML writer" revision="1.59" showComponentDetails="false">
+<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="3.1.0" id="1198081350738" licenseCode="javlinconsulting" licenseType="Commercial PRO" modified="Wed Jun 22 11:55:13 CEST 2011" modifiedBy="cloveruser" name="Testing XML writer" revision="1.70" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/addresses.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="302" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Creating an XML file." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="488" x="269" y="195">
-<attr name="text"><![CDATA[
-Four input flows are received by XMLWriter. Data records from different flows are interconnected using pairs of the key and the parentKey attributes as specified in the Mapping attribute of XMLWriter. 
-The same values of key and parentKey are used to create the output XML file. All values are compared as strings. For this reason the second and the third readers remove quotes by setting Quoted strings to true. Otherwise, string with quotes and without them would be considered as different strings and would not be interconnected. 
-Data policy of these two readers is also set to less strict (Controlled instead of Strict).
-The Mapping attribute in XMLWriter defines the structure of output file. It specifies whether the fields will be written as elements (default) or attributes. fieldsAs and fieldsAsExcept should be specified.
-Also fields that serve to interconnect data flows are hidden in child elements and also duplicate fields are hidden also in children (fieldsIgnore).
-In this example, customers are used as the highest level element, the orders made by these customers are nested in them, the address ID is added to some of the orders and also the employee who had the responsibility for individual order is nested in the order.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="167" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="XML Output File" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="156" x="281" y="21"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="64" guiName="Orders" guiWidth="128" guiX="23" guiY="21" id="INPUT1" type="DATA_READER"/>
-<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="64" guiName="Employees" guiWidth="128" guiX="23" guiY="103" id="INPUT2" quotedStrings="true" type="DATA_READER"/>
-<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="64" guiName="Customers" guiWidth="128" guiX="24" guiY="182" id="INPUT3" quotedStrings="true" type="DATA_READER"/>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="64" guiName="Addresses" guiWidth="128" guiX="50" guiY="264" id="INPUT4" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/xmlOut.xml" guiHeight="84" guiName="XMLWriter" guiWidth="128" guiX="296" guiY="95" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
+<Node dedupKey="OrderID(a)" enabled="enabled" guiHeight="80" guiName="Dedup" guiWidth="128" guiX="241" guiY="22" id="DEDUP0" type="DEDUP">
+<attr name="guiDescription"><![CDATA[OrderID]]></attr>
+</Node>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="93" guiName="Orders" guiWidth="128" guiX="24" guiY="21" id="INPUT1" type="DATA_READER"/>
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="93" guiName="Employees" guiWidth="128" guiX="24" guiY="130" id="INPUT2" quotedStrings="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Remove quotes ("Quoted strings" attribute)]]></attr>
+</Node>
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="93" guiName="Customers" guiWidth="128" guiX="24" guiY="237" id="INPUT3" quotedStrings="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Remove quotes ("Quoted strings" attribute)]]></attr>
+</Node>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="93" guiName="Addresses" guiWidth="128" guiX="24" guiY="349" id="INPUT4" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/xmlOut.xml" guiHeight="93" guiName="XML Output File" guiWidth="128" guiX="411" guiY="211" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <root xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
-  <customer clover:inPort="2" clover:include="$2.CUSTOMERID">
-    <clover:elements clover:include="$2.*" clover:exclude="$2.CompanyName;$2.State"/>    
-    <order clover:inPort="0" clover:key="CustomerID" clover:parentKey="CUSTOMERID" clover:include="$0.OrderID">
-      <clover:elements clover:include="$0.*"/>    
-      <address clover:inPort="3" clover:key="OrderID" clover:parentKey="OrderID" clover:include="$3.*" clover:exclude="$3.OrderID;$3.ShipName;$3.ShipAddress;$3.ShipCity;$3.ShipRegion;$3.ShipPostalCode;$3.ShipCountry"/>
-      <employee clover:inPort="1" clover:key="EmployeeID" clover:parentKey="EmployeeID">
-        <clover:elements clover:include="$1.*"/>
-      </employee>  
-    </order> 
+  <customer CUSTOMERID="$2.CUSTOMERID" clover:inPort="2">
+    <clover:elements clover:include="$2.*" clover:exclude="$2.CompanyName;$2.State"/>
+    <order OrderID="$0.OrderID" clover:inPort="0" clover:key="CustomerID" clover:parentKey="CUSTOMERID">
+      <clover:elements clover:include="$0.*" clover:exclude="$0.OrderID;$0.CustomerID;$0.EmployeeID"/>
+      <address AddressID="$3.AddressID" clover:inPort="3" clover:key="OrderID" clover:parentKey="OrderID"/>
+      <employee EmployeeID="$1.EmployeeID" clover:inPort="1" clover:key="EmployeeID" clover:parentKey="EmployeeID">
+        <clover:elements clover:include="$1.*" clover:exclude="$1.EmployeeID"/>
+      </employee>
+    </order>
   </customer>
 </root>]]></attr>
+<attr name="guiDescription"><![CDATA[Data records from different flows are connected using pairs of the clover:key and the clover:parentKey attributes as specified in the Mapping attribute. The same values of clover:key and clover:parentKey are used to create the output XML file. All values are compared as strings. Fields that are used for joining data flows are excluded from child elements using the clover:exclude attribute and also duplicate fields are excluded from children. Customers are used as the highest level element, the orders made by these customers are nested in them, the address ID is added to some of the orders and also the employee who had the responsibility for individual order is nested in the order.]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="XML_OUT:0"/>
-<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="XML_OUT:1"/>
-<Edge debugMode="true" fromNode="INPUT3:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XML_OUT:2"/>
-<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE4" inPort="Port 3 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="XML_OUT:3"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="395:42|395:225" guiLocks="395|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="XML_OUT:0"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="INPUT2:0" guiBendpoints="202:150|202:239" guiLocks="202|null|null" guiRouter="Manual" id="INEDGE2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="XML_OUT:1"/>
+<Edge debugMode="true" fromNode="INPUT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XML_OUT:2"/>
+<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE4" inPort="Port 3 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="XML_OUT:3"/>
 </Phase>
 </Graph>

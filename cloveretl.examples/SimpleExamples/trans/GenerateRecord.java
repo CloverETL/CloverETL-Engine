@@ -30,6 +30,12 @@ public class GenerateRecord extends DataRecordGenerate{
 		return super.init();
 	}
 	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		sequence.resetValue();
+	}
+	
 	public int generate(DataRecord[] outputRecords) throws TransformException {
 
 		keyRecord.getField(0).setValue(r.nextInt(11));
@@ -44,13 +50,7 @@ public class GenerateRecord extends DataRecordGenerate{
 		outputRecords[0].getField(4).setValue(sequence.nextValueInt());
 		return ALL;
 	}
-		
-	@Override
-	public void finished() {
-		sequence.resetValue();
-		super.finished();
-	}
-	
+
 	public String getMessage() {
 		return "Lookup value doesn't exist for key: " + keyRecord.getField(0);
 	}

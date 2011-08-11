@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Wed Jun 09 11:47:13 CEST 2010" modifiedBy="avackova" name="ComplexTransformation" revision="1.62">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Fri Jun 10 15:13:59 CEST 2011" modifiedBy="avackova" name="ComplexTransformation" revision="1.67" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/fixlen/odetailsDBF.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/fixlen/ordersDBF.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="237" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ExtMergeJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="159" x="371" y="135">
-<attr name="text"><![CDATA[
-Left outer join 
-
-= also Orders without Details]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="237" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ExtHashJoin" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="551" y="135">
-<attr name="text"><![CDATA[
-Left outer join
-
-= also Orders without Customers]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="228" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="288" x="717" y="-46">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="186" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="427" x="646" y="195">
 <attr name="text"><![CDATA[
 This graph illustrates the usage of a new Clover Transformation Language 2.
 
@@ -28,28 +16,35 @@ CTL2 is strongly typed language with type control. Arguments and return values o
 
 CTL2 has many advantages as compared with CTL1. See CloverETL Designer Users Guide for details.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Equivalent in CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="387" y="-82">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Equivalent in CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="18" y="281">
 <attr name="text"><![CDATA[
 This is an equivalent of graphDBFJoinTL.grf written in a new Clover transformation language - CTL2.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="ExtSort (ORDERID)" guiWidth="50" guiX="196" guiY="194" id="EXT_SORT_DETAILS" sortKey="ORDERID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="25" guiName="ExtSort (ORDERID)" guiWidth="50" guiX="196" guiY="281" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="25" guiName="Orders Details" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="25" guiName="Orders General" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
-<Edge debugMode="false" fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:1"/>
-<Edge debugMode="false" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
-<Edge debugMode="false" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_DETAILS:0"/>
-<Edge debugMode="false" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_ORDERS:0"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ORDERID)" guiWidth="167" guiX="193" guiY="163" id="EXT_SORT_DETAILS" sortKey="ORDERID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ORDERID)" guiWidth="167" guiX="191" guiY="26" id="EXT_SORT_ORDERS" sortKey="ORDERID(a)" type="EXT_SORT"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="101" guiName="Orders Details" guiWidth="134" guiX="17" guiY="163" id="IN_DETAILS" type="DBF_DATA_READER">
+<attr name="guiDescription"><![CDATA[Information about individual items of each order (details)]]></attr>
+</Node>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.DBF" guiHeight="101" guiName="Orders General" guiWidth="139" guiX="15" guiY="26" id="IN_ORDERS" type="DBF_DATA_READER">
+<attr name="guiDescription"><![CDATA[Information about the orders as a whole]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
+<Edge debugMode="false" fromNode="IN_DETAILS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_DETAILS:0"/>
+<Edge debugMode="false" fromNode="IN_ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT_ORDERS:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="25" guiName="Filter &quot;N/A&quot; Customers" guiWidth="50" guiX="717" guiY="250" id="FILTER" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Filter &quot;N/A&quot; Customers" guiWidth="194" guiX="823" guiY="86" id="FILTER" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Records without a customer name are rejected and records with a customer name are accepted.]]></attr>
 <attr name="filterExpression"><![CDATA[$CUSTOMER!="N/A"]]></attr>
 </Node>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="Customers (Controlled)" guiWidth="50" guiX="388" guiY="39" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER"/>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="25" guiName="Orders Complete Info" guiWidth="50" guiX="387" guiY="250" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="101" guiName="Customers (Controlled)" guiWidth="199" guiX="398" guiY="247" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Customers who made the orders]]></attr>
+</Node>
+<Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="Orders Complete Info" guiWidth="187" guiX="417" guiY="86" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 function double price_per_unit(double unit_price,double quantity,double discount){
@@ -82,8 +77,9 @@ function integer transform(){
 	return ALL;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[joinType is set to "Left outer join" to process also Orders without Details. slaveDuplicates attribute is set to true as order may include multiple ordered items.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="Orders and Customers" guiWidth="50" guiX="562" guiY="251" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" joinType="leftOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="101" guiName="Orders and Customers" guiWidth="190" guiX="617" guiY="86" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 function void copyFields(){
@@ -102,13 +98,14 @@ function integer transform(){
  }
 
 ]]></attr>
+<attr name="guiDescription"><![CDATA[joinType is set to "Left outer join" as we want to join also the orders without a customer. But customers without an order will be ignored and will not be sent to the output. slaveDuplicates attribute is set to "false" as customers are unique in the flat file.]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="25" guiName="Orders-Customers" guiWidth="50" guiX="883" guiY="199" id="WRITER1" type="DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="25" guiName="Orders-N/ACustomers" guiWidth="50" guiX="882" guiY="296" id="WRITER2" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER1:0"/>
-<Edge debugMode="false" fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" router="Manhattan" toNode="WRITER2:0"/>
-<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN_CUSTOMER:1"/>
-<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN_CUSTOMER:0"/>
-<Edge debugMode="false" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="FILTER:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="101" guiName="Orders-Customers" guiWidth="161" guiX="1086" guiY="20" id="WRITER1" type="DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="101" guiName="Orders-N/ACustomers" guiWidth="188" guiX="1086" guiY="138" id="WRITER2" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="FILTER:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="FILTER:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" router="Manhattan" toNode="WRITER2:0"/>
+<Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="610:267|610:122" guiLocks="610|null|null" guiRouter="Manual" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN_CUSTOMER:0"/>
+<Edge debugMode="false" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="FILTER:0"/>
 </Phase>
 </Graph>

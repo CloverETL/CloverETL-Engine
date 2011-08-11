@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation Devel" modified="Tue May 03 15:22:41 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.59" showComponentDetails="true">
+<Graph author="avackova" created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="0.0.0.devel" id="1204546356214" licenseType="Evaluation Devel" modified="Fri Jun 10 11:19:36 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.61" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
@@ -7,21 +7,19 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="98" guiName="Input" guiWidth="128" guiX="20" guiY="20" id="Input" quotedStrings="true" type="DATA_READER">
+<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Input" guiWidth="128" guiX="20" guiY="20" id="Input" quotedStrings="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read data to be sent to jms queue.]]></attr>
 </Node>
-<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="98" guiName="JmsReader" guiWidth="128" guiX="19" guiY="128" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
-<attr name="_processorClass"><![CDATA[org.jetel.component.JmsMsg2DataRecordProperties]]></attr>
+<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="101" guiName="JmsReader" guiWidth="128" guiX="19" guiY="128" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
 <attr name="guiDescription"><![CDATA[Read data from jms queue.]]></attr>
 </Node>
-<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="98" guiName="JmsWriter" guiWidth="128" guiX="245" guiY="20" id="JmsWriter" type="JMS_WRITER">
-<attr name="_processorClass"><![CDATA[org.jetel.component.DataRecord2JmsMsgProperties]]></attr>
+<Node bodyField="LastName" connection="dest" enabled="enabled" guiHeight="101" guiName="JmsWriter" guiWidth="128" guiX="245" guiY="20" id="JmsWriter" type="JMS_WRITER">
 <attr name="guiDescription"><![CDATA[Send data to jms queue.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="98" guiName="Output" guiWidth="128" guiX="244" guiY="128" id="Output" quotedStrings="true" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/jms.out" guiHeight="101" guiName="Output" guiWidth="128" guiX="244" guiY="128" id="Output" quotedStrings="true" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Save data to flat file.]]></attr>
 </Node>
-<Edge fromNode="Input:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
-<Edge fromNode="JmsReader:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="Output:0"/>
+<Edge fromNode="Input:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
+<Edge fromNode="JmsReader:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="Output:0"/>
 </Phase>
 </Graph>

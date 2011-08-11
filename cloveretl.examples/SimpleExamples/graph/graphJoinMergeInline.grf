@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 16 09:47:22 CET 2007" guiVersion="0.0.0.devel" id="1204547632760" licenseType="Evaluation Devel" modified="Tue Jul 13 09:36:00 CEST 2010" modifiedBy="avackova" name="test" revision="1.123">
+<Graph author="avackova" created="Tue Jan 16 09:47:22 CET 2007" guiVersion="0.0.0.devel" id="1204547632760" licenseType="Evaluation Devel" modified="Fri Jun 17 13:42:16 CEST 2011" modifiedBy="avackova" name="test" revision="1.127" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders3way.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="467" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtMergeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="582" x="-59" y="293">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="353" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtMergeJoin Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="923" x="-59" y="309">
 <attr name="text"><![CDATA[
 In this graph, the use of ExtMergeJoin is demonstrated.
 
@@ -30,12 +30,14 @@ Note that the file with employees does not contain employees with EmployeeID 5. 
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Employees" guiWidth="0" guiX="-60" guiY="128" id="DELIMITED_DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="0" guiName="Orders-Employees" guiWidth="0" guiX="659" guiY="112" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="251" guiY="21" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (EmployeeID)" guiWidth="0" guiX="251" guiY="128" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (ReportsTo)" guiWidth="0" guiX="251" guiY="214" id="EXT_SORT2" sortKey="ReportsTo(a)" type="EXT_SORT"/>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="0" guiName="ExtMergeJoin (Inner)" guiWidth="0" guiX="457" guiY="116" id="MERGE_JOIN1" joinKey="$EmployeeID#$EmployeeID;#$ReportsTo;" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="-60" guiY="128" id="DELIMITED_DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Information about employees]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="101" guiName="Orders-Employees" guiWidth="162" guiX="702" guiY="80" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="251" guiY="21" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="251" guiY="117" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ReportsTo)" guiWidth="173" guiX="251" guiY="214" id="EXT_SORT2" sortKey="ReportsTo(a)" type="EXT_SORT"/>
+<Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="ExtMergeJoin (Inner)" guiWidth="182" guiX="501" guiY="80" id="MERGE_JOIN1" joinKey="$EmployeeID#$EmployeeID;#$ReportsTo;" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
@@ -68,15 +70,17 @@ public class ReformatJoinTest3WayInline extends DataRecordTransform{
 
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="SimpleCopy" guiWidth="0" guiX="95" guiY="130" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" fieldMap="$OrderDate:=#D;$EmployeeID:=#C;$Freight:=#H;$ShipAddress:=#J;$RequiredDate:=#E;$OrderID:=#A;$ShipPostalCode:=#M;$ShippedDate:=#F;$ShipName:=#I;$ShipRegion:=#L;$CustomerID:=#B;$ShipVia:=#G;$ShipCity:=#K;$ShipCountry:=#N;" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="0" guiName="XLS (Orders)" guiWidth="0" guiX="-59" guiY="21" id="XLS_READER0" metadataRow="1" startRow="2" type="XLS_READER"/>
-<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:1"/>
-<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge8" inPort="Port 2 (slave)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:2"/>
-<Edge debugMode="false" fromNode="MERGE_JOIN1:0" guiBendpoints="" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DELIMITED_DATA_WRITER0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
-<Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="95" guiY="130" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fieldMap="$OrderDate:=#D;$EmployeeID:=#C;$Freight:=#H;$ShipAddress:=#J;$RequiredDate:=#E;$OrderID:=#A;$ShipPostalCode:=#M;$ShippedDate:=#F;$ShipName:=#I;$ShipRegion:=#L;$CustomerID:=#B;$ShipVia:=#G;$ShipCity:=#K;$ShipCountry:=#N;" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="101" guiName="XLS (Orders)" guiWidth="128" guiX="-59" guiY="21" id="XLS_READER0" metadataRow="1" startRow="2" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Information about orders]]></attr>
+</Node>
+<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="479:41|479:96" guiLocks="479|null|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="461:137|461:112" guiLocks="461|null|null" guiRouter="Manual" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="482:234|482:132" guiLocks="482|null|null" guiRouter="Manual" id="Edge8" inPort="Port 2 (slave)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="MERGE_JOIN1:2"/>
+<Edge debugMode="false" fromNode="MERGE_JOIN1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
+<Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>

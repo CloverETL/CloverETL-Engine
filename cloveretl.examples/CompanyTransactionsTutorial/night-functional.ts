@@ -34,22 +34,22 @@
 	
 	<FunctionalTest ident="A05" graphFile="graph/A05_CreatingXMLEmplFamCustAm.grf">
 		<Property name="DATATMP_DIR" value="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/data-tmp"/>
-		<Property name="MAPPINGS" value=""/>
+		<Property name="MAPPINGS" value="0"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="A06" graphFile="graph/A06_CreatingXMLCustEmplFamAm.grf">
 		<Property name="DATATMP_DIR" value="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/data-tmp"/>
-		<Property name="MAPPINGS" value=""/>
+		<Property name="MAPPINGS" value="0"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="A07" graphFile="graph/A07_CreatingXMLAmCustEmplFam.grf">
 		<Property name="DATATMP_DIR" value="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/data-tmp"/>
-		<Property name="MAPPINGS" value=""/>
+		<Property name="MAPPINGS" value="0"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="A08" graphFile="graph/A08_CreatingXMLTransactionsFamily.grf">
 		<Property name="DATATMP_DIR" value="/data/bigfiles/cloveretl-engine-2.8/cloveretl.engine.examples.CompanyTransactionsTutorial.bigdata/data-tmp"/>
-		<Property name="MAPPINGS" value=""/>
+		<Property name="MAPPINGS" value="0"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="A09" graphFile="graph/A09_XMLExtractEmplFamCustAm.grf">

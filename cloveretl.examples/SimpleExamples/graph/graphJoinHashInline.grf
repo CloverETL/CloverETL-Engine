@@ -1,44 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="0.0.0.devel" id="1204547167052" licenseType="Evaluation Devel" modified="Tue Jul 13 09:34:30 CEST 2010" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.44">
+<Graph author="avackova" created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="0.0.0.devel" id="1204547167052" licenseType="Evaluation Devel" modified="Fri Jun 17 13:41:15 CEST 2011" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.49" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders3way.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="380" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the ExtHashJoin component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="582" x="56" y="313">
-<attr name="text"><![CDATA[
-In this graph, Orders are joined with both Employees and Customers. 
-
-Orders data is received through the master port and both Employees and Customers data through slave ports.
-
-Remember that ExtHashJoin can use different fields to join master values with different slave!
-
-Here, Orders are joined with Employees based on EmployeeID (first slave port), whereas Orders are joined with Customers based on CustomerID (second slave port).
-
-Left outer join is performed. In other words, both the orders without corresponding employee and the orders without corresponding customer are also sent to transform function. However, the employees without corresponding order and the customers without corresponding order are not.
-
-Transformation is defined in the Transform attribute. It is written in Java directly in the graph and can be seen in the Source tab.
-
-Remember that ExtHashJoin does not require sorted data!
-
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="311" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Join" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="217" x="216" y="-144">
-<attr name="text"><![CDATA[
-- Orders with Employees on EmployeeID
-
-- Orders with Customers on CustomerID
-
-Left outer join (also Orders withou Employees and Customers are joined)]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="24" guiY="36" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="24" guiY="120" id="INPUT2" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="25" guiName="Customers" guiWidth="50" guiX="24" guiY="204" id="INPUT3" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="ExtHashJoin" guiWidth="50" guiX="252" guiY="36" id="JOIN" joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID" joinType="leftOuter" slaveDuplicates="true" type="EXT_HASH_JOIN">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="24" guiY="9" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="24" guiY="120" id="INPUT2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="101" guiName="Customers" guiWidth="128" guiX="24" guiY="227" id="INPUT3" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="252" guiY="97" id="JOIN" joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID" joinType="leftOuter" slaveDuplicates="true" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
@@ -72,11 +46,14 @@ public class ReformatJoinTest3WayInline extends DataRecordTransform{
 }
 
 ]]></attr>
+<attr name="guiDescription"><![CDATA[- Orders with Employees on EmployeeID
+- Orders with Customers on CustomerID
+Left outer join (also Orders without Employees and Customers are joined)]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="Orders-Employees-Customers" guiWidth="50" guiX="468" guiY="36" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:0"/>
-<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:1"/>
-<Edge debugMode="false" fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="Port 2 (slave)" metadata="Metadata3" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:2"/>
-<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="101" guiName="Orders-Employees-Customers" guiWidth="244" guiX="468" guiY="97" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="218:29|218:113" guiLocks="218|null|null" guiRouter="Manual" id="INEDGE1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:0"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="201:140|201:129" guiLocks="201|null|null" guiRouter="Manual" id="INEDGE2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:1"/>
+<Edge debugMode="false" fromNode="INPUT3:0" guiBendpoints="226:247|226:84" guiLocks="226|null|null" guiRouter="Manual" id="INEDGE3" inPort="Port 2 (slave)" metadata="Metadata3" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:2"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
 </Phase>
 </Graph>

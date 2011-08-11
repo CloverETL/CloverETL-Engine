@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of several components in different phases.&#10;First, all components from phase 0 are run, then the execution continues&#10;with phase 1.&#10;Data which crossess phase boundary is automatically buffered so the data &#10;producing node can finish its work and the data consuming node can later&#10;start reading the data. " guiVersion="0.0.0.devel" id="1204549866044" licenseType="Evaluation Devel" modified="Fri Mar 12 12:12:48 CET 2010" modifiedBy="cloveruser" name="TestingPhases" revision="1.11">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of several components in different phases.&#10;First, all components from phase 0 are run, then the execution continues&#10;with phase 1.&#10;Data which crossess phase boundary is automatically buffered so the data &#10;producing node can finish its work and the data consuming node can later&#10;start reading the data. " guiVersion="0.0.0.devel" id="1204549866044" licenseType="Evaluation Devel" modified="Mon Jun 13 09:43:54 CEST 2011" modifiedBy="avackova" name="TestingPhases" revision="1.12" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -14,22 +14,23 @@ Edges that connect components of different phases are switched to Phase connecti
 
 ]]></attr>
 </Note>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="ExtSort" guiWidth="50" guiX="195" guiY="20" id="SORT" sortKey="ShipName;ShipVia" type="EXT_SORT"/>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="EDG1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SORT:0"/>
-<Edge fromNode="SORT:0" guiBendpoints="" id="BUFF" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="COPY:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="195" guiY="20" id="SORT" sortKey="ShipName;ShipVia" type="EXT_SORT"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="EDG1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SORT:0"/>
+<Edge fromNode="SORT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="BUFF" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="COPY:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="25" guiName="SimpleCopy" guiWidth="50" guiX="370" guiY="20" id="COPY" type="SIMPLE_COPY"/>
-<Edge fromNode="COPY:0" guiBendpoints="" id="EDG2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE:0"/>
-<Edge fromNode="COPY:1" guiBendpoints="" id="EDG3" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="MERGE:1"/>
-<Edge fromNode="COPY:2" guiBendpoints="" id="EDG4" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="MERGE:2"/>
+<Node enabled="enabled" guiHeight="80" guiName="SimpleCopy" guiWidth="128" guiX="370" guiY="20" id="COPY" type="SIMPLE_COPY"/>
+<Edge fromNode="COPY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="EDG2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="MERGE:0"/>
+<Edge fromNode="COPY:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="EDG3" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="MERGE:1"/>
+<Edge fromNode="COPY:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="EDG4" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="MERGE:2"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" guiHeight="25" guiName="MERGE" guiWidth="50" guiX="545" guiY="20" id="MERGE" mergeKey="ShipName;ShipVia" type="MERGE"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.phases.merged" guiHeight="25" guiName="3 Orders Merged" guiWidth="50" guiX="720" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Edge fromNode="MERGE:0" guiBendpoints="" id="EDG5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Node enabled="enabled" guiHeight="80" guiName="MERGE" guiWidth="128" guiX="545" guiY="20" id="MERGE" mergeKey="ShipName;ShipVia" type="MERGE"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.phases.merged" guiHeight="101" guiName="3 Orders Merged" guiWidth="150" guiX="720" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Edge fromNode="MERGE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="EDG5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

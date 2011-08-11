@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="0.0.0.devel" id="1196683081647" licenseType="Evaluation Devel" modified="Tue Jul 13 10:05:14 CEST 2010" modifiedBy="avackova" name="Testing Simple Copy" revision="1.21">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." guiVersion="0.0.0.devel" id="1196683081647" licenseType="Evaluation Devel" modified="Fri Jun 17 13:44:45 CEST 2011" modifiedBy="avackova" name="Testing Simple Copy" revision="1.27" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -23,33 +23,34 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="120" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Internal Metadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="172" x="342" y="289">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="120" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Internal Metadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="172" x="20" y="135">
 <attr name="text"><![CDATA[
 Metadata are internal. They are written directly in the graph and can be seen in the Source tab.
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="181" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the SimpleCopy and Trash Components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="314" x="9" y="151">
-<attr name="text"><![CDATA[
-
-This graph is similar to the graphSimpleCopy.grf.
-
-Settings of Trashes are different here. However, for more details about the use of these components, see the graph mentioned above.
-
 ]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="25" guiName="BROADCAST2" guiWidth="50" guiX="370" guiY="194" id="BROADCAST2" type="SIMPLE_COPY"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
-<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Debug print to a file" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="Discards All" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="Discards All" guiWidth="50" guiX="545" guiY="194" id="TRASH3" type="TRASH"/>
-<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH1:0"/>
-<Edge fromNode="BROADCAST:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH2:0"/>
-<Edge fromNode="BROADCAST:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="BROADCAST2:0"/>
-<Edge fromNode="BROADCAST2:0" guiBendpoints="" id="INNEREDGE4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH3:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="BROADCAST:0"/>
+<Node enabled="enabled" guiHeight="101" guiName="BROADCAST" guiWidth="128" guiX="201" guiY="20" id="BROADCAST" type="SIMPLE_COPY">
+<attr name="guiDescription"><![CDATA[All data records are copied to each connected output port.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="BROADCAST2" guiWidth="131" guiX="201" guiY="160" id="BROADCAST2" type="SIMPLE_COPY">
+<attr name="guiDescription"><![CDATA[All data records are copied to each connected output port.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="101" guiName="Debug print to a file" guiWidth="176" guiX="376" guiY="20" id="TRASH1" type="TRASH">
+<attr name="guiDescription"><![CDATA[Write data into a file (for debugging reasons)]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Discards All" guiWidth="128" guiX="376" guiY="135" id="TRASH2" type="TRASH">
+<attr name="guiDescription"><![CDATA[Discards all data (default settings)]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Discards All" guiWidth="128" guiX="376" guiY="260" id="TRASH3" type="TRASH">
+<attr name="guiDescription"><![CDATA[Discards all data (default settings)]]></attr>
+</Node>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INNEREDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH1:0"/>
+<Edge fromNode="BROADCAST:1" guiBendpoints="364:52|364:155" guiLocks="364|null|null" guiRouter="Manual" id="INNEREDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="TRASH2:0"/>
+<Edge fromNode="BROADCAST:2" guiBendpoints="337:68|337:136|196:136|196:180" guiLocks="337|196|136" guiRouter="Manual" id="INNEREDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="BROADCAST2:0"/>
+<Edge fromNode="BROADCAST2:0" guiBendpoints="363:180|363:280" guiLocks="363|null|null" guiRouter="Manual" id="INNEREDGE4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH3:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>

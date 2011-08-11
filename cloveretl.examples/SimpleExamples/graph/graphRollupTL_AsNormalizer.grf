@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Fri Mar 12 12:59:49 CET 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.65">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Mon Jun 13 10:23:39 CEST 2011" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.68" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -9,20 +9,14 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="122" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Rollup as Normalizer" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="325" x="114" y="248">
-<attr name="text"><![CDATA[
-Rollup can also serve as Normalizer.
-
-The phase 0 is taken from graphNormalizeTL.grf.
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="235" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The same outputs" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="150" x="362" y="-42"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="287" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The same outputs" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="218" x="555" y="-32"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped For Each Employee" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="85" guiName="Customers Grouped For Each Employee" guiWidth="311" guiX="20" guiY="12" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="Normalizer" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="69" guiName="Normalizer" guiWidth="128" guiX="361" guiY="12" id="NORMALIZE" type="NORMALIZER">
 <attr name="normalize"><![CDATA[list customers;
 //declares a list
 
@@ -48,15 +42,15 @@ function clean() {
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
-<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="101" guiName="Customers Normalized" guiWidth="192" guiX="569" guiY="11" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
+<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="22" guiY="114" id="INPUT2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="85" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="21" guiY="135" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="195" guiY="113" id="ROLLUP0" type="ROLLUP">
+<Node enabled="enabled" guiHeight="101" guiName="Rollup as Normalizer" guiWidth="178" guiX="361" guiY="135" id="ROLLUP0" type="ROLLUP">
 <attr name="transform"><![CDATA[//#TL
 list customers;
 int Length;
@@ -114,9 +108,10 @@ function transform(counter, groupAccumulator) {
 // }
 
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Rollup can serve as Normalizer]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized_Rollup.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="372" guiY="114" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP0:0"/>
-<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized_Rollup.out" guiHeight="101" guiName="Customers Normalized" guiWidth="192" guiX="570" guiY="134" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP0:0"/>
+<Edge debugMode="true" fromNode="ROLLUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER1:0"/>
 </Phase>
 </Graph>

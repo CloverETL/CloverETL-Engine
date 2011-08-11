@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551492111" licenseType="Evaluation Devel" modified="Fri Mar 12 11:15:16 CET 2010" modifiedBy="cloveruser" name="XXX" revision="1.41">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551492111" licenseType="Evaluation Devel" modified="Fri Jun 17 13:46:07 CEST 2011" modifiedBy="avackova" name="XXX" revision="1.50" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -59,81 +59,64 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Sequence cached="50" fileURL="${SEQ_DIR}/seqkey.seq" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="258" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the XMLExtract Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="459" x="-96" y="-136">
-<attr name="text"><![CDATA[
-XMLExtract reads XML files using SAX technology.
-
-In this example, an input XML file is read and mapped to the connected output ports using the specified Mapping attribute.
-
-A sequence is used to join data from port 2 and port 3. The sequence is then reset in the finished() function.
-
-Note that output port 5 uses some fields from port 4 as its key values. Field values on port 4 are concatenated to generate the values of the key on port 5.
-
-Input file contains the information about company employees, their benefits, families, projects, and customers within these projects. 
-
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="168" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees.xml" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="159" x="19" y="167"/>
+<Sequence cached="50" id="Sequence0" name="seqKey" start="0" step="1" type="PRIMITIVE_SEQUENCE"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="101" guiName="Employees" guiWidth="128" guiX="419" guiY="7" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[false]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="405" guiY="368" id="DATA_WRITER1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiHeight="101" guiName="Join - Benefits" guiWidth="134" guiX="419" guiY="449" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCHILD.txt" guiHeight="0" guiName="Children" guiWidth="0" guiX="425" guiY="107" id="DATA_WRITER2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCHILD.txt" guiHeight="101" guiName="Children" guiWidth="128" guiX="419" guiY="116" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="446" guiY="192" id="DATA_WRITER3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiHeight="101" guiName="Projects" guiWidth="128" guiX="419" guiY="227" id="DATA_WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="403" guiY="284" id="DATA_WRITER4" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="101" guiName="Customers" guiWidth="128" guiX="419" guiY="339" id="DATA_WRITER4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="ExtMergeJoin" guiWidth="0" guiX="225" guiY="369" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiHeight="101" guiName="ExtMergeJoin" guiWidth="130" guiX="231" guiY="387" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.car := $0.car;
-	$0.seqKey := $0.seqKey;
-	$0.mobilephone := $0.mobilephone;
-	$0.financial_bonus := (($1.monthly_bonus)*12)+($1.yearly_bonus);
+function integer transform() {
+	$0.car = $0.car;
+	$0.seqKey = $0.seqKey;
+	$0.mobilephone = $0.mobilephone;
+	$0.financial_bonus = (($1.monthly_bonus)*12)+($1.yearly_bonus);
+	return ALL;
 }
-	
-// Called to return a user-defined error message when an error occurs.
-// function getMessage() {}
-
-// Called during component initialization.
-// function init() {}
-
-// Called after the component finishes.
- function finished() {
-     sequence(Sequence0).reset;
- }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[A sequence is used to join data]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="32" guiY="243" id="XML_EXTRACT0" sourceUri="${DATAIN_DIR}/other/employees.xml" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="101" guiName="Employees.xml" guiWidth="138" guiX="42" guiY="127" id="XML_EXTRACT0" sourceUri="${DATAIN_DIR}/other/employees.xml" type="XML_EXTRACT" useNestedNodes="true">
 <attr name="mapping"><![CDATA[<Mappings>
-	<Mapping element="employee" outPort="0" xmlFields="salary" cloverFields="basic_salary">
-		<Mapping element="child" outPort="1" parentKey="empID" generatedKey="parentID"/>
-		<Mapping element="benefits" outPort="2" parentKey="empID;jobID" generatedKey="empID;jobID" sequenceField="seqKey" sequenceId="Sequence0">
-			<Mapping element="financial" outPort="3" parentKey="seqKey" generatedKey="seqKey"/>   
-		</Mapping>
-		<Mapping element="project" outPort="4" parentKey="empID;jobID" generatedKey="empID;jobID">
-			<Mapping element="customer" outPort="5" parentKey="projName;projManager;inProjectID;Start" generatedKey="joinedKey"/>
+	<Mapping element="employees">
+		<Mapping element="employee" outPort="0"
+				xmlFields="jobID;empID;salary"
+				cloverFields="jobID;empID;basic_salary">
+			<Mapping element="child" outPort="1" parentKey="empID" generatedKey="parentID"/>
+			<Mapping element="benefits" outPort="2" parentKey="empID;jobID" generatedKey="empID;jobID" sequenceField="seqKey" sequenceId="Sequence0">
+				<Mapping element="financial" outPort="3" parentKey="seqKey" generatedKey="seqKey"/>
+			</Mapping>
+			<Mapping element="project" outPort="4" parentKey="empID;jobID" generatedKey="empID;jobID">
+				<Mapping element="customer" outPort="5" parentKey="projName;inProjectID;projManager;Start" generatedKey="joinedKey"/>
+			</Mapping>
 		</Mapping>
 	</Mapping>
-</Mappings>]]></attr>
+</Mappings>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Input XML file is read and mapped to the connected output ports using the specified Mapping attribute. Note that output port 5 uses some fields from port 4 as its key values. Field values on port 4 are concatenated to generate the values of the key on port 5.]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" id="Edge5" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 2 (out)" toNode="EXT_MERGE_JOIN1:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:3" guiBendpoints="" id="Edge22" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 3 (out)" toNode="EXT_MERGE_JOIN1:1"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:4" guiBendpoints="" id="Edge23" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 4 (out)" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:5" guiBendpoints="" id="Edge24" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 5 (out)" toNode="DATA_WRITER4:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="249:137|249:27" guiLocks="249|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:2" guiBendpoints="195:157|195:405" guiLocks="195|null|null" guiRouter="Manual" id="Edge21" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 2 (out)" toNode="EXT_MERGE_JOIN1:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:3" guiBendpoints="217:167|217:423" guiLocks="217|null|null" guiRouter="Manual" id="Edge22" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 3 (out)" toNode="EXT_MERGE_JOIN1:1"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:4" guiBendpoints="302:177|302:247" guiLocks="302|275|null" guiRouter="Manual" id="Edge23" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 4 (out)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:5" guiBendpoints="255:187|255:359" guiLocks="255|275|null" guiRouter="Manual" id="Edge24" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 5 (out)" toNode="DATA_WRITER4:0"/>
 </Phase>
 </Graph>

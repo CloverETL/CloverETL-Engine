@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph is a simple utility which demonstrates usage of parameters. It allows viewing content&#10;of particular data file (in delimited format). It reads in data and stores them in &quot;debug&quot; format&#10;under name Debug_output_&lt;inputfilename&gt;&#10;&#10;Execution: java org.jetel.main.runGraph -P:data=&lt;data file&gt; -P:meta=&lt;metadata file&gt; graphViewData.grf" guiVersion="0.0.0.devel" id="1204551287558" licenseType="Evaluation Devel" modified="Tue Jul 13 11:17:47 CEST 2010" modifiedBy="avackova" name="View Data" revision="1.20">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph is a simple utility which demonstrates usage of parameters. It allows viewing content&#10;of particular data file (in delimited format). It reads in data and stores them in &quot;debug&quot; format&#10;under name Debug_output_&lt;inputfilename&gt;&#10;&#10;Execution: java org.jetel.main.runGraph -P:data=&lt;data file&gt; -P:meta=&lt;metadata file&gt; graphViewData.grf" guiVersion="0.0.0.devel" id="1204551287558" licenseType="Evaluation Devel" modified="Mon Jun 13 12:31:17 CEST 2011" modifiedBy="avackova" name="View Data" revision="1.23" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${meta}" id="InMetadata"/>
 <Property id="GraphParameter0" name="data" value="data-in/delimited/orders.dat"/>
 <Property id="GraphParameter1" name="meta" value="${META_DIR}/delimited/orders.fmt"/>
 <Property fileURL="workspace.prm" id="GraphParameter2"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="345" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="View Data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="569" x="24" y="108">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="345" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="View Data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="569" x="24" y="135">
 <attr name="text"><![CDATA[
 You can view data in multiple different ways.
 
@@ -28,8 +28,8 @@ If Debug file URL is not empty, a table with data is written to the specified fi
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${PROJECT}/${data}" guiHeight="25" guiName="${data}" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node charset="UTF-8" debugFilename="${DATAOUT_DIR}/data.out" debugPrint="true" enabled="enabled" guiHeight="25" guiName="Trash output" guiWidth="50" guiX="336" guiY="24" id="TRASH1" type="TRASH"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" router="Manhattan" toNode="TRASH1:0"/>
+<Node enabled="enabled" fileURL="${PROJECT}/${data}" guiHeight="101" guiName="${data}" guiWidth="128" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node charset="UTF-8" debugFilename="${DATAOUT_DIR}/data.out" debugPrint="true" enabled="enabled" guiHeight="69" guiName="Trash output" guiWidth="128" guiX="336" guiY="24" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" router="Manhattan" toNode="TRASH1:0"/>
 </Phase>
 </Graph>

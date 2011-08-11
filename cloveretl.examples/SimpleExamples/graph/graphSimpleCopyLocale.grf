@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="0.0.0.devel" id="1196683146888" licenseType="Evaluation Devel" modified="Tue Jul 13 10:06:03 CEST 2010" modifiedBy="avackova" name="Testing Simple Copy" revision="1.24">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="0.0.0.devel" id="1196683146888" licenseType="Evaluation Devel" modified="Mon Jun 13 11:11:37 CEST 2011" modifiedBy="avackova" name="Testing Simple Copy" revision="1.27" showComponentDetails="true">
 <Global>
 <Metadata id="OutMetadata" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -44,27 +44,20 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="245" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the SimpleCopy Component (Format Changes)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="479" x="20" y="112">
-<attr name="text"><![CDATA[
-In addition to what has been described in other examples about SimpleCopy, here we demonstrate how SimpleCopy can serve to change metadata. Metadata on the component output differ from those on its input. 
-
-Sometimes you want to change metadata from delimited to fixed, mixed, etc. You can do this in Reformat, but you can do the same with SimpleCopy.
-
-In this example, date data fields of the input have specified format (dd/MM/yyyy). Their output equivalents use locale (en.US). Thus, format of date changes, but dates are the same. 
-
-Also delimiters can be changed, etc.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees &amp;&amp; OutMetadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="213" x="360" y="-36"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="133" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Employees &amp;&amp; InMetadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="-12" y="-36"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="204" guiY="24" id="BROADCAST" type="SIMPLE_COPY"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="0" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="25" guiName="Employees" guiWidth="50" guiX="408" guiY="24" id="OUTPUT1" type="DATA_WRITER">
-<attr name="dataPolicy"><![CDATA[Strict]]></attr>
+<Node enabled="enabled" guiHeight="101" guiName="Change format" guiWidth="137" guiX="204" guiY="24" id="BROADCAST" type="SIMPLE_COPY">
+<attr name="guiDescription"><![CDATA[Metadata on the output differ from those on input: date data fields of the input have specified format (dd/MM/yyyy). Their output equivalents use locale (en.US). Thus, format of date changes, but dates are the same.]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT1:0"/>
-<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" router="Manhattan" toNode="BROADCAST:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="0" guiY="24" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Employees formatted according to InMetadata]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="408" guiY="24" id="OUTPUT1" type="DATA_WRITER">
+<attr name="dataPolicy"><![CDATA[Strict]]></attr>
+<attr name="guiDescription"><![CDATA[Employees formatted according to OutMetadata]]></attr>
+</Node>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" router="Manhattan" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>

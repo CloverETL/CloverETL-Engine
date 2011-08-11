@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Thu Apr 28 14:41:32 CEST 2011" modifiedBy="avackova" name="CreditCards" revision="1.96" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Mon May 30 17:53:54 CEST 2011" modifiedBy="avackova" name="CreditCards" revision="1.100" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -81,20 +81,20 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="customer_id" enabled="enabled" guiHeight="98" guiName="SumByCustomer" guiWidth="149" guiX="247" guiY="737" id="AGGREGATE0" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE">
+<Node aggregateKey="customer_id" enabled="enabled" guiHeight="101" guiName="SumByCustomer" guiWidth="149" guiX="247" guiY="737" id="AGGREGATE0" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[This function aggregates by summing all transactions for each customer]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiHeight="98" guiName="Transactions" guiWidth="128" guiX="35" guiY="99" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiHeight="101" guiName="Transactions" guiWidth="128" guiX="35" guiY="99" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Customer transactions loaded]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiHeight="98" guiName="Customers" guiWidth="128" guiX="35" guiY="248" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiHeight="101" guiName="Customers" guiWidth="128" guiX="35" guiY="248" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[50'000 customers loaded]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Amount&gt;400k" guiWidth="129" guiX="489" guiY="737" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Amount&gt;400k" guiWidth="129" guiX="489" guiY="737" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[We filter out customers whose total transactions are more then 400k]]></attr>
 <attr name="filterExpression"><![CDATA[$0.amount > 400000]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="ConvertCurrency" guiWidth="152" guiX="739" guiY="271" id="EXT_HASH_JOIN0" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="101" guiName="ConvertCurrency" guiWidth="152" guiX="739" guiY="271" id="EXT_HASH_JOIN0" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -129,7 +129,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Rebase curriencies to one base currency]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="MatchCustomer" guiWidth="144" guiX="494" guiY="152" id="EXT_MERGE_JOIN0" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="101" guiName="MatchCustomer" guiWidth="144" guiX="494" guiY="152" id="EXT_MERGE_JOIN0" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -164,13 +164,13 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Merge transactions with customers]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="FastSort" guiWidth="128" guiX="251" guiY="99" id="FAST_SORT0" sortKey="CustomerId(a)" type="FAST_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="FastSort" guiWidth="128" guiX="251" guiY="99" id="FAST_SORT0" sortKey="CustomerId(a)" type="FAST_SORT">
 <attr name="guiDescription"><![CDATA[Sort transactions by customer ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="FastSort" guiWidth="128" guiX="697" guiY="737" id="FAST_SORT1" sortKey="amount(d)" type="FAST_SORT">
+<Node enabled="enabled" guiHeight="101" guiName="FastSort" guiWidth="128" guiX="697" guiY="737" id="FAST_SORT1" sortKey="amount(d)" type="FAST_SORT">
 <attr name="guiDescription"><![CDATA[Sort those customers in order of transaction totals]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Partition" guiWidth="128" guiX="31" guiY="711" id="PARTITION0" type="PARTITION">
+<Node enabled="enabled" guiHeight="101" guiName="Partition" guiWidth="128" guiX="31" guiY="711" id="PARTITION0" type="PARTITION">
 <attr name="partitionSource"><![CDATA[//#CTL2
 // This transformation partitions input records into multiple output ports.
 
@@ -201,7 +201,7 @@ function integer getOutputPort() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Here, we split the transactions into 3 separate streams]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="64" guiName="Reformat" guiWidth="128" guiX="495" guiY="315" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="495" guiY="315" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer counter = 1;
 // Transforms input record into output record.
@@ -232,7 +232,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="64" guiName="Reformat" guiWidth="128" guiX="488" guiY="525" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="488" guiY="525" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -261,16 +261,16 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="81" guiName="risky-customers.html" guiWidth="181" guiX="886" guiY="737" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="85" guiName="risky-customers.html" guiWidth="181" guiX="886" guiY="737" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Risky customers]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="98" guiName="missing-customer" guiWidth="155" guiX="886" guiY="518" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiHeight="101" guiName="missing-customer" guiWidth="155" guiX="886" guiY="518" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="STRUCTURE_WRITER2" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Ttransactions with bad customer IDs]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="81" guiName="missing-currency.html" guiWidth="186" guiX="886" guiY="630" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiHeight="85" guiName="missing-currency.html" guiWidth="186" guiX="886" guiY="630" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Unsupported currency]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Rates Reader" guiWidth="128" guiX="36" guiY="399" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT" useNestedNodes="true">
+<Node enabled="enabled" guiHeight="101" guiName="Rates Reader" guiWidth="128" guiX="36" guiY="399" id="XML_EXTRACT0" sourceUri="${RATES_FILE}" type="XML_EXTRACT" useNestedNodes="true">
 <attr name="mapping"><![CDATA[<Mappings>
   <Mapping element="gesmes:Envelope">
     <Mapping element="Cube">
@@ -282,19 +282,19 @@ function integer transform() {
 </Mappings>]]></attr>
 <attr name="guiDescription"><![CDATA[Load exchange rates from web as xml]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="FAST_SORT0:0"/>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="233:0:-98:80:0.5|233:-80:-98:0:0.5" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
-<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="FAST_SORT1:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="27:0:887:-438:0.5|27:272:887:-166:0.5|-861:272:-1:-166:0.5|-867:438:-7:0:0.5" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
-<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="39:0:-62:-119:0.5|39:119:-62:0:0.5" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
-<Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
-<Edge debugMode="false" fromNode="FAST_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
-<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="213:-7:-507:4:0.5|213:-11:-507:0:0.5" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER3:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="AGGREGATE0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER2:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="17:0:-361:69:0.5|17:-104:-361:-35:0.5|363:-104:-15:-35:0.5|363:-69:-15:0:0.5" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="FAST_SORT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="401:268|401:188" guiLocks="401|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="FAST_SORT1:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="27:0|27:272|-861:272|-867:438" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="false" fromNode="FAST_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="191:727|191:545" guiLocks="191|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="229:743|229:648" guiLocks="229|null|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER3:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER2:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="17:0|17:-104|363:-104|363:-69" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 </Graph>

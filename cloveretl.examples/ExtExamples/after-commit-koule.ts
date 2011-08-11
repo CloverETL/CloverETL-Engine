@@ -10,6 +10,7 @@
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="test" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="db2" type="DB2" user="db2inst" password="semafor" URL="jdbc:db2://koule:50002/test" driver="com.ibm.db2.jcc.DB2Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
+	<DBConnection ident="infobright_3_5" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5030/test" driver="org.gjt.mm.mysql.Driver" />
 	
 	<FunctionalTest ident="PostgreDataWriter" graphFile="graph/graphPostgreSqlDataWriter.grf">
 	      <SQLStatement connection="postgre_test">DELETE FROM test</SQLStatement>
@@ -68,6 +69,13 @@
 	      	<SQLStatement connection="infobright">drop table test</SQLStatement>
 	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
      	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
+	 	</FunctionalTest>
+	
+	<FunctionalTest ident="InfobrightDataWriter_3_5" graphFile="graph/graphInfobrightDataWriter.grf">
+        <Property name="port" value="5030" />
+	      	<SQLStatement connection="infobright_3_5">drop table test</SQLStatement>
+	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
+     	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright_3_5" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
 	 	</FunctionalTest>
 	
 </TestScenario>

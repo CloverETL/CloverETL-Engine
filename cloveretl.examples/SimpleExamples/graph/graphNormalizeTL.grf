@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Mon Jun 07 17:10:21 CEST 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.32">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Fri Jun 10 16:00:25 CEST 2011" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -9,22 +9,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="338" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Normalizer Component (CTL)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="37" y="143">
-<attr name="text"><![CDATA[
-Graph demonstrates the use of Normalizer. Received records contain a field named "customers". Its values are strings consisting of substrings, white spaces and hyphens.
-
-Component splits the field into several substrings without white spaces and hyphens and counts the number of such substrings. This is performed by the count() function. The count of substrings is returned by the function.
-
-In the transform() function, which is called multiple times (number of calls of the function equals to the number returned by the count() function for the input record), new output records are created. These get the substrings and assign each of them to one of the output fields. 
-
-Thus, this component creates one or more output records based on one input record.
-
-Before processing next input record, the clean() function returns variables into intitial state.
-
-Transformation is written in Clover Transformation Language (CTL) directly in the graph. It can be seen in the Source tab. It is executed on runtime.
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="226" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CTL1 vs. CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="532" y="116">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CTL1 vs. CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="712" x="22" y="149">
 <attr name="text"><![CDATA[
 This graph still uses the older CTL1. 
 CloverETL now offers a new CTL2 transformation language, 
@@ -36,10 +21,10 @@ For the CTL2 equaivalent of this older TL syntax see  graphNormalizeTLNew.grf.
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="22" guiY="30" id="INPUT2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="85" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="22" guiY="30" id="INPUT2" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Normalizer" guiWidth="0" guiX="197" guiY="30" id="NORMALIZER0" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="367" guiY="30" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#TL
 list customers;
 // This transformation defines the way in which a single input record is normalized
@@ -79,9 +64,10 @@ function clean() {
 // Called after the component finishes.
 // function finished() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Splits the field into several substrings without white spaces and hyphens and counts the number of such substrings. This is performed by the count() function. In the transform() function, which is called multiple times (number of calls of the function equals to the number returned by the count() function for the input record), new output records are created. These get the substrings and assign each of them to one of the output fields. Thus, this component creates one or more output records based on one input record. Before processing next input record, the clean() function returns variables into intitial state.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="372" guiY="30" id="WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="NORMALIZER0:0"/>
-<Edge debugMode="true" fromNode="NORMALIZER0:0" guiBendpoints="" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="101" guiName="Customers Normalized" guiWidth="192" guiX="542" guiY="30" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="NORMALIZER0:0"/>
+<Edge debugMode="true" fromNode="NORMALIZER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
 </Phase>
 </Graph>

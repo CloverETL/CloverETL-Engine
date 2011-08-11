@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Thu May 19 15:32:16 CEST 2011" modifiedBy="avackova" name="Testing Simple Copy" revision="1.47" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204539735714" licenseType="Evaluation Devel" modified="Tue Jun 07 10:35:57 CEST 2011" modifiedBy="avackova" name="Testing Simple Copy" revision="1.48" showComponentDetails="true">
 <Global>
 <Metadata id="InOutMetadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="organizationalPerson" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -42,20 +42,20 @@ An autofilling function (global_row_count) is used for a field of the edge metad
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" guiHeight="64" guiName="DBInputTable" guiWidth="129" guiX="24" guiY="24" id="DB_INPUT_TABLE0" sqlQuery="select * from RT_COUNTRIES" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="64" guiName="LookupTableReaderWriter" guiWidth="219" guiX="192" guiY="24" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Edge debugMode="false" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Node dbConnection="JDBC0" enabled="enabled" guiHeight="69" guiName="DBInputTable" guiWidth="129" guiX="24" guiY="24" id="DB_INPUT_TABLE0" sqlQuery="select * from RT_COUNTRIES" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="69" guiName="LookupTableReaderWriter" guiWidth="219" guiX="192" guiY="24" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Edge debugMode="false" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/persons.txt" guiHeight="98" guiName="Before writing" guiWidth="134" guiX="587" guiY="196" id="DATA_WRITER0" type="DATA_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/persons.txt" guiHeight="101" guiName="Before writing" guiWidth="134" guiX="587" guiY="196" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[The data records with new values of country information are written to delimited file. ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="LDAPReader" guiWidth="128" guiX="23" guiY="196" id="LDAP_READER0" ldapUrl="ldap://mail.javlin.eu:3893" scope="subtree" type="LDAP_READER">
+<Node enabled="enabled" guiHeight="101" guiName="LDAPReader" guiWidth="128" guiX="23" guiY="196" id="LDAP_READER0" ldapUrl="ldap://koule" scope="subtree" type="LDAP_READER">
 <attr name="guiDescription"><![CDATA[LDAP directory structure is read from LDAP server.]]></attr>
 <attr name="filter"><![CDATA[cn=*]]></attr>
 <attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="Reformat" guiWidth="128" guiX="191" guiY="196" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="101" guiName="Reformat" guiWidth="128" guiX="191" guiY="196" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -81,26 +81,26 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Old "st" field values are replaced by new values generated at random using the lookup table.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="359" guiY="196" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="LDAP_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
-<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 1 (out)" toNode="LDAP_WRITER1:0"/>
+<Edge debugMode="false" fromNode="LDAP_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 1 (out)" toNode="LDAP_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node action="replace_attributes" enabled="enabled" guiHeight="98" guiName="LDAPWriter" guiWidth="128" guiX="598" guiY="309" id="LDAP_WRITER1" ldapUrl="ldap://koule" passThroughInputPort="0" passThroughOutputPort="0" password="secret" type="LDAP_WRITER" user="cn=Manager,dc=javlin,dc=eu">
+<Node action="replace_attributes" enabled="enabled" guiHeight="101" guiName="LDAPWriter" guiWidth="128" guiX="598" guiY="309" id="LDAP_WRITER1" ldapUrl="ldap://koule" passThroughInputPort="0" passThroughOutputPort="0" password="secret" type="LDAP_WRITER" user="cn=Manager,dc=javlin,dc=eu">
 <attr name="guiDescription"><![CDATA[The data records with new values of country information are written back to the LDAP directory. ]]></attr>
 </Node>
 </Phase>
 <Phase number="3">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/ldap_persons.txt" guiHeight="98" guiName="After writing" guiWidth="128" guiX="600" guiY="423" id="DATA_WRITER1" type="DATA_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/ldap_persons.txt" guiHeight="101" guiName="After writing" guiWidth="128" guiX="600" guiY="423" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[The same records that were saved to an output file by UniversalDataWriter in phase 1. 
 Both the files (persons.txt and ldap_persons.txt) are identical. ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="LDAPReader" guiWidth="128" guiX="26" guiY="423" id="LDAP_READER1" ldapUrl="ldap://koule" scope="subtree" type="LDAP_READER">
+<Node enabled="enabled" guiHeight="101" guiName="LDAPReader" guiWidth="128" guiX="26" guiY="423" id="LDAP_READER1" ldapUrl="ldap://koule" scope="subtree" type="LDAP_READER">
 <attr name="guiDescription"><![CDATA[Read data with new attributes from LDAP directory.]]></attr>
 <attr name="filter"><![CDATA[cn=*]]></attr>
 <attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="LDAP_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="LDAP_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="InOutMetadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

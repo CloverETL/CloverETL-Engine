@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 30 09:08:40 CEST 2009" description="This graph shows usage of xsd file for mapping between xsd and clover metadata." guiVersion="0.0.0.devel" id="1238400925607" licenseType="Evaluation Devel" modified="Fri Mar 12 11:18:06 CET 2010" modifiedBy="cloveruser" name="graphXMLExtractXsd" revision="1.29">
+<Graph author="avackova" created="Mon Mar 30 09:08:40 CEST 2009" description="This graph shows usage of xsd file for mapping between xsd and clover metadata." guiVersion="0.0.0.devel" id="1238400925607" licenseType="Evaluation Devel" modified="Mon Jun 13 13:11:02 CEST 2011" modifiedBy="avackova" name="graphXMLExtractXsd" revision="1.32" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="item" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -25,23 +25,13 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="188" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the XMLExtract Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="304" x="17" y="232">
-<attr name="text"><![CDATA[
-XMLExtract reads XML files using SAX technology.
-
-In this example, an XSD file is used to generate a Mapping of the input XML file to the connected output ports. 
-
-Trash prints received data to Console, whereas the two writers write it to output files.
-
-]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Shiporder.xml" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="178" x="64" y="62"/>
+<Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/persons.txt" guiHeight="0" guiName="Person Details" guiWidth="0" guiX="378" guiY="140" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/items.txt" guiHeight="0" guiName="Items" guiWidth="0" guiX="378" guiY="247" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Basic Info (Person)" guiWidth="0" guiX="378" guiY="29" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="87" guiY="128" id="XML_EXTRACT0" schema="${META_DIR}/xsd/shiporder.xsd" sourceUri="${DATAIN_DIR}/other/shiporder.xml" type="XML_EXTRACT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/persons.txt" guiHeight="101" guiName="Person Details" guiWidth="134" guiX="378" guiY="118" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/items.txt" guiHeight="101" guiName="Items" guiWidth="128" guiX="378" guiY="247" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="69" guiName="Basic Info (Person)" guiWidth="162" guiX="378" guiY="29" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="101" guiName="Shiporder.xml" guiWidth="129" guiX="87" guiY="128" id="XML_EXTRACT0" schema="${META_DIR}/xsd/shiporder.xsd" sourceUri="${DATAIN_DIR}/other/shiporder.xml" type="XML_EXTRACT" useNestedNodes="true">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="shiporder" outPort="0"
 			xmlFields="orderperson"
@@ -51,9 +41,10 @@ Trash prints received data to Console, whereas the two writers write it to outpu
 	</Mapping>
 </Mappings>
 ]]></attr>
+<attr name="guiDescription"><![CDATA[XSD file is used to generate a Mapping of the input XML file to the connected output ports.]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="320:160|320:138" guiLocks="320|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

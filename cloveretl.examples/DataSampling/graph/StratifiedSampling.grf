@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Tue Jan 18 15:13:31 CET 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.34">
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Fri Jun 17 11:45:53 CEST 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.36" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/stratifiedSample.txt"/>
 <Property fileURL="parameters.prm" id="GraphParameter1"/>
 <Property fileURL="workspace.prm" id="GraphParameter10"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="86" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stratified sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="662" x="21" y="-62">
-<attr name="text"><![CDATA[If the data set embraces a number of distinct categories, the frame can be organized by these categories into separate "strata". Each stratum is then sampled as an independent sub-population, out of which individual elements can be randomly selected. It must be selected at least one record from each "stratum".]]></attr>
-</Note>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="38" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stratified sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="662" x="21" y="-62"/>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="320" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Stratified random sampling - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="665" x="20" y="107">
 <attr name="text"><![CDATA[
 DataSampling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by all project graphs:
@@ -26,14 +24,16 @@ This graph has its own parameter also. It is output_file, that defines file for 
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="21" guiY="30" id="DATA_READER0" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="21" guiY="-10" id="DATA_READER0" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${input_file}]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="208" guiY="30" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT"/>
-<Node enabled="enabled" groupKeyFields="${sampling_field}" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="370" guiY="30" id="ROLLUP0" type="ROLLUP">
+<Node enabled="enabled" guiHeight="101" guiName="EXTSort" guiWidth="128" guiX="208" guiY="-10" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT">
+<attr name="guiDescription"><![CDATA[Stratified sampling method requires the data to be sorted]]></attr>
+</Node>
+<Node enabled="enabled" groupKeyFields="${sampling_field}" guiHeight="101" guiName="Rollup" guiWidth="128" guiX="370" guiY="-10" id="ROLLUP0" type="ROLLUP">
 <attr name="transform"><![CDATA[//#CTL2
 boolean recordSent;
 
@@ -116,8 +116,9 @@ function integer transform(integer counter, VoidMetadata groupAccumulator) {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[If the data set embraces a number of distinct categories, the frame can be organized by these categories into separate "strata". Each stratum is then sampled as an independent sub-population, out of which individual elements can be randomly selected. It must be selected at least one record from each "stratum".]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="555" guiY="30" id="WRITER0" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiHeight="85" guiName="DataWriter" guiWidth="128" guiX="555" guiY="-10" id="WRITER0" type="${WRITER_TYPE}">
 <attr name="fileURL"><![CDATA[${output_file}]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="sheetName"><![CDATA[StratifiedSampling]]></attr>

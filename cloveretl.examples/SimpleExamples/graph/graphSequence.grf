@@ -1,25 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example extends graphOrdersReformat in a sence that&#10;the counter used for generating OrderKey is taken from&#10;Sequence object which is persistent between graph executions - i.e.&#10;you get continuous sequence of unique numbers.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204550328210" licenseType="Evaluation Devel" modified="Mon Jun 28 12:56:42 CEST 2010" modifiedBy="cloveruser" name="Testing Reformat" revision="1.23">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example extends graphOrdersReformat in a sence that&#10;the counter used for generating OrderKey is taken from&#10;Sequence object which is persistent between graph executions - i.e.&#10;you get continuous sequence of unique numbers.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204550328210" licenseType="Evaluation Devel" modified="Mon Jun 13 10:35:11 CEST 2011" modifiedBy="avackova" name="Testing Reformat" revision="1.25" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Sequence cached="5" fileURL="${SEQ_DIR}/sequence.dat" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="132" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sequence is used" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="175" y="-30"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Reformat and a Sequence" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="512" x="21" y="119">
-<attr name="text"><![CDATA[
-The graph demonstrates how a sequence can be used in Reformat. In this graph, transformation is defined using the Transform attribute and it is written in Java directly in the graph. It can be seen in the Source tab.
-
-Transformation can also be written in the source code in Clover transformation language.
-
-]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="25" guiName="Orders Transformed" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="25" guiName="Reformat" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="101" guiName="Orders Transformed" guiWidth="173" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="101" guiName="Reformat" guiWidth="128" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -65,8 +56,9 @@ public class ReformatOrdersInline extends DataRecordTransform{
 	}
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Sequence is used]]></attr>
 </Node>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
-<Edge debugMode="true" fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REF:0"/>
+<Edge debugMode="true" fromNode="REF:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

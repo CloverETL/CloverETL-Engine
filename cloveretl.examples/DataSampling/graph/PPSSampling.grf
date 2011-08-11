@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Tue Jan 18 15:10:42 CET 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.46">
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276167645196" licenseType="Evaluation Devel" modified="Fri Jun 17 11:42:57 CEST 2011" modifiedBy="avackova" name="SimpleRandomSampling" revision="1.48" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Property id="GraphParameter0" name="output_file" value="${DATAOUT_DIR}/ppsSample.txt"/>
-<Property fileURL="parameters.prm" id="GraphParameter11"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="83" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Probability proportional to size sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="661" x="22" y="-59">
+<Property fileURL="parameters.prm" id="GraphParameter1"/>
+<Property fileURL="workspace.prm" id="GraphParameter10"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="43" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Probability proportional to size sampling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="661" x="22" y="-59">
 <attr name="text"><![CDATA[
-Probability for each record is set to be proportional to its "stratum" size, up to a maximum of 1. Strata are defined by the value of the selected field. For each group of records it it is used systematic sampling method as in SystematicRandomSampling.grf.
+
 ]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="339" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Probability proportional to size sampling - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="666" x="19" y="108">
@@ -28,14 +28,16 @@ This graph has its own parameter also. It is output_file, that defines file for 
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="DataReader" guiWidth="0" guiX="21" guiY="30" id="DATA_READER0" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="21" guiY="-5" id="DATA_READER0" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${input_file}]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="EXTSort" guiWidth="0" guiX="208" guiY="30" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT"/>
-<Node enabled="enabled" groupKeyFields="${sampling_field}" guiHeight="0" guiName="Rollup" guiWidth="0" guiX="379" guiY="30" id="ROLLUP0" type="ROLLUP">
+<Node enabled="enabled" guiHeight="101" guiName="EXTSort" guiWidth="128" guiX="208" guiY="-5" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT">
+<attr name="guiDescription"><![CDATA[PPS sampling method requires the data to be sorted.]]></attr>
+</Node>
+<Node enabled="enabled" groupKeyFields="${sampling_field}" guiHeight="101" guiName="Rollup" guiWidth="128" guiX="379" guiY="-5" id="ROLLUP0" type="ROLLUP">
 <attr name="transform"><![CDATA[//#CTL2
 integer index;
 integer rec_counter;
@@ -115,8 +117,9 @@ function integer transform(integer counter, VoidMetadata groupAccumulator) {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Probability for each record is set to be proportional to its "stratum" size, up to a maximum of 1. Strata are defined by the value of the selected field. For each group of records it it is used systematic sampling method as in SystematicRandomSampling.grf.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="DataWriter" guiWidth="0" guiX="555" guiY="30" id="WRITER0" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiHeight="85" guiName="DataWriter" guiWidth="128" guiX="555" guiY="-5" id="WRITER0" type="${WRITER_TYPE}">
 <attr name="fileURL"><![CDATA[${output_file}]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="sheetName"><![CDATA[PPSSampling]]></attr>

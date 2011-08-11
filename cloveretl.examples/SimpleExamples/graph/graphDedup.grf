@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Nov 27 15:42:58 CET 2007" guiVersion="0.0.0.devel" id="1196692750273" licenseType="Evaluation Devel" modified="Tue Jul 13 09:29:37 CEST 2010" modifiedBy="avackova" name="Dedup" revision="1.80">
+<Graph author="avackova" created="Tue Nov 27 15:42:58 CET 2007" guiVersion="0.0.0.devel" id="1196692750273" licenseType="Evaluation Devel" modified="Tue May 24 12:42:24 CEST 2011" modifiedBy="avackova" name="Dedup" revision="1.82" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="314" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Dedup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="475" x="13" y="219">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="251" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of Dedup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="676" x="17" y="200">
 <attr name="text"><![CDATA[
 Dedup serves to remove records that are duplicate according to the specified key, or to select the specified number of records (at most) from the beginning or the end, or to select unique records only. 
 
@@ -19,21 +19,21 @@ Selected records are sent to the required first output port of Dedup.
 
 Rejected records can be sent to the optional second output port. But this needs not be connected.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="193" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Dedup" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="147" x="351" y="24">
-<attr name="text"><![CDATA[
-At most two of every key value, taken from the start.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="0" guiName="Employees" guiWidth="0" guiX="11" guiY="134" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/out.txt" guiHeight="0" guiName="Accepted Records" guiWidth="0" guiX="549" guiY="60" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/reject.txt" guiHeight="0" guiName="Rejected Records" guiWidth="0" guiX="550" guiY="221" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node dedupKey="Title;TitleInCourtesy" enabled="enabled" guiHeight="0" guiName="At most two of each" guiWidth="0" guiX="360" guiY="134" id="DEDUP0" keep="first" noDupRecord="2" type="DEDUP"/>
-<Node enabled="enabled" guiHeight="0" guiName="ExtSort (Title;TitleInCourtesy)" guiWidth="0" guiX="192" guiY="134" id="EXT_SORT0" sortKey="Title(a);TitleInCourtesy(a)" type="EXT_SORT"/>
-<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" router="Manhattan" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="DEDUP0:1" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (duplicate)" router="Manhattan" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DEDUP0:0"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="103" guiName="Employees" guiWidth="128" guiX="16" guiY="77" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads employees data]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/out.txt" guiHeight="103" guiName="Accepted Records" guiWidth="159" guiX="698" guiY="20" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/reject.txt" guiHeight="103" guiName="Rejected Records" guiWidth="155" guiX="698" guiY="166" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node dedupKey="Title;TitleInCourtesy" enabled="enabled" guiHeight="103" guiName="At most two of each" guiWidth="176" guiX="411" guiY="77" id="DEDUP0" keep="first" noDupRecord="2" type="DEDUP">
+<attr name="guiDescription"><![CDATA[At most two of every key value, taken from the start.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="103" guiName="ExtSort " guiWidth="128" guiX="197" guiY="77" id="EXT_SORT0" sortKey="Title(a);TitleInCourtesy(a)" type="EXT_SORT"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (duplicate)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DEDUP0:0"/>
 </Phase>
 </Graph>

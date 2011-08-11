@@ -4,6 +4,7 @@
 
 	<DBConnection ident="postgre_foodmart" type="POSTGRE" user="test" password="test" URL="jdbc:postgresql://koule/foodmart" driver="org.postgresql.Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
+	<DBConnection ident="infobright_3_5" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5030/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="derby" type="DERBY" user="app" password="derby" 
 		URL="jdbc:derby://localhost:1527/${PROJECT_DIR}/data-in/derby.db;" 
 		driver="org.apache.derby.jdbc.ClientDriver" />
@@ -89,6 +90,15 @@
 	     <DeleteFile file="dbInc.txt"/>
 	</FunctionalTest>
 
+<!--Please uncomment the test after resolving CL-1861
+	<FunctionalTest ident="DBUnload_Mysql" graphFile="graph/graphDBUnload.grf" absoluteProjectPath="true">
+          <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
+          <Property name="connection" value="mysql.cfg" />
+	 	  <FlatFile outputFile="data-out/employees.list.out" supposedFile="supposed-out/employees.list.DBUnload.out"/>	                                                                    
+	     <DeleteFile file="dbInc.txt"/>
+	</FunctionalTest>
+-->
+
 	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/employees.txt" supposedFile="supposed-out/employees.DBUnload2.txt"/>	                                                                    
 	</FunctionalTest>
@@ -127,6 +137,14 @@
       	<SQLStatement connection="infobright">drop table test</SQLStatement>
 	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
      	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="InfobrightDataWriterRemote_3_5" graphFile="graph/graphInfobrightDataWriterRemote.grf">
+        <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
+         <Property name="connection_cfg" value="infobright-3-5.cfg" />
+      	<SQLStatement connection="infobright_3_5">drop table test</SQLStatement>
+	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
+     	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright_3_5" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
 	</FunctionalTest>
 	
 </TestScenario>

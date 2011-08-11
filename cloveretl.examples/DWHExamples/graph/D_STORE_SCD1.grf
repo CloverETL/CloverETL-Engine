@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Sep 24 09:28:57 CEST 2009" guiVersion="0.0.0.devel" id="1253797005857" licenseType="Evaluation Devel" modified="Tue May 24 09:19:24 CEST 2011" modifiedBy="avackova" name="D_STORE_SCD1" revision="1.32" showComponentDetails="true">
+<Graph author="Petr" created="Thu Sep 24 09:28:57 CEST 2009" guiVersion="0.0.0.devel" id="1253797005857" licenseType="Evaluation Devel" modified="Fri Jun 10 10:30:25 CEST 2011" modifiedBy="avackova" name="D_STORE_SCD1" revision="1.33" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/D_STORE.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/Store.fmt" id="Metadata0"/>
@@ -44,7 +44,7 @@ If the data is stored in database instead of files, the D_STORE_update.tbl and D
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="103" guiName="DataIntersection" guiWidth="152" guiX="479" guiY="136" id="DATA_INTERSECTION0" joinKey="$STORE_NUMBER=$STORE_NUMBER" keyDuplicates="false" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiHeight="101" guiName="DataIntersection" guiWidth="152" guiX="479" guiY="136" id="DATA_INTERSECTION0" joinKey="$STORE_NUMBER=$STORE_NUMBER" keyDuplicates="false" type="DATA_INTERSECTION">
 <attr name="order"><![CDATA[Asc]]></attr>
 <attr name="transform"><![CDATA[//#TL
 
@@ -77,20 +77,20 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Records are intersected on natural key]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/D_STORE.tbl" guiHeight="103" guiName="D_STORE" guiWidth="128" guiX="72" guiY="71" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${TABLES}/D_STORE.tbl" guiHeight="101" guiName="D_STORE" guiWidth="128" guiX="72" guiY="71" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Store dimension as of 24th Sep 2009]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Store_25092009.csv" guiHeight="103" guiName="Store_input" guiWidth="128" guiX="73" guiY="225" id="DATA_READER1" skipRows="1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Store_25092009.csv" guiHeight="101" guiName="Store_input" guiWidth="128" guiX="73" guiY="225" id="DATA_READER1" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Snapshot of the online transaction processing system (OLTP) as of 25th Sep 2009]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="103" guiName="Find differences" guiWidth="145" guiX="652" guiY="128" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Find differences" guiWidth="145" guiX="652" guiY="128" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Processing the records contained in both DWH and OLTP]]></attr>
 <attr name="filterExpression"><![CDATA[$STORE_NAME != $STORE_NAME_NEW OR $STORE_STREET_ADDRESS != $STORE_STREET_ADDRESS_NEW OR $STORE_CITY != $STORE_CITY_NEW
 OR $STORE_MANAGER != $STORE_MANAGER_NEW OR $STORE_ZIP_CODE != $STORE_ZIP_CODE_NEW OR $NO_EMPLOYEE != $NO_EMPLOYEE_NEW]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="86" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="251" guiY="87" id="EXT_SORT0" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="86" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="253" guiY="225" id="EXT_SORT1" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="103" guiName="Add ID_D_STORE" guiWidth="153" guiX="653" guiY="243" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="85" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="251" guiY="87" id="EXT_SORT0" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="253" guiY="225" id="EXT_SORT1" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="101" guiName="Add ID_D_STORE" guiWidth="153" guiX="653" guiY="243" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -142,22 +142,22 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="651" guiY="56" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="4:0:-16:78:0.5|4:-78:-16:0:0.5" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
-<Edge debugMode="false" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="EXT_FILTER0:0"/>
-<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="REFORMAT0:0"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
-<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (accepted)" toNode="REFORMAT1:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="4:0|4:-78" guiLocks="null|null|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:1" guiBendpoints="646:172|646:148" guiLocks="646|null|null" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="EXT_FILTER0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="REFORMAT0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (accepted)" toNode="REFORMAT1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${TABLES}/D_STORE_insert.tbl" guiHeight="86" guiName="INSERT to D_STORE" guiWidth="174" guiX="813" guiY="244" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${TABLES}/D_STORE_insert.tbl" guiHeight="85" guiName="INSERT to D_STORE" guiWidth="174" guiX="813" guiY="244" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[New stores]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/D_STORE_update.tbl" guiHeight="86" guiName="UPDATE D_STORE" guiWidth="159" guiX="985" guiY="128" id="DATA_WRITER1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${TABLES}/D_STORE_update.tbl" guiHeight="85" guiName="UPDATE D_STORE" guiWidth="159" guiX="985" guiY="128" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Updated stores]]></attr>
 </Node>
 </Phase>

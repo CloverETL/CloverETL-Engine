@@ -3,6 +3,17 @@
 
 <TestScenario ident="simple-examples" description="Engine simple examples" useJMX="true">    
 
+
+<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf" defaultProperties="changedParams">	 
+     <Property name="-P:DEFAULT_INTERNAL_IO_BUFFER_SIZE" value="89152" />
+	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/object.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/object1.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/subject.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/subject1.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
+	 <FlatFile outputFile="data-out/RDFTriples.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
+	 <FlatFile outputFile="data-out/RDFTriples1.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
+</FunctionalTest>
  
 <FunctionalTest ident="AggregateSorted" graphFile="graph/graphAggregateSorted.grf">
 	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/orders.aggregated.AggregateSorted"/>
@@ -125,11 +136,11 @@
 <FunctionalTest ident="DictionaryTL" graphFile="graph/graphDictionaryTL.grf">
 	 <FlatFile outputFile="data-out/smaller_half.txt" supposedFile="supposed-out/smaller_half.DictionaryTL.txt"/>
 	 <FlatFile outputFile="data-out/greater_half.txt" supposedFile="supposed-out/greater_half.DictionaryTL.txt"/>
-	 <RegEx expression="TRASH_MIN \|# 1    \|21" occurences="1"/>
-	 <RegEx expression="TRASH_MAX \|# 1    \|9987" occurences="1"/> 
-	 <RegEx expression="DictEntry:min:string:\{value=21\}" occurences="1"/>
-	 <RegEx expression="DictEntry:median:string:\{value=4702.0\}" occurences="1"/>
-	 <RegEx expression="DictEntry:max:string:\{value=9987\}" occurences="1"/>
+	 <RegEx expression="TRASH_MIN \|# 1    \|82" occurences="1"/>
+	 <RegEx expression="TRASH_MAX \|# 1    \|9986" occurences="1"/> 
+	 <RegEx expression="DictEntry:min:integer:\{value=82\}" occurences="1"/>
+	 <RegEx expression="DictEntry:median:number:\{value=4710.5\}" occurences="1"/>
+	 <RegEx expression="DictEntry:max:integer:\{value=9986\}" occurences="1"/>
 </FunctionalTest>
 
 <FunctionalTest ident="ExtFilter" graphFile="graph/graphExtFilter.grf">
@@ -154,16 +165,6 @@
 <FunctionalTest ident="GenerateData" graphFile="graph/graphGenerateData.grf">	 
 	 <FlatFile outputFile="data-out/orders.mix" supposedFile="supposed-out/orders.GenerateData.mix"/>
 	<DeleteFile file="seq/seq.seq"/>
-</FunctionalTest>
-
-<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf" defaultProperties="changedParams">	 
-	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/object.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/object1.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/subject.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/subject1.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/RDFTriples.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
-	 <FlatFile outputFile="data-out/RDFTriples1.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
 </FunctionalTest>
 
 <FunctionalTest ident="IntersectData" graphFile="graph/graphIntersectData.grf">

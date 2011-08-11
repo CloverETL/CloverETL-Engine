@@ -5,9 +5,10 @@
 	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
 
    <FunctionalTest ident="SystemExecute" graphFile="graph/graphSystemExecuteWin.grf">
-	 <FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.SystemExecuteWin.out"/>	                                                                    
+     <!-- output on Windows platform is not stable, so this test with correct output analysis was duplicated in cloveretl.test.scenarios -->
+     <!--FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.SystemExecuteWin.out"/>	                                                                    
 	 <FlatFile outputFile="data-out/dir_command_File.out" supposedFile="supposed-out/dir_command_File.SystemExecuteWin.out"/>	                                                                    
-	 <FlatFile outputFile="data-out/dir_command_Port.out" supposedFile="supposed-out/dir_command_Port.SystemExecuteWin.out"/>	                                                                    
+	 <FlatFile outputFile="data-out/dir_command_Port.out" supposedFile="supposed-out/dir_command_Port.SystemExecuteWin.out"/-->	                                                                    
     </FunctionalTest>
    
 

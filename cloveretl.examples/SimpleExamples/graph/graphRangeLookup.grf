@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="0.0.0.devel" id="1204550037871" licenseType="Evaluation Devel" modified="Mon Jun 07 16:25:58 CEST 2010" modifiedBy="cloveruser" name="graphRangeLookup" revision="1.39">
+<Graph author="avackova" created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="0.0.0.devel" id="1204550037871" licenseType="Evaluation Devel" modified="Mon Jun 13 10:00:36 CEST 2011" modifiedBy="avackova" name="graphRangeLookup" revision="1.43" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/schedule.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/schedule.fmt" id="Metadata3"/>
@@ -20,41 +20,31 @@
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <LookupTable endFields="dateEnd;timeEnd;nameEnd" endInclude="true;true;true" id="LookupTable0" metadata="Metadata3" name="Tour schedule" startFields="dateStart;timeStart;nameStart" startInclude="true;true;true" type="rangeLookup" useI18N="true"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="160" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of Range Lookup Table (Phase 0)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="303" x="411" y="36">
-<attr name="text"><![CDATA[
-This graph demonstates the usage of Range Lookup Table. 
-
-In phase 0, UniversalDataReader reads data records from a XLS file and LookupTableReaderWriter writes them into a range lookup table.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="188" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of Range Lookup Table (Phase 1)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="532" x="66" y="309">
-<attr name="text"><![CDATA[
-In phase 1, another UniversalaDataReader reads other data records and joins them with the records from the specified range lookup table that were written to the table in phase 0. 
-Data records from the edge and the lookup table are joined based on the key. 
-LookupJoin has three fields specified as Join key. These are contained in metadata on the input edge. 
-Range lookup table has 6 fields which correspond to the three fields from the edge. 
-The records on the edge are joined with those from lookup table if the values of the three fields on the edge are included in the ranges specified by the 6 fields of metadata of range lookup table.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" freeLookupTable="false" guiHeight="0" guiName="Lookup table reader/writer" guiWidth="0" guiX="260" guiY="74" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/TourSchedule.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="62" guiY="74" id="XLS_READER0" type="XLS_READER"/>
-<Edge debugMode="true" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Node enabled="enabled" freeLookupTable="false" guiHeight="101" guiName="Lookup table reader/writer" guiWidth="225" guiX="409" guiY="24" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER">
+<attr name="guiDescription"><![CDATA[Writes data into a range lookup table.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/TourSchedule.xls" guiHeight="101" guiName="XLS Data Reader" guiWidth="150" guiX="29" guiY="24" id="XLS_READER0" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Reads data records from a XLS file]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="XLS_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoplesOnTour.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="63" guiY="223" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/peopleAtTour.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="483" guiY="223" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Lookup Join" guiWidth="0" guiX="261" guiY="223" id="LOOKUP_JOIN0" joinKey="date;time;name" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[// automatically generated on Fri Nov 14 10:22:16 CET 2008
-function transform() {
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoplesOnTour.dat" guiHeight="101" guiName="Delimited Data Reader" guiWidth="194" guiX="30" guiY="173" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/peopleAtTour.out" guiHeight="101" guiName="Universal Data Writer" guiWidth="184" guiX="450" guiY="173" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="101" guiName="Lookup Join" guiWidth="128" guiX="286" guiY="173" id="LOOKUP_JOIN0" joinKey="date;time;name" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<attr name="transform"><![CDATA[function transform() {
 	$0.name := $0.name;
 	$0.date := $0.date;
 	$0.time := $0.time;
 	$0.activity := $1.name;
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Data records from the edge and the lookup table are joined based on the key.  LookupJoin has three fields specified as Join key. These are contained in metadata on the input edge. Range lookup table has 6 fields which correspond to the three fields from the edge. The records on the edge are joined with those from lookup table if the values of the three fields on the edge are included in the ranges specified by the 6 fields of metadata of range lookup table.]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_JOIN0:0"/>
-<Edge debugMode="true" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="LOOKUP_JOIN0:0"/>
+<Edge debugMode="true" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

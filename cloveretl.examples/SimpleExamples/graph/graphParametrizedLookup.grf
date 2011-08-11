@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="0.0.0.devel" id="1204549694917" licenseType="Evaluation Devel" modified="Fri Jan 21 15:52:17 CET 2011" modifiedBy="avackova" name="Testing Simple Lookup with parameters" revision="1.31">
+<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="0.0.0.devel" id="1204549694917" licenseType="Evaluation Devel" modified="Fri Jun 10 16:12:42 CEST 2011" modifiedBy="avackova" name="Testing Simple Lookup with parameters" revision="1.33" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="508" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Reformat component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="543" x="24" y="108">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="412" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Reformat component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="642" x="24" y="136">
 <attr name="text"><![CDATA[
 In this graph, Orders are joined with Employees on the EmployeeID field in the Reformat component. A lookup table is created in Reformat. It is filled there and used for join of Orders with Employees.
 
@@ -26,15 +26,11 @@ This graph is an equivalent of others that give the same result. They are the fo
 - graphParametrizedLookup.grf (In it, the same transformation is defined using the Reformat component instead of ExtHashJoin or ExtMergeJoin. Lookup table is defined in the Reformat and it is filled with values in that component. The transformation is defined in the Transform attribute. It is written in Java directly in the graph and can be seen in the Source tab. The result corresponds to Inner join of a Joiner.)
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Orders joined with Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="216" x="172" y="-52">
-<attr name="text"><![CDATA[
-Corresponds to Inner join.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="25" guiName="Orders" guiWidth="50" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="Reformat" guiWidth="50" guiX="204" guiY="24" id="JOIN" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="85" guiName="Orders joined with Employees" guiWidth="245" guiX="204" guiY="24" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -89,11 +85,12 @@ public class ReformatTestInline extends DataRecordTransform{
 	}
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Corresponds to Inner join.]]></attr>
 <attr name="lookupFile"><![CDATA[${LOOKUP_DIR}/employees.dat]]></attr>
 <attr name="keyField"><![CDATA[EmployeeID]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="25" guiName="Orders-Employees" guiWidth="50" guiX="436" guiY="24" id="WRITER" type="DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
-<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="101" guiName="Orders-Employees" guiWidth="162" guiX="504" guiY="24" id="WRITER" type="DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="JOIN:0"/>
+<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

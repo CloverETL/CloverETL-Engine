@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Tue Mar 29 10:14:33 CEST 2011" modifiedBy="Administrator" name="graphSystemExecute" revision="1.45">
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Mon Jun 13 12:25:06 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.48" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record name="strings" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -8,34 +8,29 @@
 </Metadata>
 <Property id="GraphParameter0" name="MY_DIR" value=".\graph"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="216" y="20">
-<attr name="text"><![CDATA[
-Component executes the "dir" command and sends the result out through the output port.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="216" y="220">
-<attr name="text"><![CDATA[
-Component executes the "dir" command and writes the result to the specified file.]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dir_command_Port.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="246" guiY="138" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="41" guiY="138" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/dir_command_Port.out" guiHeight="101" guiName="Universal Data Writer" guiWidth="184" guiX="253" guiY="38" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="101" guiName="System execute" guiWidth="145" guiX="42" guiY="38" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[Executes the "dir" command and sends the result out through the output port.]]></attr>
 <attr name="command"><![CDATA[dir /b]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="SYS_EXECUTE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="SYS_EXECUTE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="254" guiY="339" id="SYS_EXECUTE1" interpreter="${}" outputFile="${DATAOUT_DIR}/dir_command_File.out" type="SYS_EXECUTE">
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="101" guiName="System execute" guiWidth="145" guiX="42" guiY="157" id="SYS_EXECUTE1" interpreter="${}" outputFile="${DATAOUT_DIR}/dir_command_File.out" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[Executes the "dir" command and writes the result to the specified file.]]></attr>
 <attr name="command"><![CDATA[dir /b ${MY_DIR}]]></attr>
 </Node>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="629" guiY="138" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node deleteBatch="true" enabled="enabled" guiHeight="0" guiName="SystemExecute" guiWidth="0" guiX="410" guiY="138" id="SYS_EXECUTE2" interpreter="cmd /c ${}" type="SYS_EXECUTE">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="261" guiY="282" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node deleteBatch="true" enabled="enabled" guiHeight="101" guiName="SystemExecute" guiWidth="141" guiX="42" guiY="282" id="SYS_EXECUTE2" interpreter="cmd /c ${}" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[Creates and executes batch file.]]></attr>
 <attr name="command"><![CDATA[echo Listing ${MY_DIR}
 dir /b ${MY_DIR}]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="SYS_EXECUTE2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="SYS_EXECUTE2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

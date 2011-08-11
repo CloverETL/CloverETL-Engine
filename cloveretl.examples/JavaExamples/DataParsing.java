@@ -26,6 +26,8 @@ import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DataParser;
+import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -107,9 +109,9 @@ public class DataParsing {
 	metadata.addField(new DataFieldMetadata("Contract_nr",DataFieldMetadata.INTEGER_FIELD, "\r\n"));
 	
 	//initialize parser
-	DataParser parser=new DataParser();
+	Parser parser = TextParserFactory.getParser(metadata);
 	try{
-		parser.init(metadata);
+		parser.init();
 		parser.setDataSource(in);
 	}catch(Exception ex){
 		ex.printStackTrace();
@@ -127,7 +129,7 @@ public class DataParsing {
 			out.println(" Contract:"+record.getField(2).toString());
 		}
 		
-		System.out.println(parser.getRecordCount() + " records parsed. See file ./output/bonus.out");
+		System.out.println(((DataParser) parser).getRecordCount() + " records parsed. See file ./output/bonus.out");
 		parser.close();
 	} catch (Exception e1) {
 		e1.printStackTrace();

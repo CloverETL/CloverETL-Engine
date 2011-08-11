@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Mon Jun 07 17:07:20 CEST 2010" modifiedBy="cloveruser" name="Testing NORMALIZER" revision="1.27">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source." guiVersion="0.0.0.devel" id="1204549060147" licenseType="Evaluation Devel" modified="Fri Jun 10 16:05:51 CEST 2011" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.30" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="customers" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -9,7 +9,7 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="178" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="479" x="24" y="126">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="121" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Usage of CTL2" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="722" x="20" y="126">
 <attr name="text"><![CDATA[
 This graph illustrates the usage of new CTL2. Unlike CTL1, CTL2 is a strongly typed language, return values and arguments types must be declared. CTL2 has many advantages as compared with older CTL1. 
 
@@ -19,10 +19,10 @@ This graph is an equivalent of graphNormalizeTL.grf.
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="25" guiName="Customers Grouped for Each Employee" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="85" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="Normalizer" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="375" guiY="20" id="NORMALIZE" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL
 string[] customers;
 
@@ -41,9 +41,10 @@ function void clean() {
 	clear(customers);
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Splits the field into several substrings without white spaces and hyphens and counts the number of such substrings. This is performed by the count() function. In the transform() function, which is called multiple times (number of calls of the function equals to the number returned by the count() function for the input record), new output records are created. These get the substrings and assign each of them to one of the output fields. Thus, this component creates one or more output records based on one input record. Before processing next input record, the clean() function returns variables into intitial state.]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="25" guiName="Customers Normalized" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="NORMALIZE:0"/>
-<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="101" guiName="Customers Normalized" guiWidth="192" guiX="550" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="NORMALIZE:0"/>
+<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
 </Phase>
 </Graph>

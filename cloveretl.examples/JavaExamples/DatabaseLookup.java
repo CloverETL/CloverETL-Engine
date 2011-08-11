@@ -30,6 +30,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.lookup.DBLookupTable;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -116,7 +117,7 @@ public class DatabaseLookup{
 	System.out.println("Properties file: "+ arguments.getProperty(PROPERTIES_FILE_PROPERTY));
 	System.out.println("Connection propeties: "+ arguments.getProperty(CONNECTION_PROPERTY));
 	System.out.println("SQL query: "+ arguments.getProperty(QUERY_PROPERTY));
-	System.out.println("Key: "+ arguments.getProperty(QUERY_PROPERTY));
+	System.out.println("Key: "+ arguments.getProperty(KEY_PROPERTY));
 	System.out.println("Metadata file: " + arguments.getProperty(METADATA_PROPERTY));
 	System.out.println("***************************************************");
 	
@@ -150,7 +151,9 @@ public class DatabaseLookup{
 		lookupTable.preExecute();
 		
 		//creating data record for seeking
-		DataRecordMetadata keyMetadata = lookupTable.getKeyMetadata();
+		DataRecordMetadata keyMetadata = new DataRecordMetadata("db_key_metadata", DataRecordMetadata.DELIMITED_RECORD);
+		keyMetadata.addField(new DataFieldMetadata("department_id", DataFieldMetadata.INTEGER_FIELD, ";"));
+		
 		DataRecord keyRecord = new DataRecord(keyMetadata);
 		keyRecord.init();
 		RecordKey key = new RecordKey(keyMetadata.getFieldNamesArray(), keyMetadata);
