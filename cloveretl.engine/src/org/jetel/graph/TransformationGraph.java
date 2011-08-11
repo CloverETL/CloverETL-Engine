@@ -56,6 +56,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.TrueZipVFSEntries;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
@@ -112,6 +113,8 @@ public final class TransformationGraph extends GraphElement {
 
 	private IAuthorityProxy authorityProxy;
 	
+	private TrueZipVFSEntries vfsEntries;
+	
 	/**
 	 * Set of variables describing this graph instance. All information are retrieved from graph xml file.
 	 */
@@ -153,6 +156,7 @@ public final class TransformationGraph extends GraphElement {
 		dictionary = new Dictionary(this);
 		authorityProxy = new PrimitiveAuthorityProxy();
 		initialRuntimeContext = new GraphRuntimeContext();
+		vfsEntries = new TrueZipVFSEntries();
 	}
 
     public void setPassword(String password) {
@@ -946,6 +950,8 @@ public final class TransformationGraph extends GraphElement {
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
 	    	dictionary.free();
 	    	
+	    	vfsEntries.freeAll();
+	    	
 	    	setWatchDog(null);
 		} finally {
 			//unregister current thread from ContextProvider
@@ -1172,6 +1178,10 @@ public final class TransformationGraph extends GraphElement {
     	} else {
     		this.authorityProxy = authorityProxy;
     	}
+	}
+    
+	public TrueZipVFSEntries getVfsEntries() {
+		return vfsEntries;
 	}
 
     public String getUniqueConnectionId(){

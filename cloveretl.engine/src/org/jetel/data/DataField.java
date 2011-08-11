@@ -132,6 +132,8 @@ public abstract class DataField implements Serializable, Comparable<Object> {
                 return;
             }
 			if (metadata.getDefaultValueStr() != null) {
+				//do we really need to convert the string form of default value to 'SpecChar'?
+				//this conversion was already done in DataRecordMetadataXMLReaderWriter.parseRecordMetadata()
 				fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
 				if (isNull()) {
 					throw new NullDataFormatException("Null cannot be a default value (field '" + metadata.getName() + "').");

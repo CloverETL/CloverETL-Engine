@@ -34,10 +34,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -47,6 +47,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -493,7 +494,7 @@ public class MysqlDataWriter extends BulkLoader {
 		int processExitValue = 0;
 
 		if (isDataReadFromPort) {
-			if (ProcBox.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
+			if (PlatformUtils.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
 				// dataFile is used for exchange data
 				readFromPortAndWriteByFormatter();
 				box = createProcBox();
@@ -514,7 +515,7 @@ public class MysqlDataWriter extends BulkLoader {
 
 	@Override
 	protected String[] createCommandLineForLoadUtility() throws ComponentNotReadyException {
-		if (ProcBox.isWindowsPlatform()) {
+		if (PlatformUtils.isWindowsPlatform()) {
 			loadUtilityPath = StringUtils.backslashToSlash(loadUtilityPath);
 		}
 		CommandBuilder cmdBuilder = new CommandBuilder(properties, SWITCH_MARK);
@@ -531,7 +532,7 @@ public class MysqlDataWriter extends BulkLoader {
 		cmdBuilder.addParam(MYSQL_DEFAULT_CHARACTER_SET_PARAM, MYSQL_DEFAULT_CHARACTER_SET_SWITCH);
 
 		String commandFileName = createCommandFile();
-		if (ProcBox.isWindowsPlatform()) {
+		if (PlatformUtils.isWindowsPlatform()) {
 			commandFileName = StringUtils.backslashToSlash(commandFileName);
 		}
 		cmdBuilder.addAttribute(MYSQL_EXECUTE_SWITCH, "source " + commandFileName);
@@ -694,7 +695,7 @@ public class MysqlDataWriter extends BulkLoader {
 	}
 	
 	private String getDataFilePath() throws ComponentNotReadyException {
-	    if (ProcBox.isWindowsPlatform() || "false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
+	    if (PlatformUtils.isWindowsPlatform() || "false".equalsIgnoreCase(properties.getProperty(LOAD_LOCAL_PARAM))) {
 			// convert "C:\examples\xxx.dat" to "C:/examples/xxx.dat"
 			return StringUtils.backslashToSlash(getFilePath(dataFile));
 		}

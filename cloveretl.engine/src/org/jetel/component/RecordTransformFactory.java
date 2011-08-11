@@ -52,6 +52,7 @@ import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -201,8 +202,7 @@ public class RecordTransformFactory {
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
-            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, logger,
-            		transformClass, null, classPath);
+            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, transformClass, classPath);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
@@ -264,36 +264,26 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClass(ClassLoader parentClassLoader, Log logger,
-            String transformClassName, URL contextURL, CloverClassPath classPath)
-            throws ComponentNotReadyException {
-        Object instance = null;
-        // try to load in transformation class & instantiate
-        try {
-        	instance = Class.forName(transformClassName).newInstance();
-        }catch(InstantiationException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch(IllegalAccessException ex){
-            throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
-        }catch (ClassNotFoundException ex) {
-            // let's try to load in any additional .jar library (if specified)
-            if (classPath.getRuntimeClassPath() == null) {
-                throw new ComponentNotReadyException(
-                        "Can't find specified transformation class: "
-                                + transformClassName);
-            }
-            try {
-                URLClassLoader classLoader = new GreedyURLClassLoader(classPath.getRuntimeClassPath(), parentClassLoader);
-                instance = Class.forName(transformClassName, true, classLoader).newInstance();
-            } catch (ClassNotFoundException ex1) {
-                throw new ComponentNotReadyException("Can not find class: " + ex1);
-            } catch (Exception ex3) {
-                throw new ComponentNotReadyException(ex3.getMessage(), ex3);
-            } catch (NoClassDefFoundError err) {
-                throw new ComponentNotReadyException(err.getMessage(), new RuntimeException(err));
-            }
+    public static Object loadClass(ClassLoader parentClassLoader, String transformClassName, 
+    		CloverClassPath classPath) throws ComponentNotReadyException {
+    	
+    	//extra libraries are necessary for the code which was generated from CTL2,
+    	//where CTL functions are called directly and have to be part of classpath
+    	ClassLoader classLoader = new URLClassLoader(DynamicCompiler.getExtraLibraries().toArray(new URL[0]), parentClassLoader);
+        if (classPath != null && classPath.getRuntimeClassPath() != null 
+        		&& classPath.getRuntimeClassPath().length > 0) {
+            classLoader = new GreedyURLClassLoader(classPath.getRuntimeClassPath(), classLoader);
         }
-        return instance;
+
+		try {
+			return Class.forName(transformClassName, true, classLoader).newInstance();
+		} catch (ClassNotFoundException e) {
+			throw new ComponentNotReadyException("Cannot find class: " + transformClassName, e);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Cannot load class: " + transformClassName, e);
+		} catch (NoClassDefFoundError e) {
+			throw new ComponentNotReadyException("Cannot load class: " + transformClassName, new RuntimeException(e));
+		}
     }
 
     /**

@@ -148,7 +148,7 @@ public class ComponentFactory {
 			return result;
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
         } catch(NoSuchMethodException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage());

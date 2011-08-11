@@ -282,12 +282,12 @@ public class JmsConnection extends GraphElement implements IConnection {
 					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
-			throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)");// e.printStackTrace();
+			throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)", e);// e.printStackTrace();
 		} catch (NamingException e) {
 			if (e.getRootCause() instanceof NoClassDefFoundError)
-				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)", e);
 			else if (e.getRootCause() instanceof ClassNotFoundException)
-				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)", e);
 			else
 				throw new ComponentNotReadyException("Cannot create initial context; " + e.getMessage(), e);
 		} catch (IllegalStateException e) {

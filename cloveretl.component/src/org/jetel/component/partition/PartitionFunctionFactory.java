@@ -149,20 +149,14 @@ public class PartitionFunctionFactory {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private static PartitionFunction createPartitionFce(String partitionClass) throws ComponentNotReadyException{
-		PartitionFunction result;
-		
-        try {
-         	result = (PartitionFunction) Class.forName(partitionClass).newInstance();
-        } catch (InstantiationException ex) {
-        	throw new ComponentNotReadyException("Can't instantiate partition function class: " + ex.getMessage());
-        } catch (IllegalAccessException ex) {
-            throw new ComponentNotReadyException("Can't instantiate partition function class: " + ex.getMessage());
-        } catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified partition function class: " + partitionClass);
-        }
-        
-        return result;
+	private PartitionFunction createPartitionFce(String partitionClass) throws ComponentNotReadyException {
+		Object partitionFunction = RecordTransformFactory.loadClass(node.getClass().getClassLoader(),
+         			partitionClass, node.getGraph().getRuntimeContext().getClassPath());
+		if (partitionFunction instanceof PartitionFunction) {
+			return (PartitionFunction) partitionFunction;
+		} else {
+            throw new ComponentNotReadyException("The transformation class does not implement the PartitionFunction interface!");
+		}
 	}
 
 	/**

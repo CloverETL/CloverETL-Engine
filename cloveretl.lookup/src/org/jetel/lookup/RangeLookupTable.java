@@ -39,18 +39,17 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -747,22 +746,38 @@ class RangeLookup implements Lookup{
 	}
 
 	private DataRecord getNext(){
-		DataRecord result;
-		if (subTableIterator != null && subTableIterator.hasNext()) {
-			result = subTableIterator.next();
-		}else{
+		if (subTableIterator == null) {
 			return null;
 		}
-		//if value is not in interval try next
-		for (int i=0;i<startField.length;i++){
-			comparison = compare(tmpRecord, result, i);
-			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
-				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
-				return getNext();
+		boolean[] ok = new boolean[startField.length];
+		Arrays.fill(ok, false);
+		boolean allOK = false;
+		DataRecord result = null;
+		nextCandidate: while (!(allOK = checkAll(ok)) && subTableIterator.hasNext()){
+			Arrays.fill(ok, false);
+			result = subTableIterator.next();
+			for (int i = 0; i < startField.length; i++) {
+				comparison = compare(tmpRecord, result, i);
+				if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) || (comparison[1] > 0 || (comparison[1] == 0 && !endInclude[i]))) {
+					//if value is not in interval try next
+					continue nextCandidate;
+				} else {
+					ok[i] = true;
+				}
 			}
+		};
+		if (!allOK) {
+			return null;
 		}
 		numFound++;
 		return result;
+	}
+	
+	private boolean checkAll(boolean[] value) {
+		for (boolean b : value) {
+			if (!b) return false;
+		}
+		return true;
 	}
 	
 	public boolean hasNext() {

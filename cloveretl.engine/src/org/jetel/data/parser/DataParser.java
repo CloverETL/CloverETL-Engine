@@ -122,6 +122,7 @@ public class DataParser extends AbstractTextParser {
 		decoder = Charset.forName(cfg.getCharset()).newDecoder();
 		reader = null;
 		exceptionHandler = cfg.getExceptionHandler();
+		qDecoder.setQuoteChar(cfg.getQuoteChar());
 	}
 	
 	/**
@@ -424,6 +425,8 @@ public class DataParser extends AbstractTextParser {
 								}
 								if(cfg.isTreatMultipleDelimitersAsOne())
 									while(followFieldDelimiter(fieldCounter));
+
+								delimiterSearcher.reset(); // CL-1859 Fix: We don't want prefix of some other delimiter to be already matched
 								break;
 							}
 							//test default field delimiter 

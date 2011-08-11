@@ -19,19 +19,20 @@
 package org.jetel.component.xml.writer;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
+import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
@@ -48,45 +49,30 @@ public class ExternalSimplePortData extends ExternalPortData {
 
 	private Environment environment;
 	private Database database;
-
-	private ByteBuffer recordBuffer;
 	
-	private long counter = 0;
+	private long keyCounter = 0;
+	private long valueCounter = 0;
 	
 	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
 		super(inPort, keys, tempDirectory, cacheSize);
 	}
 	
 	@Override
-	public void init() throws ComponentNotReadyException {
-		super.init();
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-	}
-
-	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		environment = getEnvironment();
-		database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
+		DatabaseConfig dbConfig = getDbConfig();
+		dbConfig.setDuplicateComparator(new DuplicateComparator());
+		
+		database = environment.openDatabase(null, Long.toString(System.nanoTime()), dbConfig);
 	}
 
 	@Override
 	public void put(DataRecord record) throws IOException {
-		try {
-            record.serialize(recordBuffer);
-        } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
-        }
-        byte[] serializedValue = new byte[recordBuffer.position()];
-        recordBuffer.flip();
-        recordBuffer.get(serializedValue);
-        recordBuffer.clear();
-
-		DatabaseEntry databaseValue = new DatabaseEntry(serializedValue);
+		DatabaseEntry databaseValue = getDatabaseValue(record);
 		
-		DatabaseEntry databaseKey;
 		if (nullKey) {
-			database.put(null, new DatabaseEntry(toByteArray(counter++)), databaseValue);
+			database.put(null, new DatabaseEntry(toByteArray(keyCounter++)), databaseValue);
 		} else {
 			int[] key = primaryKey[0];
 		
@@ -96,8 +82,7 @@ public class ExternalSimplePortData extends ExternalPortData {
 			recordBuffer.get(serializedKey);
 			recordBuffer.clear();
 
-			databaseKey = new DatabaseEntry(serializedKey);
-			database.put(null, databaseKey, databaseValue);
+			database.put(null, new DatabaseEntry(serializedKey), databaseValue);
 		}
 	}
 
@@ -118,9 +103,27 @@ public class ExternalSimplePortData extends ExternalPortData {
 		super.postExecute();
 	}
 	
+	private DatabaseEntry getDatabaseValue(DataRecord record) throws IOException {
+		//prepend counter, so that record order can be preserved
+		recordBuffer.put(toByteArray(valueCounter++));
+		
+		try {
+            record.serialize(recordBuffer);
+        } catch (BufferOverflowException ex) {
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+        }
+        byte[] serializedValue = new byte[recordBuffer.position()];
+        recordBuffer.flip();
+        recordBuffer.get(serializedValue);
+        recordBuffer.clear();
+
+		return new DatabaseEntry(serializedValue);
+	}
+	
 	private void readData(DatabaseEntry foundValue, DataRecord record) throws IOException {
 		recordBuffer.put(foundValue.getData());
 		recordBuffer.flip();
+		recordBuffer.position(SERIALIZED_COUNTER_LENGTH); // discard counter
 		record.deserialize(recordBuffer);
 		recordBuffer.clear();
 	}
@@ -147,14 +150,8 @@ public class ExternalSimplePortData extends ExternalPortData {
 			
 			next = new DataRecord(metadata);
 			next.init();
-			ByteBuffer keyBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-			keyData.serialize(keyBuffer, parentKey);
-			int dataLength = keyBuffer.position();
-			keyBuffer.flip();
-			byte[] serializedKey = new byte[dataLength];
-			keyBuffer.get(serializedKey);
-
-			databaseKey = new DatabaseEntry(serializedKey);
+		
+			databaseKey = getDatabaseKey(current, key, keyData, parentKey);
 			
 			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
 				readData(foundValue, next);
@@ -244,5 +241,25 @@ public class ExternalSimplePortData extends ExternalPortData {
 		public DataRecord peek() {
 			return next;
 		}
+	}
+	
+	public static class DuplicateComparator implements Comparator<byte[]>, Serializable {
+
+		private static final long serialVersionUID = 1L;
+		
+		// We need to be able to store duplicate items under duplicate keys,
+		// therefore comparator must never return 0.
+		@Override
+		public int compare(byte[] o1, byte[] o2) {
+			int result;
+			for (int i = 0; i < SERIALIZED_COUNTER_LENGTH; i++) {
+				result = o1[i] - o2[i];
+				if (result != 0) {
+					return result;
+				}
+			}
+			return 0;
+		}
+		
 	}
 }

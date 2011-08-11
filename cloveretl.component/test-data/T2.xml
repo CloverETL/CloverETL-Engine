@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mappings>
+
+    <Mapping element="a" outPort="0"
+            xmlFields="id" cloverFields="f1">
+    <Mapping element="a" outPort="0" templateId="T"
+            xmlFields="id;../id" cloverFields="f1;f2">
+        <Mapping templateRef="T">
+        <Mapping templateRef="T">
+        <Mapping templateRef="T">
+        <Mapping templateRef="T">
+        <Mapping templateRef="T">
+        </Mapping>
+        </Mapping>
+        </Mapping>
+        </Mapping>
+        </Mapping>
+    </Mapping>
+    </Mapping>
+</Mappings>

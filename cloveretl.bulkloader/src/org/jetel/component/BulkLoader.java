@@ -23,10 +23,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
@@ -249,7 +251,7 @@ public abstract class BulkLoader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	protected void defaultCreateFileForExchange(String filePrefix) throws ComponentNotReadyException {
-		if (ProcBox.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
+		if (PlatformUtils.isWindowsPlatform() || !StringUtils.isEmpty(dataURL)) {
 			if (!StringUtils.isEmpty(dataURL)) {
 				dataFile = getFile(dataURL);
 				dataFile.delete();
@@ -365,7 +367,14 @@ public abstract class BulkLoader extends Node {
 	 */
 	protected ProcBox createProcBox(Process process) throws IOException {
 		if (process == null) {
-			process = Runtime.getRuntime().exec(commandLine);
+			ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
+
+			logger.debug("Process is executed with following settings:");
+			logger.debug("Command line: " + processBuilder.command());
+			logger.debug("Environment variables: " + processBuilder.environment());
+			logger.debug("Working director: " + processBuilder.directory());
+
+			process = processBuilder.start();
 		}
 		ProcBox box = new ProcBox(process, null, consumer, errConsumer);
     List<Thread> threads = box.getChildThreads();

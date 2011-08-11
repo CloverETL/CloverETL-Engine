@@ -277,7 +277,10 @@ public class XMLExtract extends Node {
     // from which input port to read
 	private final static int INPUT_PORT = 0;
 
-	public static final String PARENT_MAPPING_REFERENCE_PREFIX = "../";
+	public static final String PARENT_MAPPING_REFERENCE_PREFIX = "..";
+	public static final String PARENT_MAPPING_REFERENCE_SEPARATOR = "/";
+	public static final String PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR = PARENT_MAPPING_REFERENCE_PREFIX + PARENT_MAPPING_REFERENCE_SEPARATOR;
+	public static final String ELEMENT_VALUE_REFERENCE = ".";
 	
     // Map of elementName => output port
     private Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
@@ -358,6 +361,18 @@ public class XMLExtract extends Node {
             m_level++;
             m_grabCharacters = true;
             
+    		// store value of parent of currently starting element (if appropriate)
+        	if (m_activeMapping != null && m_hasCharacters && m_level == m_activeMapping.getLevel() + 1) {
+                if (m_activeMapping.descendantRefernces.containsKey(ELEMENT_VALUE_REFERENCE)) {
+               		m_activeMapping.descendantRefernces.put(ELEMENT_VALUE_REFERENCE, trim ? m_characters.toString().trim() : m_characters.toString());
+                }
+        		processCharacters(null, true);
+        	}
+        	
+            // Regardless of starting element type, reset the length of the buffer and flag
+            m_characters.setLength(0);
+            m_hasCharacters = false;
+            
             Mapping mapping = null;
             if (m_activeMapping == null) {
                 mapping = (Mapping) m_elementPortMap.get(localName);
@@ -369,115 +384,96 @@ public class XMLExtract extends Node {
                 // the DataRecord structure
                 m_activeMapping = mapping;
                 m_activeMapping.setLevel(m_level);
+                // clear cached values of xml fields referenced by descendants (there may be values from previously read element of this m_activemapping)
+                for (Entry<String, String> e : m_activeMapping.descendantRefernces.entrySet()) {
+					e.setValue(null);
+				}
                 
-                if (mapping.getOutRecord() == null) {
-//                	 Former comment was reading:
-//                    	 If it's null that means that there's no edge mapped to
-//                    	 the output port
-//                    	 remove this mapping so we don't repeat this logic (and
-//                    	 logging)
-//                	 Improved behaviour: (jlehotsky)
-//                	     If it's null that means either that there's no edge mapped
-//                	     to the output port, or output port is not specified.
-//                	     This is OK, we simply ignore the fact and continue.
-//                	     Thus the original code is commented out
-                    /*LOG.warn("XML Extract: " + getId() + " Element ("
-                            + localName
-                            + ") does not have an edge mapped to that port.");
-                    if(m_activeMapping.getParent() != null) {
-                        m_activeMapping.getParent().removeChildMapping(m_activeMapping);
-                        m_activeMapping = m_activeMapping.getParent();
-                    } else {
-                        m_elementPortMap.remove(m_activeMapping);
-                        m_activeMapping = null;
-                    }*/
-                    
-                    return;
-                }
-
-                //sequence fields initialization
-                String sequenceFieldName = m_activeMapping.getSequenceField();
-                if(sequenceFieldName != null && m_activeMapping.getOutRecord().hasField(sequenceFieldName)) {
-                    Sequence sequence = m_activeMapping.getSequence();
-                    DataField sequenceField = m_activeMapping.getOutRecord().getField(sequenceFieldName);
-                    if(sequenceField.getType() == DataFieldMetadata.INTEGER_FIELD) {
-                        sequenceField.setValue(sequence.nextValueInt());
-                    } else if(sequenceField.getType() == DataFieldMetadata.LONG_FIELD
-                            || sequenceField.getType() == DataFieldMetadata.DECIMAL_FIELD
-                            || sequenceField.getType() == DataFieldMetadata.NUMERIC_FIELD) {
-                        sequenceField.setValue(sequence.nextValueLong());
-                    } else {
-                        sequenceField.fromString(sequence.nextValueString());
-                    }
-                }
-               	m_activeMapping.prepareDoMap();
-               	m_activeMapping.incCurrentRecord4Mapping();
-                
-                // This is the closing element of the matched element that
-                // triggered the processing
-                // That should be the end of this record so send it off to the
-                // next Node
-                if (runIt) {
-                    try {
-                        DataRecord outRecord = m_activeMapping.getOutRecord();
-                        String[] generatedKey = m_activeMapping.getGeneratedKey();
-                        String[] parentKey = m_activeMapping.getParentKey();
-                        if (parentKey != null) {
-                            //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
-                            //I know it is ugly code...
-                            if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
-                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
-                                m_activeMapping.setGeneratedKey(null);
-                                m_activeMapping.setParentKey(null);
-                            } else {
-                                for(int i = 0; i < parentKey.length; i++) {
-                                    boolean existGeneratedKeyField = (outRecord != null) 
-                                    			&& (generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]));
-                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord() != null 
-                                    					&& m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
-                                    if (!existGeneratedKeyField) {
-                                        LOG.warn(getId() + ": XML Extract Mapping's generatedKey field was not found. "
-                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
-                                        m_activeMapping.setGeneratedKey(null);
-                                        m_activeMapping.setParentKey(null);
-                                    } else if (!existParentKeyField) {
-                                        LOG.warn(getId() + ": XML Extract Mapping's parentKey field was not found. " + parentKey[i]);
-                                        m_activeMapping.setGeneratedKey(null);
-                                        m_activeMapping.setParentKey(null);
-                                    } else {
-                                    	// both outRecord and m_activeMapping.getParrent().getOutRecord are not null
-                                    	// here, because of if-else if-else chain
-                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
-                                        DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
-                                        if(generatedKey.length != parentKey.length) {
-                                            if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
-                                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
-                                                m_activeMapping.setGeneratedKey(null);
-                                                m_activeMapping.setParentKey(null);
-                                            } else {
-                                                ((StringDataField) generatedKeyField).append(parentKeyField.toString());
-                                            }
-                                        } else {
-                                            generatedKeyField.setValue(parentKeyField.getValue());
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception ex) {
-                        throw new SAXException(" for output port number '" + m_activeMapping.getOutPort() + "'. Check also parent mapping. ", ex);
-                    }
-                    
-                    // Fill fields from parent record (if any mapped)
-                    if (m_activeMapping.hasFieldsFromAncestor()) {
-                    	for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
-                    		if (m_activeMapping.getOutRecord().hasField(afm.currentField)) {
-                    			m_activeMapping.getOutRecord().getField(afm.currentField).fromString(afm.ancestor.descendantRefernces.get(afm.ancestorField));
-                    		}
-                    	}
-                    }
-                } else {
-                    throw new SAXException("Stop Signaled");
+                if (mapping.getOutRecord() != null) {
+	                //sequence fields initialization
+	                String sequenceFieldName = m_activeMapping.getSequenceField();
+	                if(sequenceFieldName != null && m_activeMapping.getOutRecord().hasField(sequenceFieldName)) {
+	                    Sequence sequence = m_activeMapping.getSequence();
+	                    DataField sequenceField = m_activeMapping.getOutRecord().getField(sequenceFieldName);
+	                    if(sequenceField.getType() == DataFieldMetadata.INTEGER_FIELD) {
+	                        sequenceField.setValue(sequence.nextValueInt());
+	                    } else if(sequenceField.getType() == DataFieldMetadata.LONG_FIELD
+	                            || sequenceField.getType() == DataFieldMetadata.DECIMAL_FIELD
+	                            || sequenceField.getType() == DataFieldMetadata.NUMERIC_FIELD) {
+	                        sequenceField.setValue(sequence.nextValueLong());
+	                    } else {
+	                        sequenceField.fromString(sequence.nextValueString());
+	                    }
+	                }
+	               	m_activeMapping.prepareDoMap();
+	               	m_activeMapping.incCurrentRecord4Mapping();
+	                
+	                // This is the closing element of the matched element that
+	                // triggered the processing
+	                // That should be the end of this record so send it off to the
+	                // next Node
+	                if (runIt) {
+	                    try {
+	                        DataRecord outRecord = m_activeMapping.getOutRecord();
+	                        String[] generatedKey = m_activeMapping.getGeneratedKey();
+	                        String[] parentKey = m_activeMapping.getParentKey();
+	                        if (parentKey != null) {
+	                            //if generatedKey is a single array, all parent keys are concatenated into generatedKey field
+	                            //I know it is ugly code...
+	                            if(generatedKey.length != parentKey.length && generatedKey.length != 1) {
+	                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey and parentKey attribute has different number of field.");
+	                                m_activeMapping.setGeneratedKey(null);
+	                                m_activeMapping.setParentKey(null);
+	                            } else {
+	                                for(int i = 0; i < parentKey.length; i++) {
+	                                    boolean existGeneratedKeyField = (outRecord != null) 
+	                                    			&& (generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]));
+	                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord() != null 
+	                                    					&& m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
+	                                    if (!existGeneratedKeyField) {
+	                                        LOG.warn(getId() + ": XML Extract Mapping's generatedKey field was not found. "
+	                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
+	                                        m_activeMapping.setGeneratedKey(null);
+	                                        m_activeMapping.setParentKey(null);
+	                                    } else if (!existParentKeyField) {
+	                                        LOG.warn(getId() + ": XML Extract Mapping's parentKey field was not found. " + parentKey[i]);
+	                                        m_activeMapping.setGeneratedKey(null);
+	                                        m_activeMapping.setParentKey(null);
+	                                    } else {
+	                                    	// both outRecord and m_activeMapping.getParrent().getOutRecord are not null
+	                                    	// here, because of if-else if-else chain
+	                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
+	                                        DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
+	                                        if(generatedKey.length != parentKey.length) {
+	                                            if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
+	                                                LOG.warn(getId() + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");
+	                                                m_activeMapping.setGeneratedKey(null);
+	                                                m_activeMapping.setParentKey(null);
+	                                            } else {
+	                                                ((StringDataField) generatedKeyField).append(parentKeyField.toString());
+	                                            }
+	                                        } else {
+	                                            generatedKeyField.setValue(parentKeyField.getValue());
+	                                        }
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    } catch (Exception ex) {
+	                        throw new SAXException(" for output port number '" + m_activeMapping.getOutPort() + "'. Check also parent mapping. ", ex);
+	                    }
+	                    
+	                    // Fill fields from parent record (if any mapped)
+	                    if (m_activeMapping.hasFieldsFromAncestor()) {
+	                    	for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
+	                    		if (m_activeMapping.getOutRecord().hasField(afm.currentField) && afm.ancestor != null) {
+	                    			m_activeMapping.getOutRecord().getField(afm.currentField).fromString(afm.ancestor.descendantRefernces.get(afm.ancestorField));
+	                    		}
+	                    	}
+	                    }
+	                } else {
+	                    throw new SAXException("Stop Signaled");
+	                }
                 }
             }
             
@@ -496,8 +492,12 @@ public class XMLExtract extends Node {
                     
                     //use fields mapping
                     Map<String, String> xmlCloverMap = m_activeMapping.getXml2CloverFieldsMap();
-                    if(xmlCloverMap != null && xmlCloverMap.containsKey(attrName)) {
-                       attrName = xmlCloverMap.get(attrName);
+                    if (xmlCloverMap != null) {
+                    	if (xmlCloverMap.containsKey(attrName)) {
+                    		attrName = xmlCloverMap.get(attrName);
+                    	} else if (m_activeMapping.explicitCloverFields.contains(attrName)) {
+                    		continue; // don't do implicit mapping if clover field is used in an explicit mapping 
+                    	}
                     }
                     
                     if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
@@ -507,17 +507,13 @@ public class XMLExtract extends Node {
                 }
             }
             
-            // Regardless of starting element type, reset the length of the buffer and flag
-            m_characters.setLength(0);
-            m_hasCharacters = false;
         }
         
         /**
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
         public void characters(char[] data, int offset, int length) throws SAXException {
-            // Save the characters into the buffer, endElement will store it
-            // into the field
+            // Save the characters into the buffer, endElement will store it into the field
             if (m_activeMapping != null && m_grabCharacters) {
                 m_characters.append(data, offset, length);
                 m_hasCharacters = true;
@@ -531,62 +527,9 @@ public class XMLExtract extends Node {
             if (m_activeMapping != null) {
             	// cache characters value if the xml field is referenced by descendant
                 if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.descendantRefernces.containsKey(localName)) {
-                	m_activeMapping.descendantRefernces.put(localName, trim ? m_characters.toString().trim() : m_characters.toString());
+               		m_activeMapping.descendantRefernces.put(localName, trim ? m_characters.toString().trim() : m_characters.toString());
                 }
-
-            	//use fields mapping
-                Map<String, String> xml2clover = m_activeMapping.getXml2CloverFieldsMap();
-                if(xml2clover != null && xml2clover.containsKey(localName)) {
-                    localName = xml2clover.get(localName);
-                }
-                
-                // Store the characters processed by the characters() call back
-                //only if we have corresponding output field and we are on the right level or we want to use data from nested unmapped nodes
-                if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
-                        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-                    DataField field = m_activeMapping.getOutRecord().getField(localName);
-                    // If field is nullable and there's no character data set it
-                    // to null
-                    if (m_hasCharacters) {
-	                    try {
-                    	if (field.getValue() != null && cloverAttributes.contains(localName)) {
-                    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
-                    	} else {
-                    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
-                    	}
-	                    } catch (BadDataFormatException ex) {
-	                        // This is a bit hacky here SOOO let me explain...
-	                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
-	                            // XML dateTime format is not supported by the
-	                            // DateFormat oject that clover uses...
-	                            // so timezones are unparsable
-	                            // i.e. XML wants -5:00 but DateFormat wants
-	                            // -500
-	                            // Attempt to munge and retry... (there has to
-	                            // be a better way)
-	                            try {
-	                                // Chop off the ":" in the timezone (it HAS
-	                                // to be at the end)
-	                                String dateTime = m_characters.substring(0,
-	                                        m_characters.lastIndexOf(":"))
-	                                        + m_characters
-	                                        .substring(m_characters
-	                                        .lastIndexOf(":") + 1);
-	                                DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
-	                                field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
-	                            } catch (Exception ex2) {
-	                                // Oh well we tried, throw the originating
-	                                // exception
-	                                throw ex;
-	                            }
-	                        } else {
-	                            throw ex;
-	                        }
-	                    }
-                    } else if (field.getType() == DataFieldMetadata.STRING_FIELD) {
-                    	field.setValue("");
-                    }
-                }
+               	processCharacters(localName, m_level == m_activeMapping.getLevel());
                 
                 // Regardless of whether this was saved, reset the length of the
                 // buffer and flag
@@ -647,6 +590,71 @@ public class XMLExtract extends Node {
             //ended an element so decrease our depth
             m_level--; 
         }
+
+		/**
+		 * Store the characters processed by the characters() call back only if we have corresponding 
+		 * output field and we are on the right level or we want to use data from nested unmapped nodes
+		 */
+		private void processCharacters(String localName, boolean elementValue) {
+        	//use fields mapping
+            Map<String, String> xml2clover = m_activeMapping.getXml2CloverFieldsMap();
+            if (xml2clover != null) {
+           		if (elementValue && xml2clover.containsKey(ELEMENT_VALUE_REFERENCE)) {
+            		localName = xml2clover.get(ELEMENT_VALUE_REFERENCE);
+        		} else if (xml2clover.containsKey(localName)) {
+            		localName = xml2clover.get(localName);
+        		} else if (m_activeMapping.explicitCloverFields.contains(localName)) {
+        			return; // don't do implicit mapping if clover field is used in an explicit mapping
+        		}
+            }
+            
+			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
+			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+			    DataField field = m_activeMapping.getOutRecord().getField(localName);
+			    // If field is nullable and there's no character data set it to null
+			    if (m_hasCharacters) {
+			        try {
+			    	if (field.getValue() != null && cloverAttributes.contains(localName)) {
+			    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
+			    	} else {
+			    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
+			    	}
+			        } catch (BadDataFormatException ex) {
+			            // This is a bit hacky here SOOO let me explain...
+			            if (field.getType() == DataFieldMetadata.DATE_FIELD) {
+			                // XML dateTime format is not supported by the
+			                // DateFormat oject that clover uses...
+			                // so timezones are unparsable
+			                // i.e. XML wants -5:00 but DateFormat wants
+			                // -500
+			                // Attempt to munge and retry... (there has to
+			                // be a better way)
+			                try {
+			                    // Chop off the ":" in the timezone (it HAS
+			                    // to be at the end)
+			                    String dateTime = m_characters.substring(0,
+			                            m_characters.lastIndexOf(":"))
+			                            + m_characters
+			                            .substring(m_characters
+			                            .lastIndexOf(":") + 1);
+			                    DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
+			                    field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
+			                } catch (Exception ex2) {
+			                    // Oh well we tried, throw the originating
+			                    // exception
+			                    throw ex;
+			                }
+			            } else {
+			                throw ex;
+			            }
+			        }
+			    } else if (field.getType() == DataFieldMetadata.STRING_FIELD 
+			    		// and value wasn't already stored (from characters)
+			    		&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
+			    	field.setValue("");
+			    }
+			}
+		}
     }
     
     /**
@@ -665,12 +673,19 @@ public class XMLExtract extends Node {
         String m_sequenceId;							// sequence ID
         Sequence sequence;								// sequence (Simple, Db,..)
         
-        // mapping - xml name -> clover field name
+        /** Mapping - xml name -> clover field name */
         Map<String, String> xml2CloverFieldsMap = new HashMap<String, String>();
 
-        List<AncestorFieldMapping> fieldsFromAncestor;
-        // mapping - xml name -> clover field name; these xml fields are referenced by descendant mappings
+        /** List of clover fields (among else) which will be filled from ancestor */
+        List<AncestorFieldMapping> fieldsFromAncestor; 
+
+        /** Mapping - xml name -> clover field name; these xml fields are referenced by descendant mappings */
         Map<String, String> descendantRefernces = new HashMap<String, String>();
+        
+        /** Set of Clover fields which are mapped explicitly (using xmlFields & cloverFields attributes).
+         *  It is union of xml2CloverFieldsMap.values() and Clover fields from fieldsFromAncestor list. Its purpose: quick lookup
+         */
+        Set<String> explicitCloverFields = new HashSet<String>(); 
         
         // for skip and number a record attribute for this mapping
 		int skipRecords4Mapping;						// skip records
@@ -848,19 +863,16 @@ public class XMLExtract extends Node {
         }
         
         /**
-         * Gets mapping - xml name -> clover field name 
-         * @return
+         * Gets mapping - xml name -> clover field name
+         * WARNING: values of this map must be kept in synch with explicitCloverFields; prefer {@link #putXml2CloverFieldMap()} 
          */
         public Map<String, String> getXml2CloverFieldsMap() {
             return xml2CloverFieldsMap;
         }
         
-        /**
-         * Sets mapping - xml name -> clover field name
-         * @param xml2CloverFieldsMap
-         */
-        public void setXml2CloverFieldsMap(Map<String, String> xml2CloverFieldsMap) {
-            this.xml2CloverFieldsMap = xml2CloverFieldsMap;
+        public void putXml2CloverFieldMap(String xmlField, String cloverField) {
+        	xml2CloverFieldsMap.put(xmlField, cloverField);
+        	explicitCloverFields.add(cloverField);
         }
         
         /**
@@ -1111,7 +1123,10 @@ public class XMLExtract extends Node {
         		fieldsFromAncestor = new LinkedList<AncestorFieldMapping>();
         	}
         	fieldsFromAncestor.add(ancestorFieldReference);
-        	ancestorFieldReference.ancestor.descendantRefernces.put(ancestorFieldReference.ancestorField, null);
+        	if (ancestorFieldReference.ancestor != null) {
+        		ancestorFieldReference.ancestor.descendantRefernces.put(ancestorFieldReference.ancestorField, null);
+        	}
+        	explicitCloverFields.add(ancestorFieldReference.currentField);
         }
         
 		public List<AncestorFieldMapping> getFieldsFromAncestor() {
@@ -1122,20 +1137,46 @@ public class XMLExtract extends Node {
 			return fieldsFromAncestor != null && !fieldsFromAncestor.isEmpty(); 
 		}
 		
-		private void addAcestorFieldMapping(String ancestorField, String currentField) {
-			String parentField = ancestorField;
-			Mapping parent = this;
-			while (parentField.startsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
-				parent = parent.getParent();
-				if (parent == null) {
-					LOG.warn("Invalid ancestor record field reference " + ancestorField + " in mapping of element <" + this.getElement() + ">"); 
+		private void addAcestorFieldMapping(String ancestorFieldRef, String currentField) {
+			String ancestorField = ancestorFieldRef;
+			ancestorField = normalizeAncestorValueRef(ancestorField);
+			Mapping ancestor = this;
+			while (ancestorField.startsWith(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR)) {
+				ancestor = ancestor.getParent();
+				if (ancestor == null) {
+					// User may want this in template declaration
+					LOG.debug("Invalid ancestor XML field reference " + ancestorFieldRef + " in mapping of element <" + this.getElement() + ">"); 
 					break;
 				}
-				parentField = parentField.substring(PARENT_MAPPING_REFERENCE_PREFIX.length());
+				ancestorField = ancestorField.substring(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR.length());
 			}
-			if (parent != null) {
-				addAncestorField(new AncestorFieldMapping(parent, parentField, currentField, ancestorField));
+			if (ancestor != null) {
+				addAncestorField(new AncestorFieldMapping(ancestor, ancestorField, currentField, ancestorFieldRef));
+			} else {
+				// This AncestorFieldMapping makes sense in templates - invalid ancestor reference may become valid in template reference
+				addAncestorField(new AncestorFieldMapping(null, null, currentField, ancestorFieldRef));
 			}
+		}
+
+		/**
+		 * If <code>ancestorField</code> is reference to ancestor element value, returns its normalized
+		 * version, otherwise returns unchanged original parameter.
+		 * Normalized ancestor field reference always ends with "../.": suffix.
+		 * Valid unnormalized ancestor element value references are i.e.: ".." or "../"
+		 */
+		private String normalizeAncestorValueRef(String ancestorField) {
+			if (PARENT_MAPPING_REFERENCE_PREFIX.equals(ancestorField)) {
+				return PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR + ELEMENT_VALUE_REFERENCE;
+			}
+			
+			if (ancestorField.startsWith(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR)) {
+				if (ancestorField.endsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
+					ancestorField += PARENT_MAPPING_REFERENCE_SEPARATOR + ELEMENT_VALUE_REFERENCE;
+				} else if (ancestorField.endsWith(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR)) {
+					ancestorField += ELEMENT_VALUE_REFERENCE;
+				}
+			}
+			return ancestorField;
 		}
 		
     }
@@ -1389,14 +1430,14 @@ public class XMLExtract extends Node {
             if (attributes.exists(XML_XMLFIELDS) && attributes.exists(XML_CLOVERFIELDS)) {
                 String[] xmlFields = attributes.getString(XML_XMLFIELDS, null).split(Defaults.Component.KEY_FIELDS_DELIMITER);
                 String[] cloverFields = attributes.getString(XML_CLOVERFIELDS, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+                // TODO add existence check for Clover fields, if possible
 
                 if(xmlFields.length == cloverFields.length){
-                    Map<String, String> xmlCloverMap = mapping.xml2CloverFieldsMap;
                     for (int i = 0; i < xmlFields.length; i++) {
-                    	if (xmlFields[i].startsWith(PARENT_MAPPING_REFERENCE_PREFIX)) {
+                    	if (xmlFields[i].startsWith(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR) || xmlFields[i].equals(PARENT_MAPPING_REFERENCE_PREFIX)) {
                     		mapping.addAcestorFieldMapping(xmlFields[i], cloverFields[i]);
                     	} else {
-                    		xmlCloverMap.put(xmlFields[i], cloverFields[i]);
+                    		mapping.putXml2CloverFieldMap(xmlFields[i], cloverFields[i]);
                     	}
                     }
                 } else {

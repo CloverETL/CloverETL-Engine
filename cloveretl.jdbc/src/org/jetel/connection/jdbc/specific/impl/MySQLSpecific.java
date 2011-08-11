@@ -26,9 +26,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.specific.conn.MySQLConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * My SQL specific behaviour.
@@ -83,8 +85,17 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 
 	@Override
     public String quoteIdentifier(String identifier) {
-        return ('`' + identifier + '`');
+        return ("\\`" + identifier + "\\`");
     }
+
+	@Override
+	public String compileSelectQuery4Table(String schema, String table) {
+    	if (isSchemaRequired() && !StringUtils.isEmpty(schema)) {
+    		return "select * from `" + schema + "`.`" + table+"`";
+    	} else {
+    		return "select * from `" + table+"`";
+    	}
+	}
 
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {

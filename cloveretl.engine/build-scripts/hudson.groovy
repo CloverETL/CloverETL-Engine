@@ -81,6 +81,8 @@ if( !runTests ){
 		antTarget = "runtests-with-testdb"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
+		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
@@ -110,7 +112,7 @@ if( !runTests ){
 		"-Ddir.examples=../cloveretl.examples",
 	]
 
-	antTarget = "run-scenarios-with-engine-build"
+	antTarget = "run-scenarios-with-engine-build-with-testdb"
 	if( testOption == "profile" ){
 		antTarget = "run-scenarios-with-profiler"
 		antArgs += "-Dprofiler.settings=CPURecording;MonitorRecording;ThreadProfiling;VMTelemetryRecording"
@@ -122,8 +124,14 @@ if( !runTests ){
 		antCustomEnv["DB2INSTANCE"]="db2inst"
 	}
 	if( testName == "after-commit-windows" ){
+		//testing derby database is not available under windows platform, so target is changed
+		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
 	}
+	if (testName == "night") { //night tests need more memory
+		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+	}
+	
 	
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build 
@@ -158,7 +166,8 @@ if( env['ComSpec'] ) {
 antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
-if( env['HOSTNAME'] != "klara" ) {
+println "hostName=" + InetAddress.localHost.hostName
+if( InetAddress.localHost.hostName != "klara.javlin.eu" ) {
 	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "hudson@klara:/data/cte-logs"]
 	keyFile = new File("/hudson/id_dsa")
 	if( keyFile.exists() ){

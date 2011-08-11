@@ -167,7 +167,7 @@ public class SimpleCopy extends Node {
     		super.checkConfig(status);
    		 
     		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE, false)) {
     			return status;
     		}
             checkMetadata(status, getInMetadata(), getOutMetadata(), false);

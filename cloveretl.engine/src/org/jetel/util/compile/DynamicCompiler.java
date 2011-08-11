@@ -35,12 +35,12 @@ import java.util.Set;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileObject.Kind;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,7 +135,7 @@ public final class DynamicCompiler {
 	 * extension.
 	 * @return set of libraries which should be part of compile time classpath
 	 */
-	private Set<URL> getExtraLibraries() {
+	public static Set<URL> getExtraLibraries() {
 		List<Extension> importantExtensions = Plugins.getExtensions(TLFunctionLibraryDescription.EXTENSION_POINT_ID);
 		importantExtensions.addAll(Plugins.getExtensions(org.jetel.interpreter.extensions.TLFunctionLibraryDescription.EXTENSION_POINT_ID));
 		importantExtensions.addAll(Plugins.getExtensions(TLCompilerDescription.EXTENSION_POINT_ID));

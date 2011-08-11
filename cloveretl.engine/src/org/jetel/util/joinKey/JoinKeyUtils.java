@@ -162,29 +162,40 @@ public class JoinKeyUtils {
 			int slaveNum;
 			DataRecordMetadata metadata;
 			for(int i = 0; i < recName.length; i++){
-				if (recName[i] != null) {
-					slaveNum = isNumber ? Integer.parseInt(recName[i]) - 1: (Integer)slaveMetadata.get(recName[i])[1];
-					metadata = isNumber ? inMetadata.get(slaveNum + 1) : (DataRecordMetadata)slaveMetadata.get(recName[i])[0];
-					reorder[MASTER][slaveNum] = res[MASTER][i];
-					reorder[SLAVE][slaveNum] = res[SLAVE][i];
-				}else{
-					slaveNum = i;
-					metadata = inMetadata.get(i+1);
-					reorder[MASTER][i] = res[MASTER][i];
-					reorder[SLAVE][i] = res[SLAVE][i];
+				try {
+					if (recName[i] != null) {
+						slaveNum = isNumber ? Integer.parseInt(recName[i]) - 1 : (Integer) slaveMetadata.get(recName[i])[1];
+						metadata = isNumber ? inMetadata.get(slaveNum + 1) : (DataRecordMetadata) slaveMetadata.get(recName[i])[0];
+						reorder[MASTER][slaveNum] = res[MASTER][i];
+						reorder[SLAVE][slaveNum] = res[SLAVE][i];
+					} else {
+						slaveNum = i;
+						metadata = inMetadata.get(i + 1);
+						reorder[MASTER][i] = res[MASTER][i];
+						reorder[SLAVE][i] = res[SLAVE][i];
+					}
+				} catch (IndexOutOfBoundsException e) {
+					// reference to metadata number, that doesn't exist or more mappings, that number if input metadata
+					Pattern indexPattern = Pattern.compile("Index\\:\\s*(\\d+)");
+					Pattern sizePattern = Pattern.compile("Size\\:\\s*(\\d+)");
+					Matcher indexMatcher = indexPattern.matcher(e.getMessage());
+					Matcher sizeMatcher = sizePattern.matcher(e.getMessage());
+					throw new ComponentNotReadyException("Input port " + (indexMatcher.find() ? indexMatcher.group(1) : "?") + 
+							" not defined or mapping has too many elements (number of input ports: " + 
+							(sizeMatcher.find() ? sizeMatcher.group(1) : "?") + ")");
 				}
-				//check fields in metadata
-//we can't do that, because if only master is given we can set slave directly later
-//				for (int j = 0; j < reorder[MASTER][slaveNum].length; j++) {
-//					if (masterMetadata.getFieldPosition(reorder[MASTER][slaveNum][j]) == -1){
-//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[MASTER][slaveNum][j]) +
-//							" specified as key field, doesn't exist in master metadata.");
-//					}
-//					if (metadata.getFieldPosition(reorder[SLAVE][slaveNum][j]) == -1){
-//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[SLAVE][slaveNum][j]) +
-//							" specified as key field, doesn't exist in " + StringUtils.quote(metadata.getName()) + " metadata.");
-//					}
-//				}
+					//check fields in metadata
+					//we can't do that, because if only master is given we can set slave directly later
+					//				for (int j = 0; j < reorder[MASTER][slaveNum].length; j++) {
+					//					if (masterMetadata.getFieldPosition(reorder[MASTER][slaveNum][j]) == -1){
+					//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[MASTER][slaveNum][j]) +
+					//							" specified as key field, doesn't exist in master metadata.");
+					//					}
+					//					if (metadata.getFieldPosition(reorder[SLAVE][slaveNum][j]) == -1){
+					//						throw new ComponentNotReadyException("Field " + StringUtils.quote(reorder[SLAVE][slaveNum][j]) +
+					//							" specified as key field, doesn't exist in " + StringUtils.quote(metadata.getName()) + " metadata.");
+					//					}
+					//				}
 			}
 			res = reorder;
 			

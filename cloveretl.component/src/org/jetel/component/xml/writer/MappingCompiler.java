@@ -319,9 +319,14 @@ public class MappingCompiler extends AbstractVisitor {
 				}
 			}
 			ParsedName pName = parseName(element.getProperty(MappingProperty.NAME));
+			boolean writeNull = Element.WRITE_NULL_DEFAULT;
+			String writeNullString = element.getProperty(MappingProperty.WRITE_NULL_ELEMENT);
+			if (writeNullString != null) {
+				writeNull = Boolean.parseBoolean(writeNullString);
+			}
 			
 			WritableLoopElement loopElement =
-				new WritableLoopElement(currentLoopParent, pName.getName(), pName.getPrefix(), isHidden,
+				new WritableLoopElement(currentLoopParent, pName.getName(), pName.getPrefix(), writeNull, isHidden,
 						portData, currentLoopParent != null ? currentLoopParent.getPortIndex() : -1, keys, parentKeys,
 						filterExpression, graph, componentId, logger);
 			if (currentParent != null) {

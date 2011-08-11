@@ -57,6 +57,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -801,7 +802,7 @@ public class DB2DataWriter extends Node {
 		
 		//---Data is read from port
 		if (!getInPorts().isEmpty()) {
-			if (usePipe && ProcBox.isWindowsPlatform()) {
+			if (usePipe && PlatformUtils.isWindowsPlatform()) {
 				status.add(new ConfigurationProblem("Pipe transfer not supported on Windows", Severity.WARNING, this,
 						Priority.NORMAL, XML_USEPIPE_ATTRIBUTE));
 			}
@@ -894,7 +895,7 @@ public class DB2DataWriter extends Node {
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Can't create temporary data file", e);
 			}			
-			if (usePipe && ProcBox.isWindowsPlatform()) {
+			if (usePipe && PlatformUtils.isWindowsPlatform()) {
 				logger.warn("Node " + this.getId() + " warning: Pipe transfer not " +
 						"supported on Windows - switching it off");
 				usePipe = false;

@@ -24,7 +24,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
+import org.jetel.connection.jdbc.specific.conn.PervasiveConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
@@ -45,7 +45,7 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 
 	@Override
 	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
+		return new PervasiveConnection(dbConnection, operationType, getAutoKeyType());
 	}
 
 	@Override

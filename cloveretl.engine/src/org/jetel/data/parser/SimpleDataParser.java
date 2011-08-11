@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -38,8 +39,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
-
-import sun.nio.ch.ChannelInputStream;
 
 /**
  * This parser is as simple as posible - limited validation, error handling, functionality - but very fast. List of
@@ -228,8 +227,7 @@ public class SimpleDataParser extends AbstractTextParser {
 			} else if (inputDataSource instanceof CharBuffer) {
 				throw new UnsupportedOperationException("NOT IMPLEMENTED");
 			} else if (inputDataSource instanceof ReadableByteChannel) {
-				reader = new InputStreamReader(new ChannelInputStream(
-						(ReadableByteChannel) inputDataSource), cfg.getCharset());
+				reader = Channels.newReader((ReadableByteChannel) inputDataSource, cfg.getCharset());
 			} else {
 				reader = new InputStreamReader((InputStream) inputDataSource,
 						cfg.getCharset());

@@ -143,14 +143,16 @@ public class Trash extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if (!checkInputPorts(status, 1, Integer.MAX_VALUE) || !checkOutputPorts(status, 0, 1)) {
+		if (!checkInputPorts(status, 1, Integer.MAX_VALUE, false) || !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
 
-		if (debugPrint && debugFilename != null) {
+		if (debugPrint) {
 			if (inPorts.size() > 1) {
 				status.add("Debug printing is supported with only one input port connected.", Severity.WARNING, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
-			} else {
+			}
+			
+			if (debugFilename != null) {
 				try {
 					FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, mkDir);
 				} catch (ComponentNotReadyException e) {
@@ -179,7 +181,7 @@ public class Trash extends Node {
 		TransformationGraph graph = getGraph();
 
 		// creates necessary directories
-		if (mkDir) {
+		if (mkDir && (debugFilename != null)) {
 			FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
 		}
 		

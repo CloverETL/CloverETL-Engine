@@ -411,6 +411,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.data.Defaults"></keep>
 			<keep name="org.jetel.plugin.PluginDescriptor"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.PluginActivator"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.plugin.PluginLocation"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.Plugins"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.ExtensionParameter"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.plugin.Extension"><field access="protected public"/><method access="protected public"/></keep>
@@ -439,7 +440,7 @@ defined.version.suffix=release
 
 			<keep name="org.jetel.data.*"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.PluginableItemDescription"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="org.jetel.data.parser.*"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.data.parser.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.reader.DriverReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.InputReader"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.data.reader.SlaveReader"><field access="public"/><method access="public"/></keep>
@@ -475,10 +476,12 @@ defined.version.suffix=release
 			<keep name="org.jetel.util.exec.ProcBox"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.exec.DataConsumer"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.exec.DataProducer"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.exec.PlatformUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.string.Compare"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.string.StringUtils"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.string.StringAproxComparator"><field access="public"/><method access="public"/></keep>			
-			<keep name="org.jetel.util.string.Concatenate"><field access="public"/><method access="public"/></keep>			
+			<keep name="org.jetel.util.string.Concatenate"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.util.string.QuotingDecoder"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.stream.StreamUtils"><field access="public"/><method access="public"/></keep>			
 			<keep name="org.jetel.util.file.FileUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.util.file.FileURLParser"><field access="public"/><method access="public"/></keep>
@@ -933,6 +936,7 @@ defined.version.suffix=release
 				</fileset>
 				<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
 				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+				<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
 				<path refid="cp.cobertura"/>
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
@@ -942,7 +946,7 @@ defined.version.suffix=release
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
-			<formatter type="xml"/>
+			<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
 		</junit>
 	</target>
 	

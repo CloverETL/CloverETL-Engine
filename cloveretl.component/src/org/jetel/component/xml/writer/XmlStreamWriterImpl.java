@@ -27,8 +27,6 @@ import java.nio.charset.CharsetEncoder;
 
 import javax.xml.stream.XMLStreamException;
 
-import com.sun.org.apache.xerces.internal.util.XMLStringBuffer;
-
 /**
  * Simple implementation of streamed xml writer. Does not check validity of output xml.
  * 
@@ -49,8 +47,7 @@ public class XmlStreamWriterImpl {
 	private CharStack elementStack = new CharStack();
 	private XMLStringBuffer buffer = new XMLStringBuffer(BUFFER_SIZE);
 
-	private static final int BUFFER_SIZE = 8192;
-	private static final int FLUSH_TRESHOLD = 4096;
+	private static final int BUFFER_SIZE = 8192; 
 
 	public static final char[] CLOSE_START_TAG = ">".toCharArray();
 	public static final char[] OPEN_START_TAG = "<".toCharArray();
@@ -285,16 +282,16 @@ public class XmlStreamWriterImpl {
 		write(content, startWritePos, end - startWritePos);
 	}
 
-	private void write(char[] data, int start, int end) throws XMLStreamException {
+	private void write(char[] data, int offset, int length) throws XMLStreamException {
 		try {
-			if (end - start >= FLUSH_TRESHOLD) {
+			if (length > BUFFER_SIZE) {
 				flushBuffer();
-				outStreamWriter.write(data, start, end);
+				outStreamWriter.write(data, offset, length);
 			} else {
-				buffer.append(data, start, end);
-				if (buffer.length > FLUSH_TRESHOLD) {
+				if (buffer.length + buffer.length > BUFFER_SIZE) {
 					flushBuffer();
 				}
+				buffer.append(data, offset, length);
 			}
 		} catch (IOException e) {
 			throw new XMLStreamException(e);
@@ -357,6 +354,29 @@ public class XmlStreamWriterImpl {
 
 		public boolean isEmpty() {
 			return depth <= 0;
+		}
+	}
+	
+	private class XMLStringBuffer {
+		char[] ch;
+		int offset;
+		int length;
+		
+		public XMLStringBuffer(int size) {
+			ch = new char[size];
+		}
+		            
+		/** Clears the string buffer. */
+		public void clear() {
+			offset = 0;
+			length = 0;
+		}
+
+		public void append(char[] ch, int offset, int length) {
+			if (ch != null && length > 0) {
+				System.arraycopy(ch, offset, this.ch, this.length, length);
+				this.length += length;
+			}
 		}
 	}
 

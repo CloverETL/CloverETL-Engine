@@ -42,20 +42,20 @@ public class ComponentNotReadyException extends Exception {
 	  super(message);
   }
   
-  public ComponentNotReadyException(Exception ex){
+  public ComponentNotReadyException(Throwable ex){
       super(ex);
   }
 
-  public ComponentNotReadyException(String message, Exception ex){
+  public ComponentNotReadyException(String message, Throwable ex){
       super(message, ex);
   }
 
-  public ComponentNotReadyException(IGraphElement element,Exception ex){
+  public ComponentNotReadyException(IGraphElement element,Throwable ex){
       super(ex);
       this.graphElement=element;
   }
   
-  public ComponentNotReadyException(IGraphElement element,String message,Exception ex){
+  public ComponentNotReadyException(IGraphElement element,String message,Throwable ex){
       super(message,ex);
       this.graphElement=element;
   }

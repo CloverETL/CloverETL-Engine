@@ -54,6 +54,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.StrictParserExceptionHandler;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -408,6 +409,15 @@ public class XPathParser implements Parser {
 		return recordResult;
 	}
 
+	/**
+	 * This method can be removed in a future release.
+	 * @param metadata ignored parameter
+	 * @throws ComponentNotReadyException
+	 */
+	@Deprecated
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+		init();
+	}
 
 	public void init() throws ComponentNotReadyException {
 		try {

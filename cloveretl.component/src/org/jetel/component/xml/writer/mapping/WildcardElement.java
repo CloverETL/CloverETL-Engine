@@ -66,11 +66,14 @@ public class WildcardElement extends AbstractElement {
 	@Override
 	public String getSimpleContent() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Include: '").append(getProperty(MappingProperty.INCLUDE)).append("'");
-		
-		String property = getProperty(MappingProperty.EXCLUDE);
+		String property = getProperty(MappingProperty.INCLUDE);
 		if (property != null) {
-			sb.append(" Exclude: ").append(property).append("'");
+			sb.append("Include: '").append(property).append("'");
+		}
+		
+		property = getProperty(MappingProperty.EXCLUDE);
+		if (property != null) {
+			sb.append(" Exclude: '").append(property).append("'");
 		}
 		
 		return sb.toString();

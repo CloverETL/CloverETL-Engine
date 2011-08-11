@@ -303,6 +303,7 @@ public class TextParserConfiguration implements Cloneable {
 		this.verbose = cfg.verbose;
 		this.treatMultipleDelimitersAsOne = cfg.treatMultipleDelimitersAsOne;
 		this.quotedStrings = cfg.quotedStrings;
+		this.quoteChar = cfg.quoteChar;
 		this.trim = cfg.trim;
 		this.skipLeadingBlanks = new Boolean(cfg.skipLeadingBlanks);
 		this.skipTrailingBlanks = new Boolean(cfg.skipTrailingBlanks);

@@ -76,7 +76,7 @@ public class SQLCloverStatement {
 	private final static Pattern CLOVER_OUTPUT_FIELD = Pattern.compile("\\$(\\w+)\\s*" + Defaults.ASSIGN_SIGN);
 //	private final static Pattern CLOVER_INPUT_FIELD = Pattern.compile("(?<!\\$)\\$(\\w++)(?!:)");
 	//New REGEX allows table names, columns which contains '$' character
-	private final static Pattern CLOVER_INPUT_FIELD = Pattern.compile("(?<=(?:[\\s+=]))\\$(\\w++)(?!:)");
+	private final static Pattern CLOVER_INPUT_FIELD = Pattern.compile("(?<=(?:[\\s+=\\(,><]))\\$(\\w++)(?!:)");
 	
     final static Pattern PREPARED_STMT_PATTERN = Pattern.compile("\\?");
 

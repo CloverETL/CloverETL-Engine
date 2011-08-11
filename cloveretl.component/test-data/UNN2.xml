@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mappings>
+    <Mapping element="root"> <!-- This "root" mapping has no effect (or at least it shouln't have, I think :) -->
+        <Mapping element="e">
+	        <Mapping element="e">
+	            <Mapping element="foo" outPort="0" xmlFields="." cloverFields="f1"/>
+	        </Mapping>
+        </Mapping>
+    </Mapping>
+</Mappings>

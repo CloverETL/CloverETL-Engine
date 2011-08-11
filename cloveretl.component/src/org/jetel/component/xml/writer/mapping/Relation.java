@@ -46,7 +46,12 @@ public class Relation extends AbstractElement {
 	@Override
 	public String getSimpleContent() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Port: '").append(getProperty(MappingProperty.INPUT_PORT)).append("'");
+		String port = getProperty(MappingProperty.INPUT_PORT);
+		if (port != null) {
+			sb.append("Port: '").append(port).append("'");
+		} else {
+			sb.append("Port unassigned");
+		}
 		
 		String property = getProperty(MappingProperty.KEY);
 		if (property != null) {

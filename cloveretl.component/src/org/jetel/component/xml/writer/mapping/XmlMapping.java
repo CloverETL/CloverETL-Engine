@@ -63,7 +63,9 @@ public class XmlMapping {
 
 	public static final String DEFAULT_VERSION = "1.0";
 	public static final String DEFAULT_ENCODING = "UTF-8";
-	public static final String EMPTY_MODEL = "<root xmlns:" + MAPPING_KEYWORDS_PREFIX + "=\"" + MAPPING_KEYWORDS_NAMESPACEURI + "\" />";
+	public static final String EMPTY_MODEL = "<root xmlns:" + MAPPING_KEYWORDS_PREFIX + "=\"" + MAPPING_KEYWORDS_NAMESPACEURI + "\">\n"
+	                                       + "  <element0/>\n"
+	                                       + "</root>";
 
 	public static final String UNKNOWN_ATTRIBUTE = "Unknown property ";
 
