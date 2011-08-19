@@ -444,7 +444,7 @@ public final class IntegerDecimal implements Decimal {
     		else
     			byteBuffer.putLong(value);
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
     }
 
@@ -475,7 +475,7 @@ public final class IntegerDecimal implements Decimal {
     	try {
     		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormatter))));
     	} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
     }
 
@@ -486,7 +486,7 @@ public final class IntegerDecimal implements Decimal {
         		dataBuffer.putLong(value);
         		dataBuffer.putInt(scale);
         	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
         	}
         }
     }

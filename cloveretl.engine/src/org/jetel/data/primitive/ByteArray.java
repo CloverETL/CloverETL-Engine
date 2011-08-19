@@ -315,7 +315,7 @@ public class ByteArray implements Comparable, Iterable {
 		try {
 			dataBuffer.put(value, 0, count);
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 	
@@ -330,7 +330,7 @@ public class ByteArray implements Comparable, Iterable {
 		try {
 			dataBuffer.put(value, offset, length);
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 

@@ -356,7 +356,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 				dataBuffer.put(encoder.encode(CharBuffer.wrap(metadata.getNullValue())));
 			}
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 
@@ -378,7 +378,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                	buffer.put(value);
             }
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
 

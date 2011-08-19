@@ -53,7 +53,7 @@ public class RestrictedByteArrayOutputStream extends ByteArrayOutputStream {
 	 */
 	protected void validateBufferSize(int newSize) {
 		if (newSize > maxArrayLength) {
-    		throw new RuntimeException("The size of data buffer is only " + maxArrayLength + ". Set appropriate parameter in defautProperties file.");
+    		throw new RuntimeException("The size of data buffer is only " + maxArrayLength + ". Set appropriate parameter in defaultProperties file.");
 		}
 	}
 

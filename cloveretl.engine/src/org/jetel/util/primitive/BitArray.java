@@ -225,7 +225,7 @@ public class BitArray implements Serializable{
     	try {
     		buffer.put(bits,0,lengthBytes);
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
     }
 

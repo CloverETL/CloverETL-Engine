@@ -279,7 +279,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 

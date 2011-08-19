@@ -345,7 +345,7 @@ public class CloverDataParser implements Parser {
 		}
 		if (recordBuffer.remaining() < recordSize) {
 			throw new RuntimeException("The size of data buffer is only " + recordBuffer.limit() + 
-					", but record size is " + recordSize + ". Set appropriate parameter in defautProperties file.");
+					", but record size is " + recordSize + ". Set appropriate parameter in defaultProperties file.");
 		}
 		record.deserialize(recordBuffer);
 		sourceRecordCounter++;
