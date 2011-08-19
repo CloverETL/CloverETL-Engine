@@ -550,7 +550,7 @@ public class DataParser extends AbstractTextParser {
 	    		try {
 	    			recordBuffer.put(character);
 	    		} catch (BufferOverflowException e) {
-	    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+	    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 	    		}
     		}
     		return character;
@@ -600,7 +600,7 @@ public class DataParser extends AbstractTextParser {
 				try {
 					recordBuffer.put((char) ret);
 				} catch (BufferOverflowException e) {
-					throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+					throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 				}
 			}
 			return ret;

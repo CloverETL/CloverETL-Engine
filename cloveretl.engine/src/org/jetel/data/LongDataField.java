@@ -492,7 +492,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 		try {
 			buffer.putLong(value);
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 

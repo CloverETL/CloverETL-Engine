@@ -219,7 +219,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 			else
 				buffer.put( value ? (byte)1 : (byte)0 ); // dataBuffer accepts only bytes
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 

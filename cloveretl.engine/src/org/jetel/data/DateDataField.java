@@ -321,7 +321,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 				buffer.putLong(DATE_NULL_VAL_SERIALIZED);
 			}
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}
 	}
 

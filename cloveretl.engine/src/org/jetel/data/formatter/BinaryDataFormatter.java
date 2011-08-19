@@ -125,7 +125,7 @@ public class BinaryDataFormatter implements Formatter {
 		}
 		if (buffer.remaining() < recordSize + lengthSize){
 			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + 
-					", but record size is " + (recordSize + lengthSize) + ". Set appropriate parameter in defautProperties file.");
+					", but record size is " + (recordSize + lengthSize) + ". Set appropriate parameter in defaultProperties file.");
 		}
         ByteBufferUtils.encodeLength(buffer, recordSize);
         record.serialize(buffer);
