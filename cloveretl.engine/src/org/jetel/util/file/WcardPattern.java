@@ -720,7 +720,7 @@ public class WcardPattern {
 		}
 		return lResolvedPaths;
 	}
-
+	
 	/**
 	 * Checks if the name accepts the pattern
 	 * @param pattern
@@ -729,6 +729,24 @@ public class WcardPattern {
 	 */
 	public static boolean checkName(String pattern, String name){
 		return new WcardFilter(pattern).accept(name);
+	}
+	
+	/**
+	 * Creates compiled Pattern from String pattern with simplified syntax -- containing '*' and '?' symbols.
+	 * 
+	 * @param pattern
+	 * @return
+	 */
+	public static Pattern compileSimplifiedPattern(String pattern) {
+		StringBuilder regex = new StringBuilder(pattern);
+		regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
+		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
+			regex.replace(0, regex.length(), regex.toString().replace("" + WCARD_CHAR[wcardIdx],
+					REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
+		}
+		regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
+
+		return Pattern.compile(regex.toString());
 	}
 
 	/**
@@ -759,18 +777,7 @@ public class WcardPattern {
 		 * @param str Wildcard pattern. 
 		 */
 		public WcardFilter(String str) {
-
-			StringBuffer regex = new StringBuffer(str);
-			regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
-			for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-				regex.replace(0, regex.length(), 
-						regex.toString().replace("" + WCARD_CHAR[wcardIdx],
-								REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
-			}
-			regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
-
-			// Create compiled regex pattern
-			rePattern = Pattern.compile(regex.toString());
+			rePattern = compileSimplifiedPattern(str);
 		}
 
 		/**

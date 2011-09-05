@@ -200,6 +200,11 @@
 	    <parameter id="className" value="org.jetel.component.XLSReader"/>
 	    <parameter id="type" value="XLS_READER"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SpreadsheetReader"/>
+	    <parameter id="type" value="SPREADSHEET_READER"/>
+	</extension>
 
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XLSWriter"/>

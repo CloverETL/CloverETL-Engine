@@ -564,6 +564,10 @@ public class XLSXDataParser extends XLSParser {
 		}
 
 		@Override
+		public void notifyUpdateCell(Cell arg0) {
+		}
+
+		@Override
 		public void notifyDeleteCell(Cell cell) {
 		}
 
@@ -579,6 +583,11 @@ public class XLSXDataParser extends XLSParser {
 
 		@Override
 		public Cell evaluateInCell(Cell cell) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void evaluateAll() {
 			throw new UnsupportedOperationException();
 		}
 		
