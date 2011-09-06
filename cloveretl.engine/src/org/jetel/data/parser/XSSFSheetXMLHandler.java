@@ -26,7 +26,8 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * This class is a slightly modified copy of Apache POI 3.8b3 org.apache.poi.xssf.eventusermodel.XSSFSheetXMLHandler class.
  * Notable differences:
- *  - ignores formula "f" tags. Cell with formula is treated as any other cell with value.
+ *  - ignores formula "f" tags. Cell with formula is treated as any other cell with value;
+ *  - in {@link SheetContentsHandler#cell(String, int, String, int)}, cell value type and cell style index is available.
  *  
  * @author tkramolis
  * 
