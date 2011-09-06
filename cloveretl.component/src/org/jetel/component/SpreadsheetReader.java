@@ -74,7 +74,7 @@ public class SpreadsheetReader extends Node {
     public static final String XML_SHEET_ATTRIBUTE = "sheet";
     public static final String XML_CHARSET_ATTRIBUTE = "charset";
     public static final String XML_DATA_POLICY_ATTRIBUTE = "dataPolicy";
-    public static final String XML_MAPPING_ATTRIBUTE = "spreadsheetMapping";
+    public static final String XML_MAPPING_ATTRIBUTE = "mapping";
     public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
     public static final String XML_NUM_RECORDS_ATTRIBUTE = "numRecords";
     public static final String XML_SKIP_RECORDS_ATTRIBUTE = "skipRecords";
@@ -91,71 +91,71 @@ public class SpreadsheetReader extends Node {
 	private final static int LOG_PORT = 1;
     
     public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
-        SpreadsheetReader extXLSReader = null;
+        SpreadsheetReader spreadsheetReader = null;
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         try {
-        	extXLSReader = new SpreadsheetReader(xattribs.getString(XML_ID_ATTRIBUTE));
+        	spreadsheetReader = new SpreadsheetReader(xattribs.getString(XML_ID_ATTRIBUTE));
         	
-        	extXLSReader.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-        	extXLSReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-        	extXLSReader.setPolicyType(xattribs.getString(XML_DATA_POLICY_ATTRIBUTE, null));
+        	spreadsheetReader.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+        	spreadsheetReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+        	spreadsheetReader.setPolicyType(xattribs.getString(XML_DATA_POLICY_ATTRIBUTE, null));
         	
         	if (xattribs.exists(XML_ATTITUDE_ATTRIBUTE)) {
-        		extXLSReader.setParserAttitude(ExtXLSAttitude.valueOfIgnoreCase(xattribs.getString(XML_ATTITUDE_ATTRIBUTE)));
+        		spreadsheetReader.setParserAttitude(SpreadsheetAttitude.valueOfIgnoreCase(xattribs.getString(XML_ATTITUDE_ATTRIBUTE)));
         	}
         	
         	String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
 			String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 			if (mappingURL != null) {
-				extXLSReader.setMappingURL(mappingURL);
+				spreadsheetReader.setMappingURL(mappingURL);
 			} else if (mapping != null) {
-				extXLSReader.setMapping(mapping);
+				spreadsheetReader.setMapping(mapping);
 			}
 			
 			if (xattribs.exists(XML_SHEET_ATTRIBUTE)) {
-				extXLSReader.setSheet(xattribs.getString(XML_SHEET_ATTRIBUTE));
+				spreadsheetReader.setSheet(xattribs.getString(XML_SHEET_ATTRIBUTE));
 			}
             if (xattribs.exists(XML_NUM_RECORDS_ATTRIBUTE)) {
-            	extXLSReader.setNumRecords(xattribs.getInteger(XML_NUM_RECORDS_ATTRIBUTE));
+            	spreadsheetReader.setNumRecords(xattribs.getInteger(XML_NUM_RECORDS_ATTRIBUTE));
             }
             if (xattribs.exists(XML_SKIP_RECORDS_ATTRIBUTE)) {
-            	extXLSReader.setSkipRecords(xattribs.getInteger(XML_SKIP_RECORDS_ATTRIBUTE));
+            	spreadsheetReader.setSkipRecords(xattribs.getInteger(XML_SKIP_RECORDS_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				extXLSReader.setSkipSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE)){
-				extXLSReader.setSkipSourceRecords(xattribs.getInteger(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_NUM_SHEET_RECORDS_ATTRIBUTE)){
-				extXLSReader.setNumSheetRecords(xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setNumSheetRecords(xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_SHEET_RECORDS_ATTRIBUTE)){
-				extXLSReader.setSkipSheetRecords(xattribs.getInteger(XML_SKIP_SHEET_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setSkipSheetRecords(xattribs.getInteger(XML_SKIP_SHEET_RECORDS_ATTRIBUTE));
 			}
             if (xattribs.exists(XML_MAX_ERROR_COUNT_ATTRIBUTE)) {
-            	extXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAX_ERROR_COUNT_ATTRIBUTE));
+            	spreadsheetReader.setMaxErrorCount(xattribs.getInteger(XML_MAX_ERROR_COUNT_ATTRIBUTE));
             }
             
             if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-            	extXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+            	spreadsheetReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
             }
             if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-            	extXLSReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+            	spreadsheetReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
             }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":"
                     + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
         }
 
-        return extXLSReader;
+        return spreadsheetReader;
     }
 
 	private String fileURL;
 	private String charset;
 	
-	private ExtXLSAttitude parserAttitude = ExtXLSAttitude.IN_MEMORY;
+	private SpreadsheetAttitude parserAttitude = SpreadsheetAttitude.IN_MEMORY;
 	private AbstractSpreadsheetParser parser;
     private MultiFileReader reader;
 	private PolicyType policyType = PolicyType.STRICT;
@@ -194,7 +194,7 @@ public class SpreadsheetReader extends Node {
 		this.charset = charset;
 	}
 	
-	public void setParserAttitude(ExtXLSAttitude parserAttitude) {
+	public void setParserAttitude(SpreadsheetAttitude parserAttitude) {
         this.parserAttitude = parserAttitude;
     }
 	
@@ -272,7 +272,7 @@ public class SpreadsheetReader extends Node {
 		try {
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
-				if (mapping.getOrientation() == SpreadsheetOrientation.VERTICAL && parserAttitude == ExtXLSAttitude.STREAM) {
+				if (mapping.getOrientation() == SpreadsheetOrientation.VERTICAL && parserAttitude == SpreadsheetAttitude.STREAM) {
 					status.add(new ConfigurationProblem("Vertical reading is not supported with stream parser attitude!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
 				mapping.checkConfig(status);
@@ -383,7 +383,7 @@ public class SpreadsheetReader extends Node {
 
 	private void prepareParser(XLSMapping parsedMapping) throws ComponentNotReadyException {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-        if (parserAttitude == ExtXLSAttitude.IN_MEMORY) {
+        if (parserAttitude == SpreadsheetAttitude.IN_MEMORY) {
             parser = new SpreadsheetDOMParser(metadata, parsedMapping);
         } else {
         	parser = new SpreadsheetStreamParser(metadata, parsedMapping);
@@ -494,15 +494,15 @@ public class SpreadsheetReader extends Node {
 		parser.postExecute();
 	}
 
-	public static enum ExtXLSAttitude {
+	public static enum SpreadsheetAttitude {
 
         /** In-memory based parser should be used */
         IN_MEMORY,
         /** Stream based parser should be used */
         STREAM;
 
-        public static ExtXLSAttitude valueOfIgnoreCase(String string) {
-            for (ExtXLSAttitude parserType : values()) {
+        public static SpreadsheetAttitude valueOfIgnoreCase(String string) {
+            for (SpreadsheetAttitude parserType : values()) {
                 if (parserType.name().equalsIgnoreCase(string)) {
                     return parserType;
                 }
