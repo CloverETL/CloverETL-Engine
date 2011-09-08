@@ -346,7 +346,7 @@ public class DBJoin extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
-        dbMetadata = getGraph().getDataRecordMetadata(metadataName);
+        dbMetadata = getGraph().getDataRecordMetadata(metadataName, false);
 
         try {
         	

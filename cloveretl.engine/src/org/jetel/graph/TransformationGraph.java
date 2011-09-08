@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.Channels;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,6 +45,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -296,27 +296,27 @@ public final class TransformationGraph extends GraphElement {
 	 * @param name name (the ID) under which dataRecordMetadata has been registered with graph
 	 * @return
 	 */
-	public DataRecordMetadata getDataRecordMetadata(String name){
-		Object metadata = dataRecordMetadata.get(name);
-		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
-			metadata = null;
-		}
-	    return (DataRecordMetadata)metadata;
+	public DataRecordMetadata getDataRecordMetadata(String name) {
+		return getDataRecordMetadata(name, true);
 	}
 	
-	public DataRecordMetadata getDataRecordMetadata(String name, boolean forceFromStub) throws ComponentNotReadyException{
+	public DataRecordMetadata getDataRecordMetadata(String name, boolean forceFromStub) {
 		Object metadata = dataRecordMetadata.get(name);
 		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
-			try {
-				metadata = ((DataRecordMetadataStub)metadata).createMetadata();
-				dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
-			} catch (SQLException e) {
-				throw new ComponentNotReadyException("Creating metadata from stub failed: ", e);
-			} catch (UnsupportedOperationException e) {
-				throw new ComponentNotReadyException("Creating metadata from stub not defined for this connection: ", e);
+			if (forceFromStub) {
+				try {
+					metadata = ((DataRecordMetadataStub)metadata).createMetadata();
+					dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
+				} catch (UnsupportedOperationException e) {
+					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub not defined for this connection: ", e);
+				} catch (Exception e) {
+					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub failed: ", e);
+				}
+			} else {
+				metadata = null;
 			}
 		}
-	    return (DataRecordMetadata)metadata;
+	    return (DataRecordMetadata) metadata;
 	}
 
 	/**

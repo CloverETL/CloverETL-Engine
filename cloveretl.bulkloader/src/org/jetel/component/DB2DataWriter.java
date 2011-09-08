@@ -813,7 +813,7 @@ public class DB2DataWriter extends Node {
 		if (fileMetadataName != null) {
 			try {
 				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
-			} catch (ComponentNotReadyException e) {
+			} catch (Exception e) {
 				status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
 			}
 			if (fileMetadata == null) {

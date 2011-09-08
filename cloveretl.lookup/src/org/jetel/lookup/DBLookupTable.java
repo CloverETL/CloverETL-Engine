@@ -18,8 +18,6 @@
  */
 package org.jetel.lookup;
 
-import java.sql.ParameterMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -47,12 +45,12 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -349,7 +347,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
 
 		if (metadataId != null) {
-			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId, false);
 			if (dbMetadata == null) {
 				status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
 						" does not exist. DB metadata will be created from sql query.", Severity.WARNING, this, 

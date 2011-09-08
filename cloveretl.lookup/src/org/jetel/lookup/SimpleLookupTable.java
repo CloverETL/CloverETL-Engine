@@ -389,7 +389,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		super.checkConfig(status);
 
 		if (metadata == null) {
-			metadata = getGraph().getDataRecordMetadata(metadataName);
+			metadata = getGraph().getDataRecordMetadata(metadataName, false);
 		}
 
 		if (indexKey == null) {

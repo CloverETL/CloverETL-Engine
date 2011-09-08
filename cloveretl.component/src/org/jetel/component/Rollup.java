@@ -410,7 +410,7 @@ public class Rollup extends Node {
             }
         }
 
-        if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) == null) {
+        if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId, false) == null) {
             status.add(new ConfigurationProblem("The group \"accumulator\" metadata ID is not valid!",
                     Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
         }
