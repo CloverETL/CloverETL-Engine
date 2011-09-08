@@ -195,7 +195,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		super.checkConfig(status);
 
 		if (metadata == null) {
-			metadata = getGraph().getDataRecordMetadata(metadataId);
+			metadata = getGraph().getDataRecordMetadata(metadataId, false);
 		}		
 
 		if (startKey == null) {
