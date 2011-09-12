@@ -123,6 +123,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	protected void setUp() {
+		// set default locale to English to prevent various parsing errors
+		Locale.setDefault(Locale.ENGLISH);
 		initEngine();
 	}
 
