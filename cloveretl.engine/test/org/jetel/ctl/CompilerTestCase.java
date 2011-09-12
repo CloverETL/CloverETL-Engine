@@ -130,6 +130,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		super.tearDown();
 		inputRecords = null;
 		outputRecords = null;
+		graph = null;
 	}
 
 	protected TransformationGraph createEmptyGraph() {
