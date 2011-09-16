@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URL;
@@ -531,6 +532,85 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 //----------------------------- TESTS -----------------------------
+
+	@SuppressWarnings("unchecked")
+	public void test_operators_unary_record_allowed() {
+		doCompile("test_operators_unary_record_allowed");
+		check("value", Arrays.asList(14, 16, 16, 65, 63, 63));
+		check("bornMillisec", Arrays.asList(14L, 16L, 16L, 65L, 63L, 63L));
+		List<Double> actualAge = (List<Double>) getVariable("age");
+		double[] expectedAge = {14.123, 16.123, 16.123, 65.789, 63.789, 63.789};
+		for (int i = 0; i < actualAge.size(); i++) {
+			assertEquals("age[" + i + "]", expectedAge[i], actualAge.get(i), 0.0001);
+		}
+		check("currency", Arrays.asList(
+				new BigDecimal(BigInteger.valueOf(12500), 3), 
+				new BigDecimal(BigInteger.valueOf(14500), 3),
+				new BigDecimal(BigInteger.valueOf(14500), 3),
+				new BigDecimal(BigInteger.valueOf(65432), 3),
+				new BigDecimal(BigInteger.valueOf(63432), 3),
+				new BigDecimal(BigInteger.valueOf(63432), 3)
+		));
+	}
+
+	@SuppressWarnings("unchecked")
+	public void test_dynamic_compare() {
+		doCompile("test_dynamic_compare");
+		
+		String varName = "compare";
+		List<Integer> compareResult = (List<Integer>) getVariable(varName);
+		for (int i = 0; i < compareResult.size(); i++) {
+			if ((i % 3) == 0) {
+				assertTrue(varName + "[" + i + "]", compareResult.get(i) > 0);
+			} else if ((i % 3) == 1) {
+				assertEquals(varName + "[" + i + "]", Integer.valueOf(0), compareResult.get(i));
+			} else if ((i % 3) == 2) {
+				assertTrue(varName + "[" + i + "]", compareResult.get(i) < 0);
+			}
+		}
+		
+		varName = "compareBooleans";
+		compareResult = (List<Integer>) getVariable(varName);
+		assertEquals(varName + "[0]", Integer.valueOf(0), compareResult.get(0));
+		assertTrue(varName + "[1]", compareResult.get(1) > 0);
+		assertTrue(varName + "[2]", compareResult.get(2) < 0);
+		assertEquals(varName + "[3]", Integer.valueOf(0), compareResult.get(3));
+	}
+
+	public void test_dynamic_get_set_loop() {
+		doCompile("test_dynamic_get_set_loop");
+		
+		check("recordLength", 9);
+		
+		check("value", Arrays.asList(654321, 777777, 654321, 654323, 123456, 112567, 112233));
+		check("type", Arrays.asList("string", "number", "string", "date", "long", "integer", "boolean", "byte", "decimal"));
+		check("asString", Arrays.asList("1000", "1001.0", "1002", "Thu Jan 01 01:00:01 CET 1970", "1004", "1005", "true", null, "1008.000"));
+		check("isNull", Arrays.asList(false, false, false, false, false, false, false, true, false));
+		check("fieldName", Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency"));
+		Integer[] indices = new Integer[9];
+		for (int i = 0; i < indices.length; i++) {
+			indices[i] = i;
+		}
+		check("fieldIndex", Arrays.asList(indices));
+		
+		// check dynamic write and read with all data types
+		check("booleanVar", true);
+		assertTrue("byteVar", Arrays.equals(new BigInteger("1234567890abcdef", 16).toByteArray(), (byte[]) getVariable("byteVar")));
+		check("decimalVar", new BigDecimal(BigInteger.valueOf(1000125), 3));
+		check("integerVar", 1000);
+		check("longVar", 1000000000000L);
+		check("numberVar", 1000.5);
+		check("stringVar", "hello");
+		check("dateVar", new Date(5000));
+		
+	}
+
+	public void test_dynamic_invalid() {
+		doCompileExpectErrors("test_dynamic_invalid", Arrays.asList(
+				"Input record cannot be assigned to",
+				"Input record cannot be assigned to"
+		));
+	}
 
 	public void test_return_constants() {
 		// test case for issue 2257
@@ -1216,7 +1296,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Illegal argument to ++/-- operator",
 				"Illegal argument to ++/-- operator",
 				"Illegal argument to ++/-- operator",
-				"Illegal argument to ++/-- operator"));
+				"Illegal argument to ++/-- operator",
+				"Input record cannot be assigned to",
+				"Input record cannot be assigned to",
+				"Input record cannot be assigned to",
+				"Input record cannot be assigned to"
+		));
 	}
 	
 	public void test_operator_equal() {
@@ -2757,4 +2842,5 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("escaped", "http://example.com/foo%20bar%5E");
 		check("unescaped", "http://example.com/foo bar^");
 	}
+	
 }
