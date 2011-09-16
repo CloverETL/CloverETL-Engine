@@ -2087,21 +2087,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 
 	public Object visit(CLVFFieldAccessExpression node, Object data) {
-		/*
-		 * Output fields are handled in assignment via setVariable()
-		 * They should never be visited 
-		 */
-		if (node.isOutput()) {
-			throw new IllegalArgumentException("Output field should never be visited explicitely!!");
-		}
-		
+		DataRecord record =	node.isOutput() 
+			? outputRecords[node.getRecordId()] : inputRecords[node.getRecordId()];
+			
 		// record.* handling
 		if (node.isWildcard()) {
-			stack.push(inputRecords[node.getRecordId()]);
+			stack.push(record);
 			return data;
 		}
 		
-		final DataField field = inputRecords[node.getRecordId()].getField(node.getFieldId());
+		final DataField field = record.getField(node.getFieldId());
 		stack.push(fieldValue(field));
 		
 		return data;
@@ -2453,6 +2448,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 			DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
 			record.getField(fieldId).setValue(value);
+		} else if(node.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) node;
+			DataRecord record = faNode.isOutput() ? outputRecords[faNode.getRecordId()] : inputRecords[faNode.getRecordId()];
+			record.getField(faNode.getFieldId()).setValue(value);
 		} else {
 			int blockOffset = -1;
 			int varOffset = -1;

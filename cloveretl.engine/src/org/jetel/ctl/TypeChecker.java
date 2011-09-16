@@ -1348,8 +1348,25 @@ public class TypeChecker extends NavigatingVisitor {
 		 * would be prohibited, while reading (original value) from output
 		 * field would be prohibited as well.
 		 */
-		if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER
-				&& operand.getId() != TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
+		if (operand.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+			try {
+				CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
+				if (fa.getDiscriminator() == null) {
+					error(node, "Illegal argument to ++/-- operator");
+					node.setType(TLType.ERROR);
+					return data;
+				} else if (!fa.getDiscriminator().equals("out")) {
+					error(node, "Input record cannot be assigned to");
+					node.setType(TLType.ERROR);
+					return data;
+				}
+			} catch(ClassCastException cce) {
+				error(node, "Illegal argument to ++/-- operator");
+				node.setType(TLType.ERROR);
+				return data;
+			}
+		} else if ((operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER)
+				&& (operand.getId() != TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION)) {
 			error(node, "Illegal argument to ++/-- operator");
 			node.setType(TLType.ERROR);
 			return data;
@@ -1674,7 +1691,24 @@ public class TypeChecker extends NavigatingVisitor {
 			 * would be prohibited, while reading (original value) from output
 			 * field would be prohibited as well.
 			 */
-			if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER
+			if (operand.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+				try {
+					CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
+					if (fa.getDiscriminator() == null) {
+						error(node, "Illegal argument to ++/-- operator");
+						node.setType(TLType.ERROR);
+						return data;
+					} else if (!fa.getDiscriminator().equals("out")) {
+						error(node, "Input record cannot be assigned to");
+						node.setType(TLType.ERROR);
+						return data;
+					}
+				} catch(ClassCastException cce) {
+					error(node, "Illegal argument to ++/-- operator");
+					node.setType(TLType.ERROR);
+					return data;
+				}
+			} else if (operand.getId() != TransformLangParserTreeConstants.JJTIDENTIFIER
 					&& operand.getId() != TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
 				error(node, "Illegal argument to ++/-- operator");
 				node.setType(TLType.ERROR);
