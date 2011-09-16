@@ -658,14 +658,14 @@ TOKEN :
 <WithinFieldIdentifier> 
 TOKEN :
 {
-  
-  <FIELD_IDENTIFIER : ( <NUMERIC_ID> | <STRING_ID> ) ( "." ( <NUMERIC_ID> | <STRING_ID> | "*") )? > : DEFAULT
+  <FIELD_IDENTIFIER : ( <PORT_TYPE> )? ( <NUMERIC_ID> | <STRING_ID> ) ( "." ( <NUMERIC_ID> | <STRING_ID> | "*") )? > : DEFAULT
+|  
+  < #PORT_TYPE: ("in" | "out") "." >
 |
   < #NUMERIC_ID : ( [ "1"-"9" ] )? ( [ "0" - "9" ] )+ >
 |
   < #STRING_ID : <IDENTIFIER> >
 }
-
 
 TOKEN : 
 {
@@ -2616,9 +2616,18 @@ void RecordOrFieldIdentifier()                       :
 	 	// let's presume this is not a wildcard access
 	 	jjtn000.setWildcard(false);
 	 	
-	 	int dotPos; 	
-	 	if ((dotPos = token.image.indexOf('.') ) > 0 ) {
-	 		String recId = token.image.substring(0,dotPos);
+	 	int dotPos;
+
+		String tokenImage = token.image;
+		String discriminator = null;
+	 	if (tokenImage.startsWith("in.")) {
+	 	  discriminator = "in";
+	 	  tokenImage = tokenImage.substring(3);		} else if (tokenImage.startsWith("out.")) {
+	 	  discriminator = "out";
+		  tokenImage = tokenImage.substring(4);		}	 	jjtn000.setDiscriminator(discriminator);
+	 	  
+	 	if ((dotPos = tokenImage.indexOf('.') ) > 0 ) {
+	 		String recId = tokenImage.substring(0,dotPos);
 	 		try {
 	 			Integer recNum = Integer.parseInt(recId);
 	 			// set directly the position access 
@@ -2627,7 +2636,7 @@ void RecordOrFieldIdentifier()                       :
 	 			jjtn000.setRecordName(recId);
 	 		}
 	 		
-	 		String fieldId = token.image.substring(dotPos+1);
+	 		String fieldId = tokenImage.substring(dotPos+1);
 			if (fieldId.equals("*")) {
 				jjtn000.setWildcard(true);
 			} else {
@@ -2641,19 +2650,28 @@ void RecordOrFieldIdentifier()                       :
 		 		}
 			}
 			
-	 	} else {
+	 	} else if (discriminator == null) {
 	 		// shortended syntax $1 or $fieldName -> treat as $0.1 or $0.fieldName
 	 		jjtn000.setRecordId(0);
 			try {
-		 		Integer fieldNum = Integer.parseInt(token.image);
+		 		Integer fieldNum = Integer.parseInt(tokenImage);
 		 		// set directly the position access
 		 		jjtn000.setFieldId(fieldNum);
 		 	} catch (NumberFormatException e) {
 		 		// set the field name
-		 		jjtn000.setFieldName(token.image);
+		 		jjtn000.setFieldName(tokenImage);
 		 	}
+	 	} else {
+	 	    // new syntax, $in.1 no longer means $0.1, but $1.* instead
+	 	    jjtn000.setWildcard(true);	 		try {
+	 			Integer recNum = Integer.parseInt(tokenImage);
+	 			// set directly the position access 
+	 			jjtn000.setRecordId(recNum);
+	 		} catch (NumberFormatException e) {
+	 			jjtn000.setRecordName(tokenImage);
+	 		}
 	 	}
-	 }/*@bgen(jjtree)*/
+	}/*@bgen(jjtree)*/
          } finally {
            if (jjtc000) {
              jjtree.closeNodeScope(jjtn000, true);

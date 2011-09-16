@@ -265,12 +265,28 @@ public class ASTBuilder extends NavigatingVisitor {
 
 		
 		Object id = node.getRecordId();
-		// if the FieldAccessExpression appears somewhere except assignment 
-		// the 'data' will be null so we treat it as a reference to the input field
+		
+		Boolean isOutput;
 		Boolean isLHS = data != null ? (Boolean)data : false;
-		node.setMetadata(null);
-		node.setOutput(isLHS);
-
+		String discriminator = node.getDiscriminator();
+		if (discriminator != null) {
+			if (discriminator.equals("in")) {
+				if (isLHS) {
+					error(node, "Input record cannot be assigned to");
+				}
+				isOutput = false;
+			} else if (discriminator.equals("out")) {
+				isOutput = true;
+			} else {
+				throw new IllegalArgumentException(discriminator);
+			}
+		} else {
+			// if the FieldAccessExpression appears somewhere except assignment 
+			// the 'data' will be null so we treat it as a reference to the input field
+			isOutput = isLHS;
+			node.setMetadata(null);
+		}
+		node.setOutput(isOutput);
 		
 		Integer recordPos = null;
 
@@ -279,19 +295,19 @@ public class ASTBuilder extends NavigatingVisitor {
 			recordPos = node.getRecordId();
 		} else {
 			// calculate positional reference
-			recordPos = isLHS ? getOutputPosition(node.getRecordName()) : getInputPosition(node.getRecordName());
+			recordPos = isOutput ? getOutputPosition(node.getRecordName()) : getInputPosition(node.getRecordName());
 			if (recordPos != null) {
-				Set<String> ambiguousMetadata = isLHS ? ambiguousOutputMetadata : ambiguousInputMetadata;
+				Set<String> ambiguousMetadata = isOutput ? ambiguousOutputMetadata : ambiguousInputMetadata;
 
 				if (ambiguousMetadata.contains(node.getRecordName())) {
 					// metadata names can clash - warn user that we will not be able to resolve them correctly
-					warn(node, (isLHS ? "Output" : "Input") + " record name '" + node.getRecordName() + "' is ambiguous",
+					warn(node, (isOutput ? "Output" : "Input") + " record name '" + node.getRecordName() + "' is ambiguous",
 							"Use positional access or rename metadata to a unique name");
 				}
 
 				node.setRecordId(recordPos);
 			} else {
-				error(node, "Unable to resolve " + (isLHS ? "output" : "input") + " metadata '" + node.getRecordName() + "'");
+				error(node, "Unable to resolve " + (isOutput ? "output" : "input") + " metadata '" + node.getRecordName() + "'");
 				node.setType(TLType.ERROR);
 				return node; // nothing else to do
 			}
@@ -299,11 +315,11 @@ public class ASTBuilder extends NavigatingVisitor {
 		}
 
 		// check if we have metadata for this record
-		DataRecordMetadata metadata = isLHS ? getOutputMetadata(recordPos) : getInputMetadata(recordPos);
+		DataRecordMetadata metadata = isOutput ? getOutputMetadata(recordPos) : getInputMetadata(recordPos);
 		if (metadata != null) {
 			node.setMetadata(metadata);
 		} else {
-			error(node, "Cannot " + (isLHS ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
+			error(node, "Cannot " + (isOutput ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
 			node.setType(TLType.ERROR);
 			return node;
 		}

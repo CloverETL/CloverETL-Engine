@@ -27,6 +27,7 @@ public class CLVFFieldAccessExpression extends SimpleNode {
 	
 	private String recordName;
 	private String fieldName;
+	private String discriminator;
 
 	private DataRecordMetadata metadata; 
 	private Integer recordId = null;
@@ -111,6 +112,20 @@ public class CLVFFieldAccessExpression extends SimpleNode {
 		return fieldName;
 	}
 	
+	/**
+	 * @return the discriminator
+	 */
+	public String getDiscriminator() {
+		return discriminator;
+	}
+
+	/**
+	 * @param discriminator the discriminator to set
+	 */
+	public void setDiscriminator(String discriminator) {
+		this.discriminator = discriminator;
+	}
+
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
