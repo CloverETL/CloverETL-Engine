@@ -344,11 +344,6 @@ public class ExtDataGenerator extends DataGenerator {
 			 verifyAutofilling(getOutMetadata().get(0));
 			 createGeneratorClass(null, outMetadata);
 			 
-			 // RecordGenerateTL doesn't have check config in contrast to CTLRecordGenerate
-			 if (generatorClass != null && generatorClass instanceof RecordGenerateTL) {
-				 initGeneratorClass(outMetadata);
-			 }
-			 
 		 } catch (ComponentNotReadyException e) {
 			 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
 					 ConfigurationStatus.Severity.ERROR, this,

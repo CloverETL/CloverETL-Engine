@@ -123,6 +123,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Destination destination = null;
 	private URL[] librariesUrls = null;
 	private URL contextURL;
+	private GreedyURLClassLoader loader;
 	
 	private ConnectionFactory factory = null;
 	private Context initCtx = null;
@@ -220,7 +221,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					// Save the class loader so that you can restore it later
 					prevCl = Thread.currentThread().getContextClassLoader();
 					// Create the class loader by using the given URL
-					GreedyURLClassLoader loader = new GreedyURLClassLoader(librariesUrls, this.getClass().getClassLoader());
+					loader = new GreedyURLClassLoader(librariesUrls, this.getClass().getClassLoader());
 					// InitialContext uses thread Class-Loader
 					Thread.currentThread().setContextClassLoader(loader);
 				}
@@ -388,7 +389,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}
 
 	private void initConnection() throws ComponentNotReadyException {
+		ClassLoader prevCl = null;
+		
 		try {
+			if (loader != null) {
+				// Save the class loader so that you can restore it later
+				prevCl = Thread.currentThread().getContextClassLoader();
+				Thread.currentThread().setContextClassLoader(loader);
+			}
 			try {
 				connection = factory.createConnection(user, pwd);
 			} catch (Exception e) {
@@ -409,6 +417,11 @@ public class JmsConnection extends GraphElement implements IConnection {
 			connection.start();
 		} catch (JMSException ex) {
 			throw new ComponentNotReadyException(ex);
+		} finally {
+			if (prevCl != null) {
+				//thread classloader restoration
+				Thread.currentThread().setContextClassLoader(prevCl);
+			}
 		}
 	}
 	

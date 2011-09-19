@@ -7,12 +7,8 @@
 <FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf" defaultProperties="changedParams">	 
      <Property name="-P:DEFAULT_INTERNAL_IO_BUFFER_SIZE" value="89152" />
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/object.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/object1.txt" supposedFile="supposed-out/object.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/subject.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/subject1.txt" supposedFile="supposed-out/subject.HttpConnector.txt"/>
-	 <FlatFile outputFile="data-out/RDFTriples.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
-	 <FlatFile outputFile="data-out/RDFTriples1.xml" supposedFile="supposed-out/RDFTriples.HttpConnector.xml"/>
+	 <FlatFile outputFile="data-tmp/CzechRepublic.xml" supposedFile="supposed-out/CzechRepublic.HttpConnector.xml"/>
+	 <FlatFile outputFile="data-tmp/Poland.xml" supposedFile="supposed-out/Poland.HttpConnector.xml"/>
 </FunctionalTest>
  
 <FunctionalTest ident="AggregateSorted" graphFile="graph/graphAggregateSorted.grf">

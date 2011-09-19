@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Fri Jun 17 13:40:11 CEST 2011" modifiedBy="avackova" name="graphHTTPRequest" revision="1.317" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 22 10:22:52 CEST 2009" guiVersion="0.0.0.devel" id="1248257432736" licenseType="Evaluation Devel" modified="Tue Sep 13 12:25:13 CEST 2011" modifiedBy="avackova" name="graphHTTPRequest" revision="1.355" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="city" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -16,13 +16,6 @@
 <Field name="field" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
-<Field name="predicate" type="string"/>
-<Field name="type" type="string"/>
-<Field name="content" type="string"/>
-</Record>
-</Metadata>
 <Property id="GraphParameter0" name="httpParams" value="`join('&amp;','whichClient=${whichClient}','citiesLevel=${citiesLevel}','maxt=${maxt}','Submit=${Submit}','product=${product}')`"/>
 <Property fileURL="httpParams.prm" id="GraphParameter1"/>
 <Property fileURL="workspace.prm" id="GraphParameter6"/>
@@ -32,7 +25,7 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="UTF-8" enabled="enabled" guiHeight="69" guiName="HTTP connector" guiWidth="144" guiX="25" guiY="127" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR0" outFileUrl="${DATAOUT_DIR}/RDFTriples.xml" requestMethod="POST" type="HTTP_CONNECTOR">
+<Node charset="UTF-8" enabled="disabled" guiHeight="69" guiName="HTTP connector" guiWidth="144" guiX="25" guiY="127" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR0" outFileUrl="${DATAOUT_DIR}/RDFTriples.xml" requestMethod="POST" type="HTTP_CONNECTOR">
 <attr name="requestContent"><![CDATA[<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
      <soap:Body>
           <m:GetRDFTriples xmlns:m="http://www.schemaweb.info/webservices/methods/">
@@ -46,15 +39,9 @@
 <attr name="url"><![CDATA[http://www.weather.gov/forecasts/xml/SOAP_server/ndfdXMLclient.php?${httpParams}]]></attr>
 <attr name="guiDescription"><![CDATA[All request parameters are in the url string, used GET request method]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="25" guiY="127" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR4" outFileUrl="${DATAOUT_DIR}/RDFTriples.xml" requestMethod="POST" type="HTTP_CONNECTOR">
-<attr name="requestContent"><![CDATA[<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-     <soap:Body>
-          <m:GetRDFTriples xmlns:m="http://www.schemaweb.info/webservices/methods/">
-               <t:namespace xmlns:t="http://www.schemaweb.info/2003/types/">http://purl.org/vocab/bio/0.1/</t:namespace>
-          </m:GetRDFTriples>
-     </soap:Body>
-</soap:Envelope>]]></attr>
-<attr name="url"><![CDATA[http://www.schemaweb.info/webservices/soap/SchemaWebSoap.asmx]]></attr>
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="25" guiY="127" headerProperties="Content-Type=application/x-www-form-urlencoded&#10;" id="HTTP_CONNECTOR4" outFileUrl="${DATATMP_DIR}/CzechRepublic.xml" requestMethod="POST" type="HTTP_CONNECTOR">
+<attr name="requestContent"><![CDATA[CountryName=Czech Republic]]></attr>
+<attr name="url"><![CDATA[http://www.webservicex.com/globalweather.asmx/GetCitiesByCountry]]></attr>
 <attr name="guiDescription"><![CDATA[Server address set in url attribute , request body specified in separate attributte (requestContent), used POST request method]]></attr>
 </Node>
 </Phase>
@@ -70,9 +57,9 @@
 }
 ]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="26" guiY="250" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR5" inFileUrl="${DATAIN_DIR}/other/RDFTriples_request.xml" outFileUrl="${DATAOUT_DIR}/RDFTriples1.xml" requestMethod="POST" type="HTTP_CONNECTOR">
-<attr name="url"><![CDATA[http://www.schemaweb.info/webservices/soap/SchemaWebSoap.asmx]]></attr>
-<attr name="guiDescription"><![CDATA[As above, but request body is read from external file.]]></attr>
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="26" guiY="250" headerProperties="Content-Type=text/xml; charset\=utf-8&#10;SOAPAction=http\://www.webserviceX.NET/GetCitiesByCountry&#10;" id="HTTP_CONNECTOR5" inFileUrl="${DATAIN_DIR}/other/Country_request.xml" outFileUrl="${DATATMP_DIR}/Poland.xml" requestMethod="POST" type="HTTP_CONNECTOR">
+<attr name="url"><![CDATA[http://www.webservicex.com/globalweather.asmx]]></attr>
+<attr name="guiDescription"><![CDATA[Similar ss above, but request body is read from external file.]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/forecast.xml" guiHeight="101" guiName="ForecastInformation" guiWidth="176" guiX="349" guiY="11" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[<Context xpath="//data">
@@ -93,49 +80,103 @@
 <Edge debugMode="true" fromNode="XML_XPATH_READER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="EXT_HASH_JOIN0:1"/>
 </Phase>
 <Phase number="2">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/urls.txt" guiHeight="101" guiName="UniversalDataReader" guiWidth="181" guiX="29" guiY="390" id="DATA_READER0" type="DATA_READER">
-<attr name="guiDescription"><![CDATA[Reads input data for HttpConnector component]]></attr>
-</Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/subject.txt" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="821" guiY="377" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/object.txt" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="822" guiY="488" id="DATA_WRITER3" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="462" guiY="393" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR3" inputField="field" outputField="field" requestMethod="POST" type="HTTP_CONNECTOR">
-<attr name="url"><![CDATA[http://www.schemaweb.info/webservices/soap/SchemaWebSoap.asmx]]></attr>
+<Node charset="UTF-16" enabled="enabled" fileURL="${DATAOUT_DIR}/weatherCz$.xml" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="708" guiY="515" id="DATA_WRITER0" recordsPerFile="1" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="582" guiY="393" headerProperties="Content-Type=application/x-www-form-urlencoded&#10;" id="HTTP_CONNECTOR3" inputField="field" outputField="field" requestMethod="POST" type="HTTP_CONNECTOR">
+<attr name="url"><![CDATA[http://www.webservicex.com/globalweather.asmx/GetWeather]]></attr>
 <attr name="guiDescription"><![CDATA[Request body is read from input port. Response is sent to output port.]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="243" guiY="391" id="STRUCTURE_WRITER0" mask="&lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&#10;     &lt;soap:Body&gt;&#10;          &lt;m:GetRDFTriples xmlns:m=&quot;http://www.schemaweb.info/webservices/methods/&quot;&gt;&#10;               &lt;t:namespace xmlns:t=&quot;http://www.schemaweb.info/2003/types/&quot;&gt;$field&lt;/t:namespace&gt;&#10;          &lt;/m:GetRDFTriples&gt;&#10;     &lt;/soap:Body&gt;&#10;&lt;/soap:Envelope&gt;" recordsPerFile="1" type="STRUCTURE_WRITER">
+<Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="349" guiY="393" id="STRUCTURE_WRITER0" mask="CityName=$city&amp;CountryName=$state" recordsPerFile="1" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Formats input data to the requested format]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="823" guiY="601" id="TRASH0" type="TRASH"/>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="461" guiY="511" id="XML_EXTRACT0" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:discrete" type="XML_EXTRACT" useNestedNodes="true">
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="524" guiY="515" id="XML_EXTRACT0" sourceUri="port:$0.field:discrete" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="string" outPort="0"
+			xmlFields="."
+			cloverFields="field"/>
+</Mappings>
+]]></attr>
 <attr name="guiDescription"><![CDATA[Parses data received with upstream HttpConnector component]]></attr>
 </Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
-<Edge debugMode="true" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="10:0|784:503|441:503|-314:114" guiLocks="null|null|503" guiRouter="Manual" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT0:0"/>
-<Edge debugMode="true" fromNode="STRUCTURE_WRITER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR3:0"/>
-<Edge fromNode="XML_EXTRACT0:0" guiBendpoints="792:527|792:397" guiLocks="792|714|null" guiRouter="Manual" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
-<Edge fromNode="XML_EXTRACT0:1" guiBendpoints="802:543|802:508" guiLocks="802|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER3:0"/>
-<Edge fromNode="XML_EXTRACT0:2" guiBendpoints="117:0|117:62" guiLocks="null|null|null" guiRouter="Manual" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="TRASH0:0"/>
-</Phase>
-<Phase number="3">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/urls.txt" guiHeight="101" guiName="UniversalDataReader" guiWidth="181" guiX="17" guiY="697" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="25" guiY="393" id="XML_EXTRACT2" sourceUri="${DATATMP_DIR}/CzechRepublic.xml" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="string" outPort="0"
+			xmlFields="."
+			cloverFields="field"/>
+</Mappings>
+]]></attr>
 <attr name="guiDescription"><![CDATA[Reads input data for HttpConnector component]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/subject1.txt" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="823" guiY="698" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/object1.txt" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="823" guiY="810" id="DATA_WRITER4" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="450" guiY="697" headerProperties="Content-Type=text/xml; charset\=&quot;utf-8&quot;&#10;SOAPAction=&quot;http\://www.schemaweb.info/webservices/methods/GetRDFTriples&quot;&#10;" id="HTTP_CONNECTOR2" inputField="field" outputField="field" requestMethod="POST" responseAsFileName="true" responseDirectory="${DATATMP_DIR}" responseFilePrefix="triples" type="HTTP_CONNECTOR">
-<attr name="url"><![CDATA[http://www.schemaweb.info/webservices/soap/SchemaWebSoap.asmx]]></attr>
-<attr name="guiDescription"><![CDATA[Request body is read from input port. Responses are saved in files. Output field gets names of these files.]]></attr>
+<Node enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="200" guiY="393" id="XML_EXTRACT3" sourceUri="port:$0.field:discrete" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="NewDataSet">
+		<Mapping element="Table" outPort="0"
+				xmlFields="Country;City"
+				cloverFields="state;city"/>
+	</Mapping>
+</Mappings>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Very first file contains xml with xml with data. Now we parse the data itself.]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="231" guiY="697" id="STRUCTURE_WRITER1" mask="&lt;soap:Envelope xmlns:soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;&gt;&#10;     &lt;soap:Body&gt;&#10;          &lt;m:GetRDFTriples xmlns:m=&quot;http://www.schemaweb.info/webservices/methods/&quot;&gt;&#10;               &lt;t:namespace xmlns:t=&quot;http://www.schemaweb.info/2003/types/&quot;&gt;$field&lt;/t:namespace&gt;&#10;          &lt;/m:GetRDFTriples&gt;&#10;     &lt;/soap:Body&gt;&#10;&lt;/soap:Envelope&gt;" recordsPerFile="1" type="STRUCTURE_WRITER">
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR3:0" guiBendpoints="894:413|900:505|498:505|498:535" guiLocks="900|498|505" guiRouter="Manual" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT0:0"/>
+<Edge debugMode="true" fromNode="STRUCTURE_WRITER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR3:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="XML_EXTRACT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT3:0"/>
+<Edge fromNode="XML_EXTRACT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+</Phase>
+<Phase number="3">
+<Node charset="UTF-16" enabled="enabled" fileURL="${DATAOUT_DIR}/weatherPL$.xml" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="708" guiY="761" id="DATA_WRITER3" recordsPerFile="1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtFilter" guiWidth="128" guiX="524" guiY="761" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Filters valid data only]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$0.field ?= '<\?xml.*']]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="HTTP connector with dynamic request" guiWidth="302" guiX="582" guiY="636" headerProperties="Content-Type=application/x-www-form-urlencoded&#10;" id="HTTP_CONNECTOR6" inputField="field" outputField="field" requestMethod="POST" responseAsFileName="true" responseDirectory="${DATATMP_DIR}" responseFilePrefix="weather" type="HTTP_CONNECTOR">
+<attr name="url"><![CDATA[http://www.webservicex.com/globalweather.asmx/GetWeather]]></attr>
+<attr name="guiDescription"><![CDATA[Request body is read from input port. Responses are saved in files. Output field gets names of these files..]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="port:$0.field:discrete" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="349" guiY="636" id="STRUCTURE_WRITER2" mask="CityName=$city&amp;CountryName=$state" recordsPerFile="1" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Formats input data to the requested format]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="828" guiY="919" id="TRASH1" type="TRASH"/>
-<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="461" guiY="808" id="XML_EXTRACT1" mappingURL="${META_DIR}/triples_mapping.xml" sourceUri="port:$0.field:source" type="XML_EXTRACT" useNestedNodes="true"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="STRUCTURE_WRITER1:0"/>
-<Edge debugMode="true" fromNode="HTTP_CONNECTOR2:0" guiBendpoints="10:0|772:802|441:802|-302:107" guiLocks="null|null|802" guiRouter="Manual" id="Edge7" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT1:0"/>
-<Edge debugMode="true" fromNode="STRUCTURE_WRITER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR2:0"/>
-<Edge fromNode="XML_EXTRACT1:0" guiBendpoints="795:824|795:718" guiLocks="795|730|null" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
-<Edge fromNode="XML_EXTRACT1:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="DATA_WRITER4:0"/>
-<Edge fromNode="XML_EXTRACT1:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" router="Manhattan" toNode="TRASH1:0"/>
+<Node enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="200" guiY="636" id="XML_EXTRACT6" sourceUri="port:$0.field:discrete" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="NewDataSet">
+		<Mapping element="Table" outPort="0"
+				xmlFields="Country;City"
+				cloverFields="state;city"/>
+	</Mapping>
+</Mappings>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Very first file contains xml with xml with data. Now we parse the data itself.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="25" guiY="636" id="XML_EXTRACT7" sourceUri="${DATATMP_DIR}/Poland.xml" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="soap:Envelope">
+		<Mapping element="soap:Body">
+			<Mapping element="GetCitiesByCountryResponse">
+				<Mapping element="GetCitiesByCountryResult" outPort="0"
+					xmlFields="."
+					cloverFields="field"/>
+			</Mapping>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Reads input data for HttpConnector component]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" guiHeight="101" guiName="XMLExtract" guiWidth="128" guiX="349" guiY="761" id="XML_EXTRACT8" sourceUri="port:$0.field:source" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="string" outPort="0"
+			xmlFields="."
+			cloverFields="field"/>
+</Mappings>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Parses data received with upstream HttpConnector component]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR6:0" guiBendpoints="898:656|898:747|329:747|329:781" guiLocks="898|329|747" guiRouter="Manual" id="Edge19" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT8:0"/>
+<Edge debugMode="true" fromNode="STRUCTURE_WRITER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge20" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="HTTP_CONNECTOR6:0"/>
+<Edge fromNode="XML_EXTRACT6:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER2:0"/>
+<Edge fromNode="XML_EXTRACT7:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="XML_EXTRACT6:0"/>
+<Edge debugMode="true" fromNode="XML_EXTRACT8:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>

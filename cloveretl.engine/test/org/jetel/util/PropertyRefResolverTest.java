@@ -38,6 +38,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		properties.put("pwd", "${password}");
 		properties.put("ctl", "'${eval}'");
 		properties.put("eval", "`'do' + 'ne'`");
+		properties.put("recursion", "a${recursion}");
 
 		resolver = new PropertyRefResolver(properties);
 	}
@@ -62,6 +63,13 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("back quoted `CTL expression`", resolver.resolveRef("back quoted `'\\`CTL expression\\`'`"));
 		assertEquals("just back quotes (`)", resolver.resolveRef("just back quotes (\\`)"));
 		assertEquals("empty CTL expression", resolver.resolveRef("emp``ty CTL expression"));
+		
+		assertEquals("xxxyyyzzz", resolver.resolveRef("`'$' + '{' + 'pwd' + '}'`"));
+		assertEquals("'done'", resolver.resolveRef("`'$' + '{' + 'ctl' + '}'`"));
+	}
+	
+	public void testUnlimitedRecursion() {
+		assertTrue(resolver.resolveRef("${recursion}").matches("a*\\$\\{recursion\\}"));
 	}
 
 }

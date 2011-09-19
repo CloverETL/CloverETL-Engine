@@ -139,6 +139,8 @@ public class PartitionFunctionFactory {
 			}
 		}
 
+		partitionFunction.setNode(node);
+
 		return partitionFunction;
 	}
 	

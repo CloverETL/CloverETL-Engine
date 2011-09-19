@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" debugMode="true" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Fri Jun 17 13:39:11 CEST 2011" modifiedBy="avackova" name="ComplexTransformation" revision="1.77" showComponentDetails="true">
+<Graph author="avackova" created="Wed Nov 22 10:24:41 CET 2006" debugMode="true" description="This graph illustrates complex transformation. It reads data about orders made and&#10;combines them (joins) with data about which items were purchased. It then adds&#10;information about which company made particular order/bought particular item.&#10;It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.&#10;&#10;It also shows how to embed data transformation routine directly into transformation&#10;graph layou file (both joins have the transformations embedded - see below).&#10;&#10;Note: It is faster to reference record's fields by index as opposite to names - used&#10;in this example.&#10;" guiVersion="0.0.0.devel" id="1196411890471" licenseType="Evaluation Devel" modified="Wed Sep 14 12:52:47 CEST 2011" modifiedBy="avackova" name="ComplexTransformation" revision="1.77" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/incorrectRecords.fmt" id="Metadata4"/>
@@ -21,7 +21,7 @@ The same graph written in CTL2 is graphDBFJoinTLNew.grf.]]></attr>
 <attr name="guiDescription"><![CDATA[Records without a customer name are rejected and records with a customer name are accepted.]]></attr>
 <attr name="filterExpression"><![CDATA[$CUSTOMER!="N/A"]]></attr>
 </Node>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="101" guiName="Customers (Controlled)" guiWidth="199" guiX="384" guiY="214" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER">
+<Node charset="UTF-8" dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="101" guiName="Customers (Controlled)" guiWidth="199" guiX="384" guiY="214" id="IN_CUSTOMERS" quotedStrings="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Customers who made the orders]]></attr>
 </Node>
 <Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/ODETAILS.DBF" guiHeight="101" guiName="Orders Details" guiWidth="134" guiX="14" guiY="126" id="IN_DETAILS" type="DBF_DATA_READER">
@@ -81,10 +81,10 @@ function transform(){
 <attr name="guiDescription"><![CDATA[joinType is set to "Left outer join" as we want to join also the orders without a customer. But customers without an order will be ignored and will not be sent to the output. slaveDuplicates attribute is set to "false" as customers are unique in the flat file.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Incorrect Customers" guiWidth="176" guiX="668" guiY="248" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="101" guiName="Orders-Customers" guiWidth="161" guiX="1074" guiY="11" id="WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="101" guiName="Orders-N/ACustomers" guiWidth="188" guiX="1074" guiY="141" id="WRITER2" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBForders.out" guiHeight="101" guiName="Orders-Customers" guiWidth="161" guiX="1074" guiY="11" id="WRITER1" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/joinedDBFordersNA.out" guiHeight="101" guiName="Orders-N/ACustomers" guiWidth="188" guiX="1074" guiY="141" id="WRITER2" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="EXT_SORT_DETAILS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:1"/>
-<Edge debugMode="true" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="363:16|363:76" guiLocks="363|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="JOIN:0"/>
 <Edge debugMode="true" fromNode="FILTER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" router="Manhattan" toNode="WRITER1:0"/>
 <Edge debugMode="true" fromNode="FILTER:1" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (rejected)" router="Manhattan" toNode="WRITER2:0"/>
 <Edge debugMode="true" fromNode="IN_CUSTOMERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN_CUSTOMER:1"/>

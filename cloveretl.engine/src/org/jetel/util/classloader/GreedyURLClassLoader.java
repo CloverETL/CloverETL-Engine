@@ -26,10 +26,13 @@ import org.jetel.data.Defaults;
 import org.jetel.util.string.StringUtils;
 
 /**
- * Class-loader extended from URL classloader which loads classes (greedily) from specified
- * URLs at first. If unsuccesfull, it tries to load class using parent classloader.
+ * Class-loader extended from URL classloader which by default loads classes (greedily) from specified
+ * URLs at first. If unsuccessful, it tries to load class using parent classloader. Specified packages
+ * are excluded from greedy loading.
  * 
- * It can use common class-loading strategy (parent class-loader first) for some specified packages.
+ * On the other hand, class loader can behave like ordinary class loader and only the specified packages
+ * are loaded greedily.
+ * 
  * @author misho
  *
  */
@@ -40,33 +43,106 @@ public class GreedyURLClassLoader extends URLClassLoader {
 	 * Typically "java." "javax." "sun.misc." etc. */
 	public static String[] excludedPackages = StringUtils.split(Defaults.PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING);
 
+	protected String[] clExcludedPackages = null; 
+	
+	/**
+	 * Is this class loader greedy by default? 
+	 */
+	protected boolean greedy = true;
+	
+	/**
+	 * Greedy class loader is created.
+	 * @param urls the URLs from which to load classes and resources
+	 */
 	public GreedyURLClassLoader(URL[] urls) {
 		super(urls);
+        this.clExcludedPackages = GreedyURLClassLoader.excludedPackages;
 	}
 
+    /**
+     * Greedy class loader is created.
+     * @param urls the URLs from which to load classes and resources
+     * @param parent the parent class loader for delegation 
+     */
     public GreedyURLClassLoader(URL[] urls,ClassLoader parent) {
         super(urls,parent);
+        this.clExcludedPackages = GreedyURLClassLoader.excludedPackages;
     }
-    
-	public synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
+    /**
+     * Greedy class loader, where classes from specified packages are loaded by regular algorithm (parent-first pattern).
+     * @param urls the URLs from which to load classes and resources
+     * @param parent the parent class loader for delegation 
+     * @param excludedPackages package prefixes which are excluded from greedy loading
+     */
+    public GreedyURLClassLoader(URL[] urls,ClassLoader parent, String[] excludedPackages) {
+        super(urls,parent);
+        this.clExcludedPackages = excludedPackages;
+    }
+
+    /**
+     * Greedy/regular class loader, where classes from specified packages are loaded by regular/greedy algorithm.
+     * @param urls the URLs from which to load classes and resources
+     * @param parent the parent class loader for delegation 
+     * @param excludedPackages package prefixes which are excluded from greedy/regular loading
+     * @param greedy whther this class loader is greedy (or regular)
+     */
+    public GreedyURLClassLoader(URL[] urls,ClassLoader parent, String[] excludedPackages, boolean greedy) {
+        super(urls,parent);
+        this.clExcludedPackages = excludedPackages;
+        this.greedy = greedy;
+    }
+
+	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		boolean useGreedyAlgorithm = greedy;
+		
+		// for specified packages use inverse strategy - parents first
+		if (clExcludedPackages != null){
+			for (String pack : clExcludedPackages){
+				if (name.startsWith(pack)) {
+					useGreedyAlgorithm = !useGreedyAlgorithm;
+					break;
+				}
+			}
+		}
+	
+		if (useGreedyAlgorithm) {
+			Class c = loadClassGreedy(name, resolve);
+			return c;
+		} else {
+	        if (log.isTraceEnabled())
+	      	   log.trace(this+" P-F loading: "+ name);
+			Class c = super.loadClass(name, resolve);
+	        if (log.isTraceEnabled())
+	           log.trace(this+" P-F loaded:  "+ name+" by: "+getClassLoaderId(c.getClassLoader()));
+			return c;
+		}
+	}
+
+	protected synchronized Class<?> loadClassGreedy(String name, boolean resolve) throws ClassNotFoundException {
 		// First, check if the class has already been loaded
 		Class c = findLoadedClass(name);
 		if (c == null) {
-			// for specified packages use common strategy - parents first
-			if (excludedPackages != null){
-				for (String pack : excludedPackages){
-					if (name.startsWith(pack))
-						return super.loadClass(name, resolve);
-				}// for
-			}
 		    try {
 				// try to load the class by ourselves
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loading: "+ name);
 		        c = findClass(name);
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    } catch (ClassNotFoundException e) {
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loading: "+ name + " by: "+getClassLoaderId(getParent()));
 		    	c = getParent().loadClass(name);
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    } catch (SecurityException se) { // intended to catch java.lang.SecurityException: sealing violation: package oracle.jdbc.driver is sealed at java.net.URLClassLoader.defineClass (URLClassLoader.java:227)
 		    	log.warn("GreedyURLClassLoader: cannot load "+name+" due to "+"SecurityException:"+se.getMessage()+" loading from parent class-loader:"+this.getParent());
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loading: "+ name + " by parent: "+getClassLoaderId(getParent()));
 		    	c = getParent().loadClass(name);
+		        if (log.isTraceEnabled())
+			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    }
 		}
 		if (resolve) {
@@ -74,7 +150,22 @@ public class GreedyURLClassLoader extends URLClassLoader {
 		}
 		return c;
 	}
-	
+
+	/**
+	 * Returns some readable ID of specified class-loader usable for logging messages.
+	 * @param parent
+	 * @return
+	 */
+	protected String getClassLoaderId(ClassLoader cl) {
+		if (cl == null) {
+			return "null";
+		} else if (cl instanceof GreedyURLClassLoader) {
+			return cl.toString();
+		} else {
+			return cl.getClass().toString()+"#"+cl.hashCode();
+		}
+	}
+
 	public synchronized void addURL(URL urlToAdd) {
 		super.addURL(urlToAdd);
 	}

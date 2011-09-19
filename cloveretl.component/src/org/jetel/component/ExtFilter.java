@@ -159,6 +159,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 		
 	}
 
+	public ExtFilter(String id, String filterExpression){
+		super(id);
+		this.filterExpression = filterExpression;
+	}
+
 	@Override
 	public Result execute() throws Exception {
 		InputPortDirect inPort=getInputPortDirect(READ_FROM_PORT);

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 
 /**
  * Plugin class loader is descendant of URLClassLoader and is used for particular plugins.
@@ -38,7 +39,7 @@ import org.apache.log4j.Logger;
  * @author Martin Zatopek
  *
  */
-public class PluginClassLoader extends URLClassLoader {
+public class PluginClassLoader extends GreedyURLClassLoader {
 	static final Logger log = Logger.getLogger(PluginClassLoader.class);
 
     private PluginDescriptor pluginDescriptor;
@@ -46,14 +47,23 @@ public class PluginClassLoader extends URLClassLoader {
     
     /**
      * Constructor.
-     * @param parent
-     * @param pluginDescriptor
+     * @param parent parent class loader
+     * @param pluginDescriptor reference to a plugin tided with this class loader
+     * @param greedy whether this class loader behaves greedy or not
+     * @param excludedPackages package prefixes of classes which are excluded from given loading algorithm (greedy/regular)
      */
-    public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor) {
-        super(pluginDescriptor.getLibraryURLs(), parent);
-        if (log.isDebugEnabled())
-        	log.debug("create PluginClassLoader:"+Arrays.asList(pluginDescriptor.getLibraryURLs()));
+    public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor, boolean greedy, String[] excludedPackages) {
+        super(pluginDescriptor.getLibraryURLs(), parent, excludedPackages, greedy);
         this.pluginDescriptor = pluginDescriptor;
+        if (log.isTraceEnabled()) {
+        	log.trace("Init "+this+" parent:"+parent+" greedy:"+greedy);
+        	if (pluginDescriptor.getLibraryURLs() != null){
+        		log.trace("Init "+this+" libraries:"+Arrays.asList(pluginDescriptor.getLibraryURLs()));
+        	}
+        	if (excludedPackages != null){
+        		log.trace("Init "+this+" excludedPackages:"+Arrays.asList(excludedPackages) );
+        	}
+        }
         collectImports();
     }
 
@@ -74,6 +84,8 @@ public class PluginClassLoader extends URLClassLoader {
         }
         
         this.importPlugins = importPlugins.toArray(new PluginDescriptor[importPlugins.size()]);
+        if (log.isTraceEnabled())
+        	log.trace(this+" importPlugins:"+importPlugins );
     }
 
     @Override
@@ -109,7 +121,12 @@ public class PluginClassLoader extends URLClassLoader {
                continue;
            }
            try {
-               return ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
+               if (log.isTraceEnabled())
+            	   log.trace(this+" trying to find:"+ name + " in "+getClassLoaderId(importPlugins[i].getClassLoader()));
+               Class<?> cl = ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
+               if (log.isTraceEnabled() && cl != null)
+            	   log.trace(this+" class:"+ name + " found by "+getClassLoaderId(cl.getClassLoader()));
+               return cl;
            } catch(ClassNotFoundException e) {
                //continue;
            }
@@ -143,5 +160,9 @@ public class PluginClassLoader extends URLClassLoader {
         }
         
         return retURLs.toArray(new URL[retURLs.size()]);
+    }
+    
+    public String toString(){
+    	return "PluginClassLoader:"+this.getPluginDescriptor().getId();
     }
 }
