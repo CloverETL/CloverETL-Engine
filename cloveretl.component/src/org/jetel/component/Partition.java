@@ -34,10 +34,10 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -350,6 +350,7 @@ public class Partition extends Node {
 		//create partition function if still is not created
 		if (partitionFce != null) {
 			partitionClass = partitionFce.getClass().getName();
+			partitionFce.setNode(this);
 		} else {
 			PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
 			partitionFceFactory.setNode(this);
@@ -365,7 +366,6 @@ public class Partition extends Node {
 		}
 		
 		partitionFce.init(outPorts.size(),partitionKey);
-		partitionFce.setNode(this);
 	}
 
 
@@ -527,7 +527,7 @@ public class Partition extends Node {
 					partitionFceFactory.setLocale(locale);
 					partitionFceFactory.setUseI18N(useI18N);
 					partitionFceFactory.setLogger(logger);
-					partitionFce = partitionFceFactory.createPartitionDynamic(checkTransform);
+					partitionFceFactory.createPartitionDynamic(checkTransform);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = partitionSource != null ? XML_PARTIONSOURCE_ATTRIBUTE : XML_PARTITIONURL_ATTRIBUTE;

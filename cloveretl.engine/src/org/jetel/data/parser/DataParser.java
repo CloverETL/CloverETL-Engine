@@ -481,7 +481,7 @@ public class DataParser extends AbstractTextParser {
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
 					//check record delimiter presence for last field
-					if(hasRecordDelimiter && fieldCounter + 1 == numFields) {
+					if(hasRecordDelimiter && fieldCounter + 1 == numFields && character != -1) {
 						int followRecord = followRecordDelimiter(); 
 						if(followRecord>0) { //record delimiter is not found
 							return parsingErrorFound("Too many characters found", record, fieldCounter);

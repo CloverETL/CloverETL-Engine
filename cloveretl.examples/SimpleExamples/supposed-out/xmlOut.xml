@@ -15,8 +15,8 @@
     <CUSTOMERID>ANATR</CUSTOMERID>
     <Representative>Ana Trujillo</Representative>
     <JobTitle>Owner</JobTitle>
-    <Address>Avda. de la Constituciï¿½ 2222</Address>
-    <City>Mï¿½ico D.F.</City>
+    <Address>Avda. de la Constitución 2222</Address>
+    <City>México D.F.</City>
     <PostCode>05021</PostCode>
     <Country>Mexico</Country>
     <Phone>(5) 555-4729</Phone>
@@ -27,7 +27,7 @@
     <Representative>Antonio Moreno</Representative>
     <JobTitle>Owner</JobTitle>
     <Address>Mataderos  2312</Address>
-    <City>Mï¿½ico D.F.</City>
+    <City>México D.F.</City>
     <PostCode>05023</PostCode>
     <Country>Mexico</Country>
     <Phone>(5) 555-3932</Phone>
@@ -36,8 +36,8 @@
     <CUSTOMERID>AROUT</CUSTOMERID>
     <Representative>Thomas Hardy</Representative>
     <JobTitle>Sales Representative</JobTitle>
-    <Address>120 Hanover Sq.</Address>
-    <City>London</City>
+    <Address>Brook Farm, Stratford St. Mary</Address>
+    <City>Colchester</City>
     <PostCode>WA1 1DP</PostCode>
     <Country>UK</Country>
     <Phone>(171) 555-7788</Phone>
@@ -47,7 +47,7 @@
     <CUSTOMERID>BERGS</CUSTOMERID>
     <Representative>Christina Berglund</Representative>
     <JobTitle>Order Administrator</JobTitle>
-    <Address>Berguvsvï¿½en  8</Address>
+    <Address>Berguvsvägen  8</Address>
     <City>Lulea</City>
     <PostCode>S-958 22</PostCode>
     <Country>Sweden</Country>
@@ -125,9 +125,9 @@
   </customer>
   <customer CUSTOMERID="BLONP">
     <CUSTOMERID>BLONP</CUSTOMERID>
-    <Representative>Frï¿½ï¿½ique Citeaux</Representative>
+    <Representative>Frédérique Citeaux</Representative>
     <JobTitle>Marketing Manager</JobTitle>
-    <Address>24, place Klï¿½er</Address>
+    <Address>24, place Kléber</Address>
     <City>Strasbourg</City>
     <PostCode>67000</PostCode>
     <Country>France</Country>
@@ -250,7 +250,7 @@
     <Representative>Francisco Chang</Representative>
     <JobTitle>Marketing Manager</JobTitle>
     <Address>Sierras de Granada 9993</Address>
-    <City>Mï¿½ico D.F.</City>
+    <City>México D.F.</City>
     <PostCode>05022</PostCode>
     <Country>Mexico</Country>
     <Phone>(5) 555-3392</Phone>
@@ -289,7 +289,7 @@
     <CUSTOMERID>COMMI</CUSTOMERID>
     <Representative>Pedro Afonso</Representative>
     <JobTitle>Sales Associate</JobTitle>
-    <Address>Av. dos Lusï¿½das, 23</Address>
+    <Address>Av. dos Lusíadas, 23</Address>
     <City>Sao Paulo</City>
     <PostCode>05432-043</PostCode>
     <Country>Brazil</Country>
@@ -329,7 +329,7 @@
     <CUSTOMERID>CONSH</CUSTOMERID>
     <Representative>Elizabeth Brown</Representative>
     <JobTitle>Sales Representative</JobTitle>
-    <Address>Berkeley Gardens 12  Brewery </Address>
+    <Address>Berkeley Gardens 12  Brewery</Address>
     <City>London</City>
     <PostCode>WX1 6LT</PostCode>
     <Country>UK</Country>
@@ -441,7 +441,7 @@
     <CUSTOMERID>FAMIA</CUSTOMERID>
     <Representative>Aria Cruz</Representative>
     <JobTitle>Marketing Assistant</JobTitle>
-    <Address>Rua Orï¿½, 92</Address>
+    <Address>Rua Orós, 92</Address>
     <City>Sao Paulo</City>
     <PostCode>05442-030</PostCode>
     <Country>Brazil</Country>
@@ -463,7 +463,7 @@
     <Representative>Maria Larsson</Representative>
     <JobTitle>Owner</JobTitle>
     <Address>Akergatan 24</Address>
-    <City>Brï¿½ke</City>
+    <City>Bräcke</City>
     <PostCode>S-844 67</PostCode>
     <Country>Sweden</Country>
     <Phone>0695-34 67 21</Phone>
@@ -512,7 +512,7 @@
     <Representative>Henriette Pfalzheim</Representative>
     <JobTitle>Owner</JobTitle>
     <Address>Mehrheimerstr. 369</Address>
-    <City>Kï¿½n</City>
+    <City>Köln</City>
     <PostCode>50739</PostCode>
     <Country>Germany</Country>
     <Phone>0221-0644327</Phone>
@@ -547,23 +547,12 @@
       </employee>
     </order>
   </customer>
-  <customer CUSTOMERID="PARIS">
-    <CUSTOMERID>PARIS</CUSTOMERID>
-    <Representative>Marie Bertrand</Representative>
-    <JobTitle>Owner</JobTitle>
-    <Address>265, boulevard Charonne</Address>
-    <City>Paris</City>
-    <PostCode>75012</PostCode>
-    <Country>France</Country>
-    <Phone>(1) 42.34.22.66</Phone>
-    <Fax>(1) 42.34.22.77</Fax>
-  </customer>
   <customer CUSTOMERID="PERIC">
     <CUSTOMERID>PERIC</CUSTOMERID>
     <Representative>Guillermo Fernï¿½dez</Representative>
     <JobTitle>Sales Representative</JobTitle>
     <Address>Calle Dr. Jorge Cash 321</Address>
-    <City>Mï¿½ico D.F.</City>
+    <City>México D.F.</City>
     <PostCode>05033</PostCode>
     <Country>Mexico</Country>
     <Phone>(5) 552-3745</Phone>
@@ -584,7 +573,7 @@
     <CUSTOMERID>PRINI</CUSTOMERID>
     <Representative>Isabel de Castro</Representative>
     <JobTitle>Sales Representative</JobTitle>
-    <Address>Estrada da sade n. 58</Address>
+    <Address>Estrada da saúde n. 58</Address>
     <City>Lisboa</City>
     <PostCode>1756</PostCode>
     <Country>Portugal</Country>
@@ -674,7 +663,7 @@
     <CUSTOMERID>QUICK</CUSTOMERID>
     <Representative>Horst Kloss</Representative>
     <JobTitle>Accounting Manager</JobTitle>
-    <Address>Taucherstraï¿½ 10</Address>
+    <Address>Taucherstraße 10</Address>
     <City>Cunewalde</City>
     <PostCode>01307</PostCode>
     <Country>Germany</Country>
@@ -962,8 +951,8 @@
     <CUSTOMERID>RICSU</CUSTOMERID>
     <Representative>Michael Holz</Representative>
     <JobTitle>Sales Manager</JobTitle>
-    <Address>Grenzacherweg 237</Address>
-    <City>Geneve</City>
+    <Address>Starenweg 5</Address>
+    <City>Gencve</City>
     <PostCode>1203</PostCode>
     <Country>Switzerland</Country>
     <Phone>0897-034214</Phone>
@@ -1001,7 +990,7 @@
     <CUSTOMERID>ROMEY</CUSTOMERID>
     <Representative>Alejandra Camino</Representative>
     <JobTitle>Accounting Manager</JobTitle>
-    <Address>Gran Vï¿½, 1</Address>
+    <Address>Gran Vía, 1</Address>
     <City>Madrid</City>
     <PostCode>28001</PostCode>
     <Country>Spain</Country>
@@ -1205,7 +1194,8 @@
     <CUSTOMERID>THEBI</CUSTOMERID>
     <Representative>Liz Nixon</Representative>
     <JobTitle>Marketing Manager</JobTitle>
-    <Address>89 Jefferson Way Suite 2</Address>
+    <Address>89 Jefferson Way
+Suite 2</Address>
     <City>Portland</City>
     <PostCode>97201</PostCode>
     <Country>USA</Country>
@@ -1227,7 +1217,7 @@
     <Representative>Karin Josephs</Representative>
     <JobTitle>Marketing Manager</JobTitle>
     <Address>Luisenstr. 48</Address>
-    <City>Mnster</City>
+    <City>Münster</City>
     <PostCode>44087</PostCode>
     <Country>Germany</Country>
     <Phone>0251-031259</Phone>
@@ -1267,7 +1257,7 @@
     <Representative>Miguel Angel Paolino</Representative>
     <JobTitle>Owner</JobTitle>
     <Address>Avda. Azteca 123</Address>
-    <City>Mï¿½ico D.F.</City>
+    <City>México D.F.</City>
     <PostCode>05033</PostCode>
     <Country>Mexico</Country>
     <Phone>(5) 555-2933</Phone>
@@ -1640,7 +1630,7 @@
     <CUSTOMERID>WHITC</CUSTOMERID>
     <Representative>Karl Jablonski</Representative>
     <JobTitle>Owner</JobTitle>
-    <Address>305 - 14th Ave. S. Suite 3B</Address>
+    <Address>1029 - 12th Ave. S.</Address>
     <City>Seattle</City>
     <PostCode>98128</PostCode>
     <Country>USA</Country>

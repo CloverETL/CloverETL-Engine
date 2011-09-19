@@ -43,6 +43,10 @@ public class PluginDescriptionBuilder {
 
     private static final String CLASS_ATTR = "class";
 
+    private static final String GREEDY_CLASS_LOADER = "greedyClassLoader";
+
+    private static final String EXCLUDED_PACKAGES = "excludedPackages";
+
     private static final String RUNTIME_ELEMENT = "runtime";
     
     private static final String LIBRARY_ELEMENT = "library";
@@ -98,12 +102,22 @@ public class PluginDescriptionBuilder {
         plugin.setVersion(pluginElement.getAttribute(VERSION_ATTR));
         
         //provider-name attribute
-        if(!pluginElement.hasAttribute(PROVIDER_NAME)) {
+        if(pluginElement.hasAttribute(PROVIDER_NAME)) {
             plugin.setProviderName(pluginElement.getAttribute(PROVIDER_NAME));
         }
 
         //class attribute
         plugin.setPluginClassName(pluginElement.getAttribute(CLASS_ATTR));
+        
+        //greedy class loader
+        if (pluginElement.hasAttribute(GREEDY_CLASS_LOADER)) {
+        	plugin.setGreedyClassLoader(Boolean.parseBoolean(pluginElement.getAttribute(GREEDY_CLASS_LOADER)));
+        }
+        
+        //excluded packages
+        if (pluginElement.hasAttribute(EXCLUDED_PACKAGES)) {
+        	plugin.setExcludedPackages(StringUtils.split(pluginElement.getAttribute(EXCLUDED_PACKAGES)));
+        }
         
         //requires element
         NodeList nodes = pluginElement.getElementsByTagName(REQUIRES_ELEMENT);

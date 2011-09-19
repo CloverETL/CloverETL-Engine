@@ -70,6 +70,20 @@ public class PluginDescriptor {
     private String pluginClassName;
     
     /**
+     * Whether greedy classloader should be used for this plugin.
+     * 'Greedy' means, that class loading does not follow standard parent-first strategy,
+     * it uses self-first strategy instead. 
+     * (current classloader is preferred for class name resolution).
+     */
+    private boolean greedyClassLoader = false;
+    
+    /**
+	 * List of package prefixes which are excluded from greedy/regular class loading. i.e. "java." "javax." "sun.misc." etc.
+	 * Prevents GreedyClassLoader from loading standard java interfaces and classes from third-party libs.
+     */
+    private String[] excludedPackages; 
+
+    /**
      * List of all requires plugins.
      */
     private List<PluginPrerequisite> prerequisites;
@@ -179,6 +193,22 @@ public class PluginDescriptor {
         this.providerName = providerName;
     }
 
+    public boolean isGreedyClassLoader() {
+    	return greedyClassLoader;
+    }
+
+    public void setGreedyClassLoader(boolean greedyClassLoader) {
+    	this.greedyClassLoader = greedyClassLoader;
+    }
+    
+    public String[] getExcludedPackages() {
+    	return excludedPackages;
+    }
+
+    public void setExcludedPackages(String[] excludedPackages) {
+    	this.excludedPackages = excludedPackages;
+    }
+
     public String getPluginClassName() {
         return pluginClassName;
     }
@@ -209,12 +239,12 @@ public class PluginDescriptor {
 //            logger.warn("PluginDescription.getClassLoader(): Plugin " + getId() + " is not already active.");
 //            return null;
         }
-        if(classLoader == null) {
+        if (classLoader == null) {
         	ClassLoader realParentCL = parentClassLader != null ? parentClassLader : PluginDescriptor.class.getClassLoader();
         	if (Plugins.isSimpleClassLoading()) {
         		classLoader = realParentCL;
         	} else {
-        		classLoader = new PluginClassLoader(realParentCL, this);
+        		classLoader = new PluginClassLoader(realParentCL, this, greedyClassLoader, excludedPackages);
         	}
         }
         return classLoader;

@@ -1,7 +1,0 @@
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-     <soap:Body>
-          <m:GetRDFTriples xmlns:m="http://www.schemaweb.info/webservices/methods/">
-               <t:namespace xmlns:t="http://www.schemaweb.info/2003/types/">http://purl.org/vocab/bio/0.1/</t:namespace>
-          </m:GetRDFTriples>
-     </soap:Body>
-</soap:Envelope>
