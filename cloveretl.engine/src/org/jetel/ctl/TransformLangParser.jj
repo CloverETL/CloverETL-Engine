@@ -651,17 +651,15 @@ TOKEN :
  */
 TOKEN : 
 {
-	< FIELD_ACCESS_OPERATOR : "$" > :  WithinFieldIdentifier 
+	< FIELD_ACCESS_OPERATOR : "$" ( "in." | "out." )? > :  WithinFieldIdentifier 
 }
 
 // See above. When numeric identifier of field is parsed jump back to DEFAULT lexical state
 <WithinFieldIdentifier> 
 TOKEN :
 {
-  <FIELD_IDENTIFIER : ( <PORT_TYPE> )? ( <NUMERIC_ID> | <STRING_ID> ) ( "." ( <NUMERIC_ID> | <STRING_ID> | "*") )? > : DEFAULT
+  <FIELD_IDENTIFIER : ( <NUMERIC_ID> | <STRING_ID> ) ( "." ( <NUMERIC_ID> | <STRING_ID> | "*") )? > : DEFAULT
 |  
-  < #PORT_TYPE: ("in" | "out") "." >
-|
   < #NUMERIC_ID : ( [ "1"-"9" ] )? ( [ "0" - "9" ] )+ >
 |
   < #STRING_ID : <IDENTIFIER> >
@@ -2600,8 +2598,9 @@ void RecordOrFieldIdentifier()                       :
 {/*@bgen(jjtree) FieldAccessExpression */
          try {
 /*@egen*/
-	 "$"
+	 <FIELD_ACCESS_OPERATOR>
 	 {
+		String fieldAccessOperatorImage = token.image;
 	 	jjtn000.begin(token.beginLine,token.beginColumn);
 	 }
 	  <FIELD_IDENTIFIER>/*@bgen(jjtree)*/
@@ -2618,14 +2617,14 @@ void RecordOrFieldIdentifier()                       :
 	 	
 	 	int dotPos;
 
-		String tokenImage = token.image;
 		String discriminator = null;
-	 	if (tokenImage.startsWith("in.")) {
+	 	if (fieldAccessOperatorImage.equals("$in.")) {
 	 	  discriminator = "in";
-	 	  tokenImage = tokenImage.substring(3);		} else if (tokenImage.startsWith("out.")) {
+		} else if (fieldAccessOperatorImage.equals("$out.")) {
 	 	  discriminator = "out";
-		  tokenImage = tokenImage.substring(4);		}	 	jjtn000.setDiscriminator(discriminator);
+		}	 	jjtn000.setDiscriminator(discriminator);
 	 	  
+		String tokenImage = token.image;
 	 	if ((dotPos = tokenImage.indexOf('.') ) > 0 ) {
 	 		String recId = tokenImage.substring(0,dotPos);
 	 		try {
