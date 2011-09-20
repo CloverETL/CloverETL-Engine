@@ -77,8 +77,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	protected TreeMap<Integer, OutputPort> outPorts;
 	protected TreeMap<Integer, InputPort> inPorts;
 
-	protected OutputPort logPort;
-
 	protected volatile boolean runIt = true;
 
 	protected volatile Result runResult;
@@ -112,8 +110,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public final static char OUTPUT_PORT = 'O';
 	/**  Description of the Field */
 	public final static char INPUT_PORT = 'I';
-	/**  Description of the Field */
-	public final static char LOG_PORT = 'L';
 
 	/**
 	 * XML attributes of every cloverETL component
@@ -143,7 +139,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		super(id,graph);
 		outPorts = new TreeMap<Integer, OutputPort>();
 		inPorts = new TreeMap<Integer, InputPort>();
-		logPort = null;
         phase = null;
         runResult=Result.N_A; // result is not known yet
         childThreads = new ArrayList<Thread>();
@@ -314,13 +309,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					break;
 				case INPUT_PORT:
 					count = ((InputPort) inPorts.get(port)).getInputRecordCounter();
-					break;
-				case LOG_PORT:
-					if (logPort != null) {
-						count = logPort.getOutputRecordCounter();
-					} else {
-						count = -1;
-					}
 					break;
 				default:
 					count = -1;
@@ -752,17 +740,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     }
 
 	/**
-	 *  Adds a feature to the LogPort attribute of the Node object
-	 *
-	 *@param  port  The feature to be added to the LogPort attribute
-	 *@since        April 4, 2002
-	 */
-	public void addLogPort(OutputPort port) {
-		logPort = port;
-		port.connectWriter(this, -1);
-	}
-
-	/**
 	 *  An operation that does removes/unregisteres por<br>
 	 *  Not yet implemented.
 	 *
@@ -805,18 +782,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 */
 	public DataRecord readRecord(int _portNum, DataRecord record) throws IOException, InterruptedException {
 		return	((InputPort) inPorts.get(Integer.valueOf(_portNum))).readRecord(record);
-	}
-
-	/**
-	 *  An operation that writes record to Log port
-	 *
-	 *@param  record                    Description of Parameter
-	 *@exception  IOException           Description of Exception
-	 *@exception  InterruptedException  Description of Exception
-	 *@since                            April 2, 2002
-	 */
-	public void writeLogRecord(DataRecord record) throws IOException, InterruptedException {
-			logPort.writeRecord(record);
 	}
 
 	/**
