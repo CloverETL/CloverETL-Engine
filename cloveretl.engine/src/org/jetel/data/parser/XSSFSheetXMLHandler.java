@@ -16,6 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+package org.jetel.data.parser;
 
 /* ====================================================================
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -33,7 +34,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==================================================================== */
-package org.jetel.data.parser;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
