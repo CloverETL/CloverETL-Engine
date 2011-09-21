@@ -576,9 +576,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(varName + "[2]", compareResult.get(2) < 0);
 		assertEquals(varName + "[3]", Integer.valueOf(0), compareResult.get(3));
 	}
-
-	public void test_dynamic_get_set_loop() {
-		doCompile("test_dynamic_get_set_loop");
+	
+	private void test_dynamic_get_set_loop(String testIdentifier) {
+		doCompile(testIdentifier);
 		
 		check("recordLength", 9);
 		
@@ -603,6 +603,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stringVar", "hello");
 		check("dateVar", new Date(5000));
 		
+	}
+
+	public void test_dynamic_get_set_loop() {
+		test_dynamic_get_set_loop("test_dynamic_get_set_loop");
+	}
+
+	public void test_dynamic_get_set_loop_alternative() {
+		test_dynamic_get_set_loop("test_dynamic_get_set_loop_alternative");
 	}
 
 	public void test_dynamic_invalid() {
