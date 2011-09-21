@@ -647,15 +647,76 @@ TOKEN :
  */
 TOKEN : 
 {
-	< FIELD_ACCESS_OPERATOR : "$" ( "in." | "out." )? > :  WithinFieldIdentifier 
+	< FIELD_ACCESS_OPERATOR : "$" | "$in." | "$out." > :  WithinFieldIdentifier 
 }
 
-// See above. When numeric identifier of field is parsed jump back to DEFAULT lexical state
 <WithinFieldIdentifier> 
 TOKEN :
 {
-  <FIELD_IDENTIFIER : ( <NUMERIC_ID> | <STRING_ID> ) ( "." ( <NUMERIC_ID> | <STRING_ID> | "*") )? > : DEFAULT
-|  
+  <RECORD_ACCESS_FIRST_PART :  ( <NUMERIC_ID> | <STRING_ID> ) >
+  // after this token, decide whether to switch to DEFAULT state or to ExpectingFieldIdentifier
+  // the decision is made using a custom lookahead
+  // we need to distinguish between function call and string field identifiers
+  // - function call is followed by a left parenthesis
+  {
+		boolean fieldIdentifier = false; // is the following token a field identifier?
+		int count = 0; // the number of characters to rollback
+		try  {
+		    char c = input_stream.readChar(); // read the first character
+			count++;
+		    if (c == '.') { // field identifier may only come after '.'
+				c = input_stream.readChar(); // read the second character
+				count++;
+			    if (c == '_' || Character.isLetter(c)) { // string identifier
+				    do { // read letters, digits and underscores
+						c = input_stream.readChar();
+						count++;
+				    } while(c == '_' || Character.isLetterOrDigit(c));
+				    while (c == ' ' || c == '\t' || c == '\r' || c == '\n') { // skip whitespace after the identifier
+						c = input_stream.readChar();
+						count++;
+				    }
+				    if (c != '(') { // the identifier is actually a function name
+				    	fieldIdentifier = true;
+				    } else {
+//				    	System.out.print("\nFunction call");
+				    }
+			    } else if (Character.isDigit(c)) { // numeric identifier
+					// if the first character is a number, assume it is a numeric field identifier
+					// TODO if there are more digits, make sure the first one is [1-9]
+			    	fieldIdentifier = true;				} else if (c == '*') { // asterisk
+					// also expect <RECORD_ACCESS_SECOND_PART> if there is an asterisk			    	fieldIdentifier = true;
+				}
+		    }
+		} catch (Exception ex) {
+			// end of file
+		} finally {
+		    try {
+//				System.out.println();
+				input_stream.backup(count); // rollback to the original position
+		    } catch(Exception ex) {
+		    	throw new RuntimeException("Error restoring previous input stream position", ex);
+		    }
+		}
+		
+		if (fieldIdentifier) {
+//			System.out.println("Expecting a field identifier");
+			// manually switch state to <ExpectingFieldIdentifier>
+			SwitchTo(TransformLangParserConstants.ExpectingFieldIdentifier);
+		} else {
+//			System.out.println("Not expecting a field identifier");
+			// manually switch state to <DEFAULT>
+			SwitchTo(TransformLangParserConstants.DEFAULT);
+		}
+	    
+   }
+}
+
+// See above. When identifier of field is parsed jump back to DEFAULT lexical state
+<ExpectingFieldIdentifier> 
+TOKEN :
+{
+  <RECORD_ACCESS_SECOND_PART : "." ( <NUMERIC_ID> | <STRING_ID> | "*") > : DEFAULT| 
   < #NUMERIC_ID : ( [ "1"-"9" ] )? ( [ "0" - "9" ] )+ >
 |
   < #STRING_ID : <IDENTIFIER> >
@@ -1284,7 +1345,7 @@ void PrimaryExpression() #void:
 {
 	(
 	 ( 
-	 	LOOKAHEAD(2) // disambiguate between identifier and function call 
+	 	LOOKAHEAD(7) // disambiguate between identifier and function call 
 	 	( GeneralFunctionCall() )
 		|
 		( Identifier() )
@@ -1441,49 +1502,60 @@ void BuiltInFunctionCall() #void:
 void RecordOrFieldIdentifier() #FieldAccessExpression: 
 {}
 {
-	 <FIELD_ACCESS_OPERATOR>
-	 {
-		String fieldAccessOperatorImage = token.image;
+	<FIELD_ACCESS_OPERATOR>
+	{
+		// first read the field access operator
+		// can be "$", "$in." or "$out."
 	 	jjtThis.begin(token.beginLine,token.beginColumn);
-	 }
-	  <FIELD_IDENTIFIER>
-	 {
-	 	jjtThis.end(token.endLine,token.endColumn);
-	 	
+
+		String fieldAccessImage = token.image;
+		String discriminator = null;
+	 	if (fieldAccessImage.equals("$in.")) {
+	 	  discriminator = "in"; // an input port is required
+		} else if (fieldAccessImage.equals("$out.")) {
+	 	  discriminator = "out"; // an output port is required
+		}
+		// store the information from the field access operator
+	 	jjtThis.setDiscriminator(discriminator);
+	}
+	<RECORD_ACCESS_FIRST_PART>
+	{
+		// the first part may denote a record ID or a field ID (old syntax) 
+		String firstPartImage = token.image;
+	    String secondPartImage = null;
+	}
+	// 
+	(
+	  <RECORD_ACCESS_SECOND_PART>
+	  {
+	    // optionally, there may be the second part of the field access expression
+	    secondPartImage = token.image.substring(1); // remove the '.' from the beginning
+	  }
+	)?
+	{
+	 	jjtThis.end(token.endLine,token.endColumn);	
 	 	// let's presume this is not a wildcard access
 	 	jjtThis.setWildcard(false);
 	 	
-	 	int dotPos;
-
-		String discriminator = null;
-	 	if (fieldAccessOperatorImage.equals("$in.")) {
-	 	  discriminator = "in";
-		} else if (fieldAccessOperatorImage.equals("$out.")) {
-	 	  discriminator = "out";
-		}	 	jjtThis.setDiscriminator(discriminator);
-	 	  
-		String tokenImage = token.image;
-	 	if ((dotPos = tokenImage.indexOf('.') ) > 0 ) {
-	 		String recId = tokenImage.substring(0,dotPos);
+	 	if (secondPartImage != null) {
 	 		try {
-	 			Integer recNum = Integer.parseInt(recId);
+	 			Integer recNum = Integer.parseInt(firstPartImage);
 	 			// set directly the position access 
 	 			jjtThis.setRecordId(recNum);
 	 		} catch (NumberFormatException e) {
-	 			jjtThis.setRecordName(recId);
+	 			jjtThis.setRecordName(firstPartImage);
 	 		}
 	 		
-	 		String fieldId = tokenImage.substring(dotPos+1);
-			if (fieldId.equals("*")) {
+			if (secondPartImage.equals("*")) {
 				jjtThis.setWildcard(true);
 			} else {
 		 		try {
-		 			Integer fieldNum = Integer.parseInt(fieldId);
+		 			Integer fieldNum = Integer.parseInt(secondPartImage);
 		 			// set directly the position access
 		 			jjtThis.setFieldId(fieldNum);
 		 		} catch (NumberFormatException e) {
 		 			// set the field name
-		 			jjtThis.setFieldName(fieldId);
+		 			jjtThis.setFieldName(secondPartImage);
 		 		}
 			}
 			
@@ -1491,21 +1563,22 @@ void RecordOrFieldIdentifier() #FieldAccessExpression:
 	 		// shortended syntax $1 or $fieldName -> treat as $0.1 or $0.fieldName
 	 		jjtThis.setRecordId(0);
 			try {
-		 		Integer fieldNum = Integer.parseInt(tokenImage);
+		 		Integer fieldNum = Integer.parseInt(firstPartImage);
 		 		// set directly the position access
 		 		jjtThis.setFieldId(fieldNum);
 		 	} catch (NumberFormatException e) {
 		 		// set the field name
-		 		jjtThis.setFieldName(tokenImage);
+		 		jjtThis.setFieldName(firstPartImage);
 		 	}
 	 	} else {
 	 	    // new syntax, $in.1 no longer means $0.1, but $1.* instead
-	 	    jjtThis.setWildcard(true);	 		try {
-	 			Integer recNum = Integer.parseInt(tokenImage);
+	 	    jjtThis.setWildcard(true);
+	 		try {
+	 			Integer recNum = Integer.parseInt(firstPartImage);
 	 			// set directly the position access 
 	 			jjtThis.setRecordId(recNum);
 	 		} catch (NumberFormatException e) {
-	 			jjtThis.setRecordName(tokenImage);
+	 			jjtThis.setRecordName(firstPartImage);
 	 		}
 	 	}
 	}

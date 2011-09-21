@@ -227,19 +227,21 @@ public interface TransformLangParserConstants {
   /** RegularExpression Id. */
   int FIELD_ACCESS_OPERATOR = 119;
   /** RegularExpression Id. */
-  int FIELD_IDENTIFIER = 120;
+  int RECORD_ACCESS_FIRST_PART = 120;
   /** RegularExpression Id. */
-  int NUMERIC_ID = 121;
+  int RECORD_ACCESS_SECOND_PART = 121;
   /** RegularExpression Id. */
-  int STRING_ID = 122;
+  int NUMERIC_ID = 122;
   /** RegularExpression Id. */
-  int IDENTIFIER = 123;
+  int STRING_ID = 123;
   /** RegularExpression Id. */
-  int LETTER = 124;
+  int IDENTIFIER = 124;
   /** RegularExpression Id. */
-  int UNDERSCORE = 125;
+  int LETTER = 125;
   /** RegularExpression Id. */
-  int ERROR = 129;
+  int UNDERSCORE = 126;
+  /** RegularExpression Id. */
+  int ERROR = 130;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -249,6 +251,8 @@ public interface TransformLangParserConstants {
   int WithinSingleLineComment = 2;
   /** Lexical state. */
   int WithinFieldIdentifier = 3;
+  /** Lexical state. */
+  int ExpectingFieldIdentifier = 4;
 
   /** Literal token values. */
   String[] tokenImage = {
@@ -372,7 +376,8 @@ public interface TransformLangParserConstants {
     "\"ALL\"",
     "\"STOP\"",
     "<FIELD_ACCESS_OPERATOR>",
-    "<FIELD_IDENTIFIER>",
+    "<RECORD_ACCESS_FIRST_PART>",
+    "<RECORD_ACCESS_SECOND_PART>",
     "<NUMERIC_ID>",
     "<STRING_ID>",
     "<IDENTIFIER>",
