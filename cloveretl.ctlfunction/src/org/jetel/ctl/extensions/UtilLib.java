@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.UUID;
+
 import org.jetel.ctl.Stack;
 
 public class UtilLib extends TLFunctionLibrary {
@@ -25,7 +27,8 @@ public class UtilLib extends TLFunctionLibrary {
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
     	final TLFunctionPrototype ret = 
-    		"sleep".equals(functionName) ? new SleepFunction() : null; 
+    		"sleep".equals(functionName) ? new SleepFunction() :
+    		"randomUUID".equals(functionName) ? new RandomUuidFunction() : null; 
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -61,5 +64,22 @@ public class UtilLib extends TLFunctionLibrary {
 		}
     	
     }
-        
+    
+    // UUID
+    @TLFunctionAnnotation("Generates random universally unique identifier (UUID)")
+    public static String randomUUID(TLFunctionCallContext context) {
+    	return UUID.randomUUID().toString();
+    }
+    
+    class RandomUuidFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(randomUUID(context));
+    	}
+    }
 }

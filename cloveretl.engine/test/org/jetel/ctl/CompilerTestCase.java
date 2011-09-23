@@ -2833,6 +2833,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue("sleep() function didn't pause execution", System.currentTimeMillis() - time > 1000);
 	}
 	
+	public void test_utillib_random_uuid() {
+		doCompile("test_utillib_random_uuid");
+		assertNotNull(getVariable("uuid"));
+	}
+	
 	public void test_stringlib_validUrl() {
 		doCompile("test_stringlib_url");
 		check("urlValid", Arrays.asList(true, true, false));
