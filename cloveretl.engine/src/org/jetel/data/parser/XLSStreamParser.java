@@ -256,14 +256,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		}
 	}
 
-	private class SheetNamesHSSFListener implements HSSFListener {
+	private static class SheetNamesHSSFListener implements HSSFListener {
 
 		private final List<String> sheetNames = new ArrayList<String>();
 
 		@Override
 		public void processRecord(Record record) {
-			switch (record.getSid()) {
-			case BoundSheetRecord.sid:
+			if (record.getSid() == BoundSheetRecord.sid) {
 				sheetNames.add(((BoundSheetRecord) record).getSheetname());
 			}
 		}
@@ -648,7 +647,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		}
 	}
 
-	private class HeaderHSSFListener implements HSSFListener {
+	private static class HeaderHSSFListener implements HSSFListener {
 
 		private SSTRecord sstRecord;
 
@@ -971,7 +970,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public boolean stopCondition();
 	}
 
-	private class EndOfRowRecord extends Record {
+	private static class EndOfRowRecord extends Record {
 
 		public static final short SID = -1;
 

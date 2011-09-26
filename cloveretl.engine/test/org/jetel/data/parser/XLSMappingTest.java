@@ -20,10 +20,10 @@ package org.jetel.data.parser;
 
 import java.util.List;
 
-import org.jetel.data.parser.AbstractSpreadsheetParser.SpreadsheetMappingMode;
-import org.jetel.data.parser.AbstractSpreadsheetParser.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
+import org.jetel.data.parser.XLSMapping.SpreadsheetMappingMode;
+import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;

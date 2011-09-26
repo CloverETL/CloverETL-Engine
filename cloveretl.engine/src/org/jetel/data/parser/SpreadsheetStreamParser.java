@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 
 /**
  * @author lkrejci (info@cloveretl.com)

@@ -36,6 +36,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
+import org.jetel.data.parser.XLSMapping.Stats;
+import org.jetel.data.parser.XLSMapping.SpreadsheetMappingMode;
+import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -75,15 +78,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	private List<String> sheetNames;
 
 	private List<Integer> unusedFields;
-	private boolean autoNameMapping = false;
-	private boolean nameMapping = false;
-	private int mappingMaxRow = 0;
-	private int mappingMaxColumn = 0;
 	
-	// 0-based
-	protected int mappingMinRow = Integer.MAX_VALUE;
-	// 0-based
-	protected int mappingMinColumn = Integer.MAX_VALUE;
+	protected int mappingMinRow; // 0-based
+	protected int mappingMinColumn;// 0-based
+	
 	private int currentSheetIndex = -1;
 
 	protected DataRecordMetadata metadata;
@@ -265,83 +263,38 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			for (int i = 0; i < metadata.getNumFields(); i++) {
 				mapping[0][i] = i;
 			}
-			
-			mappingMinRow = 0;
-			mappingMinColumn = 0;
 		} else {
-			int maxSkip = 0;
-			int minSkip = Integer.MAX_VALUE;
-			int finalMaxRow = 0;
-			int finalMaxColumn = 0;
+			Stats stats = mappingInfo.getStats();
 			
-			for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-				if (!nameMapping && group.getMappingMode() == SpreadsheetMappingMode.NAME) {
-					nameMapping = true;
-				}
-				if (!autoNameMapping && group.getMappingMode() == SpreadsheetMappingMode.AUTO) {
-					autoNameMapping = true;
-				}
-				
-				for (HeaderRange range : group.getRanges()) {
-					if (range.getRowStart() < mappingMinRow) {
-						mappingMinRow = range.getRowStart();
-					}
-					if (range.getRowEnd() > mappingMaxRow) {
-						mappingMaxRow = range.getRowEnd();
-					}
-					if (range.getColumnStart() < mappingMinColumn) {
-						mappingMinColumn = range.getColumnStart();
-					}
-					if (range.getColumnEnd() > mappingMaxColumn) {
-						mappingMaxColumn = range.getColumnEnd();
-					}
-					if (range.getRowEnd() + group.getSkip() > finalMaxRow) {
-						finalMaxRow = range.getRowEnd() + group.getSkip(); 
-					}
-					if (range.getColumnEnd() + group.getSkip() > finalMaxColumn) {
-						finalMaxColumn = range.getColumnEnd() + group.getSkip();
-					}
-				}
-				if (group.getSkip() > maxSkip) {
-					maxSkip = group.getSkip();
-				}
-				if (group.getSkip() < minSkip) {
-					minSkip = group.getSkip();
-				}
-			}
-			if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-				mappingMinRow += minSkip;
-			} else {
-				mappingMinColumn += minSkip;
-			}		
-
-			if (maxSkip == 0) {
+			mappingMinRow = stats.getMappingMinRow();
+			mappingMinColumn = stats.getMappingMinColumn();
+			
+			if (stats.getMaxSkip() == 0) {
 				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-					this.startLine = mappingMinRow;
+					this.startLine = stats.getMappingMinRow();
 				} else {
-					this.startLine = mappingMinColumn;
+					this.startLine = stats.getMappingMinColumn();
 				}
 			} else {
-				autoNameMapping = false;
 				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-					this.startLine = mappingMaxRow + 1;
+					this.startLine = stats.getMappingMaxRow() + 1;
 				} else {
-					this.startLine = mappingMaxColumn + 1;
+					this.startLine = stats.getMappingMaxColumn() + 1;
 				}
 			}
 
-			int rowCount = finalMaxRow - mappingMinRow + 1;
-			int columnCount = finalMaxColumn - mappingMinColumn + 1;
+			int rowCount = stats.getFinalMaxRow() - stats.getMappingMinRow() + 1;
+			int columnCount = stats.getFinalMaxColumn() - stats.getMappingMinColumn() + 1;
 
 			if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-				columnCount = mappingMaxColumn - mappingMinColumn + 1;
+				columnCount = stats.getMappingMaxColumn() - stats.getMappingMinColumn() + 1;
 			} else {
-				rowCount = mappingMaxRow - mappingMinRow + 1;
+				rowCount = stats.getMappingMaxRow() - stats.getMappingMinRow() + 1;
 			}
 			mapping = new int[rowCount][columnCount];
 			clearMapping();
 			
-			if (!autoNameMapping && !nameMapping) {
+			if (!stats.isAutoNameMapping() && !stats.isNameMapping()) {
 				resolveDirectMapping();
 				resolveOrderMapping();
 			}
@@ -357,11 +310,12 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		Set<Integer> toRemove = new HashSet<Integer>();
+		Stats stats = mappingInfo.getStats();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			if (group.getCloverField() != XLSMapping.UNDEFINED) {
 				HeaderRange range = group.getRanges().get(0);
-				int row = range.getRowStart() - mappingMinRow;
-				int column = range.getColumnStart() - mappingMinColumn;
+				int row = range.getRowStart() - stats.getMappingMinRow();
+				int column = range.getColumnStart() - stats.getMappingMinColumn();
 
 				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
 					row += group.getSkip();
@@ -427,20 +381,21 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveNameMapping() throws ComponentNotReadyException {
 		Map<String, Integer> nameMap = metadata.getFieldNamesMap();
+		Stats stats = mappingInfo.getStats();
 		
-		String[][] headerCells = getHeader(mappingMinRow, mappingMinColumn, mappingMaxRow + 1, mappingMaxColumn + 1);
+		String[][] headerCells = getHeader(stats.getMappingMinRow(), stats.getMappingMinColumn(), stats.getMappingMaxRow() + 1, stats.getMappingMaxColumn() + 1);
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			for (HeaderRange range : group.getRanges()) {
 				if (group.getCloverField() != XLSMapping.UNDEFINED) {
 					continue;
 				}
-				if ((group.getMappingMode() != SpreadsheetMappingMode.NAME || (autoNameMapping && group.getMappingMode() != SpreadsheetMappingMode.AUTO))) {
+				if ((group.getMappingMode() != SpreadsheetMappingMode.NAME || (stats.isAutoNameMapping() && group.getMappingMode() != SpreadsheetMappingMode.AUTO))) {
 					continue;
 				}
 				for (int row = range.getRowStart(); row <= range.getRowEnd() && row < headerCells.length; row++) {
-					String[] headerRow = headerCells[row - mappingMinRow];
+					String[] headerRow = headerCells[row - stats.getMappingMinRow()];
 					for (int column = range.getColumnStart(); column < range.getColumnEnd() && column < headerRow.length; column++) {
-						String header = headerRow[column - mappingMinColumn]; // TODO: perform "name mangling"?
+						String header = headerRow[column - stats.getMappingMinColumn()]; // TODO: perform "name mangling"?
 
 						Integer cloverIndex = nameMap.get(header);
 						if (cloverIndex == null) {
@@ -448,8 +403,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 							continue;
 						}
 
-						int rowIndex = row - mappingMinRow;
-						int columnIndex = column - mappingMinColumn;
+						int rowIndex = row - stats.getMappingMinRow();
+						int columnIndex = column - stats.getMappingMinColumn();
 						if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
 							rowIndex += group.getSkip();
 						} else {
@@ -468,6 +423,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	}
 
 	protected void resolveOrderMapping() throws ComponentNotReadyException {
+		Stats stats = mappingInfo.getStats();
+		
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			for (HeaderRange range : group.getRanges()) {
 				if (group.getCloverField() != XLSMapping.UNDEFINED) {
@@ -475,14 +432,14 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				}
 				
 				if (group.getMappingMode() != SpreadsheetMappingMode.ORDER 
-						|| (autoNameMapping && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
+						|| (stats.isAutoNameMapping() && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
 					continue;
 				}
 
 				for (int row = range.getRowStart(); row <= range.getRowEnd(); row++) {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd(); column++) {
-						int rowIndex = row - mappingMinRow;
-						int columnIndex = column - mappingMinColumn;
+						int rowIndex = row - stats.getMappingMinRow();
+						int columnIndex = column - stats.getMappingMinColumn();
 						if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
 							rowIndex += group.getSkip();
 						} else {
@@ -589,7 +546,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			return;
 		}
 
-		Integer rowPosition = incremental.getRow(sheetIndex);
+		Integer rowPosition = incremental.getRow(sheetNames.get(sheetIndex));
 		if (rowPosition != null && rowPosition > 0) {
 			try {
 				skip((rowPosition - startLine) / mappingInfo.getStep());
@@ -627,8 +584,9 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 		if (setCurrentSheet(nextSheet)) {
 			currentSheetIndex = nextSheet;
+			Stats stats = mappingInfo.getStats();
 
-			if (autoNameMapping || nameMapping) {
+			if (stats.isAutoNameMapping() || stats.isNameMapping()) {
 				clearMapping();
 				try {
 					resolveDirectMapping();
@@ -643,55 +601,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		}
 
 		return false;
-	}
-
-	public static enum SpreadsheetOrientation {
-
-		HORIZONTAL, VERTICAL;
-
-		public static SpreadsheetOrientation valueOfIgnoreCase(String string) {
-			for (SpreadsheetOrientation orientation : values()) {
-				if (orientation.name().equalsIgnoreCase(string)) {
-					return orientation;
-				}
-			}
-
-			return HORIZONTAL;
-		}
-
-	}
-
-	public static enum SpreadsheetMappingMode {
-
-		ORDER, NAME, AUTO;
-
-		public static SpreadsheetMappingMode valueOfIgnoreCase(String string) {
-			for (SpreadsheetMappingMode orientation : values()) {
-				if (orientation.name().equalsIgnoreCase(string)) {
-					return orientation;
-				}
-			}
-
-			return AUTO;
-		}
-
-	}
-
-	public static enum SpreadsheetFormat {
-
-		XLS, XLSX;
-
-		public static SpreadsheetFormat valueOfIgnoreCase(String string) {
-			for (SpreadsheetFormat format : values()) {
-				if (format.name().equalsIgnoreCase(string)) {
-					return format;
-				}
-			}
-
-			return XLSX;
-		}
-
-	}
+	}	
 
 	/**
 	 * For incremental reading.
@@ -734,8 +644,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			}
 		}
 
-		public Integer getRow(int sheetIndex) {
-			return sheetRow.get(sheetIndex);
+		public Integer getRow(String sheetName) {
+			return sheetRow.get(sheetName);
 		}
 
 		public void setRow(String sheet, int row) {
