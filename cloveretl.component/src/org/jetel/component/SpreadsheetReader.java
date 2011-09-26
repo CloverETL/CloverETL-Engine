@@ -29,11 +29,11 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.parser.SpreadsheetDOMParser;
 import org.jetel.data.parser.AbstractSpreadsheetParser;
-import org.jetel.data.parser.AbstractSpreadsheetParser.SpreadsheetOrientation;
+import org.jetel.data.parser.SpreadsheetDOMParser;
 import org.jetel.data.parser.SpreadsheetStreamParser;
 import org.jetel.data.parser.XLSMapping;
+import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -48,6 +48,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
+import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -64,7 +65,7 @@ import org.w3c.dom.Element;
  */
 public class SpreadsheetReader extends Node {
 	
-    protected static Log logger = LogFactory.getLog(XLSReader.class);
+    protected static Log LOGGER = LogFactory.getLog(SpreadsheetReader.class);
 
     public static final String COMPONENT_TYPE = "SPREADSHEET_READER";
     protected final static String DEFAULT_SHEET_VALUE = "0";
@@ -210,8 +211,8 @@ public class SpreadsheetReader extends Node {
 		this.mappingURL = mappingURL;
 	}
     
-	public void setMapping(String xlsMapping) {
-		this.mapping = xlsMapping;
+	public void setMapping(String mapping) {
+		this.mapping = mapping;
 	}
 
 	public void setSheet(String sheet) {
@@ -324,7 +325,7 @@ public class SpreadsheetReader extends Node {
             && isStringOrByte(logMetadata.getField(3));
         
         if(!ret) {
-            logger.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
+            LOGGER.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
         }
         
         return ret;
@@ -353,7 +354,7 @@ public class SpreadsheetReader extends Node {
 					field.setValue(charSeq.toString().getBytes(cs));
 				} catch (UnsupportedEncodingException e) {
 					// if parameter charset set, encoding support was checked in checkConfig()
-					logger.error(getId() + ": failed to write log record", e);
+					LOGGER.error(getId() + ": failed to write log record", e);
 				}
 			} else {
 				throw new IllegalArgumentException("DataField type has to be string, byte or cbyte");
@@ -371,7 +372,7 @@ public class SpreadsheetReader extends Node {
 				InputStream stream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
 				parsedMapping = XLSMapping.parse(stream, metadata);
 			} catch (IOException e) {
-				logger.error("cannot instantiate node from XML", e);
+				LOGGER.error("cannot instantiate node from XML", e);
 				throw new ComponentNotReadyException(e.getMessage(), e);
 			}
 		} else if (mapping != null) {
@@ -400,7 +401,7 @@ public class SpreadsheetReader extends Node {
 	private void prepareReader() {
 		TransformationGraph graph = getGraph();
 		reader = new MultiFileReader(parser, graph.getRuntimeContext().getContextURL(), fileURL);
-        reader.setLogger(logger);
+        reader.setLogger(LOGGER);
         reader.setIncrementalFile(incrementalFile);
         reader.setIncrementalKey(incrementalKey);
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
@@ -470,10 +471,10 @@ public class SpreadsheetReader extends Node {
 							setCharSequenceToField(bdfe.getMessage(), logRecord.getField(3));
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(bdfe.getMessage());
+							LOGGER.warn(bdfe.getMessage());
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-							logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
 							return Result.ERROR;
 						}
 					}
@@ -493,24 +494,4 @@ public class SpreadsheetReader extends Node {
 		super.postExecute();
 		parser.postExecute();
 	}
-
-	public static enum SpreadsheetAttitude {
-
-        /** In-memory based parser should be used */
-        IN_MEMORY,
-        /** Stream based parser should be used */
-        STREAM;
-
-        public static SpreadsheetAttitude valueOfIgnoreCase(String string) {
-            for (SpreadsheetAttitude parserType : values()) {
-                if (parserType.name().equalsIgnoreCase(string)) {
-                    return parserType;
-                }
-            }
-
-            return IN_MEMORY;
-        }
-
-    }
-
 }
