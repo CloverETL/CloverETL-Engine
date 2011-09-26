@@ -36,8 +36,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.jetel.data.parser.AbstractSpreadsheetParser.SpreadsheetMappingMode;
-import org.jetel.data.parser.AbstractSpreadsheetParser.SpreadsheetOrientation;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
@@ -66,6 +64,8 @@ public class XLSMapping {
 	public static final SpreadsheetMappingMode DEFAULT_AUTO_MAPPING_MODE = SpreadsheetMappingMode.AUTO;
 	
 	public static final int UNDEFINED = -1;
+	public static final char ESCAPE_START = '[';
+	public static final char ESCAPE_END = ']';
 	
 	private static final String XPATH_GLOBAL_ATTRIBUTES = "/mapping/globalAttributes/";
 	private static final String XPATH_STEP_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "step/text()";
@@ -92,11 +92,13 @@ public class XLSMapping {
 	private final SpreadsheetOrientation orientation;
 	
 	private final List<HeaderGroup> headerGroups;
+	private final Stats stats;
 	
 	private XLSMapping(int step, SpreadsheetOrientation orientation, List<HeaderGroup> groups) {
 		this.step = step;
 		this.orientation = orientation;
 		this.headerGroups = groups;
+		this.stats = resolveMappingStats();
 	}
 	
 	public int getStep() {
@@ -109,6 +111,10 @@ public class XLSMapping {
 
 	public List<HeaderGroup> getHeaderGroups() {
 		return headerGroups;
+	}
+	
+	public Stats getStats() {
+		return stats;
 	}
 	
 	public static XLSMapping getDefault() {
@@ -251,6 +257,74 @@ public class XLSMapping {
 		return ranges;
 	}
 	
+	private Stats resolveMappingStats() {
+		boolean nameMapping = false;
+		boolean autoNameMapping = false;
+		
+		int maxSkip = 0;
+		int minSkip = Integer.MAX_VALUE;
+		int finalMaxRow = 0;
+		int finalMaxColumn = 0;
+		
+		int mappingMinRow = Integer.MAX_VALUE;
+		int mappingMaxRow = 0;
+		int mappingMinColumn = Integer.MAX_VALUE;
+		int mappingMaxColumn = 0;
+		
+		if (headerGroups.isEmpty()) {
+			mappingMinRow = 0;
+			mappingMinColumn = 0;
+		} else {
+			for (HeaderGroup group : headerGroups) {
+				if (!nameMapping && group.getMappingMode() == SpreadsheetMappingMode.NAME) {
+					nameMapping = true;
+				}
+				if (!autoNameMapping && group.getMappingMode() == SpreadsheetMappingMode.AUTO) {
+					autoNameMapping = true;
+				}
+
+				for (HeaderRange range : group.getRanges()) {
+					if (range.getRowStart() < mappingMinRow) {
+						mappingMinRow = range.getRowStart();
+					}
+					if (range.getRowEnd() > mappingMaxRow) {
+						mappingMaxRow = range.getRowEnd();
+					}
+					if (range.getColumnStart() < mappingMinColumn) {
+						mappingMinColumn = range.getColumnStart();
+					}
+					if (range.getColumnEnd() > mappingMaxColumn) {
+						mappingMaxColumn = range.getColumnEnd();
+					}
+					if (range.getRowEnd() + group.getSkip() > finalMaxRow) {
+						finalMaxRow = range.getRowEnd() + group.getSkip();
+					}
+					if (range.getColumnEnd() + group.getSkip() > finalMaxColumn) {
+						finalMaxColumn = range.getColumnEnd() + group.getSkip();
+					}
+				}
+				if (group.getSkip() > maxSkip) {
+					maxSkip = group.getSkip();
+				}
+				if (group.getSkip() < minSkip) {
+					minSkip = group.getSkip();
+				}
+			}
+		}
+		if (getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+			mappingMinRow += minSkip;
+		} else {
+			mappingMinColumn += minSkip;
+		}
+		
+		if (maxSkip != 0) {
+			autoNameMapping = false;
+		}
+		
+		return new Stats(nameMapping, autoNameMapping, maxSkip, minSkip, finalMaxRow, finalMaxColumn,
+				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn);
+	}
+	
 	public static class HeaderGroup {
 		private final int skip;
 		private final int cloverField;
@@ -282,7 +356,7 @@ public class XLSMapping {
 		}
 	}
 
-	public static class HeaderRange {
+	protected static class HeaderRange {
 		
 		private final int rowStart;
 		private final int rowEnd;
@@ -311,7 +385,108 @@ public class XLSMapping {
 		public int getColumnEnd() {
 			return columnEnd;
 		}
-	}	
+	}
+
+	public static class Stats {
+		private final boolean nameMapping;
+		private final boolean autoNameMapping;
+
+		private final int maxSkip;
+		private final int minSkip;
+		private final int finalMaxRow;
+		private final int finalMaxColumn;
+
+		private final int mappingMinRow;
+		private final int mappingMaxRow;
+		private final int mappingMinColumn;
+		private final int mappingMaxColumn;
+		
+		private Stats(boolean nameMapping, boolean autoNameMapping, int maxSkip, int minSkip, int finalMaxRow,
+				int finalMaxColumn, int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn) {
+			this.nameMapping = nameMapping;
+			this.autoNameMapping = autoNameMapping;
+			this.maxSkip = maxSkip;
+			this.minSkip = minSkip;
+			this.finalMaxRow = finalMaxRow;
+			this.finalMaxColumn = finalMaxColumn;
+			this.mappingMinRow = mappingMinRow;
+			this.mappingMaxRow = mappingMaxRow;
+			this.mappingMinColumn = mappingMinColumn;
+			this.mappingMaxColumn = mappingMaxColumn;
+		}
+
+		public boolean isNameMapping() {
+			return nameMapping;
+		}
+
+		public boolean isAutoNameMapping() {
+			return autoNameMapping;
+		}
+
+		public int getMaxSkip() {
+			return maxSkip;
+		}
+
+		public int getMinSkip() {
+			return minSkip;
+		}
+
+		public int getFinalMaxRow() {
+			return finalMaxRow;
+		}
+
+		public int getFinalMaxColumn() {
+			return finalMaxColumn;
+		}
+
+		public int getMappingMinRow() {
+			return mappingMinRow;
+		}
+
+		public int getMappingMaxRow() {
+			return mappingMaxRow;
+		}
+
+		public int getMappingMinColumn() {
+			return mappingMinColumn;
+		}
+
+		public int getMappingMaxColumn() {
+			return mappingMaxColumn;
+		}
+	}
+
+	public static enum SpreadsheetOrientation {
+
+		HORIZONTAL, VERTICAL;
+
+		public static SpreadsheetOrientation valueOfIgnoreCase(String string) {
+			for (SpreadsheetOrientation orientation : values()) {
+				if (orientation.name().equalsIgnoreCase(string)) {
+					return orientation;
+				}
+			}
+
+			return HORIZONTAL;
+		}
+
+	}
+
+	public static enum SpreadsheetMappingMode {
+
+		ORDER, NAME, AUTO;
+
+		public static SpreadsheetMappingMode valueOfIgnoreCase(String string) {
+			for (SpreadsheetMappingMode orientation : values()) {
+				if (orientation.name().equalsIgnoreCase(string)) {
+					return orientation;
+				}
+			}
+
+			return AUTO;
+		}
+
+	}
 }
 
 

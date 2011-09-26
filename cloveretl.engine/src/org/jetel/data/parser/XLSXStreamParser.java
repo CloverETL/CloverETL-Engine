@@ -33,6 +33,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
@@ -116,8 +118,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					return null;
 				}
 				sheetContentHandler.finishRecord();
-			}
-		} catch (Exception e) {
+			}			
+		} catch (XMLStreamException e) {
+			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
+		} catch (SAXException e) {
 			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
 		}
 
@@ -142,8 +146,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			int skippedRecords = sheetContentHandler.getNumberOfSkippedRecords();
 			nextRecordStartRow += skippedRecords * parent.mappingInfo.getStep();
 
-			return skippedRecords;
-		} catch (Exception e) {
+			return skippedRecords;			
+		} catch (XMLStreamException e) {
+			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
+		} catch (SAXException e) {
 			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
 		}
 	}
@@ -159,7 +165,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				stream.close();
 			}
 			return toReturn;
-		} catch (Exception e) {
+		} catch (InvalidFormatException e) {
+			throw new JetelRuntimeException(e);
+		} catch (IOException e) {
 			throw new JetelRuntimeException(e);
 		}
 	}
@@ -234,7 +242,11 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			stylesTable = reader.getStylesTable();
 			sharedStringsTable = new ReadOnlySharedStringsTable(opcPackage);
 			sheetContentHandler = new RecordFillingContentHandler(stylesTable, dataFormatter, AbstractSpreadsheetParser.USE_DATE1904);
-		} catch (Exception e) {
+		} catch (InvalidFormatException e) {
+			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
+		} catch (OpenXML4JException e) {
+			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
+		} catch (SAXException e) {
 			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
 		}
 
@@ -317,7 +329,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				rows.add(rowContentHandler.getCellValues());
 				currentRow++;
 			}
-		} catch (Exception e) {
+		} catch (XMLStreamException e) {
+			throw new ComponentNotReadyException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
+		} catch (SAXException e) {
 			throw new ComponentNotReadyException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
 		} finally {
 			closeCurrentInputStream();
@@ -621,7 +635,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
 					if (cellType == Cell.CELL_TYPE_BOOLEAN) {
-						field.setValue(value == XSSFSheetXMLHandler.CELL_VALUE_TRUE);
+						field.setValue(XSSFSheetXMLHandler.CELL_VALUE_TRUE.equals(value));
 					} else {
 						throw new IllegalStateException("Cannot get Boolean value from type " + cellTypeToString(cellType) + " cell");
 					}
@@ -650,7 +664,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 	}
 
-	private class CellValue {
+	private static class CellValue {
 		public final int columnIndex;
 		public final String value;
 		public final int type;

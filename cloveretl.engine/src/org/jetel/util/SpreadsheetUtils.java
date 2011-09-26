@@ -18,6 +18,10 @@
  */
 package org.jetel.util;
 
+import org.jetel.data.formatter.XLSFormatter;
+
+
+
 /**
  * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -48,6 +52,38 @@ public class SpreadsheetUtils {
 			columnIndex += c - A + 1;
 		}
 		return columnIndex - 1;
+	}
+	
+	public static enum SpreadsheetAttitude {
+
+        IN_MEMORY,
+        STREAM;
+
+        public static SpreadsheetAttitude valueOfIgnoreCase(String string) {
+            for (SpreadsheetAttitude parserType : values()) {
+                if (parserType.name().equalsIgnoreCase(string)) {
+                    return parserType;
+                }
+            }
+
+            return IN_MEMORY;
+        }
+    }
+
+	public static enum SpreadsheetFormat {
+
+		XLS, XLSX, AUTO;
+
+		public static SpreadsheetFormat valueOfIgnoreCase(String string) {
+			for (SpreadsheetFormat format : values()) {
+				if (format.name().equalsIgnoreCase(string)) {
+					return format;
+				}
+			}
+
+			return XLSX;
+		}
+
 	}
 
 }

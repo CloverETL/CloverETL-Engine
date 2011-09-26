@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.data.parser.XLSMapping;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.string.StringUtils;
 
@@ -35,13 +36,10 @@ import org.jetel.util.string.StringUtils;
  */
 public class SpreadsheetIndexIterator implements Iterator<Integer> {
 
-	private static final char XLS_ESCAPE_START = '[';
-	private static final char XLS_ESCAPE_END = ']';
-
 	private static String UNLIMITED = "*";
 
 	private static final String INVALID_SHEET_CHARACTERS = ":\\\\/\\[\\]";
-	private static final String ESCAPED_SHEET = "\\" + XLS_ESCAPE_START + "[^" + INVALID_SHEET_CHARACTERS + "]{1,31}\\" + XLS_ESCAPE_END;
+	private static final String ESCAPED_SHEET = "\\" + XLSMapping.ESCAPE_START + "[^" + INVALID_SHEET_CHARACTERS + "]{1,31}\\" + XLSMapping.ESCAPE_END;
 
 	private static final String INVALID_UNESCAPED_CHARACTERS = INVALID_SHEET_CHARACTERS + "\\,\\-";
 	private static final String UNESCAPED_SHEET = "[^" + INVALID_UNESCAPED_CHARACTERS + "]{1,31}";
@@ -91,10 +89,10 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 
 	private Integer parseNextPattern() {
 		int commaIndex = pattern.indexOf(',', patternIndex);
-		int escapeStartIndex = pattern.indexOf(XLS_ESCAPE_START, patternIndex);
+		int escapeStartIndex = pattern.indexOf(XLSMapping.ESCAPE_START, patternIndex);
 		if (escapeStartIndex != -1) {
 			if (commaIndex > escapeStartIndex) {
-				int escapeEndIndex = pattern.indexOf(XLS_ESCAPE_END, patternIndex);
+				int escapeEndIndex = pattern.indexOf(XLSMapping.ESCAPE_END, patternIndex);
 				if (commaIndex < escapeEndIndex) {
 					commaIndex = pattern.indexOf(',', escapeEndIndex);
 				}
@@ -138,7 +136,7 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 						}
 					}
 					
-					if (intervalStart.charAt(0) == XLS_ESCAPE_START) {
+					if (intervalStart.charAt(0) == XLSMapping.ESCAPE_START) {
 						toCompile = intervalStart.substring(1, intervalStart.length() - 1);
 					}
 					
@@ -161,7 +159,7 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 				return Integer.parseInt(sheetName);
 			} else {
 				String sheet = sheetName;
-				if (sheetName.charAt(0) == XLS_ESCAPE_START) {
+				if (sheetName.charAt(0) == XLSMapping.ESCAPE_START) {
 					sheet = sheetName.substring(1, sheetName.length() - 1);
 				}
 

@@ -58,7 +58,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	/**
 	 * These are the different kinds of cells we support. We keep track of the current one between the start and end.
 	 */
-	enum xssfDataType {
+	enum XSSFDataType {
 		BOOLEAN, ERROR, INLINE_STRING, SST_STRING, NUMBER,
 	}
 
@@ -83,7 +83,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 
 	// Set when cell start element is seen;
 	// used when cell close element is seen.
-	private xssfDataType nextDataType;
+	private XSSFDataType nextDataType;
 
 	// Used to format numeric cell values.
 	private int styleIndex;
@@ -110,7 +110,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	public XSSFSheetXMLHandler(ReadOnlySharedStringsTable strings, SheetContentsHandler sheetContentsHandler) {
 		this.sharedStringsTable = strings;
 		this.output = sheetContentsHandler;
-		this.nextDataType = xssfDataType.NUMBER;
+		this.nextDataType = XSSFDataType.NUMBER;
 	}
 	
 	public boolean processMissingRows() {
@@ -166,19 +166,19 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			output.startRow(rowNum - numberOfMissingRows);
 		} else if ("c".equals(name)) { // c => cell
 			// Set up defaults.
-			this.nextDataType = xssfDataType.NUMBER;
+			this.nextDataType = XSSFDataType.NUMBER;
 			cellRef = attributes.getValue("r");
 			String cellType = attributes.getValue("t");
 			String cellStyleStr = attributes.getValue("s");
 			
 			if ("b".equals(cellType)) {
-				nextDataType = xssfDataType.BOOLEAN;
+				nextDataType = XSSFDataType.BOOLEAN;
 			} else if ("e".equals(cellType)) {
-				nextDataType = xssfDataType.ERROR;
+				nextDataType = XSSFDataType.ERROR;
 			} else if ("inlineStr".equals(cellType)) {
-				nextDataType = xssfDataType.INLINE_STRING;
+				nextDataType = XSSFDataType.INLINE_STRING;
 			} else if ("s".equals(cellType)) {
-				nextDataType = xssfDataType.SST_STRING;
+				nextDataType = XSSFDataType.SST_STRING;
 			} else {
 				if (cellStyleStr != null) {
 					// Number, but almost certainly with a special style or format
