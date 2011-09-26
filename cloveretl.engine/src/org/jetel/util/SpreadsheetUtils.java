@@ -18,7 +18,7 @@
  */
 package org.jetel.util;
 
-import org.jetel.data.formatter.XLSFormatter;
+import java.awt.Point;
 
 
 
@@ -52,6 +52,39 @@ public class SpreadsheetUtils {
 			columnIndex += c - A + 1;
 		}
 		return columnIndex - 1;
+	}
+	
+	
+	public static Point getCellCoordinates(String cellReference) {
+		int columnIndex = 0;
+		char c;
+		int i = 0;
+		for (; i < cellReference.length(); i++) {
+			 c = cellReference.charAt(i);
+			 if (c < A || c > Z) {
+				 break;
+			 }
+			columnIndex *= CHAR_COUNT;
+			columnIndex += c - A + 1;
+		}
+		return new Point(columnIndex - 1, Integer.valueOf(cellReference.substring(i, cellReference.length())) - 1);
+	}
+	
+	public static String getColumnReference(int columnIndex) {
+		if (columnIndex < CHAR_COUNT) {
+			char c = A;
+			c += columnIndex;
+			return String.valueOf(c);
+		} else {
+			StringBuilder sb = new StringBuilder();
+			while (columnIndex > 0) {
+				char c = A;
+				c += columnIndex % CHAR_COUNT;
+				sb.insert(0, c);
+				columnIndex /= CHAR_COUNT;
+			}
+			return sb.toString();
+		}
 	}
 	
 	public static enum SpreadsheetAttitude {
