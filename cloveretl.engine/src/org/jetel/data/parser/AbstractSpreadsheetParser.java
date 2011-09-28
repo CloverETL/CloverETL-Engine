@@ -266,35 +266,15 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		} else {
 			Stats stats = mappingInfo.getStats();
 			
+			/** extract some frequently used stats*/
 			mappingMinRow = stats.getMappingMinRow();
 			mappingMinColumn = stats.getMappingMinColumn();
+			startLine = stats.getStartLine();
 			
-			if (stats.getMaxSkip() == 0) {
-				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-					this.startLine = stats.getMappingMinRow();
-				} else {
-					this.startLine = stats.getMappingMinColumn();
-				}
-			} else {
-				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-					this.startLine = stats.getMappingMaxRow() + 1;
-				} else {
-					this.startLine = stats.getMappingMaxColumn() + 1;
-				}
-			}
-
-			int rowCount = stats.getFinalMaxRow() - stats.getMappingMinRow() + 1;
-			int columnCount = stats.getFinalMaxColumn() - stats.getMappingMinColumn() + 1;
-
-			if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
-				columnCount = stats.getMappingMaxColumn() - stats.getMappingMinColumn() + 1;
-			} else {
-				rowCount = stats.getMappingMaxRow() - stats.getMappingMinRow() + 1;
-			}
-			mapping = new int[rowCount][columnCount];
+			mapping = new int[stats.getRowCount()][stats.getColumnCount()];
 			clearMapping();
 			
-			if (!stats.isAutoNameMapping() && !stats.isNameMapping()) {
+			if (!stats.useAutoNameMapping() && !stats.useNameMapping()) {
 				resolveDirectMapping();
 				resolveOrderMapping();
 			}
@@ -389,7 +369,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				if (group.getCloverField() != XLSMapping.UNDEFINED) {
 					continue;
 				}
-				if ((group.getMappingMode() != SpreadsheetMappingMode.NAME || (stats.isAutoNameMapping() && group.getMappingMode() != SpreadsheetMappingMode.AUTO))) {
+				if ((group.getMappingMode() != SpreadsheetMappingMode.NAME || (stats.useAutoNameMapping() && group.getMappingMode() != SpreadsheetMappingMode.AUTO))) {
 					continue;
 				}
 				for (int row = range.getRowStart(); row <= range.getRowEnd() && row < headerCells.length; row++) {
@@ -432,7 +412,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				}
 				
 				if (group.getMappingMode() != SpreadsheetMappingMode.ORDER 
-						|| (stats.isAutoNameMapping() && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
+						|| (stats.useAutoNameMapping() && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
 					continue;
 				}
 
@@ -586,7 +566,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			currentSheetIndex = nextSheet;
 			Stats stats = mappingInfo.getStats();
 
-			if (stats.isAutoNameMapping() || stats.isNameMapping()) {
+			if (stats.useAutoNameMapping() || stats.useNameMapping()) {
 				clearMapping();
 				try {
 					resolveDirectMapping();
