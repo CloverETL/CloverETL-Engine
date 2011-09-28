@@ -70,7 +70,7 @@ public class XLSMapping {
 	private static final String XPATH_GLOBAL_ATTRIBUTES = "/mapping/globalAttributes/";
 	private static final String XPATH_STEP_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "step/text()";
 	private static final String XPATH_ORIENTATION_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "orientation/text()";
-	//private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader/text()"; //TODO: add for writer
+	private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader/text()"; // TODO: this seems to be redundant
 
 	private static final String XML_HEADER_GROUP = "headerGroup";
 	private static final String XML_HEADER_GROUP_CLOVER_FIELD = "cloverField";
@@ -85,19 +85,21 @@ public class XLSMapping {
 	private static final XLSMapping DEFAULT_MAPPING;
 	static {
 		List<HeaderGroup> groups = Collections.emptyList();
-		DEFAULT_MAPPING = new XLSMapping(1, SpreadsheetOrientation.HORIZONTAL, groups);
+		DEFAULT_MAPPING = new XLSMapping(1, SpreadsheetOrientation.HORIZONTAL, true, groups);
 	}
 	
 	private final int step;
 	private final SpreadsheetOrientation orientation;
+	private final boolean writeHeader;
 	
 	private final List<HeaderGroup> headerGroups;
 	private final Stats stats;
 	
-	private XLSMapping(int step, SpreadsheetOrientation orientation, List<HeaderGroup> groups) {
+	private XLSMapping(int step, SpreadsheetOrientation orientation, boolean writeHeader, List<HeaderGroup> groups) {
 		this.step = step;
 		this.orientation = orientation;
 		this.headerGroups = groups;
+		this.writeHeader = writeHeader;
 		this.stats = resolveMappingStats();
 	}
 	
@@ -107,6 +109,10 @@ public class XLSMapping {
 
 	public SpreadsheetOrientation getOrientation() {
 		return orientation;
+	}
+
+	public boolean isWriteHeader() {
+		return writeHeader;
 	}
 
 	public List<HeaderGroup> getHeaderGroups() {
@@ -151,7 +157,7 @@ public class XLSMapping {
 	
 	private static DocumentBuilder getBuilder() {
 		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); //TODO: check schema checking
 			factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
 			factory.setAttribute("http://java.sun.com/xml/jaxp/properties/schemaSource", "XLSMapping.xsd");
 
@@ -168,9 +174,10 @@ public class XLSMapping {
 
 			Double intResult = (Double) xpath.evaluate(XPATH_STEP_ATTRIBUTE, document, XPathConstants.NUMBER);
 			String orientationResult = (String) xpath.evaluate(XPATH_ORIENTATION_ATTRIBUTE, document, XPathConstants.STRING);
+			Boolean writeHeaderResult = (Boolean) xpath.evaluate(XPATH_WRITE_HEADER_ATTRIBUTE, document, XPathConstants.BOOLEAN);
 
 			return new XLSMapping(intResult.intValue(), SpreadsheetOrientation.valueOfIgnoreCase(orientationResult),
-					parseHeaderGroups(document.getElementsByTagName(XML_HEADER_GROUP), metadata));
+					writeHeaderResult, parseHeaderGroups(document.getElementsByTagName(XML_HEADER_GROUP), metadata));
 		} catch (XPathExpressionException e) {
 			throw new JetelRuntimeException(e);
 		}
@@ -263,13 +270,17 @@ public class XLSMapping {
 		
 		int maxSkip = 0;
 		int minSkip = Integer.MAX_VALUE;
-		int finalMaxRow = 0;
-		int finalMaxColumn = 0;
+		int maxReadRow = 0;
+		int maxReadColumn = 0;
 		
 		int mappingMinRow = Integer.MAX_VALUE;
 		int mappingMaxRow = 0;
 		int mappingMinColumn = Integer.MAX_VALUE;
 		int mappingMaxColumn = 0;
+		
+		int startLine;
+		int rowCount;
+		int columnCount;
 		
 		if (headerGroups.isEmpty()) {
 			mappingMinRow = 0;
@@ -296,11 +307,11 @@ public class XLSMapping {
 					if (range.getColumnEnd() > mappingMaxColumn) {
 						mappingMaxColumn = range.getColumnEnd();
 					}
-					if (range.getRowEnd() + group.getSkip() > finalMaxRow) {
-						finalMaxRow = range.getRowEnd() + group.getSkip();
+					if (range.getRowEnd() + group.getSkip() > maxReadRow) {
+						maxReadRow = range.getRowEnd() + group.getSkip();
 					}
-					if (range.getColumnEnd() + group.getSkip() > finalMaxColumn) {
-						finalMaxColumn = range.getColumnEnd() + group.getSkip();
+					if (range.getColumnEnd() + group.getSkip() > maxReadColumn) {
+						maxReadColumn = range.getColumnEnd() + group.getSkip();
 					}
 				}
 				if (group.getSkip() > maxSkip) {
@@ -321,8 +332,31 @@ public class XLSMapping {
 			autoNameMapping = false;
 		}
 		
-		return new Stats(nameMapping, autoNameMapping, maxSkip, minSkip, finalMaxRow, finalMaxColumn,
-				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn);
+		if (maxSkip == 0) {
+			if (orientation == SpreadsheetOrientation.HORIZONTAL) {
+				startLine = mappingMinRow;
+			} else {
+				startLine = mappingMinColumn;
+			}
+		} else {
+			if (orientation == SpreadsheetOrientation.HORIZONTAL) {
+				startLine = mappingMaxRow + 1;
+			} else {
+				startLine = mappingMaxColumn + 1;
+			}
+		}
+		
+		rowCount = maxReadRow - mappingMinRow + 1;
+		columnCount = maxReadColumn - mappingMinColumn + 1;
+
+		if (orientation == SpreadsheetOrientation.HORIZONTAL) {
+			columnCount = mappingMaxColumn - mappingMinColumn + 1;
+		} else {
+			rowCount = mappingMaxRow - mappingMinRow + 1;
+		}
+		
+		return new Stats(nameMapping, autoNameMapping, mappingMinRow, mappingMaxRow, mappingMinColumn,
+				startLine, rowCount, columnCount, mappingMaxColumn);
 	}
 	
 	public static class HeaderGroup {
@@ -356,7 +390,7 @@ public class XLSMapping {
 		}
 	}
 
-	protected static class HeaderRange {
+	public static class HeaderRange {
 		
 		private final int rowStart;
 		private final int rowEnd;
@@ -388,55 +422,58 @@ public class XLSMapping {
 	}
 
 	public static class Stats {
+		/** flag indicating that name mapping is set somewhere in the mapping */
 		private final boolean nameMapping;
+		/** flag indicating that auto mapping is resolved as name mapping */
 		private final boolean autoNameMapping;
+		
+		/** starting line of read/write */
+		private final int startLine;
+		/** record height */
+		private final int rowCount;
+		/** record width */
+		private final int columnCount;
 
-		private final int maxSkip;
-		private final int minSkip;
-		private final int finalMaxRow;
-		private final int finalMaxColumn;
-
+		/** minimum row in mapping */
 		private final int mappingMinRow;
+		/** maximum row in mapping */
 		private final int mappingMaxRow;
+		/** minimum column in mapping */
 		private final int mappingMinColumn;
+		/** maximum column in mapping */
 		private final int mappingMaxColumn;
 		
-		private Stats(boolean nameMapping, boolean autoNameMapping, int maxSkip, int minSkip, int finalMaxRow,
-				int finalMaxColumn, int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn) {
+		private Stats(boolean nameMapping, boolean autoNameMapping, int startLine, int rowCount, int columnCount,
+				int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn) {
 			this.nameMapping = nameMapping;
 			this.autoNameMapping = autoNameMapping;
-			this.maxSkip = maxSkip;
-			this.minSkip = minSkip;
-			this.finalMaxRow = finalMaxRow;
-			this.finalMaxColumn = finalMaxColumn;
+			this.startLine = startLine;
+			this.rowCount = rowCount;
+			this.columnCount = columnCount;
 			this.mappingMinRow = mappingMinRow;
 			this.mappingMaxRow = mappingMaxRow;
 			this.mappingMinColumn = mappingMinColumn;
 			this.mappingMaxColumn = mappingMaxColumn;
 		}
 
-		public boolean isNameMapping() {
+		public boolean useNameMapping() {
 			return nameMapping;
 		}
 
-		public boolean isAutoNameMapping() {
+		public boolean useAutoNameMapping() {
 			return autoNameMapping;
 		}
-
-		public int getMaxSkip() {
-			return maxSkip;
+		
+		public int getStartLine() {
+			return startLine;
 		}
 
-		public int getMinSkip() {
-			return minSkip;
+		public int getRowCount() {
+			return rowCount;
 		}
 
-		public int getFinalMaxRow() {
-			return finalMaxRow;
-		}
-
-		public int getFinalMaxColumn() {
-			return finalMaxColumn;
+		public int getColumnCount() {
+			return columnCount;
 		}
 
 		public int getMappingMinRow() {
