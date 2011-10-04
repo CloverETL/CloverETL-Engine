@@ -200,7 +200,7 @@ public class SQLIncremental {
 	 */
 	public PreparedStatement updateQuery(DBConnectionInstance dbConnection) throws SQLException, ComponentNotReadyException{
 		//create record where current incremental values are stored
-    	Statement statement = dbConnection.getSqlConnection().createStatement();
+    	Statement statement = dbConnection.getSqlConnection().createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     	ResultSet resultSet = statement.executeQuery(createSelectKeyQuery());
         ResultSetMetaData dbMetadata = resultSet.getMetaData();
 
