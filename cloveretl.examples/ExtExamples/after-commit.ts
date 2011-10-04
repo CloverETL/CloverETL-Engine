@@ -90,14 +90,12 @@
 	     <DeleteFile file="dbInc.txt"/>
 	</FunctionalTest>
 
-<!--Please uncomment the test after resolving CL-1861
 	<FunctionalTest ident="DBUnload_Mysql" graphFile="graph/graphDBUnload.grf" absoluteProjectPath="true">
           <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
           <Property name="connection" value="mysql.cfg" />
 	 	  <FlatFile outputFile="data-out/employees.list.out" supposedFile="supposed-out/employees.list.DBUnload.out"/>	                                                                    
 	     <DeleteFile file="dbInc.txt"/>
 	</FunctionalTest>
--->
 
 	<FunctionalTest ident="DBUnload2" graphFile="graph/graphDBUnload2.grf" absoluteProjectPath="true">
 	 	  <FlatFile outputFile="data-out/employees.txt" supposedFile="supposed-out/employees.DBUnload2.txt"/>	                                                                    
