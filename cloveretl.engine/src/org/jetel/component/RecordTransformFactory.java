@@ -147,8 +147,7 @@ public class RecordTransformFactory {
     			if (child.getId() != JJTRETURNSTATEMENT) {
 	    			// check if direct mapping
 	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
-	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION
-	    					|| ((CLVFFieldAccessExpression) lhs).isWildcard()) { //'$0.* = ...' is also prohibited
+	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
 	    				// not a mapping
 	    				return false;
 	    			}
