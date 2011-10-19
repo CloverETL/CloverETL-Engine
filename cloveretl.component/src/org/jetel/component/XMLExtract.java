@@ -982,7 +982,7 @@ public class XMLExtract extends Node {
          */
         public Sequence getSequence() {
             if(sequence == null) {
-                String element = StringUtils.normalizeName(StringUtils.trimXmlNamespace(getElement()));
+                String element = StringUtils.normalizeString(StringUtils.trimXmlNamespace(getElement()));
 
                 if(getSequenceId() == null) {
                     sequence = new PrimitiveSequence(element, getGraph(), element);

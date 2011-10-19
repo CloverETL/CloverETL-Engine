@@ -385,9 +385,16 @@ public class DBFAnalyzer {
 		
 		// add "hidden" field indicatind deletion status
 		record.addField(new DataFieldMetadata("_IS_DELETED_",DataFieldMetadata.STRING_FIELD,(short)1));
+		
+		List<String> originalNames = new ArrayList<String>(dbfNumFields);
+		for (int i=0;i<dbfNumFields;i++){
+			originalNames.add(dbfFields[i].name);
+		}
+		String[] normalizedNames = StringUtils.normalizeNames(originalNames);
+		
 		for (int i=0;i<dbfNumFields;i++){
 			// create field definition based on what we read from DBF file header
-			DataFieldMetadata field=new DataFieldMetadata(dbfFields[i].name,
+			DataFieldMetadata field=new DataFieldMetadata(normalizedNames[i],
 					dbfFieldType2Clover(dbfFields[i].type),
 					dbfFields[i].length);
 
@@ -397,6 +404,7 @@ public class DBFAnalyzer {
 			}
 			record.addField(field);
 		}
+		
 		return record;
 	}
 	/**

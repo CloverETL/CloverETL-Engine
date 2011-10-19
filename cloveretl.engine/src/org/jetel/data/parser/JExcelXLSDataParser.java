@@ -195,10 +195,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	@Override
 	public DataRecordMetadata createMetadata(){
 		if (wb == null) return null;
-		String name = sheet.getName();
-		if (!StringUtils.isValidObjectName(name)) {
-			name = StringUtils.normalizeName(name);
-		}
+		String name = StringUtils.normalizeName(sheet.getName());
 		DataRecordMetadata xlsMetadata = new DataRecordMetadata(name, DataRecordMetadata.DELIMITED_RECORD);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
@@ -227,9 +224,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			}
 			type = dataCell != null ? dataCell.getType() : CellType.LABEL;
 			name = (metadataRow>-1) && nameCell != null ? nameCell.getContents() : XLSFormatter.getCellCode(i);
-			if (!StringUtils.isValidObjectName(name)) {
-				name = StringUtils.normalizeName(name);
-			}
+			name = StringUtils.normalizeName(name);
 			if (type == CellType.EMPTY && namesRow != dataRow && nameCell.getType() == CellType.EMPTY){
 				continue;
 			}else if (type == CellType.BOOLEAN) {
@@ -248,6 +243,12 @@ public class JExcelXLSDataParser extends XLSParser {
 				xlsMetadata.addField(field);
 			}
 		}
+		
+		String[] uniqueNames = StringUtils.getUniqueNames(xlsMetadata.getFieldNamesArray());
+		for (int i = 0; i < xlsMetadata.getNumFields(); i++) {
+			xlsMetadata.getField(i).setName(uniqueNames[i]);
+		}
+		
 		return xlsMetadata;
 	}
 	

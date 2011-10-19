@@ -27,9 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -73,7 +76,14 @@ public class StringUtils {
     private static Pattern delimiterPattern;
 	
 	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
-	private final static Pattern INVALID_CHAR = Pattern.compile("[^_A-Za-z0-9]{1}");
+	
+	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]";
+	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}");
+	private final static Pattern LEADING_INVALID_SUBSTRING = Pattern.compile("^" + INVALID_CHARACTER_CLASS + "+");
+	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$");
+	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+");
+	
+	private static final int DEFAULT_TRUNC_LENGTH = 250;
 	
 	private final static char[] vowels = {'A', 'E', 'I', 'O', 'U'};
 
@@ -808,6 +818,130 @@ public class StringUtils {
 		return seq.toString().matches(OBJECT_NAME_PATTERN);
 
 	}
+	
+	/**
+	 * This function should be used to convert arbitrary field
+	 * or record name into a valid identifier.
+	 * 
+	 * Valid identifiers (containing) should be left untouched.
+	 * 
+	 * Empty strings should be replaced with a string containing
+	 * one underscore so that metadata extraction works even for
+	 * databases which do not return table name in the ResultSetMetadata.
+	 * 
+	 * Even valid identifiers should be truncated to DEFAULT_TRUNC_LENGTH.
+	 * 
+	 * @param originalName
+	 * @return
+	 */
+	public static String normalizeName(String originalName) {
+		if (originalName == null) {
+			return null;
+		}
+		if (originalName.isEmpty()) {
+			// required for metadata extraction from databases which don't return table name (Oracle?)
+			originalName = ILLICIT_CHAR_REPLACEMENT;
+		}
+		String result;
+		
+		if (isValidObjectName(originalName)) {
+			// do not modify valid names
+			result = originalName;
+		} else {
+			// trim whitespace first
+			originalName = originalName.trim();
+			
+			// must be done before removing invalid, can be swapped with removing non-printable
+			result = StringUtils.removeDiacritic(originalName);
+			// must be done before removing invalid, can be swapped with removing diacritic
+			result = StringUtils.removeNonPrintable(result);
+			
+			// must be done before prepending an underscore
+			result = LEADING_INVALID_SUBSTRING.matcher(result).replaceFirst(""); // beginning
+			result = TRAILING_INVALID_SUBSTRING.matcher(result).replaceFirst(""); // end
+			result = INVALID_SUBSTRING.matcher(result).replaceAll(ILLICIT_CHAR_REPLACEMENT);
+			
+			// isDigit accepts other than arabic digits, but those should be removed above
+			if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
+				result = "_" + result;
+			}
+		}
+		
+		// trim also valid identifiers
+		// must be done last (or when the length never changes again)
+		if (result.length() > DEFAULT_TRUNC_LENGTH) {
+			result = result.substring(0, DEFAULT_TRUNC_LENGTH);
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns an array containing strings from originalNames
+	 * with numbers appended if necessary.
+	 * 
+	 * @param originalNames
+	 * @return unique names
+	 */
+	public static String[] getUniqueNames(String... originalNames) {
+		return getUniqueNames(Arrays.asList(originalNames));
+	}
+	
+	/**
+	 * Returns an array containing strings from originalNames
+	 * with numbers appended if necessary.
+	 * 
+	 * @param originalNames
+	 * @return unique names
+	 */
+	public static String[] getUniqueNames(List<String> originalNames) {
+		int length = originalNames.size();
+		String[] result = new String[length];
+		Set<String> newNames = new HashSet<String>();
+		for (int n = 0; n < length; n++) {
+			String newName = originalNames.get(n);
+			if (!newNames.contains(newName)) {
+				result[n] = newName;
+				newNames.add(newName);
+			} else {
+				int i = 1;
+				String extendedName = newName + i;
+				while (newNames.contains(extendedName)) {
+					extendedName = newName + (++i);
+				}
+				result[n] = extendedName;
+				newNames.add(extendedName);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Normalizes all strings in originalNames and ensures that
+	 * the results are unique.
+	 * 
+	 * @param originalNames
+	 * @return unique normalized names
+	 */
+	public static String[] normalizeNames(String... originalNames) {
+		return normalizeNames(Arrays.asList(originalNames));
+	}
+	
+	/**
+	 * Normalizes all strings in originalNames and ensures that
+	 * the results are unique.
+	 * 
+	 * @param originalNames
+	 * @return unique normalized names
+	 */
+	public static String[] normalizeNames(List<String> originalNames) {
+		String[] normalizedNames = new String[originalNames.size()];
+		int i = 0;
+		for (String s: originalNames) {
+			normalizedNames[i++] = normalizeName(s);
+		}
+		return getUniqueNames(normalizedNames);
+	}
 
 	public static boolean isValidObjectId(CharSequence seq) {
 		if (seq == null) {
@@ -828,7 +962,7 @@ public class StringUtils {
 	 * @param seq
 	 * @return
 	 */
-	public static String normalizeName(CharSequence seq) {
+	public static String normalizeString(CharSequence seq) {
 		if (seq == null) {
 			return null;
 		}
