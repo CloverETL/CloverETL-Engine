@@ -22,6 +22,7 @@ package org.jetel.util.string;
 
 import java.util.Arrays;
 import java.util.Properties;
+import org.jetel.util.string.StringUtils;
 
 import org.jetel.test.CloverTestCase;
 
@@ -583,6 +584,50 @@ public class StringUtilsTest extends CloverTestCase {
 		ret.put("animal","pinguin");
 		ret.put("empty", "");
 		return ret;
+	}
+
+	private static void assertArraysEquals(Object[] expected, Object[] actual) {
+		boolean equal = Arrays.equals(expected, actual); 
+		assertTrue(
+				equal ? "" : "Expected: " + Arrays.toString(expected) + ", actual: " + Arrays.toString(actual),
+				equal
+		);
+	}
+	
+	public void testNormalizeNames() {
+		assertEquals("Milasek", StringUtils.normalizeName("Milášek"));
+		assertEquals("Mil_ek", StringUtils.normalizeName("Mil%$ek"));
+		assertEquals("Mil___ek", StringUtils.normalizeName("Mil%_$ek"));
+		assertEquals("_0Mil___ek", StringUtils.normalizeName("0Mil%_$ek"));
+		assertEquals(null, StringUtils.normalizeName(null));
+		assertEquals("_", StringUtils.normalizeName(""));
+		assertEquals("_", StringUtils.normalizeName("_"));
+		assertEquals("__", StringUtils.normalizeName("__"));
+		assertEquals("a", StringUtils.normalizeName("%a%"));
+		assertEquals("a", StringUtils.normalizeName("%$@%a&*%"));
+		assertEquals("a_a", StringUtils.normalizeName("%$@%a!@#$%a&*%"));
+		assertEquals("_0", StringUtils.normalizeName("%0%"));
+		assertEquals("_0", StringUtils.normalizeName("%$@%0&*%"));
+		assertEquals("_0_5", StringUtils.normalizeName("%$@%0!@#$%^5&*%"));
+		assertEquals("Milan_Krivanek", StringUtils.normalizeName("\"Milan Křivánek\""));
+		assertEquals("_0Milan_Krivanek", StringUtils.normalizeName("\"0Milan Křivánek\""));
+		assertEquals("Zlutoucky_kun_upel_dabelske_ody", StringUtils.normalizeName("Žluťoučký kůň úpěl ďábelské ódy"));
+		
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 500; i++) {
+			sb.append('a');
+		}
+		String trimmed = StringUtils.normalizeName(sb.toString());
+		assertTrue("The length of the normalized name is greater than 256", trimmed.length() <= 256);
+		
+		assertArraysEquals(
+				new String[] {"unique", "unique1", "unique2", "unique11"}, 
+				StringUtils.normalizeNames("unique", "unique1", "unique", "unique1")
+		);
+		assertArraysEquals(
+				new String[] {"Milan_Krivanek", "Milan_Krivanek1"}, 
+				StringUtils.normalizeNames("Milan Křivánek", "Milan_Krivanek")
+		);
 	}
 }
 

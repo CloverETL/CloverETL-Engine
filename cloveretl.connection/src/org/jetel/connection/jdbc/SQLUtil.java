@@ -246,22 +246,23 @@ public class SQLUtil {
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific, boolean failIfUknownType) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		String tableName = dbMetadata.getTableName(1);
-		if (!StringUtils.isValidObjectName(tableName)) {
-			tableName = StringUtils.normalizeName(tableName);
-		}
-		DataRecordMetadata jetelMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
+		DataRecordMetadata jetelMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
 		String colName;
+		
+		List<String> originalNames = new ArrayList<String>();
+		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
+			originalNames.add(dbMetadata.getColumnName(i));
+		}
+		String[] normalizedNames = StringUtils.normalizeNames(originalNames);
 
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
-			colName = dbMetadata.getColumnName(i);
-			if (!StringUtils.isValidObjectName(colName)) {
-				colName = StringUtils.normalizeName(colName);
-			}
+			colName = normalizedNames[i-1];
 			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific, failIfUknownType);
 			jetelMetadata.addField(fieldMetadata);
 		}
+		
 		return jetelMetadata;
 	}
 

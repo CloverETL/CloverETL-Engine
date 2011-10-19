@@ -275,11 +275,7 @@ public class XLSXDataParser extends XLSParser {
 			return null;
 		}
 
-		String sheetName = workbook.getSheetName(sheetCounter);
-
-		if (!StringUtils.isValidObjectName(sheetName)) {
-			sheetName = StringUtils.normalizeName(sheetName);
-		}
+		String sheetName = StringUtils.normalizeName(workbook.getSheetName(sheetCounter));
 
 		DataRecordMetadata xlsMetadata = new DataRecordMetadata(sheetName, DataRecordMetadata.DELIMITED_RECORD);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
@@ -319,11 +315,8 @@ public class XLSXDataParser extends XLSParser {
 			}
 
 			String cellName = (metadataRow > -1 && nameCell != null) ? 
-					StringUtils.normalizeName(dataFormatter.formatCellValue(nameCell)) : XLSFormatter.getCellCode(i);
-
-			if (!StringUtils.isValidObjectName(cellName)) {
-				cellName = StringUtils.normalizeName(cellName);
-			}
+					dataFormatter.formatCellValue(nameCell) : XLSFormatter.getCellCode(i);
+			cellName = StringUtils.normalizeName(cellName);
 
 			DataFieldMetadata dataField = null;
 
@@ -342,6 +335,11 @@ public class XLSXDataParser extends XLSParser {
 			}
 
 			xlsMetadata.addField(dataField);
+		}
+
+		String[] uniqueNames = StringUtils.getUniqueNames(xlsMetadata.getFieldNamesArray());
+		for (int i = 0; i < xlsMetadata.getNumFields(); i++) {
+			xlsMetadata.getField(i).setName(uniqueNames[i]);
 		}
 
 		return xlsMetadata;

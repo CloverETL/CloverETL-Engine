@@ -400,10 +400,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					String[] fieldName = st.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
-					if (!StringUtils.isValidObjectName(tableName)) {
-						tableName = StringUtils.normalizeName(tableName);
-					}
-					dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 					dbMetadata.setRecordDelimiter("\n");
 					for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
@@ -604,10 +601,7 @@ class DBLookup implements Lookup{
 				String[] fieldName = statement.getCloverOutputFields();
 				DataFieldMetadata fieldMetadata;
 				String tableName = dbMeta.getTableName(1);
-				if (!StringUtils.isValidObjectName(tableName)) {
-					tableName = StringUtils.normalizeName(tableName);
-				}
-				dbMetadata = new DataRecordMetadata(tableName, DataRecordMetadata.DELIMITED_RECORD);
+				dbMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
 				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 				dbMetadata.setRecordDelimiter("\n");
 				for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
