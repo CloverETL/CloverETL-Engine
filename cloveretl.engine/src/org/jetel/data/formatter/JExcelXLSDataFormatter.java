@@ -109,6 +109,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	public JExcelXLSDataFormatter(String charset, boolean append, boolean removeSheets){
 		super(append, removeSheets);
 		this.charset = charset;
+		inMemory = false;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
@@ -265,7 +266,16 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         try{
             WorkbookSettings settings = new WorkbookSettings();
             if (charset != null) settings.setEncoding(charset);
-    		
+            if (isInMemory()) {
+            	settings.setGCDisabled( false );
+            	settings.setUseTemporaryFileDuringWrite( false );
+            }else{
+            	settings.setGCDisabled( true );
+            	settings.setUseTemporaryFileDuringWrite( true );   
+            	if (tmpDir != null) {
+					settings.setTemporaryFileDuringWriteDirectory(tmpDir);
+				}
+            }
     		os = null;
     		InputStream is = null;
     		if (outputDataTarget instanceof Object[]) {

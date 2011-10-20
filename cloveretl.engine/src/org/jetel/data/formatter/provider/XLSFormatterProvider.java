@@ -18,6 +18,8 @@
  */
 package org.jetel.data.formatter.provider;
 
+import java.io.File;
+
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
@@ -45,6 +47,8 @@ public class XLSFormatterProvider implements FormatterProvider {
 	private String charset;
 
 	private String[] excludedFieldNames;
+	private Boolean inMemory;
+	private File tmpDir;
 
 	public XLSFormatterProvider(boolean append, boolean removeSheets) {
 		this(append, removeSheets, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -69,6 +73,12 @@ public class XLSFormatterProvider implements FormatterProvider {
 		formatter.setFirstRow(firstRow);
 		formatter.setNamesRow(namesRow);
 		formatter.setExcludedFieldNames(excludedFieldNames);
+		if (inMemory != null) {
+			formatter.setInMemory(inMemory);
+		}
+		if (tmpDir != null) {
+			formatter.setTmpDir(tmpDir);
+		}
 		return formatter;
 	}
 
@@ -175,6 +185,39 @@ public class XLSFormatterProvider implements FormatterProvider {
 
 	public void setExcludedFieldNames(String[] excludedFieldNames) {
 		this.excludedFieldNames = excludedFieldNames;
+	}
+
+	/**
+	 * @return true if Formatter is to process formatting in memory <br>
+	 * 			false if Formatter is to create temporary files when formating
+	 */
+	public Boolean isInMemory() {
+		return inMemory;
+	}
+
+	/**
+	 * Sets type of processing for xls files
+	 * 
+	 * @param inMemory
+	 */
+	public void setInMemory(boolean inMemory) {
+		this.inMemory = inMemory;
+	}
+
+	/**
+	 * @return directory for temporary files
+	 */
+	public File getTmpDir() {
+		return tmpDir;
+	}
+	
+	/**
+	 * Sets directory for temporary files
+	 * 
+	 * @param tmpDir
+	 */
+	public void setTmpDir(File tmpDir){
+		this.tmpDir = tmpDir;
 	}
 
 }
