@@ -18,6 +18,7 @@
  */
 package org.jetel.data.formatter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -373,6 +374,16 @@ public class XLSXDataFormatter extends XLSFormatter {
 		outputStream = null;
 	}
 
+	@Override
+	public void setInMemory(boolean inMemory) {
+		logger.warn("XLSXDataFormatter doesn't support inMemory attribute. This setting has no influence on formatter behavior");
+	}
+	
+	@Override
+	public void setTmpDir(File tmpDir) {
+		logger.warn("XLSXDataFormatter doesn't support tmpDir attribute. Set temp directory by java.io.tmpdir system property");
+	}
+	
 	/**
 	 * A structure used to save states when multiple sheet writing is enabled.
 	 *

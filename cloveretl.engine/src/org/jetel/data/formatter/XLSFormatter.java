@@ -18,6 +18,7 @@
  */
 package org.jetel.data.formatter;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.naming.InvalidNameException;
@@ -103,6 +104,10 @@ public abstract class XLSFormatter implements Formatter {
 
 	private String[] excludedFieldNames;
 	protected int[] includedFieldIndices;
+
+	protected Boolean inMemory;
+	protected File tmpDir;
+
 
 	/**
 	 * Constructor
@@ -308,6 +313,38 @@ public abstract class XLSFormatter implements Formatter {
 	public void finish() throws IOException {
 		flush();
 	}
+
+	/**
+	 * Sets type of processing for xls files
+	 * 
+	 * @param inMemory
+	 */
+	public void setInMemory(boolean inMemory) {
+		this.inMemory  = inMemory;
+	}
 	
+	/**
+	 * @return true if Formatter is to process formatting in memory <br>
+	 * 			false if Formatter is to create temporary files when formating
+	 */
+	public boolean isInMemory() {
+		return inMemory;
+	}
+
+	/**
+	 * Sets directory for temporary files
+	 * 
+	 * @param tmpDir
+	 */
+	public void setTmpDir(File tmpDir) {
+		this.tmpDir = tmpDir;
+	}
+
+	/**
+	 * @return directory for temporary files
+	 */
+	public File getTmpDir(){
+		return tmpDir;
+	}
 }
 
