@@ -213,7 +213,7 @@ public class runGraph {
                     System.exit(-1);
                 }
             } else if (args[i].startsWith(INFO_SWITCH)) {
-                showData.printInfo();
+                printInfo();
                 System.exit(0);
             } else if (args[i].startsWith(PLUGINS_SWITCH)) {
                 i++;
@@ -429,6 +429,33 @@ public class runGraph {
 		return threadManager.executeWatchDog(watchDog);
 	}
     
+	public static String getInfo(){
+		final StringBuilder ret = new StringBuilder();
+		ret.append("CloverETL library version ");
+		ret.append(JetelVersion.MAJOR_VERSION );
+		ret.append(".");
+		ret.append(JetelVersion.MINOR_VERSION);
+		ret.append(".");
+		ret.append(JetelVersion.REVISION_VERSION);
+		if( ! "".equals(JetelVersion.VERSION_SUFFIX) ) {
+			ret.append(".");
+			ret.append(JetelVersion.VERSION_SUFFIX);
+	 	}
+		if( ! "0".equals(JetelVersion.BUILD_NUMBER) ) {
+			ret.append(" build#");
+			ret.append(JetelVersion.BUILD_NUMBER);
+		}
+		if( JetelVersion.LIBRARY_BUILD_DATETIME.length() != 0 ){
+			ret.append(" compiled ");
+			ret.append( JetelVersion.LIBRARY_BUILD_DATETIME );
+		}
+		return ret.toString();
+	}
+	
+	public static void printInfo(){
+	    System.out.println(getInfo());
+	}
+
 	private static void printHelp() {
 		System.out.println("Usage: runGraph [-(v|cfg|logcfg|loglevel|P:|tracking|info|plugins|pass)] <graph definition file>");
 		System.out.println("Options:");
@@ -458,7 +485,7 @@ public class runGraph {
 	public static void printRuntimeHeader() {
         logger.info("***  CloverETL framework/transformation graph"
                 + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
-        logger.info("Running with " + showData.getInfo());
+        logger.info("Running with " + getInfo());
 
         logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
         		"OS " + System.getProperty("os.name") +
