@@ -90,6 +90,10 @@ import org.w3c.dom.Element;
  *  created separated sheets. If it is not set new sheet with default name is created</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
+ *  <tr><td><b>inMemory</b></td><td>indicates if disable temporary files during writing. Default value is <b>false</b>. 
+ *  <i>Note: It can be applied for <b>xls</b> files only</i></td>
+ *  <tr><td><b>tmpDir</b></td><td>Target directory for the temporary files. If this is not set, the system default temporary directory
+ *   is used. This has no effect unless the <i>inMemory</i> setting is <i>false</i>.  <i>Note: It can be applied for <b>xls</b> files only</i></td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>sheetNumber</b></td><td>number of sheet for writing data (starting from 0).
  *   If it is not set new sheet with default name is created. If sheetName and sheetNumber 
