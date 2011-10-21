@@ -602,6 +602,7 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals(null, StringUtils.normalizeName(null));
 		assertEquals("_", StringUtils.normalizeName(""));
 		assertEquals("_", StringUtils.normalizeName("_"));
+		assertEquals("_", StringUtils.normalizeName("#"));
 		assertEquals("__", StringUtils.normalizeName("__"));
 		assertEquals("a", StringUtils.normalizeName("%a%"));
 		assertEquals("a", StringUtils.normalizeName("%$@%a&*%"));
