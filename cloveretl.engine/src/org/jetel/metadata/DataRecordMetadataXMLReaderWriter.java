@@ -296,7 +296,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		
 		String label = record.getLabel();
 		if (!StringUtils.isEmpty(label)) {
-			metadataElement.setAttribute(LABEL_ATTR, label);
+			metadataElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 		}
 
 		if(record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) rt = "delimited";
@@ -349,7 +349,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldElement.setAttribute(NAME_ATTR, field.getName());
 				label = field.getLabel();
 				if (!StringUtils.isEmpty(label)) {
-				    fieldElement.setAttribute(LABEL_ATTR, label);
+				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
 
