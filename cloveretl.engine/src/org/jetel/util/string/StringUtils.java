@@ -838,10 +838,6 @@ public class StringUtils {
 		if (originalName == null) {
 			return null;
 		}
-		if (originalName.isEmpty()) {
-			// required for metadata extraction from databases which don't return table name (Oracle?)
-			originalName = ILLICIT_CHAR_REPLACEMENT;
-		}
 		String result;
 		
 		if (isValidObjectName(originalName)) {
@@ -862,7 +858,8 @@ public class StringUtils {
 			result = INVALID_SUBSTRING.matcher(result).replaceAll(ILLICIT_CHAR_REPLACEMENT);
 			
 			// isDigit accepts other than arabic digits, but those should be removed above
-			if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
+			// also replace empty string with a single underscore
+			if (result.isEmpty() || Character.isDigit(result.charAt(0))) {
 				result = "_" + result;
 			}
 		}
