@@ -443,6 +443,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		org.w3c.dom.NamedNodeMap attributes;
 		DataRecordMetadata recordMetadata;
 		String recordName = null;
+		String recordLabel = null;
 		String recordType = null;
 		String recordDelimiter = null;
 		String fieldDelimiter = null;
@@ -465,6 +466,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					.getNodeValue());
 			if (itemName.equalsIgnoreCase("name")) {
 				recordName = itemValue;
+			} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
+				recordLabel = itemValue;
 			} else if (itemName.equalsIgnoreCase("type")) {
 				recordType = itemValue;
 			} else if (itemName.equalsIgnoreCase("locale")) {
@@ -502,6 +505,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				"Unknown record type '" + recordType + "'. One of these options is supported delimited|fixed|mixed.");
 
 		recordMetadata = new DataRecordMetadata(recordName, rt);
+		if (!StringUtils.isEmpty(recordLabel)) {
+			recordMetadata.setLabel(recordLabel);
+		}
 		if (recLocaleStr != null) {
 			recordMetadata.setLocaleStr(recLocaleStr);
 		}
@@ -550,6 +556,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String format = null;
 			String defaultValue = null;
 			String name = null;
+			String label = null;
 			String size = null;
 			String shift = null;
 			String delimiter = null;
@@ -572,6 +579,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					fieldType = getFieldType(itemValue);
 				} else if (itemName.equalsIgnoreCase("name")) {
 					name = itemValue;
+				} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
+					label = itemValue;
 				} else if (itemName.equalsIgnoreCase("size")) {
 					size = itemValue;
 				} else if (itemName.equalsIgnoreCase(SHIFT_ATTR)) {
@@ -656,6 +665,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			// set properties
 			field.setFieldProperties(fieldProperties);
 
+			// set the label
+			if (label != null) {
+				field.setLabel(label);
+			}
 			// set format string if defined
 			if (format != null) {
 				field.setFormatStr(format);
