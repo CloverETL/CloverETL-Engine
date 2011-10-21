@@ -115,6 +115,8 @@ public class DataFieldMetadata implements Serializable {
 	/** Characters that can be contained in format of time. */
 	private static final Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
 	
+	public static final String EMPTY_NAME = "_";
+	
 	/**
 	 * Converts a type of a data field into its full string form.
 	 *
@@ -200,6 +202,8 @@ public class DataFieldMetadata implements Serializable {
 	protected String name;
 	/** Description of the field. */
 	private String description;
+	/** Original name of the field. */
+	private String label;
 
 	/** The type of the field. */
 	private char type = UNKNOWN_FIELD;
@@ -384,6 +388,24 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	public String getDescription() {
 		return description;
+	}
+	
+	/**
+	 * Sets the original name of the field.
+	 * 
+	 * @param label the original name of the field
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	/**
+	 * Returns the original name of the field.
+	 * 
+	 * @return original name of the field
+	 */
+	public String getLabel() {
+		return label;
 	}
 
 	/**
@@ -1080,6 +1102,7 @@ public class DataFieldMetadata implements Serializable {
 
 		dataFieldMetadata.setNumber(number);
 		dataFieldMetadata.setName(name);
+		dataFieldMetadata.setLabel(label);
 		dataFieldMetadata.setDescription(description);
 		dataFieldMetadata.setType(type);
 		dataFieldMetadata.setDelimiter(delimiter);

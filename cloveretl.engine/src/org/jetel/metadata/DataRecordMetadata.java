@@ -20,6 +20,7 @@ package org.jetel.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -67,11 +68,15 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/** The default string value that is considered as null. */
 	public static final String DEFAULT_NULL_VALUE = "";
 	public static final String BYTE_MODE_ATTR = "byteMode";
+	
+	public static final String EMPTY_NAME = "_";
 
 	/** Name of the data record. */
 	private String name;
 	/** Description of the data record. */
 	private String description;
+	/** Original name of the data record. */
+	private String label;
 
 	/** The type of the data record. */
 	private char recType;
@@ -173,6 +178,24 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public String getDescription() {
 		return description;
+	}
+	
+	/**
+	 * Sets the original name of the data record.
+	 * 
+	 * @param label the original name of the record
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	/**
+	 * Returns the original name of the data record.
+	 * 
+	 * @return the original name of the record 
+	 */
+	public String getLabel() {
+		return label;
 	}
 
 	/**
@@ -790,6 +813,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, recType);
 
 		dataRecordMetadata.setName(name);
+		dataRecordMetadata.setLabel(label);
 		dataRecordMetadata.setDescription(description);
 		dataRecordMetadata.setRecType(recType);
 		dataRecordMetadata.setSkipSourceRows(skipSourceRows);
@@ -1192,6 +1216,92 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public String getCollatorSensitivity() {
 		return collatorSensitivity;
 	}
+	
+	/**
+	 * The main method for record and field names normalization.
+	 * 
+	 * First add all the fields to the record and set their labels: {@link #setLabel(String)}.
+	 * Then call {@link #normalize()} to set the names
+	 * to their normalized versions and clear the labels, if applicable. 
+	 */
+	public void normalize() {
+		normalizeMetadata(this);
+	}
+	
+	/**
+	 * Sets the original names for the record and its fields.
+	 * 
+	 * The names are first normalized and made unique.
+	 * 
+	 * The normalized names are set as the new names.
+	 * 
+	 * Then if the normalized names are different from the original names,
+	 * the original names are set as the new labels. Otherwise
+	 * the labels are set to null.
+	 * 
+	 * @param recordName new full name of the record
+	 * @param fieldNames new full names of the fields
+	 */
+	public void setNames(String recordName, String... fieldNames) {
+		setNames(this, recordName, fieldNames);
+	}
+	
+	/**
+	 * @see #setNames(String, String...)
+	 * 
+	 * @param metadata
+	 * @param recordName
+	 * @param fieldNames
+	 */
+	public static void setNames(DataRecordMetadata metadata, String recordName, String... fieldNames) {
+		if (metadata == null) {
+			return;
+		}
+		if (recordName != null) {
+			String normalizedRecordName = StringUtils.normalizeName(recordName);
+			metadata.setName(normalizedRecordName);
+			metadata.setLabel(normalizedRecordName.equals(recordName) ? null : recordName);
+		}
+		int numFields = metadata.getNumFields(); 
+		if ((fieldNames != null) && (numFields == fieldNames.length)) {
+			String[] normalizedNames = StringUtils.normalizeNames(fieldNames);
+			boolean equal = Arrays.equals(fieldNames, normalizedNames);
+			for (int i = 0; i < numFields; i++) {
+				DataFieldMetadata field = metadata.getField(i);
+				field.setName(normalizedNames[i]);
+				field.setLabel(equal ? null : fieldNames[i]);
+			}
+		}
+	}
 
+	/**
+	 * @see #normalize()
+	 * 
+	 * @param metadata the metadata to normalize
+	 */
+	public static void normalizeMetadata(DataRecordMetadata metadata) {
+		if (metadata == null) {
+			return;
+		}
+		String newRecordName = metadata.getLabel();
+		if (newRecordName == null) {
+			newRecordName = metadata.getName();
+		}
+		
+		int numFields = metadata.getNumFields();
+		
+		String[] originalNames = new String[numFields];
+		for (int i = 0; i < numFields; i++) {
+			DataFieldMetadata field = metadata.getField(i); 
+			String label = field.getLabel();
+			if (label == null) {
+				label = field.getName();
+			}
+			originalNames[i] = label;
+		}
+		
+		metadata.setNames(newRecordName, originalNames);
+	}
+	
 }
 

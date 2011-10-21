@@ -40,7 +40,6 @@ import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  Various utilities for working with Databases
@@ -156,6 +155,7 @@ public class SQLUtil {
 
 	public static DataFieldMetadata dbMetadata2jetel(String name, DbMetadata dbMetadata, int sqlIndex, JdbcSpecific jdbcSpecific, boolean failIfUnknownType) throws SQLException{
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
+		fieldMetadata.setLabel(name);
 		
 		int type = dbMetadata.getType(sqlIndex);
 		char cloverType;
@@ -245,23 +245,18 @@ public class SQLUtil {
 	 */
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific, boolean failIfUknownType) throws SQLException {
 		DataFieldMetadata fieldMetadata;
-		String tableName = dbMetadata.getTableName(1);
-		DataRecordMetadata jetelMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
+		DataRecordMetadata jetelMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+		jetelMetadata.setLabel(dbMetadata.getTableName(1));
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
-		String colName;
 		
-		List<String> originalNames = new ArrayList<String>();
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
-			originalNames.add(dbMetadata.getColumnName(i));
-		}
-		String[] normalizedNames = StringUtils.normalizeNames(originalNames);
-
-		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
-			colName = normalizedNames[i-1];
-			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific, failIfUknownType);
+			fieldMetadata = dbMetadata2jetel(DataFieldMetadata.EMPTY_NAME, dbMetadata, i, jdbcSpecific, failIfUknownType);
+			fieldMetadata.setLabel(dbMetadata.getColumnName(i));
 			jetelMetadata.addField(fieldMetadata);
 		}
+		
+		jetelMetadata.normalize();
 		
 		return jetelMetadata;
 	}

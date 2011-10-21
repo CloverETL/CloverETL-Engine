@@ -234,6 +234,7 @@ public class SQLIncremental {
 			}
 			keyMetadata.addField(SQLUtil.dbMetadata2jetel((String)keyDef[i][NAME], dbMetadata, index, jdbcSpecific));
 		}
+		keyMetadata.normalize();
 		keyRecord = new DataRecord(keyMetadata);
 		keyRecord.init();
 		//prepare trans map for filling key record with updated values

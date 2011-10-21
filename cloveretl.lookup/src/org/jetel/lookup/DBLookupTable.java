@@ -400,13 +400,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					String[] fieldName = st.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
-					dbMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata.setLabel(tableName);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 					dbMetadata.setRecordDelimiter("\n");
 					for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
 						fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
 						dbMetadata.addField(fieldMetadata);
 					}
+					dbMetadata.normalize();
 				}
 		   }
 		   DataRecord record = new DataRecord(dbMetadata);
@@ -601,13 +603,15 @@ class DBLookup implements Lookup{
 				String[] fieldName = statement.getCloverOutputFields();
 				DataFieldMetadata fieldMetadata;
 				String tableName = dbMeta.getTableName(1);
-				dbMetadata = new DataRecordMetadata(StringUtils.normalizeName(tableName), DataRecordMetadata.DELIMITED_RECORD);
+				dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+				dbMetadata.setLabel(tableName);
 				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 				dbMetadata.setRecordDelimiter("\n");
 				for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
 					fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
 					dbMetadata.addField(fieldMetadata);
 				}
+				dbMetadata.normalize();
 		   }
 	   }
 	}
