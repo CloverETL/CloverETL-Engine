@@ -141,6 +141,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String FIELD_ELEMENT = "Field";
 	//private static final String CODE_ELEMENT = "Code";
 	private static final String NAME_ATTR = "name"; 
+	private static final String LABEL_ATTR = "label"; 
     private static final String TYPE_ATTR = "type";
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
@@ -292,6 +293,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		DataFieldMetadata field;
 
 		metadataElement.setAttribute(NAME_ATTR, record.getName());
+		
+		String label = record.getLabel();
+		if (!StringUtils.isEmpty(label)) {
+			metadataElement.setAttribute(LABEL_ATTR, label);
+		}
 
 		if(record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) rt = "delimited";
 		else if(record.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) rt = "fixed";
@@ -341,6 +347,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				metadataElement.appendChild(fieldElement);
 
 				fieldElement.setAttribute(NAME_ATTR, field.getName());
+				label = field.getLabel();
+				if (!StringUtils.isEmpty(label)) {
+				    fieldElement.setAttribute(LABEL_ATTR, label);
+				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));

@@ -195,8 +195,9 @@ public class JExcelXLSDataParser extends XLSParser {
 	@Override
 	public DataRecordMetadata createMetadata(){
 		if (wb == null) return null;
-		String name = StringUtils.normalizeName(sheet.getName());
-		DataRecordMetadata xlsMetadata = new DataRecordMetadata(name, DataRecordMetadata.DELIMITED_RECORD);
+		String name = sheet.getName();
+		DataRecordMetadata xlsMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+		xlsMetadata.setLabel(name);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 		Cell[] namesRow;
@@ -224,30 +225,24 @@ public class JExcelXLSDataParser extends XLSParser {
 			}
 			type = dataCell != null ? dataCell.getType() : CellType.LABEL;
 			name = (metadataRow>-1) && nameCell != null ? nameCell.getContents() : XLSFormatter.getCellCode(i);
-			name = StringUtils.normalizeName(name);
 			if (type == CellType.EMPTY && namesRow != dataRow && nameCell.getType() == CellType.EMPTY){
 				continue;
 			}else if (type == CellType.BOOLEAN) {
-				field = new DataFieldMetadata(name, DataFieldMetadata.BOOLEAN_FIELD,null);
-				xlsMetadata.addField(field);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.BOOLEAN_FIELD,null);
 			}else if (type == CellType.DATE){
-				field = new DataFieldMetadata(name, DataFieldMetadata.DATE_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.DATE_FIELD,null);
 				field.setFormatStr(((SimpleDateFormat)((DateCell)dataCell).getDateFormat()).toPattern());
-				xlsMetadata.addField(field);
 			}else if (type == CellType.NUMBER) {
-				field = new DataFieldMetadata(name, DataFieldMetadata.NUMERIC_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.NUMERIC_FIELD,null);
 				field.setFormatStr(((DecimalFormat)((NumberCell)dataCell).getNumberFormat()).toPattern());
-				xlsMetadata.addField(field);
 			}else{
-				field = new DataFieldMetadata(name, DataFieldMetadata.STRING_FIELD,null);
-				xlsMetadata.addField(field);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.STRING_FIELD,null);
 			}
+			field.setLabel(name);
+			xlsMetadata.addField(field);
 		}
 		
-		String[] uniqueNames = StringUtils.getUniqueNames(xlsMetadata.getFieldNamesArray());
-		for (int i = 0; i < xlsMetadata.getNumFields(); i++) {
-			xlsMetadata.getField(i).setName(uniqueNames[i]);
-		}
+		xlsMetadata.normalize();
 		
 		return xlsMetadata;
 	}

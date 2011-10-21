@@ -5,7 +5,6 @@ import java.io.*;
 import org.jetel.metadata.*;
 import java.math.*;
 import org.jetel.data.*;
-import org.jetel.util.string.StringUtils;
 
 /** Token Manager. */
 public class DDL2CloverTokenManager implements DDL2CloverConstants

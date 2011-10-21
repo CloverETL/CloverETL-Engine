@@ -373,8 +373,9 @@ public class DBFAnalyzer {
 	}
 	
 	public DataRecordMetadata getCloverMetadata(){
-		DataRecordMetadata record=new DataRecordMetadata(StringUtils.normalizeName(dbfTableName),
+		DataRecordMetadata record=new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME,
 							DataRecordMetadata.FIXEDLEN_RECORD);
+		record.setLabel(dbfTableName);
 	
 		// set record properties - additional info for DBF-type of data 
 		Properties recProp=new Properties();
@@ -384,19 +385,16 @@ public class DBFAnalyzer {
 		record.setRecordProperties(recProp);
 		
 		// add "hidden" field indicatind deletion status
-		record.addField(new DataFieldMetadata("_IS_DELETED_",DataFieldMetadata.STRING_FIELD,(short)1));
-		
-		List<String> originalNames = new ArrayList<String>(dbfNumFields);
-		for (int i=0;i<dbfNumFields;i++){
-			originalNames.add(dbfFields[i].name);
-		}
-		String[] normalizedNames = StringUtils.normalizeNames(originalNames);
+		DataFieldMetadata isDeletedField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME,DataFieldMetadata.STRING_FIELD,(short)1);
+		isDeletedField.setLabel("_IS_DELETED_");
+		record.addField(isDeletedField);
 		
 		for (int i=0;i<dbfNumFields;i++){
 			// create field definition based on what we read from DBF file header
-			DataFieldMetadata field=new DataFieldMetadata(normalizedNames[i],
+			DataFieldMetadata field=new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME,
 					dbfFieldType2Clover(dbfFields[i].type),
 					dbfFields[i].length);
+			field.setLabel(dbfFields[i].name);
 
 			// if DATE DBF type, then set format/date mask
 			if (dbfFields[i].type=='D'){
@@ -404,6 +402,8 @@ public class DBFAnalyzer {
 			}
 			record.addField(field);
 		}
+		
+		record.normalize();
 		
 		return record;
 	}

@@ -6,7 +6,6 @@ import java.io.*;
 import org.jetel.metadata.*;
 import java.math.*;
 import org.jetel.data.*;
-import org.jetel.util.string.StringUtils;
 
 public class DDL2Clover implements DDL2CloverConstants {
 
@@ -63,8 +62,6 @@ public class DDL2Clover implements DDL2CloverConstants {
   final public DataRecordMetadata createTableStatement() throws ParseException {
         DataRecordMetadata dataRecordMetadata;
         List<DataFieldMetadata> list;
-        List<String> fieldNames = new ArrayList<String>();
-        Iterator<DataFieldMetadata> it;
     jj_consume_token(CREATE);
     switch (jj_nt.kind) {
     case GLOBAL:
@@ -83,16 +80,12 @@ public class DDL2Clover implements DDL2CloverConstants {
     } else {
       ;
     }
-                        dataRecordMetadata = new DataRecordMetadata(StringUtils.normalizeName(identifier()));
+                        String tableName = identifier();
+                        // the record name will be constructed from the label
+                        dataRecordMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME);
+                        dataRecordMetadata.setLabel(tableName);
                         list = tableElementList();
                         for (DataFieldMetadata field : list) {
-                            fieldNames.add(field.getName());
-                        }
-                        String[] uniqueNames = StringUtils.getUniqueNames(fieldNames);
-                        int i = 0;
-                        for (it = list.iterator(); it.hasNext(); i++) {
-                            DataFieldMetadata field = it.next();
-                            field.setName(uniqueNames[i]);
                             dataRecordMetadata.addField(field);
                         }
     switch (jj_nt.kind) {
@@ -131,6 +124,7 @@ public class DDL2Clover implements DDL2CloverConstants {
                 } else if (fieldDelimiter == null && recordDelimiter == null) {
                         dataRecordMetadata.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
                 }
+          dataRecordMetadata.normalize();
           {if (true) return dataRecordMetadata;}
     throw new Error("Missing return statement in function");
   }
@@ -356,13 +350,13 @@ public class DDL2Clover implements DDL2CloverConstants {
       }
       columnConstraint = columnConstraintDefinition();
     }
-          name = StringUtils.normalizeName(name);
           if (type.length == null) {
-                dataFieldMetadata = new DataFieldMetadata(name, type.type, null);
+                dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, type.type, null);
           } else {
                 //dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
-                dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
+                dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, type.type, type.length.shortValue());
           }
+          dataFieldMetadata.setLabel(name);
           if (value != null) {
                 dataFieldMetadata.setDefaultValueStr(value.toString());
           }

@@ -275,9 +275,10 @@ public class XLSXDataParser extends XLSParser {
 			return null;
 		}
 
-		String sheetName = StringUtils.normalizeName(workbook.getSheetName(sheetCounter));
+		String sheetName = workbook.getSheetName(sheetCounter);
 
-		DataRecordMetadata xlsMetadata = new DataRecordMetadata(sheetName, DataRecordMetadata.DELIMITED_RECORD);
+		DataRecordMetadata xlsMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+		xlsMetadata.setLabel(sheetName);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
 
@@ -316,14 +317,13 @@ public class XLSXDataParser extends XLSParser {
 
 			String cellName = (metadataRow > -1 && nameCell != null) ? 
 					dataFormatter.formatCellValue(nameCell) : XLSFormatter.getCellCode(i);
-			cellName = StringUtils.normalizeName(cellName);
 
 			DataFieldMetadata dataField = null;
 
 			if (cellType == Cell.CELL_TYPE_BOOLEAN) {
-				dataField = new DataFieldMetadata(cellName, DataFieldMetadata.BOOLEAN_FIELD, null);
+				dataField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.BOOLEAN_FIELD, null);
 			} else if (cellType == Cell.CELL_TYPE_NUMERIC) {
-				dataField = new DataFieldMetadata(cellName, DateUtil.isCellDateFormatted(dataCell)
+				dataField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DateUtil.isCellDateFormatted(dataCell)
 						? DataFieldMetadata.DATE_FIELD : DataFieldMetadata.NUMERIC_FIELD, null);
 				String formatString = dataCell.getCellStyle().getDataFormatString();
 
@@ -331,16 +331,14 @@ public class XLSXDataParser extends XLSParser {
 					dataField.setFormatStr(formatString);
 				}
 			} else {
-				dataField = new DataFieldMetadata(cellName, DataFieldMetadata.STRING_FIELD, null);
+				dataField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.STRING_FIELD, null);
 			}
 
+			dataField.setLabel(cellName);
 			xlsMetadata.addField(dataField);
 		}
 
-		String[] uniqueNames = StringUtils.getUniqueNames(xlsMetadata.getFieldNamesArray());
-		for (int i = 0; i < xlsMetadata.getNumFields(); i++) {
-			xlsMetadata.getField(i).setName(uniqueNames[i]);
-		}
+		xlsMetadata.normalize();
 
 		return xlsMetadata;
 	}
