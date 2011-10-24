@@ -22,7 +22,6 @@ package org.jetel.util.string;
 
 import java.util.Arrays;
 import java.util.Properties;
-import org.jetel.util.string.StringUtils;
 
 import org.jetel.test.CloverTestCase;
 
@@ -628,6 +627,10 @@ public class StringUtilsTest extends CloverTestCase {
 		assertArraysEquals(
 				new String[] {"Milan_Krivanek", "Milan_Krivanek1"}, 
 				StringUtils.normalizeNames("Milan Křivánek", "Milan_Krivanek")
+		);
+		assertArraysEquals(
+				new String[] {"Milan_Krivanek1", "Milan_Krivanek2"}, 
+				StringUtils.normalizeNames(Arrays.asList("Milan Křivánek", "Milan_Krivanek"), Arrays.asList("Milan_Krivanek"))
 		);
 	}
 }
