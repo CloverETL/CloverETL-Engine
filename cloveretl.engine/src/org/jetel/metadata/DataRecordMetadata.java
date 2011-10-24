@@ -1022,15 +1022,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		short fieldSize;
 		int headerSize;
 		char blank = ' ';
+		String label;
 
 		int[] includedFieldIndices = fieldsIndicesComplement(excludedFieldNames);
 		int lastIncludedFieldIndex = includedFieldIndices[includedFieldIndices.length - 1];
 
 		for (int i : includedFieldIndices) {
 			dataFieldMetadata = getField(i);
+			label = dataFieldMetadata.getLabel();
+			if (label == null) {
+				label = dataFieldMetadata.getName();
+			}
 			if (dataFieldMetadata.isDelimited()) {
 				// delim: add field name and delimiter
-				ret.append(dataFieldMetadata.getName());
+				ret.append(label);
 
 				if (i == lastIncludedFieldIndex) {
 					dataFieldMetadata = getField(getNumFields() - 1);
@@ -1040,10 +1045,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			} else {
 				// fixlen: strip header name or add blank spaces
 				fieldSize = dataFieldMetadata.getSize();
-				if (fieldSize <= (headerSize = dataFieldMetadata.getName().length())) {
-					ret.append(dataFieldMetadata.getName().substring(0, fieldSize));
+				if (fieldSize <= (headerSize = label.length())) {
+					ret.append(label.substring(0, fieldSize));
 				} else {
-					ret.append(dataFieldMetadata.getName());
+					ret.append(label);
 					for (int j = fieldSize - headerSize; j > 0; j--) {
 						ret.append(blank);
 					}
