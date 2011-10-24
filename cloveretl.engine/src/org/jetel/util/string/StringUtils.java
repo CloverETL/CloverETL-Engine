@@ -885,6 +885,18 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Returns an array containing strings from originalNames with numbers appended
+	 * so that resulting strings are unique with respect to both originalNames and otherNames.
+	 * 
+	 * @param originalNames names to make unique
+	 * @param reservedNamesNames other already unique reserved names to take into account
+	 * @return unique names made from originalNames
+	 */
+	public static String[] getUniqueNames(String[] originalNames, List<String> reservedNamesNames) {
+		return getUniqueNames(Arrays.asList(originalNames), reservedNamesNames);
+	}
+	
+	/**
 	 * Returns an array containing strings from originalNames
 	 * with numbers appended if necessary.
 	 * 
@@ -892,22 +904,34 @@ public class StringUtils {
 	 * @return unique names
 	 */
 	public static String[] getUniqueNames(List<String> originalNames) {
+		return getUniqueNames(originalNames, null);
+	}
+	
+	/**
+	 * Returns an array containing strings from originalNames with numbers appended
+	 * so that resulting strings are unique with respect to both originalNames and otherNames.
+	 * 
+	 * @param originalNames names to make unique
+	 * @param reservedNames other already unique reserved names to take into account
+	 * @return unique names made from originalNames
+	 */
+	public static String[] getUniqueNames(List<String> originalNames, List<String> reservedNames) {
 		int length = originalNames.size();
 		String[] result = new String[length];
-		Set<String> newNames = new HashSet<String>();
+		Set<String> uniqueNames = reservedNames == null ? new HashSet<String>() : new HashSet<String>(reservedNames);
 		for (int n = 0; n < length; n++) {
 			String newName = originalNames.get(n);
-			if (!newNames.contains(newName)) {
+			if (!uniqueNames.contains(newName)) {
 				result[n] = newName;
-				newNames.add(newName);
+				uniqueNames.add(newName);
 			} else {
 				int i = 1;
 				String extendedName = newName + i;
-				while (newNames.contains(extendedName)) {
+				while (uniqueNames.contains(extendedName)) {
 					extendedName = newName + (++i);
 				}
 				result[n] = extendedName;
-				newNames.add(extendedName);
+				uniqueNames.add(extendedName);
 			}
 		}
 		return result;
@@ -921,7 +945,7 @@ public class StringUtils {
 	 * @return unique normalized names
 	 */
 	public static String[] normalizeNames(String... originalNames) {
-		return normalizeNames(Arrays.asList(originalNames));
+		return normalizeNames(Arrays.asList(originalNames), null);
 	}
 	
 	/**
@@ -932,12 +956,24 @@ public class StringUtils {
 	 * @return unique normalized names
 	 */
 	public static String[] normalizeNames(List<String> originalNames) {
+		return normalizeNames(originalNames, null);
+	}
+	
+	/**
+	 * Normalizes all strings in originalNames and ensures that
+	 * the results are unique also with respect to reservedNames.
+	 * 
+	 * @param originalNames names to normalize and to make unique
+	 * @param reservedNames already normalized and unique names which cannot appear in result
+	 * @return unique normalized names
+	 */
+	public static String[] normalizeNames(List<String> originalNames, List<String> reservedNames) {
 		String[] normalizedNames = new String[originalNames.size()];
 		int i = 0;
 		for (String s: originalNames) {
 			normalizedNames[i++] = normalizeName(s);
 		}
-		return getUniqueNames(normalizedNames);
+		return getUniqueNames(normalizedNames, reservedNames);
 	}
 
 	public static boolean isValidObjectId(CharSequence seq) {
