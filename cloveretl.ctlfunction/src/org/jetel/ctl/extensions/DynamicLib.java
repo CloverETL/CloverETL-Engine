@@ -175,7 +175,7 @@ public class DynamicLib extends TLFunctionLibrary {
 			
 	}
 	
-	private static String LIBRARY_NAME = "Dynamic";
+	private static String LIBRARY_NAME = "Dynamic field access";
 
 	@Override
 	public String getName() {
