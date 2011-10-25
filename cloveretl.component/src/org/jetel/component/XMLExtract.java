@@ -1768,16 +1768,18 @@ public class XMLExtract extends Node {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler handler = new MyHandler();
-			InputStream is = null;
+			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
 				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new FileInputStream(new File(filePath));
+				is = new InputSource(new FileInputStream(new File(filePath)));
 				ReadableByteChannel ch = FileUtils.getReadableChannel(
 						graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				doc = createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
-				is = new ByteArrayInputStream(mapping.getBytes(charset));
+				// inlined mapping
+				// don't use the charset of the component's input files, but the charset of the .grf file
+		        is = new InputSource(new StringReader(mapping));
 				doc = createDocumentFromString(mapping);
 	        }
 			if (is != null) {
