@@ -20,6 +20,8 @@ package org.jetel.util;
 
 import java.awt.Point;
 
+import org.apache.poi.ss.util.CellReference;
+
 
 
 /**
@@ -41,6 +43,7 @@ public class SpreadsheetUtils {
 	private static final int CHAR_COUNT = Z - A + 1;
 	
 	public static int getColumnIndex(String cellReference) {
+		// TODO maybe use CellReference.convertColStringToIndex() instead
 		int columnIndex = 0;
 		char c;
 		for (int i = 0; i < cellReference.length(); i++) {
@@ -71,20 +74,7 @@ public class SpreadsheetUtils {
 	}
 	
 	public static String getColumnReference(int columnIndex) {
-		if (columnIndex < CHAR_COUNT) {
-			char c = A;
-			c += columnIndex;
-			return String.valueOf(c);
-		} else {
-			StringBuilder sb = new StringBuilder();
-			while (columnIndex > 0) {
-				char c = A;
-				c += columnIndex % CHAR_COUNT;
-				sb.insert(0, c);
-				columnIndex /= CHAR_COUNT;
-			}
-			return sb.toString();
-		}
+		return CellReference.convertNumToColString(columnIndex);
 	}
 	
 	public static enum SpreadsheetAttitude {
