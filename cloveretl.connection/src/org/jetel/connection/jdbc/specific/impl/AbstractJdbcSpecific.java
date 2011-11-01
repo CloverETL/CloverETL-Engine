@@ -48,6 +48,7 @@ import org.jetel.connection.jdbc.CopySQLData.CopyTimestamp;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
@@ -592,4 +593,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public boolean useSavepoints() {
 		return false;
 	}
+
+	@Override
+	public void unloadDriver(JdbcDriver driver) {
+		// do nothing by default
+	}
+	
 }

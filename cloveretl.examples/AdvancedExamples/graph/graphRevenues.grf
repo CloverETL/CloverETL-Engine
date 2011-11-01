@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation Devel" modified="Mon Jun 20 17:16:05 CEST 2011" modifiedBy="avackova" name="Revenues of one half-year" revision="1.51" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation Devel" modified="Mon Oct 10 12:23:31 CEST 2011" modifiedBy="avackova" name="Revenues of one half-year" revision="1.52" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="Aggr_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -149,9 +149,9 @@ function integer transform() {
 <Edge fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTER2:0"/>
 <Edge fromNode="FILTER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE1:0"/>
 <Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge18" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY1:1" guiBendpoints="766:394|766:456|142:456|-603:86" guiLocks="766|null|null" guiRouter="Manual" id="Edge25" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="SORT3:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY1:1" guiBendpoints="766:394|766:450|142:450|-603:86" guiLocks="766|null|450" guiRouter="Manual" id="Edge25" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="SORT3:0"/>
 <Edge fromNode="SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="AGGREGATE1:0"/>
-<Edge fromNode="SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge26" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN1:0"/>
-<Edge fromNode="SORT3:0" guiBendpoints="4:0|4:32" guiRouter="Manual" id="Edge27" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN1:1"/>
+<Edge fromNode="SORT2:0" guiBendpoints="299:569|299:494" guiLocks="299|null|null" guiRouter="Manual" id="Edge26" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN1:0"/>
+<Edge fromNode="SORT3:0" guiBendpoints="308:480|308:512" guiLocks="308|null|null" guiRouter="Manual" id="Edge27" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN1:1"/>
 </Phase>
 </Graph>

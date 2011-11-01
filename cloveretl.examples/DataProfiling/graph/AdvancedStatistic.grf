@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseType="Evaluation Devel" modified="Mon May 02 10:24:18 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.289" showComponentDetails="true">
+<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseType="Evaluation Devel" modified="Mon Oct 10 12:43:04 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.292" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -91,7 +91,7 @@
 - modus value
 It also finds frequency counts for fields with not many (< ${HISTOGRAM_THRESHOLD}) unique values.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="361" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Advanced statistic - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="625" x="719" y="-50">
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="361" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Advanced statistic - parameters" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="625" x="737" y="-44">
 <attr name="text"><![CDATA[DataProfiling project contains (as usuall CloverDesigner project) workspace.prm file, that stores project structure. It contains also parameters.prm file, which defines parameters shared by BasicStatistic and AdvancedStatistic graphs:
 DATE_FORMAT - format for parsing dates in final output
 READER_TYPE - both graphs are prepared for reading various types of data. This example is configured for reading data from all sheets (sheetName=*) of xls file. The project contains the flat file also; to read this file, change READER_TYPE to DATA_READER. For some other Readers it is necessry to set additional attributes, eg. sqlQuery and dbConnection for DBInputTable.
@@ -121,23 +121,23 @@ Reformat also stores fields for further processing in the graph dictionary . The
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="276" id="AGGREGATE1" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueByte);$countUnique:=countunique($valueByte);$modusByte:=modus($valueByte);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="102" id="AGGREGATE2" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueDate);$countUnique:=countunique($valueDate);$minDate:=min($valueDate);$maxDate:=max($valueDate);$medianDate:=median($valueDate);$modusDate:=modus($valueDate);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="361" id="AGGREGATE3" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueNumber);$countUnique:=countunique($valueNumber);$minNumber:=min($valueNumber);$maxNumber:=max($valueNumber);$avgNumber:=avg($valueNumber);$medianNumber:=median($valueNumber);$modusNumber:=modus($valueNumber);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="64" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="184" id="AGGREGATE4" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueString);$countUnique:=countunique($valueString);$minString:=min($valueString);$maxString:=max($valueString);$medianString:=median($valueString);$modusString:=modus($valueString);" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiHeight="81" guiName="DataReader" guiWidth="128" guiX="-132" guiY="22" id="DATA_READER1" type="${READER_TYPE}">
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="276" id="AGGREGATE1" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueByte);$countUnique:=countunique($valueByte);$modusByte:=modus($valueByte);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="102" id="AGGREGATE2" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueDate);$countUnique:=countunique($valueDate);$minDate:=min($valueDate);$maxDate:=max($valueDate);$medianDate:=median($valueDate);$modusDate:=modus($valueDate);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="361" id="AGGREGATE3" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueNumber);$countUnique:=countunique($valueNumber);$minNumber:=min($valueNumber);$maxNumber:=max($valueNumber);$avgNumber:=avg($valueNumber);$medianNumber:=median($valueNumber);$modusNumber:=modus($valueNumber);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="184" id="AGGREGATE4" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueString);$countUnique:=countunique($valueString);$minString:=min($valueString);$maxString:=max($valueString);$medianString:=median($valueString);$modusString:=modus($valueString);" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="-132" guiY="22" id="DATA_READER1" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${input_file}]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="81" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="339" id="EXT_SORT1" sortKey="fieldName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" errorLog="${DATATMP_DIR}/stat_skipped.log" guiHeight="98" guiName="Normalizer" guiWidth="128" guiX="13" guiY="22" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer1.java" type="NORMALIZER">
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="329" id="EXT_SORT1" sortKey="fieldName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/stat_skipped.log" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="13" guiY="22" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer1.java" type="NORMALIZER">
 <attr name="guiDescription"><![CDATA[ Creates "normalized" records from each input record. Such "normalized" record contains information about each input field: its original name, type and value. Depending on the type only one output field's value is fulfilled.
 This components serves also as a filter if STATISTIC_FIELDS or NOT_STATISTIC_FIELDS parameter is not empty.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="98" guiName="TypePartition" guiWidth="128" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
+<Node enabled="enabled" guiHeight="101" guiName="TypePartition" guiWidth="128" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
 <attr name="partitionSource"><![CDATA[//#TL
 // This transformation partitions input records into multiple output ports.
 import '${TRANS_DIR}/types.ctl';
@@ -164,7 +164,7 @@ function getOutputPort() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Partitions data depending on the value type, so Aggregate components work with not empty records.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="64" guiName="Simplification" guiWidth="128" guiX="882" guiY="356" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="Simplification" guiWidth="128" guiX="882" guiY="329" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
@@ -226,8 +226,8 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="168" guiY="22" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="336" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="98" guiName="DataWriter" guiWidth="128" guiX="1204" guiY="322" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="329" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="101" guiName="DataWriter" guiWidth="128" guiX="1204" guiY="329" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Statistic]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
@@ -311,32 +311,32 @@ function transform() {
 		</TD>
 	</TR>]]></attr>
 </Node>
-<Edge fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:0"/>
-<Edge fromNode="AGGREGATE1:0" guiBendpoints="27:0:-43:-64:0.5|27:64:-43:0:0.5" guiRouter="Manual" id="Edge9" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:1"/>
-<Edge fromNode="AGGREGATE2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:2"/>
-<Edge fromNode="AGGREGATE3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 3 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:3"/>
-<Edge fromNode="AGGREGATE4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 4 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:4"/>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="730:42|730:348" guiLocks="730|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="AGGREGATE1:0" guiBendpoints="699:296|699:384" guiLocks="699|null|null" guiRouter="Manual" id="Edge9" inPort="Port 3 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:3"/>
+<Edge fromNode="AGGREGATE2:0" guiBendpoints="720:122|720:360" guiLocks="720|685|null" guiRouter="Manual" id="Edge10" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="AGGREGATE3:0" guiBendpoints="695:381|695:396" guiLocks="695|null|null" guiRouter="Manual" id="Edge11" inPort="Port 4 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:4"/>
+<Edge fromNode="AGGREGATE4:0" guiBendpoints="709:204|709:372" guiLocks="709|null|null" guiRouter="Manual" id="Edge12" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:2"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
 <Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (out)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
 <Edge fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
-<Edge fromNode="PARTITION0:0" guiBendpoints="44:0:-8:-8:0.5|44:8:-8:0:0.5" guiRouter="Manual" id="Edge15" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
-<Edge fromNode="PARTITION0:1" guiBendpoints="40:0:-12:-76:0.5|40:76:-12:0:0.5" guiRouter="Manual" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE2:0"/>
-<Edge fromNode="PARTITION0:2" guiBendpoints="32:0:-20:-146:0.5|32:146:-20:0:0.5" guiRouter="Manual" id="Edge19" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="AGGREGATE4:0"/>
-<Edge fromNode="PARTITION0:3" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 3 (out)" toNode="AGGREGATE1:0"/>
-<Edge fromNode="PARTITION0:4" guiBendpoints="19:0:-33:-299:0.5|19:299:-33:0:0.5" guiRouter="Manual" id="Edge24" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 4 (out)" toNode="AGGREGATE3:0"/>
+<Edge fromNode="PARTITION0:0" guiBendpoints="514:34|514:42" guiLocks="514|null|null" guiRouter="Manual" id="Edge15" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
+<Edge fromNode="PARTITION0:1" guiBendpoints="510:46|510:122" guiLocks="510|null|null" guiRouter="Manual" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE2:0"/>
+<Edge fromNode="PARTITION0:2" guiBendpoints="503:58|503:204" guiLocks="503|null|null" guiRouter="Manual" id="Edge19" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="AGGREGATE4:0"/>
+<Edge fromNode="PARTITION0:3" guiBendpoints="493:70|493:296" guiLocks="493|null|null" guiRouter="Manual" id="Edge16" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 3 (out)" toNode="AGGREGATE1:0"/>
+<Edge fromNode="PARTITION0:4" guiBendpoints="485:82|485:381" guiLocks="485|509|null" guiRouter="Manual" id="Edge24" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 4 (out)" toNode="AGGREGATE3:0"/>
 <Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge25" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
 <Edge debugMode="false" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge26" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
 <Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="fieldName;valueBoolean" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="451" id="AGGREGATE10" mapping="$fieldName:=$fieldName;$type:=first($type);$valueBoolean:=$valueBoolean;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueString" enabled="enabled" equalNULL="true" guiHeight="64" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="592" id="AGGREGATE6" mapping="$fieldName:=$fieldName;$type:=first($type);$valueString:=$valueString;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueNumber" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="751" id="AGGREGATE7" mapping="$fieldName:=$fieldName;$type:=first($type);$valueNumber:=$valueNumber;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueDate" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="523" id="AGGREGATE8" mapping="$fieldName:=$fieldName;$type:=first($type);$valueDate:=$valueDate;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueByte" enabled="enabled" equalNULL="true" guiHeight="64" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=first($type);$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiHeight="98" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="717" id="EXT_SORT0" sortKey="fieldName(a);value(a)" type="EXT_SORT"/>
-<Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiHeight="98" guiName="Histogram filter" guiWidth="145" guiX="287" guiY="559" id="REFORMAT1" type="REFORMAT">
+<Node aggregateKey="fieldName;valueBoolean" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="451" id="AGGREGATE10" mapping="$fieldName:=$fieldName;$type:=first($type);$valueBoolean:=$valueBoolean;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueString" enabled="enabled" equalNULL="true" guiHeight="69" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="592" id="AGGREGATE6" mapping="$fieldName:=$fieldName;$type:=first($type);$valueString:=$valueString;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueNumber" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="751" id="AGGREGATE7" mapping="$fieldName:=$fieldName;$type:=first($type);$valueNumber:=$valueNumber;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueDate" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="523" id="AGGREGATE8" mapping="$fieldName:=$fieldName;$type:=first($type);$valueDate:=$valueDate;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueByte" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=first($type);$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="733" id="EXT_SORT0" sortKey="fieldName(a);value(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiHeight="101" guiName="Histogram filter" guiWidth="145" guiX="287" guiY="559" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 import '${TRANS_DIR}/types.ctl';
 
@@ -410,7 +410,7 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Filters values, for which frequency counts will be calculated. It also serves as a type partition like in Phase 0.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="64" guiName="Simplification" guiWidth="128" guiX="882" guiY="751" id="REFORMAT2" type="REFORMAT">
+<Node enabled="enabled" guiHeight="69" guiName="Simplification" guiWidth="128" guiX="882" guiY="733" id="REFORMAT2" type="REFORMAT">
 <attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
@@ -470,8 +470,8 @@ function transform() {
 // function finished() { }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="731" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="98" guiName="DataWriter" guiWidth="128" guiX="1187" guiY="717" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="733" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="101" guiName="DataWriter" guiWidth="128" guiX="1187" guiY="733" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Histogram]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="append"><![CDATA[true]]></attr>
@@ -522,11 +522,11 @@ As a STRUCTURE_WRITER it creates the table with histograms and closes html page.
 		</TD>
 	</TR>]]></attr>
 </Node>
-<Edge fromNode="AGGREGATE10:0" guiBendpoints="" guiRouter="Manhattan" id="Edge34" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:0"/>
-<Edge fromNode="AGGREGATE6:0" guiBendpoints="" guiRouter="Manhattan" id="Edge36" inPort="Port 2 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:2"/>
+<Edge fromNode="AGGREGATE10:0" guiBendpoints="725:471|725:743" guiLocks="725|null|null" guiRouter="Manual" id="Edge34" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:0"/>
+<Edge fromNode="AGGREGATE6:0" guiBendpoints="701:612|701:767" guiLocks="701|null|null" guiRouter="Manual" id="Edge36" inPort="Port 2 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:2"/>
 <Edge fromNode="AGGREGATE7:0" guiBendpoints="" guiRouter="Manhattan" id="Edge38" inPort="Port 4 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:4"/>
-<Edge fromNode="AGGREGATE8:0" guiBendpoints="" guiRouter="Manhattan" id="Edge35" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
-<Edge fromNode="AGGREGATE9:0" guiBendpoints="" guiRouter="Manhattan" id="Edge37" inPort="Port 3 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:3"/>
+<Edge fromNode="AGGREGATE8:0" guiBendpoints="711:543|711:755" guiLocks="711|null|null" guiRouter="Manual" id="Edge35" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
+<Edge fromNode="AGGREGATE9:0" guiBendpoints="693:688|693:779" guiLocks="693|null|null" guiRouter="Manual" id="Edge37" inPort="Port 3 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:3"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (out)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
 <Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge27" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE10:0"/>
 <Edge fromNode="REFORMAT1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge28" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE8:0"/>

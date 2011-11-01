@@ -65,7 +65,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
      * @param parent the parent class loader for delegation 
      */
     public GreedyURLClassLoader(URL[] urls,ClassLoader parent) {
-        super(urls,parent);
+		super(urls,parent);
         this.clExcludedPackages = GreedyURLClassLoader.excludedPackages;
     }
 
@@ -76,7 +76,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
      * @param excludedPackages package prefixes which are excluded from greedy loading
      */
     public GreedyURLClassLoader(URL[] urls,ClassLoader parent, String[] excludedPackages) {
-        super(urls,parent);
+		super(urls,parent);
         this.clExcludedPackages = excludedPackages;
     }
 
@@ -88,7 +88,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
      * @param greedy whther this class loader is greedy (or regular)
      */
     public GreedyURLClassLoader(URL[] urls,ClassLoader parent, String[] excludedPackages, boolean greedy) {
-        super(urls,parent);
+		super(urls,parent);
         this.clExcludedPackages = excludedPackages;
         this.greedy = greedy;
     }

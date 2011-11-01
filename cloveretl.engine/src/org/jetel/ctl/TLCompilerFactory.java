@@ -54,7 +54,9 @@ public class TLCompilerFactory {
         //register all compilers
         for(Extension extension : compilerExtensions) {
             try {
-                registerCompiler(new TLCompilerDescription(extension));
+            	TLCompilerDescription desc = new TLCompilerDescription(extension);
+            	desc.init();
+                registerCompiler(desc);
             } catch(Exception e) {
                 logger.error("Cannot create TL compiler description, extension in plugin manifest is not valid.\n"
                         + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
@@ -94,10 +96,10 @@ public class TLCompilerFactory {
             }
         } catch (ClassNotFoundException ex) {
             logger.error("Unknown TL compiler: " + compilerType + " class: " + className);
-            throw new RuntimeException("Unknown TL compiler: " + compilerType + " class: " + className);
+            throw new RuntimeException("Unknown TL compiler: " + compilerType + " class: " + className, ex);
         } catch (Exception ex) {
             logger.error("Unknown TL compiler type: " + compilerType);
-            throw new RuntimeException("Unknown TL compiler type: " + compilerType);
+            throw new RuntimeException("Unknown TL compiler type: " + compilerType, ex);
         }
 
     }

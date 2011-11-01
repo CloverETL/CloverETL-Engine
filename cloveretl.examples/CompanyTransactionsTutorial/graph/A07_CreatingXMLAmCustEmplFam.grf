@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu Jun 09 15:36:29 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.186" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Mon Oct 10 12:30:35 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.187" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
@@ -97,17 +97,17 @@ function transform() {
 <Node enabled="enabled" fieldMap="$EmployeeSurname:=EmployeeSurname;$EmployeeID:=EmployeeID;$EmployeeFirstname:=EmployeeFirstname;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="EmployeesXLS" guiWidth="135" guiX="56" guiY="401" id="XLS_READER1" metadataRow="1" sheetName="Employees" type="XLS_READER">
 <attr name="guiDescription"><![CDATA[Employees]]></attr>
 </Node>
-<Node enabled="enabled" fieldMap="$SpouseName:=SpouseName;$EmployeeID:=EmployeeID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="SpousesXLS" guiWidth="128" guiX="642" guiY="287" id="XLS_READER2" metadataRow="1" sheetName="Spouses" type="XLS_READER">
+<Node enabled="enabled" fieldMap="$SpouseName:=SpouseName;$EmployeeID:=EmployeeID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="SpousesXLS" guiWidth="128" guiX="621" guiY="339" id="XLS_READER2" metadataRow="1" sheetName="Spouses" type="XLS_READER">
 <attr name="guiDescription"><![CDATA[Spouses]]></attr>
 </Node>
-<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="625:241|625:405" guiLocks="625|628|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="845:241|845:405" guiLocks="845|628|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN1:1"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 3 (in)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:3"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 4 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:4"/>
 <Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN1:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="610:329|610:417" guiLocks="610|550|null" guiRouter="Manual" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="820:329|820:417" guiLocks="820|550|null" guiRouter="Manual" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 2 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
 </Phase>

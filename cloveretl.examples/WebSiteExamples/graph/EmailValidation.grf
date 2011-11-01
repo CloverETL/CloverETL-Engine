@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Tue May 31 08:58:17 CEST 2011" modifiedBy="avackova" name="EmailValidation" revision="1.47" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Mon Oct 10 12:17:31 CEST 2011" modifiedBy="avackova" name="EmailValidation" revision="1.48" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -69,7 +69,7 @@ In this example, we are loading a file in order to check the validity of the ema
 <Edge debugMode="false" fromNode="EMAIL_FILTER1:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
 <Edge debugMode="false" fromNode="EMAIL_FILTER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
 <Edge debugMode="false" fromNode="EMAIL_FILTER2:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_FILTER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="269:270|269:56" guiLocks="269|262|null" guiRouter="Manual" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_FILTER0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="299:286|299:230" guiLocks="299|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_FILTER1:0"/>
 <Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EMAIL_FILTER2:0"/>
 </Phase>

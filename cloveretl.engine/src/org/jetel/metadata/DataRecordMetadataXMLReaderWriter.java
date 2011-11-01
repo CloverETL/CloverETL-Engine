@@ -147,7 +147,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
     public  static final String FIELD_DELIMITER_ATTR = "fieldDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
-	private static final String EOF_AS_DELIMITER_ATTR = "eofAsDelimiter";
+	public static final String EOF_AS_DELIMITER_ATTR = "eofAsDelimiter";
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
@@ -323,7 +323,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
-			Enumeration enumeration = prop.propertyNames();
+			Enumeration<?> enumeration = prop.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String) enumeration.nextElement();
 				metadataElement.setAttribute(key, prop.getProperty(key));
@@ -384,7 +384,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				// output field properties - if anything defined
 				prop = field.getFieldProperties();
 				if (prop != null) {
-					Enumeration enumeration = prop.propertyNames();
+					Enumeration<?> enumeration = prop.propertyNames();
 					while (enumeration.hasMoreElements()) {
 						String key = (String) enumeration.nextElement();
 						fieldElement.setAttribute(key, prop.getProperty(key));
@@ -779,27 +779,27 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		return Short.parseShort(fieldSizeStr);
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param fieldType
-	 *            Description of Parameter
-	 * @param fieldTypeOptions
-	 *            Description of Parameter
-	 * @param fieldTypeStrings
-	 *            Description of Parameter
-	 * @return Description of the Returned Value
-	 * @since May 6, 2002
-	 */
-	private final static String fieldTypeFormat(char fieldType,
-			char[] fieldTypeOptions, String[] fieldTypeStrings) {
-		for (int i = 0; i < fieldTypeOptions.length; i++) {
-			if (fieldTypeOptions[i] == fieldType) {
-				return fieldTypeStrings[i];
-			}
-		}
-		return "";
-	}
+//	/**
+//	 * Description of the Method
+//	 * 
+//	 * @param fieldType
+//	 *            Description of Parameter
+//	 * @param fieldTypeOptions
+//	 *            Description of Parameter
+//	 * @param fieldTypeStrings
+//	 *            Description of Parameter
+//	 * @return Description of the Returned Value
+//	 * @since May 6, 2002
+//	 */
+//	private final static String fieldTypeFormat(char fieldType,
+//			char[] fieldTypeOptions, String[] fieldTypeStrings) {
+//		for (int i = 0; i < fieldTypeOptions.length; i++) {
+//			if (fieldTypeOptions[i] == fieldType) {
+//				return fieldTypeStrings[i];
+//			}
+//		}
+//		return "";
+//	}
 
 }
 /*

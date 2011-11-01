@@ -162,9 +162,13 @@ public class MappingValidator extends AbstractVisitor {
 		} else {
 			for (Integer inPortIndex : availablePorts) {
 				DataRecordMetadata dataRecordMetadata = inPorts.get(inPortIndex);
-				DataFieldMetadata[] fields = dataRecordMetadata.getFields();
-				for (int i = 0; i < fields.length; i++) {
-					availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, fields[i], null));
+				if (dataRecordMetadata != null) {
+					DataFieldMetadata[] fields = dataRecordMetadata.getFields();
+					for (int i = 0; i < fields.length; i++) {
+						availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, fields[i], null));
+					}
+				} else {
+					addProblem(element, MappingProperty.INCLUDE, new MappingError("Metadata of port '" + inPortIndex + "' not available", Severity.ERROR));
 				}
 			}
 		}
@@ -221,9 +225,13 @@ public class MappingValidator extends AbstractVisitor {
 		} else if (omitNullString != null) {
 			for (Integer inPortIndex : availablePorts) {
 				DataRecordMetadata dataRecordMetadata = inPorts.get(inPortIndex);
-				DataFieldMetadata[] fields = dataRecordMetadata.getFields();
-				for (int i = 0; i < fields.length; i++) {
-					availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, fields[i], null));
+				if (dataRecordMetadata != null) {
+					DataFieldMetadata[] fields = dataRecordMetadata.getFields();
+					for (int i = 0; i < fields.length; i++) {
+						availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, fields[i], null));
+					}
+				} else {
+					addProblem(element, MappingProperty.OMIT_NULL_ELEMENT, new MappingError("Metadata of port '" + inPortIndex + "' not available", Severity.ERROR));
 				}
 			}
 		}
@@ -486,6 +494,8 @@ public class MappingValidator extends AbstractVisitor {
 			Integer inPortIndex = getAvailableInputPort(parsedFieldExpression.getPort(), element, MappingProperty.VALUE);
 			if (inPortIndex == null) {
 				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not available here!", Severity.ERROR));
+			} else if (inPorts.get(inPortIndex) == null) {
+				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Metadata of port '" + parsedFieldExpression.getPort() + "' not available", Severity.ERROR));
 			} else if (inPorts.get(inPortIndex).getField(parsedFieldExpression.getFields()) == null) {
 				addProblem(element, MappingProperty.VALUE,
 						new MappingError("Field '" + parsedFieldExpression.getFields() + "' is not available.", Severity.ERROR));
@@ -579,13 +589,18 @@ public class MappingValidator extends AbstractVisitor {
 
 		Integer inPortIndex = getAvailableInputPort(fieldExpression.getPort(), element, property);
 		if (inPortIndex != null) {
-			String fieldsString = fieldExpression.getFields();
-			DataFieldMetadata[] fields = inPorts.get(inPortIndex).getFields();
-			for (int i = 0; i < fields.length; i++) {
-				DataFieldMetadata field = fields[i]; 
-				if (field.getName().matches(fieldsString)) {
-					availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, field, fieldExpression.getNamespace()));
+			DataRecordMetadata recordMetadata = inPorts.get(inPortIndex);
+			if (recordMetadata != null) {
+				String fieldsString = fieldExpression.getFields();
+				DataFieldMetadata[] fields = recordMetadata.getFields();
+				for (int i = 0; i < fields.length; i++) {
+					DataFieldMetadata field = fields[i]; 
+					if (field.getName().matches(fieldsString)) {
+						availableFields.add(new DataFieldMetadataWrapper(inPortIndex, i, field, fieldExpression.getNamespace()));
+					}
 				}
+			} else {
+				addProblem(element, property, new MappingError("Metadata of port '" + fieldExpression.getPort() + "' are not available", Severity.ERROR));
 			}
 		} else {
 			addProblem(element, property, new MappingError("Port '" + fieldExpression.getPort() + "' is not available", Severity.ERROR));
@@ -610,7 +625,7 @@ public class MappingValidator extends AbstractVisitor {
 			}
 		} catch (NumberFormatException ex) {
 			for (Entry<Integer, DataRecordMetadata> entry : availablePorts.entrySet()) {
-				if (entry.getValue().getName().equals(inPortString)) {
+				if (entry.getValue() != null && entry.getValue().getName().equals(inPortString)) {
 					toReturn.add(entry.getKey());
 				}
 			}
@@ -643,9 +658,13 @@ public class MappingValidator extends AbstractVisitor {
 
 	private void checkAvailableData(AbstractElement element, MappingProperty property, DataRecordMetadata metadata,
 			String[] fieldNames) {
-		for (String fieldName : fieldNames) {
-			if (metadata.getField(fieldName) == null) {
-				addProblem(element, property, new MappingError("Record '" + metadata.getName() + "' does not contain field '" + fieldName + "'", Severity.ERROR));
+		if (metadata == null) {
+			addProblem(element, property, new MappingError("Port metadata not available", Severity.ERROR));
+		} else {
+			for (String fieldName : fieldNames) {
+				if (metadata.getField(fieldName) == null) {
+					addProblem(element, property, new MappingError("Record '" + metadata.getName() + "' does not contain field '" + fieldName + "'", Severity.ERROR));
+				}
 			}
 		}
 	}

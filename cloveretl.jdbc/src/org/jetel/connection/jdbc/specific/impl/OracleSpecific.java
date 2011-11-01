@@ -18,15 +18,23 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.lang.management.ManagementFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Hashtable;
 import java.util.regex.Pattern;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.CopySQLData.CopyOracleXml;
+import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.specific.conn.OracleConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
@@ -197,6 +205,35 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		}
 		
 	}
-	
+
+	@Override
+	public void unloadDriver(JdbcDriver driver) {
+		super.unloadDriver(driver);
+		
+		if (driver == null) {
+			return;
+		}
+		
+		ClassLoader classLoader = driver.getClassLoader();
+		if (classLoader != null) {
+			// Oracle driver registers a MBean for each classloader
+			try {
+				Hashtable<String,String> table = new Hashtable<String, String>();
+				table.put("type", "diagnosability");
+				String classLoaderId = classLoader.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(classLoader)); 
+				table.put("name", classLoaderId);
+				ObjectName name = new ObjectName("com.oracle.jdbc", table);
+				MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+				if (server.isRegistered(name)) {
+					server.unregisterMBean(name);
+				}
+			} catch (Exception ex) {
+				Log logger = LogFactory.getLog(OracleSpecific.class);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Exception on deregistering the Oracle driver MBean", ex);
+				}
+			}
+		}
+	}
 	
 }

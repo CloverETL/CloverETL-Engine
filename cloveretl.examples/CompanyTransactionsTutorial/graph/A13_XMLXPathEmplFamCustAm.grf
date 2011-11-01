@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Thu Jun 09 15:40:35 CEST 2011" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.130" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 14:23:19 CET 2009" guiVersion="0.0.0.devel" id="1231854565020" licenseType="Evaluation Devel" modified="Mon Oct 10 12:31:40 CEST 2011" modifiedBy="avackova" name="ReadingXMLExtract" revision="1.131" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/AmountsWithEmplID_WithCustID.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
@@ -22,14 +22,14 @@ More detailed information about this graph can be found in the "readme.html" fil
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeesXMLXPath.txt" guiHeight="101" guiName="employeesDelimited" guiWidth="179" guiX="383" guiY="204" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLXPath.txt" guiHeight="101" guiName="childrenDelimited" guiWidth="159" guiX="880" guiY="309" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/childrenXMLXPath.txt" guiHeight="101" guiName="childrenDelimited" guiWidth="159" guiX="880" guiY="310" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersXMLXPath.txt" guiHeight="101" guiName="customersDelimited" guiWidth="175" guiX="865" guiY="491" id="DATA_WRITER2" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/amountsXMLXPathWithEmplID_WithCustID.txt" guiHeight="101" guiName="amountsWithEmplID_CustIDDelimited" guiWidth="305" guiX="519" guiY="579" id="DATA_WRITER3" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/spousesXMLXPath.txt" guiHeight="101" guiName="spousesDelimited" guiWidth="158" guiX="498" guiY="384" id="DATA_WRITER4" type="DATA_WRITER"/>
 <Node dedupKey="CustomerID" enabled="enabled" guiHeight="69" guiName="Dedup" guiWidth="128" guiX="691" guiY="491" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="260" guiY="579" id="EXT_SORT0" sortKey="AmountID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="532" guiY="491" id="EXT_SORT1" numberOfTapes="60" sortKey="CustomerID(a)" sorterInitialCapacity="20000" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="669" guiY="311" id="EXT_SORT2" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="669" guiY="310" id="EXT_SORT2" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="367" guiY="491" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 

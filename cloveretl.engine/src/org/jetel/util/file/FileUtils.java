@@ -62,6 +62,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
+import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
@@ -136,6 +137,7 @@ public class FileUtils {
     * @throws MalformedURLException  
     */
     public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+    	//FIX CLD-2895
     	//default value for addStrokePrefix was changed to true
     	//right now I am not sure if this change can have an impact to other part of project,
     	//but it seems this changed fix relatively important issue:
@@ -204,7 +206,7 @@ public class FileUtils {
     }
     
     /**
-     * Converts a list of file URLs to URL objects by calling {@link #getFile(URL, String)}.
+     * Converts a list of file URLs to URL objects by calling {@link #getFileURL(URL, String)}.
      *
      * @param contextUrl URL context for converting relative paths to absolute ones
      * @param fileUrls array of string file URLs
@@ -1264,7 +1266,7 @@ public class FileUtils {
 			} else if (input.startsWith("gzip:")) {
 				input = input.substring(input.indexOf(':') + 1);
 			}
-			return input;
+			return normalizeFilePath(input);
 		}
 	}
 
@@ -1398,6 +1400,57 @@ public class FileUtils {
 		}
 	}
 
+	/**
+	 * This method affects only windows platform following way:
+	 * 1) backslashes are replaced by slashes
+	 * 2) if first character is slash and device specification follows, the starting slash is removed
+	 * 
+	 * For example:
+	 * c:\project\data.txt -> c:/project/data.txt
+	 * /c:/project/data.txt -> c:/project/data.txt
+	 * 
+	 * A path reached from method anUrl.getPath() (or anUrl.getFile()) should be cleaned by this method. 
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static String normalizeFilePath(String path) {
+		if (path == null) {
+			return "";
+		} else {
+			if (PlatformUtils.isWindowsPlatform()) {
+				//convert backslash to forward slash
+				path = path.indexOf('\\') == -1 ? path : path.replace('\\', '/');
+				//if device is present
+				int i = path.indexOf(':');
+				if (i != -1) {
+					//remove leading slash from device part to handle output of URL.getFile()
+					path = path.charAt(0) == '/' ? path.substring(1, path.length()) : path;
+				}
+			}
+			return path;
+		}
+	}
+	
+	/**
+	 * Standardized way how to convert an URL to string.
+	 * For URLs with 'file' protocol only simple path is returned (for example file:/c:/project/data.txt ->c:/project/data.txt)
+	 * The URLs with other protocols are converted by URL.toString() method. 
+	 * 
+	 * @param url
+	 * @return
+	 */
+	public static String convertUrlToString(URL url) {
+		if (url == null) {
+			return null;
+		}
+		
+        if (url.getProtocol().equals(FILE_PROTOCOL)) {
+			return normalizeFilePath(url.getPath());
+		} else {
+			return url.toString();
+		}
+	}
 	
     public static class ArchiveURLStreamHandler extends URLStreamHandler {
     	@Override

@@ -58,12 +58,12 @@ public abstract class PortData {
 	 * @return
 	 */
 	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
-			SortHint hint, String tempDirectory, long cacheSize) {
+			SortHint hint, String tempDirectory) {
 		if (cached) {
 			if (keys.size() > 1) {
-				return new ExternalComplexPortData(inPort, keys, tempDirectory, cacheSize);
+				return new ExternalComplexPortData(inPort, keys, tempDirectory);
 			} else {
-				return new ExternalSimplePortData(inPort, keys, tempDirectory, cacheSize);
+				return new ExternalSimplePortData(inPort, keys, tempDirectory);
 			}
 		} else {
 			return new StreamedPortData(inPort, keys, hint, tempDirectory);
@@ -95,6 +95,10 @@ public abstract class PortData {
 	}
 	
 	public void free() {		
+	}
+	
+	public void setSharedCache(CacheRecordManager sharedCache) {
+		//ignore
 	}
 	
 	public abstract boolean readInputPort();

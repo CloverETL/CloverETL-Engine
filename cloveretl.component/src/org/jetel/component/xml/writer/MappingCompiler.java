@@ -94,12 +94,12 @@ public class MappingCompiler extends AbstractVisitor {
 		this.tagger = new MappingTagger(inPorts, sortHintsString);
 	}
 
-	public WritableMapping compile(Map<Integer, InputPort> inPorts, String tmpDir, long cacheSize, boolean partition) throws ComponentNotReadyException {
+	public WritableMapping compile(Map<Integer, InputPort> inPorts, boolean partition, String tempDir) throws ComponentNotReadyException {
 		tagger.setResolvePartition(partition);
 		tagger.tag();
 		
 		tagMap = tagger.getTagMap();
-		portDataMap = tagger.getPortDataMap(inPorts, tmpDir, cacheSize);
+		portDataMap = tagger.getPortDataMap(inPorts, tempDir);
 		modelPartitionElement = tagger.getPartitionElement();
 		
 		mapping.visit(this);

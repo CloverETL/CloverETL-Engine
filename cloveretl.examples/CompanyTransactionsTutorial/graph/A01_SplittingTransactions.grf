@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation Devel" modified="Thu Jun 09 15:30:23 CEST 2011" modifiedBy="avackova" name="Splitting" revision="1.64" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231837143600" licenseType="Evaluation Devel" modified="Mon Oct 10 12:27:37 CEST 2011" modifiedBy="avackova" name="Splitting" revision="1.65" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/Customers.fmt" id="Metadata3"/>
@@ -80,9 +80,9 @@ function transform() {
 <Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge20" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP3:0"/>
-<Edge debugMode="false" fromNode="REFORMAT4:0" guiBendpoints="419:436|419:318" guiLocks="419|null|null" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:0" guiBendpoints="408:436|408:318" guiLocks="408|null|null" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT3:0"/>
 <Edge debugMode="false" fromNode="REFORMAT4:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_SORT2:0"/>
 <Edge debugMode="false" fromNode="REFORMAT4:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="REFORMAT4:3" guiBendpoints="421:478|421:638" guiLocks="421|null|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT4:3" guiBendpoints="414:478|414:638" guiLocks="414|null|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>

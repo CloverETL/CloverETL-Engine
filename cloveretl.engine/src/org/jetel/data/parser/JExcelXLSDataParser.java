@@ -225,7 +225,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			}
 			type = dataCell != null ? dataCell.getType() : CellType.LABEL;
 			name = (metadataRow>-1) && nameCell != null ? nameCell.getContents() : XLSFormatter.getCellCode(i);
-			if (type == CellType.EMPTY && namesRow != dataRow && nameCell.getType() == CellType.EMPTY){
+			if (type == CellType.EMPTY && namesRow != dataRow && (nameCell == null || nameCell.getType() == CellType.EMPTY)) {
 				continue;
 			}else if (type == CellType.BOOLEAN) {
 				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.BOOLEAN_FIELD,null);

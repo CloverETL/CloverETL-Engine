@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.BitArray;
@@ -422,12 +423,16 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	public void init() {
 		DataFieldMetadata fieldMetadata;
 		// create appropriate data fields based on metadata supplied
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldMetadata = metadata.getField(i);
-			fields[i] =
-					DataFieldFactory.createDataField(
-					fieldMetadata.getType(),
-					fieldMetadata,plain);
+		try {
+			for (int i = 0; i < metadata.getNumFields(); i++) {
+				fieldMetadata = metadata.getField(i);
+				fields[i] =
+						DataFieldFactory.createDataField(
+						fieldMetadata.getType(),
+						fieldMetadata,plain);
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException(String.format("Data record '%s' cannot be initialized.", metadata.getName()), e);
 		}
 	}
 

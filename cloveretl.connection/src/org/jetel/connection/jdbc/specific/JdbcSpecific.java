@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -298,5 +299,13 @@ public interface JdbcSpecific {
 	 * thus enabling partial rollback to last savepoint if next statement fails.
 	 */
 	public boolean useSavepoints();
+	
+	/**
+	 * Performs driver-specific operations upon
+	 * driver unloading.
+	 * 
+	 * @param driver the driver to be unloaded
+	 */
+	public void unloadDriver(JdbcDriver driver);
 
 }

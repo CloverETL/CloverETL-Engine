@@ -10,8 +10,6 @@
 	<classpathentry kind="lib" path="lib/saxon8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/je-4.1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/JEJConsole.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/RepJEJConsole.jar"/>
+	<classpathentry kind="lib" path="lib/jdbm-2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

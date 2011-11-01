@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Mon May 30 17:53:54 CEST 2011" modifiedBy="avackova" name="CreditCards" revision="1.100" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Evaluation Devel" modified="Mon Oct 10 12:16:45 CEST 2011" modifiedBy="avackova" name="CreditCards" revision="1.101" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -286,7 +286,7 @@ function integer transform() {
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="FAST_SORT0:0"/>
 <Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="401:268|401:188" guiLocks="401|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="FAST_SORT1:0"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="27:0|27:272|-861:272|-867:438" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="899:289|899:510|23:510|23:727" guiLocks="899|23|510" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
 <Edge debugMode="true" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge debugMode="false" fromNode="FAST_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
