@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,8 +33,11 @@ import java.util.SortedSet;
 
 import javax.xml.stream.XMLStreamException;
 
+import jdbm.recman.BaseRecordManager;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.xml.writer.CacheRecordManager;
 import org.jetel.component.xml.writer.DataIterator;
 import org.jetel.component.xml.writer.MappingCompiler;
 import org.jetel.component.xml.writer.MappingError;
@@ -41,8 +45,8 @@ import org.jetel.component.xml.writer.MappingTagger;
 import org.jetel.component.xml.writer.MappingValidator;
 import org.jetel.component.xml.writer.PortData;
 import org.jetel.component.xml.writer.XmlFormatterProvider;
-import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.AbstractElement;
+import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.component.xml.writer.model.WritableMapping;
 import org.jetel.data.DataRecord;
@@ -109,12 +113,14 @@ public class ExtXmlWriter extends Node {
 	private String mappingURL;
 	private boolean omitNewLines;
 	private String tmpDir;
+	private File tempDirectory;
 	private long cacheSize = DEFAULT_CACHE_SIZE;
 	
 	private boolean sortedInput;
 	private String sortHintsString;
 	private WritableMapping engineMapping;
 	private Map<Integer, PortData> portDataMap;
+	private CacheRecordManager sharedCache;
 	
 	private int recordsPerFile;
 	private int recordsCount;
@@ -150,10 +156,13 @@ public class ExtXmlWriter extends Node {
 		}
 		
 		if (sortedInput && sortHintsString == null) {
-			ConfigurationProblem problem = new ConfigurationProblem("Sort keys is not set",
-					Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			problem.setAttributeName("sortKeys");
-			status.add(problem);
+			status.add(new ConfigurationProblem("Sort keys is not set", Severity.ERROR, this,
+					ConfigurationStatus.Priority.NORMAL, XML_SORTKEYS_ATTRIBUTE));
+		}
+		if (cacheSize > Runtime.getRuntime().maxMemory()) {
+			status.add(new ConfigurationProblem("Cache size has a value of " + cacheSize + " but the JVM" +
+					" is only configured for " + Runtime.getRuntime().maxMemory(), Severity.ERROR, this,
+					ConfigurationStatus.Priority.NORMAL, XML_CACHE_SIZE));
 		}
 		
 		return status;
@@ -303,8 +312,18 @@ public class ExtXmlWriter extends Node {
 		compiler.setLogger(logger);
 		compiler.setMapping(mapping);
 		
-		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0; 
-		this.engineMapping = compiler.compile(inPorts, tmpDir, cacheSize, partition);
+		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
+		
+		try {
+			tempDirectory = File.createTempFile("xmlCache", "", tmpDir != null ? new File(tmpDir) : null);
+			tempDirectory.delete();
+			tempDirectory.mkdir();
+			tempDirectory.deleteOnExit();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+		
+		engineMapping = compiler.compile(inPorts, partition, tempDirectory.getAbsolutePath());
 		
 		portDataMap = compiler.getPortDataMap();		
 		for (PortData portData : portDataMap.values()) {
@@ -352,7 +371,22 @@ public class ExtXmlWriter extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		
+		try {
+			//Init new cache record manager
+			File f = File.createTempFile("cache", "", tempDirectory);
+			String fileName = f.getAbsolutePath();
+			f.delete();
+			
+			BaseRecordManager recMan = new BaseRecordManager(fileName);
+			recMan.disableTransactions();
+			sharedCache = new CacheRecordManager(recMan, cacheSize);
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
+		
 		for (PortData portData : portDataMap.values()) {
+			portData.setSharedCache(sharedCache);
 			portData.preExecute();
 		}
 	}
@@ -440,7 +474,17 @@ public class ExtXmlWriter extends Node {
 			portData.postExecute();
 		}
 		try {
+			sharedCache.close();
 			writer.close();
+			
+			// clear cache directory, but do not delete directory itself as it is to be reused in another run
+			if (tempDirectory.exists()) {
+				File[] files = tempDirectory.listFiles();
+				for (int i = 0; i < files.length; i++) {
+					files[i].deleteOnExit();
+					files[i].delete();
+				}
+			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
 		}
@@ -453,6 +497,14 @@ public class ExtXmlWriter extends Node {
 			for (PortData portData : portDataMap.values()) {
 				portData.free();
 			}
+		}
+		if (tempDirectory != null && tempDirectory.exists()) {
+			File[] files = tempDirectory.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				files[i].delete();
+			}
+			tempDirectory.deleteOnExit();
+			tempDirectory.delete();
 		}
 	}
 
@@ -490,25 +542,25 @@ public class ExtXmlWriter extends Node {
             if (xattribs.exists(XML_SORTKEYS_ATTRIBUTE)) {
             	writer.setSortHintsString(xattribs.getString(XML_SORTKEYS_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+			if (xattribs.exists(XML_RECORDS_PER_FILE)) {
                 writer.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
             }
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				writer.setRecordsCount(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
-			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
 				writer.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
 				writer.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
 				writer.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
 				writer.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+			if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 				writer.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
             }
 		} catch (AttributeNotFoundException ex) {

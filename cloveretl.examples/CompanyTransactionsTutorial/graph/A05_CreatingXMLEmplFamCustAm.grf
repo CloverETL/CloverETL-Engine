@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu Jun 09 15:32:56 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.229" showComponentDetails="true">
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Mon Oct 10 12:29:13 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.230" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata4"/>
 <Metadata fileURL="${META_DIR}/AmountsWithEmplID_WithCustID.fmt" id="Metadata6"/>
@@ -113,6 +113,6 @@ function transform() {
 <Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN1:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER2:0" guiBendpoints="26:0|26:-52" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 2 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER2:0" guiBendpoints="813:339|813:287" guiLocks="813|null|null" guiRouter="Manual" id="Edge2" inPort="Port 2 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
 </Phase>
 </Graph>

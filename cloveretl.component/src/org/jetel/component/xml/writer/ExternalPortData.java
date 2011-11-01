@@ -18,95 +18,53 @@
  */
 package org.jetel.component.xml.writer;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import jdbm.Serializer;
+import jdbm.SerializerInput;
+import jdbm.SerializerOutput;
+import jdbm.helper.Tuple;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
-import com.sleepycat.je.CacheMode;
-import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
-
 /**
- * Abstarct class for implementetions od data provider which needs to cache records.
- * 
  * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 17 May 2011
+ * @created 12 Sep 2011
  */
 public abstract class ExternalPortData extends PortData {
 	
+	private static final byte[] SERIALIZED_LONG_ZERO = toByteArray(0L);
+
+	protected static final int PAGE_SIZE = 64;
 	protected static final int SERIALIZED_COUNTER_LENGTH = 8;
 	
-	private File tempFile;
-	private long cacheSize;
-	
-	/** record buffer */
+	protected EntrySerializer serializer;
+	protected RecordKeyComparator recordKeyComparator;
+
+	protected String fileName;
+
 	protected ByteBuffer recordBuffer;
+	protected long keyCounter = 0;
+
+	protected CacheRecordManager sharedCache;
 	
-	/**
-	 * @param inPort
-	 * @param keys
-	 * @param tempDirectory
-	 */
-	ExternalPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
+	ExternalPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
 		super(inPort, keys, tempDirectory);
-		this.cacheSize = cacheSize;
-	}
-	
-	@Override
-	public void init() throws ComponentNotReadyException {
-		super.init();
-		// long counter is prepended, therefore + SERIALIZED_LONG_LENGTH
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE + SERIALIZED_COUNTER_LENGTH);
-		try {
-			tempFile = File.createTempFile("berkdb", "", tempDirectory != null ? new File(tempDirectory) : null);
-			tempFile.delete();
-			tempFile.mkdir();
-			tempFile.deleteOnExit();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-	}
-	
-	@Override
-	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		if (tempFile.exists()) {
-			File[] files = tempFile.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				files[i].delete();
-			}
-		}
 	}
 
 	@Override
-	public void free() {
-		super.free();
-		tempFile.delete();
-	}
-
-	protected Environment getEnvironment() throws ComponentNotReadyException {
-		EnvironmentConfig envConfig = new EnvironmentConfig();
-		envConfig.setCacheSize(cacheSize);
-		envConfig.setAllowCreate(true);
-		envConfig.setLocking(false);
-		envConfig.setSharedCache(true);
-		envConfig.setCacheMode(CacheMode.MAKE_COLD);
-		try {
-			return new Environment(tempFile, envConfig);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException(e);
-		}
+	public void setSharedCache(CacheRecordManager sharedCache) {
+		this.sharedCache = sharedCache;
 	}
 
 	@Override
@@ -114,32 +72,46 @@ public abstract class ExternalPortData extends PortData {
 		return true;
 	}
 	
-	protected DatabaseConfig getDbConfig() {
-		DatabaseConfig dbConfig = new DatabaseConfig();
-		dbConfig.setAllowCreate(true);
-		dbConfig.setTemporary(true);
-		dbConfig.setSortedDuplicates(true);
-		dbConfig.setExclusiveCreate(true);
-		return dbConfig;
+	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE + SERIALIZED_COUNTER_LENGTH);
+		serializer = new EntrySerializer();
+		recordKeyComparator = new RecordKeyComparator();
 	}
-	
-	protected DatabaseEntry getDatabaseKey(DataRecord record, int[] key, DataRecord parentRecord, int[] parentKey) {
+
+	protected byte[] getDatabaseKey(DataRecord record, int[] key, DataRecord parentRecord, int[] parentKey) {
 		for (int i = 0; i < parentKey.length; i++) {
 			record.getField(key[i]).setValue(parentRecord.getField(parentKey[i]));
 		}
 		
 		record.serialize(recordBuffer, key);
+		recordBuffer.put(SERIALIZED_LONG_ZERO);
 		int dataLength = recordBuffer.position();
 		recordBuffer.flip();
 		byte[] serializedKey = new byte[dataLength];
 		recordBuffer.get(serializedKey);
 		recordBuffer.clear();
 
-		return new DatabaseEntry(serializedKey);
+		return serializedKey;
+	}
+		
+	protected static boolean equalsKey(Tuple<byte[], byte[]> tuple, byte[] key) {
+		byte[] foundKey = tuple.getKey();
+		
+		if (key.length != foundKey.length) {
+			return false;
+		}
+		for (int i = 0; i < key.length - SERIALIZED_COUNTER_LENGTH; i++) {
+			if (foundKey[i] != key[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
-	protected byte[] toByteArray(long data) {
-	    return new byte[] {
+	protected static byte[] toByteArray(long data) {
+		return new byte[] {
 	        (byte)((data >> 56) & 0xff),
 	        (byte)((data >> 48) & 0xff),
 	        (byte)((data >> 40) & 0xff),
@@ -147,7 +119,57 @@ public abstract class ExternalPortData extends PortData {
 	        (byte)((data >> 24) & 0xff),
 	        (byte)((data >> 16) & 0xff),
 	        (byte)((data >> 8) & 0xff),
-	        (byte)((data >> 0) & 0xff),
+	        (byte)(data & 0xff),
 	    };
+	}
+	
+	protected static long fromByteArray(byte[] data, int pos) {
+		return (((long) (data[pos + 0] & 0xff) << 56) |
+				((long) (data[pos + 1] & 0xff) << 48) |
+				((long) (data[pos + 2] & 0xff) << 40) |
+				((long) (data[pos + 3] & 0xff) << 32) |
+				((long) (data[pos + 4] & 0xff) << 24) |
+				((long) (data[pos + 5] & 0xff) << 16) |
+				((long) (data[pos + 6] & 0xff) << 8) |
+				((long) (data[pos + 7] & 0xff)));
+	}
+
+	private static class EntrySerializer implements Serializer<byte[]> {
+
+		@Override
+		public void serialize(SerializerOutput out, byte[] obj) throws IOException {
+			out.write(obj);
+		}
+
+		@Override
+		public byte[] deserialize(SerializerInput in) throws IOException, ClassNotFoundException {
+			byte[] data = new byte[in.available()];
+			in.read(data);
+			return data;
+		}
+	}
+
+	private static class RecordKeyComparator implements Comparator<byte[]>, Serializable {
+		private static final long serialVersionUID = -8678623124738984233L;
+
+		public int compare(byte[] key1, byte[] key2) {
+			if (key1 == null) {
+				throw new IllegalArgumentException("Argument 'key1' is null");
+			}
+			if (key2 == null) {
+				throw new IllegalArgumentException("Argument 'key2' is null");
+			}
+			
+			if (key1.length != key2.length) {
+				return key1.length - key2.length;
+			}
+			for (int i = 0; i < key1.length - SERIALIZED_COUNTER_LENGTH; i++) {
+				if (key1[i] != key2[i]) {
+					return key1[i] - key2[i]; 
+				}
+			}
+			long result = fromByteArray(key1, key1.length - 8) - fromByteArray(key2, key2.length - 8); 
+			return result > 0 ? 1 : result < 0 ? -1 : 0;
+		}
 	}
 }

@@ -64,6 +64,33 @@ public class CommandBuilder {
 	}
 
 	/**
+	 * NOTE: This method was introduced due to hot fix of issue CL-1932.
+	 * Special characters (StringUtils.specCharToString()) are not converted to string
+	 * in comparison with former implementation (CommandBuilder.addAttribute()).
+	 * Method should be removed once the issue "CL-1930 Escape sequences interpretation in CommandBuilder" is solved.
+	 * This method can be invoked only by MsSqlDataWriter.createCommandLineForLoadUtility() method 
+	 * for 'serverName' attribute.
+	 * 
+	 * DO NOT CALL THIS METHOD IN OTHER CASES!!! comprehensive re-factorization is necessary first
+	 *  
+	 *  Adds attribute and it's value:
+	 *  attrName=attrValue or attrName='attrValue'
+	 *  for exmaple:  host=localhost | host='localhost' | --host=localhost 
+	 * 
+	 * @param attrName
+	 * @param attrValue
+	 * @param singleQuoted decides if attrValue will be single quoted
+	 * @deprecated see the note above
+	 */
+	public void addAttributeDirect(String attrName, String attrValue) {
+		if (StringUtils.isEmpty(attrValue)) {
+			return;
+		}
+
+		cmdList.add(switchMark + attrName + equalMark + attrValue);
+	}
+	
+	/**
 	 *  Adds attribute and it's value:
 	 *  attrName=attrValue or attrName='attrValue'
 	 *  for exmaple:  host=localhost | host='localhost' | --host=localhost 

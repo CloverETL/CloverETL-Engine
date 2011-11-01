@@ -901,7 +901,9 @@ public abstract class TLType {
 				} else {
 					return from.equals(to) ? 0 : Integer.MAX_VALUE;
 				}
-			} 
+			} else if (to.isTypeVariable()) {
+				return 10;
+			}
 
 			return Integer.MAX_VALUE;
 		}

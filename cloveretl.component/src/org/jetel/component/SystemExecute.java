@@ -675,12 +675,21 @@ public class SystemExecute extends Node{
 	 * 		to the environment of the current process. It can be changed by adding <i>!false</i> after the new value, eg.:
 	 * 		<i>PATH=/home/user/mydir</i> appends <i>/home/user/mydir</i> to the existing PATH, but <i>PATH=/home/user/mydir!false</i>
 	 * 		replaces the old value by the new one (<i>/home/user/mydir</i>).
+	 * @throws XMLConfigurationException 
 	 */
-	public void setEnvironment(String string) {
+	public void setEnvironment(String string) throws XMLConfigurationException {
 		String[] env = StringUtils.split(string);
 		String[] def;
 		for (int i = 0; i < env.length; i++) {
 			def = JoinKeyUtils.getMappingItemsFromMappingString(env[i]);
+			if (def[0] == null) {
+		           throw new XMLConfigurationException("Invalid attribute " + StringUtils.quote(XML_ENVIRONMENT_ATTRIBUTE) + 
+		        		   " - Missing property key for value: " + def[1]);
+			}
+			if (def[1] == null) {
+		           throw new XMLConfigurationException("Invalid attribute " + StringUtils.quote(XML_ENVIRONMENT_ATTRIBUTE) + 
+		        		   " - Missing property value for key: " + def[0]);
+			}
 			environment.setProperty(def[0], StringUtils.unquote(def[1]));
 		}
 	}

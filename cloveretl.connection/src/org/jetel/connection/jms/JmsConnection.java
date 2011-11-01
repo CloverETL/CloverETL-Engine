@@ -245,10 +245,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 				}
 				try {
 					Object o = initCtx.lookup(conFtory);
-					if (o instanceof ConnectionFactory)
+					if (o instanceof ConnectionFactory) {
 						factory = (ConnectionFactory) o;
-					else
-						throw new ComponentNotReadyException("Cannot find connection factory " + ConnectionFactory.class + " loaded by:" + ConnectionFactory.class.getClassLoader() + " with jndiName:" + conFtory + " found:" + o + " " + (o != null ? (("" + o.getClass() + " loaded by:" + o.getClass().getClassLoader())) : ""));
+					} else {
+						if (o == null)
+							throw new ComponentNotReadyException("Cannot find connection factory " + ConnectionFactory.class + " with jndiName:" + conFtory + " in the ctx:"+initCtx);
+						else
+							throw new ComponentNotReadyException("Cannot find connection factory (interface may be loaded by different classloader) " + ConnectionFactory.class + " loaded by:" + ConnectionFactory.class.getClassLoader() + " with jndiName:" + conFtory + " found:" + o + " " + (o != null ? (("" + o.getClass() + " loaded by:" + o.getClass().getClassLoader())) : ""));
+					}
 
 				} catch (ComponentNotReadyException e) {
 					throw e;

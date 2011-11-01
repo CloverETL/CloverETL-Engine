@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation Devel" modified="Mon Jun 20 17:25:54 CEST 2011" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.369" showComponentDetails="true">
+<Graph author="avackova" created="Fri Feb 29 16:16:12 CET 2008" guiVersion="0.0.0.devel" id="1204298432250" licenseType="Evaluation Devel" modified="Mon Oct 10 12:25:36 CEST 2011" modifiedBy="avackova" name="SOAP_EXAMPLE" revision="1.371" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/extract.fmt" id="Metadata10"/>
 <Metadata fileURL="${META_DIR}/extractAgg.fmt" id="Metadata11"/>
@@ -15,9 +15,9 @@
 <Metadata fileURL="${META_DIR}/time_pairs.fmt" id="Metadata4"/>
 <Property fileURL="parameters.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter4"/>
-<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="0" fileURL="${SEQ_DIR}/time_seq.seq" id="Sequence1" name="time_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="194" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Forecast information is get from SOAP server." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="-307" y="110">
+<Sequence cached="0" fileURL="${SEQ_DIR}/temp_seq.seq" id="Sequence0" name="temp_seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="194" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Forecast information is get from SOAP server." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="234" x="-307" y="110">
 <attr name="text"><![CDATA[
 We want to get information about daily maximum temperatures for 7 day weather forecast.
 
@@ -214,10 +214,10 @@ function integer transform() {
 <Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
 <Edge fromNode="XML_XPATH_READER0:0" guiBendpoints="-93:13|-93:-7" guiLocks="-93|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="34:0|34:-12" guiRouter="Manual" id="Edge1" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="98:0|98:112" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
+<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="-21:33|-21:145" guiLocks="-21|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata3" outPort="Port 2 (out)" toNode="EXT_HASH_JOIN2:1"/>
 <Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="-38:43|-38:127" guiLocks="-38|null|null" guiRouter="Manual" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 3 (out)" toNode="EXT_HASH_JOIN2:0"/>
-<Edge fromNode="XML_XPATH_READER0:4" guiBendpoints="-76:53|-76:270" guiLocks="-76|null|null" guiRouter="Manual" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
-<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="-95:63|-95:252" guiLocks="-95|null|null" guiRouter="Manual" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
+<Edge fromNode="XML_XPATH_READER0:4" guiBendpoints="-47:53|-47:270" guiLocks="-47|null|null" guiRouter="Manual" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 4 (out)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="-60:63|-60:252" guiLocks="-60|null|null" guiRouter="Manual" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 5 (out)" toNode="EXT_HASH_JOIN1:0"/>
 </Phase>
 <Phase number="1">
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/extract.xls" guiHeight="101" guiName="StatisticalInformation" guiWidth="188" guiX="1484" guiY="91" id="XLS_WRITER1" namesRow="1" sheetName="aggregated" type="XLS_WRITER">

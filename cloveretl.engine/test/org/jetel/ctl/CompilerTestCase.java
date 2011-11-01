@@ -1900,11 +1900,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("popList", Arrays.asList(1, 2, 3, 4));
 	}
 
+	@SuppressWarnings("unchecked")
 	public void test_containerlib_push() {
 		doCompile("test_containerlib_push");
 
 		check("pushElem", Integer.valueOf(6));
 		check("pushList", Arrays.asList(1, 2, 3, 4, 5, 6));
+		
+		// there is hardly any way to get an instance of DataRecord
+		// hence we just check if the list has correct size
+		// and if its elements have correct metadata
+		List<DataRecord> recordList = (List<DataRecord>) getVariable("recordList");
+		List<DataRecordMetadata> mdList = Arrays.asList(
+				graph.getDataRecordMetadata(OUTPUT_1),
+				graph.getDataRecordMetadata(INPUT_2),
+				graph.getDataRecordMetadata(INPUT_1)
+		);
+		assertEquals(mdList.size(), recordList.size());
+		for (int i = 0; i < mdList.size(); i++) {
+			assertEquals(mdList.get(i), recordList.get(i).getMetadata());
+		}
 	}
 
 	public void test_containerlib_remove() {

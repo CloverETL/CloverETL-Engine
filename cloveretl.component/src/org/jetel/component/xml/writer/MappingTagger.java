@@ -31,8 +31,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.Element;
+import org.jetel.component.xml.writer.mapping.MappingProperty;
 import org.jetel.component.xml.writer.mapping.Relation;
 import org.jetel.component.xml.writer.mapping.XmlMapping;
 import org.jetel.data.Defaults;
@@ -97,7 +97,7 @@ public class MappingTagger extends AbstractVisitor {
 		return portTagMap.keySet();
 	}
 
-	public Map<Integer, PortData> getPortDataMap(Map<Integer, InputPort> inPorts, String tempDirectory, long cacheSize) throws ComponentNotReadyException {
+	public Map<Integer, PortData> getPortDataMap(Map<Integer, InputPort> inPorts, String tempDir) throws ComponentNotReadyException {
 		Map<Integer, PortData> portDataMap = new HashMap<Integer, PortData>(inPorts.size());
 		for (Entry<Integer, InputPort> entry : inPorts.entrySet()) {
 			Integer inPortIndex = entry.getKey();
@@ -105,7 +105,7 @@ public class MappingTagger extends AbstractVisitor {
 			PortTag portTag = portTagMap.get(inPortIndex);
 			if (portTag != null) {
 				PortData portData = PortData.getInstance(portTag.isCached(), entry.getValue(),
-						portTag.getKeys(), sortHints.get(inPortIndex), tempDirectory, cacheSize);
+						portTag.getKeys(), sortHints.get(inPortIndex), tempDir);
 				portDataMap.put(inPortIndex, portData);
 			}
 		}

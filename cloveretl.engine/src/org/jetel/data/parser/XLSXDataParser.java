@@ -353,7 +353,7 @@ public class XLSXDataParser extends XLSParser {
 
 		for (int i = 0; i < resultLength; i++) {
 			Row row = sheet.getRow(startRow + i);
-		    if(row != null) {
+		    if (row != null && row.getLastCellNum() > 0) {
 		       result[i] = new String[row.getLastCellNum()];
 
 			   for (int j = 0; j < row.getLastCellNum(); j++) {

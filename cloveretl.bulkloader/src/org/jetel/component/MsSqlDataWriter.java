@@ -39,10 +39,10 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -662,7 +662,8 @@ public class MsSqlDataWriter extends BulkLoader {
 		cmdBuilder.addParam(MS_SQL_INPUT_FILE_PARAM, MS_SQL_INPUT_FILE_SWITCH);
 		cmdBuilder.addParam(MS_SQL_OUTPUT_FILE_PARAM, MS_SQL_OUTPUT_FILE_SWITCH);
 		cmdBuilder.addParam(MS_SQL_PACKET_SIZE_PARAM, MS_SQL_PACKET_SIZE_SWITCH);
-		cmdBuilder.addAttribute(MS_SQL_SERVER_NAME_SWITCH, getServerName());
+		//HOTFIX: CL-1932 @see CommandBuilder.addAttributeDirect() javadoc
+		cmdBuilder.addAttributeDirect(MS_SQL_SERVER_NAME_SWITCH, getServerName());
 		cmdBuilder.addAttribute(MS_SQL_USER_NAME_SWITCH, user);
 		cmdBuilder.addAttribute(MS_SQL_PASSWORD_SWITCH, password);
 		cmdBuilder.addBooleanParam(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
@@ -1012,7 +1013,7 @@ public class MsSqlDataWriter extends BulkLoader {
 				msSqlDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+				msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_OWNER_ATTRIBUTE)) {
 				msSqlDataWriter.setOwner(xattribs.getString(XML_OWNER_ATTRIBUTE));
@@ -1030,7 +1031,7 @@ public class MsSqlDataWriter extends BulkLoader {
         		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SERVER_NAME_ATTRIBUTE)) {
-        		msSqlDataWriter.setServerName(xattribs.getString(XML_SERVER_NAME_ATTRIBUTE));
+        		msSqlDataWriter.setServerName(xattribs.getStringEx(XML_SERVER_NAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 				msSqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));

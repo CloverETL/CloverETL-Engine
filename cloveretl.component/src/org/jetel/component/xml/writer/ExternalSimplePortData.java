@@ -19,94 +19,46 @@
 package org.jetel.component.xml.writer;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.BufferOverflowException;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import jdbm.helper.Tuple;
+import jdbm.helper.TupleBrowser;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.OperationStatus;
-
 /**
- * Implementation of data provider which handles the situation when records need to be cached and need to be looked up
- * under exactly one key
- * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
- * @created 11 Mar 2011
+ * @created 8 Sep 2011
  */
 public class ExternalSimplePortData extends ExternalPortData {
 
-	private Environment environment;
-	private Database database;
-	
-	private long keyCounter = 0;
-	private long valueCounter = 0;
-	
-	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
-		super(inPort, keys, tempDirectory, cacheSize);
+	private BTree<byte[], byte[]> tree;
+
+	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
+		super(inPort, keys, tempDirectory);
 	}
-	
+
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		environment = getEnvironment();
-		DatabaseConfig dbConfig = getDbConfig();
-		dbConfig.setDuplicateComparator(new DuplicateComparator());
-		
-		database = environment.openDatabase(null, Long.toString(System.nanoTime()), dbConfig);
-	}
-
-	@Override
-	public void put(DataRecord record) throws IOException {
-		DatabaseEntry databaseValue = getDatabaseValue(record);
-		
-		if (nullKey) {
-			database.put(null, new DatabaseEntry(toByteArray(keyCounter++)), databaseValue);
-		} else {
-			int[] key = primaryKey[0];
-		
-			record.serialize(recordBuffer, key);
-			byte[] serializedKey = new byte[recordBuffer.position()];
-			recordBuffer.flip();
-			recordBuffer.get(serializedKey);
-			recordBuffer.clear();
-
-			database.put(null, new DatabaseEntry(serializedKey), databaseValue);
+		try {
+			tree = BTree.createInstance(sharedCache, recordKeyComparator, serializer, serializer, PAGE_SIZE);
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
 		}
-	}
-
-	@Override
-	public DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData) throws IOException {
-		if (key == null) {
-			return new SimpleCachedDataIterator();
-		} else {
-			return new KeyDataIterator(key, parentKey, keyData);
-		}
-	}
-
-	@Override
-	public void postExecute() throws ComponentNotReadyException {
-		database.close();
-		environment.close();
-		
-		super.postExecute();
 	}
 	
-	private DatabaseEntry getDatabaseValue(DataRecord record) throws IOException {
-		//prepend counter, so that record order can be preserved
-		recordBuffer.put(toByteArray(valueCounter++));
-		
+	public void put(DataRecord dataRecord) throws IOException {
+		tree.insert(serializeKey(dataRecord), serializeValue(dataRecord), false);
+	}
+	
+	private byte[] serializeValue(DataRecord record) throws IOException {
 		try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
@@ -117,48 +69,68 @@ public class ExternalSimplePortData extends ExternalPortData {
         recordBuffer.get(serializedValue);
         recordBuffer.clear();
 
-		return new DatabaseEntry(serializedValue);
+		return serializedValue;
 	}
 	
-	private void readData(DatabaseEntry foundValue, DataRecord record) throws IOException {
-		recordBuffer.put(foundValue.getData());
+	private byte[] serializeKey(DataRecord record) {
+		if (!nullKey) {
+			record.serialize(recordBuffer, primaryKey[0]);
+		}
+		recordBuffer.put(toByteArray(keyCounter++));
+		byte[] serializedKey = new byte[recordBuffer.position()];
 		recordBuffer.flip();
-		recordBuffer.position(SERIALIZED_COUNTER_LENGTH); // discard counter
+		recordBuffer.get(serializedKey);
+		recordBuffer.clear();
+		
+		return serializedKey;
+	}
+	
+	@Override
+	public DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData) throws IOException {
+		if (key == null) {
+			return new SimpleDataIterator();
+		} else {
+			return new KeyDataIterator(key, parentKey, keyData);
+		}
+	}
+	
+	private void readData(Tuple<byte[], byte[]> tuple, DataRecord record) throws IOException {
+		recordBuffer.put(tuple.getValue());
+		recordBuffer.flip();
 		record.deserialize(recordBuffer);
 		recordBuffer.clear();
 	}
-
+	
 	private class KeyDataIterator implements DataIterator {
-		
+
 		private DataRecord current;
 		private DataRecord next;
 		private DataRecord temp;
-		
-		private Cursor cursor;
-		
-		private DatabaseEntry databaseKey;
-		private DatabaseEntry foundValue = new DatabaseEntry();
-		
+
+		private TupleBrowser<byte[], byte[]> browser;
+		private Tuple<byte[], byte[]> tuple;
+		private byte[] serializedKey;
+
 		public KeyDataIterator(int[] key, int[] parentKey, DataRecord keyData) throws IOException {
-			
 			DataRecordMetadata metadata = inPort.getMetadata();
-			
-			cursor = database.openCursor(null, null);
-			
+
 			current = new DataRecord(metadata);
 			current.init();
-			
 			next = new DataRecord(metadata);
 			next.init();
-		
-			databaseKey = getDatabaseKey(current, key, keyData, parentKey);
-			
-			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+			tuple = new Tuple<byte[], byte[]>();
+
+			serializedKey = getDatabaseKey(current, key, keyData, parentKey);
+			browser = tree.browse(serializedKey);
+
+			if (browser.getNext(tuple)) {
+				if (equalsKey(tuple, serializedKey)) {
+					readData(tuple, next);
+				} else {
+					next = null;
+				}
 			} else {
-				cursor.close();
 				next = null;
-				
 			}
 		}
 
@@ -167,13 +139,17 @@ public class ExternalSimplePortData extends ExternalPortData {
 			temp = current;
 			current = next;
 			next = temp;
-			
-			if (cursor.getNextDup(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+
+			if (browser.getNext(tuple)) {
+				if (equalsKey(tuple, serializedKey)) {
+					readData(tuple, next);
+				} else {
+					next = null;
+				}
 			} else {
-				cursor.close();
 				next = null;
 			}
+			
 			return current;
 		}
 
@@ -188,31 +164,29 @@ public class ExternalSimplePortData extends ExternalPortData {
 		}
 	}
 	
-	private class SimpleCachedDataIterator implements DataIterator {
-		
-		private Cursor cursor;
-		
-		private DatabaseEntry foundKey = new DatabaseEntry();
-		private DatabaseEntry foundValue = new DatabaseEntry();
-		
+	private class SimpleDataIterator implements DataIterator {
+
+		private TupleBrowser<byte[], byte[]> browser;
+		private Tuple<byte[], byte[]> tuple;
+
 		private DataRecord current;
 		private DataRecord next;
 		private DataRecord temp;
-		
-		public SimpleCachedDataIterator() throws IOException {
+
+		public SimpleDataIterator() throws IOException {
 			DataRecordMetadata metadata = inPort.getMetadata();
-			
+
 			current = new DataRecord(metadata);
 			current.init();
 			next = new DataRecord(metadata);
 			next.init();
-			
-			cursor = database.openCursor(null, null);
-			
-			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+			tuple = new Tuple<byte[], byte[]>();
+
+			browser = tree.browse();
+
+			if (browser.getNext(tuple)) {
+				readData(tuple, next);
 			} else {
-				cursor.close();
 				next = null;
 			}
 		}
@@ -222,11 +196,10 @@ public class ExternalSimplePortData extends ExternalPortData {
 			temp = current;
 			current = next;
 			next = temp;
-			
-			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+
+			if (browser.getNext(tuple)) {
+				readData(tuple, next);
 			} else {
-				cursor.close();
 				next = null;
 			}
 			return current;
@@ -241,25 +214,5 @@ public class ExternalSimplePortData extends ExternalPortData {
 		public DataRecord peek() {
 			return next;
 		}
-	}
-	
-	public static class DuplicateComparator implements Comparator<byte[]>, Serializable {
-
-		private static final long serialVersionUID = 1L;
-		
-		// We need to be able to store duplicate items under duplicate keys,
-		// therefore comparator must never return 0.
-		@Override
-		public int compare(byte[] o1, byte[] o2) {
-			int result;
-			for (int i = 0; i < SERIALIZED_COUNTER_LENGTH; i++) {
-				result = o1[i] - o2[i];
-				if (result != 0) {
-					return result;
-				}
-			}
-			return 0;
-		}
-		
 	}
 }

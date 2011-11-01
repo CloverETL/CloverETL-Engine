@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.data;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -38,29 +39,33 @@ public class DataFieldFactory {
 	 * @since                 May 2, 2002
 	 */
 	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
-		switch (fieldType) {
-			case DataFieldMetadata.STRING_FIELD:
-				return new StringDataField(fieldMetadata,plain);
-			case DataFieldMetadata.DATE_FIELD:
-				return new DateDataField(fieldMetadata,plain);
-			case DataFieldMetadata.NUMERIC_FIELD:
-				return new NumericDataField(fieldMetadata,plain);
-			case DataFieldMetadata.DECIMAL_FIELD:
-                return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
-			case DataFieldMetadata.INTEGER_FIELD:
-				return new IntegerDataField(fieldMetadata,plain);
-			case DataFieldMetadata.BYTE_FIELD:
-				return new ByteDataField(fieldMetadata,plain);
-			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-				return new CompressedByteDataField(fieldMetadata,plain);
-			case DataFieldMetadata.LONG_FIELD:
-				return new LongDataField(fieldMetadata,plain);
-			case DataFieldMetadata.BOOLEAN_FIELD:
-				return new BooleanDataField(fieldMetadata);
-			case DataFieldMetadata.NULL_FIELD:
-				return NullField.NULL_FIELD;
-			default:
-				throw new RuntimeException("Unsupported data type: " + fieldType);
+		try {
+			switch (fieldType) {
+				case DataFieldMetadata.STRING_FIELD:
+					return new StringDataField(fieldMetadata,plain);
+				case DataFieldMetadata.DATE_FIELD:
+					return new DateDataField(fieldMetadata,plain);
+				case DataFieldMetadata.NUMERIC_FIELD:
+					return new NumericDataField(fieldMetadata,plain);
+				case DataFieldMetadata.DECIMAL_FIELD:
+	                return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
+				case DataFieldMetadata.INTEGER_FIELD:
+					return new IntegerDataField(fieldMetadata,plain);
+				case DataFieldMetadata.BYTE_FIELD:
+					return new ByteDataField(fieldMetadata,plain);
+				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+					return new CompressedByteDataField(fieldMetadata,plain);
+				case DataFieldMetadata.LONG_FIELD:
+					return new LongDataField(fieldMetadata,plain);
+				case DataFieldMetadata.BOOLEAN_FIELD:
+					return new BooleanDataField(fieldMetadata);
+				case DataFieldMetadata.NULL_FIELD:
+					return NullField.NULL_FIELD;
+				default:
+					throw new RuntimeException("Unsupported data type: " + fieldType);
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException(String.format("Data field '%s' cannot be created.", fieldMetadata.getName()), e);
 		}
 	}
 

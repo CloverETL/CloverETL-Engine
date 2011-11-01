@@ -431,12 +431,12 @@ public class XMLExtract extends Node {
 	                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord() != null 
 	                                    					&& m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
 	                                    if (!existGeneratedKeyField) {
-	                                        LOG.warn(getId() + ": XML Extract Mapping's generatedKey field was not found. "
-	                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
+	                                        LOG.warn(getId() + ": XML Extract Mapping's generatedKey field was not found. generatedKey: "
+	                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]) + " of element " + m_activeMapping.m_element + ", outPort: " + m_activeMapping.m_outPort);
 	                                        m_activeMapping.setGeneratedKey(null);
 	                                        m_activeMapping.setParentKey(null);
 	                                    } else if (!existParentKeyField) {
-	                                        LOG.warn(getId() + ": XML Extract Mapping's parentKey field was not found. " + parentKey[i]);
+	                                        LOG.warn(getId() + ": XML Extract Mapping's parentKey field was not found. parentKey: " + parentKey[i] + " of element " + m_activeMapping.m_element + ", outPort: " + m_activeMapping.m_outPort);
 	                                        m_activeMapping.setGeneratedKey(null);
 	                                        m_activeMapping.setParentKey(null);
 	                                    } else {

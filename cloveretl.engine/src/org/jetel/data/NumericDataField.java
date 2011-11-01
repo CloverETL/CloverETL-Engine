@@ -95,7 +95,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 			switch (binaryFormat) {
 			case FLOAT_BIG_ENDIAN: case FLOAT_LITTLE_ENDIAN: case DOUBLE_BIG_ENDIAN: case DOUBLE_LITTLE_ENDIAN:
 				if (_metadata.getSize() != binaryFormat.size) {
-					throw new BadDataFormatException(String.format("The size of the field must be %d bytes", binaryFormat.size));
+					throw new BadDataFormatException(String.format("The size of the field '%s' (%d bytes) does not correspond with binary format '%s' (%d bytes).", _metadata.getName(), _metadata.getSize(), binaryFormat.getFormatString(), binaryFormat.size));
 				}
 				break;
 			default:

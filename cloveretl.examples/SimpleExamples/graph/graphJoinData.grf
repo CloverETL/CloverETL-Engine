@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates functionality of SORT and EXT_MERGE_JOIN components. EXT_MERGE_JOIN components&#10;performs joining of master data with slave data based on specified key. It requires both master and slave&#10;data to be sorted according to used key.  " guiVersion="0.0.0.devel" id="1204546564762" licenseType="Evaluation Devel" modified="Fri Jun 10 15:33:27 CEST 2011" modifiedBy="avackova" name="Testing Joiner" revision="1.96" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates functionality of SORT and EXT_MERGE_JOIN components. EXT_MERGE_JOIN components&#10;performs joining of master data with slave data based on specified key. It requires both master and slave&#10;data to be sorted according to used key.  " guiVersion="0.0.0.devel" id="1204546564762" licenseType="Evaluation Devel" modified="Mon Oct 10 13:18:19 CEST 2011" modifiedBy="avackova" name="Testing Joiner" revision="1.97" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>

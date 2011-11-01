@@ -290,6 +290,10 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
             		oldWb = Workbook.getWorkbook(is, settings);
         		} catch (Throwable t) {
         			//NOTHING - xls file doesn't exist, create new one
+        		} finally {
+        			if (is != null) {
+        				is.close();
+        			}
         		}
     			os = FileUtils.getOutputStream(url, fName, false, -1);
     		} else if (outputDataTarget instanceof WritableByteChannel) {

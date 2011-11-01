@@ -19,55 +19,40 @@
 package org.jetel.component.xml.writer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jdbm.helper.Tuple;
+import jdbm.helper.TupleBrowser;
+
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.OperationStatus;
-
 /**
- * Implementation of data provider which handles the most complex use case - data must be cached and lookup up under
- * multiple keys.
- * 
- * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * 
- * @created 11 Mar 2011
+ * @author lkrejci (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 13 Sep 2011
  */
-
 public class ExternalComplexPortData extends ExternalPortData {
 	
-	public static final String NULL_INDEX_NAME = "$NULL_INDEX";
+	private static final String NULL_INDEX_NAME = "$NULL_INDEX";
 	
-	private DirectDynamicRecordBuffer dataStorage;
-	private Environment environment;
-	private Map<String, Database> dataMap;
-
 	private String[] stringKeys;
-	private ByteBuffer indexBuffer;
-	
-	private long counter = 0;
-		
-	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory, long cacheSize) {
-		super(inPort, keys, tempDirectory, cacheSize);
+	private DirectDynamicRecordBuffer dataStorage;
+	private Map<String, BTree<byte[], byte[]>> dataMap;
+
+	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
+		super(inPort, keys, tempDirectory);
 	}
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		indexBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		
 		dataStorage = new DirectDynamicRecordBuffer(tempDirectory);
 		try {
 			dataStorage.init();
@@ -75,34 +60,35 @@ public class ExternalComplexPortData extends ExternalPortData {
 			throw new ComponentNotReadyException(e);
 		}
 		 
-		dataMap = new HashMap<String, Database>();
-		
+		dataMap = new HashMap<String, BTree<byte[], byte[]>>();
 	}
-	
-		@Override
+
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		DataRecordMetadata metadata = inPort.getMetadata();
 		
-		environment = getEnvironment();
-		
-		stringKeys = new String[primaryKey.length];
-		for (int outer = 0; outer < primaryKey.length; outer++) {
-			int[] key = primaryKey[outer];
-			stringKeys[outer] = generateKey(metadata, key);
-			Database database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
-			dataMap.put(stringKeys[outer], database);
-		}
-		if (nullKey) {
-			Database database = environment.openDatabase(null, Long.toString(System.nanoTime()), getDbConfig());
-			dataMap.put(NULL_INDEX_NAME, database);
+		try {
+			stringKeys = new String[primaryKey.length];
+			for (int outer = 0; outer < primaryKey.length; outer++) {
+				int[] key = primaryKey[outer];
+				stringKeys[outer] = generateKey(metadata, key);
+				BTree<byte[], byte[]> tree = BTree.createInstance(sharedCache, recordKeyComparator, serializer, serializer, PAGE_SIZE);
+				dataMap.put(stringKeys[outer], tree);
+			}
+			if (nullKey) {
+				BTree<byte[], byte[]> tree = BTree.createInstance(sharedCache, recordKeyComparator, serializer, serializer, PAGE_SIZE);
+				dataMap.put(NULL_INDEX_NAME, tree);
+			}
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
 	@Override
 	public void put(DataRecord record) throws IOException {
 		IndexKey value = dataStorage.writeRaw(record);
-		
+
 		recordBuffer.putInt(value.getPosition());
 		recordBuffer.putInt(value.getLength());
 		int length = recordBuffer.position();
@@ -110,58 +96,39 @@ public class ExternalComplexPortData extends ExternalPortData {
 		byte[] serializedValue = new byte[length];
 		recordBuffer.get(serializedValue);
 		recordBuffer.clear();
-		DatabaseEntry databaseValue = new DatabaseEntry(serializedValue);
-		
+
 		for (int i = 0; i < primaryKey.length; i++) {
 			int[] key = primaryKey[i];
-			
-			DatabaseEntry databaseKey;
-		
+
 			record.serialize(recordBuffer, key);
-			length = recordBuffer.position();
+			recordBuffer.put(toByteArray(keyCounter));
+			byte[] serializedKey = new byte[recordBuffer.position()];
 			recordBuffer.flip();
-			byte[] serializedKey = new byte[length];
 			recordBuffer.get(serializedKey);
 			recordBuffer.clear();
 
-			databaseKey = new DatabaseEntry(serializedKey);
-			
-			Database database = dataMap.get(stringKeys[i]);
-			database.put(null, databaseKey, databaseValue);
+			BTree<byte[], byte[]> tree = dataMap.get(stringKeys[i]);
+			tree.insert(serializedKey, serializedValue, false);
 		}
 		if (nullKey) {
-			DatabaseEntry databaseKey = new DatabaseEntry(toByteArray(counter++));
-			Database database = dataMap.get(NULL_INDEX_NAME);
-			database.put(null, databaseKey, databaseValue);
+			BTree<byte[], byte[]> tree = dataMap.get(NULL_INDEX_NAME);
+			tree.insert(toByteArray(keyCounter), serializedValue, false);
 		}
+		
+		keyCounter++;
 	}
 
 	@Override
-	public DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData) throws IOException {
+	public DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData)
+			throws IOException {
 		if (key == null) {
 			return new SimpleCachedDataIterator();
 		} else {
 			return new KeyDataIterator(key, parentKey, keyData);
 		}
 	}
-
-	@Override
-	public void postExecute() throws ComponentNotReadyException{
-		try {
-			dataStorage.close();
-			for (Database database : dataMap.values()) {
-				database.close();
-			}
-			dataStorage.clear();
-			environment.close();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-		
-		super.postExecute();
-	}
 	
-	private String generateKey(DataRecordMetadata metadata, int[] key) {
+	private static String generateKey(DataRecordMetadata metadata, int[] key) {
 		StringBuilder stringKey = new StringBuilder();
 		for (int j = 0; j < key.length; j++) {
 			stringKey.append(metadata.getField(key[j]).getName());
@@ -169,55 +136,57 @@ public class ExternalComplexPortData extends ExternalPortData {
 		return stringKey.toString();
 	}
 	
-	private void readData(DatabaseEntry foundValue, DataRecord record) throws IOException {
+	private void readData(Tuple<byte[], byte[]> tuple, DataRecord record) throws IOException {
 		int length = 0;
 		int position = 0;
 		
-		indexBuffer.put(foundValue.getData());
-		indexBuffer.flip();
-		position = indexBuffer.getInt();
-		length = indexBuffer.getInt();
-		indexBuffer.clear();
+		recordBuffer.put(tuple.getValue());
+		recordBuffer.flip();
+		position = recordBuffer.getInt();
+		length = recordBuffer.getInt();
+		recordBuffer.clear();
 		
 		recordBuffer.limit(length);
 		dataStorage.read(recordBuffer, position);
 		record.deserialize(recordBuffer);
 		recordBuffer.clear();
 	}
-
+	
 	private class KeyDataIterator implements DataIterator {
-		
+
 		private DataRecord current;
 		private DataRecord next;
 		private DataRecord temp;
-		
+
 		private String indexKey;
-		private Database index;
-		
-		private Cursor cursor;
-		
-		private DatabaseEntry databaseKey;
-		private DatabaseEntry foundValue = new DatabaseEntry();
-		
+		private BTree<byte[], byte[]> index;
+
+		private TupleBrowser<byte[], byte[]> browser;
+		private Tuple<byte[], byte[]> tuple;
+		private byte[] serializedKey;
+
 		public KeyDataIterator(int[] key, int[] parentKey, DataRecord keyData) throws IOException {
-			
+
 			DataRecordMetadata metadata = inPort.getMetadata();
 			indexKey = generateKey(metadata, key);
-			
 			index = dataMap.get(indexKey);
-			cursor = index.openCursor(null, null);
-			
+
 			current = new DataRecord(metadata);
 			current.init();
 			next = new DataRecord(metadata);
 			next.init();
-			
-			databaseKey = getDatabaseKey(current, key, keyData, parentKey);
-			
-			if (cursor.getSearchKey(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+			tuple = new Tuple<byte[], byte[]>();
+
+			serializedKey = getDatabaseKey(current, key, keyData, parentKey);
+			browser = index.browse(serializedKey);
+
+			if (browser.getNext(tuple)) {
+				if (equalsKey(tuple, serializedKey)) {
+					readData(tuple, next);
+				} else {
+					next = null;
+				}
 			} else {
-				cursor.close();
 				next = null;
 			}
 		}
@@ -227,11 +196,14 @@ public class ExternalComplexPortData extends ExternalPortData {
 			temp = current;
 			current = next;
 			next = temp;
-			
-			if (cursor.getNextDup(databaseKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+
+			if (browser.getNext(tuple)) {
+				if (equalsKey(tuple, serializedKey)) {
+					readData(tuple, next);
+				} else {
+					next = null;
+				}
 			} else {
-				cursor.close();
 				next = null;
 			}
 			return current;
@@ -247,33 +219,28 @@ public class ExternalComplexPortData extends ExternalPortData {
 			return next;
 		}
 	}
-	
+
 	private class SimpleCachedDataIterator implements DataIterator {
-		
-		private Cursor cursor;
-		
-		private DatabaseEntry foundKey = new DatabaseEntry();
-		private DatabaseEntry foundValue = new DatabaseEntry();
-		
+		private TupleBrowser<byte[], byte[]> browser;
+		private Tuple<byte[], byte[]> tuple;
+
 		private DataRecord current;
 		private DataRecord next;
 		private DataRecord temp;
-		
+
 		public SimpleCachedDataIterator() throws IOException {
 			DataRecordMetadata metadata = inPort.getMetadata();
-			
+
 			current = new DataRecord(metadata);
 			current.init();
 			next = new DataRecord(metadata);
 			next.init();
-			
-			cursor = dataMap.get(NULL_INDEX_NAME).openCursor(null, null);
-			indexBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-			
-			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+			tuple = new Tuple<byte[], byte[]>();
+
+			browser = dataMap.get(NULL_INDEX_NAME).browse();
+			if (browser.getNext(tuple)) {
+				readData(tuple, next);
 			} else {
-				cursor.close();
 				next = null;
 			}
 		}
@@ -283,11 +250,10 @@ public class ExternalComplexPortData extends ExternalPortData {
 			temp = current;
 			current = next;
 			next = temp;
-			
-			if (cursor.getNext(foundKey, foundValue, null) == OperationStatus.SUCCESS) {
-				readData(foundValue, next);
+
+			if (browser.getNext(tuple)) {
+				readData(tuple, next);
 			} else {
-				cursor.close();
 				next = null;
 			}
 			return current;
@@ -303,4 +269,5 @@ public class ExternalComplexPortData extends ExternalPortData {
 			return next;
 		}
 	}
+
 }

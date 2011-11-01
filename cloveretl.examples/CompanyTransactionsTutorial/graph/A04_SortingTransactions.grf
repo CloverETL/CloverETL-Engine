@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="0.0.0.devel" id="1232110167500" licenseType="Evaluation Devel" modified="Thu Jun 09 15:32:10 CEST 2011" modifiedBy="avackova" name="sorting" revision="1.110" showComponentDetails="true">
+<Graph author="milos_kovalcik" created="Fri Jan 16 13:28:30 CET 2009" guiVersion="0.0.0.devel" id="1232110167500" licenseType="Evaluation Devel" modified="Mon Oct 10 12:28:11 CEST 2011" modifiedBy="avackova" name="sorting" revision="1.111" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="CustomersForEmployees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -171,8 +171,8 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Edge debugMode="false" fromNode="EXT_SORT6:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge31" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="DATA_WRITER6:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT7:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge32" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP2:0"/>
 <Edge debugMode="false" fromNode="EXT_SORT8:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge35" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="434:380|434:241" guiLocks="434|null|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="434:380|434:241" guiLocks="434|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="450:390|450:347" guiLocks="450|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="468:400|468:455" guiLocks="468|null|null" guiRouter="Manual" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EXT_SORT4:0"/>
 <Edge fromNode="SIMPLE_COPY0:3" guiBendpoints="457:410|457:566" guiLocks="457|null|null" guiRouter="Manual" id="Edge23" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="EXT_SORT3:0"/>
 <Edge fromNode="SIMPLE_COPY0:4" guiBendpoints="450:420|450:680" guiLocks="450|null|null" guiRouter="Manual" id="Edge25" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 4 (out)" toNode="EXT_SORT0:0"/>
