@@ -207,8 +207,14 @@ public class DataWriter extends Node {
 
 		//prepare formatter provider
 		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		formatterProvider.setQuotedStrings(quotedStrings);
-		formatterProvider.setQuoteChar(quoteChar);
+		if (getInMetadata().get(0).isQuotedStrings()) {
+			formatterProvider.setQuotedStrings(true);
+			formatterProvider.setQuoteChar(getInMetadata().get(0).getQuoteChar());
+		}
+		else {
+			formatterProvider.setQuotedStrings(quotedStrings);
+			formatterProvider.setQuoteChar(quoteChar);
+		}
 		
 		initLookupTable();
 
