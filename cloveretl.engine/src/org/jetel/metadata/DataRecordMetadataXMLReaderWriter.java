@@ -38,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -157,6 +158,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
 	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRows";
+	private static final String QUOTED_STRINGS = "quotedStrings";
+	private static final String QUOTE_CHAR = "quoteChar";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	public static final String CONNECTION_ATTR = "connection";
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
@@ -320,6 +323,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         if (record.getSkipSourceRows() > 0) {
         	metadataElement.setAttribute(SKIP_SOURCE_ROW_ATTR, String.valueOf(record.getSkipSourceRows()));
         }
+        
+        if (record.isQuotedStrings()) {
+        	metadataElement.setAttribute(QUOTED_STRINGS, String.valueOf(true));
+        }
+        
+        if (record.getQuoteChar() != null) {
+        	metadataElement.setAttribute(QUOTE_CHAR, String.valueOf(record.getQuoteChar()));
+        }
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
@@ -453,6 +464,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String itemName;
 		String itemValue;
 		String skipSourceRows = null;
+		String quotedStrings = null;
+		String quoteChar = null;
 		String collatorSensitivity = null;
 		Properties recordProperties = null;
 
@@ -480,6 +493,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_SIZE_ATTR)) {
 				sizeStr = itemValue;
+			} else if (itemName.equalsIgnoreCase(QUOTED_STRINGS)) {
+				quotedStrings = itemValue;
+			} else if (itemName.equalsIgnoreCase(QUOTE_CHAR)) {
+				quoteChar = itemValue;
 			} else if (itemName.equalsIgnoreCase(SKIP_SOURCE_ROW_ATTR)) {
 				skipSourceRows = itemValue;
 			} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
@@ -536,6 +553,13 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setSkipSourceRows(iSkipSourceRows);
 		} catch (NumberFormatException e) {
 			// ignore 
+		}
+		
+		if (!StringUtils.isEmpty(quoteChar)) {
+			recordMetadata.setQuoteChar(QuotingDecoder.quoteCharFromString(quoteChar));
+		}
+		if (!StringUtils.isEmpty(quotedStrings)) {
+			recordMetadata.setQuotedStrings(Boolean.valueOf(quotedStrings));
 		}
 
 		if (!StringUtils.isEmpty(collatorSensitivity)) {

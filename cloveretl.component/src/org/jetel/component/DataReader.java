@@ -367,8 +367,14 @@ public class DataReader extends Node {
 		parserCfg.setCharset(charset);
 		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
         parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        parserCfg.setQuotedStrings(quotedStrings);
-        parserCfg.setQuoteChar(quoteChar);
+        if (getOutMetadata().get(0).isQuotedStrings()) {
+        	parserCfg.setQuotedStrings(true);
+        	parserCfg.setQuoteChar(getOutMetadata().get(0).getQuoteChar());
+        }
+        else {
+	        parserCfg.setQuotedStrings(quotedStrings);
+	        parserCfg.setQuoteChar(quoteChar);
+        }
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTrim(trim);

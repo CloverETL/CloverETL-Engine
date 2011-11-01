@@ -82,6 +82,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private char recType;
 
 	private int skipSourceRows = -1;
+	
+	private boolean quotedStrings;
+	private Character quoteChar;
 
 	private String recordDelimiter;
 	private String fieldDelimiter;
@@ -230,6 +233,34 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public int getSkipSourceRows() {
 		return skipSourceRows;
+	}
+	
+	/**
+	 * @return the quote character
+	 */
+	public Character getQuoteChar() {
+		return quoteChar;
+	}
+	
+	/**
+	 * @param quoteChar strings quote character
+	 */
+	public void setQuoteChar(Character quoteChar) {
+		this.quoteChar = quoteChar;
+	}
+	
+	/**
+	 * @return are strings quoted?
+	 */
+	public boolean isQuotedStrings() {
+		return quotedStrings;
+	}
+	
+	/**
+	 * @param quotedStrings are strings quoted?
+	 */
+	public void setQuotedStrings(boolean quotedStrings) {
+		this.quotedStrings = quotedStrings;
 	}
 
 	/**
@@ -819,6 +850,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setSkipSourceRows(skipSourceRows);
 		dataRecordMetadata.setRecordDelimiter(recordDelimiter);
 		dataRecordMetadata.setFieldDelimiter(fieldDelimiter);
+		dataRecordMetadata.setQuoteChar(quoteChar);
+		dataRecordMetadata.setQuotedStrings(quotedStrings);
 		dataRecordMetadata.setRecordSize(recordSize);
 
 		for (DataFieldMetadata field : fields) {
@@ -1163,6 +1196,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		buffer.append(", recType = ").append(recType);
 		buffer.append(", localeStr = ").append(localeStr);
 		buffer.append(", skipSourceRows = ").append(skipSourceRows);
+		buffer.append(", quotedStrings = ").append(quotedStrings);
+		buffer.append(", quoteChar = ").append(quoteChar);
 		buffer.append(", recordProperties = ").append(recordProperties);
 		buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
 		buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
