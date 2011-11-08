@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -1173,10 +1174,6 @@ public class DB2DataWriter extends Node {
 		for (int i=0; i < metadata.getNumFields() - 1; i++){
 			field = metadata.getField(i);
 			newField = field.duplicate();
-			//set defined delimiter
-			if (delimiterFound){
-				newField.setDelimiter(String.valueOf(columnDelimiter));
-			}
 			//if found first "good" delimiter set it for all fields
 			if (!delimiterFound && field.isDelimited()){
 				if (field.getDelimiters()[0].length() == 1 && !Character.isWhitespace(field.getDelimiters()[0].charAt(0))) {
@@ -1184,6 +1181,10 @@ public class DB2DataWriter extends Node {
 					columnDelimiter = field.getDelimiters()[0].charAt(0);
 					delimiterFieldIndex = i;
 				}
+			}
+			//set defined delimiter
+			if (delimiterFound){
+				newField.setDelimiter(String.valueOf(columnDelimiter));
 			}
 			fMetadata.addField(newField);
 		}
@@ -1605,16 +1606,24 @@ public class DB2DataWriter extends Node {
 				exitValue = runWithPipe();
 			}else {
 				if (!getInPorts().isEmpty()) {
-					//save data in temporary file
-					formatter.setDataTarget(new FileOutputStream(dataFile));
-					while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
-						if (skipped >= recordSkip) {
-							formatter.write(inRecord);
-						}else{
-							skipped++;
+					OutputStream os = null;
+					try {
+						os = new FileOutputStream(dataFile);
+						//save data in temporary file
+						formatter.setDataTarget(os);
+						while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+							if (skipped >= recordSkip) {
+								formatter.write(inRecord);
+							}else{
+								skipped++;
+							}
+						}
+						formatter.finish();
+					} finally {
+						if (os != null) {
+							os.close();
 						}
 					}
-					formatter.finish();
 				}
 				//read data from file
 				if (runIt) {
