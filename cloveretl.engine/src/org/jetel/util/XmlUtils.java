@@ -24,6 +24,7 @@ import java.nio.channels.ReadableByteChannel;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.xmlbeans.impl.common.XMLChar;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.w3c.dom.Document;
@@ -77,5 +78,18 @@ public class XmlUtils {
             throw new JetelException("XML document building failed.", e);
         }
     }
-
+    
+    /**
+     * Returns true if the argument can be used
+     * as a name of an XML element (or attribute).
+     * 
+     * Uses Apache XMLBeans library.
+     * 
+     * @param name the string to be checked
+     * @return <code>true</code> if <code>name</code> is a valid XML element or attribute name
+     */
+    public static boolean isValidElementName(String name) {
+    	return XMLChar.isValidName(name);
+    }
+    
 }
