@@ -65,7 +65,7 @@ public class SpreadsheetWriter extends Node {
 	public static final String COMPONENT_TYPE = "SPREADSHEET_WRITER";
 
 	public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	public static final String XML_TEMPLATE_FILE_URL_ATTRIBUTE = "templateFileURL ";
+	public static final String XML_TEMPLATE_FILE_URL_ATTRIBUTE = "templateFileURL";
 	public static final String XML_FORMATTER_TYPE_ATTRIBUTE = "formatterType";
 	public static final String XML_ATTITUDE_ATTRIBUTE = "attitude";
 	public static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
@@ -343,7 +343,9 @@ public class SpreadsheetWriter extends Node {
 		formatterProvider.setAttitude(attitude);
 		formatterProvider.setFormatterType(resolveFormat(formatterType, fileURL));
 		
-		formatterProvider.setTemplateFile(getGraph().getRuntimeContext().getContextURL(), templateFileURL);
+		if (templateFileURL!=null) {
+			formatterProvider.setTemplateFile(getGraph().getRuntimeContext().getContextURL(), templateFileURL);
+		}
 		formatterProvider.setMapping(prepareMapping());
 		formatterProvider.setSheet(sheet);
 		formatterProvider.setAppend(append);
