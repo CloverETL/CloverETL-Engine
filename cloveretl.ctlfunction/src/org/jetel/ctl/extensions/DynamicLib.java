@@ -165,6 +165,7 @@ public class DynamicLib extends TLFunctionLibrary {
        		"getValueAsString".equals(functionName) ? new GetValueAsStringFunction() :
        		"compare".equals(functionName) ? new CompareFunction() :
        		"getFieldIndex".equals(functionName) ? new GetFieldIndexFunction() :
+           	"getFieldLabel".equals(functionName) ? new GetFieldLabelFunction() :
    			null; 
 		
 		if (ret == null) {
@@ -523,6 +524,17 @@ public class DynamicLib extends TLFunctionLibrary {
 	public static final Integer getFieldIndex(TLFunctionCallContext context, DataRecord record, String fieldName) {
 		return record.getMetadata().getFieldPosition(fieldName);
 	}
+	
+	// GET FIELD LABEL
+	@TLFunctionAnnotation("Returns the label of a field")
+	public static final String getFieldLabel(TLFunctionCallContext context, DataRecord record, int fieldIndex) {
+		return record.getMetadata().getField(fieldIndex).getLabelOrName();
+	}
+
+	@TLFunctionAnnotation("Returns the label of a field")
+	public static final String getFieldLabel(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		return record.getMetadata().getField(fieldName).getLabelOrName();
+	}
 
 	class GetValueFunction implements TLFunctionPrototype {
 		
@@ -661,6 +673,26 @@ public class DynamicLib extends TLFunctionLibrary {
 			String fieldName = stack.popString();
 			DataRecord record = stack.popRecord();
 			stack.push(getFieldIndex(context, record, fieldName));
+		}
+	}
+
+	class GetFieldLabelFunction implements TLFunctionPrototype {
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[1].isInteger()) {
+				int index = stack.popInt();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldLabel(context, record, index));
+			} else if (context.getParams()[1].isString()) {
+				String name = stack.popString();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldLabel(context, record, name));
+			}
 		}
 	}
 }
