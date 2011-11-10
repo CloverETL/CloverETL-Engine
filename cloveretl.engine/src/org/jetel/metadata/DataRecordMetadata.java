@@ -95,6 +95,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldNamesMap = new HashMap<String, Integer>();
 	@SuppressWarnings("Se")
+	private Map<String, Integer> fieldLabelsMap = new HashMap<String, Integer>();
+	@SuppressWarnings("Se")
 	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
@@ -198,6 +200,19 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the original name of the record 
 	 */
 	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 * Returns the label of the data record.
+	 * If it is not set, returns the name of the record.
+	 * 
+	 * @return the label of the record 
+	 */
+	public String getLabelOrName() {
+		if (label == null) {
+			return getName();
+		}
 		return label;
 	}
 
@@ -437,6 +452,23 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * Returns a <code>DataFieldMetadata</code> reference based on the field's label.
+	 *
+	 * @param label the label of the requested field
+	 *
+	 * @return a <code>DataFieldMetadata</code> reference
+	 */
+	public DataFieldMetadata getFieldByLabel(String label) {
+		int position = getFieldPositionByLabel(label);
+
+		if (position >= 0) {
+			return getField(position);
+		}
+
+		return null;
+	}
+
+	/**
 	 * Returns the type of a field based on the field's position within a data record.
 	 *
 	 * @param fieldNumber the ordinal number of the requested field
@@ -507,6 +539,34 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 		return -1;
 	}
+	
+	/**
+	 * Returns the position of a field based on the field's label.
+	 * 
+	 * If the label is not unique, returns the position
+	 * of the first occurence.
+	 * 
+	 * If no such label exists,
+	 * try to find a field by its name instead.
+	 * 
+	 * @param label the label of the requested field
+	 *
+	 * @return the position of the field within the data record or -1 if no such field exists
+	 */
+	public int getFieldPositionByLabel(String label) {
+		if (fieldLabelsMap.isEmpty()) {
+			updateFieldLabelsMap();
+		}
+
+		Integer position = fieldLabelsMap.get(label);
+
+		if (position != null) {
+			return position;
+		}
+
+		// the label may not exist, but we may find a field by name
+		return getFieldPosition(label);
+	}
 
 	/**
 	 * Adds a field to the data record.
@@ -570,6 +630,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		recordSize = -1;
 
 		fieldNamesMap.clear();
+		fieldLabelsMap.clear();
 		fieldTypes.clear();
 		fieldOffset.clear();
 
@@ -624,6 +685,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 		for (int i = 0; i < fields.size(); i++) {
 			fieldNamesMap.put(fields.get(i).getName(), i);
+		}
+	}
+
+	/**
+	 * Used to populate the fieldLabelsMap map if empty.
+	 */
+	private void updateFieldLabelsMap() {
+		assert (fieldLabelsMap.isEmpty());
+		
+		for (int i = 0; i < fields.size(); i++) {
+			String label = fields.get(i).getLabelOrName();
+			if (!fieldLabelsMap.containsKey(label)) {
+				fieldLabelsMap.put(label, i);
+			}
 		}
 	}
 
@@ -1062,10 +1137,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 		for (int i : includedFieldIndices) {
 			dataFieldMetadata = getField(i);
-			label = dataFieldMetadata.getLabel();
-			if (label == null) {
-				label = dataFieldMetadata.getName();
-			}
+			label = dataFieldMetadata.getLabelOrName();
 			if (dataFieldMetadata.isDelimited()) {
 				// delim: add field name and delimiter
 				ret.append(label);

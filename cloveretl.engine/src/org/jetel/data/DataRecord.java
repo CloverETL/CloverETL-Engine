@@ -230,6 +230,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	public void delField(int _fieldNum) {
             DataField tmp_fields[]=new DataField[fields.length-1];
             DataRecordMetadata tmp_metadata=new DataRecordMetadata(metadata.getName(),metadata.getRecType());
+            tmp_metadata.setLabel(metadata.getLabel());
             int counter=0;
             for(int i=0;i<fields.length;i++){
                 if (i!=_fieldNum){
@@ -383,6 +384,18 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	    return fields[metadata.getFieldPosition(_name)];
 	}
 
+	/**
+	 *  An operation that returns DataField with
+     *  specified label.
+	 *
+	 * @param  _name  Description of Parameter
+	 * @return        The Field value
+	 * @since
+	 */
+	public DataField getFieldByLabel(String _label) {
+		return fields[metadata.getFieldPositionByLabel(_label)];
+	}
+	
     /**
      * Returns true if record contains a field with a given name.
      * @param name
@@ -392,6 +405,15 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
         return metadata.getField(name) != null;
     }
 
+    /**
+     * Returns true if record contains a field with a given label.
+     * @param label
+     * @return
+     */
+    public boolean hasLabeledField(String label) {
+        return metadata.getFieldByLabel(label) != null;
+    }
+    
 	/**
 	 *  An attribute that returns metadata object describing the record
 	 *
