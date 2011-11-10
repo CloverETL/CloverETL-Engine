@@ -83,7 +83,7 @@ public class StringUtils {
 	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$");
 	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+");
 	
-	private static final int DEFAULT_TRUNC_LENGTH = 250;
+	private static final int MAX_OBJECT_NAME_LENGTH = 250;
 	
 	private final static char[] vowels = {'A', 'E', 'I', 'O', 'U'};
 
@@ -814,6 +814,9 @@ public class StringUtils {
 		if (seq == null) {
 			return false;
 		}
+		if (seq.length() > MAX_OBJECT_NAME_LENGTH) {
+			return false;
+		}
 
 		return seq.toString().matches(OBJECT_NAME_PATTERN);
 
@@ -866,8 +869,8 @@ public class StringUtils {
 		
 		// trim also valid identifiers
 		// must be done last (or when the length never changes again)
-		if (result.length() > DEFAULT_TRUNC_LENGTH) {
-			result = result.substring(0, DEFAULT_TRUNC_LENGTH);
+		if (result.length() > MAX_OBJECT_NAME_LENGTH) {
+			result = result.substring(0, MAX_OBJECT_NAME_LENGTH);
 		}
 		
 		return result;
@@ -926,7 +929,7 @@ public class StringUtils {
 				uniqueNames.add(newName);
 			} else {
 				int i = 1;
-				String extendedName = newName + i;
+				String extendedName = newName + "_" + i;
 				while (uniqueNames.contains(extendedName)) {
 					extendedName = newName + (++i);
 				}
