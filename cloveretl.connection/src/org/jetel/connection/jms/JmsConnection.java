@@ -355,6 +355,15 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 
+	public void initSession() throws ComponentNotReadyException {
+		try {
+		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		if (session == null)
+			throw new ComponentNotReadyException("Cannot create JMS session");
+		} catch (JMSException e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
 	
 
 	@Override
@@ -367,13 +376,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 				initConnection();
 			}
 		}
-		try {
-		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		if (session == null)
-			throw new ComponentNotReadyException("Cannot create JMS session");
-		} catch (JMSException e) {
-			throw new ComponentNotReadyException(e);
-		}
+		initSession();
 	}
 	
 	public synchronized void postExecute() throws ComponentNotReadyException {
@@ -392,7 +395,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 
-	private void initConnection() throws ComponentNotReadyException {
+	public void initConnection() throws ComponentNotReadyException {
 		ClassLoader prevCl = null;
 		
 		try {
