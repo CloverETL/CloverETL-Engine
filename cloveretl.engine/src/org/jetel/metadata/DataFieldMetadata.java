@@ -409,6 +409,19 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * Returns the label of the field.
+	 * If it is not set, returns the name of the field.
+	 * 
+	 * @return label of the field
+	 */
+	public String getLabelOrName() {
+		if (label == null) {
+			return getName();
+		}
+		return label;
+	}
+	
+	/**
 	 * Sets the type of the data field.
 	 * 
 	 * @param type the new type of the data field
