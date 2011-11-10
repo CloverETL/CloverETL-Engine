@@ -269,6 +269,7 @@ public class SQLUtil {
 	public static DataRecordMetadata dbMetadata2jetel(ParameterMetaData dbMetadata, String metadataName, JdbcSpecific jdbcSpecific) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(metadataName, DataRecordMetadata.DELIMITED_RECORD);
+		jetelMetadata.setLabel(metadataName);
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
 		String colName;
@@ -278,6 +279,9 @@ public class SQLUtil {
 			fieldMetadata = dbMetadata2jetel(colName, dbMetadata, i, jdbcSpecific);
 			jetelMetadata.addField(fieldMetadata);
 		}
+		
+		jetelMetadata.normalize();
+		
 		return jetelMetadata;
 	}
 
