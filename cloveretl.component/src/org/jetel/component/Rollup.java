@@ -302,6 +302,11 @@ public class Rollup extends Node {
     public Rollup(String id) {
         super(id);
     }
+    
+    public Rollup(String id, RecordRollup recordRollup) {
+        this(id);
+        this.recordRollup = recordRollup;
+    }
 
     @Override
     public String getType() {
@@ -472,13 +477,15 @@ public class Rollup extends Node {
             groupKey.init();
         }
 
-        if (transform != null) {
-            recordRollup = createTransformFromSourceCode(transform);
-        } else if (transformUrl != null) {
-            recordRollup = createTransformFromSourceCode(FileUtils.getStringFromURL(
-                    getGraph().getRuntimeContext().getContextURL(), transformUrl, transformUrlCharset));
-        } else if (transformClassName != null) {
-            recordRollup = createTransformFromClassName(transformClassName);
+        if (recordRollup == null) {
+            if (transform != null) {
+                recordRollup = createTransformFromSourceCode(transform);
+            } else if (transformUrl != null) {
+                recordRollup = createTransformFromSourceCode(FileUtils.getStringFromURL(
+                        getGraph().getRuntimeContext().getContextURL(), transformUrl, transformUrlCharset));
+            } else if (transformClassName != null) {
+                recordRollup = createTransformFromClassName(transformClassName);
+            }
         }
 
         recordRollup.setNode(this);
