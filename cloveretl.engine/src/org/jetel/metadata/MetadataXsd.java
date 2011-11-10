@@ -80,13 +80,17 @@ public class MetadataXsd extends MXAbstract {
 		
 		DataRecordMetadata metadata;
 		if (fieldDelimiter != null) {
-			metadata = new DataRecordMetadata(recordName, DataRecordMetadata.DELIMITED_RECORD);
+			metadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
 			metadata.setRecordDelimiter(recordDelimiter);
 		}
-		else if (defaultFieldSize > -1) metadata = new DataRecordMetadata(recordName, DataRecordMetadata.FIXEDLEN_RECORD);
-		else metadata = new DataRecordMetadata(recordName);
+		else if (defaultFieldSize > -1) metadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.FIXEDLEN_RECORD);
+		else metadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME);
+		
+		metadata.setLabel(recordName);
 		
 		createFields(metadata, rootElement);
+		
+		metadata.normalize();
 		return metadata;
 	}
 
@@ -121,12 +125,13 @@ public class MetadataXsd extends MXAbstract {
 			DataFieldMetadata dataFieldMetadata;
 			switch (metadata.getRecType()) {
 			case DataRecordMetadata.FIXEDLEN_RECORD:
-				dataFieldMetadata = new DataFieldMetadata(name, defaultFieldSize);
+				dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, defaultFieldSize);
 				break;
 			default:
-				dataFieldMetadata = new DataFieldMetadata(name, fieldDelimiter);
+				dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, fieldDelimiter);
 				break;
 			}
+			dataFieldMetadata.setLabel(name);
 			
 			dataFieldMetadata.setNullable(minOccurs != null && minOccurs.equals("0") ? true : false);
 			setField(dataFieldMetadata, findFieldTypeNode(node, type), type);
