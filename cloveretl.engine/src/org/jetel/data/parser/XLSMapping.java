@@ -82,10 +82,12 @@ public class XLSMapping {
 
 	private static final Pattern HEADER_PATTERN = Pattern.compile("([A-Z]{1,3})([1-9][0-9]{0,6})");
 	
+	final public static SpreadsheetOrientation HEADER_ON_TOP = SpreadsheetOrientation.VERTICAL;
+	
 	private static final XLSMapping DEFAULT_MAPPING;
 	static {
 		List<HeaderGroup> groups = Collections.emptyList();
-		DEFAULT_MAPPING = new XLSMapping(1, SpreadsheetOrientation.HORIZONTAL, true, groups);
+		DEFAULT_MAPPING = new XLSMapping(1, HEADER_ON_TOP, true, groups);
 	}
 	
 	private final int step;
@@ -322,7 +324,7 @@ public class XLSMapping {
 				}
 			}
 		}
-		if (getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+		if (getOrientation() == HEADER_ON_TOP) {
 			mappingMinRow += minSkip;
 		} else {
 			mappingMinColumn += minSkip;
@@ -333,13 +335,13 @@ public class XLSMapping {
 		}
 		
 		if (maxSkip == 0) {
-			if (orientation == SpreadsheetOrientation.HORIZONTAL) {
+			if (orientation == HEADER_ON_TOP) {
 				startLine = mappingMinRow;
 			} else {
 				startLine = mappingMinColumn;
 			}
 		} else {
-			if (orientation == SpreadsheetOrientation.HORIZONTAL) {
+			if (orientation == HEADER_ON_TOP) {
 				startLine = mappingMaxRow + 1;
 			} else {
 				startLine = mappingMaxColumn + 1;
@@ -349,14 +351,8 @@ public class XLSMapping {
 		rowCount = maxReadRow - mappingMinRow + 1;
 		columnCount = maxReadColumn - mappingMinColumn + 1;
 
-		if (orientation == SpreadsheetOrientation.HORIZONTAL) {
-			columnCount = mappingMaxColumn - mappingMinColumn + 1;
-		} else {
-			rowCount = mappingMaxRow - mappingMinRow + 1;
-		}
-		
-		return new Stats(nameMapping, autoNameMapping, mappingMinRow, mappingMaxRow, mappingMinColumn,
-				startLine, rowCount, columnCount, mappingMaxColumn);
+		return new Stats(nameMapping, autoNameMapping, startLine, rowCount, columnCount,
+				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn);
 	}
 	
 	public static class HeaderGroup {
