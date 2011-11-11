@@ -27,12 +27,10 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -51,13 +49,9 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
-import org.jetel.data.SetVal;
-import org.jetel.data.formatter.XLSFormatter.XLSType;
 import org.jetel.data.parser.XLSMapping;
-import org.jetel.data.parser.XSSFSheetXMLHandler;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
-import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.Numeric;
@@ -70,8 +64,6 @@ import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
-
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
 
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -121,7 +113,6 @@ public class SpreadsheetFormatter implements Formatter {
 	private String sheet;
 	private XLSMapping mappingInfo;
 	private List<CellMapping> headerMapping = new ArrayList<CellMapping>();
-	private CellMapping[] mapping;
 	private Map<Integer, Integer> xToCloverFieldMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Range> cloverFieldToXMapping = new HashMap<Integer, Range>();
 
