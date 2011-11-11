@@ -128,16 +128,10 @@ public class SpreadsheetFormatter implements Formatter {
 	private Object outputDataTarget;
 	private InputStream workbookInputStream;
 
-	private RecordKey sheetNameKeyRecord;
 	private DataRecordMetadata metadata;
-	private Map<String, SheetData> sheetData;
 
 	private int sheetIndex = -1;
 	private String sheetName;
-	/** the sheet data associated with the currently used sheet */
-	private SheetData currentSheetData;
-	/** the current row index used for writing */
-	private int currentRowIndex;
 
 	private int headerRowCount = 0;
 	private int headerColumnCount = 0;
@@ -198,10 +192,6 @@ public class SpreadsheetFormatter implements Formatter {
 				for (int i = 0; i < fields.length; i++) {// Remove clover field indicator from each field
 					fields[i] = fields[i].substring(1);
 				}
-
-				sheetNameKeyRecord = new RecordKey(fields, metadata);
-				sheetNameKeyRecord.init();
-				sheetData = new HashMap<String, SheetData>();
 			} else {
 				int result = StringUtils.isInteger(sheet);
 				if (result == 0 || result == 1) {
@@ -463,40 +453,10 @@ public class SpreadsheetFormatter implements Formatter {
 				workbook.removeSheetAt(i);
 			}
 		}
+		prepareSelectedOrDefaultSheet();
 	}
 
-	private void prepareSheet() {
-		if (sheetName != null) {
-			currentSheet = workbook.getSheet(sheetName);
-
-			if (sheet == null) {
-				currentSheet = workbook.createSheet(sheetName);
-			} else if (!append) {
-				Iterator<Row> rowIterator = currentSheet.iterator();
-
-				while (rowIterator.hasNext()) {
-					rowIterator.next();
-					rowIterator.remove();
-				}
-			}
-		} else if (sheetIndex >= 0) {
-			if (sheetIndex >= workbook.getNumberOfSheets()) {
-				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
-			}
-
-			currentSheet = workbook.getSheetAt(sheetIndex);
-		} else {
-			currentSheet = workbook.createSheet();
-		}
-
-		// save the current sheet
-		if (sheetData != null) {
-			currentSheetData = new SheetData(currentSheet, currentRowIndex);
-			sheetData.put(currentSheet.getSheetName(), currentSheetData);
-		}
-	}
-
-	private void chooseDefaultSheet() {
+	private void prepareSelectedOrDefaultSheet() {
 		if (sheetName != null) {
 			currentSheet = workbook.getSheet(sheetName);
 		} else if (sheetIndex >= 0) {
@@ -508,24 +468,32 @@ public class SpreadsheetFormatter implements Formatter {
 		} else {
 			currentSheet = workbook.createSheet();
 			sheetName = currentSheet.getSheetName();
-			writeSheetHeader();
-			// save the current sheet
-			if (sheetData != null) {
-				currentSheetData = new SheetData(currentSheet, currentRowIndex);
-				sheetData.put(currentSheet.getSheetName(), currentSheetData);
-			}
 		}
-	}
-
-	private void prepareSheet(DataRecord record) {
-		sheetName = sheetNameKeyRecord.getKeyString(record);
-
-		if (sheetData.containsKey(sheetName)) {
-			currentSheetData = sheetData.get(sheetName); //TODO - finn - maybe header creation will be needed too
-			currentRowIndex = currentSheetData.currentRow;
-		} else {
-			prepareSheet();
+		
+		if (!append) {
+			for (int i=0; i<=currentSheet.getLastRowNum();++i) {
+				Row row = currentSheet.getRow(i);
+				if (row!=null) {
+					currentSheet.removeRow(row);
+				}
+			}
+			
 			writeSheetHeader();
+		}
+
+	}
+	
+	private void chooseSelectedOrDefaultSheet() {
+		if (sheetName != null) {
+			currentSheet = workbook.getSheet(sheetName);
+		} else if (sheetIndex >= 0) {
+			if (sheetIndex >= workbook.getNumberOfSheets()) {
+				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
+			}
+
+			currentSheet = workbook.getSheetAt(sheetIndex);
+		} else {
+			throw new JetelRuntimeException("A sheet selected for writting not found.");
 		}
 	}
 
@@ -553,13 +521,36 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	private void setBoldFontToCellGivenByRowAndColumn(int rowIndex, int columnIndex) {
-		Cell cell = getCellByRowAndColumn(rowIndex, columnIndex);
-		CellStyle origStyle = cell.getCellStyle();
-		short fontIndex = origStyle.getFontIndex();
-		Font font = workbook.getFontAt(fontIndex);
-		font.setBoldweight(Short.MAX_VALUE);
-		origStyle.setFont(font);
-		cell.setCellStyle(origStyle);
+//		Cell cell = getCellByRowAndColumn(rowIndex, columnIndex);
+//		CellStyle origStyle = cell.getCellStyle();
+//		short fontIndex = origStyle.getFontIndex();
+//		Font font = workbook.getFontAt(fontIndex);
+//		Font correspondingBoldFont = workbook.findFont(Short.MAX_VALUE, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
+//		if (correspondingBoldFont==null) {
+//			correspondingBoldFont = workbook.createFont();
+//			correspondingBoldFont.setBoldweight(Short.MAX_VALUE);
+//			correspondingBoldFont.setColor(font.getColor());
+//			correspondingBoldFont.setFontHeight(font.getFontHeight());
+//			correspondingBoldFont.setFontName(font.getFontName());
+//			correspondingBoldFont.setItalic(font.getItalic());
+//			correspondingBoldFont.setStrikeout(font.getStrikeout());
+//			correspondingBoldFont.setTypeOffset(font.getTypeOffset());
+//			correspondingBoldFont.setUnderline(font.getUnderline());
+//		}
+//		
+//		boolean cellStyleFound = false;
+//		for (short i=0; i<workbook.getNumCellStyles(); ++i) {
+//			CellStyle cellStyle = workbook.getCellStyleAt(i);
+//			if (cellStyle.getFontIndex()==correspondingBoldFont.getIndex()) {
+//				cellStyleFound = true;
+//				correspondingBoldFont
+//			}
+//		}
+		
+		
+//		origStyle.setFont(correspondingBoldFont);
+		
+//		cell.setCellStyle(origStyle);
 	}
 	
 	private void writeSheetHeader() {// TODO: implement me
@@ -585,7 +576,7 @@ public class SpreadsheetFormatter implements Formatter {
 							dataLabel = metadata.getField(cloverField).getName();
 						}
 						setStringToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart(), dataLabel);
-//						setBoldFontToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart());
+						setBoldFontToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart());
 					}
 				}
 			}
@@ -663,11 +654,7 @@ public class SpreadsheetFormatter implements Formatter {
 			throw new NullPointerException("record");
 		}
 
-		if (sheetNameKeyRecord != null) { // perform L3 partitioning according to sheet attribute;
-			prepareSheet(record);
-		} else if (sheet == null) {
-			chooseDefaultSheet();
-		}
+		chooseSelectedOrDefaultSheet();
 		
 		CellPosition cellOffset = createNextRecordRegion(recordRowIndent, recordColumnIndent, recordRowCount, recordColumnCount);
 		for (int i=0; i<record.getNumFields(); ++i) {
@@ -812,28 +799,6 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 
 		throw new IllegalArgumentException("Unsupported format");
-	}
-
-	// Copy of inner help class so that there is no dependency on old XLSWriter
-	/**
-	 * A structure used to save states when multiple sheet writing is enabled.
-	 * 
-	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
-	 * 
-	 * @version 30th January 2009
-	 * @since 30th January 2009
-	 */
-	private static final class SheetData {
-
-		/** the sheet affected */
-		private Sheet sheet;
-		/** the current row within the sheet */
-		private int currentRow;
-
-		public SheetData(Sheet sheet, int currentRow) {
-			this.sheet = sheet;
-			this.currentRow = currentRow;
-		}
 	}
 
 	private class CellMapping {
