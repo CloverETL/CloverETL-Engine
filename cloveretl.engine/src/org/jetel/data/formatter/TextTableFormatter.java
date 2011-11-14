@@ -325,7 +325,7 @@ public class TextTableFormatter implements Formatter {
             sentBytes += writeString(TABLE_VERTICAL);
         }
         for (int i=0; i<maskAnalize.length; i++) {
-        	fName = fMetadata[maskAnalize[i].index].getName();
+        	fName = fMetadata[maskAnalize[i].index].getLabelOrName();
         	sentBytes += writeString(fName.getBytes(charSet));
         	sentBytes += writeString(blank, maskAnalize[i].length-fName.length());
             sentBytes += writeString(TABLE_VERTICAL);
@@ -455,7 +455,7 @@ public class TextTableFormatter implements Formatter {
 		if (header) {
 			DataFieldMetadata[] fMetadata = metadata.getFields();
 			for (int i=0; i<maskAnalize.length; i++) {
-				lenght = fMetadata[maskAnalize[i].index].getName().length();
+				lenght = fMetadata[maskAnalize[i].index].getLabelOrName().length();
 				maskAnalize[i].length = maskAnalize[i].length < lenght ? lenght : maskAnalize[i].length;
 			}
 		}
