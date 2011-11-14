@@ -78,19 +78,18 @@ public interface RecordNormalize extends Transform {
 	/**
 	 * @param source Input record
 	 * @param target Output records
-	 * @param inRecordNo Number of input record (starting from 0)
-	 * @param inFieldNo Number of input field (starting from 0)
+	 * @param idx Sequential number of output record (starting from 0)
 	 * @return < -1 -- fatal error / user defined
 	 *           -1 -- error / skip record
 	 *         >= 0 -- OK
 	 * @throws TransformException
 	 */
-	public int transform(DataRecord source, DataRecord target, int inRecordNo, int inFieldNo) throws TransformException;
+	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException;
 
 	/**
-	 * Called only if {@link #transform(DataRecord, DataRecord, int, int)} throws an exception.
+	 * Called only if {@link #transform(DataRecord, DataRecord, int)} throws an exception.
 	 *
-	 * @param exception an exception that caused {@link #transform(DataRecord, DataRecord, int, int)} to fail
+	 * @param exception an exception that caused {@link #transform(DataRecord, DataRecord, int)} to fail
 	 * @param source Input record
 	 * @param target Output records
 	 * @param idx Sequential number of output record (starting from 0)
