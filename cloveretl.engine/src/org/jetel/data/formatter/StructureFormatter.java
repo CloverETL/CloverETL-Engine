@@ -87,20 +87,22 @@ public class StructureFormatter implements Formatter {
 	
 	public static String createDefaultMask(DataRecordMetadata metadata){
 		StringBuilder maskBuilder = new StringBuilder();
+		String recordLabel = metadata.getLabelOrName();
 		maskBuilder.append("< ");
-		maskBuilder.append(metadata.getName());
+		maskBuilder.append(recordLabel);
 		maskBuilder.append(">\n");
 		for (int i=0;i<metadata.getNumFields();i++){
+			String fieldLabel = metadata.getField(i).getLabelOrName();
 			maskBuilder.append("\t<");
-			maskBuilder.append(metadata.getField(i).getName());
+			maskBuilder.append(fieldLabel);
 			maskBuilder.append(">$");
 			maskBuilder.append(metadata.getField(i).getName());
 			maskBuilder.append("</");
-			maskBuilder.append(metadata.getField(i).getName());
+			maskBuilder.append(fieldLabel);
 			maskBuilder.append(">\n");
 		}
 		maskBuilder.append("</");
-		maskBuilder.append(metadata.getName());
+		maskBuilder.append(recordLabel);
 		maskBuilder.append(">\n");
 		return maskBuilder.toString();
 	}
