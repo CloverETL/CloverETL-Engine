@@ -319,7 +319,7 @@ public class LdapParser implements Parser {
 			DataField df = record.getField(i);
 			if (df.getMetadata().isAutoFilled()) continue;
 			try {
-				transMap[i].setField(df,attrs.get(df.getMetadata().getName()));
+				transMap[i].setField(df,attrs.get(df.getMetadata().getLabelOrName()));
 			} catch (BadDataFormatException bdfe) {
 				if (exceptionHandler != null) { //use handler only if configured
 					exceptionHandler.populateHandler(getErrorMessage(bdfe

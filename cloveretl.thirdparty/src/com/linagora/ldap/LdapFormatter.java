@@ -235,7 +235,7 @@ public class LdapFormatter {
 		Attributes attrs = new BasicAttributes(true);
 		
 		for (int i = 0; i < transMap.length; i++) {
-			String attrId = this.metadata.getField(i).getName();
+			String attrId = this.metadata.getField(i).getLabelOrName();
 			if(!attrId.equalsIgnoreCase("dn")) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
 				DataField dataField = record.getField(i);
@@ -318,11 +318,13 @@ public class LdapFormatter {
 	}
 	
 	public void close() {
-		try {
-			ldapManager.close();
-		} catch (NamingException e) {
-			//nothing to do ?
-			logger.warn("Error while closing LdapManager", e);
+		if (ldapManager != null) {
+			try {
+				ldapManager.close();
+			} catch (NamingException e) {
+				//nothing to do ?
+				logger.warn("Error while closing LdapManager", e);
+			}
 		}
 	}
 	
