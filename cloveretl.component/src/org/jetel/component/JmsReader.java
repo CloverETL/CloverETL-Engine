@@ -38,6 +38,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -417,6 +418,11 @@ public class JmsReader extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
+
+		OutputPort outputPort = getOutputPort(OUTPUT_PORT);
+		if (outputPort != null) {
+			new UniqueLabelsValidator(status, this).validateMetadata(outputPort.getMetadata());
+		}
 
 //        try {
         	
