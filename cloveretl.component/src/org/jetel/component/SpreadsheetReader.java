@@ -268,8 +268,6 @@ public class SpreadsheetReader extends Node {
 			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 
-		checkMetadata(status, getOutMetadata());
-		
 		try {
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
