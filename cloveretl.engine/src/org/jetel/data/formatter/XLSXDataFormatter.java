@@ -238,7 +238,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 
 				for (int i = 0; i < includedFieldIndices.length; i++) {
 					Cell newCell = row.createCell(firstColumn + i);
-					newCell.setCellValue(metadata.getField(includedFieldIndices[i]).getName());
+					newCell.setCellValue(metadata.getField(includedFieldIndices[i]).getLabelOrName());
 					newCell.setCellStyle(cellStyle);
 				}
 
