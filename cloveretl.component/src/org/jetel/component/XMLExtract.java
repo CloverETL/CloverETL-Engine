@@ -375,9 +375,9 @@ public class XMLExtract extends Node {
             
             Mapping mapping = null;
             if (m_activeMapping == null) {
-                mapping = (Mapping) m_elementPortMap.get(localName);
+                mapping = m_elementPortMap.get(localName);
             } else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
-                mapping = (Mapping) m_activeMapping.getChildMapping(localName);
+                mapping = m_activeMapping.getChildMapping(localName);
             }
             if (mapping != null) {
                 // We have a match, start converting all child nodes into
@@ -500,9 +500,18 @@ public class XMLExtract extends Node {
                     	}
                     }
                     
-                    if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
+                    DataRecord outRecord = m_activeMapping.getOutRecord();
+                    DataField field = null;
+                    
+                    if (outRecord != null) {
+                    	if (outRecord.hasLabeledField(attrName)) {
+                    		field = outRecord.getFieldByLabel(attrName);
+                    	}
+                    }
+                    
+                    if (field != null) {
                     	String val = attributes.getValue(i);
-                        m_activeMapping.getOutRecord().getField(attrName).fromString(trim ? val.trim() : val);
+                    	field.fromString(trim ? val.trim() : val);
                     }
                 }
             }
@@ -608,9 +617,16 @@ public class XMLExtract extends Node {
         		}
             }
             
-			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
-			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-			    DataField field = m_activeMapping.getOutRecord().getField(localName);
+            DataRecord outRecord = m_activeMapping.getOutRecord();
+            DataField field = null;
+            
+			if ((outRecord != null) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+            	if (outRecord.hasLabeledField(localName)) {
+            		field = outRecord.getFieldByLabel(localName);
+            	}
+			}
+			
+			if (field != null) {
 			    // If field is nullable and there's no character data set it to null
 			    if (m_hasCharacters) {
 			        try {
@@ -1753,6 +1769,18 @@ public class XMLExtract extends Node {
         return COMPONENT_TYPE;
     }
     
+    private void checkUniqueness(ConfigurationStatus status, Mapping mapping) {
+    	if (mapping.getOutRecord() == null) {
+    		return;
+    	}
+		new UniqueLabelsValidator(status, this).validateMetadata(mapping.getOutRecord().getMetadata());
+		if (mapping.getChildMap() != null) {
+			for (Mapping child: mapping.getChildMap().values()) {
+				checkUniqueness(status, child);
+			}
+		}
+    }
+    
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 
@@ -1809,6 +1837,10 @@ public class XMLExtract extends Node {
 			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
 		} finally {
 			declaredTemplates.clear();
+		}
+		
+		for (Mapping mapping: getMappings().values()) {
+			checkUniqueness(status, mapping);
 		}
 		
         try { 
