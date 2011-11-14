@@ -355,6 +355,11 @@ public class JmsWriter extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
+		
+		InputPort inputPort = getInputPort(INPUT_PORT);
+		if (inputPort != null) {
+			new UniqueLabelsValidator(status, this).validateMetadata(inputPort.getMetadata());
+		}
 
 //        try {
         	

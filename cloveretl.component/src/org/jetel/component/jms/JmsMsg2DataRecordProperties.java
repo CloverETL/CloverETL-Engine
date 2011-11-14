@@ -101,7 +101,7 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 				if (value == null) {	// value is not accessible
 					continue;
 				}
-				record.getField(name).fromString(value);
+				record.getFieldByLabel(name).fromString(value);
 			} catch (IndexOutOfBoundsException e) {
 				// field with given name doesn't exist
 				continue;
