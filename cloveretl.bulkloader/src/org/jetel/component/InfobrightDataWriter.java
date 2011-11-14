@@ -274,7 +274,8 @@ public class InfobrightDataWriter extends Node {
 		//try to create loader and Brighthouse record
 		log = new CommonsLogger(logger);
 		try {
-			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+			String quotedTable = "`" + table + "`";
+			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
 		} catch (Exception e) {
 			status.add(new ComponentNotReadyException(e), Severity.ERROR, this, Priority.NORMAL, XML_AGENT_PORT_ATTRIBUTE);
 		}
@@ -397,7 +398,7 @@ public class InfobrightDataWriter extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private AbstractColumnType jetelType2Brighthouse(DataFieldMetadata field, int precision, JdbcSpecific jdbcSpecific, EtlLogger logger) throws ComponentNotReadyException{
-		String columnName = field.getName();
+		String columnName = field.getName(); // label is not necessary, the name is not used for mapping
 		String columnTypeName = field.getTypeAsString();
 		switch (field.getType()) {
 		case DataFieldMetadata.BOOLEAN_FIELD:
@@ -443,7 +444,8 @@ public class InfobrightDataWriter extends Node {
 		}
 
 		try {
-			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+			String quotedTable = "`" + table + "`";
+			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
