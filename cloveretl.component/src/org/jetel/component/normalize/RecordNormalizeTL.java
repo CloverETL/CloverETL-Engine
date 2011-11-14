@@ -132,8 +132,8 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 	}
 
 	@Override
-	public int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
-		transformArguments[0].getNumeric().setValue(idx);
+	public int transform(DataRecord source, DataRecord target, int inRecordNo, int inFieldNo) throws TransformException {
+		transformArguments[0].getNumeric().setValue(inFieldNo);
 
 		return transformImpl(transformFunction, source, target, transformArguments);
 	}
