@@ -142,7 +142,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	}
 
 	@Override
-	public final int transform(DataRecord source, DataRecord target, int idx) throws TransformException {
+	public final int transform(DataRecord source, DataRecord target, int inRecordNo, int inFieldNo) throws TransformException {
 		int result = 0;
 
 		// both input and output records are accessible within the transform() function
@@ -150,7 +150,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		outputRecord = target;
 
 		try {
-			result = transformDelegate(idx);
+			result = transformDelegate(inFieldNo);
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
@@ -164,7 +164,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	}
 
 	/**
-	 * Called by {@link #transform(DataRecord, DataRecord, int)} to transform data records in a user-specific way
+	 * Called by {@link #transform(DataRecord, DataRecord, int, int)} to transform data records in a user-specific way
 	 * defined in the CTL transform. Has to be overridden by the generated transform class.
 	 *
 	 * @throws ComponentNotReadyException if some internal initialization failed

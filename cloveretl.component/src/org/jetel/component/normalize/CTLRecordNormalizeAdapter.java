@@ -131,9 +131,9 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 	}
 
 	@Override
-	public int transform(DataRecord source, DataRecord target, int idx)
+	public int transform(DataRecord source, DataRecord target, int inRecordNo, int inFieldNo)
 			throws TransformException {
-		transformArguments[0] = idx;
+		transformArguments[0] = inFieldNo;
 
 		return transformImpl(transformFunction, source, target, transformArguments);
 	}

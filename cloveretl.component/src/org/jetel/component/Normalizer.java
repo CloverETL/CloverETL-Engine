@@ -278,7 +278,7 @@ public class Normalizer extends Node {
 				transformResult = -1;
 
 				try {
-					transformResult = norm.transform(inRecord, outRecord, idx);
+					transformResult = norm.transform(inRecord, outRecord, src, idx);
 				} catch (Exception exception) {
 					transformResult = norm.transformOnError(exception, inRecord, outRecord, idx);
 				}
