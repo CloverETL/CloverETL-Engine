@@ -351,7 +351,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		WritableCellFormat format = new WritableCellFormat(font);
 		Label name;
 		for (int i = 0; i < includedFieldIndices.length; i++) {
-			name = new Label(firstColumn + i, currentRow, metadata.getField(includedFieldIndices[i]).getName(), format);
+			name = new Label(firstColumn + i, currentRow, metadata.getField(includedFieldIndices[i]).getLabelOrName(), format);
 			try {
 				sheet.addCell(name);
 			} catch (Exception e) {
