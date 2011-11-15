@@ -584,6 +584,7 @@ public class DB2DataWriter extends Node {
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	private static final String XML_WARNING_LINES_ATTRIBUTE = "capturedWarningLines";
+	private static final String XML_FAIL_ON_WARNINGS_ATTRIBUTE = "failOnWarnings";
 	
 	/**
 	 * available additional parameters
@@ -698,6 +699,7 @@ public class DB2DataWriter extends Node {
 	private int recordSkip = -1;
 	private int skipped = 0;
 	private int warningNumber = DEFAULT_ERROR_WARNINGS_NUMBER;
+	private boolean failOnWarnings = false;
 	
 	private Formatter formatter;
 	private DataRecordMetadata fileMetadata;
@@ -1657,6 +1659,9 @@ public class DB2DataWriter extends Node {
 				logger.info("Number of rows loaded = " + consumer.getLoaded());
 				logger.info("Number of rows rejected = " + consumer.getRejected());
 			}
+			if (isFailOnWarnings()) {
+				throw new JetelException("Process raised a warning (exit value 2)");
+			}
 		}
 		
 		if (getOutputPort(ERROR_PORT) != null) {
@@ -1754,6 +1759,9 @@ public class DB2DataWriter extends Node {
             }
             if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
             	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
+            	writer.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
             }
            return writer;
         } catch (Exception ex) {
@@ -1925,6 +1933,14 @@ public class DB2DataWriter extends Node {
 
 	public void setWarningNumber(int warningNumber) {
 		this.warningNumber = warningNumber;
+	}
+	
+	public boolean isFailOnWarnings() {
+		return failOnWarnings;
+	}
+
+	public void setFailOnWarnings(boolean failOnWarnings) {
+		this.failOnWarnings = failOnWarnings;
 	}
 
 	/**
