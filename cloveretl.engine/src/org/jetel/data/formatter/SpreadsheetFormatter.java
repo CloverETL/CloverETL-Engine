@@ -465,9 +465,15 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 
 			currentSheet = workbook.getSheetAt(sheetIndex);
-		} else {
-			currentSheet = workbook.createSheet();
-			sheetName = currentSheet.getSheetName();
+		} 
+		
+		if (currentSheet==null){
+			if (sheetName!=null) {
+				currentSheet = workbook.createSheet(sheetName);
+			} else {
+				currentSheet = workbook.createSheet();
+				sheetName = currentSheet.getSheetName();
+			}
 		}
 		
 		if (!append) {
@@ -520,37 +526,45 @@ public class SpreadsheetFormatter implements Formatter {
 		cell.setCellValue(stringValue);
 	}
 	
-	private void setBoldFontToCellGivenByRowAndColumn(int rowIndex, int columnIndex) {
-//		Cell cell = getCellByRowAndColumn(rowIndex, columnIndex);
-//		CellStyle origStyle = cell.getCellStyle();
-//		short fontIndex = origStyle.getFontIndex();
-//		Font font = workbook.getFontAt(fontIndex);
-//		Font correspondingBoldFont = workbook.findFont(Short.MAX_VALUE, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
-//		if (correspondingBoldFont==null) {
-//			correspondingBoldFont = workbook.createFont();
-//			correspondingBoldFont.setBoldweight(Short.MAX_VALUE);
-//			correspondingBoldFont.setColor(font.getColor());
-//			correspondingBoldFont.setFontHeight(font.getFontHeight());
-//			correspondingBoldFont.setFontName(font.getFontName());
-//			correspondingBoldFont.setItalic(font.getItalic());
-//			correspondingBoldFont.setStrikeout(font.getStrikeout());
-//			correspondingBoldFont.setTypeOffset(font.getTypeOffset());
-//			correspondingBoldFont.setUnderline(font.getUnderline());
-//		}
-//		
-//		boolean cellStyleFound = false;
-//		for (short i=0; i<workbook.getNumCellStyles(); ++i) {
-//			CellStyle cellStyle = workbook.getCellStyleAt(i);
-//			if (cellStyle.getFontIndex()==correspondingBoldFont.getIndex()) {
-//				cellStyleFound = true;
-//				correspondingBoldFont
-//			}
-//		}
+	private short findOrCreateBoldStyle(int rowIndex, int columnIndex) {
+		Cell cell = getCellByRowAndColumn(rowIndex, columnIndex);
+		CellStyle origStyle = cell.getCellStyle();
+		short fontIndex = origStyle.getFontIndex();
+		Font font = workbook.getFontAt(fontIndex);
+		Font correspondingBoldFont = workbook.findFont(Short.MAX_VALUE, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
+		if (correspondingBoldFont==null) {
+			correspondingBoldFont = workbook.createFont();
+			correspondingBoldFont.setBoldweight(Short.MAX_VALUE);
+			correspondingBoldFont.setColor(font.getColor());
+			correspondingBoldFont.setFontHeight(font.getFontHeight());
+			correspondingBoldFont.setFontName(font.getFontName());
+			correspondingBoldFont.setItalic(font.getItalic());
+			correspondingBoldFont.setStrikeout(font.getStrikeout());
+			correspondingBoldFont.setTypeOffset(font.getTypeOffset());
+			correspondingBoldFont.setUnderline(font.getUnderline());
+		}
 		
+		CellStyle correspondingCellStyle=null;
+		for (short i=0; i<workbook.getNumCellStyles() && correspondingCellStyle==null; ++i) {
+			CellStyle cellStyle = workbook.getCellStyleAt(i);
+			if (cellStyle.getFontIndex()==correspondingBoldFont.getIndex()) {
+				correspondingCellStyle=cellStyle;
+			}
+		}
 		
-//		origStyle.setFont(correspondingBoldFont);
+		if (correspondingCellStyle==null) {
+			correspondingCellStyle = workbook.createCellStyle();
+			correspondingCellStyle.cloneStyleFrom(origStyle);
+			correspondingCellStyle.setFont(correspondingBoldFont);
+		}
 		
-//		cell.setCellStyle(origStyle);
+		return correspondingCellStyle.getIndex();
+	}
+	
+	private void setStyleToCellGivenByRowAndColumn(int rowIndex, int columnIndex, short styleNumber) {
+		Cell cell = getCellByRowAndColumn(rowIndex, columnIndex);
+		CellStyle cellStyle = workbook.getCellStyleAt(styleNumber);
+		cell.setCellStyle(cellStyle);
 	}
 	
 	private void writeSheetHeader() {// TODO: implement me
@@ -560,8 +574,11 @@ public class SpreadsheetFormatter implements Formatter {
 //		} else {
 //			
 //		}
+		
 		if (!append) {
 			createRegion(headerRowIndent + headerRowCount, headerColumnIndent + headerColumnCount);
+			boolean boldStyleFound = false;
+			short boldStyle = 0;
 			
 			for (HeaderGroup headerGroup : mappingInfo.getHeaderGroups()) {
 				for (HeaderRange range : headerGroup.getRanges()) {
@@ -576,7 +593,11 @@ public class SpreadsheetFormatter implements Formatter {
 							dataLabel = metadata.getField(cloverField).getName();
 						}
 						setStringToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart(), dataLabel);
-						setBoldFontToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart());
+						if (!boldStyleFound) {
+							boldStyle = findOrCreateBoldStyle(range.getRowStart(), range.getColumnStart());
+							boldStyleFound = true;
+						}
+						setStyleToCellGivenByRowAndColumn(range.getRowStart(), range.getColumnStart(), boldStyle);
 					}
 				}
 			}
