@@ -621,15 +621,15 @@ public class StringUtilsTest extends CloverTestCase {
 		assertTrue("The length of the normalized name is greater than 256", trimmed.length() <= 256);
 		
 		assertArraysEquals(
-				new String[] {"unique", "unique1", "unique2", "unique11"}, 
-				StringUtils.normalizeNames("unique", "unique1", "unique", "unique1")
+				new String[] {"unique", "unique1", "unique_1", "unique_2", "unique1_1", "unique_1_1"}, 
+				StringUtils.normalizeNames("unique", "unique1", "unique_1", "unique", "unique1", "unique_1")
 		);
 		assertArraysEquals(
-				new String[] {"Milan_Krivanek", "Milan_Krivanek1"}, 
+				new String[] {"Milan_Krivanek", "Milan_Krivanek_1"}, 
 				StringUtils.normalizeNames("Milan Křivánek", "Milan_Krivanek")
 		);
 		assertArraysEquals(
-				new String[] {"Milan_Krivanek1", "Milan_Krivanek2"}, 
+				new String[] {"Milan_Krivanek_1", "Milan_Krivanek_2"}, 
 				StringUtils.normalizeNames(Arrays.asList("Milan Křivánek", "Milan_Krivanek"), Arrays.asList("Milan_Krivanek"))
 		);
 	}

@@ -931,7 +931,7 @@ public class StringUtils {
 				int i = 1;
 				String extendedName = newName + "_" + i;
 				while (uniqueNames.contains(extendedName)) {
-					extendedName = newName + (++i);
+					extendedName = newName + "_" + (++i);
 				}
 				result[n] = extendedName;
 				uniqueNames.add(extendedName);
