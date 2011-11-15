@@ -398,6 +398,7 @@ public class JoinKeyUtils {
 		if (target.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 			target = target.substring(Defaults.CLOVER_FIELD_INDICATOR.length());
 		}
+		target = StringUtils.stringToSpecChar(target);
 		String source = null;
 		if (mapping.length > 1) {
 			source = mapping[1].trim();
@@ -412,6 +413,7 @@ public class JoinKeyUtils {
 			if (index > -1) {
 				source = source.substring(0, index);
 			}
+			source = StringUtils.stringToSpecChar(source);
 		}
 		return new String[] { target, source };
 	}
