@@ -25,6 +25,7 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -432,11 +433,16 @@ public class DBOutputTable extends Node {
 
 		// create insert query from db table name
 		if (sqlQuery == null) {
+			String quotedTableName = dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName);
 			sqlQuery = new String[1];
 			if (dbFields != null) {
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
+				String[] quotedDbFields = new String[dbFields.length];
+				for (int i = 0; i < dbFields.length; i++) {
+					quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
+				}
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(quotedTableName, quotedDbFields);
 			} else {
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
 			}
 		}
 
@@ -1180,7 +1186,7 @@ public class DBOutputTable extends Node {
 				outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+				String[] pairs = StringUtils.split(xattribs.getStringEx(XML_FIELDMAP_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 				String[] cloverFields = new String[pairs.length];
 				String[] dbFields = new String[pairs.length];
 				String[] mapping;
@@ -1264,15 +1270,21 @@ public class DBOutputTable extends Node {
 				throw new ComponentNotReadyException(e1);
 			}
 
+			
+			String quotedTableName = dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName);
 			inPort = getInputPort(READ_FROM_PORT);
 			if (sqlQuery == null) {
 				sqlQuery = new String[1];
 				if (dbFields != null) {
+					String[] quotedDbFields = new String[dbFields.length];
+					for (int i = 0; i < dbFields.length; i++) {
+						quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
+					}
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(
-							dbTableName, dbFields);
+							quotedTableName, quotedDbFields);
 				} else {
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort
-							.getMetadata(), dbTableName);
+							.getMetadata(), quotedTableName);
 				}
 			}
 			boolean supportsConnectionKeyGenaration = false;

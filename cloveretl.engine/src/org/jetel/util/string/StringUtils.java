@@ -653,6 +653,49 @@ public class StringUtils {
 	}
 
 	/**
+	 * Converts a given character to its Unicode escape representation.
+	 * 
+	 * @param character
+	 * @return Unicode escape string for <code>character</code>
+	 */
+	public static String toUnicode(char character) {
+		StringBuilder outBuffer = new StringBuilder();
+		outBuffer.append("\\u");
+		String hex = Integer.toHexString(character & 0xFFFF);	// Get hex value of the char. 
+		for (int j = 0; j < 4 - hex.length(); j++) {	// Prepend zeros because unicode requires 4 digits
+			outBuffer.append("0");
+		}
+		outBuffer.append(hex.toLowerCase());		// standard unicode format.
+        return outBuffer.toString();
+	}
+	
+	/**
+	 * In <code>inputString</code>, 
+	 * replaces all characters from <code>escapeChars</code>
+	 * by their Unicode escape strings.
+	 * 
+	 * To convert back, {@link #stringToSpecChar(CharSequence)}
+	 * can be used.
+	 * 
+	 * @param inputString the input string
+	 * @param escapeChars the characters to be replaced
+	 * @return <code>inputString</code> with <code>escapeChars</code> replaced with their Unicode escape codes
+	 */
+	public static String unicodeEscapeChars(String inputString, String escapeChars) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < inputString.length(); i++) {
+			char c = inputString.charAt(i);
+			if (escapeChars.indexOf(c) >= 0) {
+				sb.append(toUnicode(c));
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+	
+	
+	/**
 	 * Converts textual representation of control characters into control characters<br>
 	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
 	 * 
