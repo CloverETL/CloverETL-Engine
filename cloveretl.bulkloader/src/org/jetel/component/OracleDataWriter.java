@@ -125,6 +125,7 @@ public class OracleDataWriter extends BulkLoader {
     private static final String XML_MAX_DISCARDS_ATTRIBUTE = "maxDiscards";
     private static final String XML_IGNORE_ROWS_ATTRIBUTE = "ignoreRows";
     private static final String XML_COMMIT_INTERVAL_ATTRIBUTE = "commitInterval";
+    private static final String XML_FAIL_ON_WARNINGS_ATTRIBUTE = "failOnWarnings";
 
     // keywords for sqlldr client, these keywords have own xml attributes
     private static final String SQLLDR_MAX_ERRORS_KEYWORD = "errors";
@@ -199,6 +200,7 @@ public class OracleDataWriter extends BulkLoader {
     private int maxDiscards = UNUSED_INT;
     private int ignoreRows = UNUSED_INT;
     private int commitInterval = UNUSED_INT;
+    private boolean failOnWarnings = false;
     
     private File badFile = null;
     private File discardFile = null;
@@ -254,9 +256,16 @@ public class OracleDataWriter extends BulkLoader {
 			logger.info("Sqlldr utility execution successful.");
 			break;
 		case EXEC_SQLLDR_WARN:
-			logger.warn("Sqlldr utility exited with WARN. See log file for details.");
-			if (isDataWrittenToPort) {
-				oracleBadRowReaderWriter.run();
+			if (isFailOnWarnings()) {
+				if (isDataWrittenToPort) {
+					oracleBadRowReaderWriter.run();
+				}
+				throw new JetelException("Sqlldr utility exited with WARN. See log file for details.");
+			} else {
+				logger.warn("Sqlldr utility exited with WARN. See log file for details.");
+				if (isDataWrittenToPort) {
+					oracleBadRowReaderWriter.run();
+				}
 			}
 			break;
 		default:
@@ -631,6 +640,9 @@ public class OracleDataWriter extends BulkLoader {
 			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 				oracleDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
+				oracleDataWriter.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
+			}
             
             return oracleDataWriter;
         } catch (Exception ex) {
@@ -683,7 +695,15 @@ public class OracleDataWriter extends BulkLoader {
 		this.commitInterval = commitInterval;
 	}
     
-    /**  Description of the Method */
+	private boolean isFailOnWarnings() {
+		return failOnWarnings;
+	}
+
+	private void setFailOnWarnings(boolean failOnWarnings) {
+		this.failOnWarnings = failOnWarnings;
+	}
+
+	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
