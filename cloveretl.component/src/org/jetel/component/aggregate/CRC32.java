@@ -18,7 +18,6 @@
  */
 package org.jetel.component.aggregate;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
@@ -26,6 +25,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Calculates CRC32 on an aggregation group.
@@ -40,7 +40,7 @@ public class CRC32 extends AggregateFunction {
 	
 	private int loopCount = 0;
 	private java.util.zip.CRC32 crc32;
-	ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+	CloverBuffer dataBuffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	private CharsetEncoder encoder;
 
 	// Is input nullable?

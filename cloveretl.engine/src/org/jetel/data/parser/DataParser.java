@@ -182,11 +182,11 @@ public class DataParser extends AbstractTextParser {
 		if (cfg.getMetadata() == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
+		byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE);
 		charBuffer.flip(); // initially empty 
-		fieldBuffer = new StringBuilder(Defaults.DataParser.FIELD_BUFFER_LENGTH);
-		recordBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
+		fieldBuffer = new StringBuilder(Defaults.Record.INITIAL_FIELD_SIZE);
+		recordBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		numFields = cfg.getMetadata().getNumFields();
 		isAutoFilling = new boolean[numFields];
@@ -408,8 +408,8 @@ public class DataParser extends AbstractTextParser {
 						//fieldDelimiter update
 						if(!skipLBlanks) {
 						    fieldBuffer.append((char) character);
-						    if (fieldBuffer.length() > Defaults.DataParser.FIELD_BUFFER_LENGTH) {
-								return parsingErrorFound("Field delimiter was not found (this could be caused by insufficient field buffer size - DataParser.FIELD_BUFFER_LENGTH=" + Defaults.DataParser.FIELD_BUFFER_LENGTH + " - increase the constant if necessary)", record, fieldCounter);
+						    if (fieldBuffer.length() > Defaults.Record.MAX_FIELD_SIZE) {
+								return parsingErrorFound("Field delimiter was not found (this could be caused by insufficient field buffer size - Record.MAX_FIELD_SIZE=" + Defaults.Record.MAX_FIELD_SIZE + " - increase the constant if necessary)", record, fieldCounter);
 						    }
                         }
 

@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -30,6 +28,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -65,7 +64,7 @@ public class SpeedLimiter extends Node {
 	public final static String COMPONENT_TYPE = "SPEED_LIMITER";
 	private final static int READ_FROM_PORT = 0;
 
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 	private long delay = 0L;
 
 	/**
@@ -140,11 +139,7 @@ public class SpeedLimiter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer == null) {
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-					Defaults.Record.MAX_RECORD_SIZE);
-		}
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 	}
 	
 	/*

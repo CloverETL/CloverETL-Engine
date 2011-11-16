@@ -33,6 +33,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 
@@ -477,7 +478,7 @@ public final class HugeDecimal implements Decimal {
 	}
 
 	@Override
-	public void serialize(ByteBuffer byteBuffer) {
+	public void serialize(CloverBuffer byteBuffer) {
 		try {
 			if(isNaN()) {
 				byteBuffer.put((byte) 0);
@@ -493,7 +494,7 @@ public final class HugeDecimal implements Decimal {
 	}
 
 	@Override
-	public void deserialize(ByteBuffer byteBuffer) {
+	public void deserialize(CloverBuffer byteBuffer) {
 		byte size = byteBuffer.get();
 		if(size == 0) {
 			setNaN(true);

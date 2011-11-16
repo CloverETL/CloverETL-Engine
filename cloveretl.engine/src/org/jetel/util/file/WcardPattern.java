@@ -387,7 +387,7 @@ public class WcardPattern {
     	}
     	
 		// create input stream
-    	InputStream is = new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+    	InputStream is = new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
     	
     	// create list of new names generated from the anchor
     	newFileStreamNames.add(new FileStreamName(

@@ -19,12 +19,13 @@
 package org.jetel.data.parser;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.InvalidMarkException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 
 import javax.naming.OperationNotSupportedException;
+
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Common interface for input readers providing byte input, char input or mixed char/byte input
@@ -112,7 +113,7 @@ public interface ICharByteInputReader {
 	 * @throws OperationNotSupportedException
 	 * @throws InvalidMarkException
 	 */
-	public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException;
+	public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException;
 		
 
 	/**

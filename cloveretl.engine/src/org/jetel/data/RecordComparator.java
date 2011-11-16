@@ -18,7 +18,6 @@
  */
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
@@ -30,6 +29,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.key.OrderType;
 import org.jetel.util.key.RecordKeyTokens;
 
@@ -356,7 +356,7 @@ public class RecordComparator implements Comparator {
      * @param buffer ByteBuffer into which serialize key fields
      * @param record data record from which key fields will be serialized into ByteBuffer
      */
-    public void serializeKeyFields(ByteBuffer buffer,DataRecord record) {
+    public void serializeKeyFields(CloverBuffer buffer,DataRecord record) {
         for (int i = 0; i < keyFields.length; i++) {
             record.getField(keyFields[i]).serialize(buffer);
         }
@@ -370,7 +370,7 @@ public class RecordComparator implements Comparator {
      * @param record data record whose key fields will be deserialized from ByteBuffer
      * @since 29.1.2007
      */
-    public void deserializeKeyFileds(ByteBuffer buffer,DataRecord record){
+    public void deserializeKeyFileds(CloverBuffer buffer,DataRecord record){
         for (int i = 0; i < keyFields.length; i++) {
             record.getField(keyFields[i]).deserialize(buffer);
         }

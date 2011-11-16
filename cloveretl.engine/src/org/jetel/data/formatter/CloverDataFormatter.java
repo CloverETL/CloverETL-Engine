@@ -31,8 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import de.schlichtherle.util.zip.ZipEntry;
-import de.schlichtherle.util.zip.ZipOutputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -40,8 +38,12 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
+
+import de.schlichtherle.util.zip.ZipEntry;
+import de.schlichtherle.util.zip.ZipOutputStream;
 
 
 /**
@@ -73,7 +75,7 @@ public class CloverDataFormatter implements Formatter {
 
 	private WritableByteChannel writer;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
-	private ByteBuffer buffer;
+	private CloverBuffer buffer;
 	private WritableByteChannel idxWriter;
 	private ByteBuffer idxBuffer;
 	private boolean saveIndex;
@@ -104,15 +106,16 @@ public class CloverDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata)
-			throws ComponentNotReadyException {
-        buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+	@Override
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+        buffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object outputDataTarget) {
+    @Override
+	public void setDataTarget(Object outputDataTarget) {
         //create output stream
     	this.out = (OutputStream) outputDataTarget;
         try {
@@ -156,13 +159,15 @@ public class CloverDataFormatter implements Formatter {
         buffer.put(extraBytes);
     }
     
-    public void reset() {
+    @Override
+	public void reset() {
 		if (isOpen) {
 			close();
 		}
 	}
 	
-    public void finish() throws IOException{
+    @Override
+	public void finish() throws IOException{
     	if (!isOpen) return;
     	
     	flush();
@@ -216,7 +221,7 @@ public class CloverDataFormatter implements Formatter {
 					do {
 						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
-						ByteBufferUtils.flush(buffer,idxWriter);
+						ByteBufferUtils.flush(buffer.buf(),idxWriter);
 					}while (position == buffer.limit());
 					//clear up
 					idxReader.close();
@@ -230,6 +235,7 @@ public class CloverDataFormatter implements Formatter {
 
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
+	@Override
 	public void close() {
 		if (!isOpen) return;
 		try {
@@ -271,6 +277,7 @@ public class CloverDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		int recordSize = record.getSizeSerialized();
 		if (saveIndex) {
@@ -283,12 +290,8 @@ public class CloverDataFormatter implements Formatter {
 			}
 			idxBuffer.putShort(index);
 		}
-		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
+		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
 			flush();
-		}
-		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + 
-					", but record size is " + recordSize + ". Set appropriate parameter in defaultProperties file.");
 		}
 		buffer.putInt(recordSize);
 		record.serialize(buffer);
@@ -299,8 +302,9 @@ public class CloverDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
+	@Override
 	public void flush() throws IOException {
-		ByteBufferUtils.flush(buffer,writer);
+		ByteBufferUtils.flush(buffer.buf(),writer);
 		out.flush();
 	}
 	
@@ -316,10 +320,12 @@ public class CloverDataFormatter implements Formatter {
 		this.append = append;
 	}
 
+	@Override
 	public int writeFooter() throws IOException {
 		return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		return 0;
 	}

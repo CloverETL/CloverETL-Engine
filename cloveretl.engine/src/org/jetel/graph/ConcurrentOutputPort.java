@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Simple wrapper around common direct output port. Only additional value is synchronized
@@ -44,60 +45,85 @@ public class ConcurrentOutputPort implements OutputPort, OutputPortDirect {
 		this.outputPort = outputPort;
 	}
 
+	@Override
 	public void close() throws InterruptedException, IOException {
 		outputPort.close();
 	}
 
+	@Override
 	public void connectWriter(Node _writer, int portNum) {
 		outputPort.connectWriter(_writer, portNum);
 	}
 
+	@Override
 	public void eof() throws InterruptedException, IOException {
 		outputPort.eof();
 	}
 
+	@Override
 	public long getByteCounter() {
 		return outputPort.getByteCounter();
 	}
 
+	@Override
 	public DataRecordMetadata getMetadata() {
 		return outputPort.getMetadata();
 	}
 
+	@Override
 	public long getOutputByteCounter() {
 		return outputPort.getOutputByteCounter();
 	}
 
+	@Override
 	public int getOutputPortNumber() {
 		return outputPort.getOutputPortNumber();
 	}
 
+	@Override
 	public int getOutputRecordCounter() {
 		return outputPort.getOutputRecordCounter();
 	}
 
+	@Override
 	public Node getReader() {
 		return outputPort.getReader();
 	}
 
+	@Override
 	public int getRecordCounter() {
 		return outputPort.getRecordCounter();
 	}
 
+	@Override
 	public void open() {
 		outputPort.open();
 	}
 
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		outputPort.reset();
 	}
 
+	@Override
 	public synchronized void writeRecord(DataRecord record) throws IOException, InterruptedException {
 		outputPort.writeRecord(record);
 	}
 
-	public synchronized void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public synchronized void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 		outputPort.writeRecordDirect(record);
+	}
+
+	@Override
+	@Deprecated
+	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public int getUsedMemory() {
+		return outputPort.getUsedMemory();
 	}
 	
 }

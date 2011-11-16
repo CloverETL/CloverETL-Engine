@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -30,6 +28,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -82,7 +81,7 @@ public class SimpleCopy extends Node {
 	 */
 	private final static int WRITE_TO_PORT = 0;
 
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 
 
 	/**
@@ -118,11 +117,7 @@ public class SimpleCopy extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer == null) {
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-					Defaults.Record.MAX_RECORD_SIZE);
-		}
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 	}
 
 	@Override

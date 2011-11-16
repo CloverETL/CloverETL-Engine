@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * The base class for all partition functions.
@@ -41,6 +42,7 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 	/** a set of fields composing key based on which should the partition be determined */
 	protected RecordKey partitionKey;
 
+	@Override
 	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
 		this.numPartitions = numPartitions;
 		this.partitionKey = partitionKey;
@@ -65,9 +67,30 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 	}
 
 	@Override
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
 		// by default just throw the exception that caused the error
 		throw new TransformException("Partitioning failed!", exception);
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) throws TransformException {
+		return getOutputPortOnError(exception, directRecord.buf());
+		
+//following lines are correct implementation after obsolete function with ByteBuffers will be removed
+//		// by default just throw the exception that caused the error
+//		throw new TransformException("Partitioning failed!", exception);
+	}
+
+	@Override
+	@Deprecated
+	public int getOutputPort(ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPort(CloverBuffer directRecord) throws TransformException {
+		return getOutputPort(directRecord.buf());
 	}
 
 }

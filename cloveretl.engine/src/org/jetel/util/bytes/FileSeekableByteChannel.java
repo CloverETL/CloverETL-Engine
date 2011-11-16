@@ -118,7 +118,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 		
     	long shift = 0;
 		
-		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		CharBuffer charBuffer = CharBuffer.allocate(1);	// small buffer, so that byte channel position can be determined for each character
 		
 		CharsetDecoder charsetDecoder = channelCharset.newDecoder();

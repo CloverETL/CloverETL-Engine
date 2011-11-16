@@ -66,7 +66,7 @@ public class DelimitedDataParser implements Parser {
 	private IParserExceptionHandler exceptionHandler;
 	private ByteBuffer dataBuffer;
 	private CharBuffer charBuffer;
-	private CharBuffer fieldStringBuffer;
+	private StringBuilder fieldStringBuffer;
 	private char[] delimiterCandidateBuffer;
 	private DataRecordMetadata metadata;
 	private ReadableByteChannel reader;
@@ -129,7 +129,7 @@ public class DelimitedDataParser implements Parser {
 		this.qdecoder = qdecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+		fieldStringBuffer = new StringBuilder(Defaults.Record.INITIAL_FIELD_SIZE);
 		delimiterCandidateBuffer = new char [DELIMITER_CANDIDATE_BUFFER_LENGTH];
 		decoder = Charset.forName(charsetDecoder).newDecoder();
 	}
@@ -417,7 +417,7 @@ public class DelimitedDataParser implements Parser {
 			}
 			
 			// we clear our buffer
-			fieldStringBuffer.clear();
+			fieldStringBuffer.setLength(0);
 			character = 0;
 			isWithinQuotes=false;
 			boolean eofDelimiter = false;
@@ -454,10 +454,10 @@ public class DelimitedDataParser implements Parser {
 						 *  NOT A DELIMITER
 						 */
 						if (delimiterPosition > 0) {
-							fieldStringBuffer.put(delimiterCandidateBuffer,0,delimiterPosition);
+							fieldStringBuffer.append(delimiterCandidateBuffer,0,delimiterPosition);
 						} else {
                             try{
-                                fieldStringBuffer.put((char) character);
+                                fieldStringBuffer.append((char) character);
                             }catch(BufferOverflowException ex){
                                 throw new IOException(
 										"Field too long or can not find delimiter ["
@@ -515,7 +515,6 @@ public class DelimitedDataParser implements Parser {
 			// set field's value
 			// are we skipping this row/field ?
 			if (record != null){
-			    fieldStringBuffer.flip();
 			    if (isSkipLeadingBlanks[fieldCounter]) {
 			    	StringUtils.trimLeading(fieldStringBuffer);
 			    }
@@ -539,7 +538,7 @@ public class DelimitedDataParser implements Parser {
 	 *@param  data      Description of Parameter
 	 *@since            March 28, 2002
 	 */
-	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
+	private void populateField(DataRecord record, int fieldNum, StringBuilder data) {
         CharSequence strData = buffer2String(data, fieldNum);
         try {
 			record.getField(fieldNum).fromString(strData);
@@ -569,7 +568,7 @@ public class DelimitedDataParser implements Parser {
 	 *@param  buffer        Character buffer to work on
 	 *@return               String with quotes removed if specified
 	 */
-	private CharSequence buffer2String(CharBuffer buffer,int fieldNum) {
+	private CharSequence buffer2String(StringBuilder buffer, int fieldNum) {
 		if (fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD &&
 			fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD_COMPRESSED	) {
 			return qdecoder.decode(buffer);

@@ -99,7 +99,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 			byteBuffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
 			try {
-				inChannel.read(byteBuffer);
+				inChannel.read(byteBuffer.buf());
 			} catch (IOException e) {
 				break;
 			}
@@ -188,7 +188,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		if (byteBuffer.remaining() < dataLen) {	// need to get more data from channel
 			byteBuffer.compact();
 			try {
-				inChannel.read(byteBuffer);				// write to buffer
+				inChannel.read(byteBuffer.buf());				// write to buffer
 				byteBuffer.flip();						// prepare buffer for reading
 			} catch (IOException e) {
 				throw new JetelException(e.getMessage());

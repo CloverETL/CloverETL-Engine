@@ -33,6 +33,7 @@ import javax.naming.OperationNotSupportedException;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * An abstract class for input readers able to provide mixed char/byte data
@@ -80,7 +81,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	}
 
 	@Override
-	public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+	public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 		throw new OperationNotSupportedException("Input reader doesn't support getByteSequence() operation. Choose another implementation");
 	}
 
@@ -109,7 +110,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		if (channel instanceof FileChannel) {
 			((FileChannel)channel).position(position);
 		} else {
-			ByteBuffer buf = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+			ByteBuffer buf = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 			int bytesRemaining = position;
 			while (bytesRemaining > 0) {
 				buf.clear();
@@ -194,7 +195,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 * @created Dec 7, 2010
 	 */
 	public static class ByteInputReader extends CharByteInputReader {
-		private ByteBuffer byteBuffer;
+		private CloverBuffer byteBuffer;
 		private int currentMark;
 		private boolean endOfInput;
 		private int maxBackMark;
@@ -205,7 +206,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public ByteInputReader(int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE);
+			byteBuffer = CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
@@ -237,7 +238,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				currentMark = numBytesToPreserve - markSpan;
 
 				byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve);
-				int bytesConsumed = channel.read(byteBuffer);
+				int bytesConsumed = channel.read(byteBuffer.buf());
 				byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 				switch (bytesConsumed) {
 				case 0:
@@ -297,13 +298,13 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+		public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 			if (currentMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
 			int pos = byteBuffer.position();
 			byteBuffer.position(currentMark);
-			ByteBuffer seq = byteBuffer.slice();
+			CloverBuffer seq = byteBuffer.slice();
 			seq.limit(pos + relativeEnd - currentMark); // set the end of the sequence
 			byteBuffer.position(pos); // restore original position
 			currentMark = INVALID_MARK;
@@ -358,8 +359,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public CharInputReader(Charset charset, int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
 			this.charset = charset;
 			if (charset == null) {
@@ -537,7 +538,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 */
 	public static class SingleByteCharsetInputReader extends CharByteInputReader {
 		private Charset charset;
-		private ByteBuffer byteBuffer;
+		private CloverBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
 		private int currentMark;
@@ -551,8 +552,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public SingleByteCharsetInputReader(Charset charset, int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
-			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
 			this.charset = charset;
 			if (charset == null) {
@@ -605,7 +606,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			// get more data from input
 			charBuffer.limit(charBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
 			byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
-			int bytesConsumed = channel.read(byteBuffer);
+			int bytesConsumed = channel.read(byteBuffer.buf());
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 			switch (bytesConsumed) {
 			case 0:
@@ -616,7 +617,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				 * make sure there are no chars remaining inside the decoder - that would would mean our assumptions
 				 * about single byte charset decoders are invalid
 				 */
-				decoder.decode(byteBuffer, charBuffer, true);
+				decoder.decode(byteBuffer.buf(), charBuffer, true);
 				decoder.flush(charBuffer);
 				charBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 				/*
@@ -631,7 +632,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			default:
 				assert byteBuffer.position() == numBytesToPreserve && byteBuffer.limit() > numBytesToPreserve : "Unexpected internal state occured during code execution";
 				byteBuffer.mark();
-				if (decoder.decode(byteBuffer, charBuffer, false).isError()) {
+				if (decoder.decode(byteBuffer.buf(), charBuffer, false).isError()) {
 					// any errors disrupt one-to-one correspondence between byte buffer and char buffer
 					throw new OperationNotSupportedException("Selected charset doesn't conform to limitations imposed by single byte charset input reader. Choose another implementation");
 				}
@@ -734,13 +735,13 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+		public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 			if (currentMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
 			int pos = byteBuffer.position();
 			byteBuffer.position(currentMark);
-			ByteBuffer seq = byteBuffer.slice();
+			CloverBuffer seq = byteBuffer.slice();
 			seq.limit(pos + relativeEnd - currentMark); // set the end of the sequence
 			byteBuffer.position(pos); // restore original position
 			currentMark = INVALID_MARK;
@@ -786,7 +787,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 */
 	public static class RobustInputReader extends CharByteInputReader {
 		private Charset charset;
-		private ByteBuffer byteBuffer;
+		private CloverBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
 		private int currentByteMark;
@@ -807,8 +808,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
 			int maxBytesPerChar = Math.round(charset.newEncoder().maxBytesPerChar());
-			byteBuffer = ByteBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE));
-			charBuffer = CharBuffer.allocate(Defaults.Record.MAX_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = CloverBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE));
+			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			decoder = charset.newDecoder();
 			decoder.onMalformedInput(CodingErrorAction.REPORT);
 			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
@@ -851,7 +852,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			do {
 				charBuffer.limit(numCharsToPreserve + 1).position(numCharsToPreserve); // get ready to receive one char
 
-				if (decoder.decode(byteBuffer, charBuffer, false).isError()) {
+				if (decoder.decode(byteBuffer.buf(), charBuffer, false).isError()) {
 					return DECODING_FAILED;
 				}
 				charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
@@ -874,7 +875,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					currentByteMark = numBytesToPreserve - byteMarkSpan;
 
 					byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
-					int bytesConsumed = channel.read(byteBuffer);
+					int bytesConsumed = channel.read(byteBuffer.buf());
 					byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 					switch (bytesConsumed) {
 					case 0:
@@ -882,7 +883,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					case -1: // end of input
 						// check that the decoder doesn't maintain internal state
 						charBuffer.clear(); // get ready to receive data
-						decoder.decode(byteBuffer, charBuffer, true); // decode any remaining data
+						decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
 						decoder.flush(charBuffer);
 						charBuffer.flip();
 						if (charBuffer.hasRemaining()) {
@@ -934,7 +935,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentByteMark = numBytesToPreserve - byteMarkSpan;
 
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to receive data
-			int bytesConsumed = channel.read(byteBuffer);
+			int bytesConsumed = channel.read(byteBuffer.buf());
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 			switch (bytesConsumed) {
 			case 0:
@@ -942,7 +943,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			case -1: // end of input
 				// check that the decoder doesn't maintain internal state
 				charBuffer.clear(); // get ready to receive data
-				decoder.decode(byteBuffer, charBuffer, true); // decode any remaining data
+				decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
 				decoder.flush(charBuffer);
 				charBuffer.flip();
 				if (charBuffer.hasRemaining()) {
@@ -1030,13 +1031,13 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+		public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 			if (currentByteMark == INVALID_MARK) {
 				throw new InvalidMarkException();
 			}
 			int pos = byteBuffer.position();
 			byteBuffer.position(currentByteMark);
-			ByteBuffer seq = byteBuffer.slice();
+			CloverBuffer seq = byteBuffer.slice();
 			seq.limit(pos + relativeEnd - currentByteMark); // set the end of the sequence
 			byteBuffer.position(pos); // restore original position
 			currentByteMark = INVALID_MARK;
@@ -1157,7 +1158,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public ByteBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
+		public CloverBuffer getByteSequence(int relativeEnd) throws OperationNotSupportedException, InvalidMarkException {
 			inputReader.setMark(innerMark);
 			return inputReader.getByteSequence(relativeEnd);
 		}

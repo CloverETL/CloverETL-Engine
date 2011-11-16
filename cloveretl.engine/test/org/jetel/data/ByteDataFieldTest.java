@@ -19,10 +19,9 @@
 
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author maciorowski
@@ -168,7 +167,7 @@ public class ByteDataFieldTest extends CloverTestCase {
 
 	public void test_serialize() {
 		ByteDataField deserializedByteField = (ByteDataField) byteField.duplicate();
-		ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.Data.DATA_RECORDS_BUFFER_SIZE);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
 
 		byteField.setValue(byteArray);
 		byteField.serialize(buffer);

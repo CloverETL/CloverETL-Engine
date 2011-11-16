@@ -18,11 +18,11 @@
  */
 package org.jetel.graph;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.tape.DataRecordTape;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * A class that represents PhaseConnectionEdge - data connection between two NODEs in different Phases.<br>
@@ -51,7 +51,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 
 	private boolean isEmpty;
 	
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 	
 	/**
 	 *Constructor for the Edge object
@@ -78,32 +78,40 @@ public class PhaseConnectionEdge extends EdgeBase {
 		}else{
 		    dataTape = new DataRecordTape();
 		}
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		isReadMode=false;
 		wasInitialized = false;
 		isEmpty = false;
 	}
 
-
-
+	@Override
 	public int getOutputRecordCounter() {
 		return writeCounter;
 	}
 
-    public int getInputRecordCounter() {
+    @Override
+	public int getInputRecordCounter() {
         return readCounter;
     }
 
-    public long getOutputByteCounter(){
+    @Override
+	public long getOutputByteCounter(){
         return writeByteCounter;
     }
 
-    public long getInputByteCounter(){
+    @Override
+	public long getInputByteCounter(){
         return readByteCounter;
     }
 
-    public int getBufferedRecords(){
+    @Override
+	public int getBufferedRecords(){
         return writeCounter-readCounter;
+    }
+    
+    @Override
+    public int getUsedMemory() {
+    	return recordBuffer.capacity() + dataTape.getBufferSize();
     }
     
 	/**
@@ -113,6 +121,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @throws InterruptedException 
 	 * @since                   April 2, 2002
 	 */
+	@Override
 	public void init() throws IOException, InterruptedException {
 		// initialize & open the data pipe
 		// we are ready to supply data
@@ -158,7 +167,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
-
+	@Override
 	public  DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
 	    if (!isReadMode) {
 			return null;
@@ -174,7 +183,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 		
 	}
 
-
 	/**
 	 *  We read data into ByteBuffer directly
 	 *
@@ -185,7 +193,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 	    if (!isReadMode) {
 			return false;
 		} 
@@ -200,7 +209,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 		}
 	}
 
-
 	/**
 	 * An operation that does send one DataRecord through the Edge/PIPE
 	 *
@@ -210,6 +218,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
+	@Override
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
 	    if (isReadMode){
 		    throw new IOException("Error: Mixed read/write operation on DataRecordTape !");
@@ -222,7 +231,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 		writeCounter++;
 	}
 
-
 	/**
 	 *  We write directly content of ByteBuffer
 	 *
@@ -232,7 +240,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public  void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public  void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 	    if (isReadMode){
 		    throw new IOException("Error: Mixed read/write operation on DataRecordTape !");
 		}
@@ -249,6 +258,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
+	@Override
 	public void eof() throws IOException, InterruptedException {
 	    // as writer closes the
 	    // port/edge - no more data is to be written, flush
@@ -258,15 +268,16 @@ public class PhaseConnectionEdge extends EdgeBase {
 	    isReadMode=true;
 	}
 
+	@Override
 	public boolean hasData(){
 		return !isEmpty;
-//		return writeCounter - readCounter > 0;
 	}
 	
 	/* (non-Javadoc)
 	 * clean up
 	 * @see java.lang.Object#finalize()
 	 */
+	@Override
 	public void free() {
 	    try{
 	        dataTape.close();

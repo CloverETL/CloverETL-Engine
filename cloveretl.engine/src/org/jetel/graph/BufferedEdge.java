@@ -19,12 +19,12 @@
 package org.jetel.graph;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.DynamicRecordBuffer;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * A class that represents Edge - data connection between two NODEs.
@@ -71,26 +71,37 @@ public class BufferedEdge extends EdgeBase {
 		this.internalBufferSize = internalBufferSize;
 	}
 
+	@Override
 	public int getOutputRecordCounter() {
 		return outputRecordCounter;
 	}
 
-    public int getInputRecordCounter() {
+    @Override
+	public int getInputRecordCounter() {
         return inputRecordCounter;
     }
 
-    public long getOutputByteCounter(){
+    @Override
+	public long getOutputByteCounter(){
         return byteCounter;
     }
 
-    public long getInputByteCounter(){
+    @Override
+	public long getInputByteCounter(){
         return byteCounter;
     }
 
-    public int getBufferedRecords(){
+    @Override
+	public int getBufferedRecords(){
         return recordBuffer.getBufferedRecords();
     }
     
+    @Override
+    public int getUsedMemory() {
+    	return recordBuffer.getBufferSize();
+    }
+    
+	@Override
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
 		recordBuffer.init();
@@ -107,6 +118,7 @@ public class BufferedEdge extends EdgeBase {
 		byteCounter = 0;
 	}
 
+	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
         DataRecord ret = recordBuffer.readRecord(record);
 
@@ -117,7 +129,8 @@ public class BufferedEdge extends EdgeBase {
 		return ret;
     }
 
-	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
         boolean ret = recordBuffer.readRecord(record);
 
         if (ret) {
@@ -127,16 +140,19 @@ public class BufferedEdge extends EdgeBase {
         return ret;
     }
 
+	@Override
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         byteCounter += recordBuffer.writeRecord(record);
         outputRecordCounter++;
 	}
 
-	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 	    byteCounter += recordBuffer.writeRecord(record);
         outputRecordCounter++;
     }
 
+	@Override
 	public void eof() throws InterruptedException {
         try {
 			recordBuffer.setEOF();
@@ -159,6 +175,7 @@ public class BufferedEdge extends EdgeBase {
 		}
 	}
 
+	@Override
 	public boolean hasData() {
 		return recordBuffer.hasData();
 	}

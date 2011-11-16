@@ -36,7 +36,7 @@ import org.jetel.graph.runtime.CloverWorker;
  * For this purpose it is recommended to use CloverWorker class instead Runnable every time 
  * you want to create separate thread inside a component.
  *
- *@see CloverWorker
+ * @see CloverWorker
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *

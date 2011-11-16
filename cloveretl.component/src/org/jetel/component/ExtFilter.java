@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -36,6 +34,7 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -172,7 +171,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		boolean isData=true;
         DataRecord record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
         record.init();
-        ByteBuffer recordBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+        CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
         
 		while(isData && runIt){
 			try{

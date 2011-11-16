@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -31,6 +29,7 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -119,7 +118,7 @@ public class SimpleGather extends Node {
 		InputPortDirect inputPorts[]= (InputPortDirect[])getInPorts().toArray(new InputPortDirect[0]);
 		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
-		ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		readFromPort = 0;
 		inPort = inputPorts[readFromPort];
 		int lastReadPort = -1;

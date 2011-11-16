@@ -19,10 +19,10 @@
 package org.jetel.data;
 
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
@@ -212,7 +212,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @param  buffer  
 	 */
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
 		try {
 			if (isNull())
 				buffer.put((byte)-1);
@@ -229,7 +229,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @param  buffer
 	 */
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		byte tmpl = buffer.get();
 		if (tmpl == (byte)-1) {
 			setNull(true);

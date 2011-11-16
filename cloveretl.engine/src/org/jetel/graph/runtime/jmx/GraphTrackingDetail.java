@@ -74,8 +74,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		graph = null;
 	}
 	
-	
-	
 	public void copyFrom(GraphTrackingDetail graphDetail) {
 		this.runningPhaseDetail = getPhaseDetail(graphDetail.getRunningPhaseTracking().getPhaseNum());
 		this.startTime = graphDetail.startTime;
@@ -122,7 +120,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		return runningPhaseDetail;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getGraphName()
 	 */
@@ -157,6 +154,11 @@ public class GraphTrackingDetail implements GraphTracking {
 		}
 	}
 
+	@Override
+	public int getUsedMemory() {
+		return graph.getMemoryTracker().getUsedMemory();
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
 	 */

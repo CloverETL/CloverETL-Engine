@@ -19,7 +19,6 @@
 package org.jetel.graph;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +32,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -185,13 +185,13 @@ public class EdgeDebuger {
 		}
     }
     
-    private boolean isValid(ByteBuffer record) {
+    private boolean isValid(CloverBuffer record) {
     	filterTmpRecord.deserialize(record);
 		record.rewind();
 		return isValid(filterTmpRecord);
     }
     
-    public void writeRecord(ByteBuffer byteBuffer) throws IOException, InterruptedException {
+    public void writeRecord(CloverBuffer byteBuffer) throws IOException, InterruptedException {
         if (readMode) {
 			throw new IllegalStateException("Error: Mixed read/write operation on DataRecordTape!");
 		}
@@ -212,7 +212,7 @@ public class EdgeDebuger {
         }
     }
     
-    private boolean checkRecordToWrite(ByteBuffer byteBuffer) {
+    private boolean checkRecordToWrite(CloverBuffer byteBuffer) {
     	return ((filter == null || isValid(byteBuffer)) && (sampler == null || sampler.sample()));
     }
 

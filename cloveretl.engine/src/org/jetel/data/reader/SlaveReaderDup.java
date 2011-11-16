@@ -19,7 +19,6 @@
 package org.jetel.data.reader;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -27,6 +26,7 @@ import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Slave reader with duplicates support. Uses file buffer to store duplicate records. Support rewind operation.
@@ -41,7 +41,7 @@ public class SlaveReaderDup implements InputReader {
 	protected RecordKey key;
 	private DataRecord[] rec = new DataRecord[2];
 	private FileRecordBuffer recBuf;
-	private ByteBuffer rawRec = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+	private CloverBuffer rawRec = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 	private boolean firstRun;
 	private boolean getFirst;
 	DataRecord deserializedRec;

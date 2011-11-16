@@ -18,7 +18,6 @@
  */
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -421,7 +421,7 @@ public class RecordKey {
 	 * @param buffer ByteBuffer into which serialize key fields
 	 * @param record data record from which key fields will be serialized into ByteBuffer
 	 */
-	public void serializeKeyFields(ByteBuffer buffer,DataRecord record) {
+	public void serializeKeyFields(CloverBuffer buffer,DataRecord record) {
 		for (int i = 0; i < keyFields.length; i++) {
 			record.getField(keyFields[i]).serialize(buffer);
 		}
@@ -435,7 +435,7 @@ public class RecordKey {
      * @param record data record whose key fields will be deserialized from ByteBuffer
      * @since 29.1.2007
      */
-    public void deserializeKeyFileds(ByteBuffer buffer,DataRecord record){
+    public void deserializeKeyFileds(CloverBuffer buffer,DataRecord record){
         for (int i = 0; i < keyFields.length; i++) {
             record.getField(keyFields[i]).deserialize(buffer);
         }

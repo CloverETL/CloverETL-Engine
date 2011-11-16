@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
@@ -27,14 +26,15 @@ import org.jetel.data.InternalSortDataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -99,7 +99,7 @@ public class Sort extends Node {
 	private InternalSortDataRecord newSorter;
 	private boolean sortOrderAscending;
 	private String[] sortKeys;
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
     private String localeStr;
     private boolean useI18N;
 
@@ -202,11 +202,7 @@ public class Sort extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer == null) {
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-					Defaults.Record.MAX_RECORD_SIZE);
-		}
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		// create sorter
 		boolean[] sortOrderings = new boolean[sortKeys.length];
 		Arrays.fill(sortOrderings, sortOrderAscending);

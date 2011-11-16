@@ -22,8 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Class implementing RecordBuffer backed by temporary file - i.e. unlimited
@@ -43,7 +44,7 @@ public class FileRecordBuffer {
 	private File tmpFile;
 	private String tmpFilePath;
 
-	private ByteBuffer dataBuffer;
+	private CloverBuffer dataBuffer;
 
 	private long readPosition;
 	private long writePosition;
@@ -55,7 +56,7 @@ public class FileRecordBuffer {
 	// indicates whether buffer contains unwritten data
 
 	// data
-	private final static int DEFAULT_BUFFER_SIZE = Defaults.Record.MAX_RECORD_SIZE * 8;
+	private final static int DEFAULT_BUFFER_SIZE = Defaults.Record.INITIAL_RECORD_SIZE * 8;
 	// size of BUFFER - used for push & shift operations
 	private final static int LEN_SIZE_SPECIFIER = 4;
 	// size of integer variable used to keep record length
@@ -85,7 +86,7 @@ public class FileRecordBuffer {
 		isDirty = false;
 		hasFile = false;
 		isClosed=false;
-		dataBuffer = ByteBuffer.allocateDirect(dataBufferSize > DEFAULT_BUFFER_SIZE ? dataBufferSize : DEFAULT_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(dataBufferSize > DEFAULT_BUFFER_SIZE ? dataBufferSize : DEFAULT_BUFFER_SIZE);
 	}
 
 
@@ -103,7 +104,7 @@ public class FileRecordBuffer {
 		isDirty = false;
 		hasFile = false;
 		isClosed=false;
-		dataBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
 	}
 
 
@@ -174,7 +175,7 @@ public class FileRecordBuffer {
 	 *@exception  IOException  In case of IO failure
 	 *@since                   September 17, 2002
 	 */
-	public void push(ByteBuffer data) throws IOException {
+	public void push(CloverBuffer data) throws IOException {
 		if(isClosed){
 			throw new IOException("Buffer has been closed !");
 		}
@@ -223,8 +224,8 @@ public class FileRecordBuffer {
 	private final void secureBuffer(long position, int requestedSize) throws IOException {
 		if (needRemap(position, requestedSize)) {
 			flushBuffer();
-			boolean reloadNeed = position < writePosition ? true : false;
-			mapBuffer(position, reloadNeed);
+			boolean reloadNeed = (position < writePosition);
+			mapBuffer(position, requestedSize, reloadNeed);
 		}
 	}
 
@@ -238,7 +239,7 @@ public class FileRecordBuffer {
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
-	public ByteBuffer shift(ByteBuffer data) throws IOException {
+	public CloverBuffer shift(CloverBuffer data) throws IOException {
 		int recordSize;
 		if(isClosed){
 			throw new IOException("Buffer has been closed !");
@@ -269,7 +270,7 @@ public class FileRecordBuffer {
 	 *      no more record can be retrieved
 	 *@exception  IOException  Description of the Exception
 	 */
-	public ByteBuffer get(ByteBuffer data) throws IOException {
+	public CloverBuffer get(CloverBuffer data) throws IOException {
 		int recordSize;
 		if(isClosed){
 			throw new IOException("Buffer has been closed !");
@@ -304,14 +305,14 @@ public class FileRecordBuffer {
 			if (!hasFile) {
 				openTmpFile();
 			}
-			tmpFileChannel.write(dataBuffer, mapPosition);
+			tmpFileChannel.write(dataBuffer.buf(), mapPosition);
 		}
 		dataBuffer.clear();
 		isDirty = false;
 	}
 
-	public boolean isEmpty(){
-		return (readPosition>=writePosition ? true : false);
+	public boolean isEmpty() {
+		return readPosition >= writePosition;
 	}
 
 	/**
@@ -322,12 +323,16 @@ public class FileRecordBuffer {
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
-	private void mapBuffer(long fromPosition, boolean reload) throws IOException {
+	private void mapBuffer(long fromPosition, int requestedSize, boolean reload) throws IOException {
 		dataBuffer.clear();
+		//ensure that the buffer is big enough to bear 'requestedSize' bytes
+		if (dataBuffer.capacity() < requestedSize) {
+			dataBuffer.expand(requestedSize);
+		}
 		mapPosition = fromPosition;
 		if (reload) {
 			if (hasFile) {
-				tmpFileChannel.read(dataBuffer, mapPosition);
+				tmpFileChannel.read(dataBuffer.buf(), mapPosition);
 				dataBuffer.flip();
 			} else {
 				throw new RuntimeException("Can't remap buffer TMP file doesn't exist");
@@ -336,91 +341,5 @@ public class FileRecordBuffer {
 		isDirty = false;
 	}
 
-//	public static void main(String argv[]) {
-//		byte[] charArray = new byte[100];
-//		String text;
-//		int nRecords = 200;
-//		ByteBuffer data = ByteBuffer.allocateDirect(80);
-//		ByteBuffer outData;
-//		FileRecordBuffer fBuffer;
-//		System.out.println("Testing FileRecord Buffer");
-//		fBuffer = new FileRecordBuffer(null);
-//
-//		System.out.println("Temp file location: " + fBuffer.tmpFile.getAbsolutePath());
-//		System.out.println();
-//		System.out.println("Adding testing records #" + nRecords);
-//		for (int i = 0; i < 200; i++) {
-//			data.clear();
-//			text = new String("THIS IS TESTING RECORD no " + i);
-//			data.put(text.getBytes());
-//			data.putInt(i);
-//			data.flip();
-//			try {
-//				fBuffer.push(data);
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//			}
-//		}
-//		System.out.println("Finished!");
-//		System.out.println("Reading 100 Testing records");
-//		for (int i = 0; i < 100; i++) {
-//			data.clear();
-//			outData = null;
-//			try {
-//				outData = fBuffer.shift(data);
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//			}
-//			System.out.print("Rec no: " + i + " ");
-//			if (data != null) {
-//				outData.flip();
-//				outData.get(charArray, 0, outData.remaining());
-//				System.out.print(new String(charArray));
-//			}
-//			System.out.println();
-//		}
-//		System.out.println("Adding testing records #100");
-//		for (int i = 200; i < 300; i++) {
-//			data.clear();
-//			text = new String("THIS IS TESTING RECORD no " + i);
-//			data.put(text.getBytes());
-//			data.putInt(i);
-//			data.flip();
-//			try {
-//				fBuffer.push(data);
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//			}
-//		}
-//
-//		System.out.println("Reading testing records #" + nRecords);
-//		fBuffer.rewind();
-//		do {
-//			data.clear();
-//			outData = null;
-//			try {
-//				outData = fBuffer.shift(data);
-//			} catch (IOException ex) {
-//				ex.printStackTrace();
-//			}
-//			System.out.print("Rec : ");
-//			if (outData != null) {
-//				outData.flip();
-//				for (int i = 0; i < charArray.length; charArray[i++] = 0) {
-//					;
-//				}
-//				outData.get(charArray, 0, outData.remaining());
-//				System.out.print(new String(charArray));
-//			}
-//			System.out.println();
-//		} while (outData != null);
-//		try {
-//			fBuffer.close();
-//		} catch (IOException ex) {
-//			ex.printStackTrace();
-//		}
-//
-//	}
-//
 }
 

@@ -20,6 +20,8 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.jetel.util.bytes.CloverBuffer;
+
 /**
  * An interface defining operations expected from OutputPortDirect object
  * This interface is complementary to OutputPort. In order to work properly,
@@ -31,8 +33,19 @@ import java.nio.ByteBuffer;
  */
 public interface OutputPortDirect extends OutputPort {
 
-	// Operations
-	
+	/**
+	 * An operation that passes/writes one record through this port.<br>
+     * The passed-in object (CloverBuffer) must be ready to be read - i.e.
+     * CloverBuffer.position() should be 0 and CloverBuffer.limit() should be
+     * pointing to the end of data in the buffer.
+	 *
+	 * @param  record                   CloverBuffer containing the data to be written/sent
+	 * @exception  IOException           If writing failed during method call
+	 * @exception  InterruptedException  If thread waiting to be notified was interrupted
+	 * @since                            August 13, 2002
+	 */
+	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException;
+
 	/**
 	 * An operation that passes/writes one record through this port.<br>
      * The passed-in object (ByteBuffer) must be ready to be read - i.e.
@@ -43,7 +56,9 @@ public interface OutputPortDirect extends OutputPort {
 	 * @exception  IOException           If writing failed during method call
 	 * @exception  InterruptedException  If thread waiting to be notified was interrupted
 	 * @since                            August 13, 2002
+	 * @deprecated {@link #writeRecordDirect(CloverBuffer)} instead
 	 */
+	@Deprecated
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
 
 }

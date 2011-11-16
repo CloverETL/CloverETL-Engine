@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Simple interface for partition functions.
@@ -76,7 +77,10 @@ public interface PartitionFunction extends Transform {
 	/**
 	 * @param record data record which should be used for determining partition??? number
 	 * @return port number which should be used for sending data out.
+	 * 
+	 * @deprecated use {@link #getOutputPort(CloverBuffer)} instead
 	 */
+	@Deprecated
 	public int getOutputPort(ByteBuffer directRecord) throws TransformException;
 
 	/**
@@ -88,7 +92,28 @@ public interface PartitionFunction extends Transform {
 	 * @return port number which should be used for sending data out.
 	 *
 	 * @throws TransformException
+	 * 
+	 * @deprecated use {@link #getOutputPortOnError(Exception, CloverBuffer)} instead
 	 */
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException;
+
+	/**
+	 * @param record data record which should be used for determining partition??? number
+	 * @return port number which should be used for sending data out.
+	 */
+	public int getOutputPort(CloverBuffer directRecord) throws TransformException;
+
+	/**
+	 * Called only if {@link #getOutputPort(ByteBuffer)} throws an exception.
+	 *
+	 * @param exception an exception that caused {@link #getOutputPort(ByteBuffer)} to fail
+	 * @param record data record which should be used for determining partition??? number
+	 *
+	 * @return port number which should be used for sending data out.
+	 *
+	 * @throws TransformException
+	 */
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) throws TransformException;
 
 }

@@ -19,7 +19,8 @@
 package org.jetel.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
+
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * 
@@ -70,7 +71,7 @@ public interface ISortDataRecord {
 	 *@param  recordData  ByteBuffer into which copy next record's data
 	 *@return             True if there was next record or False
 	 */
-	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException;
+	public boolean get(CloverBuffer recordDataBuffer) throws IOException, InterruptedException;
 
 	/**
 	 * Resets all resources (buffers, collections of internal sorter, etc), so component can

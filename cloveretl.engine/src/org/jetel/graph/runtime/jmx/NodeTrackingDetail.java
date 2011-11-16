@@ -53,7 +53,8 @@ public class NodeTrackingDetail implements NodeTracking {
     private float peakUsageCPU;
     private float usageUser;
     private float peakUsageUser;
-
+    private int usedMemory;
+    
 	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail, Node node) {
 		this.parentPhaseDetail = parentPhaseDetail;
 		this.node = node;
@@ -210,6 +211,11 @@ public class NodeTrackingDetail implements NodeTracking {
 		return nodeName;
 	}
 	
+	@Override
+	public int getUsedMemory() {
+		return usedMemory;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking()
 	 */
@@ -357,6 +363,9 @@ public class NodeTrackingDetail implements NodeTracking {
 		for(OutputPortTrackingDetail outputPortDetail: outputPortsDetails) {
 			outputPortDetail.gatherTrackingDetails();
 		}
+		
+		//usedMemory
+		usedMemory = node.getGraph().getMemoryTracker().getUsedMemory(node);
 	}
 
 	void phaseFinished() {

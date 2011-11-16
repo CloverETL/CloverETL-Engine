@@ -68,6 +68,8 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 				inputPort.getInputRecordCounter(), 
 				inputPort.getInputByteCounter(),
 				((Edge) inputPort).getBufferedRecords());
+		
+		setUsedMemory(inputPort.getUsedMemory());
 	}
 	
 }

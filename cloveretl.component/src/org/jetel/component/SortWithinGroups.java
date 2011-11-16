@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
@@ -30,16 +29,17 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.NotInitializedException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.NotInitializedException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -253,7 +253,7 @@ public class SortWithinGroups extends Node {
     /** a data record sorter used to sort the record groups */
     private ISortDataRecord dataRecordSorter = null;
     /** a data record buffer used to retrieve data records from the above sorter */
-    private ByteBuffer dataRecordBuffer = null;
+    private CloverBuffer dataRecordBuffer = null;
 
     /**
      * Constructs a new instance of the <code>SortWithinGroups</code> component.
@@ -420,15 +420,8 @@ public class SortWithinGroups extends Node {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
 
-        dataRecordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-
-        if (dataRecordBuffer == null) {
-            throw new ComponentNotReadyException("Error allocating a data record buffer! Required size: "
-                    + Defaults.Record.MAX_RECORD_SIZE);
-        }
+        dataRecordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
     }
-
-    
     
     @Override
     public void preExecute() throws ComponentNotReadyException {

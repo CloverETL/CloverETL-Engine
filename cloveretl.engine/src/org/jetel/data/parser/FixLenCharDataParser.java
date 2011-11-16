@@ -133,7 +133,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 			byteBuffer.clear();
 			if (bytes < Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) byteBuffer.limit(bytes);
 			try {
-				inChannel.read(byteBuffer);
+				inChannel.read(byteBuffer.buf());
 			} catch (IOException e) {
 				break;
 			}
@@ -274,13 +274,13 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		if (charBuffer.remaining() < recordLength + maxDelim) {	// need to get more data from channel
 			byteBuffer.compact();	// ready for writing
 			try {
-				inChannel.read(byteBuffer);	// write to buffer
+				inChannel.read(byteBuffer.buf());	// write to buffer
 				byteBuffer.flip();	// ready reading
 			} catch (IOException e) {
 				throw new JetelException(e.getMessage());
 			}
 			charBuffer.compact();	// ready for writing
-			decoder.decode(byteBuffer, charBuffer, false);
+			decoder.decode(byteBuffer.buf(), charBuffer, false);
 			charBuffer.flip();		// ready for reading
             _savedPos = 0;
 			_savedLim = charBuffer.limit();

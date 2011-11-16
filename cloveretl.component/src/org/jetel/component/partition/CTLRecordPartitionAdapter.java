@@ -31,6 +31,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Class for executing partition function written in CloverETL language
@@ -107,11 +108,24 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 		return (Integer) result;
 	}
 
-	public int getOutputPort(ByteBuffer directRecord) throws TransformException {
+	@Override
+	public int getOutputPort(CloverBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
+	@Deprecated
+	public int getOutputPort(ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}

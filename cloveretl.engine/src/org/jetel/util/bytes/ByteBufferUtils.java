@@ -55,8 +55,7 @@ public final class ByteBufferUtils {
 	 * @return The number of bytes written, possibly zero
 	 * @throws IOException
 	 */
-	public static int flush(ByteBuffer buffer, WritableByteChannel writer)
-			throws IOException {
+	public static int flush(ByteBuffer buffer, WritableByteChannel writer) throws IOException {
 		int write = 0;
 		buffer.flip();
 		write = writer.write(buffer);
@@ -92,7 +91,7 @@ public final class ByteBufferUtils {
      * @param out
      * @throws IOException
      */
-    public static void rewrite(InputStream in, OutputStream out)throws IOException{
+    public static void rewrite(InputStream in, OutputStream out) throws IOException {
     	ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
     	ReadableByteChannel reader = Channels.newChannel(in);
     	WritableByteChannel writer = Channels.newChannel(out);
@@ -139,7 +138,8 @@ public final class ByteBufferUtils {
      * @since 21.11.2006
      */
     
-    public static final void encodeLength(ByteBuffer buffer,int length){
+    public static final void encodeLength(CloverBuffer buffer,int length) {
+//    	buffer.putInt(length);
         if (length <= Byte.MAX_VALUE) {
             buffer.put((byte) length);
         } else {
@@ -160,7 +160,8 @@ public final class ByteBufferUtils {
      * @since 21.11.2006
      * @see org.jetel.util.ByteBufferUtils.encodeLength()
      */
-    public static final int decodeLength(ByteBuffer buffer){
+    public static final int decodeLength(CloverBuffer buffer) {
+//    	return buffer.getInt();
         int length=0; 
         int size;
         int offset = 0;
@@ -189,6 +190,7 @@ public final class ByteBufferUtils {
      * @since 8.12.2006
      */
     public static final int lengthEncoded(int length){
+//    	return 4;
         int count=0; 
             do {
                 count++;
@@ -200,21 +202,21 @@ public final class ByteBufferUtils {
     /**
      * Decodes the value stored in the byte buffer using the specified byte order.
      * 
-     * @param byteBuffer source buffer
+     * @param buffer source buffer
      * @param byteOrder
      * 
      * @return decoded value of the byte buffer
      */
-    public static BigInteger decodeValue(ByteBuffer byteBuffer, ByteOrder byteOrder) {
-    	byte[] bytes = new byte[byteBuffer.remaining()];
+    public static BigInteger decodeValue(CloverBuffer buffer, ByteOrder byteOrder) {
+    	byte[] bytes = new byte[buffer.remaining()];
 		if (byteOrder == ByteOrder.BIG_ENDIAN) {
 			 // no backing array, read all the remaining bytes
-			byteBuffer.get(bytes);
+			buffer.get(bytes);
 		} else {
 			// read the bytes backwards
-			int lastPosition = byteBuffer.limit() - 1;
+			int lastPosition = buffer.limit() - 1;
 			for(int i = 0; i < bytes.length; i++) {
-				bytes[i] = byteBuffer.get(lastPosition - i);
+				bytes[i] = buffer.get(lastPosition - i);
 			}
 		}
     	
@@ -222,10 +224,10 @@ public final class ByteBufferUtils {
     }
     
     /**
-     * Convenience method, see {@link #encodeValue(ByteBuffer, BigInteger, ByteOrder, int)}. 
+     * Convenience method, see {@link #encodeValue(CloverBuffer, BigInteger, ByteOrder, int)}. 
      */
-    public static int encodeValue(ByteBuffer byteBuffer, long value, ByteOrder byteOrder, int minLength) {
-    	return encodeValue(byteBuffer, BigInteger.valueOf(value), byteOrder, minLength);
+    public static int encodeValue(CloverBuffer buffer, long value, ByteOrder byteOrder, int minLength) {
+    	return encodeValue(buffer, BigInteger.valueOf(value), byteOrder, minLength);
     }
     
     /**
@@ -233,14 +235,14 @@ public final class ByteBufferUtils {
      * <code>minLength</code> can be used to specify padding, otherwise set it to 0.
      * No check for maximum length is performed. 
      * 
-     * @param byteBuffer target buffer
+     * @param buffer target buffer
      * @param value the value to convert to bytes
      * @param byteOrder {@link ByteOrder#BIG_ENDIAN} or {@link ByteOrder#LITTLE_ENDIAN}
      * @param minLength minimum length, used for padding 
      * 
      * @return number of bytes encoding the value
      */
-    public static int encodeValue(ByteBuffer byteBuffer, BigInteger value, ByteOrder byteOrder, int minLength) {
+    public static int encodeValue(CloverBuffer buffer, BigInteger value, ByteOrder byteOrder, int minLength) {
     	byte[] bytes = value.toByteArray();
     	
     	byte paddingByte = (value.signum() < 0) ? (byte) 0xFF : 0x00;
@@ -248,18 +250,18 @@ public final class ByteBufferUtils {
     	if (byteOrder == ByteOrder.BIG_ENDIAN) {
     		// padding bits first
     		for (int i = bytes.length; i < minLength; i++) {
-    			byteBuffer.put(paddingByte);
+    			buffer.put(paddingByte);
     		}
     		// then value bits
-    		byteBuffer.put(bytes);
+    		buffer.put(bytes);
     	} else {
     		// value bits first 
     		for (int i = bytes.length - 1; i >= 0; i--) {
-    			byteBuffer.put(bytes[i]);
+    			buffer.put(bytes[i]);
     		}
     		// then padding bits
     		for (int i = bytes.length; i < minLength; i++) {
-    			byteBuffer.put(paddingByte);
+    			buffer.put(paddingByte);
     		}
     	}
     	

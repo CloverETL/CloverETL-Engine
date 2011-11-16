@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
 
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 
 
@@ -59,9 +60,9 @@ public interface Decimal extends Numeric {
 	
 	public boolean isNaN();
 	
-	public void serialize(ByteBuffer byteBuffer);
+	public void serialize(CloverBuffer byteBuffer);
 	
-	public void deserialize(ByteBuffer byteBuffer);
+	public void deserialize(CloverBuffer byteBuffer);
 	
 	public int getSizeSerialized();
 	

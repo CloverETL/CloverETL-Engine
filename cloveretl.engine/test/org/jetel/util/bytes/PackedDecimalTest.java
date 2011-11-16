@@ -52,7 +52,7 @@ public class PackedDecimalTest extends CloverTestCase {
 	 * @param expected
 	 */
 	private void checkPutPackedDecimal(BigInteger value, byte[] expected) {
-		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		CloverBuffer dataBuffer = CloverBuffer.allocate(expected.length);
 		PackedDecimal.putPackedDecimal(dataBuffer, value, expected.length);
 		assertTrue(Arrays.equals(expected, dataBuffer.array()));
 	}

@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
@@ -41,11 +40,11 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -56,6 +55,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.AproximativeJoinKey;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -257,7 +257,7 @@ public class AproxMergeJoin extends Node {
 
 	private double conformityLimit;
 	
-	private ByteBuffer dataBuffer;
+	private CloverBuffer dataBuffer;
 	private FileRecordBuffer recordBuffer;
 
 	// for passing data records into transform function
@@ -840,7 +840,7 @@ public class AproxMergeJoin extends Node {
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 	}
 	
 	/**
@@ -1173,7 +1173,7 @@ public class AproxMergeJoin extends Node {
      		
     		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
     		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
-    		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+    		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
         	
 			if (errorActionsString != null) {
 				ErrorAction.checkActions(errorActionsString);

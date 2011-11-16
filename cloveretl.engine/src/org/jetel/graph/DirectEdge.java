@@ -20,12 +20,12 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
@@ -40,21 +40,16 @@ import org.jetel.util.bytes.ByteBufferUtils;
  */
 public class DirectEdge extends EdgeBase {
 
-	
-	private ByteBuffer readBuffer;
-	private ByteBuffer writeBuffer;
-	private ByteBuffer tmpDataRecord;
+	private CloverBuffer readBuffer;
+	private CloverBuffer writeBuffer;
+	private CloverBuffer tmpDataRecord;
 	private int recordCounter;
     private long byteCounter;
     private AtomicInteger bufferedRecords; 
 	private volatile boolean isClosed;
     private boolean readerWait;
     private volatile boolean writerWait;
-	
 	private int readBufferLimit;
-
-	// Attributes
-	
 
 	private final static int EOF=Integer.MAX_VALUE;
 
@@ -69,48 +64,55 @@ public class DirectEdge extends EdgeBase {
 		super(proxy);
 		
 	}
-
-
 	
+	@Override
 	public int getOutputRecordCounter() {
 		return recordCounter;
 	}
 
-    public int getInputRecordCounter() {
+    @Override
+	public int getInputRecordCounter() {
         return recordCounter;
     }
 
 
-    public long getOutputByteCounter(){
+    @Override
+	public long getOutputByteCounter(){
         return byteCounter; 
     }
 
-    public long getInputByteCounter(){
+    @Override
+	public long getInputByteCounter(){
         return byteCounter; 
     }
 
-    public int getBufferedRecords(){
+    @Override
+	public int getBufferedRecords(){
         return bufferedRecords.get();
     }
-	
 
-
+    @Override
+    public int getUsedMemory() {
+    	return writeBuffer.capacity() + readBuffer.capacity() + tmpDataRecord.capacity();
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
 	 * @exception  IOException  Description of Exception
 	 * @since                   April 2, 2002
 	 */
+	@Override
 	public void init() throws IOException {
 		// initialize & open the data pipe
 		// we are ready to supply data
-		readBuffer= ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
-		writeBuffer=ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
+		readBuffer = CloverBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
+		writeBuffer = CloverBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		recordCounter = 0;
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
-		tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		isClosed=false;
 	    readerWait=false;
 	    writerWait=false;
@@ -141,21 +143,21 @@ public class DirectEdge extends EdgeBase {
 	 * @since                            April 2, 2002
 	 */
 
+	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-	    
-	    if (!readBuffer.hasRemaining()){
-	        if (!fillReadBuffer()){
+	    if (!readBuffer.hasRemaining()) {
+	        if (!fillReadBuffer()) {
 	            return null;
 	        }
 	    }
-	    try{
+	    try {
 	        // create the record/read it from buffer
 	        if (ByteBufferUtils.decodeLength(readBuffer) == EOF) {
 	            isClosed=true;
 	            return null; // EOF
 	        }
 	        record.deserialize(readBuffer);
-	    }catch(BufferUnderflowException ex){
+	    } catch(BufferUnderflowException ex) {
 	        throw new IOException("BufferUnderflow when reading/deserializing record. It can be caused by different metadata.");
 	    }
         bufferedRecords.decrementAndGet();
@@ -173,7 +175,8 @@ public class DirectEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	@Override
+	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 	    
 	    if (!readBuffer.hasRemaining()){
 	        if (!fillReadBuffer()){
@@ -226,8 +229,8 @@ public class DirectEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
-	public void writeRecord(DataRecord record) throws IOException,
-            InterruptedException {
+	@Override
+	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
 
         tmpDataRecord.clear();
         try {
@@ -240,7 +243,9 @@ public class DirectEdge extends EdgeBase {
         tmpDataRecord.flip();
         int length = tmpDataRecord.remaining();
 
-        if ((length + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining()) {
+        if ((length + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining() && writeBuffer.position() > 0) {
+        	//write buffer is flushed only if serialized record does not fit into write buffer and at least a record is already written
+        	//write buffer is not flushed if is empty (even if the written record does not fit into write buffer) - dynamicity of write buffer is used 
             flushWriteBuffer();
         }
         try {
@@ -267,11 +272,13 @@ public class DirectEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public void writeRecordDirect(ByteBuffer record) throws IOException,
-            InterruptedException {
+	@Override
+	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
         int dataLength = record.remaining();
 
-        if ((dataLength + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining()) {
+        if ((dataLength + ByteBufferUtils.SIZEOF_INT) > writeBuffer.remaining() && writeBuffer.position() > 0) {
+        	//write buffer is flushed only if serialized record does not fit into write buffer and at least a record is already written
+        	//write buffer is not flushed if is empty (even if the written record does not fit into write buffer) - dynamicity of write buffer is used 
             flushWriteBuffer();
         }
 
@@ -287,7 +294,6 @@ public class DirectEdge extends EdgeBase {
         byteCounter += dataLength;
         recordCounter++;
         bufferedRecords.incrementAndGet();
-
     }
 
 	private synchronized void flushWriteBuffer() throws InterruptedException{
@@ -304,7 +310,7 @@ public class DirectEdge extends EdgeBase {
 	}
 	
 	private final void switchBuffers(){
-	    ByteBuffer tmp;
+		CloverBuffer tmp;
 	    tmp=readBuffer;
 	    readBuffer=writeBuffer;
 	    writeBuffer=tmp;
@@ -312,22 +318,6 @@ public class DirectEdge extends EdgeBase {
 	    readBuffer.flip();
 	    readBufferLimit=readBuffer.limit(); // save readRecord limit
 	}
-
-//	/**
-//	 *  Description of the Method
-//	 *
-//	 * @since    April 2, 2002
-//	 */
-//	public void open() {
-//		isClosed=false;
-//		readBuffer.clear();
-//		readBuffer.flip();
-//		writeBuffer.clear();
-//        bufferedRecords.set(0);
-//        recordCounter=0;
-//        byteCounter=0;
-//	}
-
 
 	/**
 	 *  Description of the Method

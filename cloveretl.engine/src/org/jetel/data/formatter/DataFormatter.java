@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -35,6 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 
 /**
@@ -46,8 +46,8 @@ import org.jetel.util.string.QuotingDecoder;
  */
 public class DataFormatter implements Formatter {
 	private String charSet = null;
-	private ByteBuffer fieldBuffer;
-	private ByteBuffer fieldFiller;
+	private CloverBuffer fieldBuffer;
+	private CloverBuffer fieldFiller;
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
@@ -56,11 +56,11 @@ public class DataFormatter implements Formatter {
 	private int[] delimiterLength;
 	private int[] fieldLengths;
 	private boolean[] quotedFields;
-	private ByteBuffer dataBuffer;
+	private CloverBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
-	private ByteBuffer footer; 
-	private ByteBuffer header; 
+	private CloverBuffer footer; 
+	private CloverBuffer header; 
 	private boolean quotedStrings;
 	
 	private String[] excludedFieldNames;
@@ -76,15 +76,15 @@ public class DataFormatter implements Formatter {
 	// Operations
 	
 	public DataFormatter(){
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		metadata = null;
 	}
 	
 	public DataFormatter(String charEncoder){
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
 		charSet = charEncoder;
 		metadata = null;
 	}
@@ -202,7 +202,7 @@ public class DataFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		dataBuffer.flip();
-		writer.write(dataBuffer);
+		writer.write(dataBuffer.buf());
 		dataBuffer.clear();
 	}
 
@@ -280,11 +280,11 @@ public class DataFormatter implements Formatter {
 	 */
 	private void initFieldFiller() {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
+		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
 		Arrays.fill(fillerArray, DEFAULT_FILLER_CHAR);
 
 		try {
-			fieldFiller = encoder.encode(CharBuffer.wrap(fillerArray));
+			fieldFiller = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed initialization of FIELD_FILLER buffer :" + ex);
 		}
@@ -293,7 +293,7 @@ public class DataFormatter implements Formatter {
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
-				footer = ByteBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
+				footer = CloverBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}
@@ -309,7 +309,7 @@ public class DataFormatter implements Formatter {
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {
-				header = ByteBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
+				header = CloverBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}

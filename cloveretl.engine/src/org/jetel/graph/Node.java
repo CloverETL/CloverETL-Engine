@@ -46,6 +46,7 @@ import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -806,8 +807,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@exception  InterruptedException  Description of Exception
 	 *@since                            August 13, 2002
 	 */
-    public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
+    public void writeRecordBroadcastDirect(CloverBuffer recordBuffer) throws IOException, InterruptedException {
         for(int i=0;i<outPortsSize;i++){
+            ((OutputPortDirect) outPortsArray[i]).writeRecordDirect(recordBuffer);
+            recordBuffer.rewind();
+        }
+    }
+
+    /**
+     * @deprecated use {@link #writeRecordBroadcastDirect(CloverBuffer)} instead
+     */
+    @Deprecated
+    public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
+        for(int i = 0; i < outPortsSize; i++) {
             ((OutputPortDirect) outPortsArray[i]).writeRecordDirect(recordBuffer);
             recordBuffer.rewind();
         }

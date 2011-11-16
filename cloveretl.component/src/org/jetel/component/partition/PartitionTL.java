@@ -34,6 +34,7 @@ import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Class for executing partition function written in CloverETL language
@@ -120,12 +121,24 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 	}
 
 	@Override
+	@Deprecated
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
+	public int getOutputPort(CloverBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 
