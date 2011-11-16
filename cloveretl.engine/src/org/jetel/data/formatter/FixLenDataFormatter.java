@@ -85,7 +85,7 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	public FixLenDataFormatter() {
 		writer = null;
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 	}
 
@@ -99,7 +99,7 @@ public class FixLenDataFormatter implements Formatter {
 	public FixLenDataFormatter(String charEncoder) {
 		writer = null;
 		charSet = charEncoder;
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
 	}
 
 

@@ -54,7 +54,7 @@ public class RingRecordBuffer {
 	 * @param recordBufferSize maximum number of records stored in the buffer at once
 	 */
 	public RingRecordBuffer(int recordBufferSize) {
-		this(recordBufferSize, Defaults.Graph.RECORDS_BUFFER_SIZE);
+		this(recordBufferSize, Defaults.Record.RECORDS_BUFFER_SIZE);
 	}
 	
 	/**

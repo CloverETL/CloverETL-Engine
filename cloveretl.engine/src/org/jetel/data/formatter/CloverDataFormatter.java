@@ -108,7 +108,7 @@ public class CloverDataFormatter implements Formatter {
 	 */
 	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-        buffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
  	}
 
     /* (non-Javadoc)
