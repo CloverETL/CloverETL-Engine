@@ -850,7 +850,8 @@ public class OracleDataWriter extends BulkLoader {
 			if (dbFields != null) {
 				ret.append(dbFields[i]);
 			} else {
-				ret.append(fields[i].getName());
+				String fieldLabel = fields[i].getLabelOrName(); 
+				ret.append("\"" + fieldLabel + "\"");
 			}
 			if (fields[i].getType() == DataFieldMetadata.DATE_FIELD) {
 				if (fields[i].isDateFormat() && !fields[i].isTimeFormat()) {
