@@ -75,7 +75,7 @@ public abstract class ExternalPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 		serializer = new EntrySerializer();
 		recordKeyComparator = new RecordKeyComparator();
 	}

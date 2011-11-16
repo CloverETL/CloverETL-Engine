@@ -259,7 +259,7 @@ public class Partition extends Node {
 			OutputPortDirect[] outPorts) throws Exception {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		CloverBuffer inRecordDirect = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		CloverBuffer inRecordDirect = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 
 		while (runIt) {
 			if (!inPort.readRecordDirect(inRecordDirect)) {
@@ -295,7 +295,7 @@ public class Partition extends Node {
 	}
 
 	private void executeDirect(InputPortDirect inPort, OutputPortDirect[] outPorts) throws Exception {
-		CloverBuffer inRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		CloverBuffer inRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 
 		while (runIt) {
 			if (!inPort.readRecordDirect(inRecord)) {

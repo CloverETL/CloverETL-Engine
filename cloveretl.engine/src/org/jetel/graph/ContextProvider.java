@@ -68,12 +68,15 @@ public class ContextProvider {
 	public static synchronized Node getNode() {
     	Node node = nodesCache.get(Thread.currentThread());
     	if (node == null) {
-			logger.warn("ContextProvider was not able to provide requested node. Current thread is not registered.");
+			logger.debug("ContextProvider was not able to provide requested node. Current thread is not registered.");
     	}
     	return node;
     }
 
 	public static synchronized void registerNode(Node node) {
+		if (nodesCache.containsKey(node)) {
+			logger.warn("Attempt to unregister non-registered thread in the ContextProvider.");
+		}
 		nodesCache.put(Thread.currentThread(), node);
 	}
 

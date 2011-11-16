@@ -18,9 +18,11 @@
  */
 package org.jetel.util.bytes;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ReadOnlyBufferException;
 
+import org.jetel.data.Defaults;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -33,6 +35,13 @@ import org.jetel.test.CloverTestCase;
  */
 public class CloverBufferTest extends CloverTestCase {
 
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		initEngine();
+	}
+	
     public void testNormalizeCapacity() {
         // A few sanity checks
         assertEquals(Integer.MAX_VALUE, CloverBufferImpl.normalizeCapacity(-10));
@@ -300,6 +309,52 @@ public class CloverBufferTest extends CloverTestCase {
             // Expected an Exception, signifies test success
             assertTrue(true);
         }
+    }
+    
+    public void testMaximumCapacity() {
+    	try {
+    		CloverBuffer.allocate(1, 2);
+    		assert false;
+    	} catch (IllegalArgumentException e) {
+    		//that is correct
+    	}
+
+    	try {
+    		CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.INITIAL_RECORD_SIZE - 1);
+    		assert false;
+    	} catch (IllegalArgumentException e) {
+    		//that is correct
+    	}
+
+    	CloverBuffer.allocate(1, 1);
+    	
+		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+    	
+    	for (int i = 0; i < Defaults.Record.MAX_RECORD_SIZE; i++) {
+        	buffer.put((byte) 0);
+    	}
+    	
+    	try {
+    		buffer.put((byte) 0);
+    		assert false;
+    	} catch (BufferOverflowException e) {
+    		//that is correct
+    	}
+    	
+    	buffer.clear();
+    	buffer.limit(100);
+    	buffer.shrink();
+
+    	for (int i = 0; i < Defaults.Record.MAX_RECORD_SIZE; i++) {
+        	buffer.put((byte) 0);
+    	}
+    	
+    	try {
+    		buffer.put((byte) 0);
+    		assert false;
+    	} catch (BufferOverflowException e) {
+    		//that is correct
+    	}
     }
 
 }

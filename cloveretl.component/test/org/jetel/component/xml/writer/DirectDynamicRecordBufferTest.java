@@ -47,7 +47,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
 		buffer.init();
 		
-		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 		
 		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();

@@ -385,7 +385,7 @@ public class AggregateFunctionOld implements Iterator {
         MyLong myLong;
 		CRC32 crc32 = new CRC32();
         MessageDigest md5;
-        CloverBuffer dataBuffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        CloverBuffer dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.MAX_FIELD_SIZE);
         
 		/**
 		 *Constructor for the FilterItem object

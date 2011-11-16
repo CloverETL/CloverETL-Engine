@@ -76,15 +76,15 @@ public class DataFormatter implements Formatter {
 	// Operations
 	
 	public DataFormatter(){
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.MAX_FIELD_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		metadata = null;
 	}
 	
 	public DataFormatter(String charEncoder){
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.MAX_FIELD_SIZE);
 		charSet = charEncoder;
 		metadata = null;
 	}

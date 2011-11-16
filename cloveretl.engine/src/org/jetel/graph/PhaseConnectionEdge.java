@@ -78,7 +78,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		}else{
 		    dataTape = new DataRecordTape();
 		}
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 		isReadMode=false;
 		wasInitialized = false;
 		isEmpty = false;

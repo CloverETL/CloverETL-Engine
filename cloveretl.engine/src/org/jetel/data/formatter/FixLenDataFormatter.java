@@ -85,7 +85,7 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	public FixLenDataFormatter() {
 		writer = null;
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 	}
 
@@ -99,7 +99,7 @@ public class FixLenDataFormatter implements Formatter {
 	public FixLenDataFormatter(String charEncoder) {
 		writer = null;
 		charSet = charEncoder;
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
 	}
 
 
@@ -193,7 +193,7 @@ public class FixLenDataFormatter implements Formatter {
         }
 		recordLength = metadata.getRecordSize() > 0 ? metadata.getRecordSize() : metadata.getRecordSizeStripAutoFilling(); 
 
-		if (dataBuffer.capacity() < recordLength + (isRecordDelimiter ? recordDelimiter.length : 0)) {
+		if (recordLength + (isRecordDelimiter ? recordDelimiter.length : 0) > Defaults.Record.MAX_RECORD_SIZE) {
 			throw new RuntimeException("Output buffer too small to hold data record " + metadata.getName());			
 		}
 

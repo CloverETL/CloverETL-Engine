@@ -113,8 +113,8 @@ public class StructureFormatter implements Formatter {
 		encoder.reset();
 
 		// create buffered output stream writer and buffers 
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.MAX_FIELD_SIZE);
 		//if mask is not given create default mask
 		if (mask == null) {
 			mask = createDefaultMask(metadata);

@@ -592,6 +592,8 @@ s    	 */
 
 	public final static class Graph {
 		public static void init() {
+			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
+					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 			DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE",
 					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 			BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE",
@@ -601,8 +603,14 @@ s    	 */
 		}
 
 		/**
+		 * Size of internal buffer for temporary storing several data records.
+		 * Size should be at least INITIAL_RECORD_SIZE, better several times bigger
+		 */
+		public static int RECORDS_BUFFER_SIZE;
+
+		/**
 		 * Size of internal buffer of DirectEdge for storing data records when transmitted between two components. The
-		 * size should be at least MAX_RECORD_SIZE + 8, better several times bigger
+		 * size should be at least INITIAL_RECORD_SIZE + 8, better several times bigger
 		 */
 		public static int DIRECT_EDGE_INTERNAL_BUFFER_SIZE;
 
@@ -610,7 +618,7 @@ s    	 */
 		 * Size of internal buffer of BufferedEdge for storing/caching data records. BufferedEdge is used when engine
 		 * needs to compensate fact that component reads data from two different ports and there might be some
 		 * interdependencies between the source data flows. The size should be at least
-		 * Defaults.Record.MAX_RECORD_SIZE*10, better several times bigger - 128kB or more
+		 * Defaults.Record.INITIAL_RECORD_SIZE*10, better several times bigger - 128kB or more
 		 */
 		public static int BUFFERED_EDGE_INTERNAL_BUFFER_SIZE;
 
