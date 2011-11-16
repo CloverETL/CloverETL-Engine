@@ -102,10 +102,10 @@ public class DynamicRecordBuffer {
     public void init() {
         obsoleteTempFiles = new LinkedList<DynamicRecordBuffer.TempFile>();
         isClosed = false;
-		initialBufferSize = Math.max(initialBufferSize, Defaults.Record.INITIAL_RECORD_SIZE);
+		initialBufferSize = Math.max(initialBufferSize, Defaults.Graph.RECORDS_BUFFER_SIZE);
         readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
-        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
         awaitingData = false;
         bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();

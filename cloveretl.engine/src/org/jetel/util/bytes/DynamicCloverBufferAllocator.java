@@ -41,8 +41,19 @@ public class DynamicCloverBufferAllocator implements CloverBufferAllocator {
 	}
 
 	@Override
+	public CloverBuffer allocate(int capacity, int maximumCapacity, boolean direct) {
+		ByteBuffer innerBuffer = direct ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
+		return new DynamicCloverBuffer(innerBuffer, maximumCapacity);
+	}
+
+	@Override
 	public CloverBuffer wrap(ByteBuffer innerBuffer) {
 		return new DynamicCloverBuffer(innerBuffer);
+	}
+	
+	@Override
+	public CloverBuffer wrap(ByteBuffer innerBuffer, int maximumCapacity) {
+		return new DynamicCloverBuffer(innerBuffer, maximumCapacity);
 	}
 
 }

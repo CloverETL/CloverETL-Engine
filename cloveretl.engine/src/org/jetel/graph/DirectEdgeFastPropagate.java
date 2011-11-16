@@ -98,8 +98,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
 	public void init() throws IOException {
         // initialize & open the data pipe
         // we are ready to supply data
-        recordsBuffer = new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS, 
-                                            Defaults.Record.INITIAL_RECORD_SIZE);
+        recordsBuffer = new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS);
         recordCounter = 0;
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
@@ -277,14 +276,14 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          * @param  bufferSize  size of 1 internal buffer - should be similar to org.jetel.data.Defaults.Record.MAX_RECORD_SIZE
          * @since              June 5, 2002
          */
-        EdgeRecordBufferPool(int numBuffers, int bufferSize) {
+        EdgeRecordBufferPool(int numBuffers) {
             size= numBuffers > MIN_NUM_BUFFERS ? numBuffers : MIN_NUM_BUFFERS;
             // create/allocate  buffers
             buffers = new CloverBuffer[size];
             readPointer=0;
             writePointer=0;
             for (int i = 0; i < size; i++) {
-                buffers[i] = CloverBuffer.allocateDirect(bufferSize);
+                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
                 if (buffers[i] == null) {
                     throw new RuntimeException("Failed buffer allocation");
                 }

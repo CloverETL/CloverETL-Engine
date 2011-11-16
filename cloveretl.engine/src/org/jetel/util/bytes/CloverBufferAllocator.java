@@ -37,6 +37,10 @@ public interface CloverBufferAllocator {
 
 	public CloverBuffer allocate(int capacity, boolean direct);
 
+	public CloverBuffer allocate(int capacity, int maximumCapacity, boolean direct);
+
     public CloverBuffer wrap(ByteBuffer innerBuffer);
+
+    public CloverBuffer wrap(ByteBuffer innerBuffer, int maximumCapacity);
 
 }

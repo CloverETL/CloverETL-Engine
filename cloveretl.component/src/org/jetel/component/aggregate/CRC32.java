@@ -40,7 +40,7 @@ public class CRC32 extends AggregateFunction {
 	
 	private int loopCount = 0;
 	private java.util.zip.CRC32 crc32;
-	CloverBuffer dataBuffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+	CloverBuffer dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.MAX_FIELD_SIZE);
 	private CharsetEncoder encoder;
 
 	// Is input nullable?

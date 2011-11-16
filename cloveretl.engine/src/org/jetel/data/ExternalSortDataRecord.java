@@ -119,7 +119,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			sorter.setCaseSensitive(caseSensitive);
 		}
 		
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 	}
 
 	@Override

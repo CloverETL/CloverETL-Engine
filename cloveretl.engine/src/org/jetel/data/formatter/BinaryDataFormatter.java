@@ -29,6 +29,7 @@ import java.nio.channels.WritableByteChannel;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -95,7 +96,7 @@ public class BinaryDataFormatter implements Formatter {
 	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = useDirectBuffers ? CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) : CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		buffer = CloverBuffer.allocate(Defaults.Graph.RECORDS_BUFFER_SIZE, useDirectBuffers);
  	}
 
 	public DataRecordMetadata getMetadata() {
@@ -113,8 +114,7 @@ public class BinaryDataFormatter implements Formatter {
 			try {
 				writer = Channels.newChannel(new FileOutputStream((File) outputDataTarget));
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new JetelRuntimeException(e);
 			}
 		} else if (outputDataTarget instanceof OutputStream) {
 			writer = Channels.newChannel((OutputStream)outputDataTarget);

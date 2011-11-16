@@ -79,12 +79,32 @@ public abstract class CloverBuffer {
 	}
 
 	/**
+	 * Allocates new clover buffer with given capacity. Buffer is not direct by default.
+	 * @param capacity initial capacity of allocated buffer
+	 * @param maximumCapacity the limit for inner buffer capacity, buffer expansion is limited
+	 * @return allocated clover buffer instance
+	 */
+	public static CloverBuffer allocate(int capacity, int maximumCapacity) {
+		return allocator.allocate(capacity, maximumCapacity, DEFAULT_DIRECT);
+	}
+
+	/**
 	 * Allocates new direct clover buffer with given capacity.
 	 * @param capacity initial capacity of allocated buffer
 	 * @return allocated clover buffer instance
 	 */
 	public static CloverBuffer allocateDirect(int capacity) {
 		return allocator.allocate(capacity, true);
+	}
+
+	/**
+	 * Allocates new direct clover buffer with given capacity.
+	 * @param capacity initial capacity of allocated buffer
+	 * @param maximumCapacity the limit for inner buffer capacity, buffer expansion is limited
+	 * @return allocated clover buffer instance
+	 */
+	public static CloverBuffer allocateDirect(int capacity, int maximumCapacity) {
+		return allocator.allocate(capacity, maximumCapacity, true);
 	}
 
 	/**
@@ -96,7 +116,18 @@ public abstract class CloverBuffer {
 	public static CloverBuffer allocate(int capacity, boolean direct) {
 		return allocator.allocate(capacity, direct);
 	}
-	
+
+	/**
+	 * Allocates new clover buffer with given capacity.
+	 * @param capacity initial capacity of allocated buffer
+	 * @param maximumCapacity the limit for inner buffer capacity, buffer expansion is limited
+	 * @param direct true if underlying buffer is direct
+	 * @return allocated clover buffer instance
+	 */
+	public static CloverBuffer allocate(int capacity, int maximumCapacity, boolean direct) {
+		return allocator.allocate(capacity, maximumCapacity, direct);
+	}
+
     /**
      * Wraps the specified NIO {@link ByteBuffer} into CloverBuffer buffer.
      */

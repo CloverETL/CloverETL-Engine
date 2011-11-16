@@ -420,7 +420,7 @@ public class SortWithinGroups extends Node {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
 
-        dataRecordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+        dataRecordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
     }
     
     @Override

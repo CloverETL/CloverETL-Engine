@@ -175,7 +175,7 @@ public class CloverDataParser implements Parser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        recordBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc)

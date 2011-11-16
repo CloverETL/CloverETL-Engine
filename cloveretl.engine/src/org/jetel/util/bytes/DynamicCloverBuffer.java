@@ -61,8 +61,11 @@ public class DynamicCloverBuffer extends CloverBuffer {
     /** Tells if a buffer can be expanded */
     private boolean recapacityAllowed = true;
 
-    /** The minimum number of bytes the IoBuffer can hold */
+    /** The minimum number of bytes the CloverBuffer can hold */
     private int minimumCapacity;
+
+    /** The maximum number of bytes the CloverBuffer can hold */
+    private int maximumCapacity = Integer.MAX_VALUE;
 
     /**
      * We don't have any access to Buffer.markValue(), so we need to track it down,
@@ -90,6 +93,25 @@ public class DynamicCloverBuffer extends CloverBuffer {
     }
 
     /**
+     * Basic constructor. Simple growable wrapper of ByteBuffer is created.
+     * @param buf
+     * @param maximumCapacity the limit for inner buffer capacity, buffer expansion is limited
+     */
+    protected DynamicCloverBuffer(ByteBuffer buf, int maximumCapacity) {
+        this.buf = buf;
+        this.recapacityAllowed = true;
+        this.derived = false;
+        this.minimumCapacity = buf.capacity();
+        this.maximumCapacity = maximumCapacity;
+
+        if (this.minimumCapacity > this.maximumCapacity) {
+        	throw new IllegalArgumentException("maximumCapacity cannot be smaller then minimumCapacity");
+        }
+
+    	memoryAllocated(capacity());
+    }
+
+    /**
      * Constructor for non-growing views to the given buffer
      * @param parent
      * @param buf
@@ -111,7 +133,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
     /**
      * Sets the underlying NIO buffer instance.
      * 
-     * @param newBuf The buffer to store within this IoBuffer
+     * @param newBuf The buffer to store within this CloverBuffer
      */
     private void buf(ByteBuffer buf) {
         this.buf = buf;
@@ -1246,4 +1268,12 @@ public class DynamicCloverBuffer extends CloverBuffer {
         }
     }
 
+    @Override
+	protected ByteBuffer allocateByteBuffer(int requestedCapacity, boolean direct) {
+    	if (requestedCapacity > maximumCapacity) {
+    		throw new BufferOverflowException();
+    	}
+    	return super.allocateByteBuffer(requestedCapacity, direct);
+    }
+    
 }
