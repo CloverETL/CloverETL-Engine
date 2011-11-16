@@ -30,6 +30,7 @@ import java.util.Arrays;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.Compare;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -367,7 +368,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  buffer  Description of Parameter
 	 *@since          October 29, 2002
 	 */
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
         try {
             if(isNull) {
     			// encode nulls as zero
@@ -389,7 +390,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  buffer  Description of Parameter
 	 *@since          October 29, 2002
 	 */
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		// encoded length is incremented by one, decrement it back to normal
 		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
 

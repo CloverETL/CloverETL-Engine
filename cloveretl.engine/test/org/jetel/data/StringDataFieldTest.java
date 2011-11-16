@@ -19,11 +19,10 @@
 
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author maciorowski
@@ -162,7 +161,7 @@ public void test_1_StringDataField() {
 	 */
 	
 	public void test_serialize() {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(100);
 		
 		aStringDataField1.setValue("adasdad");
 		aStringDataField1.serialize(buffer);

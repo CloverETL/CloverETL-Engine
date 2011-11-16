@@ -19,7 +19,6 @@
 
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -27,6 +26,7 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatterFactory;
 
 /**
@@ -229,7 +229,7 @@ public void test_1_DateDataField() {
 	 */
 	
 	public void test_serialize() {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(100);
 		
 		Calendar calendar = new GregorianCalendar(2003,4,10);
 		Date trialTime1 = null;

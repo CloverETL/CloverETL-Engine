@@ -37,7 +37,7 @@ public class RestrictedByteArrayOutputStream extends ByteArrayOutputStream {
 	 * Creates ByteBufferOutputStream.
 	 */
 	public RestrictedByteArrayOutputStream() {
-		super(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		super(Defaults.Record.INITIAL_FIELD_SIZE);
 	}
 	
 	/**

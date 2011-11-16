@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -47,6 +46,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -259,7 +259,7 @@ public class Partition extends Node {
 			OutputPortDirect[] outPorts) throws Exception {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		ByteBuffer inRecordDirect = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer inRecordDirect = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 
 		while (runIt) {
 			if (!inPort.readRecordDirect(inRecordDirect)) {
@@ -295,7 +295,7 @@ public class Partition extends Node {
 	}
 
 	private void executeDirect(InputPortDirect inPort, OutputPortDirect[] outPorts) throws Exception {
-		ByteBuffer inRecord = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer inRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 
 		while (runIt) {
 			if (!inPort.readRecordDirect(inRecord)) {

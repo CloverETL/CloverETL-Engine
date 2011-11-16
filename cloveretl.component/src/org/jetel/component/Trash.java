@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -40,6 +39,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.MultiFileWriter;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.bytes.LogOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileURLParser;
@@ -462,7 +462,7 @@ public class Trash extends Node {
 
 		public void run() {
 			DataRecord record = new DataRecord(inPort.getMetadata());
-			ByteBuffer recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 			if (mode.equals(Mode.VALIDATE_RECORDS)) {
 				record.init();
 			}

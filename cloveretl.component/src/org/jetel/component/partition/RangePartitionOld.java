@@ -28,6 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Partition algorithm which compares current key value with set of
@@ -125,12 +126,25 @@ public class RangePartitionOld implements PartitionFunction{
     	return null;
     }
     
+	@Override
+	@Deprecated
 	public int getOutputPort(ByteBuffer directRecord) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
+	public int getOutputPort(CloverBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) throws TransformException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -20,7 +20,6 @@ package org.jetel.data.formatter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -35,6 +34,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -59,14 +59,14 @@ public class StructureFormatter implements Formatter {
 	private int index;
 	private int lastIndex;
 	private int fieldIndex;
-	private ByteBuffer fieldBuffer; 
-	private ByteBuffer dataBuffer;
+	private CloverBuffer fieldBuffer; 
+	private CloverBuffer dataBuffer;
 	private CharsetEncoder encoder;
 	private String charSet = null;
 	private String sFooter; 
 	private String sHeader; 
-	private ByteBuffer footer; 
-	private ByteBuffer header; 
+	private CloverBuffer footer; 
+	private CloverBuffer header; 
 	
 
 	/**
@@ -107,15 +107,14 @@ public class StructureFormatter implements Formatter {
 		return maskBuilder.toString();
 	}
 
-	public void init(DataRecordMetadata _metadata)
-			throws ComponentNotReadyException {
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		encoder = Charset.forName(charSet).newEncoder();
 		encoder.reset();
 
 		// create buffered output stream writer and buffers 
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
 		//if mask is not given create default mask
 		if (mask == null) {
 			mask = createDefaultMask(metadata);
@@ -250,7 +249,7 @@ public class StructureFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		ByteBufferUtils.flush(dataBuffer,writer);
+		ByteBufferUtils.flush(dataBuffer.buf(), writer);
 	}
 
 	public void setMask(String mask) {
@@ -284,7 +283,7 @@ public class StructureFormatter implements Formatter {
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
-				footer = ByteBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
+				footer = CloverBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}
@@ -300,7 +299,7 @@ public class StructureFormatter implements Formatter {
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {
-				header = ByteBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
+				header = CloverBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}

@@ -19,13 +19,14 @@
 package org.jetel.data;
 
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.text.RuleBasedCollator;
 
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.Compare;
 
 /**
@@ -45,7 +46,7 @@ public class StringDataField extends DataField implements CharSequence{
 	
 	private static final long serialVersionUID = 6350085938993427855L;
 	
-	private StringBuilder value;
+	private CloverString value;
 	private StringFormat stringFormat = null;
 	
 	/**
@@ -76,9 +77,9 @@ public class StringDataField extends DataField implements CharSequence{
     public StringDataField(DataFieldMetadata _metadata,boolean plain) {
         super(_metadata);
         if (_metadata.getSize() < 1) {
-            value = new StringBuilder(INITIAL_STRING_BUFFER_CAPACITY);
+            value = new CloverString(INITIAL_STRING_BUFFER_CAPACITY);
         } else {
-            value = new StringBuilder(_metadata.getSize());
+            value = new CloverString(_metadata.getSize());
         }
         // handle format string
         String regExp;
@@ -95,12 +96,12 @@ public class StringDataField extends DataField implements CharSequence{
 
 	private StringDataField(DataFieldMetadata _metadata, CharSequence _value){
 	    super(_metadata);
-	    this.value=new StringBuilder(_value.length());
-	    this.value.append(_value);
+	    this.value = new CloverString(_value);
 	}
 
+	@Override
 	public DataField duplicate(){
-	    StringDataField newField=new StringDataField(metadata,value);
+	    StringDataField newField=new StringDataField(metadata, value);
 	    newField.setNull(this.isNull());
 	    return newField;
 	}
@@ -109,6 +110,8 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
+	@Deprecated
 	public void copyFrom(DataField fieldFrom){
 	    if (fieldFrom instanceof StringDataField ){
 	        if (!fieldFrom.isNull){
@@ -129,6 +132,7 @@ public class StringDataField extends DataField implements CharSequence{
      * @exception  IllegalArgumentException When value of types other then char[], CharSequence descendant is passed to the function <code>value</code>
 	 * @since                              April 23, 2002
 	 */
+	@Override
 	public void setValue(Object value) throws BadDataFormatException {
         if(value == null || value instanceof CharSequence) {
             setValue((CharSequence) value);
@@ -189,6 +193,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @param  isNull  The new Null value
 	 * @since          October 29, 2002
 	 */
+	@Override
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (this.isNull) {
@@ -202,12 +207,14 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @return    The Null value
 	 * @since     October 29, 2002
 	 */
+	@Override
 	public boolean isNull() {
 		return super.isNull();
 	}
 
     
-    public void reset(){
+    @Override
+	public void reset(){
         if (metadata.isNullable()){
             setNull(true);
         }else if (metadata.isDefaultValueSet()){
@@ -223,12 +230,14 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @return    The Value value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public Object getValue() {
 	    return (isNull ? null : value);
 	}
 
-    public Object getValueDuplicate() {
-        return (isNull ? null : new StringBuilder(value));
+    @Override
+	public Object getValueDuplicate() {
+        return (isNull ? null : new CloverString(value));
     }
 
 	/**
@@ -247,10 +256,12 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @return    The Type value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public char getType() {
 		return DataFieldMetadata.STRING_FIELD;
 	}
 
+	@Override
 	public String toString() {
 		if (isNull) {
 			return metadata.getNullValue();
@@ -259,6 +270,7 @@ public class StringDataField extends DataField implements CharSequence{
 		return value.toString();
 	}
 
+	@Override
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 			setValue((CharSequence) null);
@@ -273,22 +285,32 @@ public class StringDataField extends DataField implements CharSequence{
 		setValue(seq);
 	}
 
-	public void serialize(ByteBuffer buffer) {
+	@Override
+	public void serialize(CloverBuffer buffer) {
 	    final int length = value.length();
 	    
 		try {
 			// encode nulls as zero, increment length of non-null values by one
 			ByteBufferUtils.encodeLength(buffer, isNull ? 0 : length + 1);
-	
-			for(int counter = 0; counter < length; counter++) {
-				buffer.putChar(value.charAt(counter));
+
+			//TODO what is the best constant?
+			if (length > 1000) {
+				int doubledLength = length << 1;
+				buffer.expand(doubledLength);
+				value.getChars(buffer.asCharBuffer());
+				buffer.skip(doubledLength);
+			} else {
+				for(int counter = 0; counter < length; counter++) {
+					buffer.putChar(value.charAt(counter));
+				}
 			}
     	} catch (BufferOverflowException e) {
     		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
 
-	public void deserialize(ByteBuffer buffer) {
+	@Override
+	public void deserialize(CloverBuffer buffer) {
 		// encoded length is incremented by one, decrement it back to normal
 		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
 
@@ -298,13 +320,20 @@ public class StringDataField extends DataField implements CharSequence{
 		if (length < 0) {
 			setNull(true);
 		} else {
-			for (int counter = 0; counter < length; counter++) {
-				value.append(buffer.getChar());
+			//TODO what is the best constant? 30 seems to be optimal for my local machine
+			if (length > 30) {
+				value.append(buffer.buf().asCharBuffer(), length);
+				buffer.skip(length << 1);
+			} else {
+				for (int counter = 0; counter < length; counter++) {
+					value.append(buffer.getChar());
+				}
 			}
 			setNull(false);
 		}
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null ) return false;
 	    if (this==obj) return true;
@@ -336,6 +365,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @param  obj  Any object implementing CharSequence interface
 	 * @return      -1;0;1 based on comparison result
 	 */
+	@Override
 	public int compareTo(Object obj) {
 	    CharSequence strObj;
 	    
@@ -387,6 +417,7 @@ public class StringDataField extends DataField implements CharSequence{
     }
 
     
+	@Override
 	public int hashCode(){
 		int hash=5381;
 		for (int i=0;i<value.length();i++){
@@ -411,15 +442,19 @@ public class StringDataField extends DataField implements CharSequence{
 		return length * SIZE_OF_CHAR + ByteBufferUtils.lengthEncoded(length + 1); //this incrementation is necessary due 'null/empty string' encoding, see serialize/deserialize methods
 	}
 	
+	@Override
 	public char charAt(int position){
 		return value.charAt(position);
 	}
 	
+	@Override
 	public int length(){
 		return value.length();
 	}
 	
+	@Override
 	public CharSequence subSequence(int start, int end){
 		return value.subSequence(start,end);
 	}
+	
 }

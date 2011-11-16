@@ -144,6 +144,11 @@ public interface InputPort {
      */
 	public void reset() throws ComponentNotReadyException;
 
+	/**
+	 * @return size of allocated memory on the edge (memory footprint)
+	 */
+	public int getUsedMemory();
+	
 }
 /*
  *  end interface InputPort

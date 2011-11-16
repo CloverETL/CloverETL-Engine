@@ -18,13 +18,13 @@
  */
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * This class represents record will all fields with null value.
@@ -61,12 +61,12 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't deserialize NullRecord");
 	}
 	
 	@Override
-	public void deserialize(ByteBuffer buffer, int[] whichFields) {
+	public void deserialize(CloverBuffer buffer, int[] whichFields) {
 		throw new UnsupportedOperationException("Can't deserialize NullRecord");
 	}
 	
@@ -81,12 +81,12 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
 	@Override
-	public void serialize(ByteBuffer buffer, int[] whichFields) {
+	public void serialize(CloverBuffer buffer, int[] whichFields) {
 		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
@@ -207,7 +207,7 @@ final class NullField extends DataField{
 	}
 
 	@Override
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't deserialize NullField");
 	}
 
@@ -222,11 +222,11 @@ final class NullField extends DataField{
 	}
 
 	@Override
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 	}
 
 	@Override
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 	}
 
 	@Override
@@ -258,7 +258,7 @@ final class NullField extends DataField{
 	}
 
 	@Override
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't serialize NullField");
 	}
 

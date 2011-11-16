@@ -20,12 +20,12 @@ package org.jetel.data.tape;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author dpavlis
@@ -73,7 +73,7 @@ protected void tearDown() {
  *
  */
 public void test_1_DataTape() throws InterruptedException, IOException {
-	ByteBuffer buffer= ByteBuffer.allocateDirect(2048);
+	CloverBuffer buffer = CloverBuffer.allocateDirect(2048);
     
     DataRecordTape tape=new DataRecordTape(TEST_FILE, true, false);
     // first chunk of data

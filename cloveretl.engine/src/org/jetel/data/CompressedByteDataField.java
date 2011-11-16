@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.ZipUtils;
 import org.jetel.util.string.Compare;
 
@@ -172,7 +173,7 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
         try {
             if(isNull) {
     			// encode nulls as zero
@@ -188,7 +189,7 @@ public class CompressedByteDataField extends ByteDataField {
     	}
 	}
 
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		dataLen = ByteBufferUtils.decodeLength(buffer);
 
 		if (dataLen == 0) {

@@ -19,12 +19,12 @@
 package org.jetel.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Class for external sorting of data records.<br>
@@ -65,7 +65,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private boolean[] sortOrderings;
 	private RecordOrderedKey sortKey;
 	DataRecordMetadata inMetadata;
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 	private boolean[] sourceRecordsFlags;
 	private DataRecord[] sourceRecords;
 	int prevIndex;
@@ -119,15 +119,10 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			sorter.setCaseSensitive(caseSensitive);
 		}
 		
-		recordBuffer = ByteBuffer
-        	.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		
-		if (recordBuffer == null) {
-			throw new RuntimeException("Can NOT allocate internal record buffer ! Required size:"
-                    + Defaults.Record.MAX_RECORD_SIZE);
-		}
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 	}
 
+	@Override
 	public boolean put(DataRecord record) throws IOException, InterruptedException {
 		if (!sorter.put(record)) {
 			// we need to sort & flush buffer on to tape and merge it
@@ -144,6 +139,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		return true;
 	}
 	
+	@Override
 	public void sort() throws IOException, InterruptedException {
 		if (doMerge) {
 			// sort whatever remains in sorter
@@ -156,6 +152,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 	
+	@Override
 	public DataRecord get() throws IOException, InterruptedException {		
 		
 		int index;
@@ -184,7 +181,8 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 	
-	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException {		
+	@Override
+	public boolean get(CloverBuffer recordDataBuffer) throws IOException, InterruptedException {		
 		DataRecord record=get();
 		if (record!=null){
 		    record.serialize(recordDataBuffer);
@@ -195,6 +193,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}		
 	}
 
+	@Override
 	public void reset() {
 		sorter.reset();
 		if (carouselInitialized && tapeCarousel != null) {
@@ -210,6 +209,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
 	}
 	
+	@Override
 	public void postExecute(){
 		if (carouselInitialized && (tapeCarousel!=null)) {
 			try {
@@ -222,6 +222,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		sorter.postExecute();
 	}
 	
+	@Override
 	public void free() {
 		sorter.free();
 	}

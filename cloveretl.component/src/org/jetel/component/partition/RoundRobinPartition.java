@@ -26,6 +26,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * RoundRobin partition algorithm.
@@ -82,14 +83,27 @@ public class RoundRobinPartition implements PartitionFunction{
     public Node getNode() {
     	return null;
     }
-    
+
+	@Override
+	@Deprecated
 	public int getOutputPort(ByteBuffer directRecord) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPort(CloverBuffer directRecord) {
 		 last=(last+1)%numPorts;
 	     return last;
 	}
 
 	@Override
+	@Deprecated
 	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int getOutputPortOnError(Exception exception, CloverBuffer directRecord) throws TransformException {
 		// by default just throw the exception that caused the error
 		throw new TransformException("Partitioning failed!", exception);
 	}

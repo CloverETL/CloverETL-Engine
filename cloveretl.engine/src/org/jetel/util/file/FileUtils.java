@@ -414,7 +414,7 @@ public class FileUtils {
         	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
         	return lIs.size() > 0 ? lIs.get(0) : null;
         } else if (archiveType == ArchiveType.GZIP) {
-            return new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+            return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         } else if (archiveType == ArchiveType.TAR) {
         	List<InputStream> lIs = getTarInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
         	return lIs.size() > 0 ? lIs.get(0) : null;
@@ -993,7 +993,7 @@ public class FileUtils {
 		
 		// gzip channel
 		else if (archiveType == ArchiveType.GZIP) {
-            GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+            GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
             return gzos;
         } 
 		

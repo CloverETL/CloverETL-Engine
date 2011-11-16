@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -33,9 +32,11 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * A simple class for retrieving records from binary files created by BinaryDataFormatter
@@ -53,7 +54,7 @@ public class BinaryDataParser implements Parser {
 	 */
 	InputStream backendStream;
 	DataRecordMetadata metadata;
-	ByteBuffer buffer;
+	CloverBuffer buffer;
 	IParserExceptionHandler exceptionHandler;
 	/*
 	 * aux variable
@@ -88,8 +89,7 @@ public class BinaryDataParser implements Parser {
 		try {
 			setDataSource(inputStream);
 		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JetelRuntimeException(e);
 		}
 	}
 
@@ -103,8 +103,7 @@ public class BinaryDataParser implements Parser {
 		try {
 			setDataSource(file);
 		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JetelRuntimeException(e);
 		}
 	}
 	
@@ -116,7 +115,7 @@ public class BinaryDataParser implements Parser {
 		this.bufferLimit = bufferLimit;
 	}
 
-
+	@Override
 	public void close() {
 		if (reader != null && reader.isOpen()) {
 			try {
@@ -128,24 +127,26 @@ public class BinaryDataParser implements Parser {
 					deleteOnClose.delete();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new JetelRuntimeException(e);
 			}
 		}
 		buffer.clear();
 		buffer.limit(0);
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return this.exceptionHandler;
 	}
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = new DataRecord(metadata);
 		record.init();
 		return getNext(record);
 	}
 
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		try {
 			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
@@ -182,8 +183,12 @@ public class BinaryDataParser implements Parser {
 		}
 		int size;
 		buffer.compact();
+		//ensure that the buffer is big enough to bear 'requiredSize' bytes
+		if (buffer.capacity() < requiredSize) {
+			buffer.expand(requiredSize);
+		}
 		do {
-			size = reader.read(buffer);
+			size = reader.read(buffer.buf());
 			if (buffer.position() > requiredSize) {
 				break;
 			}
@@ -198,21 +203,23 @@ public class BinaryDataParser implements Parser {
 		buffer.flip();
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
 		return null;
 	}
 
+	@Override
 	public Object getPosition() {
 		return null;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
-		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(buffSize) : ByteBuffer.allocate(buffSize);
-//		buffer = ByteBuffer.allocate(buffSize); // for memory consumption testing
+		buffer = useDirectBuffers ? CloverBuffer.allocateDirect(buffSize) : CloverBuffer.allocate(buffSize);
 		buffer.clear();
 		buffer.limit(0);
 
@@ -223,9 +230,11 @@ public class BinaryDataParser implements Parser {
 		return this.metadata;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 	}
 
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		buffer.clear();
 		buffer.limit(0);
@@ -237,14 +246,14 @@ public class BinaryDataParser implements Parser {
 		eofReached = false;
 	}
 
+	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		if (inputDataSource instanceof File) {
 			try {
 				backendStream = new FileInputStream((File) inputDataSource);
 				reader = Channels.newChannel(backendStream);
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new ComponentNotReadyException(e);
 			}
 		} else if (inputDataSource instanceof InputStream) {
 			backendStream = (InputStream) inputDataSource;
@@ -252,17 +261,18 @@ public class BinaryDataParser implements Parser {
 		}
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
 	}
 
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
-		// TODO Auto-generated method stub
 
 	}
 
+	@Override
 	public int skip(int rec) throws JetelException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

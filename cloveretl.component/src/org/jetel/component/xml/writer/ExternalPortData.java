@@ -20,7 +20,6 @@ package org.jetel.component.xml.writer;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +33,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -53,7 +53,7 @@ public abstract class ExternalPortData extends PortData {
 
 	protected String fileName;
 
-	protected ByteBuffer recordBuffer;
+	protected CloverBuffer recordBuffer;
 	protected long keyCounter = 0;
 
 	protected CacheRecordManager sharedCache;
@@ -75,7 +75,7 @@ public abstract class ExternalPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE + SERIALIZED_COUNTER_LENGTH);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		serializer = new EntrySerializer();
 		recordKeyComparator = new RecordKeyComparator();
 	}
@@ -152,6 +152,7 @@ public abstract class ExternalPortData extends PortData {
 	private static class RecordKeyComparator implements Comparator<byte[]>, Serializable {
 		private static final long serialVersionUID = -8678623124738984233L;
 
+		@Override
 		public int compare(byte[] key1, byte[] key2) {
 			if (key1 == null) {
 				throw new IllegalArgumentException("Argument 'key1' is null");

@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.BitArray;
 
 /**
@@ -250,7 +251,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 * @param  buffer  ByteBuffer from which this record's fields should be read
 	 * @since          April 23, 2002
 	 */
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
 			// bit array containing 1 if corresponding field is null loaded from the buffer
 			final byte[] nullBits = new byte[BitArray.bitsLength2Bytes(metadata.getNumNullableFields())];
@@ -288,7 +289,15 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 		}
 	}
 
-    public void deserialize(ByteBuffer buffer,int[] whichFields) {
+	/**
+	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public void deserialize(ByteBuffer buffer) {
+		deserialize(CloverBuffer.wrap(buffer));
+	}
+
+    public void deserialize(CloverBuffer buffer,int[] whichFields) {
         for(int i:whichFields){
             fields[i].deserialize(buffer);
         }
@@ -465,7 +474,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 * @param  buffer  ByteBuffer into which the individual fields of this record should be put
 	 * @since          April 23, 2002
 	 */
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
         if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
 			// the bit array is stored at the base position (the beginning of the serialized record)
 			final int basePosition = buffer.position();
@@ -515,6 +524,17 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
         }
     }
 	
+	/**
+	 * @deprecated use {@link #serialize(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public void serialize(ByteBuffer buffer) {
+		CloverBuffer bufferWrapper = CloverBuffer.wrap(buffer);
+		serialize(bufferWrapper);
+		if (buffer != bufferWrapper.buf()) {
+			throw new JetelRuntimeException("Deprecated method invokation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+	}
 
 	/**
      * Serializes this record's content into ByteBuffer.<br>
@@ -524,7 +544,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
      * @param whichFields
      * @since 27.2.2007
      */
-    public void serialize(ByteBuffer buffer,int[] whichFields) {
+    public void serialize(CloverBuffer buffer,int[] whichFields) {
         for(int i:whichFields){
             fields[i].serialize(buffer);
         }

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author maciorowski
@@ -213,7 +214,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 		IntegerDataField binaryField = new IntegerDataField(packedMetadata);
 		binaryField = new IntegerDataField(packedMetadata);
 		try {
-			binaryField.fromByteBuffer(ByteBuffer.wrap(tooBig), null);
+			binaryField.fromByteBuffer(CloverBuffer.wrap(tooBig), null);
 			fail("Should raise a BadDataFormatException");
 		} catch(BadDataFormatException bdfe) {}
 	}
@@ -228,7 +229,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	 */
 	private void checkToByteBuffer(DataFieldMetadata metadata, int value, byte[] expected) throws CharacterCodingException {
 		IntegerDataField binaryField = new IntegerDataField(metadata);
-		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		CloverBuffer dataBuffer = CloverBuffer.allocate(expected.length);
 		binaryField.setValue(value);
 		System.out.println(binaryField.getValue());
 		binaryField.toByteBuffer(dataBuffer, null);
@@ -240,7 +241,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	
 	private void checkFromByteBuffer(DataFieldMetadata metadata, byte[] bytes, int expected) throws CharacterCodingException {
 		IntegerDataField binaryField = new IntegerDataField(metadata);
-		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes), null);
+		binaryField.fromByteBuffer(CloverBuffer.wrap(bytes), null);
 		assertEquals(expected, binaryField.getInt());
 	}
 	
@@ -284,7 +285,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	 */
 	
 	public void test_serialize() {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(100);
 		
 		anIntegerDataField1.setValue(123);
 		anIntegerDataField1.serialize(buffer);

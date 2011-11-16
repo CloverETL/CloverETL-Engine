@@ -40,6 +40,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 
@@ -67,7 +68,7 @@ public class CloverDataParser implements Parser {
 
 	private DataRecordMetadata metadata;
 	private ReadableByteChannel recordFile;
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 	private String indexFileURL;
 	private String inData;
 	private InputStream inStream;
@@ -89,6 +90,7 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = new DataRecord(metadata);
 		record.init();
@@ -98,6 +100,7 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#skip(int)
 	 */
+	@Override
 	public int skip(int nRec) throws JetelException {
 		if (nRec == 0) {
 			return 0;
@@ -138,7 +141,7 @@ public class CloverDataParser implements Parser {
 				while (dataSkipBytes > recordBuffer.remaining()) {
 					dataSkipBytes -= recordBuffer.remaining();
 					recordBuffer.clear();
-					ByteBufferUtils.reload(recordBuffer,recordFile);
+					ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
 					recordBuffer.flip();
 					if (!recordBuffer.hasRemaining()) { // no more data available
 						break;
@@ -167,17 +170,18 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init()
-			throws ComponentNotReadyException {
+	@Override
+	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
@@ -186,7 +190,8 @@ public class CloverDataParser implements Parser {
      * 
      * parameter: data fiele name or {data file name, index file name}
      */
-    public void setDataSource(Object in) throws ComponentNotReadyException {
+    @Override
+	public void setDataSource(Object in) throws ComponentNotReadyException {
     	sourceRecordCounter = 0;
     	currentIndexPosition = 0;
     	indexFile = null;
@@ -225,7 +230,7 @@ public class CloverDataParser implements Parser {
         }
     	recordBuffer.clear();
 		try {
-			ByteBufferUtils.reload(recordBuffer,recordFile);
+			ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
 			recordBuffer.flip();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e.getLocalizedMessage());
@@ -295,6 +300,7 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
+	@Override
 	public void close() {
 		if (recordFile != null) {
 			try {
@@ -317,6 +323,7 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record)throws JetelException{
 		// the skip rows has skipped whole file
 		if (noDataAvailable) return null;
@@ -324,7 +331,7 @@ public class CloverDataParser implements Parser {
 		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
 			try {
-				ByteBufferUtils.reload(recordBuffer,recordFile);
+				ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
 				recordBuffer.flip();
 			} catch (IOException e) {
 				throw new JetelException(e.getLocalizedMessage());
@@ -335,17 +342,16 @@ public class CloverDataParser implements Parser {
 		}
 		int recordSize = recordBuffer.getInt();
 		//refill buffer if we are on the end of buffer
-		if (recordBuffer.remaining() < recordSize ){
+		if (recordBuffer.remaining() < recordSize) {
+			if (recordBuffer.capacity() < recordSize) {
+				recordBuffer.expand(recordSize);
+			}
 			try{
-				ByteBufferUtils.reload(recordBuffer,recordFile);
+				ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
 				recordBuffer.flip();
 			}catch(IOException ex){
 				throw new JetelException(ex.getLocalizedMessage());
 			}
-		}
-		if (recordBuffer.remaining() < recordSize) {
-			throw new RuntimeException("The size of data buffer is only " + recordBuffer.limit() + 
-					", but record size is " + recordSize + ". Set appropriate parameter in defaultProperties file.");
 		}
 		record.deserialize(recordBuffer);
 		sourceRecordCounter++;
@@ -355,39 +361,38 @@ public class CloverDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setExceptionHandler(org.jetel.exception.IParserExceptionHandler)
 	 */
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
-		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getExceptionHandler()
 	 */
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getPolicyType()
 	 */
+	@Override
 	public PolicyType getPolicyType() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public void reset() {
 		close();
 	}
 
+	@Override
 	public Object getPosition() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public void movePosition(Object position) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	public URL getProjectURL() {
@@ -412,12 +417,9 @@ public class CloverDataParser implements Parser {
     	close();
     }
 
-
 	@Override
 	public boolean nextL3Source() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
-
 }

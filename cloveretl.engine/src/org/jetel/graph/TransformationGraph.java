@@ -54,6 +54,7 @@ import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
@@ -113,6 +114,11 @@ public final class TransformationGraph extends GraphElement {
 
 	private IAuthorityProxy authorityProxy;
 	
+	/**
+	 * Memory tracker associated with this graph.
+	 */
+	private MemoryTracker memoryTracker;
+	
 	private TrueZipVFSEntries vfsEntries;
 	
 	/**
@@ -155,6 +161,7 @@ public final class TransformationGraph extends GraphElement {
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
 		authorityProxy = new PrimitiveAuthorityProxy();
+		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
 		vfsEntries = new TrueZipVFSEntries();
 	}
@@ -1179,6 +1186,13 @@ public final class TransformationGraph extends GraphElement {
     		this.authorityProxy = authorityProxy;
     	}
 	}
+    
+    /**
+     * @return memory tracker associated with this graph
+     */
+    public MemoryTracker getMemoryTracker() {
+    	return memoryTracker;
+    }
     
 	public TrueZipVFSEntries getVfsEntries() {
 		return vfsEntries;

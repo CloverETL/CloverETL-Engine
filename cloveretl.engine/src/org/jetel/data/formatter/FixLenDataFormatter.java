@@ -20,7 +20,6 @@ package org.jetel.data.formatter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -38,6 +37,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Outputs fix-len data record. Handles encoding of character based fields.
@@ -50,20 +50,20 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class FixLenDataFormatter implements Formatter {
 
-	private ByteBuffer dataBuffer;
+	private CloverBuffer dataBuffer;
 
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
 	private int recordLength;
-	private ByteBuffer fieldFillerBuf;
-	private ByteBuffer recordFillerBuf;
+	private CloverBuffer fieldFillerBuf;
+	private CloverBuffer recordFillerBuf;
 	private String charSet = null;
     private boolean isRecordDelimiter;
     private byte[] recordDelimiter;
 	private String sFooter; 
 	private String sHeader; 
-	private ByteBuffer footer; 
-	private ByteBuffer header; 
+	private CloverBuffer footer; 
+	private CloverBuffer header; 
 
     private int fieldCnt;
     private int[] fieldStart;
@@ -85,7 +85,7 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	public FixLenDataFormatter() {
 		writer = null;
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 	}
 
@@ -99,7 +99,7 @@ public class FixLenDataFormatter implements Formatter {
 	public FixLenDataFormatter(String charEncoder) {
 		writer = null;
 		charSet = charEncoder;
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 
 
@@ -108,11 +108,11 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	private void initFieldFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
+		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
 		Arrays.fill(fillerArray, filler);
 		
 		try {
-			fieldFillerBuf = encoder.encode(CharBuffer.wrap(fillerArray));
+			fieldFillerBuf = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed initialization of filler buffers :" + ex);
 		}
@@ -123,11 +123,11 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	private void initRecordFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
+		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
 		Arrays.fill(fillerArray, filler);
 		
 		try {
-			recordFillerBuf = encoder.encode(CharBuffer.wrap(fillerArray));
+			recordFillerBuf = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed initialization of filler buffers :" + ex);
 		}
@@ -368,23 +368,9 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	private void flushBuffer() throws IOException {
 		dataBuffer.flip();
-		writer.write(dataBuffer);
+		writer.write(dataBuffer.buf());
 		dataBuffer.clear();
 	}
-
-	/* unused method
-	private void flushBuffer(int limit) throws IOException {
-		int savedLimit = dataBuffer.limit();
-		dataBuffer.limit(limit);
-		dataBuffer.flip();
-		writer.write(dataBuffer);
-		dataBuffer.position(limit);
-		dataBuffer.limit(savedLimit);
-		dataBuffer.compact();
-		dataBuffer.position(dataBuffer.limit());
-		dataBuffer.limit(dataBuffer.capacity());
-	}
-	*/
 
 	/**
 	 *  Flushes the content of internal data buffer
@@ -408,7 +394,7 @@ public class FixLenDataFormatter implements Formatter {
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
-				footer = ByteBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
+				footer = CloverBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}
@@ -424,7 +410,7 @@ public class FixLenDataFormatter implements Formatter {
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {
-				header = ByteBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
+				header = CloverBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
 			} catch (UnsupportedEncodingException e) {
 				throw new UnsupportedCharsetException(encoder.charset().name());
 			}

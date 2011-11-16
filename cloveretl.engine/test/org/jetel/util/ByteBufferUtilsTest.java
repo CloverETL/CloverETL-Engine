@@ -24,20 +24,20 @@
 package org.jetel.util;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 public class ByteBufferUtilsTest extends CloverTestCase {
 
-    ByteBuffer buffer;
+    CloverBuffer buffer;
 
     protected void setUp() throws Exception {
         super.setUp();
-        buffer=ByteBuffer.allocateDirect(512);
+        buffer=CloverBuffer.allocateDirect(512);
     }
 
     public void testEncodeLength() {
@@ -70,14 +70,14 @@ public class ByteBufferUtilsTest extends CloverTestCase {
     }
     
     private void check_encodeValue(long value, ByteOrder byteOrder, byte[] expected) {
-    	ByteBuffer byteBuffer = ByteBuffer.allocate(expected.length);
+    	CloverBuffer byteBuffer = CloverBuffer.allocate(expected.length);
     	int length = ByteBufferUtils.encodeValue(byteBuffer, BigInteger.valueOf(value), byteOrder, expected.length);
     	assertEquals(expected.length, length);
     	assertTrue(Arrays.equals(expected, byteBuffer.array()));
     }
     
     private void check_decodeValue(byte[] bytes, ByteOrder byteOrder, long expected) {
-    	assertEquals(expected, ByteBufferUtils.decodeValue(ByteBuffer.wrap(bytes), byteOrder).longValue());
+    	assertEquals(expected, ByteBufferUtils.decodeValue(CloverBuffer.wrap(bytes), byteOrder).longValue());
     }
     
     public void test_decodeValue() {

@@ -42,6 +42,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.UnexpectedEndOfRecordDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
@@ -133,6 +134,8 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 			if (seq instanceof CharSequence) {
 				return (new StringBuilder((CharSequence) seq)).toString();
+			} else if (seq instanceof CloverBuffer) {
+				return Charset.forName("ISO-8859-1").decode(((CloverBuffer) seq).buf()).toString();
 			} else if (seq instanceof ByteBuffer) {
 				return Charset.forName("ISO-8859-1").decode((ByteBuffer) seq).toString();
 			}
@@ -716,7 +719,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					}
 				}
 			}
-			ByteBuffer seq = inputReader.getByteSequence(0);
+			CloverBuffer seq = inputReader.getByteSequence(0);
 			int startPos = seq.position();
 			for (int idx = 0; idx < fieldCount; idx++) {
 				if (isAutoFilling[idx]) {
@@ -1118,7 +1121,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 		
 		private void produceOutput(DataRecord record) throws CharacterCodingException, OperationNotSupportedException {
-			ByteBuffer seq = inputReader.getByteSequence(-delimPatterns.getMatchLength());
+			CloverBuffer seq = inputReader.getByteSequence(-delimPatterns.getMatchLength());
 			record.getField(fieldNumber).fromByteBuffer(seq, decoder);
 			if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 				throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");

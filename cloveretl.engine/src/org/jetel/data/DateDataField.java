@@ -19,12 +19,12 @@
 package org.jetel.data;
 
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.Compare;
@@ -313,7 +313,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          April 23, 2002
 	 */
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
 		try {
 			if (value != null) {
 				buffer.putLong(value.getTime());
@@ -332,7 +332,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          April 23, 2002
 	 */
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		long tmpl = buffer.getLong();
 		if (tmpl == DATE_NULL_VAL_SERIALIZED) {
 			setNull(true);

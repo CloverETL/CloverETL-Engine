@@ -11,6 +11,7 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 public class DecimalDataFieldTest extends CloverTestCase {
 	
@@ -60,7 +61,7 @@ public class DecimalDataFieldTest extends CloverTestCase {
 	
 	private DecimalDataField createField(DataFieldMetadata metadata, int length, int scale, byte[] bytes) throws CharacterCodingException {
 		DecimalDataField binaryField = new DecimalDataField(metadata, length, scale);
-		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes), null);
+		binaryField.fromByteBuffer(CloverBuffer.wrap(bytes), null);
 		return binaryField;
 	}
 	
@@ -138,7 +139,7 @@ public class DecimalDataFieldTest extends CloverTestCase {
 	
 	private void checkToByteBuffer(DataFieldMetadata metadata, int length, int scale, BigDecimal value, byte[] expected) throws CharacterCodingException {
 		DecimalDataField binaryField = new DecimalDataField(metadata, length, scale);
-		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		CloverBuffer dataBuffer = CloverBuffer.allocate(expected.length);
 		binaryField.setValue(value);
 		System.out.println(binaryField.getValue());
 		binaryField.toByteBuffer(dataBuffer, null);

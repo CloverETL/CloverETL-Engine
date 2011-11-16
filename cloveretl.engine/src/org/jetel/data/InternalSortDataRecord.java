@@ -18,7 +18,6 @@
  */
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.ArrayList;
@@ -29,6 +28,7 @@ import java.util.Locale;
 
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Class for simple in-memory sorting of data records.<br>
@@ -115,6 +115,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	 *  then be restarted. Existing pre-allocated buffers/collections will
 	 *  be reused.
 	 */
+	@Override
 	public void reset() {
 		recCounter = 0;
 		lastFound=0;
@@ -128,12 +129,14 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 
+	@Override
 	public void postExecute() {
 		for (Iterator<DataRecordCol> i = recordColList.iterator(); i.hasNext();) {
 		    ((DataRecordCol)i.next()).free();
 		}
 	}
 
+	@Override
 	public void free() {
 	    recordColList.clear();
 	}
@@ -148,6 +151,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		}
 	}
 
+	@Override
 	public boolean put(DataRecord record) {
 		if (!currentRecordCol.put(record)){
 		    if (!secureSpace()){
@@ -185,6 +189,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    return true;
 	}
 	
+	@Override
 	public void sort() {
         if (useCollator){
             comparator=new RecordOrderedComparator(key.getKeyFields(), this.sortOrderings, collator);
@@ -204,6 +209,7 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    recordColArray=(DataRecordCol[])recordColList.toArray(new DataRecordCol[0]);
 	}
 
+	@Override
 	public DataRecord get() {
 	    // optimization - if only 1 sorted buffer, then no merge sorting
 	    if (recordColArray.length==1){
@@ -216,7 +222,8 @@ public class InternalSortDataRecord implements ISortDataRecord {
 	    }*/
 	}
 
-	public boolean get(ByteBuffer recordDataBuffer) {
+	@Override
+	public boolean get(CloverBuffer recordDataBuffer) {
 		DataRecord record=get();
 		if (record!=null){
 		    record.serialize(recordDataBuffer);

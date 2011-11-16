@@ -21,7 +21,6 @@ package org.jetel.data;
 import java.math.BigDecimal;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -35,6 +34,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
 import org.jetel.util.string.Compare;
@@ -423,7 +423,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 * Call super otherwise.
 	 */
 	@Override
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		if (binaryFormat != null) {
 			switch (binaryFormat) {
 			case DOUBLE_BIG_ENDIAN: 
@@ -473,7 +473,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 * Call super otherwise.
 	 */
 	@Override
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		if (binaryFormat != null) {
 			switch (binaryFormat) {
 			case DOUBLE_BIG_ENDIAN: 
@@ -510,7 +510,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 *@param  buffer  Description of Parameter
 	 *@since          April 23, 2002
 	 */
-	public void serialize(ByteBuffer buffer) {
+	public void serialize(CloverBuffer buffer) {
 		try {
 			buffer.putDouble(value);
     	} catch (BufferOverflowException e) {
@@ -525,7 +525,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 *@param  buffer  Description of Parameter
 	 *@since          April 23, 2002
 	 */
-	public void deserialize(ByteBuffer buffer) {
+	public void deserialize(CloverBuffer buffer) {
 		value = buffer.getDouble();
 		setNull(Double.isNaN(value));
 	}

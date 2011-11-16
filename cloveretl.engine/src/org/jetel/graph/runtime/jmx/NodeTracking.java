@@ -112,4 +112,10 @@ public interface NodeTracking extends Serializable {
 	 * @return tracking of the specified output port, or <code>null</code> if the port is not found.
 	 */
 	PortTracking getOutputPortTracking(int portNumber);
+	
+	/**
+	 * @return size of memory footprint in bytes for the node (not guaranteed)
+	 */
+	int getUsedMemory();
+
 }

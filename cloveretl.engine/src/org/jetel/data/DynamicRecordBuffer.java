@@ -24,14 +24,13 @@ import static org.jetel.util.bytes.ByteBufferUtils.encodeLength;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Class implementing DynamicRecordBuffer backed by temporary file - i.e. unlimited
@@ -46,25 +45,21 @@ import org.jetel.util.bytes.ByteBufferUtils;
  */
 public class DynamicRecordBuffer {
 
-	private FileChannel tmpFileChannel;
-	private File tmpFile;
-	private String tmpFilePath;
+	private String tempDirectory;
 
-	protected ByteBuffer readDataBuffer;
-    protected ByteBuffer writeDataBuffer;
-    private ByteBuffer tmpDataRecord;
+	protected CloverBuffer readDataBuffer;
+    protected CloverBuffer writeDataBuffer;
+    private CloverBuffer tmpDataRecord;
 
-	private LinkedList<DiskSlot> emptyFileBuffers;
-    private LinkedList<DiskSlot> fullFileBuffers;
-    
     private AtomicInteger bufferedRecords;
     
     private boolean awaitingData;
     
-    private int lastSlot;
-    private int dataBufferSize;
+    private int initialBufferSize;
+
+    private TempFile tempFile;
+    private LinkedList<TempFile> obsoleteTempFiles; //TODO should it be synchronized?
     
-	private volatile boolean hasFile;   // indicates whether buffer contains unwritten data
 	private volatile boolean isClosed;  // indicates whether buffer has been closed - no more r&w can occure
 
 	private final static String TMP_FILE_PREFIX = ".fbuf";
@@ -81,13 +76,13 @@ public class DynamicRecordBuffer {
 	 *
 	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
 	 *      NULL (the system default will be used)
-	 *@param  dataBufferSize  The size of internal in memory buffer - two
+	 *@param  initialBufferSize  The initial size of internal in memory buffer - two
      *          buffers of exactly the same size are created - one for reading, one
      *          for writing. The size should be at least MAX_RECORD_SIZE+4
 	 */
-	public DynamicRecordBuffer(String tmpFilePath, int dataBufferSize) {
-		this.tmpFilePath = tmpFilePath;
-        this.dataBufferSize=dataBufferSize;
+	public DynamicRecordBuffer(String tempDirectory, int initialBufferSize) {
+		this.tempDirectory = tempDirectory;
+        this.initialBufferSize = initialBufferSize;
     }
 
 	/**
@@ -104,18 +99,15 @@ public class DynamicRecordBuffer {
      * 
      * @since 27.11.2006
      */
-    public void init(){
-        hasFile = false;
-        isClosed=false;
-		dataBufferSize = Math.max(dataBufferSize, Defaults.Record.MAX_RECORD_SIZE + ByteBufferUtils.SIZEOF_INT);
-        emptyFileBuffers=new LinkedList<DiskSlot>();
-        fullFileBuffers=new LinkedList<DiskSlot>();
-        readDataBuffer = ByteBuffer.allocateDirect(dataBufferSize);
-        writeDataBuffer = ByteBuffer.allocateDirect(dataBufferSize);
-        tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-        lastSlot=-1;
-        awaitingData=false;
-        bufferedRecords=new AtomicInteger(0);
+    public void init() {
+        obsoleteTempFiles = new LinkedList<DynamicRecordBuffer.TempFile>();
+        isClosed = false;
+		initialBufferSize = Math.max(initialBufferSize, Defaults.Record.INITIAL_RECORD_SIZE);
+        readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
+        writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
+        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+        awaitingData = false;
+        bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();
     }
     
@@ -124,49 +116,27 @@ public class DynamicRecordBuffer {
      * created under java.io.tmpdir dir.
 	 * @param dataBufferSize
 	 */
-	public DynamicRecordBuffer(int dataBufferSize){
-	    this(System.getProperty("java.io.tmpdir"),dataBufferSize);
+	public DynamicRecordBuffer(int initialBufferSize){
+	    this(System.getProperty("java.io.tmpdir"), initialBufferSize);
     }
     
-    
-	/**
-	 *  Opens buffer, creates temporary file.
-	 *
-	 *@exception  IOException  Description of Exception
-	 *@since                   September 17, 2002
-	 */
-	private void openTmpFile() throws IOException {
-		if (tmpFilePath != null) {
-			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, new File(tmpFilePath));
-		} else {
-			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
-		}
-		tmpFile.deleteOnExit();
-		// we want the temp file be deleted on exit
-		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
-		hasFile=true;
-	}
-
-
-	/**
+    /**
 	 *  Closes buffer, removes temporary file (is exists)
 	 *
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
 	public void close() throws IOException {
-		isClosed=true;
-        if (hasFile) {
-			tmpFileChannel.close();
-			if (!tmpFile.delete()) {
-				throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
-			}
+		isClosed = true;
+		
+		if (tempFile != null) {
+			tempFile.close();
 		}
-		hasFile = false;
-        fullFileBuffers=null;
-        emptyFileBuffers=null;
-        readDataBuffer=null;
-        writeDataBuffer=null;
+		for (TempFile tempFile : obsoleteTempFiles) {
+			tempFile.close();
+		}
+        readDataBuffer = null;
+        writeDataBuffer = null;
 	}
 	
 	/**
@@ -176,7 +146,7 @@ public class DynamicRecordBuffer {
 	 * @since Jan 11, 2008
 	 */
 	public void closeTemporarily() {
-		isClosed=true;
+		isClosed = true;
 	}	
 
 	/**
@@ -184,15 +154,21 @@ public class DynamicRecordBuffer {
 	 * unchanged size-wise
 	 */
 	public void reset() {
-		isClosed=false;
-	    emptyFileBuffers.addAll(fullFileBuffers);
-        fullFileBuffers.clear();
+		isClosed = false;
+		
+		//all obsolete temp files are closed, only the biggest/newest one is persist and reset
+		if (tempFile != null) {
+			tempFile.reset();
+		}
+		while (!obsoleteTempFiles.isEmpty()) {
+			obsoleteTempFiles.remove().close();
+		}
+		
 		readDataBuffer.clear();
         writeDataBuffer.clear();
-        awaitingData=false;
+        awaitingData = false;
         bufferedRecords.set(0);
         readDataBuffer.flip();
-        
 	}
 
 
@@ -204,25 +180,24 @@ public class DynamicRecordBuffer {
 	 * @throws InterruptedException 
 	 *@since                   September 17, 2002
 	 */
-	public int writeRecord(ByteBuffer record) throws IOException, InterruptedException {
-		if(isClosed){
+	public int writeRecord(CloverBuffer record) throws IOException, InterruptedException {
+		if (isClosed) {
 			throw new IOException("Buffer has been closed !");
 		}
 		
 		int recordSize = record.remaining();
 
-        if (writeDataBuffer.remaining() < recordSize + ByteBufferUtils.SIZEOF_INT) {
+        if (writeDataBuffer.remaining() < recordSize + ByteBufferUtils.SIZEOF_INT && writeDataBuffer.position() > 0) {
+        	//buffer is not flushed if is empty - dynamicity of buffer is used
             flushWriteBuffer();
         }
-		try {
-			//writeDataBuffer.putInt(recordSize);
-            encodeLength(writeDataBuffer,recordSize);
-			writeDataBuffer.put(record);
-            bufferedRecords.incrementAndGet();
-		} catch (BufferOverflowException ex) {
-			throw new IOException("WriteBuffer is not big enough to accomodate data record !");
-		}
-        return recordSize;
+
+        encodeLength(writeDataBuffer,recordSize);
+		writeDataBuffer.put(record);
+		
+		bufferedRecords.incrementAndGet();
+        
+		return recordSize;
 	}
 
     
@@ -240,12 +215,7 @@ public class DynamicRecordBuffer {
         }
 
         tmpDataRecord.clear();
-        try {
-            record.serialize(tmpDataRecord);
-        } catch (BufferOverflowException ex) {
-            throw new IOException(
-                    "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
-        }
+        record.serialize(tmpDataRecord);
         tmpDataRecord.flip();
         
         return writeRecord(tmpDataRecord);
@@ -260,16 +230,14 @@ public class DynamicRecordBuffer {
      * @since 27.11.2006
      */
     public void setEOF() throws IOException, InterruptedException {
-        if(isClosed){
+        if (isClosed) {
             throw new IOException("Buffer has been closed !");
         }
-        if (writeDataBuffer.remaining() < ByteBufferUtils.SIZEOF_INT){
+        if (writeDataBuffer.remaining() < ByteBufferUtils.SIZEOF_INT) {
             flushWriteBuffer();
         }
-        //writeDataBuffer.putInt(EOF);
         encodeLength(writeDataBuffer,EOF);
         flushWriteBuffer();
-        
     }
     
 
@@ -283,45 +251,38 @@ public class DynamicRecordBuffer {
 	 * @throws InterruptedException 
 	 */
 	private final synchronized void flushWriteBuffer() throws IOException, InterruptedException {
-            // we need to swap data - first try directly read buffer
-            if (awaitingData) {
-                // swap write & read buffer
-                writeDataBuffer.flip();
-                readDataBuffer.clear();
-                readDataBuffer.put(writeDataBuffer);
-                readDataBuffer.flip();
-                writeDataBuffer.clear();
-                awaitingData = false;
-                notify();
-            } else {
-
-                if (!hasFile)
-                    openTmpFile();
-                DiskSlot diskSlot;
-                // we need to get new buffer slot and save the current to disk
-                if (emptyFileBuffers.size() > 0) {
-                    diskSlot = emptyFileBuffers.removeFirst();
-                } else {
-                    diskSlot = new DiskSlot(++lastSlot);
-                }
-                writeDataBuffer.flip();
-                diskSlot.setUsedBytes(writeDataBuffer.limit());
-                // set full limit to data buffer - want to
-                // save full buffer (even if it is not fully populated - for performance 
-                // reasons
-                writeDataBuffer.limit(dataBufferSize);
-                try {
-                	tmpFileChannel.write(writeDataBuffer, diskSlot.getPosition(dataBufferSize));
-                } catch (ClosedChannelException e) {
-                	throw new InterruptedException();
-                }
-                writeDataBuffer.clear();
-                fullFileBuffers.add(diskSlot);
-            }
+		// we need to swap data - first try directly read buffer
+		if (awaitingData) {
+			// swap write & read buffer
+			writeDataBuffer.flip();
+			readDataBuffer.clear();
+			readDataBuffer.put(writeDataBuffer);
+			readDataBuffer.flip();
+			writeDataBuffer.clear();
+			awaitingData = false;
+			notify();
+		} else {
+			DiskSlot diskSlot = getDiskSlotForWrite(writeDataBuffer.capacity());
+			writeDataBuffer.flip();
+			diskSlot.write(writeDataBuffer);
+			writeDataBuffer.clear();
+		}
 	}
 
+	private DiskSlot getDiskSlotForWrite(int requestedSlotSize) {
+		if (tempFile != null && tempFile.getSlotSize() == requestedSlotSize) {
+			return tempFile.getDiskSlotForWrite();
+		} else {
+			if (tempFile != null) {
+				obsoleteTempFiles.addLast(tempFile);
+			}
+			tempFile = new TempFile(tempDirectory, requestedSlotSize);
+			tempFile.open();
 
-
+			return tempFile.getDiskSlotForWrite();
+		}
+	}
+	
 	/**
 	 *  Reads next record from the buffer - FIFO order.
 	 *
@@ -331,24 +292,22 @@ public class DynamicRecordBuffer {
 	 *@exception  IOException  Description of the Exception
 	 * @throws InterruptedException 
 	 */
-	public boolean readRecord(ByteBuffer record) throws IOException, InterruptedException {
-		if(isClosed){
+	public boolean readRecord(CloverBuffer record) throws IOException, InterruptedException {
+		if (isClosed) {
 			return false;
-			//throw new IOException("Buffer has been closed !");
 		}
 
         // test that we have enough data
         if (readDataBuffer.remaining() == 0) {
 			secureReadBuffer();
         }
-        //int recordSize = readDataBuffer.getInt();
-        int recordSize= decodeLength(readDataBuffer);
-        if (recordSize==EOF){
+        int recordSize = decodeLength(readDataBuffer);
+        if (recordSize == EOF) {
         	closeTemporarily();
             return false;
         }
         
-        int oldLimit = readDataBuffer.limit();
+        int oldLimit = readDataBuffer.limit(); //TODO old limit is same for all reading iteration; could be preset in secureReadBuffer()
         readDataBuffer.limit(readDataBuffer.position() + recordSize);
         record.clear();
         record.put(readDataBuffer);
@@ -357,7 +316,6 @@ public class DynamicRecordBuffer {
         bufferedRecords.decrementAndGet();
         return true;
 	}
-
     
     /**
      * Reads next record from the buffer - FIFO order.
@@ -371,7 +329,6 @@ public class DynamicRecordBuffer {
     public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException{
         if(isClosed) {
         	return null;
-            //throw new IOException("Buffer has been closed !");
         }
 
         // test that we have enough data
@@ -379,22 +336,20 @@ public class DynamicRecordBuffer {
 			secureReadBuffer();
         }
         
-        //int recordSize = readDataBuffer.getInt();
-        int recordSize= decodeLength(readDataBuffer);
-        if (recordSize==EOF){
+        int recordSize = decodeLength(readDataBuffer);
+        if (recordSize == EOF){
         	closeTemporarily();
             return null;
         }
             
         record.deserialize(readDataBuffer);
         bufferedRecords.decrementAndGet();
+        
         return record;
-        
-        
     }
 
 	/**
-	 * Blind record reading. If the stored record is not required, this method shoud be used. 
+	 * Blind record reading. If the stored record is not required, this method should be used. 
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -402,56 +357,55 @@ public class DynamicRecordBuffer {
 	public boolean readRecord() throws IOException, InterruptedException {
 		if (isClosed) {
 			return false;
-			//throw new IOException("Buffer has been closed !");
 		}
 
         // test that we have enough data
         if (readDataBuffer.remaining() == 0) {
 			secureReadBuffer();
         }
-        //int recordSize = readDataBuffer.getInt();
+
         int recordSize = decodeLength(readDataBuffer);
         if (recordSize == EOF) {
         	closeTemporarily();
             return false;
         }
         
-        readDataBuffer.position(readDataBuffer.position() + recordSize);
+        readDataBuffer.skip(recordSize);
         bufferedRecords.decrementAndGet();
+        
         return true;
 	}
 
     private final synchronized void secureReadBuffer() throws IOException, InterruptedException{
-        // is there a save data buffer already ?
-        if (fullFileBuffers.size()>0){
-            DiskSlot slot=fullFileBuffers.removeFirst();
-            readDataBuffer.clear();
-            tmpFileChannel.read(readDataBuffer, (long)slot.getSlot()*dataBufferSize);
-            readDataBuffer.flip();
-            readDataBuffer.limit(slot.getUsedBytes());
-            emptyFileBuffers.add(slot);
-        }else{ // we may read it from    writeBuffer
+    	DiskSlot diskSlot = getDiskSlotForRead();
+    	
+        if (diskSlot != null) {
+            diskSlot.read(readDataBuffer);
+        } else {
+        	// we may read it from writeBuffer
             // set flag that we are waiting for writer..
-            awaitingData=true;
-            while(awaitingData){
+            awaitingData = true;
+            while (awaitingData) {
                 notify();
                 wait();
             }
         }
     }
     
-
-	/**
-     * Checks status of the buffer
-     *  
-	 * @return     true if buffer is empty (contains no records) or false
-	 * @since 27.11.2006
-	 * @deprecated should not be used, threat of race condition
-	 */
-	public synchronized boolean isEmpty(){
-		return !(writeDataBuffer.hasRemaining() || readDataBuffer.hasRemaining() ||
-            fullFileBuffers.size()>0);
-	}
+    private DiskSlot getDiskSlotForRead() {
+    	//first try to find a suitable disk slot in obsolete temp files
+    	while (!obsoleteTempFiles.isEmpty()) {
+    		TempFile obsoleteTempFile = obsoleteTempFiles.getFirst();
+    		DiskSlot diskSlot = obsoleteTempFile.getDiskSlotForRead();
+    		if (diskSlot != null) {
+    			return diskSlot;
+    		} else {
+    			obsoleteTempFiles.removeFirst();
+    		}
+    	}
+    	
+    	return tempFile != null ? tempFile.getDiskSlotForRead() : null;
+    }
     
     /**
      * Checks wheter readRecord operation would return data without blocking (
@@ -461,21 +415,29 @@ public class DynamicRecordBuffer {
      * @since 27.11.2006
      */
     public synchronized boolean hasData() {
-        return readDataBuffer.hasRemaining() || fullFileBuffers.size() > 0;
+        if (readDataBuffer.hasRemaining()) {
+        	return true;
+        }
+        
+        for (TempFile obsoleteTempFile : obsoleteTempFiles) {
+        	if (obsoleteTempFile.hasData()) {
+        		return true;
+        	}
+        }
+        
+        return tempFile != null ? tempFile.hasData() : false;
     }
 
-
     /**
-     * Checks whether this buffer alrady allocated TMP file for
+     * Checks whether this buffer already allocated TMP file for
      * swapping buffer's content.
      * 
      * @return the hasFile
      * @since 20.11.2006
      */
-    public boolean isHasFile() {
-        return hasFile;
+    public boolean hasTempFile() {
+        return tempFile != null;
     }
-
 
     /**
      * Determines number of records currently stored in buffer
@@ -487,62 +449,137 @@ public class DynamicRecordBuffer {
         return bufferedRecords.get();
     }
     
+    /**
+	 * @return internal buffers capacity (memory footprint)
+     */
+    public int getBufferSize() {
+    	return readDataBuffer.capacity() + writeDataBuffer.capacity() + tmpDataRecord.capacity();
+    }
+    
+    private static class TempFile {
+    	private String tempDirectory;
+    	private File tempFile;
+    	private FileChannel tempFileChannel;
+        private final int slotSize;
+    	private LinkedList<DiskSlot> emptyFileBuffers;
+        private LinkedList<DiskSlot> fullFileBuffers;
+        private int lastSlot;
+
+		public TempFile(String tempDirectory, int slotSize) {
+			this.tempDirectory = tempDirectory;
+	        emptyFileBuffers = new LinkedList<DiskSlot>();
+	        fullFileBuffers=new LinkedList<DiskSlot>();
+	        lastSlot = -1;
+	        this.slotSize = slotSize;
+		}
+		
+		private void open() {
+			try {
+				if (tempDirectory != null) {
+					tempFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, new File(tempDirectory));
+				} else {
+					tempFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
+				}
+				
+				// we want the temp file be deleted on exit
+				tempFile.deleteOnExit();
+				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
+			} catch (IOException e) {
+				throw new JetelRuntimeException("Can't open TMP file in " + tempDirectory, e);
+			}
+		}
+
+		public void close() {
+			try {
+				tempFileChannel.close();
+			} catch (IOException e) {
+				throw new JetelRuntimeException("Can't close TMP file: " + tempFile.getAbsoluteFile(), e);
+			}
+			if (!tempFile.delete()) {
+				throw new JetelRuntimeException("Can't delete TMP file: " + tempFile.getAbsoluteFile());
+			}
+
+	        fullFileBuffers = null;
+	        emptyFileBuffers = null;
+		}
+
+		public void reset() {
+		    emptyFileBuffers.addAll(fullFileBuffers);
+	        fullFileBuffers.clear();
+		}
+
+		public final int getSlotSize() {
+			return slotSize;
+		}
+		
+		public void write(CloverBuffer cloverBuffer, long position) {
+			try {
+				tempFileChannel.write(cloverBuffer.buf(), position);
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
+		}
+
+		public void read(CloverBuffer cloverBuffer, long position) {
+			try {
+				tempFileChannel.read(cloverBuffer.buf(), position);
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
+		}
+
+		public DiskSlot getDiskSlotForWrite() {
+			DiskSlot diskSlot;
+			
+			if (emptyFileBuffers.size() > 0) {
+				diskSlot = emptyFileBuffers.removeFirst();
+			} else {
+				diskSlot = new DiskSlot(this, (long) (++lastSlot) * slotSize);
+			}
+			
+			fullFileBuffers.add(diskSlot);
+			
+			return diskSlot;
+		}
+
+		public DiskSlot getDiskSlotForRead() {
+			if (!fullFileBuffers.isEmpty()) {
+				DiskSlot diskSlot = fullFileBuffers.removeFirst();
+				
+				emptyFileBuffers.addFirst(diskSlot);
+				
+				return diskSlot;
+			}
+			
+			return null;
+		}
+		
+		public boolean hasData() {
+			return !fullFileBuffers.isEmpty();
+		}
+    }
+    
     private static class DiskSlot {
-        int slot;
+    	final TempFile tempFile;
+    	final long offset;
         int usedBytes;
         
-         DiskSlot(int slot,int usedBytes){
-            this.slot=slot;
-            this.usedBytes=usedBytes;
+        DiskSlot(final TempFile tempFile, long offset) {
+        	this.tempFile = tempFile;
+        	this.offset = offset;
         }
 
-
-         DiskSlot(int slot){
-             this(slot,-1);
-         }
-         
-        /**
-         * @return the slot
-         * @since 21.11.2006
-         */
-         int getSlot() {
-            return slot;
+        void write(CloverBuffer cloverBuffer) {
+			usedBytes = cloverBuffer.limit();
+        	tempFile.write(cloverBuffer, offset);
         }
 
-        /**
-         * @param slot the slot to set
-         * @since 21.11.2006
-         */
-         void setSlot(int slot) {
-            this.slot = slot;
+        void read(CloverBuffer cloverBuffer) {
+        	cloverBuffer.clear();
+        	cloverBuffer.limit(usedBytes);
+        	tempFile.read(cloverBuffer, offset);
+        	cloverBuffer.flip();
         }
-
-        /**
-         * @return the usedBytes
-         * @since 21.11.2006
-         */
-         int getUsedBytes() {
-            return usedBytes;
-        }
-
-         /**
-         * @param bufferSize
-         * @return
-         * @since 27.11.2006
-         */
-        long getPosition(final int bufferSize){
-             final long position=slot;
-             return position * bufferSize;
-         }
-         
-        /**
-         * @param usedBytes the usedBytes to set
-         * @since 21.11.2006
-         */
-         void setUsedBytes(int usedBytes) {
-            this.usedBytes = usedBytes;
-        }
-        
     }
     
 }

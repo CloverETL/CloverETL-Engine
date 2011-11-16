@@ -1,9 +1,8 @@
 package org.jetel.data.primitive;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.data.Defaults;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatterFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -532,7 +531,7 @@ public class DecimalNumericTest extends CloverTestCase {
         Decimal d=DecimalFactory.getDecimal(aDouble.getPrecision(), aDouble.getScale());
         Decimal i=DecimalFactory.getDecimal(anInt.getPrecision(), anInt.getScale());
         Decimal l=DecimalFactory.getDecimal(aLong.getPrecision(), aLong.getScale());
-		ByteBuffer bb=ByteBuffer.allocate(1000);
+		CloverBuffer bb = CloverBuffer.allocate(1000);
 		aDouble.serialize(bb);
 		anInt.serialize(bb);
 		aLong.serialize(bb);

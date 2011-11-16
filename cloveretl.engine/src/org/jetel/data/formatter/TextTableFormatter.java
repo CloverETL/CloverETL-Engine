@@ -20,7 +20,6 @@ package org.jetel.data.formatter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.CharacterCodingException;
@@ -39,6 +38,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Outputs data record in form coherent with given mask. 
@@ -55,8 +55,8 @@ public class TextTableFormatter implements Formatter {
 	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writerChannel;
-	private ByteBuffer fieldBuffer; 
-	private ByteBuffer dataBuffer;
+	private CloverBuffer fieldBuffer; 
+	private CloverBuffer dataBuffer;
 	private CharsetEncoder encoder;
 	private String charSet = null;
 	
@@ -117,15 +117,14 @@ public class TextTableFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata)
-			throws ComponentNotReadyException {
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		encoder = Charset.forName(charSet).newEncoder();
 		encoder.reset();
 
 		// create buffered output stream writer and buffers 
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
 		//if mask is not given create default mask
 		if (mask == null) {
 			maskAnalize = new DataFieldParams[metadata.getNumFields()];
@@ -376,7 +375,7 @@ public class TextTableFormatter implements Formatter {
         }
         sentBytes += writeString(NL);
 
-        ByteBufferUtils.flush(dataBuffer,writerChannel); //xxx
+        ByteBufferUtils.flush(dataBuffer.buf(), writerChannel); //xxx
 		return sentBytes;
 	}
 	
@@ -490,18 +489,18 @@ public class TextTableFormatter implements Formatter {
 		if (dataRecords != null && dataRecords.size()>0) {
 			if (!isMaskAnalized()) //xxx
 				analyzeRows(dataRecords, setOutputFieldNames);
-			ByteBufferUtils.flush(dataBuffer,writerChannel);
+			ByteBufferUtils.flush(dataBuffer.buf(), writerChannel);
 			leftBytes = writeHeader();
 			for (DataRecord dataRecord : dataRecords) {
 				leftBytes += writeRecord(dataRecord);
 			}
 			dataRecords.clear();
 		}
-		ByteBufferUtils.flush(dataBuffer,writerChannel);
+		ByteBufferUtils.flush(dataBuffer.buf(), writerChannel);
 	}
 	
 	private void directFlush() throws IOException {
-		ByteBufferUtils.flush(dataBuffer,writerChannel);
+		ByteBufferUtils.flush(dataBuffer.buf(), writerChannel);
 	}
 
 	public int getLeftBytes() {

@@ -20,6 +20,7 @@ package org.jetel.interpreter.data;
 
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringUtils;
 
@@ -27,21 +28,21 @@ public class TLStringValue extends TLValue implements CharSequence {
 
     public static final TLValue EMPTY = new TLStringValue("");
     
-	StringBuilder value;
+	CloverString value;
 	
 	public TLStringValue(){
 		super(TLValueType.STRING);
-		value=new StringBuilder();
+		value = new CloverString();
 	}
 	
 	
 	public TLStringValue(CharSequence value){
 		super(TLValueType.STRING);
-		this.value=new StringBuilder(value.length());
+		this.value = new CloverString(value.length());
 		this.value.append(value);
 	}
 	
-	public TLStringValue(StringBuilder value){
+	public TLStringValue(CloverString value){
 		super(TLValueType.STRING);
 		this.value=value;
 	}

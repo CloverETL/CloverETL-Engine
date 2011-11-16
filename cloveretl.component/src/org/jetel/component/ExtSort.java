@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +37,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -139,7 +139,7 @@ public class ExtSort extends Node {
 	private int internalBufferCapacity;
 	private String[] tmpDirs;
 	private int numberOfTapes;
-	private ByteBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 	private String localeStr;
 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
@@ -258,19 +258,13 @@ public class ExtSort extends Node {
 		super.init();
 		try {
 			// create sorter
-			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT)
-					.getMetadata(), sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr, caseSensitive);
+			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT).getMetadata(),
+					sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr, caseSensitive);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
 
-		recordBuffer = ByteBuffer
-    		.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-	
-		if (recordBuffer == null) {
-			throw new RuntimeException("Can NOT allocate internal record buffer ! Required size:"
-					+ Defaults.Record.MAX_RECORD_SIZE);
-		}
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
     }
 
     

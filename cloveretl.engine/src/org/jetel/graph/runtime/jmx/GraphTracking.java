@@ -83,4 +83,10 @@ public interface GraphTracking extends Serializable {
 	 * @return tracking of the currently running phase.
 	 */
 	PhaseTracking getRunningPhaseTracking();
+	
+	/**
+	 * @return size of memory footprint for whole graph (not guaranteed)
+	 */
+	int getUsedMemory();
+
 }

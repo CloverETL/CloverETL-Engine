@@ -84,4 +84,10 @@ public interface PortTracking extends Serializable {
 	 * @return average waiting records.
 	 */
 	int getAverageWaitingRecords();
+	
+	/**
+	 * @return size of memory footprint in bytes of attached edge (both ports of an edge return same number) - not guaranteed
+	 */
+	int getUsedMemory();
+	
 }

@@ -30,6 +30,7 @@ import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.string.CloverString;
 
 @SuppressWarnings("unchecked")
 public abstract class TLValue implements Comparable<TLValue>{
@@ -96,7 +97,7 @@ public abstract class TLValue implements Comparable<TLValue>{
     	   	newval = new TLByteArrayValue(((ByteDataField)field).getByteArray());
         	break;
         case DataFieldMetadata.STRING_FIELD:
-        	newval= new TLStringValue((StringBuilder)field.getValueDuplicate());
+        	newval= new TLStringValue((CloverString) field.getValueDuplicate());
         	break;
         default:
             throw new IllegalArgumentException("Don't know how to convert "+DataFieldMetadata.type2Str(field.getType()));

@@ -27,6 +27,7 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author maciorowski
@@ -146,7 +147,7 @@ public void test_1_NumericDataField() {
 	
 	private void checkToByteBuffer(DataFieldMetadata metadata, double value, byte[] expected) throws CharacterCodingException {
 		NumericDataField binaryField = new NumericDataField(metadata);
-		ByteBuffer dataBuffer = ByteBuffer.allocate(expected.length);
+		CloverBuffer dataBuffer = CloverBuffer.allocate(expected.length);
 		binaryField.setValue(value);
 		System.out.println(binaryField.getValue());
 		binaryField.toByteBuffer(dataBuffer, null);
@@ -236,7 +237,7 @@ public void test_1_NumericDataField() {
 	
 	private void checkFromByteBuffer(DataFieldMetadata metadata, byte[] bytes, double expected) throws CharacterCodingException {
 		NumericDataField binaryField = new NumericDataField(metadata);
-		binaryField.fromByteBuffer(ByteBuffer.wrap(bytes), null);
+		binaryField.fromByteBuffer(CloverBuffer.wrap(bytes), null);
 		assertEquals(expected, binaryField.getDouble());
 	}
 	
@@ -290,7 +291,7 @@ public void test_1_NumericDataField() {
 	 */
 	
 	public void test_serialize() {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(100);
 		
 		aNumericDataField1.setValue(123.23);
 		aNumericDataField1.serialize(buffer);

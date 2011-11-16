@@ -19,7 +19,6 @@
 package org.jetel.util.bytes;
 
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +56,7 @@ public class PackedDecimal {
 	
 	private static final BigInteger ONE_HUNDRED = BigInteger.valueOf(100);
 	
-	public static BigInteger parseBigInteger(ByteBuffer dataBuffer) {
+	public static BigInteger parseBigInteger(CloverBuffer dataBuffer) {
 		byte[] bytes = new byte[dataBuffer.remaining()];
 		dataBuffer.get(bytes);
 		return parseBigInteger(bytes);
@@ -216,14 +215,14 @@ public class PackedDecimal {
 	}*/
 
 	/**
-	 * Convenience method, see {@link #putPackedDecimal(ByteBuffer, BigInteger)}.
+	 * Convenience method, see {@link #putPackedDecimal(CloverBuffer, BigInteger)}.
 	 */
-	public static int putPackedDecimal(ByteBuffer dataBuffer, long value, int minLength) {
+	public static int putPackedDecimal(CloverBuffer dataBuffer, long value, int minLength) {
 		return putPackedDecimal(dataBuffer, BigInteger.valueOf(value), minLength);
 	}
 		
 	/**
-	 * Puts the value into the ByteBuffer as a packed decimal.
+	 * Puts the value into the CloverBuffer as a packed decimal.
 	 * Set <code>minLength</code> to 0 to disable padding.
 	 * 
 	 * @see http://www.simotime.com/datapk01.htm
@@ -234,7 +233,7 @@ public class PackedDecimal {
 	 * 
 	 * @return number of produced bytes
 	 */
-	public static int putPackedDecimal(ByteBuffer dataBuffer, BigInteger value, int minLength) {
+	public static int putPackedDecimal(CloverBuffer dataBuffer, BigInteger value, int minLength) {
 		byte aByte = 0;
 		// 16 is commonly used as maximum length, hence usually no reallocation
 		List<Byte> bytes = new ArrayList<Byte>(16);

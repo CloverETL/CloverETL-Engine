@@ -20,7 +20,6 @@ package org.jetel.data.formatter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
@@ -29,8 +28,10 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
+ * TODO functionality of this class should be consolidated into {@link BinaryDataFormatter} class (???)
  * 
  * @author mvarecha (info@cloveretl.com)
  *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
@@ -40,7 +41,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
 public class ByteBufferFormatter implements Formatter {
 
 	WritableByteChannel writer;
-	ByteBuffer buffer;
+	CloverBuffer buffer;
 	OutputStream backendOutputStream;
 	DataRecordMetadata metaData;
 
@@ -51,6 +52,7 @@ public class ByteBufferFormatter implements Formatter {
 		setDataTarget(outputStream);
 	}
 
+	@Override
 	public void close() {
 		if (writer != null && writer.isOpen()) {
 			try {
@@ -66,29 +68,34 @@ public class ByteBufferFormatter implements Formatter {
 		buffer.clear();
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 	}
 
+	@Override
 	public void flush() throws IOException {
 		buffer.flip();
-		writer.write(buffer);
+		writer.write(buffer.buf());
 		buffer.clear();
 	}
 
+	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		buffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
 	public DataRecordMetadata getMetadata() {
 		return this.metaData;
 	}
 	
+	@Override
 	public void reset() {
 		close();
 	}
 
+	@Override
 	public void setDataTarget(Object outputDataTarget) {
 		if (outputDataTarget instanceof OutputStream) {
 			backendOutputStream = (OutputStream) outputDataTarget;
@@ -97,19 +104,16 @@ public class ByteBufferFormatter implements Formatter {
 			throw new IllegalArgumentException("OutputStream was expected");
 	}
 
+	@Override
 	public int write(DataRecord record) throws IOException {
 		throw new UnsupportedOperationException("Cannot format DataRecord instances");
 	}
 	
-	public int write(ByteBuffer record) throws IOException {
+	public int write(CloverBuffer record) throws IOException {
 		int recordSize = record.remaining();
 		int lengthSize = ByteBufferUtils.lengthEncoded(recordSize);
-		if (recordSize + lengthSize > buffer.remaining()){
+		if (recordSize + lengthSize > buffer.remaining()) {
 			flush();
-		}
-		if (buffer.remaining() < recordSize + lengthSize){
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + 
-					", but record size is " + (recordSize + lengthSize) + ". Set appropriate parameter in defaultProperties file.");
 		}
 		
 		// store size of serialized record
@@ -121,12 +125,13 @@ public class ByteBufferFormatter implements Formatter {
         return recordSize + lengthSize;
 	}
 
-
+	@Override
 	public int writeFooter() throws IOException {
 		// no header
 		return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		// no footer
 		return 0;

@@ -18,11 +18,11 @@
  */
 package org.jetel.graph;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
@@ -39,7 +39,7 @@ import org.jetel.data.Defaults;
 public class DirectEdgeFastPropagate extends EdgeBase {
 
     
-    protected EdgeRecordBufferPool recordBuffer;
+    protected EdgeRecordBufferPool recordsBuffer;
     protected int recordCounter;
     protected long byteCounter;
     protected AtomicInteger bufferedRecords;
@@ -58,24 +58,34 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
     }
 
-    public int getOutputRecordCounter() {
+    @Override
+	public int getOutputRecordCounter() {
         return recordCounter;
     }
 
-    public int getInputRecordCounter() {
+    @Override
+	public int getInputRecordCounter() {
         return recordCounter;
     }
 
-    public long getOutputByteCounter() {
+    @Override
+	public long getOutputByteCounter() {
         return byteCounter;
     }
 
-    public long getInputByteCounter() {
+    @Override
+	public long getInputByteCounter() {
         return byteCounter;
     }
     
-    public int getBufferedRecords(){
+    @Override
+	public int getBufferedRecords() {
         return bufferedRecords.get();
+    }
+    
+    @Override
+    public int getUsedMemory() {
+    	return recordsBuffer.getBufferSize();
     }
     
     /**
@@ -84,21 +94,22 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @exception  IOException  Description of Exception
      * @since                   April 2, 2002
      */
-    public void init() throws IOException {
+    @Override
+	public void init() throws IOException {
         // initialize & open the data pipe
         // we are ready to supply data
-        recordBuffer=new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS, 
-                                            Defaults.Record.MAX_RECORD_SIZE);
+        recordsBuffer = new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS, 
+                                            Defaults.Record.INITIAL_RECORD_SIZE);
         recordCounter = 0;
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 
-        recordBuffer.open();
+        recordsBuffer.open();
     }
 
     @Override
     public void reset() {
-        recordBuffer.reset();
+        recordsBuffer.reset();
 		recordCounter = 0;
 		byteCounter=0;
 		bufferedRecords.set(0);
@@ -114,12 +125,12 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @exception  InterruptedException  Description of Exception
      * @since                            April 2, 2002
      */
-
-    public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-        ByteBuffer buffer;
+    @Override
+	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
+    	CloverBuffer buffer;
         // is the port still OPEN ?? - should be as long as the graph executes
 
-        buffer = recordBuffer.getFullBuffer();
+        buffer = recordsBuffer.getFullBuffer();
         if (buffer == null) {
             return null;
             // no more data in a flow
@@ -127,7 +138,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         // create the record/read it from buffer
         record.deserialize(buffer);
         
-        recordBuffer.setFree(buffer);
+        recordsBuffer.setFree(buffer);
         bufferedRecords.decrementAndGet();
         
         return record;
@@ -143,10 +154,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @exception  InterruptedException  Description of Exception
      * @since                            August 13, 2002
      */
-    public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-        ByteBuffer buffer;
+    @Override
+	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
+    	CloverBuffer buffer;
 
-        buffer = recordBuffer.getFullBuffer();
+        buffer = recordsBuffer.getFullBuffer();
         if (buffer == null) {
             return false;
             // no more data in flow
@@ -154,7 +166,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         record.clear();
         record.put(buffer);
         // copy content of buffer into our record
-        recordBuffer.setFree(buffer);
+        recordsBuffer.setFree(buffer);
         // free the buffer
         record.flip();
         
@@ -172,10 +184,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @exception  InterruptedException  Description of Exception
      * @since                            April 2, 2002
      */
-    public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-        ByteBuffer buffer;
+    @Override
+	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
+    	CloverBuffer buffer;
 
-        buffer = recordBuffer.getFreeBuffer();
+        buffer = recordsBuffer.getFreeBuffer();
         if (buffer == null) {
             throw new IOException("Output port closed !");
         }
@@ -184,7 +197,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         buffer.flip();
         
         byteCounter+=buffer.remaining();        
-        recordBuffer.setFull(buffer);      
+        recordsBuffer.setFull(buffer);      
         recordCounter++;
         bufferedRecords.incrementAndGet();
         // one more record written
@@ -199,10 +212,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @exception  InterruptedException  Description of Exception
      * @since                            August 13, 2002
      */
-    public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-        ByteBuffer buffer;
+    @Override
+	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
+    	CloverBuffer buffer;
 
-        buffer = recordBuffer.getFreeBuffer();
+        buffer = recordsBuffer.getFreeBuffer();
         if (buffer == null) {
             throw new IOException("Output port closed !");
         }
@@ -212,7 +226,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
         byteCounter+=buffer.remaining();
         
-        recordBuffer.setFull(buffer);
+        recordsBuffer.setFull(buffer);
         record.rewind();
         recordCounter++;
         bufferedRecords.incrementAndGet();
@@ -220,12 +234,12 @@ public class DirectEdgeFastPropagate extends EdgeBase {
 
     @Override
     public void eof() {
-        recordBuffer.close();
+        recordsBuffer.close();
     }
 
     @Override
     public boolean isEOF() {
-        return !recordBuffer.isOpen();
+        return !recordsBuffer.isOpen();
     }
     
     @Override
@@ -233,8 +247,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         //do nothing
     }
     
-    public boolean hasData(){
-        return recordBuffer.hasData();
+    @Override
+	public boolean hasData(){
+        return recordsBuffer.hasData();
     }
 
     /**
@@ -247,7 +262,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     static class EdgeRecordBufferPool {
         private final static int MIN_NUM_BUFFERS = 2; // minimum number of internal buffers for correct behaviour
         
-        ByteBuffer buffers[];
+        CloverBuffer buffers[];
         volatile int readPointer;
         volatile int writePointer;
         final int size;
@@ -265,11 +280,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         EdgeRecordBufferPool(int numBuffers, int bufferSize) {
             size= numBuffers > MIN_NUM_BUFFERS ? numBuffers : MIN_NUM_BUFFERS;
             // create/allocate  buffers
-            buffers = new ByteBuffer[size];
+            buffers = new CloverBuffer[size];
             readPointer=0;
             writePointer=0;
             for (int i = 0; i < size; i++) {
-                buffers[i] = ByteBuffer.allocateDirect(bufferSize);
+                buffers[i] = CloverBuffer.allocateDirect(bufferSize);
                 if (buffers[i] == null) {
                     throw new RuntimeException("Failed buffer allocation");
                 }
@@ -285,7 +300,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          * @param  buffer  The new Free value
          * @since          June 5, 2002
          */
-        synchronized void setFree(ByteBuffer buffer) {
+        synchronized void setFree(CloverBuffer buffer) {
             readPointer=(readPointer+1)%size;
             notify();
         }
@@ -297,7 +312,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          * @param  buffer  The new Full value
          * @since          June 5, 2002
          */
-        synchronized void setFull(ByteBuffer buffer) {
+        synchronized void setFull(CloverBuffer buffer) {
             writePointer=(writePointer+1)%size;
             notify();
         }
@@ -323,7 +338,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          * @exception  InterruptedException  Description of Exception
          * @since                            June 5, 2002
          */
-        synchronized ByteBuffer getFreeBuffer() throws InterruptedException {
+        synchronized CloverBuffer getFreeBuffer() throws InterruptedException {
             // if already closed - return null - NoMoreData required
             if (!isOpen){
                 return null;
@@ -349,7 +364,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          * @exception  InterruptedException  Description of Exception
          * @since                            June 5, 2002
          */
-        synchronized ByteBuffer getFullBuffer() throws InterruptedException {
+        synchronized CloverBuffer getFullBuffer() throws InterruptedException {
             // already closed and no more data left
             if ((!isOpen) && (readPointer==writePointer)) {
             	eofWasRead = true;
@@ -399,7 +414,19 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         public boolean hasData() {
             return readPointer != writePointer || (!isOpen && !eofWasRead);
         }
+        
+        /**
+         * @return size of allocated memory (memory footprint)
+         */
+        public int getBufferSize() {
+        	int result = 0;
+        	for (CloverBuffer cloverBuffer : buffers) {
+        		result += cloverBuffer.capacity();
+        	}
+        	return result;
+        }
     }
+    
 }
 /*
  *  end class DirectEdge

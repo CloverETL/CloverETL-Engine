@@ -18,7 +18,6 @@
  */
 package org.jetel.component.aggregate;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
@@ -28,6 +27,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.crypto.Base64;
 
 /**
@@ -43,7 +43,7 @@ public class MD5 extends AggregateFunction {
 	
 	private int loopCount = 0;
 	private MessageDigest md5;
-	ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+	CloverBuffer dataBuffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	private CharsetEncoder encoder;
 
 	// Is input nullable?
@@ -125,7 +125,7 @@ public class MD5 extends AggregateFunction {
 		dataBuffer.clear();
 		input.toByteBuffer(dataBuffer, encoder);
 		dataBuffer.flip();
-		md5.update(dataBuffer);
+		md5.update(dataBuffer.buf());
 		loopCount++;
 	}
 

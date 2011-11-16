@@ -229,7 +229,9 @@ public final class Defaults {
 	/**
 	 * when creating InputStream or OutputStream objects, what is the size of their internal buffer. Used mainly in
 	 * creating Channels from these streams.
+	 * @deprecated use {@link #DEFAULT_INTERNAL_IO_BUFFER_SIZE} instead
 	 */
+	@Deprecated
 	public static int DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE; // = 2048;
 
 	/**
@@ -283,17 +285,43 @@ public final class Defaults {
 	 */
 	public final static class Record {
 		public static void init() {
-			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 8192);
+			INITIAL_RECORD_SIZE = getIntProperties("Record.INTERNAL_RECORD_SIZE", 65536);
+			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 1048576);
+			INITIAL_FIELD_SIZE = getIntProperties("Record.INITIAL_FIELD_SIZE", 65536);
+			MAX_FIELD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 1048576);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
 			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
 		}
 
 		/**
-		 * Determines max size of record (serialized) in bytes.<br>
-		 * If you are getting BufferOverflow, increase the limit here. This affects the memory footprint !!!
+		 * Should be used as initial size of CloverBuffer dedicated to handle a data record.
+		 * Determines expected upper bounds of record size (serialized) in bytes.<br>
+		 * Clover engine is able to handle even bigger records. Underlying buffer
+		 * may be re-allocated in the case a bigger record appears.  
 		 */
-		public static int MAX_RECORD_SIZE;// = 8192;
+		public static int INITIAL_RECORD_SIZE;// = 65536;
+		
+		/**
+		 * Determines maximum size of record (serialized) in bytes.<br>
+		 * If you are getting BufferOverflow, increase the limit here.
+		 */
+		public static int MAX_RECORD_SIZE;// = 1048576;
+
+		/**
+		 * Should be used as initial size of CloverBuffer dedicated to handle a data field.
+		 * Determines expected upper bounds of field size (serialized) in bytes.<br>
+		 * Clover engine is able to handle even bigger fields. Underlying buffer
+		 * may be re-allocated in the case a bigger field appears.  
+		 */
+		public static int INITIAL_FIELD_SIZE;// = 65536;
+		
+		/**
+		 * Determines maximum size of single field (serialized) in bytes.<br>
+		 * If you are getting BufferOverflow, increase the limit here.
+		 */
+		public static int MAX_FIELD_SIZE;// = 1048576;
+
 		/**
 		 * Compression level for compressed data fields (CompressedByteField - cbyte). Should be set to a value from
 		 * interval 0-9.
@@ -351,7 +379,9 @@ public final class Defaults {
 		/**
 		 * max length of field's value representation (bytes or characters).<br>
 		 * If your records contain long fields (usually text-memos), increase the limit here.
+		 * @deprecated use {@link Record#INITIAL_FIELD_SIZE} instead
 		 */
+		@Deprecated
 		public static int FIELD_BUFFER_LENGTH;// = 512;
 
 		/**
@@ -380,7 +410,9 @@ public final class Defaults {
 		/**
 		 * max length of field's value representation (bytes or characters).<br>
 		 * If your records contain long fields (usually text-memos), increase the limit here.
+		 * @deprecated use {@link Record#INITIAL_FIELD_SIZE} instead
 		 */
+		@Deprecated
 		public static int FIELD_BUFFER_LENGTH;// = 512;
 
 		/**
@@ -446,6 +478,7 @@ s    	 */
 	 * @author dpavlis
 	 * @created 6. duben 2003
 	 */
+	@Deprecated
 	public final static class Data {
 		public static void init() {
 			DATA_RECORDS_BUFFER_SIZE = getIntProperties("Data.DATA_RECORDS_BUFFER_SIZE", 10 * 1048576);
@@ -455,10 +488,13 @@ s    	 */
 		/**
 		 * Unit size of data buffer which keeps data records for sorting/hashing
 		 */
+		@Deprecated
 		public static int DATA_RECORDS_BUFFER_SIZE;// = 10 * 1048576; // 10MB
+		
 		/**
 		 * How many units (buffers) can be allocated
 		 */
+		@Deprecated
 		public static short MAX_BUFFERS_ALLOCATED;// = 99;
 		// all together up to 990 MB
 	}
@@ -557,9 +593,9 @@ s    	 */
 	public final static class Graph {
 		public static void init() {
 			DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE",
-					Defaults.Record.MAX_RECORD_SIZE * 4);
+					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 			BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE",
-					Defaults.Record.MAX_RECORD_SIZE * 10);
+					Defaults.Record.INITIAL_RECORD_SIZE * 10);
 			DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = getIntProperties(
 					"Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
 		}

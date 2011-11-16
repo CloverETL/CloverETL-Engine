@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
@@ -32,6 +31,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * This is a simple binary formatter which is used to store DataRecord objects into files
@@ -46,7 +46,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
 public class BinaryDataFormatter implements Formatter {
 
 	WritableByteChannel writer;
-	ByteBuffer buffer;
+	CloverBuffer buffer;
 	DataRecordMetadata metaData;
 	private boolean useDirectBuffers = true;
 	
@@ -67,6 +67,7 @@ public class BinaryDataFormatter implements Formatter {
 		setDataTarget(f);
 	}
 	
+	@Override
 	public void close() {
 		if (writer != null && writer.isOpen()) {
 			try {
@@ -79,29 +80,34 @@ public class BinaryDataFormatter implements Formatter {
 		buffer.clear();
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 	}
 
+	@Override
 	public void flush() throws IOException {
 		buffer.flip();
-		writer.write(buffer);
+		writer.write(buffer.buf());
 		buffer.clear();
 	}
 
+	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = useDirectBuffers ? ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) : ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		buffer = useDirectBuffers ? CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) : CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
  	}
 
 	public DataRecordMetadata getMetadata() {
 		return this.metaData;
 	}
 	
+	@Override
 	public void reset() {
 		close();
 	}
 
+	@Override
 	public void setDataTarget(Object outputDataTarget) {
 		if (outputDataTarget instanceof File) {
 			try {
@@ -117,15 +123,12 @@ public class BinaryDataFormatter implements Formatter {
 		}
 	}
 
+	@Override
 	public int write(DataRecord record) throws IOException {
 		int recordSize = record.getSizeSerialized();
 		int lengthSize = ByteBufferUtils.lengthEncoded(recordSize);
-		if (buffer.remaining() < recordSize + lengthSize){
+		if (buffer.remaining() < recordSize + lengthSize) {
 			flush();
-		}
-		if (buffer.remaining() < recordSize + lengthSize){
-			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + 
-					", but record size is " + (recordSize + lengthSize) + ". Set appropriate parameter in defaultProperties file.");
 		}
         ByteBufferUtils.encodeLength(buffer, recordSize);
         record.serialize(buffer);
@@ -133,11 +136,13 @@ public class BinaryDataFormatter implements Formatter {
         return recordSize + lengthSize;
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		// no header
 		return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		// no footer
 		return 0;
@@ -151,6 +156,4 @@ public class BinaryDataFormatter implements Formatter {
 		this.useDirectBuffers = useDirectBuffers;
 	}
 
-	
-	
 }

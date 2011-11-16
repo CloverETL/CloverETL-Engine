@@ -20,7 +20,6 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -36,6 +35,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Superclass for fix-length data parsers.
@@ -58,7 +58,7 @@ public abstract class FixLenDataParser implements TextParser {
 	
 	protected ReadableByteChannel inChannel;
 
-	protected ByteBuffer byteBuffer;
+	protected CloverBuffer byteBuffer;
 
 	/**
 	 * Indicates whether end of input data was already reached.
@@ -86,14 +86,13 @@ public abstract class FixLenDataParser implements TextParser {
 		} else {
 			decoder = Charset.forName(charset).newDecoder();
 		}		
-		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		byteBuffer = CloverBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init()
-	throws ComponentNotReadyException {
+	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}

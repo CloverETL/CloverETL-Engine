@@ -17,7 +17,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.component.aggregate;
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -36,6 +35,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.crypto.Base64;
 
 /**
@@ -385,7 +385,7 @@ public class AggregateFunctionOld implements Iterator {
         MyLong myLong;
 		CRC32 crc32 = new CRC32();
         MessageDigest md5;
-        ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        CloverBuffer dataBuffer = CloverBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         
 		/**
 		 *Constructor for the FilterItem object

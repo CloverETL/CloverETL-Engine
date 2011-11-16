@@ -1,52 +1,52 @@
 #MAX_RECORD_SIZE - this limits the maximum size of data record in binary form. The binary form is the form used by Clover 
 #when manipulating data.
-#Parser are here to convert text representation or database representation of data records to Clover's internal. 
+#Parsers are here to convert text representation or database representation of data records to Clover's internal. 
 #Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
 #(java stores strings in unicode - 16bits per character).
-#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31 , 
-#but you should keep it under 64K.
-#Clover at runtime allocates several internal buffers of MAX_RECORD_SIZE, thus increasing this value increases also 
-#memory utilization. 
+#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31.
+#This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
+#dedicated to persist records are initially allocated to Record.INITIAL_RECORD_SIZE size
+#and can grow if necessary. This is a limit for the buffer growing.
+Record.MAX_RECORD_SIZE = 1048576
 
-Record.MAX_RECORD_SIZE = 65536
+#INITIAL_RECORD_SIZE - this is expected upper bounds of record size in binary form. The binary form is the form
+#used by Clover when manipulating data.
+#All internal buffers dedicated to persist a record are initially allocated to this size and can grow if necessary.
+#The overall impact to memory utilization can be huge. Increasing this initial buffer size can slightly
+#increase startup speed in case processing of big records.
+Record.INITIAL_RECORD_SIZE = 65536
+
+#MAX_FIELD_SIZE - this limits the maximum size of a field in binary form. The binary form is the form used by Clover 
+#when manipulating data.
+#Parsers are here to convert text representation or database representation of data records to Clover's internal. 
+#Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
+#(java stores strings in unicode - 16bits per character).
+#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31.
+#This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
+#dedicated to persist fields are initially allocated to Record.INITIAL_FIELD_SIZE size
+#and can grow if necessary. This is a limit for the buffer growing.
+Record.MAX_FIELD_SIZE = 1048576
+
+#INITIAL_FIELD_SIZE - this is expected upper bounds of field size in binary form. The binary form is the form
+#used by Clover when manipulating data.
+#All internal buffers dedicated to persist fields are initially allocated to this size and can grow if necessary.
+#The overall impact to memory utilization can be huge. Increasing this initial buffer size can slightly
+#increase startup speed in case processing of big records.
+Record.INITIAL_FIELD_SIZE = 65536
 
 #Compression level for compressed data fields (cbyte).
 Record.DEFAULT_COMPRESSION_LEVEL=5
 
-#FIELD_BUFFER_LENGTH - this is constant for textual data parsers. 
-#It determines what is the maximum size of one particular data field in text format. 
-#If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
-#The impact on memory utilization is low as each parser your graph uses allocates only one such buffer. 
-
-DataParser.FIELD_BUFFER_LENGTH = 65536
-
-
-#the same as above, but for formatting data to text representation
-#should be set to the same value as above
-
-#4096
-DataFormatter.FIELD_BUFFER_LENGTH = 65536
-
-
 #This constant determines the internal buffer clover components allocate for I/O operations. 
 #Again, increasing this value does not have big impact on overall memory utilization as only 
-#few such buffers are used at runtime. There is no sence in increasing this value to speed up something. 
+#few such buffers are used at runtime. There is no sense in increasing this value to speed up something. 
 #It has been tested that the performance improvement is negligible. 
-#However, if you increase the size of MAX_RECORD_SIZE , make sure this value is minimally 2*MAX_RECORD_SIZE.
-
-DEFAULT_INTERNAL_IO_BUFFER_SIZE = 49152
-
-#when creating InputStream or OutputStream objects, what
-#is the size of their internal buffer. Used mainly in
-#creating Channels from these streams.
-
-DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = 2048
-
+DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768
 
 DEFAULT_DATE_FORMAT = yyyy-MM-dd
 DEFAULT_TIME_FORMAT = HH:mm:ss
-#uncomment this property when locale should be independent on underlaying platform otherwise system default locale is used
-# DEFAULT_LOCALE = en.US
+#uncomment this property when locale should be independent on underlying platform otherwise system default locale is used
+#DEFAULT_LOCALE = en.US
 DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH:mm:ss
 DEFAULT_REGEXP_TRUE_STRING = true|T|TRUE|YES|Y|t|1|yes|y
 DEFAULT_REGEXP_FALSE_STRING = false|F|FALSE|NO|N|f|0|no|n
@@ -113,8 +113,6 @@ InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 8000
 
 #Size of internal buffer of DirectEdge for storing
 #data records when transmitted between two components.
-#The size should be at least MAX_RECORD_SIZE + 8, better
-#several times bigger
 #Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 24576
 
 
@@ -122,8 +120,6 @@ InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 8000
 #data records. BufferedEdge is used when engine needs to compensate
 #fact that component reads data from two different ports and there might
 #be some interdependencies between the source data flows.
-#The size should be at least Defaults.Record.MAX_RECORD_SIZE*10, better
-#several times bigger - 128kB or more
 #Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = 81920
 
 #Number of internal buffers for storing/buffering records
@@ -159,6 +155,3 @@ PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING=java.;javax.;sun.misc.
 # It determines what is the maximum size of one particular data field for stream mode for writer components. 
 # This value must be less or equal to similar field or record buffers.
 PortReadingWriting.DATA_LENGTH = 2048
-
-
-

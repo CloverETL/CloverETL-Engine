@@ -26,10 +26,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.bytes.CloverBuffer;
 import org.w3c.dom.Element;
 
 /**
@@ -192,11 +194,15 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         return edge.getInputByteCounter();
     }
 
-     public int getBufferedRecords(){
-         return edge.getBufferedRecords();
-     }
-    
-    
+    public int getBufferedRecords(){
+    	return edge.getBufferedRecords();
+    }
+
+	@Override
+	public int getUsedMemory() {
+		return edge.getUsedMemory();
+	}
+
 	/**
 	 *  Gets the Reader attribute of the Edge object
 	 *
@@ -353,10 +359,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 		return edge.readRecordDirect(record);
 	}
 
+	/**
+	 * @deprecated use {@link #readRecordDirect(CloverBuffer)}
+	 */
+	@Override
+	@Deprecated
+	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(record);
+		boolean result = readRecordDirect(wrappedBuffer);
+		if (wrappedBuffer.buf() != record) {
+			throw new JetelRuntimeException("Deprecated method invokation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
+	}
 
 	/**
 	 *  An operation that does send one DataRecord through the Edge/PIPE
@@ -380,7 +399,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
         if(edgeDebuger != null) {
             edgeDebuger.writeRecord(record);
             record.rewind();
@@ -388,6 +407,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		edge.writeRecordDirect(record);
 	}
 
+	/**
+	 * @deprecated use {@link #writeRecordDirect(CloverBuffer)}
+	 */
+	@Override
+	@Deprecated
+	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+		writeRecordDirect(CloverBuffer.wrap(record));
+	}
 
 	/**
 	 *  An operation that does ...

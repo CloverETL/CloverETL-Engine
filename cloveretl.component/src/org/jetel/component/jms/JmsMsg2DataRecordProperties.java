@@ -18,7 +18,6 @@
  */
 package org.jetel.component.jms;
 
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -35,6 +34,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Class transforming JMS messages (TextMessage or BytesMessage) to data records. One field of the record may be filled by body of the message. 
@@ -119,7 +119,7 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 				int readBytes = bmsg.readBytes(buffer);
 				if (readBytes != (int)bmsg.getBodyLength())
 					throw new JMSException("Difference in read byte array. Expected lenght:"+bmsg.getBodyLength()+" read:"+readBytes);
-				ByteBuffer dataBuffer = ByteBuffer.wrap(buffer);
+				CloverBuffer dataBuffer = CloverBuffer.wrap(buffer);
 				try {
 					record.getField(bodyField).fromByteBuffer(dataBuffer, decoder);
 				} catch (CharacterCodingException e) { // convert it to bad-format exception

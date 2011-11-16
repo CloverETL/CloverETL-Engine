@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.jetel.data.Defaults;
@@ -33,6 +32,7 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -115,7 +115,7 @@ public class Concatenate extends Node {
 	}
 
     /** A byte buffer used for fast copying of data records as their deserialized version is never used. */
-    private ByteBuffer recordBuffer;
+    private CloverBuffer recordBuffer;
 
     public Concatenate(String id) {
 		super(id);
@@ -146,7 +146,7 @@ public class Concatenate extends Node {
 
 		super.init();
 
-        recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 
         if (recordBuffer == null) {
             throw new ComponentNotReadyException("Error allocating a data record buffer!");

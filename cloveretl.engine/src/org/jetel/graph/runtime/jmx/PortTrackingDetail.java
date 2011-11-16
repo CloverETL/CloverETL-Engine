@@ -54,6 +54,8 @@ public abstract class PortTrackingDetail implements PortTracking {
 	protected int waitingRecords;
 	protected int averageWaitingRecords;
 
+	protected int usedMemory;
+	
     protected PortTrackingDetail(NodeTrackingDetail parentNodeDetail, int index) {
     	this.parentNodeDetail = parentNodeDetail;
     	this.index = index;
@@ -69,6 +71,7 @@ public abstract class PortTrackingDetail implements PortTracking {
     	this.bytePeak = portDetail.bytePeak;
     	this.waitingRecords= portDetail.waitingRecords;
     	this.averageWaitingRecords = portDetail.averageWaitingRecords;
+    	this.usedMemory = portDetail.usedMemory;
     }
     
 	/* (non-Javadoc)
@@ -134,6 +137,10 @@ public abstract class PortTrackingDetail implements PortTracking {
 		return averageWaitingRecords;
 	}
 
+	@Override
+	public int getUsedMemory() {
+		return usedMemory;
+	}
 	
 	public void setLastGatherTime(long lastGatherTime) {
 		this.lastGatherTime = lastGatherTime;
@@ -169,6 +176,10 @@ public abstract class PortTrackingDetail implements PortTracking {
 
 	public void setAverageWaitingRecords(int averageWaitingRecords) {
 		this.averageWaitingRecords = averageWaitingRecords;
+	}
+	
+	public void setUsedMemory(int usedMemory) {
+		this.usedMemory = usedMemory;
 	}
 
 	abstract public String getType();

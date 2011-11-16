@@ -18,9 +18,9 @@
  */
 package org.jetel.graph;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  A class that represents Edge - data connection between two NODEs
@@ -112,6 +112,11 @@ public abstract class EdgeBase {
      */
     public abstract int getBufferedRecords();
     
+    /**
+	 * @return size of allocated memory on the edge (memory footprint)
+     */
+    public abstract int getUsedMemory();
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -122,7 +127,7 @@ public abstract class EdgeBase {
 	 *@exception  InterruptedException  Description of Exception
 	 *@since                            August 13, 2002
 	 */
-	public abstract boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
+	public abstract boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException;
 
 
 	/**
@@ -144,7 +149,7 @@ public abstract class EdgeBase {
 	 *@exception  InterruptedException  Description of Exception
 	 *@since                            August 13, 2002
 	 */
-	public abstract void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
+	public abstract void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException;
 
     public abstract void eof() throws IOException, InterruptedException;
     

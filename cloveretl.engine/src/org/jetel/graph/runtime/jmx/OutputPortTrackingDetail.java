@@ -69,6 +69,8 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Seri
 				outputPort.getOutputRecordCounter(), 
 				outputPort.getOutputByteCounter(),
 				((Edge) outputPort).getBufferedRecords());
+
+		setUsedMemory(outputPort.getUsedMemory());
 	}
 	
 }

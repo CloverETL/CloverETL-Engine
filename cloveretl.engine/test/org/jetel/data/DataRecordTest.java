@@ -18,11 +18,10 @@
  */
 package org.jetel.data;
 
-import java.nio.ByteBuffer;
-
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Tests the DataRecord implementation.
@@ -66,7 +65,7 @@ public class DataRecordTest extends CloverTestCase {
 		DataRecord deserializedRecord = new DataRecord(record.getMetadata());
 		deserializedRecord.init();
 
-		ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
 		record.serialize(buffer);
 		buffer.flip();
 		deserializedRecord.deserialize(buffer);

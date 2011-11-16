@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -31,9 +30,11 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Parser of records from InputStream.
@@ -41,6 +42,8 @@ import org.jetel.util.bytes.ByteBufferUtils;
  * - length of serialized record, must be decoded by ByteBufferUtils#decodeLength() method.
  * - serialized record, in common clover serialization format 
  * 
+ *  TODO functionality of this class should be consolidated into {@link BinaryDataParser} class (???)
+ *  
  * @author mvarecha (info@cloveretl.com)
  *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
  *
@@ -54,7 +57,7 @@ public class ByteBufferParser implements Parser {
 	 */
 	InputStream backendStream;
 	DataRecordMetadata metadata;
-	ByteBuffer buffer;
+	CloverBuffer buffer;
 	IParserExceptionHandler exceptionHandler;
 	/*
 	 * aux variable
@@ -91,8 +94,7 @@ public class ByteBufferParser implements Parser {
 		try {
 			setDataSource(inputStream);
 		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JetelRuntimeException(e);
 		}
 	}
 
@@ -105,11 +107,11 @@ public class ByteBufferParser implements Parser {
 		try {
 			setDataSource(file);
 		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JetelRuntimeException(e);
 		}
 	}
 
+	@Override
 	public void close() {
 		if (reader != null && reader.isOpen()) {
 			try {
@@ -118,23 +120,25 @@ public class ByteBufferParser implements Parser {
 					backendStream.close();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new JetelRuntimeException(e);
 			}
 		}
 		buffer.clear();
 		buffer.limit(0);
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return this.exceptionHandler;
 	}
 
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		throw new UnsupportedOperationException("Cannot deserialize to DataRecord");
 	}
 
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		throw new UnsupportedOperationException("Cannot deserialize to DataRecord");
 	}
@@ -147,7 +151,7 @@ public class ByteBufferParser implements Parser {
 	 * @return
 	 * @throws JetelException
 	 */
-	public boolean getNext(ByteBuffer recordBuffer) throws JetelException {
+	public boolean getNext(CloverBuffer recordBuffer) throws JetelException {
 		try {
 			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
 				reloadBuffer(LEN_SIZE_SPECIFIER);
@@ -170,9 +174,8 @@ public class ByteBufferParser implements Parser {
 			buffer.limit(buffer.position() + recordSize);
 			
 			recordBuffer.clear();
-			recordBuffer.limit(recordSize);
 			recordBuffer.put(buffer);
-			recordBuffer.rewind();
+			recordBuffer.flip();
 			
 			buffer.limit(sourceLimit);
 			
@@ -191,8 +194,12 @@ public class ByteBufferParser implements Parser {
 		}
 		int size;
 		buffer.compact();
+		//we have to ensure that the buffer is big enough to bear 'requiredSize' bytes
+		if (buffer.capacity() < requiredSize) {
+			buffer.expand(requiredSize);
+		}
 		do {
-			size = reader.read(buffer);
+			size = reader.read(buffer.buf());
 			if (buffer.position() > requiredSize) {
 				break;
 			}
@@ -207,20 +214,23 @@ public class ByteBufferParser implements Parser {
 		buffer.flip();
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
 		return null;
 	}
 
+	@Override
 	public Object getPosition() {
 		return null;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE, bufferLimit) : Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
-		buffer = ByteBuffer.allocateDirect(buffSize);
+		buffer = CloverBuffer.allocateDirect(buffSize);
 		buffer.clear();
 		buffer.limit(0);
 
@@ -231,9 +241,11 @@ public class ByteBufferParser implements Parser {
 		return this.metadata;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 	}
 
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		buffer.clear();
 		buffer.limit(0);
@@ -245,6 +257,7 @@ public class ByteBufferParser implements Parser {
 		eofReached = false;
 	}
 
+	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		if (inputDataSource instanceof InputStream) {
 			backendStream = (InputStream) inputDataSource;
@@ -253,17 +266,17 @@ public class ByteBufferParser implements Parser {
 			throw new IllegalArgumentException("InputStream was expected");
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
 	}
 
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
-		// TODO Auto-generated method stub
-
 	}
 
+	@Override
 	public int skip(int rec) throws JetelException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

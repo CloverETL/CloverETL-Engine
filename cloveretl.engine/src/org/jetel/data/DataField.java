@@ -20,7 +20,6 @@ package org.jetel.data;
 
 import java.io.Serializable;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -29,6 +28,7 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -263,8 +263,8 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer));
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+		fromString(decoder.decode(dataBuffer.buf()));
 	}
 
 	/**
@@ -275,7 +275,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 		} catch (BufferOverflowException e) {
@@ -289,7 +289,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public abstract void serialize(ByteBuffer buffer);
+	public abstract void serialize(CloverBuffer buffer);
 
 
 	/**
@@ -298,7 +298,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public abstract void deserialize(ByteBuffer buffer);
+	public abstract void deserialize(CloverBuffer buffer);
 
 
 	/**

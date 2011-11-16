@@ -19,12 +19,14 @@
 package org.jetel.data;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
- * This record buffer implement LIFO record storage. Size of buffer is limited by a constant.
+ * This record buffer implement FIFO record storage with limited number of records.
+ * If buffer is full, pushing next data record is going to result in 
+ * the oldest data record to be removed from the buffer.
  * None of the main record manipulating methods (push/pop) is blocking.
  * Instances of RingRecordBuffer are not safe for use by multiple threads!
  * Usage scenario:
@@ -107,7 +109,7 @@ public class RingRecordBuffer {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public void pushRecord(ByteBuffer record) throws IOException, InterruptedException {
+	public void pushRecord(CloverBuffer record) throws IOException, InterruptedException {
 		recordBuffer.writeRecord(record);
 		numBufferedRecords++;
 
@@ -124,7 +126,7 @@ public class RingRecordBuffer {
 	}
 	
 	/**
-	 * Pick up the oldest record from the buffer or return null if the buffer is empy.
+	 * Pick up the oldest record from the buffer or return null if the buffer is empty.
 	 * @param record
 	 * @return
 	 * @throws IOException
@@ -142,13 +144,13 @@ public class RingRecordBuffer {
 	}
 
 	/**
-	 * Pick up the oldest record from the buffer or return null if the buffer is empy.
+	 * Pick up the oldest record from the buffer or return null if the buffer is empty.
 	 * @param record
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public ByteBuffer popRecord(ByteBuffer record) throws IOException, InterruptedException {
+	public CloverBuffer popRecord(CloverBuffer record) throws IOException, InterruptedException {
 		if (numBufferedRecords > 0) {
 			recordBuffer.ensureSuccessfulReading();
 
@@ -184,6 +186,8 @@ public class RingRecordBuffer {
 		
 		private void ensureSuccessfulReading() {
 			if (!hasData() && numBufferedRecords > 0) {
+				//only data records are in writeDataBuffer, lets prepare it for reading
+				//potentially very awkward hack - class is not definitely thread safe
 		    	writeDataBuffer.flip();
 		        readDataBuffer.clear();
 		        readDataBuffer.put(writeDataBuffer);
