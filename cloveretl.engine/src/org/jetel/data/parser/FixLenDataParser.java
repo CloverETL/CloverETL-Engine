@@ -86,7 +86,7 @@ public abstract class FixLenDataParser implements TextParser {
 		} else {
 			decoder = Charset.forName(charset).newDecoder();
 		}		
-		byteBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		byteBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
 	}
 	
 	/* (non-Javadoc)

@@ -292,6 +292,8 @@ public final class Defaults {
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
 			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
+			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
+					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 		}
 
 		/**
@@ -336,6 +338,12 @@ public final class Defaults {
 		 * This may speed serialization of record contains many fields with mostly NULL value assigned.
 		 */
 		public static boolean USE_FIELDS_NULL_INDICATORS; // = false;
+
+		/**
+		 * Size of internal buffer for temporary storing several data records.
+		 * Size should be at least INITIAL_RECORD_SIZE, better several times bigger
+		 */
+		public static int RECORDS_BUFFER_SIZE;
 
 	}
 
@@ -592,8 +600,6 @@ s    	 */
 
 	public final static class Graph {
 		public static void init() {
-			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
-					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 			DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE",
 					Defaults.Record.INITIAL_RECORD_SIZE * 4);
 			BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE",
@@ -601,12 +607,6 @@ s    	 */
 			DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = getIntProperties(
 					"Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
 		}
-
-		/**
-		 * Size of internal buffer for temporary storing several data records.
-		 * Size should be at least INITIAL_RECORD_SIZE, better several times bigger
-		 */
-		public static int RECORDS_BUFFER_SIZE;
 
 		/**
 		 * Size of internal buffer of DirectEdge for storing data records when transmitted between two components. The

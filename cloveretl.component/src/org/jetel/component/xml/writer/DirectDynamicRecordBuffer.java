@@ -74,7 +74,7 @@ public class DirectDynamicRecordBuffer {
 		tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tempDirectory != null ? new File(tempDirectory) : null);
 		tmpFile.deleteOnExit();
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
 	}
 	

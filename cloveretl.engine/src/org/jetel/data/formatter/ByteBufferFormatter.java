@@ -83,7 +83,7 @@ public class ByteBufferFormatter implements Formatter {
 	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = CloverBuffer.allocate(Defaults.Graph.RECORDS_BUFFER_SIZE);
+		buffer = CloverBuffer.allocate(Defaults.Record.RECORDS_BUFFER_SIZE);
  	}
 
 	public DataRecordMetadata getMetadata() {

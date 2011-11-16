@@ -218,8 +218,8 @@ public class BinaryDataParser implements Parser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata cannot be null");
 		}
-		int buffSize = bufferLimit > 0 ? Math.min(Defaults.Graph.RECORDS_BUFFER_SIZE, bufferLimit)
-				: Defaults.Graph.RECORDS_BUFFER_SIZE;
+		int buffSize = bufferLimit > 0 ? Math.min(Defaults.Record.RECORDS_BUFFER_SIZE, bufferLimit)
+				: Defaults.Record.RECORDS_BUFFER_SIZE;
 		buffer = CloverBuffer.allocate(buffSize, useDirectBuffers);
 		buffer.clear();
 		buffer.limit(0);

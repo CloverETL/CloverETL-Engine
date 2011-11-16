@@ -56,7 +56,7 @@ public class FileRecordBuffer {
 	// indicates whether buffer contains unwritten data
 
 	// data
-	private final static int DEFAULT_BUFFER_SIZE = Defaults.Graph.RECORDS_BUFFER_SIZE;
+	private final static int DEFAULT_BUFFER_SIZE = Defaults.Record.RECORDS_BUFFER_SIZE;
 	// size of BUFFER - used for push & shift operations
 	private final static int LEN_SIZE_SPECIFIER = 4;
 	// size of integer variable used to keep record length
