@@ -112,6 +112,7 @@ import org.jetel.interpreter.data.TLVariable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
+import org.jetel.util.string.CloverString;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -553,7 +554,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(node.nodeVal);
             } else if (a.type==TLValueType.STRING) {
                 //CharSequence a1 = ((TLStringValue)a).getCharSequence();
-                StringBuilder buf=(StringBuilder)node.nodeVal.getValue();
+                CloverString buf = (CloverString)node.nodeVal.getValue();
                 buf.setLength(0);
                 buf.append(a.getValue());
                 if (b.type==TLValueType.STRING) {

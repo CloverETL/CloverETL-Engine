@@ -41,6 +41,7 @@ import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.DataGenerator;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.Compare;
 import org.jetel.util.string.StringAproxComparator;
 import org.jetel.util.string.StringUtils;
@@ -190,14 +191,14 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 			for (int i = 0; i < params.length; i++) {
 				if (params[i] != TLNullValue.getInstance()) {
 					if (params[i].type == TLValueType.STRING) {
-						StringUtils.strBuffAppend(strBuf, ((TLStringValue) params[i]).getCharSequence());
+						strBuf.append(((TLStringValue) params[i]).getCharSequence());
 					} else {
-						StringUtils.strBuffAppend(strBuf, params[i].toString());
+						strBuf.append(params[i].toString());
 					}
 				}
 			}
@@ -222,7 +223,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			if (params[0] != TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
@@ -256,7 +257,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			if (params[0] != TLNullValue.getInstance() && params[0].type == TLValueType.STRING) {
@@ -291,7 +292,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			int length, from;
@@ -310,8 +311,7 @@ public class StringLib extends TLFunctionLibrary {
 			if (params[0].type != TLValueType.STRING) {
 				throw new TransformLangExecutorRuntimeException(params, "substring - wrong type of literal(s)");
 			}
-
-			StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), from, length);
+			strBuf.append(((TLStringValue) params[0]).getCharSequence(), from, from + length);
 			return val;
 		}
 
@@ -332,7 +332,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			int length;
@@ -350,9 +350,8 @@ public class StringLib extends TLFunctionLibrary {
 				throw new TransformLangExecutorRuntimeException(params, "left - wrong type of literal(s)");
 			}
 
-			StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), 0, length);
+			strBuf.append(((TLStringValue) params[0]).getCharSequence(), 0, length);
 			return val;
-
 		}
 
 		@Override
@@ -372,7 +371,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			int length;
@@ -393,7 +392,8 @@ public class StringLib extends TLFunctionLibrary {
 			CharSequence src = ((TLStringValue) params[0]).getCharSequence();
 			int from = src.length() - length;
 
-			StringUtils.subString(strBuf, src, from, length);
+			strBuf.append(src, from, from + length);
+			
 			return val;
 		}
 
@@ -414,7 +414,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			if (params[0].type != TLValueType.STRING) {
@@ -572,7 +572,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			if (params[1] == TLNullValue.getInstance()) {
@@ -965,14 +965,14 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public TLValue execute(TLValue[] params, TLContext<?> context) {
 			TLValue val = (TLValue) context.getContext();
-			StringBuilder strBuf = (StringBuilder) val.getValue();
+			CloverString strBuf = (CloverString) val.getValue();
 			strBuf.setLength(0);
 
 			delimiter = params[0] == TLNullValue.getInstance() ? "" : ((TLStringValue) params[0]).getCharSequence();
 			for (int i = 1; i < params.length; i++) {
 				if (params[i] != TLNullValue.getInstance()) {
 					if (params[i].type == TLValueType.STRING) {
-						StringUtils.strBuffAppend(strBuf, ((TLStringValue) params[i]).getCharSequence());
+						strBuf.append(((TLStringValue) params[i]).getCharSequence());
 					} else if (params[i].type == TLValueType.LIST || params[i].type == TLValueType.MAP) {
 						list = params[i].type == TLValueType.LIST ? ((TLListValue) params[i]).getList()
 								: ((TLMapValue) params[i]).getMap().entrySet();
@@ -984,7 +984,7 @@ public class StringLib extends TLFunctionLibrary {
 							}
 						}
 					} else {
-						StringUtils.strBuffAppend(strBuf, params[i].toString());
+						strBuf.append(params[i].toString());
 					}
 
 					if (i < params.length - 1) {
@@ -1129,8 +1129,8 @@ public class StringLib extends TLFunctionLibrary {
 				throw new TransformLangExecutorRuntimeException(params, "chop - wrong type of literal(s)");
 			}
 
-			StringBuilder input = (StringBuilder) params[0].getValue();
-			StringBuilder output = (StringBuilder) val.getValue();
+			CloverString input = (CloverString) params[0].getValue();
+			CloverString output = (CloverString) val.getValue();
 			// erase the output value - this will also handle empty strings
 			output.setLength(0);
 
@@ -1140,7 +1140,7 @@ public class StringLib extends TLFunctionLibrary {
 				// second parameter is pattern to chop from the end of the string
 				if (params.length > 1) {
 					output.append(input);
-					StringBuilder pattern = (StringBuilder) params[1].getValue();
+					CloverString pattern = (CloverString) params[1].getValue();
 					int endIndex = input.length();
 					int startIndex = endIndex - pattern.length();
 

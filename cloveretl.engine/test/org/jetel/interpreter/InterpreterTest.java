@@ -2960,9 +2960,9 @@ public class InterpreterTest extends CloverTestCase {
 		      
 		      // Compare for each output records if the original values were copied successfully
 		      for (int i=0; i < outputRecords.length; i++) {
-		    	  assertEquals(((StringBuilder)outputRecords[i].getField("Name").getValue()).toString(),NAME_CONTENTS);
+		    	  assertEquals(((CharSequence)outputRecords[i].getField("Name").getValue()).toString(),NAME_CONTENTS);
 		    	  assertEquals(outputRecords[i].getField("Age").getValue(),AGE_CONTENTS);
-		    	  assertEquals(((StringBuilder)outputRecords[i].getField("City").getValue()).toString(),CITY_CONTENTS);
+		    	  assertEquals(((CharSequence)outputRecords[i].getField("City").getValue()).toString(),CITY_CONTENTS);
 		    	  assertEquals(outputRecords[i].getField("Born").getValue(),BORN_CONTENTS);
 		    	  assertTrue(outputRecords[i].getField("Value").isNull());
 		      }

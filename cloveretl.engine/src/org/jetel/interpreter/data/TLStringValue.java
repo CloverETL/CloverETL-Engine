@@ -67,7 +67,7 @@ public class TLStringValue extends TLValue implements CharSequence {
 		return value;
 	}
 	
-	public CharSequence getCharSequence(){
+	public CloverString getCharSequence(){
 		return value;
 	}
 	
