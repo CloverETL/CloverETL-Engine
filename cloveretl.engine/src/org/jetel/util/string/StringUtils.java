@@ -113,22 +113,22 @@ public class StringUtils {
 	/**
 	 * Unescapes specified characters within the given string buffer.
 	 *
-	 * @param stringBuffer a string buffer containing escaped characters
+	 * @param stringBuilder a string buffer containing escaped characters
 	 * @param character the only character that should be unescaped
 	 *
 	 * @version 16th September 2009
 	 * @since 15th September 2009
 	 */
-	public static void unescapeCharacters(StringBuffer stringBuffer, char character) {
+	public static void unescapeCharacters(StringBuilder stringBuilder, char character) {
 		String characterString = String.valueOf(character);
-		int index = stringBuffer.indexOf(characterString, 1);
+		int index = stringBuilder.indexOf(characterString, 1);
 
 		while (index >= 0) {
-			if (stringBuffer.charAt(index - 1) == '\\') {
-				stringBuffer.deleteCharAt(index - 1);
+			if (stringBuilder.charAt(index - 1) == '\\') {
+				stringBuilder.deleteCharAt(index - 1);
 			}
 
-			index = stringBuffer.indexOf(characterString, index + 1);
+			index = stringBuilder.indexOf(characterString, index + 1);
 		}
 	}
 
@@ -612,7 +612,7 @@ public class StringUtils {
 			return null;
 		}
 
-		StringBuffer copy = new StringBuffer();
+		StringBuilder copy = new StringBuilder();
 		char character;
 		for (int i = 0; i < controlString.length(); i++) {
 			character = controlString.charAt(i);
@@ -709,7 +709,7 @@ public class StringUtils {
 			return null;
 		}
 
-		StringBuffer copy = new StringBuffer();
+		StringBuilder copy = new StringBuilder();
 		char character;
 		boolean isBackslash = false;
 		for (int i = 0; i < controlString.length(); i++) {
@@ -788,7 +788,7 @@ public class StringUtils {
 	public static String formatString(Object[] messages, int[] sizes) {
 		int formatSize;
 		String message;
-		StringBuffer strBuff = new StringBuffer(100);
+		StringBuilder strBuff = new StringBuilder(100);
 		for (int i = 0; i < messages.length; i++) {
 			message = messages[i] != null ? messages[i].toString() : "";
 			// left or right justified ?
@@ -820,7 +820,7 @@ public class StringUtils {
 	 * @param length
 	 *            Description of the Parameter
 	 */
-	private static void fillString(StringBuffer strBuff, String source, int start, int length) {
+	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
 		int srcLength = source.length();
 		for (int i = start; i < start + length; i++) {
 			if (i < srcLength) {
@@ -839,7 +839,7 @@ public class StringUtils {
 	 * @param length
 	 *            Description of the Parameter
 	 */
-	private static void fillBlank(StringBuffer strBuff, int length) {
+	private static void fillBlank(StringBuilder strBuff, int length) {
 		for (int i = 0; i < length; i++) {
 			strBuff.append(' ');
 		}
@@ -1129,7 +1129,7 @@ public class StringUtils {
             return s;
         }
         
-        StringBuffer b = new StringBuffer(s.length() - 2);
+        StringBuilder b = new StringBuilder(s.length() - 2);
     	boolean quote = false;
         for (int i = 1; i < s.length() - 1; i++) {
             char c = s.charAt(i);
@@ -1156,6 +1156,16 @@ public class StringUtils {
 	}
 
 	public static StringBuilder trimLeading(StringBuilder str) {
+		int pos = 0;
+		int length = str.length();
+		while (pos < length && Character.isWhitespace(str.charAt(pos))) {
+			pos++;
+		}
+		str.delete(0, pos);
+		return str;
+	}
+
+	public static CloverString trimLeading(CloverString str) {
 		int pos = 0;
 		int length = str.length();
 		while (pos < length && Character.isWhitespace(str.charAt(pos))) {
@@ -1206,6 +1216,15 @@ public class StringUtils {
 		return str;
 	}
 
+	public static CloverString trimTrailing(CloverString str) {
+		int pos = str.length() - 1;
+		while (pos > 0 && Character.isWhitespace(str.charAt(pos))) {
+			pos--;
+		}
+		str.setLength(pos + 1);
+		return str;
+	}
+
 	/**
 	 * Modifies buffer scope so that the leading and trailing whitespace is ignored.
 	 * 
@@ -1219,6 +1238,12 @@ public class StringUtils {
 	}
 
 	public static StringBuilder trim(StringBuilder buf) {
+		trimLeading(buf);
+		trimTrailing(buf);
+		return buf;
+	}
+
+	public static CloverString trim(CloverString buf) {
 		trimLeading(buf);
 		trimTrailing(buf);
 		return buf;
@@ -1361,7 +1386,7 @@ public class StringUtils {
 		if (length == 0) {
 			return null;
 		}
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < length; i++) {
 			result.append(strings[i]);
 			if (i < length - 1) {
@@ -1390,15 +1415,15 @@ public class StringUtils {
 	 * @param delimiter
 	 * @return
 	 */
-	public static String mapToString(Map map, String assignChar, String delimiter) {
+	public static String mapToString(Map<?, ?> map, String assignChar, String delimiter) {
 		if (map.size() == 0) {
 			return null;
 		}
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		for (Object entry : map.entrySet()) {
-			result.append(((Entry) entry).getKey().toString());
+			result.append(((Entry<?, ?>) entry).getKey().toString());
 			result.append(assignChar);
-			result.append(((Entry) entry).getValue().toString());
+			result.append(((Entry<?, ?>) entry).getValue().toString());
 			result.append(delimiter);
 		}
 		result.setLength(result.length() - delimiter.length());
@@ -1504,40 +1529,6 @@ public class StringUtils {
 	  }
 	  	
 	
-	/**
-	 * This method appends passed-in CharSequence to the end of passed-in StringBuffer;<br>
-	 * It returns reference to buffer object to allow cascading of these operations.
-	 * 
-	 * @param buff
-	 *            buffer to which append sequence of characters
-	 * @param seq
-	 *            characters sequence to append
-	 * @return reference to passed-in buffer
-	 */
-	public static final StringBuffer strBuffAppend(StringBuffer buff, CharSequence seq) {
-		int seqLen = seq.length();
-		buff.ensureCapacity(buff.length() + seqLen);
-		buff.append(seq);
-		return buff;
-	}
-
-	/**
-	 * This method appends passed-in CharSequence to the end of passed-in StringBuffer;<br>
-	 * It returns reference to buffer object to allow cascading of these operations.
-	 * 
-	 * @param buff
-	 *            buffer to which append sequence of characters
-	 * @param seq
-	 *            characters sequence to append
-	 * @return reference to passed-in buffer
-	 */
-	public static final StringBuilder strBuffAppend(StringBuilder buff, CharSequence seq) {
-		int seqLen = seq.length();
-		buff.ensureCapacity(buff.length() + seqLen);
-		buff.append(seq);
-		return buff;
-	}
-
 	/**
 	 * This method finds index of string from string array
 	 * 
@@ -1723,71 +1714,10 @@ public class StringUtils {
 
 	public static boolean isAscii(CharSequence str) {
 		return Pattern.matches("\\p{ASCII}*", str);
-//		for (int i = 0; i < str.length(); i++) {
-//			if (str.charAt(i) > ASCII_LAST_CHAR) {
-//				return false;
-//			}
-//		}
-//		return true;
 	}
 
 	public static String removeNonAscii(String str){
 		return str.replaceAll("[^\\p{ASCII}]+", "");
-	}
-
-	/**
-	 * This method copies substring of source to target.
-	 * 
-	 * @param target
-	 *            target to which save the substring
-	 * @param src
-	 *            source string
-	 * @param from
-	 *            positing at which start (zero based)
-	 * @param length
-	 *            number of characters to take
-	 * @return target containing substring of original or empty string if specified from/length values are out of
-	 *         ranges.
-	 * @since 23.5.2007
-	 */
-	public static StringBuilder subString(StringBuilder target, CharSequence src, int from, int length) {
-		final int end = from + length;
-		final int maxLength = src.length();
-		for (int i = (from < 0 ? 0 : from); i < end; i++) {
-			if (i >= maxLength) {
-				break;
-			}
-			target.append(src.charAt(i));
-		}
-		return target;
-	}
-
-	/**
-	 * This method copies substring of source to target.
-	 * 
-	 * @param target
-	 *            target to which save the substring
-	 * @param src
-	 *            source string
-	 * @param from
-	 *            positing at which start (zero based)
-	 * @param length
-	 *            number of characters to take
-	 * @return target containing substring of original or empty string if specified from/length values are out of
-	 *         ranges.
-	 * @since 23.5.2007
-	 */
-
-	public static StringBuffer subString(StringBuffer target, CharSequence src, int from, int length) {
-		final int end = from + length;
-		final int maxLength = src.length();
-		for (int i = (from < 0 ? 0 : from); i < end; i++) {
-			if (i >= maxLength) {
-				break;
-			}
-			target.append(src.charAt(i));
-		}
-		return target;
 	}
 
 	/**
@@ -2149,7 +2079,7 @@ public class StringUtils {
 			return null;
 		}
 
-		StringBuffer copy = new StringBuffer();
+		StringBuilder copy = new StringBuilder();
 		char character;
 		for (int i = 0; i < controlString.length(); i++) {
 			character = controlString.charAt(i);
@@ -2355,40 +2285,6 @@ public class StringUtils {
 		return ret.toString();
 	}
 
-/*
- *  3x slower then	replaceVariables(String template, VariableResolver resolver, String variableStart, String variableEnd) 
-	private static final Pattern DAFAULT_PROPERTY_PATTERN = Pattern.compile("\\$\\{([^\\}]+)\\}");
-	
-	public static String replaceVariables(Properties properties, String valueTemplate) {
-		final StringBuilder ret = new StringBuilder(valueTemplate);
-		replaceVariables(properties, ret);
-		return ret.toString();
-	}
-
-	public static void replaceVariables(Properties properties, StringBuilder value) {
-		replaceVariables(properties, value, DAFAULT_PROPERTY_PATTERN);
-	}
-	
-	public static void replaceVariables(Properties properties, StringBuilder value, Pattern pattern) {
-		final Matcher propertyMatcher = pattern.matcher(value);
-
-		while (propertyMatcher.find()) {
-			// resolve the property reference
-			final String reference = propertyMatcher.group(1);
-			final String resolvedReference = properties.getProperty(reference);
-
-			if (resolvedReference == null) {
-				throw new JetelRuntimeException("Cannot resolve reference to property: " + reference);
-			} else {
-				StringBuffer evaluatedReference = new StringBuffer(resolvedReference);
-
-				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
-				propertyMatcher.reset(value);
-			}
-		}
-	}
-*/
-	
 	private static interface VariableResolver{
 		String get(String key);
 	}

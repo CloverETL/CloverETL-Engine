@@ -21,9 +21,9 @@ package org.jetel.util.property;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -222,7 +222,7 @@ public class PropertyRefResolver {
 			return value;
 		}
 
-		StringBuffer valueBuffer = new StringBuffer(value);
+		StringBuilder valueBuffer = new StringBuilder(value);
 		try {
 			resolveRef(valueBuffer, flag);
 		} catch (JetelRuntimeException e) {
@@ -245,7 +245,7 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
 	 * and evaluated/resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveRef(StringBuffer value, RefResFlag flag) {
+	private boolean resolveRef(StringBuilder value, RefResFlag flag) {
 		// clear error messages before doing anything else
 		errorMessages.clear();
 		// let's start the recursion depth measuring
@@ -293,7 +293,7 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one CTL expression was found and evaluated, <code>false</code> otherwise
 	 */
-	private boolean evaluateExpressions(StringBuffer value) {
+	private boolean evaluateExpressions(StringBuilder value) {
 		if (!Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
 			return false;
 		}
@@ -315,7 +315,7 @@ public class PropertyRefResolver {
 				expressionMatcher.region(expressionMatcher.start(), value.length());
 			} else {
 				// resolve property references that might be present in the CTL expression
-				StringBuffer resolvedExpression = new StringBuffer(expression);
+				StringBuilder resolvedExpression = new StringBuilder(expression);
 				resolveReferences(resolvedExpression);
 
 				// make sure that expression quotes are unescaped before evaluation of the CTL expression
@@ -348,7 +348,7 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveReferences(StringBuffer value) {
+	private boolean resolveReferences(StringBuilder value) {
 		boolean anyReferenceResolved = false;
 		Matcher propertyMatcher = propertyPattern.matcher(value);
 
@@ -373,7 +373,7 @@ public class PropertyRefResolver {
 
 			if (resolvedReference != null) {
 				// evaluate the CTL expression that might be present in the property
-				StringBuffer evaluatedReference = new StringBuffer(resolvedReference);
+				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
 				evaluateExpressions(evaluatedReference);
 
 				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
@@ -398,7 +398,7 @@ public class PropertyRefResolver {
 
 	/**
 	 * @return <code>true</code> if any error occurred during the last call to the
-	 * {@link #resolveRef(StringBuffer, RefResFlag)} method, <code>false</code> otherwise
+	 * {@link #resolveRef(StringBuilder, RefResFlag)} method, <code>false</code> otherwise
 	 */
 	public boolean anyErrorOccured() {
 		return !errorMessages.isEmpty();
@@ -406,7 +406,7 @@ public class PropertyRefResolver {
 
 	/**
 	 * @return a read-only list of error messages collected during the last call to the
-	 * {@link #resolveRef(StringBuffer, RefResFlag)} method
+	 * {@link #resolveRef(StringBuilder, RefResFlag)} method
 	 */
 	public Set<String> getErrorMessages() {
 		return Collections.unmodifiableSet(errorMessages);

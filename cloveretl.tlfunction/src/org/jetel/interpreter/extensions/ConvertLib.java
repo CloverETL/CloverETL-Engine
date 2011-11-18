@@ -54,6 +54,7 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
+import org.jetel.util.string.CloverString;
 
 
 public class ConvertLib extends TLFunctionLibrary {
@@ -167,7 +168,7 @@ public class ConvertLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             TLValue val = ((Num2StrContext)context.getContext()).value;
             TLValue input=params[0];
-            StringBuilder strBuf = (StringBuilder)val.getValue();
+            CloverString strBuf = (CloverString) val.getValue();
             strBuf.setLength(0);
             
             if (params[0]==TLNullValue.getInstance()) {
@@ -262,7 +263,7 @@ public class ConvertLib extends TLFunctionLibrary {
         public TLValue execute(TLValue[] params, TLContext context) {
             TLValue val = ((Date2StrContext)context.getContext()).value;
             SimpleDateFormat format=((Date2StrContext)context.getContext()).format;
-            StringBuilder strBuf = (StringBuilder)val.getValue();
+            CloverString strBuf = (CloverString) val.getValue();
             strBuf.setLength(0);
             
             if (params[0]==TLNullValue.getInstance() || params[1]==TLNullValue.getInstance()) {
@@ -836,7 +837,7 @@ public class ConvertLib extends TLFunctionLibrary {
         		throw new TransformLangExecutorRuntimeException(params,
                         "byte2hex - can't convert \"" + params[0] + "\" to " + TLValueType.STRING.getName());
         	}
-        	StringBuilder strVal=(StringBuilder)value.getValue();
+        	CloverString strVal = (CloverString) value.getValue();
         	ByteArray bytes=((TLByteArrayValue)params[0]).getByteAraray();
         	strVal.setLength(0);
         	strVal.ensureCapacity(bytes.length());
