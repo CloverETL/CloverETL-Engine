@@ -25,7 +25,6 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -433,7 +432,9 @@ public class DBOutputTable extends Node {
 
 		// create insert query from db table name
 		if (sqlQuery == null) {
-			String quotedTableName = dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName);
+			// FIXME This also replaces escaped characters from dbTableName
+			// can lead to backslashes being consumed
+			String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
 			sqlQuery = new String[1];
 			if (dbFields != null) {
 				String[] quotedDbFields = new String[dbFields.length];
@@ -1270,8 +1271,9 @@ public class DBOutputTable extends Node {
 				throw new ComponentNotReadyException(e1);
 			}
 
-			
-			String quotedTableName = dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName);
+			// FIXME This also replaces escaped characters from dbTableName
+			// can lead to backslashes being consumed
+			String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
 			inPort = getInputPort(READ_FROM_PORT);
 			if (sqlQuery == null) {
 				sqlQuery = new String[1];
