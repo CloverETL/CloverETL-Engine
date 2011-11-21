@@ -179,11 +179,11 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 				nextDataType = XSSFDataType.INLINE_STRING;
 			} else if ("s".equals(cellType)) {
 				nextDataType = XSSFDataType.SST_STRING;
-			} else {
-				if (cellStyleStr != null) {
-					// Number, but almost certainly with a special style or format
-					styleIndex = Integer.parseInt(cellStyleStr);
-				}
+			}
+			
+			if (cellStyleStr != null) {
+				// Number, but almost certainly with a special style or format
+				styleIndex = Integer.parseInt(cellStyleStr);
 			}
 		}
 	}
