@@ -52,7 +52,7 @@ public class DynamicRecordBufferTest extends CloverTestCase {
 	protected void setUp() throws Exception {
 		initEngine();
 
-		buffer = new DynamicRecordBuffer(Defaults.Record.INITIAL_RECORD_SIZE);
+		buffer = new DynamicRecordBuffer(32000);
 		buffer.init();
 		
 		byteBuffer1 = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);

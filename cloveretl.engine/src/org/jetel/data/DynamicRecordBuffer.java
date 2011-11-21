@@ -70,6 +70,33 @@ public class DynamicRecordBuffer {
     
     private final static int EOF = Integer.MAX_VALUE; // EOF indicates that no more records will be written to buffer
 
+	/**
+	 * Constructor of the DynamicRecordBuffer with tmp file
+     * created under java.io.tmpdir dir.
+	 * @param dataBufferSize
+	 */
+	public DynamicRecordBuffer() {
+	    this(System.getProperty("java.io.tmpdir"), Defaults.Record.RECORDS_BUFFER_SIZE);
+    }
+
+	/**
+	 * Constructor of the DynamicRecordBuffer with tmp file
+     * created under java.io.tmpdir dir.
+	 * @param dataBufferSize
+	 */
+	public DynamicRecordBuffer(int initialBufferSize){
+	    this(System.getProperty("java.io.tmpdir"), initialBufferSize);
+    }
+
+	/**
+	 *  Constructor of the DynamicRecordBuffer object
+	 *
+	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
+	 *      NULL (the system default will be used)
+	 */
+	public DynamicRecordBuffer(String tempDirectory) {
+		this(tempDirectory, Defaults.Record.RECORDS_BUFFER_SIZE);
+    }
 
 	/**
 	 *  Constructor of the DynamicRecordBuffer object
@@ -102,22 +129,12 @@ public class DynamicRecordBuffer {
     public void init() {
         obsoleteTempFiles = new LinkedList<DynamicRecordBuffer.TempFile>();
         isClosed = false;
-		initialBufferSize = Math.max(initialBufferSize, Defaults.Record.RECORDS_BUFFER_SIZE);
         readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
         awaitingData = false;
         bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();
-    }
-    
-	/**
-	 * Constructor of the DynamicRecordBuffer with tmp file
-     * created under java.io.tmpdir dir.
-	 * @param dataBufferSize
-	 */
-	public DynamicRecordBuffer(int initialBufferSize){
-	    this(System.getProperty("java.io.tmpdir"), initialBufferSize);
     }
     
     /**
