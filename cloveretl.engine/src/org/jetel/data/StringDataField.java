@@ -293,8 +293,15 @@ public class StringDataField extends DataField implements CharSequence{
 			// encode nulls as zero, increment length of non-null values by one
 			ByteBufferUtils.encodeLength(buffer, isNull ? 0 : length + 1);
 
-			//TODO what is the best constant?
-			if (length > 1000) {
+			//is bulk operation worth enough?
+			boolean bulkOperation;
+			if (buffer.isDirect()) {
+				bulkOperation = (length > Defaults.Data.StringDataField.DIRECT_BULK_SERIALIZATION_THRESHOLD);
+			} else {
+				bulkOperation = (length > Defaults.Data.StringDataField.NON_DIRECT_BULK_SERIALIZATION_THRESHOLD);
+			}
+			
+			if (bulkOperation) {
 				int doubledLength = length << 1;
 				buffer.expand(doubledLength);
 				value.getChars(buffer.asCharBuffer());
@@ -320,8 +327,14 @@ public class StringDataField extends DataField implements CharSequence{
 		if (length < 0) {
 			setNull(true);
 		} else {
-			//TODO what is the best constant? 30 seems to be optimal for my local machine
-			if (length > 30) {
+			//is bulk operation worth enough?
+			boolean bulkOperation;
+			if (buffer.isDirect()) {
+				bulkOperation = (length > Defaults.Data.StringDataField.DIRECT_BULK_DESERIALIZATION_THRESHOLD);
+			} else {
+				bulkOperation = (length > Defaults.Data.StringDataField.NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD);
+			}
+			if (bulkOperation) {
 				value.append(buffer.buf().asCharBuffer(), length);
 				buffer.skip(length << 1);
 			} else {

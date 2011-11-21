@@ -286,9 +286,9 @@ public final class Defaults {
 	public final static class Record {
 		public static void init() {
 			INITIAL_RECORD_SIZE = getIntProperties("Record.INTERNAL_RECORD_SIZE", 65536);
-			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 1048576);
+			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 33554432);
 			INITIAL_FIELD_SIZE = getIntProperties("Record.INITIAL_FIELD_SIZE", 65536);
-			MAX_FIELD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 1048576);
+			MAX_FIELD_SIZE = getIntProperties("Record.MAX_FIELD_SIZE", 33554432);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
 			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
@@ -308,7 +308,7 @@ public final class Defaults {
 		 * Determines maximum size of record (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int MAX_RECORD_SIZE;// = 1048576;
+		public static int MAX_RECORD_SIZE;// = 33554432;
 
 		/**
 		 * Should be used as initial size of CloverBuffer dedicated to handle a data field.
@@ -322,7 +322,7 @@ public final class Defaults {
 		 * Determines maximum size of single field (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int MAX_FIELD_SIZE;// = 1048576;
+		public static int MAX_FIELD_SIZE;// = 33554432;
 
 		/**
 		 * Compression level for compressed data fields (CompressedByteField - cbyte). Should be set to a value from
@@ -476,7 +476,7 @@ public final class Defaults {
     	/**
     	 * This is the size of header (in bytes) for clover binary data format (@see CLOVER_DATA_HEADER). 
 		 * NOTE: cannot be changed from defaultProperties file
-s    	 */
+		 */
     	public final static int CLOVER_DATA_HEADER_SIZE = 23;
 	}
 
@@ -486,13 +486,30 @@ s    	 */
 	 * @author dpavlis
 	 * @created 6. duben 2003
 	 */
-	@Deprecated
 	public final static class Data {
 		public static void init() {
+			StringDataField.init();
 			DATA_RECORDS_BUFFER_SIZE = getIntProperties("Data.DATA_RECORDS_BUFFER_SIZE", 10 * 1048576);
 			MAX_BUFFERS_ALLOCATED = getShortProperties("Data.MAX_BUFFERS_ALLOCATED", (short) 99);
 		}
 
+		public final static class StringDataField {
+			public static void init() {
+				DIRECT_BULK_SERIALIZATION_THRESHOLD = getIntProperties("Data.StringDataField.DIRECT_BULK_SERIALIZATION_THRESHOLD", 130);
+				DIRECT_BULK_DESERIALIZATION_THRESHOLD = getIntProperties("Data.StringDataField.DIRECT_BULK_DESERIALIZATION_THRESHOLD", 20);
+				NON_DIRECT_BULK_SERIALIZATION_THRESHOLD = getIntProperties("Data.StringDataField.NON_DIRECT_BULK_SERIALIZATION_THRESHOLD", 6);
+				NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD = getIntProperties("Data.StringDataField.NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD", 6);
+			}
+
+			public static int DIRECT_BULK_SERIALIZATION_THRESHOLD;// 130 
+
+			public static int DIRECT_BULK_DESERIALIZATION_THRESHOLD;// 20
+
+			public static int NON_DIRECT_BULK_SERIALIZATION_THRESHOLD;// 6
+
+			public static int NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD;// 6
+		}
+		
 		/**
 		 * Unit size of data buffer which keeps data records for sorting/hashing
 		 */
