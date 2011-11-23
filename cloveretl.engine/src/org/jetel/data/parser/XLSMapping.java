@@ -39,6 +39,7 @@ import javax.xml.xpath.XPathFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SpreadsheetUtils;
 import org.jetel.util.string.StringUtils;
@@ -70,7 +71,7 @@ public class XLSMapping {
 	private static final String XPATH_GLOBAL_ATTRIBUTES = "/mapping/globalAttributes/";
 	private static final String XPATH_STEP_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "step/text()";
 	private static final String XPATH_ORIENTATION_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "orientation/text()";
-	private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader/text()"; // TODO: this seems to be redundant
+	private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader/text()";
 
 	private static final String XML_HEADER_GROUP = "headerGroup";
 	private static final String XML_HEADER_GROUP_CLOVER_FIELD = "cloverField";
@@ -96,6 +97,19 @@ public class XLSMapping {
 	
 	private final List<HeaderGroup> headerGroups;
 	private final Stats stats;
+	
+	public XLSMapping(DataRecordMetadata metaData) {
+		this.step = 1;
+		this.orientation = HEADER_ON_TOP;
+		this.headerGroups = new ArrayList<HeaderGroup> ();
+		DataFieldMetadata [] dataFields = metaData.getFields();
+		for (int i=0; i<dataFields.length; ++i) {
+			DataFieldMetadata dataField = dataFields[i];
+			headerGroups.add(new HeaderGroup(0, dataField.getNumber(), SpreadsheetMappingMode.AUTO, Collections.singletonList(new HeaderRange(0, 0, i, i))));
+		}
+		this.writeHeader = false;
+		this.stats = resolveMappingStats();
+	}
 	
 	private XLSMapping(int step, SpreadsheetOrientation orientation, boolean writeHeader, List<HeaderGroup> groups) {
 		this.step = step;
