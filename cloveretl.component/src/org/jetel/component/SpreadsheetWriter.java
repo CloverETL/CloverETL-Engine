@@ -61,7 +61,6 @@ import org.w3c.dom.Element;
  */
 public class SpreadsheetWriter extends Node {
 
-	//TODO: charset?
 	public static final String COMPONENT_TYPE = "SPREADSHEET_WRITER";
 
 	public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
@@ -72,12 +71,13 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public static final String XML_SHEET_ATTRIBUTE = "sheet";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_APPEND_ATTRIBUTE = "append";
 	public static final String XML_INSERT_ATTRIBUTE = "insert";
 	public static final String XML_REMOVESHEETS_ATTRIBUTE = "removeSheets";
-	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
-	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
-	public static final String XML_RECORDS_PER_FILE = "recordsPerFile";
+	public static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRecords";
+	public static final String XML_RECORD_COUNT_ATTRIBUTE = "numRecords";
+	public static final String XML_RECORDS_PER_FILE = "numFileRecords";
 	public static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	public static final String XML_PARTITION_ATTRIBUTE = "partition";
 	public static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
@@ -87,6 +87,7 @@ public class SpreadsheetWriter extends Node {
 	private static Log LOGGER = LogFactory.getLog(SpreadsheetWriter.class);
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
+	private static final int OUTPUT_LOG_PORT = 1;
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
