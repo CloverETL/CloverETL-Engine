@@ -96,8 +96,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	
 	private int lastRow = -1;
 	
-	private int numberOfMissingRows;
-	private boolean missingRowStart = true;
+//	private int numberOfMissingRows;
+//	private boolean missingRowStart = true;
 
 	/**
 	 * Accepts objects needed while parsing.
@@ -113,20 +113,20 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		this.nextDataType = XSSFDataType.NUMBER;
 	}
 	
-	public boolean processMissingRows() {
-		if (numberOfMissingRows > 0) {
-			if (missingRowStart) {
-				numberOfMissingRows--;
-				output.startRow(lastRow - numberOfMissingRows);
-			} else {
-				output.endRow();
-			}
-			missingRowStart = !missingRowStart;
-			return true;
-		}
-		
-		return false;
-	}
+//	public boolean processMissingRows() {
+//		if (numberOfMissingRows > 0) {
+//			if (missingRowStart) {
+//				numberOfMissingRows--;
+//				output.startRow(lastRow - numberOfMissingRows);
+//			} else {
+//				output.endRow();
+//			}
+//			missingRowStart = !missingRowStart;
+//			return true;
+//		}
+//		
+//		return false;
+//	}
 
 	private boolean isTextTag(String name) {
 		if ("v".equals(name)) {
@@ -160,10 +160,15 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			headerFooter.setLength(0);
 		} else if ("row".equals(name)) {
 			int rowNum = Integer.parseInt(attributes.getValue("r")) - 1;
-			numberOfMissingRows = rowNum - lastRow - 1;
-			lastRow = rowNum;
-			missingRowStart = !missingRowStart;
-			output.startRow(rowNum - numberOfMissingRows);
+//			numberOfMissingRows = rowNum - lastRow;
+//			while (processMissingRows()) {
+//				// do nothing - keep processing the rows
+//			}
+//			lastRow = rowNum;
+//			output.startRow(rowNum);
+//			missingRowStart = !missingRowStart;
+//			output.startRow(rowNum - numberOfMissingRows);
+			output.startRow(rowNum);
 		} else if ("c".equals(name)) { // c => cell
 			// Set up defaults.
 			this.nextDataType = XSSFDataType.NUMBER;
