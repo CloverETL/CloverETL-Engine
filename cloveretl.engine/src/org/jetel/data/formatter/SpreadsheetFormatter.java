@@ -49,14 +49,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.XLSFormatter.XLSType;
 import org.jetel.data.parser.XLSMapping;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -1057,7 +1056,15 @@ public class SpreadsheetFormatter implements Formatter {
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {
 				workbook = new XSSFWorkbook();
 			} else {
-				workbook = new SXSSFWorkbook(mappingInfo.getStats().getRowCount());
+				int headerWindowSize = headerRowIndent + headerRowCount;
+				int recordWindowSize;
+				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+					recordWindowSize = -minRecordFieldYOffset + mappingInfo.getStep()+1;
+				} else {
+					throw new UnsupportedOperationException("Not yet implemented"); //TODO
+				}
+				int windowsSize = maximum(headerWindowSize, recordWindowSize);
+				workbook = new SXSSFWorkbook(windowsSize);
 			}
 			break;
 		default:
