@@ -21,14 +21,12 @@ package org.jetel.component;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -975,7 +973,9 @@ public class DB2DataWriter extends Node {
 			cloverFields = new String[fileMetadata.getNumFields()];
 			int i = 0;
 			for (DataFieldMetadata field : fileMetadata) {
-				cloverFields[i++] = field.getLabelOrName();
+				//TODO Labels:
+				//cloverFields[i++] = field.getLabelOrName();
+				cloverFields[i++] = field.getName();
 			}
 		}
 		//prepare command for executing script
@@ -1171,7 +1171,8 @@ public class DB2DataWriter extends Node {
 	 */
 	private DataRecordMetadata convertToDB2Delimited(DataRecordMetadata metadata){
 		DataRecordMetadata fMetadata = new DataRecordMetadata(metadata.getName() + "_delimited", DataRecordMetadata.DELIMITED_RECORD);
-		fMetadata.setLabel(metadata.getLabel());
+		// TODO Labels:
+		//fMetadata.setLabel(metadata.getLabel());
 		boolean delimiterFound = columnDelimiter != 0;
 		int delimiterFieldIndex = -1;
 		DataFieldMetadata field, newField;
@@ -1513,7 +1514,9 @@ public class DB2DataWriter extends Node {
 		if (batchFile == null) {
 			batchFile = File.createTempFile("tmp", ".bat", new File("."));
 		}		
-		Writer batchWriter = new OutputStreamWriter(new FileOutputStream(batchFile), Charset.forName(FILE_ENCODING));
+		// TODO Labels:
+		//Writer batchWriter = new OutputStreamWriter(new FileOutputStream(batchFile), Charset.forName(FILE_ENCODING));
+		FileWriter batchWriter = new FileWriter(batchFile);
 
 		batchWriter.write(prepareConnectCommand());
 		batchWriter.write(prepareLoadCommand());

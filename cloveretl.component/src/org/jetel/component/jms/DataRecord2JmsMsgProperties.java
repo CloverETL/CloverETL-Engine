@@ -76,7 +76,9 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 				continue;
 			}
 			DataField field = record.getField(fieldIdx);
-			msg.setStringProperty(field.getMetadata().getLabelOrName(), field.toString());
+			// TODO Labels:
+			//msg.setStringProperty(field.getMetadata().getLabelOrName(), field.toString());
+			msg.setStringProperty(field.getMetadata().getName(), field.toString());
 		}
 		msg.setJMSPriority(Message.DEFAULT_PRIORITY);
 		return msg;

@@ -419,10 +419,12 @@ public class JmsReader extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
-		OutputPort outputPort = getOutputPort(OUTPUT_PORT);
-		if (outputPort != null) {
-			new UniqueLabelsValidator(status, this).validateMetadata(outputPort.getMetadata());
-		}
+		// TODO Labels:
+		//OutputPort outputPort = getOutputPort(OUTPUT_PORT);
+		//if (outputPort != null) {
+		//	new UniqueLabelsValidator(status, this).validateMetadata(outputPort.getMetadata());
+		//}
+		// TODO Labels end
 
 //        try {
         	

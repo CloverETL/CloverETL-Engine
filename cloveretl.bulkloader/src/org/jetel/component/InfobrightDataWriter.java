@@ -274,8 +274,11 @@ public class InfobrightDataWriter extends Node {
 		//try to create loader and Brighthouse record
 		log = new CommonsLogger(logger);
 		try {
-			String quotedTable = "`" + table + "`";
-			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
+			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+			// TODO Labels:
+//			String quotedTable = "`" + table + "`";
+//			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
+			// TODO Labels end
 		} catch (Exception e) {
 			status.add(new ComponentNotReadyException(e), Severity.ERROR, this, Priority.NORMAL, XML_AGENT_PORT_ATTRIBUTE);
 		}
@@ -444,8 +447,11 @@ public class InfobrightDataWriter extends Node {
 		}
 
 		try {
-			String quotedTable = "`" + table + "`";
-			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
+			loader = new InfobrightNamedPipeLoader(table, sqlConnection, log, dataFormat, chset, agentPort);
+			// TODO Labels: 
+//			String quotedTable = "`" + table + "`";
+//			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
+			// TODO Labels end
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}

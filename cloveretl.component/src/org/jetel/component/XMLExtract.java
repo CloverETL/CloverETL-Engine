@@ -500,19 +500,27 @@ public class XMLExtract extends Node {
                     	}
                     }
                     
-                    DataRecord outRecord = m_activeMapping.getOutRecord();
-                    DataField field = null;
-                    
-                    if (outRecord != null) {
-                    	if (outRecord.hasLabeledField(attrName)) {
-                    		field = outRecord.getFieldByLabel(attrName);
-                    	}
-                    }
-                    
-                    if (field != null) {
+                    // TODO Labels replace:
+                    if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
                     	String val = attributes.getValue(i);
-                    	field.fromString(trim ? val.trim() : val);
+                        m_activeMapping.getOutRecord().getField(attrName).fromString(trim ? val.trim() : val);
                     }
+                    // TODO Labels end replace
+
+					// TODO Labels replace with:
+                    //DataRecord outRecord = m_activeMapping.getOutRecord();
+                    //DataField field = null;
+                    //
+                    //if (outRecord != null) {
+                    //	if (outRecord.hasLabeledField(attrName)) {
+                    //		field = outRecord.getFieldByLabel(attrName);
+                    //	}
+                    //}
+                    //
+                    //if (field != null) {
+                    //	String val = attributes.getValue(i);
+                    //	field.fromString(trim ? val.trim() : val);
+                    //}
                 }
             }
             
@@ -617,16 +625,24 @@ public class XMLExtract extends Node {
         		}
             }
             
-            DataRecord outRecord = m_activeMapping.getOutRecord();
-            DataField field = null;
-            
-			if ((outRecord != null) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-            	if (outRecord.hasLabeledField(localName)) {
-            		field = outRecord.getFieldByLabel(localName);
-            	}
-			}
+			// TODO Labels replace:
+			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
+			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+			    DataField field = m_activeMapping.getOutRecord().getField(localName);
+			// TODO Labels replace end
 			
-			if (field != null) {
+			// TODO Labels replace with:
+            //DataRecord outRecord = m_activeMapping.getOutRecord();
+            //DataField field = null;
+            //
+			//if ((outRecord != null) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+            //	if (outRecord.hasLabeledField(localName)) {
+            //		field = outRecord.getFieldByLabel(localName);
+            //	}
+			//}
+			//
+			//if (field != null) {
+			// TODO Labels replace with end
 			    // If field is nullable and there's no character data set it to null
 			    if (m_hasCharacters) {
 			        try {
@@ -1839,9 +1855,11 @@ public class XMLExtract extends Node {
 			declaredTemplates.clear();
 		}
 		
-		for (Mapping mapping: getMappings().values()) {
-			checkUniqueness(status, mapping);
-		}
+		// TODO Labels:
+		//for (Mapping mapping: getMappings().values()) {
+		//	checkUniqueness(status, mapping);
+		//}
+		// TODO Labels end
 		
         try { 
             // check inputs

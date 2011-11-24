@@ -432,19 +432,30 @@ public class DBOutputTable extends Node {
 
 		// create insert query from db table name
 		if (sqlQuery == null) {
-			// FIXME This also replaces escaped characters from dbTableName
-			// can lead to backslashes being consumed
-			String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
 			sqlQuery = new String[1];
+			
+			// TODO Labels replace:
 			if (dbFields != null) {
-				String[] quotedDbFields = new String[dbFields.length];
-				for (int i = 0; i < dbFields.length; i++) {
-					quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
-				}
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(quotedTableName, quotedDbFields);
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
 			} else {
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
 			}
+			// TODO Labels replace end
+
+			// TODO Labels replace with:
+//			// FIXME This also replaces escaped characters from dbTableName
+//			// can lead to backslashes being consumed
+//			String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
+//			if (dbFields != null) {
+//				String[] quotedDbFields = new String[dbFields.length];
+//				for (int i = 0; i < dbFields.length; i++) {
+//					quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
+//				}
+//				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(quotedTableName, quotedDbFields);
+//			} else {
+//				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
+//			}
+			// TODO Labels replace with end
 		}
 
 		keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
@@ -1271,23 +1282,35 @@ public class DBOutputTable extends Node {
 				throw new ComponentNotReadyException(e1);
 			}
 
-			// FIXME This also replaces escaped characters from dbTableName
-			// can lead to backslashes being consumed
-			String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
 			inPort = getInputPort(READ_FROM_PORT);
 			if (sqlQuery == null) {
 				sqlQuery = new String[1];
+				// TODO Labels replace:
 				if (dbFields != null) {
-					String[] quotedDbFields = new String[dbFields.length];
-					for (int i = 0; i < dbFields.length; i++) {
-						quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
-					}
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(
-							quotedTableName, quotedDbFields);
+							dbTableName, dbFields);
 				} else {
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort
-							.getMetadata(), quotedTableName);
+							.getMetadata(), dbTableName);
 				}
+				// TODO Labels replace end
+				
+				// TODO Labels replace with:
+//				// FIXME This also replaces escaped characters from dbTableName
+//				// can lead to backslashes being consumed
+//				String quotedTableName = StringUtils.stringToSpecChar(dbConnection.getJdbcSpecific().quoteIdentifier(dbTableName));
+//				if (dbFields != null) {
+//					String[] quotedDbFields = new String[dbFields.length];
+//					for (int i = 0; i < dbFields.length; i++) {
+//						quotedDbFields[i] = dbConnection.getJdbcSpecific().quoteIdentifier(dbFields[i]);
+//					}
+//					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(
+//							quotedTableName, quotedDbFields);
+//				} else {
+//					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort
+//							.getMetadata(), quotedTableName);
+//				}
+				// TODO Labels replace with end
 			}
 			boolean supportsConnectionKeyGenaration = false;
 			try {

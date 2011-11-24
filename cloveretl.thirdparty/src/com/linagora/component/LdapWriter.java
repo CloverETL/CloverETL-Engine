@@ -335,11 +335,13 @@ public class LdapWriter extends Node {
 		 
 		checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 0, 1);
-        
-        InputPort inputPort = getInputPort(READ_FROM_PORT);
-        if (inputPort != null) {
-            new UniqueLabelsValidator(status, this).validateMetadata(inputPort.getMetadata());
-        }
+		
+		//TODO Labels:
+        //InputPort inputPort = getInputPort(READ_FROM_PORT);
+        //if (inputPort != null) {
+        //    new UniqueLabelsValidator(status, this).validateMetadata(inputPort.getMetadata());
+        //}
+        //TODO Labels end
 
         try {
             init();
