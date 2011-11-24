@@ -38,18 +38,18 @@ import org.jetel.data.NullRecord;
 import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.reader.DriverReader;
 import org.jetel.data.reader.InputReader;
+import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
-import org.jetel.data.reader.InputReader.InputOrdering;
 import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -370,7 +370,10 @@ public class MergeJoin extends Node {
 				}
 				errorLog.write("\n");
 			}else{
-				logger.warn(message);
+				//CL-2020
+				//if no error log is defined, the message is quietly ignored
+				//without messy logging in console
+				//logger.warn(message);
 			}
 		}else{
 			if (errorLog != null){
