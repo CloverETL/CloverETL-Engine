@@ -36,9 +36,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
-import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.data.parser.XLSMapping.SpreadsheetMappingMode;
 import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
+import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -297,7 +297,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				int row = range.getRowStart() - stats.getMappingMinRow();
 				int column = range.getColumnStart() - stats.getMappingMinColumn();
 
-				if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+				if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 					row += group.getSkip();
 				} else {
 					column += group.getSkip();
@@ -385,7 +385,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
-						if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 							rowIndex += group.getSkip();
 						} else {
 							columnIndex += group.getSkip();
@@ -420,7 +420,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd(); column++) {
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
-						if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 							rowIndex += group.getSkip();
 						} else {
 							columnIndex += group.getSkip();

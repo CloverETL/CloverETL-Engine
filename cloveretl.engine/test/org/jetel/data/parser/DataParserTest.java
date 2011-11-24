@@ -25,7 +25,8 @@ public class DataParserTest extends CloverTestCase {
 	private final static String TEST_FILE_UTF16 = "data/street-names.utf16.dat";
 	private final static String TEST_FILE_ISO88591 = "data/street-names.ISO88591.dat";
 	
-	DataRecordMetadata metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+	// DataRecordMetadata metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD); This doesn't work -- engine is not yet initialized
+	DataRecordMetadata metadata;
 	DataRecord recordUTF8, recordUTF16, recordCp1250, recordISO88591;
 	
 	DataParser parserUTF8;
@@ -38,6 +39,7 @@ public class DataParserTest extends CloverTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		initEngine();
+		metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
 		metadata.setFieldDelimiter("\n");
 		metadata.setRecordDelimiter("\n");
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
