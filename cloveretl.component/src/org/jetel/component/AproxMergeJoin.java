@@ -448,7 +448,10 @@ public class AproxMergeJoin extends Node {
 				}
 				errorLog.write("\n");
 			}else{
-				logger.warn(message);
+				//CL-2020
+				//if no error log is defined, the message is quietly ignored
+				//without messy logging in console
+				//logger.warn(message);
 			}
 		}else{
 			if (errorLog != null){
