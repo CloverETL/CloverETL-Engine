@@ -514,7 +514,7 @@ public class XLSMapping {
 				}
 			}
 
-			return HORIZONTAL;
+			return VERTICAL;
 		}
 
 	}

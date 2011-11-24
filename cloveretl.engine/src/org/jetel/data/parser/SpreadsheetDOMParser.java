@@ -96,7 +96,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			return false;
 		}
 		
-		if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			lastLine = sheet.getLastRowNum();
 		} else {
 			for (Row row : sheet) {
@@ -155,7 +155,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		if (nextRecordStartRow > lastLine) {
 			return null;
 		}
-		if (mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL) {
+		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			return parseHorizontal(record);
 		} else {
 			return parseVertical(record);

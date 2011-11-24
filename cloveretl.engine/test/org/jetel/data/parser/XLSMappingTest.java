@@ -53,7 +53,7 @@ public class XLSMappingTest extends CloverTestCase {
 				+ "<mapping>"
 					+ "<globalAttributes>"
 						+ "<step>1</step>"
-						+ "<orientation>HORIZONTAL</orientation>"
+						+ "<orientation>VERTICAL</orientation>"
 					+ "</globalAttributes>"
 					+ "<headerGroups>"
 						+ "<headerGroup>"
@@ -68,7 +68,7 @@ public class XLSMappingTest extends CloverTestCase {
 		try {
 			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata);
 
-			assertEquals(SpreadsheetOrientation.HORIZONTAL, mapping.getOrientation());
+			assertEquals(SpreadsheetOrientation.VERTICAL, mapping.getOrientation());
 			assertEquals(1, mapping.getStep());
 
 			List<HeaderGroup> groups = mapping.getHeaderGroups();

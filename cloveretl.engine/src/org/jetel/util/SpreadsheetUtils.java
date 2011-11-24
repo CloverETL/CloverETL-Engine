@@ -70,7 +70,13 @@ public class SpreadsheetUtils {
 			columnIndex *= CHAR_COUNT;
 			columnIndex += c - A + 1;
 		}
-		return new Point(columnIndex - 1, Integer.valueOf(cellReference.substring(i, cellReference.length())) - 1);
+		int row;
+		try {
+			row = Integer.valueOf(cellReference.substring(i, cellReference.length())) - 1;
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Invalid cell reference '" + cellReference + "'", e);
+		}
+		return new Point(columnIndex - 1, row);
 	}
 	
 	public static String getColumnReference(int columnIndex) {
