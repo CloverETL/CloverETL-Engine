@@ -235,7 +235,9 @@ public class LdapFormatter {
 		Attributes attrs = new BasicAttributes(true);
 		
 		for (int i = 0; i < transMap.length; i++) {
-			String attrId = this.metadata.getField(i).getLabelOrName();
+			// TODO Labels:
+			//String attrId = this.metadata.getField(i).getLabelOrName();
+			String attrId = this.metadata.getField(i).getName();
 			if(!attrId.equalsIgnoreCase("dn")) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
 				DataField dataField = record.getField(i);
