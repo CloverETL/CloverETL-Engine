@@ -25,15 +25,18 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
@@ -68,6 +71,8 @@ import org.jetel.util.string.StringUtils;
  * @created 6 Sep 2011
  */
 public class SpreadsheetFormatter implements Formatter {
+	/** the value specifying that no data format is used/set */
+	public static final String GENERAL_FORMAT_STRING = "General";
 
 	private SpreadsheetAttitude attitude;
 	private SpreadsheetFormat formatterType;
@@ -104,6 +109,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private Map<Integer, Integer> xToCloverFieldMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToXOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToYOffsetMapping = new HashMap<Integer, Integer>();
+	private Map<Integer, CellStyle> cloverFieldToCellStyle = new HashMap<Integer, CellStyle>();
 	private int minRecordFieldYOffset = 0;
 
 	private boolean append;
@@ -368,6 +374,8 @@ public class SpreadsheetFormatter implements Formatter {
 		cloverFieldToYOffsetMapping.clear();
 		minRecordFieldYOffset = 0;
 
+		List<DataFieldMetadata> usedDataFields = new ArrayList<DataFieldMetadata>();
+		
 		LinkedHashMap<String, DataFieldMetadata> cloverFields = new LinkedHashMap<String, DataFieldMetadata>();
 		for (DataFieldMetadata dataField : metadata.getFields()) {
 			cloverFields.put(dataField.getName(), dataField);
@@ -414,6 +422,7 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 				
 				if (cloverField != XLSMapping.UNDEFINED) {
+					usedDataFields.add(metadata.getField(cloverField));
 					for (int x = getX1fromRange(range); x<=getX2fromRange(range); ++x) {
 						xToCloverFieldMapping.put(x, cloverField);
 					}
@@ -430,20 +439,23 @@ public class SpreadsheetFormatter implements Formatter {
 		
 
 		
-		// original XLSWriter code -- just for inspiration securing that all features XLSWriter had SpreadsheetWriter will have
-		// prepare cell styles
-//		cellStyles = new CellStyle[includedFieldIndices.length];
-//		DataFormat dataFormat = workbook.createDataFormat();
-//
-//		for (int i = 0; i < includedFieldIndices.length; i++) {
-//			DataFieldMetadata fieldMetadata = metadata.getField(includedFieldIndices[i]);
-//
-//			CellStyle cellStyle = workbook.createCellStyle();
-//			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING));
-//
-//			cellStyles[i] = cellStyle;
-//		}
+		prepareCellStylesWithDataFormats(usedDataFields);
 
+	}
+
+	/**
+	 * @param usedDataFields
+	 */
+	private void prepareCellStylesWithDataFormats(List<DataFieldMetadata> usedDataFields) {
+		DataFormat dataFormat = workbook.createDataFormat();
+
+		cloverFieldToCellStyle.clear();
+		for (DataFieldMetadata fieldMetadata : usedDataFields) {
+			CellStyle cellStyle = workbook.createCellStyle();
+			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING));
+
+			cloverFieldToCellStyle.put(fieldMetadata.getNumber(), cellStyle);
+		}
 	}
 
 	@Override
@@ -891,6 +903,10 @@ public class SpreadsheetFormatter implements Formatter {
 					}
 				}
 				setCellValue(cell, dataField);
+				CellStyle cellStyle = cloverFieldToCellStyle.get(dataField.getMetadata().getNumber());
+				if (cellStyle!=null) {
+					cell.setCellStyle(cellStyle);
+				}
 			}
 			
 		}
@@ -922,7 +938,7 @@ public class SpreadsheetFormatter implements Formatter {
 				cell.setCellValue((Long)dataField.getValue());
 				break;
 			case DataFieldMetadata.NUMERIC_FIELD:
-				cell.setCellValue(((Numeric)dataField.getValue()).getDouble());
+				cell.setCellValue((Double)dataField.getValue());
 				break;
 			case DataFieldMetadata.BOOLEAN_FIELD:
 				cell.setCellValue(((Boolean) (dataField.getValue())).booleanValue());
