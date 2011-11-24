@@ -1056,15 +1056,16 @@ public class SpreadsheetFormatter implements Formatter {
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {
 				workbook = new XSSFWorkbook();
 			} else {
-				int headerWindowSize = headerRowIndent + headerRowCount;
-				int recordWindowSize;
-				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-					recordWindowSize = -minRecordFieldYOffset + mappingInfo.getStep()+1;
-				} else {
-					throw new UnsupportedOperationException("Not yet implemented"); //TODO
-				}
-				int windowsSize = maximum(headerWindowSize, recordWindowSize);
-				workbook = new SXSSFWorkbook(windowsSize);
+//				int headerWindowSize = headerRowIndent + headerRowCount;
+//				int recordWindowSize;
+//				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+//					recordWindowSize = -minRecordFieldYOffset + mappingInfo.getStep()+1;
+//				} else {
+//					throw new UnsupportedOperationException("Not yet implemented"); //TODO
+//				}
+//				int windowsSize = maximum(headerWindowSize, recordWindowSize);
+				int windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+				workbook = new SXSSFWorkbook(windowSize);
 			}
 			break;
 		default:
