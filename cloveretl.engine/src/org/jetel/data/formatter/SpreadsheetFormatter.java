@@ -179,7 +179,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	@Override
-	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata metadata) {
 		this.metadata = metadata;
 
 		if (!StringUtils.isEmpty(sheet)) {
@@ -326,7 +326,7 @@ public class SpreadsheetFormatter implements Formatter {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			for (HeaderRange range : group.getRanges()) {
 				maxX = getMaxX(maxX, range);
-				maxYIncluingSkip = getMaxY(maxY, range, group.getSkip());
+				maxYIncluingSkip = getMaxY(maxYIncluingSkip, range, group.getSkip());
 				maxY = getMaxY(maxY, range, 0);
 				minX = getMinX(minX, range);
 				minY = getMinY(minY, range);
@@ -954,7 +954,8 @@ public class SpreadsheetFormatter implements Formatter {
 
 	
 	@Override
-	public void reset() {// TODO: implement me
+	public void reset() {
+		this.init(metadata);
 	}
 
 	private URL getContextUrlFromOutputDataTarget(Object outputDataTarget) {
