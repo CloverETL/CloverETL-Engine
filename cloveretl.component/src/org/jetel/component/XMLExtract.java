@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
@@ -235,6 +236,24 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author KKou
  */
+
+/*
+ * Invariant:
+ *  Mappings are preprocessed so that all element and attribute references stored in internal structures
+ *  use universal names :
+ *  	element="mov:movies" -> element="{http://www.javlin.eu}movies"
+ *  	xmlFields="mov:att1" -> xmlFields="{http://www.javlin.eu}att1"
+ *  
+ *  Default namespace in mapping -> NOT POSSIBLE
+ *  We are not able to implement default namespace functionality.
+ *  Default namespace (declared without prefix e.g. xmlns="http://www.javlin.eu/default-ns") does
+ *  NOT apply to attributes!!! (see www.w3.org/TR/REC-xml-names/#defaulting)
+ *  Since we currently do not know which xmlFields 
+ *  are attributes and which are elements -> so we do not know which should be expanded by default namespace.
+ *  User therefore has to declare explicit namespace prefix in the Mapping, even for
+ *  attributes and elements falling into the default namespace in the processed XML document.
+ *  
+ */
 public class XMLExtract extends Node {
 
     // Logger
@@ -262,7 +281,8 @@ public class XMLExtract extends Node {
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
     private static final String XML_VALIDATE_ATTRIBUTE = "validate";
     private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
-
+    private static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
+    
     /** MiSho Experimental Templates */
     private static final String XML_TEMPLATE_ID = "templateId";
     private static final String XML_TEMPLATE_REF = "templateRef";
@@ -280,7 +300,7 @@ public class XMLExtract extends Node {
 	public static final String PARENT_MAPPING_REFERENCE_PREFIX = "..";
 	public static final String PARENT_MAPPING_REFERENCE_SEPARATOR = "/";
 	public static final String PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR = PARENT_MAPPING_REFERENCE_PREFIX + PARENT_MAPPING_REFERENCE_SEPARATOR;
-	public static final String ELEMENT_VALUE_REFERENCE = ".";
+	public static final String ELEMENT_VALUE_REFERENCE = "{}.";
 	
     // Map of elementName => output port
     private Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
@@ -317,6 +337,12 @@ public class XMLExtract extends Node {
 	private NodeList mappingNodes;
 
 	private TreeMap<String, Mapping> declaredTemplates = new TreeMap<String, Mapping>();
+	
+	/**
+	 * Namespace bindings relate namespace prefix used in Mapping specification
+	 * and the namespace URI used by the namespace declaration in processed XML document
+	 */
+	private HashMap<String,String> namespaceBindings = new HashMap<String,String>();
 	
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -357,27 +383,28 @@ public class XMLExtract extends Node {
 		/**
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
-        public void startElement(String prefix, String namespace, String localName, Attributes attributes) throws SAXException {
+        public void startElement(String namespaceURI, String localName, String qualifiedName, Attributes attributes) throws SAXException {
             m_level++;
             m_grabCharacters = true;
             
     		// store value of parent of currently starting element (if appropriate)
         	if (m_activeMapping != null && m_hasCharacters && m_level == m_activeMapping.getLevel() + 1) {
-                if (m_activeMapping.descendantRefernces.containsKey(ELEMENT_VALUE_REFERENCE)) {
-               		m_activeMapping.descendantRefernces.put(ELEMENT_VALUE_REFERENCE, trim ? m_characters.toString().trim() : m_characters.toString());
+                if (m_activeMapping.descendantReferences.containsKey(ELEMENT_VALUE_REFERENCE)) {
+               		m_activeMapping.descendantReferences.put(ELEMENT_VALUE_REFERENCE, trim ? m_characters.toString().trim() : m_characters.toString());
                 }
-        		processCharacters(null, true);
+        		processCharacters(null,null, true);
         	}
         	
             // Regardless of starting element type, reset the length of the buffer and flag
             m_characters.setLength(0);
             m_hasCharacters = false;
             
+            final String universalName = augmentURI(namespaceURI) + localName; 
             Mapping mapping = null;
             if (m_activeMapping == null) {
-                mapping = m_elementPortMap.get(localName);
+                mapping = (Mapping) m_elementPortMap.get(universalName);
             } else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
-                mapping = m_activeMapping.getChildMapping(localName);
+                mapping = (Mapping) m_activeMapping.getChildMapping(universalName);
             }
             if (mapping != null) {
                 // We have a match, start converting all child nodes into
@@ -385,7 +412,7 @@ public class XMLExtract extends Node {
                 m_activeMapping = mapping;
                 m_activeMapping.setLevel(m_level);
                 // clear cached values of xml fields referenced by descendants (there may be values from previously read element of this m_activemapping)
-                for (Entry<String, String> e : m_activeMapping.descendantRefernces.entrySet()) {
+                for (Entry<String, String> e : m_activeMapping.descendantReferences.entrySet()) {
 					e.setValue(null);
 				}
                 
@@ -467,7 +494,7 @@ public class XMLExtract extends Node {
 	                    if (m_activeMapping.hasFieldsFromAncestor()) {
 	                    	for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
 	                    		if (m_activeMapping.getOutRecord().hasField(afm.currentField) && afm.ancestor != null) {
-	                    			m_activeMapping.getOutRecord().getField(afm.currentField).fromString(afm.ancestor.descendantRefernces.get(afm.ancestorField));
+	                    			m_activeMapping.getOutRecord().getField(afm.currentField).fromString(afm.ancestor.descendantReferences.get(afm.ancestorField));
 	                    		}
 	                    	}
 	                    }
@@ -483,44 +510,39 @@ public class XMLExtract extends Node {
                 // Store all attributes as columns (this hasn't been
                 // used/tested)                
                 for (int i = 0; i < attributes.getLength(); i++) {
-                    String attrName = attributes.getQName(i);
+                	/*
+                	 * Note: XML namespaces handling
+                	 * Default namespace declared via "xmlns" attribute without prefix specification (e.g. xmlns="http://www.javlin.eu/movies)
+                	 * does NOT apply on attributes (see http://www.w3.org/TR/REC-xml-names/#defaulting)
+                	 */
+                	final String attributeLocalName = attributes.getLocalName(i);
+                    String attrName = augmentURI(attributes.getURI(i)) + attributeLocalName;
                     
-                    if (m_activeMapping.descendantRefernces.containsKey(attrName)) {
+                    if (m_activeMapping.descendantReferences.containsKey(attrName)) {
                     	String val = attributes.getValue(i);
-                    	m_activeMapping.descendantRefernces.put(attrName, trim ? val.trim() : val);
+                    	m_activeMapping.descendantReferences.put(attrName, trim ? val.trim() : val);
                     }
                     
                     //use fields mapping
-                    Map<String, String> xmlCloverMap = m_activeMapping.getXml2CloverFieldsMap();
+                    final Map<String, String> xmlCloverMap = m_activeMapping.getXml2CloverFieldsMap();
+                    String fieldName = null;
                     if (xmlCloverMap != null) {
                     	if (xmlCloverMap.containsKey(attrName)) {
-                    		attrName = xmlCloverMap.get(attrName);
+                    		fieldName = xmlCloverMap.get(attrName);
                     	} else if (m_activeMapping.explicitCloverFields.contains(attrName)) {
                     		continue; // don't do implicit mapping if clover field is used in an explicit mapping 
                     	}
                     }
                     
-                    // TODO Labels replace:
-                    if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(attrName)) {
-                    	String val = attributes.getValue(i);
-                        m_activeMapping.getOutRecord().getField(attrName).fromString(trim ? val.trim() : val);
+                    if (fieldName == null) {
+                    	// we could not find mapping using the universal name -> try implicit mapping using local name
+                    	fieldName = attributeLocalName;
                     }
-                    // TODO Labels end replace
-
-					// TODO Labels replace with:
-                    //DataRecord outRecord = m_activeMapping.getOutRecord();
-                    //DataField field = null;
-                    //
-                    //if (outRecord != null) {
-                    //	if (outRecord.hasLabeledField(attrName)) {
-                    //		field = outRecord.getFieldByLabel(attrName);
-                    //	}
-                    //}
-                    //
-                    //if (field != null) {
-                    //	String val = attributes.getValue(i);
-                    //	field.fromString(trim ? val.trim() : val);
-                    //}
+                    
+                    if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(fieldName)) {
+                    	String val = attributes.getValue(i);
+                        m_activeMapping.getOutRecord().getField(fieldName).fromString(trim ? val.trim() : val);
+                    }
                 }
             }
             
@@ -540,13 +562,20 @@ public class XMLExtract extends Node {
         /**
          * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
          */
-        public void endElement(String prefix, String namespace, String localName) throws SAXException {
+        public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
             if (m_activeMapping != null) {
+            	String fullName;
+            	if (namespaceURI.isEmpty()) {
+            		fullName = localName;
+            	} else {
+            		fullName = "{" + namespaceURI + "}" + localName;
+            	}
+            	
             	// cache characters value if the xml field is referenced by descendant
-                if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.descendantRefernces.containsKey(localName)) {
-               		m_activeMapping.descendantRefernces.put(localName, trim ? m_characters.toString().trim() : m_characters.toString());
+                if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.descendantReferences.containsKey(fullName)) {
+               		m_activeMapping.descendantReferences.put(fullName, trim ? m_characters.toString().trim() : m_characters.toString());
                 }
-               	processCharacters(localName, m_level == m_activeMapping.getLevel());
+               	processCharacters(namespaceURI, localName, m_level == m_activeMapping.getLevel());
                 
                 // Regardless of whether this was saved, reset the length of the
                 // buffer and flag
@@ -612,41 +641,42 @@ public class XMLExtract extends Node {
 		 * Store the characters processed by the characters() call back only if we have corresponding 
 		 * output field and we are on the right level or we want to use data from nested unmapped nodes
 		 */
-		private void processCharacters(String localName, boolean elementValue) {
-        	//use fields mapping
+		private void processCharacters(String namespaceURI, String localName, boolean elementValue) {
+        	// Create universal name
+			String universalName = null;
+			if (localName != null) {
+				universalName = augmentURI(namespaceURI) + localName;
+			}
+			
+			String fieldName = null;
+			//use fields mapping
             Map<String, String> xml2clover = m_activeMapping.getXml2CloverFieldsMap();
             if (xml2clover != null) {
            		if (elementValue && xml2clover.containsKey(ELEMENT_VALUE_REFERENCE)) {
-            		localName = xml2clover.get(ELEMENT_VALUE_REFERENCE);
-        		} else if (xml2clover.containsKey(localName)) {
-            		localName = xml2clover.get(localName);
-        		} else if (m_activeMapping.explicitCloverFields.contains(localName)) {
+            		fieldName = xml2clover.get(ELEMENT_VALUE_REFERENCE);
+        		} else if (xml2clover.containsKey(universalName)) {
+            		fieldName = xml2clover.get(universalName);
+        		} else if (m_activeMapping.explicitCloverFields.contains(localName) ) {
+        			// XXX: this is nonsense code ... the names stored here are field names and the code used XML element names
         			return; // don't do implicit mapping if clover field is used in an explicit mapping
         		}
+
+           		if (fieldName == null) {
+           			/*
+           			 * As we could not find match using qualified name
+           			 * try mapping the xml element/attribute without the namespace prefix
+           			 */
+           			fieldName = localName;
+           		}
             }
             
-			// TODO Labels replace:
-			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(localName) 
+			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(fieldName) 
 			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-			    DataField field = m_activeMapping.getOutRecord().getField(localName);
-			// TODO Labels replace end
-			
-			// TODO Labels replace with:
-            //DataRecord outRecord = m_activeMapping.getOutRecord();
-            //DataField field = null;
-            //
-			//if ((outRecord != null) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-            //	if (outRecord.hasLabeledField(localName)) {
-            //		field = outRecord.getFieldByLabel(localName);
-            //	}
-			//}
-			//
-			//if (field != null) {
-			// TODO Labels replace with end
+			    DataField field = m_activeMapping.getOutRecord().getField(fieldName);
 			    // If field is nullable and there's no character data set it to null
 			    if (m_hasCharacters) {
 			        try {
-			    	if (field.getValue() != null && cloverAttributes.contains(localName)) {
+			    	if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
 			    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
 			    	} else {
 			    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
@@ -712,7 +742,7 @@ public class XMLExtract extends Node {
         List<AncestorFieldMapping> fieldsFromAncestor; 
 
         /** Mapping - xml name -> clover field name; these xml fields are referenced by descendant mappings */
-        Map<String, String> descendantRefernces = new HashMap<String, String>();
+        Map<String, String> descendantReferences = new HashMap<String, String>();
         
         /** Set of Clover fields which are mapped explicitly (using xmlFields & cloverFields attributes).
          *  It is union of xml2CloverFieldsMap.values() and Clover fields from fieldsFromAncestor list. Its purpose: quick lookup
@@ -759,7 +789,7 @@ public class XMLExtract extends Node {
 			
 			if (otherMapping.hasFieldsFromAncestor()) {
 				for (AncestorFieldMapping m : otherMapping.getFieldsFromAncestor()) {
-					addAcestorFieldMapping(m.originalFieldReference, m.currentField);
+					addAncestorFieldMapping(m.originalFieldReference, m.currentField);
 				}
 			}
 
@@ -903,7 +933,7 @@ public class XMLExtract extends Node {
         }
         
         public void putXml2CloverFieldMap(String xmlField, String cloverField) {
-        	xml2CloverFieldsMap.put(xmlField, cloverField);
+        	xml2CloverFieldsMap.put(createQualifiedName(xmlField), cloverField);
         	explicitCloverFields.add(cloverField);
         }
         
@@ -1014,7 +1044,7 @@ public class XMLExtract extends Node {
          */
         public Sequence getSequence() {
             if(sequence == null) {
-                String element = StringUtils.normalizeString(StringUtils.trimXmlNamespace(getElement()));
+                String element = StringUtils.normalizeName(StringUtils.trimXmlNamespace(getElement()));
 
                 if(getSequenceId() == null) {
                     sequence = new PrimitiveSequence(element, getGraph(), element);
@@ -1156,7 +1186,7 @@ public class XMLExtract extends Node {
         	}
         	fieldsFromAncestor.add(ancestorFieldReference);
         	if (ancestorFieldReference.ancestor != null) {
-        		ancestorFieldReference.ancestor.descendantRefernces.put(ancestorFieldReference.ancestorField, null);
+        		ancestorFieldReference.ancestor.descendantReferences.put(ancestorFieldReference.ancestorField, null);
         	}
         	explicitCloverFields.add(ancestorFieldReference.currentField);
         }
@@ -1169,7 +1199,7 @@ public class XMLExtract extends Node {
 			return fieldsFromAncestor != null && !fieldsFromAncestor.isEmpty(); 
 		}
 		
-		private void addAcestorFieldMapping(String ancestorFieldRef, String currentField) {
+		private void addAncestorFieldMapping(String ancestorFieldRef, String currentField) {
 			String ancestorField = ancestorFieldRef;
 			ancestorField = normalizeAncestorValueRef(ancestorField);
 			Mapping ancestor = this;
@@ -1182,6 +1212,9 @@ public class XMLExtract extends Node {
 				}
 				ancestorField = ancestorField.substring(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR.length());
 			}
+			
+			// After the ancestor prefix has been stripped, process the namespace
+			ancestorField = createQualifiedName(ancestorField);
 			if (ancestor != null) {
 				addAncestorField(new AncestorFieldMapping(ancestor, ancestorField, currentField, ancestorFieldRef));
 			} else {
@@ -1278,6 +1311,29 @@ public class XMLExtract extends Node {
             	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
             }
 
+            // set namespace bindings attribute
+            Properties props = null;
+			if (xattribs.exists(XML_NAMESPACE_BINDINGS_ATTRIBUTE)) {
+				try {
+					props = new Properties();
+					final String content = xattribs.getString(
+							XML_NAMESPACE_BINDINGS_ATTRIBUTE, null);
+					if (content != null) {
+						props.load(new ByteArrayInputStream(content.getBytes()));
+					}
+				} catch (IOException e) {
+					throw new XMLConfigurationException("Unable to initialize namespace bindings",e);
+				}
+				
+				final HashMap<String,String> namespaceBindings = new HashMap<String,String>();
+				for (String name : props.stringPropertyNames()) {
+					namespaceBindings.put(name, props.getProperty(name));
+				}
+				
+				extract.setNamespaceBindings(namespaceBindings);
+				
+			}
+            
             // set a skip row attribute
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
             	extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
@@ -1412,13 +1468,19 @@ public class XMLExtract extends Node {
             		outputPort = attributes.getInteger(XML_OUTPORT);
             	}
 
+            	
+            	
             	if (mapping == null) {
-            		mapping = new Mapping(attributes.getString(XML_ELEMENT), outputPort, parentMapping);
+            		mapping = new Mapping(
+            				createQualifiedName(attributes.getString(XML_ELEMENT)), 
+            				outputPort, 
+            				parentMapping);
             	} else {
             		if (outputPort != -1) {
 	            		mapping.setOutPort(outputPort);
 	            		if (attributes.exists(XML_ELEMENT)) {
-	            			mapping.setElement(attributes.getString(XML_ELEMENT));
+	            			mapping.setElement(
+	            					createQualifiedName(attributes.getString(XML_ELEMENT)));
 	            		}
             		}
             	}
@@ -1435,12 +1497,14 @@ public class XMLExtract extends Node {
             boolean parentKeyPresent = false;
             boolean generatedKeyPresent = false;
             if (attributes.exists(XML_PARENTKEY)) {
-                mapping.setParentKey(attributes.getString(XML_PARENTKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            	final String[] parentKey = attributes.getString(XML_PARENTKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+                mapping.setParentKey(parentKey);
                 parentKeyPresent = true;
             }
             
             if (attributes.exists(XML_GENERATEDKEY)) {
-                mapping.setGeneratedKey(attributes.getString(XML_GENERATEDKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            	final String[] generatedKey = attributes.getString(XML_GENERATEDKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX); 
+                mapping.setGeneratedKey(generatedKey);
                 generatedKeyPresent = true;
             }
             
@@ -1467,7 +1531,7 @@ public class XMLExtract extends Node {
                 if(xmlFields.length == cloverFields.length){
                     for (int i = 0; i < xmlFields.length; i++) {
                     	if (xmlFields[i].startsWith(PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR) || xmlFields[i].equals(PARENT_MAPPING_REFERENCE_PREFIX)) {
-                    		mapping.addAcestorFieldMapping(xmlFields[i], cloverFields[i]);
+                    		mapping.addAncestorFieldMapping(xmlFields[i], cloverFields[i]);
                     	} else {
                     		mapping.putXml2CloverFieldMap(xmlFields[i], cloverFields[i]);
                     	}
@@ -1592,6 +1656,7 @@ public class XMLExtract extends Node {
     	// create new sax factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
 		factory.setValidating(validate);
+		factory.setNamespaceAware(true);
 		initXmlFeatures(factory);
         SAXParser parser;
         Set<String> xmlAttributes = getXMLMappingValues();
@@ -1682,9 +1747,11 @@ public class XMLExtract extends Node {
         if(isInitialized()) return;
 		super.init();
 
+		augmentNamespaceURIs();
+		
     	TransformationGraph graph = getGraph();
     	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
-
+    	
 		// prepare mapping
 		if (mappingURL != null) {
 			try {
@@ -1729,7 +1796,28 @@ public class XMLExtract extends Node {
         }
         
     }
+    
+    /**
+     * Augments the namespaceURIs with curly brackets to allow easy creation of qualified names
+     * E.g. xmlns:mov="http://www.javlin.eu/mov"
+     * URI = "http://www.javlin.eu";
+     * Augmented URI = "{http://www.javlin.eu}";
+     */
+    private void augmentNamespaceURIs() {
+    	for (String prefix : namespaceBindings.keySet()) {
+    		String uri = namespaceBindings.get(prefix);
+    		namespaceBindings.put(prefix, augmentURI(uri));
+    	}
+    }
 	
+    private String augmentURI(String uri) {
+    	if (uri == null) {
+    		return null;
+    	}
+    	
+    	return "{" + uri + "}";
+    }
+    
     private void createReadableChannelIterator() throws ComponentNotReadyException {
     	TransformationGraph graph = getGraph();
     	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
@@ -1781,20 +1869,51 @@ public class XMLExtract extends Node {
 		return false;
 	}
 
+	/**
+	 * Expands a prefixed element or attribute name to a universal name.
+	 * I.e. the namespace prefix is replaced by augmented URI.
+	 * The URIs are taken from the {@link XMLExtract#namespaceBindings} 
+	 * 
+	 * @param prefixedName XML element or attribute name e.g. <code>mov:movies</code>
+	 * 
+	 * @return Universal XML name in the form: <code>{http://www.javlin.eu/movies}title</code>
+	 */
+	private String createQualifiedName(String prefixedName) {
+		if (prefixedName == null || prefixedName.isEmpty()) {
+			return prefixedName;
+		}
+		
+		// check if universal XML name exists
+		int indexOfOpenBracket = prefixedName.indexOf("{");
+		if (-1<indexOfOpenBracket && indexOfOpenBracket<prefixedName.indexOf("}")) {
+			return prefixedName;
+		}
+		
+		final String[] parsed = prefixedName.split(":");
+		
+		if (parsed.length < 2) {
+			return "{}" + parsed[0];
+		}
+		
+		/*
+		 * Prefixed element:
+		 * Get the URI (already in Clark's notation) and use it to create qualified name
+		 */
+		String namespaceURI = namespaceBindings.get(parsed[0]);
+		namespaceURI = namespaceURI == null ? "{}" : namespaceURI;
+		return namespaceURI + parsed[1];
+	}
+	
+	private String[] createQualifiedName(String[] prefixedNames) {
+		final String[] result = new String[prefixedNames.length];
+		for (int i = 0; i<prefixedNames.length; i++) {
+			result[i] = createQualifiedName(prefixedNames[i]);
+		}
+		return result;
+	}
+	
     public String getType() {
         return COMPONENT_TYPE;
-    }
-    
-    private void checkUniqueness(ConfigurationStatus status, Mapping mapping) {
-    	if (mapping.getOutRecord() == null) {
-    		return;
-    	}
-		new UniqueLabelsValidator(status, this).validateMetadata(mapping.getOutRecord().getMetadata());
-		if (mapping.getChildMap() != null) {
-			for (Mapping child: mapping.getChildMap().values()) {
-				checkUniqueness(status, child);
-			}
-		}
     }
     
     @Override
@@ -1812,18 +1931,16 @@ public class XMLExtract extends Node {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler handler = new MyHandler();
-			InputSource is = null;
+			InputStream is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
 				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new InputSource(new FileInputStream(new File(filePath)));
+				is = new FileInputStream(new File(filePath));
 				ReadableByteChannel ch = FileUtils.getReadableChannel(
 						graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				doc = createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
-				// inlined mapping
-				// don't use the charset of the component's input files, but the charset of the .grf file
-		        is = new InputSource(new StringReader(mapping));
+				is = new ByteArrayInputStream(mapping.getBytes(charset));
 				doc = createDocumentFromString(mapping);
 	        }
 			if (is != null) {
@@ -1854,12 +1971,6 @@ public class XMLExtract extends Node {
 		} finally {
 			declaredTemplates.clear();
 		}
-		
-		// TODO Labels:
-		//for (Mapping mapping: getMappings().values()) {
-		//	checkUniqueness(status, mapping);
-		//}
-		// TODO Labels end
 		
         try { 
             // check inputs
@@ -2041,6 +2152,18 @@ public class XMLExtract extends Node {
     public void setCharset(String charset) {
     	this.charset = charset;
 	}
+    
+    /**
+     * Sets namespace bindings to allow processing that relate namespace prefix used in Mapping
+     * and namespace URI used in processed XML document
+	 * @param namespaceBindings the namespaceBindings to set
+	 */
+	public void setNamespaceBindings(HashMap<String, String> namespaceBindings) {
+		this.namespaceBindings = namespaceBindings;
+	}
+    
+    
+    
 
 //    private void resetRecord(DataRecord record) {
 //        // reset the record setting the nullable fields to null and default
