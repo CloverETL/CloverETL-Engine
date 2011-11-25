@@ -53,6 +53,7 @@ import org.jetel.data.formatter.XLSFormatter.XLSType;
 import org.jetel.data.parser.XLSMapping;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
+import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.BadDataFormatException;
@@ -136,6 +137,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private XYRange headerXYRange;
 	private int firstRecordBelowHeaderX = 0;
 	private int firstRecordBelowHeaderY = 0;
+	
+	private int templateCopiedRegionY1 = 0;
 	
 	public void setAttitude(SpreadsheetAttitude attitude) {
 		this.attitude = attitude;
@@ -358,6 +361,7 @@ public class SpreadsheetFormatter implements Formatter {
 
 		if (insert) {
 			firstFooterLineIndex = headerRowIndent + headerRowCount;
+			templateCopiedRegionY1 = headerXYRange.y2+1;
 		}
 	}
 	
@@ -439,9 +443,8 @@ public class SpreadsheetFormatter implements Formatter {
 
 		
 		prepareCellStylesWithDataFormats(usedDataFields);
-
 	}
-
+	
 	/**
 	 * @param usedDataFields
 	 */
@@ -451,6 +454,12 @@ public class SpreadsheetFormatter implements Formatter {
 		cloverFieldToCellStyle.clear();
 		for (DataFieldMetadata fieldMetadata : usedDataFields) {
 			CellStyle cellStyle = workbook.createCellStyle();
+			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
+			int y = templateCopiedRegionY1 + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
+			Cell templateCell = getCellByXY(x, y);
+			if (templateCell!=null) {
+				cellStyle.cloneStyleFrom(templateCell.getCellStyle());
+			}
 			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING));
 
 			cloverFieldToCellStyle.put(fieldMetadata.getNumber(), cellStyle);
@@ -840,6 +849,45 @@ public class SpreadsheetFormatter implements Formatter {
 		insertEmptyRows(getLastRowNumInCurrentSheet() + 1, rowCount);
 	}
 	
+	void insertEmptyOrTemplateRows(int index, int rowCount) {
+		int defaultColumnsToCreate = headerColumnIndent + headerColumnCount;
+		for (int i = 0; i < rowCount; ++i) {
+			int newRowIndex = index + i;
+			Row row = currentSheet.getRow(newRowIndex);
+			if (row == null) {
+				currentSheet.createRow(newRowIndex);
+			}
+			
+			Row templateRow = currentSheet.getRow(templateCopiedRegionY1 + i);
+			if (insert && templateRow!=null) {
+				// copy from a template row
+				for (int j = 0; j < templateRow.getLastCellNum(); ++j) {
+					Cell templateCell = null;
+					Integer cloverField = xToCloverFieldMapping.get(j);
+					if (cloverField!=null) {
+						Integer yOffset = cloverFieldToYOffsetMapping.get(cloverField);
+						if (yOffset!=null) {
+							templateCell = getCellByXY(j, templateCopiedRegionY1 + yOffset);
+						}
+					}
+					if (templateCell==null) {
+						templateCell = templateRow.getCell(j);
+					}
+					if (templateCell != null) {
+						Cell cell = row.createCell(j);
+						copyCell(templateCell, cell);
+					}
+				}
+			} else {
+				//or create an empty row of default width
+				for (int j=0; j<defaultColumnsToCreate; ++j) {
+					row.createCell(j);
+				}
+			}
+		}
+		
+	}
+	
 	private CellPosition createNextRecordRegion() {
  		if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
  			int rowsToCreate = mappingInfo.getStep();
@@ -848,8 +896,11 @@ public class SpreadsheetFormatter implements Formatter {
 			if (insert) {
 				if (firstFooterLineIndex <= getLastRowNumInCurrentSheet()) {
 					currentSheet.shiftRows(firstFooterLineIndex, getLastRowNumInCurrentSheet(), rowsToCreate);
+					templateCopiedRegionY1 += rowsToCreate;
 				}
-				insertEmptyRows(firstFooterLineIndex, rowsToCreate);
+				
+				insertEmptyOrTemplateRows(firstFooterLineIndex, rowsToCreate);
+					
 				rowOffset = firstFooterLineIndex;
 				if (minRecordFieldYOffset<0) {
 					for (int x=headerXYRange.x1; x<headerXYRange.x2; ++x) {
@@ -877,7 +928,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	
-	public int write(DataRecord record) throws IOException {// TODO: implement me
+	public int write(DataRecord record) throws IOException {
 		if (record == null) {
 			throw new NullPointerException("record");
 		}
@@ -978,6 +1029,35 @@ public class SpreadsheetFormatter implements Formatter {
 			if (outputDataTarget instanceof Object[]) {
 				FileOutputStream workbookOutputStream = (FileOutputStream) ((Object[]) outputDataTarget)[2];
 				if (workbookOutputStream.getChannel().isOpen()) {
+					for (int x = headerXYRange.x1; x < headerXYRange.x2; ++x) {
+						if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+							if (xToCloverFieldMapping.get(x) != null) {
+								currentSheet.autoSizeColumn(x);
+							}
+						} else {
+							throw new UnsupportedOperationException("Not implemented yet"); // TODO
+						}
+					}
+					if (insert & templateWorkbook!=null) {
+						if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
+							int deletedRows = 0;
+							for (int i=0; i<mappingInfo.getStep(); ++i) {
+								Row templateRowToRemove = currentSheet.getRow(templateCopiedRegionY1+i);
+								if (templateRowToRemove!=null) {
+									currentSheet.removeRow(templateRowToRemove);
+									deletedRows++;
+								}
+							}
+							int rowsToShiftUpStart = templateCopiedRegionY1+1;
+							int rowsToShiftUpEnd = getLastRowNumInCurrentSheet();
+							if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
+								currentSheet.shiftRows(templateCopiedRegionY1+1, getLastRowNumInCurrentSheet(), -deletedRows);
+							}
+						} else {
+							throw new UnsupportedOperationException("Not implemented yet"); // TODO
+						}
+					}
+					
 					URL url = (URL) ((Object[]) outputDataTarget)[0];
 					String file = (String) ((Object[]) outputDataTarget)[1];
 					OutputStream outputStream = FileUtils.getOutputStream(url, file, false, -1);
@@ -1064,7 +1144,12 @@ public class SpreadsheetFormatter implements Formatter {
 //					throw new UnsupportedOperationException("Not yet implemented"); //TODO
 //				}
 //				int windowsSize = maximum(headerWindowSize, recordWindowSize);
-				int windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+				int windowSize;
+				if (mappingInfo!=null) {
+					windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+				} else {
+					windowSize = 10;
+				}
 				workbook = new SXSSFWorkbook(windowSize);
 			}
 			break;
