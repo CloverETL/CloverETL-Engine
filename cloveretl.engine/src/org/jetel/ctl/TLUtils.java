@@ -20,6 +20,7 @@ package org.jetel.ctl;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 public final class TLUtils {
 
@@ -56,6 +57,71 @@ public final class TLUtils {
 		}
 	}
 
+	/**
+	 * Compares two given metadata objects.
+	 * Metadata objects are considered as equal if have same number of fields and fields are equal
+	 * (see {@link #equals(DataFieldMetadata, DataFieldMetadata)}).
+	 * @param metadata1
+	 * @param metadata2
+	 * @return <code>true</code> if metadata objects are considered as equal, <code>false</code> otherwise
+	 */
+	public static boolean equals(DataRecordMetadata metadata1, DataRecordMetadata metadata2) {
+		if (metadata1 == null || metadata2 == null) {
+			return false;
+		}
+
+		if (metadata1 == metadata2) {
+			return true;
+		}
+
+		if (metadata1.getNumFields() != metadata2.getNumFields()) {
+			return false;
+		}
+
+		for (int i = 0; i < metadata1.getNumFields(); i++) {
+			if (!equals(metadata1.getField(i), metadata2.getField(i))) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	
+	/**
+	 * Compares two given metadata fields.
+	 * Metadata fields are considered as equal if have same name and type.
+	 * @param field1
+	 * @param field2
+	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
+	 */
+	public static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2) {
+		if (field1 == null || field2 == null) {
+			return false;
+		}
+		
+		//field names have to be equal
+		if (!field1.getName().equals(field2.getName())) {
+			return false;
+		}
+		
+		//field types have to be equal
+		if (! (field1.getType() == field2.getType())) {
+			return false;
+		}
+		
+		if (field1.getType() == DataFieldMetadata.DECIMAL_FIELD) {
+			
+			if (!StringUtils.equalsWithNulls(field1.getProperty(DataFieldMetadata.LENGTH_ATTR),
+					field2.getProperty(DataFieldMetadata.LENGTH_ATTR))
+					|| !StringUtils.equalsWithNulls(field1.getProperty(DataFieldMetadata.SCALE_ATTR),
+					field2.getProperty(DataFieldMetadata.SCALE_ATTR))) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	private TLUtils() {
 		// not available
 	}

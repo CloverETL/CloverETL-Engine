@@ -684,6 +684,15 @@ public class StringUtilsTest extends CloverTestCase {
 		assertTrue(StringUtils.trimTrailing(new CloverString(" 	 	 	    a	bc    	  		   ")).equals(new CloverString(" 	 	 	    a	bc")));
 	}
 
+	public void testEqualsWithNulls() {
+		assertTrue(StringUtils.equalsWithNulls(null, null));
+		assertFalse(StringUtils.equalsWithNulls("abc", null));
+		assertFalse(StringUtils.equalsWithNulls(null, "abc"));
+		assertTrue(StringUtils.equalsWithNulls("abc", "abc"));
+		assertFalse(StringUtils.equalsWithNulls("abc", "cba"));
+		assertFalse(StringUtils.equalsWithNulls("abcdefghtjki", "cba"));
+	}
+	
 }
 
 /*

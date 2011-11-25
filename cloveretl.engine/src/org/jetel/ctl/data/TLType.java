@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
@@ -308,16 +309,12 @@ public abstract class TLType {
 				if (other.metadata != null) {
 					return false;
 				}
-			} else if (!metadata.equals(other.metadata)) {
+			} else if (!TLUtils.equals(metadata, other.metadata)) {
 				return false;
 			}
 			
 			return true;
 		}
-
-		
-		
-		
 	}
 	
 	public static final class TLTypeMap extends TLType {

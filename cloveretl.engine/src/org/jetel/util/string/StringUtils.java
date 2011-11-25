@@ -2285,6 +2285,17 @@ public class StringUtils {
 		return ret.toString();
 	}
 
+	/**
+	 * Compares two string values. Similar to call s1.equals(s2), but s1 and s2 can be null.
+	 * Null values are considered equal. Null value does not equal non-null value.
+	 */
+	public static boolean equalsWithNulls(String s1, String s2) {
+		if (s1 == null) {
+			return s2 == null;
+		}
+		return s1.equals(s2);
+	}
+	
 	private static interface VariableResolver{
 		String get(String key);
 	}
