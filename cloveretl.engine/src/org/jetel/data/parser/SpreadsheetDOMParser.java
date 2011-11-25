@@ -119,7 +119,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			throw new ComponentNotReadyException("Sheet does not contain header!");
 		}
 
-		int rowsToRead = endRow - startRow;
+		int rowsToRead = endRow - startRow + 1;
 		String[][] result = new String[rowsToRead][];
 		
 		List<String> rowResult = new ArrayList<String>();
@@ -152,17 +152,17 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
-		if (nextRecordStartRow > lastLine) {
+		if (nextRecordStartRow > lastLine - mapping.length + 1) {
 			return null;
 		}
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-			return parseHorizontal(record);
-		} else {
 			return parseVertical(record);
+		} else {
+			return parseHorizontal(record);
 		}
 	}
 
-	private DataRecord parseHorizontal(DataRecord record) {
+	private DataRecord parseVertical(DataRecord record) {
 		int cloverFieldIndex;
 		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];
@@ -192,7 +192,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		return record;
 	}
 
-	private DataRecord parseVertical(DataRecord record) {
+	private DataRecord parseHorizontal(DataRecord record) {
 		int cloverFieldIndex;
 		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];

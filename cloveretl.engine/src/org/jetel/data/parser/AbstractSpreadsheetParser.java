@@ -298,7 +298,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				int column = range.getColumnStart() - stats.getMappingMinColumn();
 
 				if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-					row += group.getSkip();
+					row += group.getSkip() - stats.getMinimalSkip();
 				} else {
 					column += group.getSkip();
 				}
@@ -374,7 +374,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				}
 				for (int row = range.getRowStart(); row <= range.getRowEnd() && row < headerCells.length; row++) {
 					String[] headerRow = headerCells[row - stats.getMappingMinRow()];
-					for (int column = range.getColumnStart(); column < range.getColumnEnd() && column < headerRow.length; column++) {
+					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column < headerRow.length; column++) {
 						String header = headerRow[column - stats.getMappingMinColumn()]; // TODO: perform "name mangling"?
 
 						Integer cloverIndex = nameMap.get(header);
@@ -386,7 +386,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
 						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-							rowIndex += group.getSkip();
+							rowIndex += group.getSkip() - stats.getMinimalSkip();
 						} else {
 							columnIndex += group.getSkip();
 						}
@@ -421,7 +421,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
 						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-							rowIndex += group.getSkip();
+							rowIndex += group.getSkip() - stats.getMinimalSkip();
 						} else {
 							columnIndex += group.getSkip();
 						}
