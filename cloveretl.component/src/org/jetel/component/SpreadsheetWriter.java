@@ -66,7 +66,7 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	public static final String XML_TEMPLATE_FILE_URL_ATTRIBUTE = "templateFileURL";
 	public static final String XML_FORMATTER_TYPE_ATTRIBUTE = "formatterType";
-	public static final String XML_ATTITUDE_ATTRIBUTE = "attitude";
+	public static final String XML_ATTITUDE_ATTRIBUTE = "writeMode";
 	public static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
@@ -289,7 +289,7 @@ public class SpreadsheetWriter extends Node {
 			FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDirs);
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
-				if (mapping.getOrientation() == SpreadsheetOrientation.VERTICAL && attitude == SpreadsheetAttitude.STREAM) {
+				if (mapping.getOrientation() != XLSMapping.HEADER_ON_TOP && attitude == SpreadsheetAttitude.STREAM) {
 					status.add(new ConfigurationProblem("Vertical orientation is not supported with stream attitude!",
 							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
