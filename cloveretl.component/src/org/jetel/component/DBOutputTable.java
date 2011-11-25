@@ -1420,7 +1420,9 @@ public class DBOutputTable extends Node {
 			}
 			status.add(problem);
 		} finally {
-			free();
+			if (dbConnection != null) {
+				dbConnection.closeConnection(getId());
+			}
 		}
 
 		return status;
