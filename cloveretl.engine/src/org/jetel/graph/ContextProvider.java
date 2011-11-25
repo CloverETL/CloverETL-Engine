@@ -74,14 +74,22 @@ public class ContextProvider {
     }
 
 	public static synchronized void registerNode(Node node) {
-		if (nodesCache.containsKey(node)) {
-			logger.warn("Attempt to unregister non-registered thread in the ContextProvider.");
+		Thread currentThread = Thread.currentThread();
+		if (nodesCache.containsKey(currentThread) && nodesCache.get(currentThread) != node) {
+			logger.warn(String.format("Current thread '%s' is already registered with different node (%s).", currentThread.getName(), nodesCache.get(currentThread).toString()));
 		}
-		nodesCache.put(Thread.currentThread(), node);
+		if (graphsCache.containsKey(currentThread) && node.getGraph() != graphsCache.get(currentThread)) {
+			logger.warn(String.format("Current thread '%s' is already registered with different graph (%s).", currentThread.getName(), graphsCache.get(currentThread).toString()));
+		}
+		nodesCache.put(currentThread, node);
 	}
 
 	public static synchronized void registerGraph(TransformationGraph graph) {
-		graphsCache.put(Thread.currentThread(), graph);
+		Thread currentThread = Thread.currentThread();
+		if (graphsCache.containsKey(currentThread) && graph != graphsCache.get(currentThread)) {
+			logger.warn(String.format("Current thread '%s' is already registered with different graph (%s).", currentThread.getName(), graphsCache.get(currentThread).toString()));
+		}
+		graphsCache.put(currentThread, graph);
 	}
 
 	public static synchronized void unregister() {
