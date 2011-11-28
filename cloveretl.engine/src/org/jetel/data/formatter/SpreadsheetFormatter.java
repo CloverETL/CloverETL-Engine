@@ -811,6 +811,7 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	
 	private void prepareSelectedOrDefaultSheet() {
 		if (sheetName != null) {
 			currentSheet = workbook.getSheet(sheetName);
@@ -1224,6 +1225,11 @@ public class SpreadsheetFormatter implements Formatter {
 
 
 	private void setCellValue(Cell cell, DataField dataField) {
+		
+		if (dataField.getValue()==null) {
+			cell.setCellValue(dataField.getMetadata().getNullValue());
+			return;
+		}
 		
 		try {
 			switch (dataField.getType()) {
