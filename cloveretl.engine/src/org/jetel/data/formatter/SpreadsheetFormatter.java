@@ -73,6 +73,7 @@ import org.jetel.util.string.StringUtils;
 public class SpreadsheetFormatter implements Formatter {
 	/** the value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
+	private static final short DEFAULT_CELL_STYLE_INDEX = 0;
 
 	private SpreadsheetAttitude attitude;
 	private SpreadsheetFormat formatterType;
@@ -445,6 +446,248 @@ public class SpreadsheetFormatter implements Formatter {
 		prepareCellStylesWithDataFormats(usedDataFields);
 	}
 	
+	private class CellStyleFilter {
+		private short alignment;
+		private short verticalAlignment;
+		private short borderBottom;
+		private short borderLeft;
+		private short borderRight;
+		private short borderTop;
+		private short bottomBorderColor;
+		private short leftBorderColor;
+		private short rightBorderColor;
+		private short topBorderColor;
+		private short dataFormat;
+		private short fillBackgroundColor;
+		private short fillForegroundColor;
+		private short fillPattern;
+		private short fontIndex;
+		private boolean hidden;
+		private short indention;
+		private boolean locked;
+		private short rotation;
+		private boolean wrapText;
+		
+		CellStyleFilter(CellStyle cellStyle) {
+			setAlignment(cellStyle.getAlignment());
+			setVerticalAlignment(cellStyle.getVerticalAlignment());
+			setBorderBottom(cellStyle.getBorderBottom());
+			setBorderLeft(cellStyle.getBorderLeft());
+			setBorderRight(cellStyle.getBorderRight());
+			setBorderTop(cellStyle.getBorderTop());
+			setBottomBorderColor(cellStyle.getBottomBorderColor());
+			setLeftBorderColor(cellStyle.getLeftBorderColor());
+			setRightBorderColor(cellStyle.getRightBorderColor());
+			setTopBorderColor(cellStyle.getRightBorderColor());
+			setDataFormat(cellStyle.getDataFormat());
+			setFillBackgroundColor(cellStyle.getFillBackgroundColor());
+			setFillForegroundColor(cellStyle.getFillForegroundColor());
+			setFillPattern(cellStyle.getFillPattern());
+			setFontIndex(cellStyle.getFontIndex());
+			setHidden(cellStyle.getHidden());
+			setIndention(cellStyle.getIndention());
+			setLocked(cellStyle.getLocked());
+			setRotation(cellStyle.getRotation());
+			setWrapText(cellStyle.getWrapText());
+		}
+
+		boolean matches(CellStyle cellStyle) {
+			return (getAlignment() == cellStyle.getAlignment() &&
+					getVerticalAlignment() == cellStyle.getVerticalAlignment() &&
+					getBorderBottom() == cellStyle.getBorderBottom() &&
+					
+			getBorderLeft() == cellStyle.getBorderLeft() &&
+			getBorderRight() == cellStyle.getBorderRight() &&
+			getBorderTop() == cellStyle.getBorderTop() &&
+			getBottomBorderColor() == cellStyle.getBottomBorderColor() &&
+			getLeftBorderColor() == cellStyle.getLeftBorderColor() &&
+			getRightBorderColor() == cellStyle.getRightBorderColor() &&
+			getTopBorderColor() == cellStyle.getRightBorderColor() &&
+			getDataFormat() == cellStyle.getDataFormat() &&
+			getFillBackgroundColor() == cellStyle.getFillBackgroundColor() &&
+			getFillForegroundColor() == cellStyle.getFillForegroundColor() &&
+			getFillPattern() == cellStyle.getFillPattern() &&
+			getFontIndex() == cellStyle.getFontIndex() &&
+			getHidden() == cellStyle.getHidden() &&
+			getIndention() == cellStyle.getIndention() &&
+			getLocked() == cellStyle.getLocked() &&
+			getRotation() == cellStyle.getRotation() &&
+			getWrapText() == cellStyle.getWrapText());
+		}
+
+		public short getAlignment() {
+			return alignment;
+		}
+
+		public void setAlignment(short alignment) {
+			this.alignment = alignment;
+		}
+
+		public short getVerticalAlignment() {
+			return verticalAlignment;
+		}
+
+		public void setVerticalAlignment(short verticalAlignment) {
+			this.verticalAlignment = verticalAlignment;
+		}
+
+		public short getBorderBottom() {
+			return borderBottom;
+		}
+
+		public void setBorderBottom(short borderBottom) {
+			this.borderBottom = borderBottom;
+		}
+
+		public short getBorderLeft() {
+			return borderLeft;
+		}
+
+		public void setBorderLeft(short borderLeft) {
+			this.borderLeft = borderLeft;
+		}
+
+		public short getBorderRight() {
+			return borderRight;
+		}
+
+		public void setBorderRight(short borderRight) {
+			this.borderRight = borderRight;
+		}
+
+		public short getBorderTop() {
+			return borderTop;
+		}
+
+		public void setBorderTop(short borderTop) {
+			this.borderTop = borderTop;
+		}
+
+		public short getBottomBorderColor() {
+			return bottomBorderColor;
+		}
+
+		public void setBottomBorderColor(short bottomBorderColor) {
+			this.bottomBorderColor = bottomBorderColor;
+		}
+
+		public short getLeftBorderColor() {
+			return leftBorderColor;
+		}
+
+		public void setLeftBorderColor(short leftBorderColor) {
+			this.leftBorderColor = leftBorderColor;
+		}
+
+		public short getRightBorderColor() {
+			return rightBorderColor;
+		}
+
+		public void setRightBorderColor(short rightBorderColor) {
+			this.rightBorderColor = rightBorderColor;
+		}
+
+		public short getTopBorderColor() {
+			return topBorderColor;
+		}
+
+		public void setTopBorderColor(short topBorderColor) {
+			this.topBorderColor = topBorderColor;
+		}
+
+		public short getDataFormat() {
+			return dataFormat;
+		}
+
+		public void setDataFormat(short dataFormat) {
+			this.dataFormat = dataFormat;
+		}
+
+		public short getFillBackgroundColor() {
+			return fillBackgroundColor;
+		}
+
+		public void setFillBackgroundColor(short fillBackgroundColor) {
+			this.fillBackgroundColor = fillBackgroundColor;
+		}
+
+		public short getFillPattern() {
+			return fillPattern;
+		}
+
+		public void setFillPattern(short fillPattern) {
+			this.fillPattern = fillPattern;
+		}
+
+		public short getFillForegroundColor() {
+			return fillForegroundColor;
+		}
+
+		public void setFillForegroundColor(short fillForegroundColor) {
+			this.fillForegroundColor = fillForegroundColor;
+		}
+
+		public short getFontIndex() {
+			return fontIndex;
+		}
+
+		public void setFontIndex(short fontIndex) {
+			this.fontIndex = fontIndex;
+		}
+
+		public boolean getHidden() {
+			return hidden;
+		}
+
+		public void setHidden(boolean hidden) {
+			this.hidden = hidden;
+		}
+
+		public short getIndention() {
+			return indention;
+		}
+
+		public void setIndention(short indention) {
+			this.indention = indention;
+		}
+
+		public boolean getLocked() {
+			return locked;
+		}
+
+		public void setLocked(boolean locked) {
+			this.locked = locked;
+		}
+
+		public short getRotation() {
+			return rotation;
+		}
+
+		public void setRotation(short rotation) {
+			this.rotation = rotation;
+		}
+
+		public boolean getWrapText() {
+			return wrapText;
+		}
+
+		public void setWrapText(boolean wrapText) {
+			this.wrapText = wrapText;
+		}
+		
+		
+	}
+	
+	CellStyle findCellStyle(CellStyleFilter cellStyleFilter) {
+		for (short i=0; i<workbook.getNumCellStyles(); ++i) {
+			CellStyle cellStyle = workbook.getCellStyleAt(i);
+			if (cellStyleFilter.matches(cellStyle)) {
+				return cellStyle;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * @param usedDataFields
 	 */
@@ -453,14 +696,32 @@ public class SpreadsheetFormatter implements Formatter {
 
 		cloverFieldToCellStyle.clear();
 		for (DataFieldMetadata fieldMetadata : usedDataFields) {
-			CellStyle cellStyle = workbook.createCellStyle();
 			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
 			int y = templateCopiedRegionY1 + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
 			Cell templateCell = getCellByXY(x, y);
+			
+			CellStyle templateCellStyle;
 			if (templateCell!=null) {
-				cellStyle.cloneStyleFrom(templateCell.getCellStyle());
+				templateCellStyle = templateCell.getCellStyle();
+			} else {
+				if (workbook.getNumCellStyles()==0) {
+					templateCellStyle = workbook.createCellStyle();
+				} else {
+					templateCellStyle = workbook.getCellStyleAt(DEFAULT_CELL_STYLE_INDEX);
+				}
 			}
-			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING));
+			
+			short modifiedDataFormat = dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING);
+			
+			CellStyleFilter cellStyleFilter = new CellStyleFilter(templateCellStyle);
+			cellStyleFilter.setDataFormat(modifiedDataFormat);
+			CellStyle cellStyle = findCellStyle(cellStyleFilter);
+			if (cellStyle==null) {
+				cellStyle = workbook.createCellStyle();
+				cellStyle.cloneStyleFrom(templateCellStyle);
+				cellStyle.setDataFormat(modifiedDataFormat);
+			}
+			
 
 			cloverFieldToCellStyle.put(fieldMetadata.getNumber(), cellStyle);
 		}
@@ -707,10 +968,10 @@ public class SpreadsheetFormatter implements Formatter {
 		CellStyle origStyle = cell.getCellStyle();
 		short fontIndex = origStyle.getFontIndex();
 		Font font = workbook.getFontAt(fontIndex);
-		Font correspondingBoldFont = workbook.findFont(Short.MAX_VALUE, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
+		Font correspondingBoldFont = workbook.findFont(Font.BOLDWEIGHT_BOLD, font.getColor(), font.getFontHeight(), font.getFontName(), font.getItalic(), font.getStrikeout(), font.getTypeOffset(), font.getUnderline());
 		if (correspondingBoldFont==null) {
 			correspondingBoldFont = workbook.createFont();
-			correspondingBoldFont.setBoldweight(Short.MAX_VALUE);
+			correspondingBoldFont.setBoldweight(Font.BOLDWEIGHT_BOLD);
 			correspondingBoldFont.setColor(font.getColor());
 			correspondingBoldFont.setFontHeight(font.getFontHeight());
 			correspondingBoldFont.setFontName(font.getFontName());
@@ -720,13 +981,9 @@ public class SpreadsheetFormatter implements Formatter {
 			correspondingBoldFont.setUnderline(font.getUnderline());
 		}
 		
-		CellStyle correspondingCellStyle=null;
-		for (short i=0; i<workbook.getNumCellStyles() && correspondingCellStyle==null; ++i) {
-			CellStyle cellStyle = workbook.getCellStyleAt(i);
-			if (cellStyle.getFontIndex()==correspondingBoldFont.getIndex()) {
-				correspondingCellStyle=cellStyle;
-			}
-		}
+		CellStyleFilter cellStyleFilter = new CellStyleFilter(origStyle);
+		cellStyleFilter.setFontIndex(correspondingBoldFont.getIndex());
+		CellStyle correspondingCellStyle = findCellStyle(cellStyleFilter);
 		
 		if (correspondingCellStyle==null) {
 			correspondingCellStyle = workbook.createCellStyle();
