@@ -20,7 +20,6 @@ package org.jetel.data;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -101,7 +100,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
-	private void prepareBuf(ByteBuffer newValue) {		
+	private void prepareBuf(CloverBuffer newValue) {		
 		this.value = new byte[newValue.remaining()];
 	}
 
@@ -343,13 +342,15 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		setNull(false);
     }
 
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+	@Override
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		prepareBuf(dataBuffer);
 		dataBuffer.get(value);
 		setNull(Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset())));
 	}
 
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	@Override
+	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		try {
 			if (!isNull()) {
 				dataBuffer.put(getByteArray());
@@ -379,7 +380,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                	buffer.put(value);
             }
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
 

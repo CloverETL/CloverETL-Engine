@@ -227,6 +227,11 @@ public abstract class CloverBuffer {
     public abstract CloverBuffer capacity(int newCapacity);
 
     /**
+     * Returns maximal capacity of the buffer.
+     */
+    public abstract int maximumCapacity();
+
+    /**
      * Returns <tt>true</tt> if and only if <tt>autoExpand</tt> is turned on.
      */
     public abstract boolean isAutoExpand();

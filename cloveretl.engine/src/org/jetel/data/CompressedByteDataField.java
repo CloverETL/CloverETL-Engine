@@ -185,7 +185,7 @@ public class CompressedByteDataField extends ByteDataField {
                	buffer.put(value);
             }
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
 

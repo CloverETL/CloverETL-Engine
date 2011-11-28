@@ -257,7 +257,7 @@ public class DataFormatter implements Formatter {
 				}
 			}
 		} catch (BufferOverflowException exception) {
-    		throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit()
+    		throw new RuntimeException("The size of data buffer is only " + dataBuffer.maximumCapacity()
     				+ ". Set appropriate parameter in defaultProperties file.", exception);
 		} catch (CharacterCodingException e) {
             throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue()
