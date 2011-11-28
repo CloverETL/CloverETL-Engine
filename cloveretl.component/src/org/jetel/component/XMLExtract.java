@@ -538,11 +538,28 @@ public class XMLExtract extends Node {
                     	// we could not find mapping using the universal name -> try implicit mapping using local name
                     	fieldName = attributeLocalName;
                     }
-                    
+
+                    // TODO Labels replace:
                     if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(fieldName)) {
                     	String val = attributes.getValue(i);
                         m_activeMapping.getOutRecord().getField(fieldName).fromString(trim ? val.trim() : val);
                     }
+                    // TODO Labels end replace
+
+					// TODO Labels replace with:
+                    //DataRecord outRecord = m_activeMapping.getOutRecord();
+                    //DataField field = null;
+                    //
+                    //if (outRecord != null) {
+                    //	if (outRecord.hasLabeledField(fieldName)) {
+                    //		field = outRecord.getFieldByLabel(fieldName);
+                    //	}
+                    //}
+                    //
+                    //if (field != null) {
+                    //	String val = attributes.getValue(i);
+                    //	field.fromString(trim ? val.trim() : val);
+                    //}
                 }
             }
             
@@ -670,9 +687,24 @@ public class XMLExtract extends Node {
            		}
             }
             
+			// TODO Labels replace:
 			if (m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(fieldName) 
 			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
 			    DataField field = m_activeMapping.getOutRecord().getField(fieldName);
+			// TODO Labels replace end
+			
+			// TODO Labels replace with:
+            //DataRecord outRecord = m_activeMapping.getOutRecord();
+            //DataField field = null;
+            //
+			//if ((outRecord != null) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+            //	if (outRecord.hasLabeledField(fieldName)) {
+            //		field = outRecord.getFieldByLabel(fieldName);
+            //	}
+			//}
+			//
+			//if (field != null) {
+			// TODO Labels replace with end
 			    // If field is nullable and there's no character data set it to null
 			    if (m_hasCharacters) {
 			        try {
@@ -1916,6 +1948,18 @@ public class XMLExtract extends Node {
         return COMPONENT_TYPE;
     }
     
+    private void checkUniqueness(ConfigurationStatus status, Mapping mapping) {
+    	if (mapping.getOutRecord() == null) {
+    		return;
+    	}
+		new UniqueLabelsValidator(status, this).validateMetadata(mapping.getOutRecord().getMetadata());
+		if (mapping.getChildMap() != null) {
+			for (Mapping child: mapping.getChildMap().values()) {
+				checkUniqueness(status, child);
+			}
+		}
+    }
+    
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 
@@ -1931,16 +1975,18 @@ public class XMLExtract extends Node {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler handler = new MyHandler();
-			InputStream is = null;
+			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
 				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new FileInputStream(new File(filePath));
+				is = new InputSource(new FileInputStream(new File(filePath)));
 				ReadableByteChannel ch = FileUtils.getReadableChannel(
 						graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				doc = createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
-				is = new ByteArrayInputStream(mapping.getBytes(charset));
+				// inlined mapping
+				// don't use the charset of the component's input files, but the charset of the .grf file
+		        is = new InputSource(new StringReader(mapping));
 				doc = createDocumentFromString(mapping);
 	        }
 			if (is != null) {
@@ -1971,6 +2017,12 @@ public class XMLExtract extends Node {
 		} finally {
 			declaredTemplates.clear();
 		}
+		
+		// TODO Labels:
+		//for (Mapping mapping: getMappings().values()) {
+		//	checkUniqueness(status, mapping);
+		//}
+		// TODO Labels end
 		
         try { 
             // check inputs
