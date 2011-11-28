@@ -578,9 +578,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		try {
 			return formatter.parseBigDecimal(input);
-		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2decimal - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "") + " - " + e.getMessage());
+		} catch (Exception e) {
+			throw new JetelRuntimeException("can't convert \"" + input + "\" " + 
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -593,8 +593,8 @@ public class ConvertLib extends TLFunctionLibrary {
 	public static final BigDecimal str2decimal(TLFunctionCallContext context, String input) {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseBigDecimal(input);
-		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2decimal - can't convert \"" + input + "\" - " + e.getMessage());
+		} catch (Exception e) {
+			throw new JetelRuntimeException("can't convert \"" + input + "\" to decimal", e);
 		}
 	}
 	class Str2DecimalFunction implements TLFunctionPrototype {
