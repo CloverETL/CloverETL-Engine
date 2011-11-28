@@ -32,6 +32,7 @@ import org.jetel.ctl.data.DateFieldEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -1150,6 +1151,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
 	public static final String getFieldName(TLFunctionCallContext context, DataRecord record, Integer position) {
+		if (position < 0 || position >= record.getNumFields()) {
+			throw new JetelRuntimeException("Field with index " + position + " does not exist in metadata " + record.getMetadata().getName());
+		}
 		return record.getField(position).getMetadata().getName();
 	}
 	
