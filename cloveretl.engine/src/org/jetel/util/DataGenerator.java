@@ -62,6 +62,16 @@ public class DataGenerator extends Random {
 	}
 
 	public char[] nextChars(int minLenght, int maxLenght) {
+		if (minLenght < 0) {
+            throw new IllegalArgumentException("min length must be positive");
+		}
+		if (maxLenght < 0) {
+            throw new IllegalArgumentException("max length must be positive");
+		}
+        if (minLenght > maxLenght) {
+            throw new IllegalArgumentException("min length cannot be bigger than max length");
+        }
+        
 		char[] result;
 		if (maxLenght != minLenght) {
 			result = new char[(nextInt(maxLenght - minLenght + 1) + minLenght)];
