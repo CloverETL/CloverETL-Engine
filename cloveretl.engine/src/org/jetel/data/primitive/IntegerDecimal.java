@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
@@ -445,7 +444,7 @@ public final class IntegerDecimal implements Decimal {
     		else
     			byteBuffer.putLong(value);
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
     }
 
@@ -472,22 +471,22 @@ public final class IntegerDecimal implements Decimal {
     }
     
     @Override
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException {
+    public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException {
     	try {
     		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormatter))));
     	} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
     }
 
     @Override
-    public void toByteBuffer(ByteBuffer dataBuffer) {
+    public void toByteBuffer(CloverBuffer dataBuffer) {
         if(!isNaN()) {
         	try {
         		dataBuffer.putLong(value);
         		dataBuffer.putInt(scale);
         	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
         	}
         }
     }

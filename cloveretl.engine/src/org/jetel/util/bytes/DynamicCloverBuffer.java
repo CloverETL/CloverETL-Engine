@@ -225,6 +225,14 @@ public class DynamicCloverBuffer extends CloverBuffer {
      * {@inheritDoc}
      */
     @Override
+    public int maximumCapacity() {
+    	return maximumCapacity;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public final boolean isAutoExpand() {
         return autoExpand && recapacityAllowed;
     }
@@ -297,6 +305,9 @@ public class DynamicCloverBuffer extends CloverBuffer {
         int newCapacity;
         if (autoExpand) {
             newCapacity = normalizeCapacity(end);
+            if (newCapacity > maximumCapacity) {
+            	newCapacity = end;
+            }
         } else {
             newCapacity = end;
         }
@@ -305,9 +316,9 @@ public class DynamicCloverBuffer extends CloverBuffer {
             capacity(newCapacity);
         }
 
-        if (end > limit()) {
+        if (newCapacity > limit()) {
             // We call limit() directly to prevent StackOverflowError
-            buf.limit(end);
+            buf.limit(newCapacity);
         }
     }
 

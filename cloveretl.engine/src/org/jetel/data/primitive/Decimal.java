@@ -19,7 +19,6 @@
 package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
 
@@ -42,14 +41,8 @@ public interface Decimal extends Numeric {
 
 	public Decimal createCopy();
 	
+	public void setValue(BigDecimal _value);
 	
-    public void setValue(BigDecimal _value);
-	
-	/**
-	 * @return value of decimal in BigDecimal form
-	 */
-	public BigDecimal getBigDecimal();
-
     /**
      * It is output method for all decimal implementations.
      * @return modified value according to precision and scale
@@ -68,11 +61,12 @@ public interface Decimal extends Numeric {
 	
 	public String toString(NumericFormatter numericFormatter);
 
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException;
+    public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, NumericFormatter numericFormatter) throws CharacterCodingException;
 
-    public void toByteBuffer(ByteBuffer dataBuffer);
+    public void toByteBuffer(CloverBuffer dataBuffer);
 	
 	public void fromString(CharSequence seq, NumericFormatter numericFormatter);
 
 	public int compareTo(Object value); //nas numeric interface, java.lang.number a tento decimal
+	
 }
