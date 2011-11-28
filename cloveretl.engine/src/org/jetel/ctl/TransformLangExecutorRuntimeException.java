@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl;
 
+import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.SimpleNode;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -98,9 +99,13 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         return -1;
     }
 	
-	public String getMessage(){
-		StringBuffer strBuf=new StringBuffer("Interpreter runtime exception");
-        if (nodeInError!=null){
+	@Override
+	public String getMessage() {
+		StringBuffer strBuf = new StringBuffer("Interpreter runtime exception");
+        if (nodeInError != null) {
+        	if (nodeInError instanceof CLVFFunctionCall) {
+        		strBuf.append(" in function ").append(((CLVFFunctionCall) nodeInError).getName());
+        	}
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
         }
@@ -108,7 +113,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             strBuf.append(" - ");
         	strBuf.append(super.getMessage());
         }
-        if (super.getCause()!=null) {
+        if (super.getCause() != null) {
         	if (getCause() instanceof NullPointerException) {
                 strBuf.append(" - ");
         		strBuf.append("Unexpected null value.");
@@ -117,8 +122,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         		strBuf.append(" - '").append(super.getCause().getMessage()).append("'");
         	}
         }
-		if (arguments !=null){
-			for(int i=0;i<arguments.length;i++){
+		if (arguments != null) {
+			for(int i = 0; i < arguments.length; i++) {
 				strBuf.append("\n");
 				strBuf.append("arg[").append(i).append("] ");
 				strBuf.append(arguments[i] != null ? arguments[i].getClass().getName() : "null").append(" \"");
