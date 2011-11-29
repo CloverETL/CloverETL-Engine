@@ -31,4 +31,4 @@ fi
 #split command-line arguments to two sets - clover and jvm arguments
 . ${CLOVER_HOME}/bin/commonlib $@
 
-${CLOVER_HOME}/bin/clover -noJMX -config ${CLOVER_HOME}/bin/serverProperties $clover_exec_args - -server -Xmx1024M -XX:+UseParallelGC -classpath "$user_classpath" $java_exec_args
+${CLOVER_HOME}/bin/clover -noJMX $clover_exec_args - -server -Xmx1024M -XX:+UseParallelGC -classpath "$user_classpath" $java_exec_args

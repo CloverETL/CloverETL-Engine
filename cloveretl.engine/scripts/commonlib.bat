@@ -1,14 +1,14 @@
 REM this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
 REM split command-line arguments to two sets - clover and jvm arguments
-REM and define CLOVER_HOME variable
+REM and define DERIVED_CLOVER_HOME variable
 
 
-REM prepare CLOVER_HOME environmental variable
+REM prepare DERIVED_CLOVER_HOME environmental variable
 REM %~dp0 is expanded pathname of the current script under NT
 set DEFAULT_CLOVER_HOME=%~dp0..
 
-if "%CLOVER_HOME%"=="" set CLOVER_HOME=%DEFAULT_CLOVER_HOME%
+if "%CLOVER_HOME%"=="" (set DERIVED_CLOVER_HOME=%DEFAULT_CLOVER_HOME%) else (set DERIVED_CLOVER_HOME=%CLOVER_HOME%)
 set DEFAULT_CLOVER_HOME=
 
 
@@ -53,23 +53,27 @@ goto nextJavaArgs
 :doneStart
 REM find CLOVER_HOME if it does not exist due to either an invalid value passed
 REM by the user or the %0 problem on Windows 9x
-if exist "%CLOVER_HOME%\lib\cloveretl.engine.jar" goto end
+if exist "%DERIVED_CLOVER_HOME%\lib\cloveretl.engine.jar" goto end
+echo Clover installation directory does not found at %DERIVED_CLOVER_HOME% 
 
 REM check for clover in Program Files
 if not exist "%ProgramFiles%\cloverETL" goto checkSystemDrive
-set CLOVER_HOME=%ProgramFiles%\cloverETL
+set DERIVED_CLOVER_HOME=%ProgramFiles%\cloverETL
+echo Clover installation directory found at %DERIVED_CLOVER_HOME%
 goto end
 
 :checkSystemDrive
 REM check for clover in root directory of system drive
 if not exist %SystemDrive%\cloverETL\lib\cloveretl.engine.jar goto checkCDrive
-set CLOVER_HOME=%SystemDrive%\cloverETL
+set DERIVED_CLOVER_HOME=%SystemDrive%\cloverETL
+echo Clover installation directory found at %DERIVED_CLOVER_HOME%
 goto end
 
 :checkCDrive
 REM check for clover in C:\cloverETL for Win9X users
 if not exist C:\cloverETL\lib\cloveretl.engine.jar goto noCloverHome
-set CLOVER_HOME=C:\cloverETL
+set DERIVED_CLOVER_HOME=C:\cloverETL
+echo Clover installation directory found at %DERIVED_CLOVER_HOME%
 goto end
 
 :noCloverHome
@@ -77,7 +81,7 @@ echo CLOVER_HOME is set incorrectly or clover could not be located. Please set C
 exit
 
 :end
-echo CLOVER_HOME=%CLOVER_HOME%
+echo CLOVER_HOME=%DERIVED_CLOVER_HOME%
 echo CLOVER_CMD_LINE_ARGS=%CLOVER_CMD_LINE_ARGS%
 echo JAVA_CMD_LINE_ARGS=%JAVA_CMD_LINE_ARGS%
 echo USER_CLASSPATH=%USER_CLASSPATH%
