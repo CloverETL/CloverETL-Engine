@@ -11,7 +11,7 @@ REM equal sign (=) is considered as a white character, so all these graph parame
 REM have to be quoted, for example "-P:paramName=value"
 
 REM split command-line arguments to two sets - clover and jvm arguments
-REM and define CLOVER_HOME variable
+REM and define DERIVED_CLOVER_HOME variable
 call "%~dp0"\commonlib.bat %*
 
 set _JAVACMD=%JAVACMD%
@@ -29,17 +29,17 @@ set TOOLS_JAR=
 :createClasspath
 set TRANSFORM_PATH=%~dp0
 
-FOR /f "tokens=*" %%G IN ('dir /b "%CLOVER_HOME%/lib"') DO (call :collectClasspath %%G)
+FOR /f "tokens=*" %%G IN ('dir /b "%DERIVED_CLOVER_HOME%/lib"') DO (call :collectClasspath %%G)
 GOTO runClover
 
 :collectClasspath
- set ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%CLOVER_HOME%/lib/%1
+ set ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%DERIVED_CLOVER_HOME%/lib/%1
 GOTO :eof
 
 
 :runClover
-echo "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%CLASSPATH%;%USER_CLASSPATH%;%TRANSFORM_PATH%;%TOOLS_JAR%;%ENGINE_CLASSPATH%" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
-"%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%CLASSPATH%;%USER_CLASSPATH%;%TRANSFORM_PATH%;%TOOLS_JAR%;%ENGINE_CLASSPATH%" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
+echo "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%CLASSPATH%;%USER_CLASSPATH%;%TRANSFORM_PATH%;%TOOLS_JAR%;%ENGINE_CLASSPATH%" "-Dclover.home=%DERIVED_CLOVER_HOME%" org.jetel.main.runGraph -plugins "%DERIVED_CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
+"%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%CLASSPATH%;%USER_CLASSPATH%;%TRANSFORM_PATH%;%TOOLS_JAR%;%ENGINE_CLASSPATH%" "-Dclover.home=%DERIVED_CLOVER_HOME%" org.jetel.main.runGraph -plugins "%DERIVED_CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
 set RETURN_CODE=%ERRORLEVEL%
 
 set CLOVER_OPTS=
@@ -51,5 +51,6 @@ set _JAVACMD=
 set TOOLS_JAR=
 set TRANSFORM_PATH=
 set ENGINE_CLASSPATH=
+set DERIVED_CLOVER_HOME=
 
 exit /B %RETURN_CODE%
