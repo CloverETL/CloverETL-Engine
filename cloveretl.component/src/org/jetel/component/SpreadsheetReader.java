@@ -71,6 +71,7 @@ public class SpreadsheetReader extends Node {
     protected final static String DEFAULT_SHEET_VALUE = "0";
     
     public static final String XML_ATTITUDE_ATTRIBUTE = "attitude";
+    public static final String XML_PASSWORD_ATTRIBUTE = "password";
     public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
     public static final String XML_SHEET_ATTRIBUTE = "sheet";
     public static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -98,6 +99,7 @@ public class SpreadsheetReader extends Node {
         try {
         	spreadsheetReader = new SpreadsheetReader(xattribs.getString(XML_ID_ATTRIBUTE));
         	
+        	spreadsheetReader.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
         	spreadsheetReader.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
         	spreadsheetReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
         	spreadsheetReader.setPolicyType(xattribs.getString(XML_DATA_POLICY_ATTRIBUTE, null));
@@ -153,6 +155,7 @@ public class SpreadsheetReader extends Node {
         return spreadsheetReader;
     }
 
+    private String password = null;
 	private String fileURL;
 	private String charset;
 	
@@ -185,6 +188,10 @@ public class SpreadsheetReader extends Node {
 	
 	public String getType() {
 		return COMPONENT_TYPE;
+	}
+	
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	
 	public void setFileUrl(String fileURL) {
