@@ -1183,7 +1183,7 @@ public class SpreadsheetFormatter implements Formatter {
 			int newRowIndex = index + i;
 			Row row = currentSheetData.sheet.getRow(newRowIndex);
 			if (row == null) {
-				currentSheetData.sheet.createRow(newRowIndex);
+				row = currentSheetData.sheet.createRow(newRowIndex);
 			}
 			
 			Row templateRow = currentSheetData.sheet.getRow(templateCopiedRegionY1 + i);
