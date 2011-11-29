@@ -124,7 +124,6 @@ public class SpreadsheetFormatter implements Formatter {
 	private Workbook workbook;
 	/** the sheet that is being used */
 	private SheetData currentSheetData;
-	private int firstFooterLineIndex;
 	/** the output stream used to output the workbook */
 	private Object outputDataTarget;
 	private InputStream workbookInputStream;
@@ -141,8 +140,6 @@ public class SpreadsheetFormatter implements Formatter {
 	private XYRange headerXYRange;
 	private int firstRecordBelowHeaderX = 0;
 	private int firstRecordBelowHeaderY = 0;
-	
-	private int templateCopiedRegionY1 = 0;
 	
 	public void setAttitude(SpreadsheetAttitude attitude) {
 		this.attitude = attitude;
@@ -366,8 +363,8 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 
 		if (insert) {
-			firstFooterLineIndex = headerRowIndent + headerRowCount;
-			templateCopiedRegionY1 = headerXYRange.y2+1;
+			currentSheetData.setFirstFooterLineIndex(headerRowIndent + headerRowCount);
+			currentSheetData.setTemplateCopiedRegionY1(headerXYRange.y2+1);
 		}
 	}
 	
@@ -701,7 +698,7 @@ public class SpreadsheetFormatter implements Formatter {
 		cloverFieldToCellStyle.clear();
 		for (DataFieldMetadata fieldMetadata : usedDataFields) {
 			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
-			int y = templateCopiedRegionY1 + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
+			int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
 			Cell templateCell = getCellByXY(x, y);
 			
 			CellStyle templateCellStyle;
@@ -849,7 +846,7 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		
-		currentSheetData = new SheetData(newSheet, 0);
+		currentSheetData = new SheetData(newSheet, 0, 0, 0);
 		sheetNameToSheetDataMap.put(newSheet.getSheetName(), currentSheetData);
 		
 		if (!append && !insert) {
@@ -880,8 +877,8 @@ public class SpreadsheetFormatter implements Formatter {
 						appendEmptyRowsToAvoidDataRewritting();
 					}
 					//check that insertion is not stopped by a missing rows at the end of file	
-					if (insert && firstFooterLineIndex > getLastRowNumInCurrentSheet()+1) {
-						appendEmptyRows(firstFooterLineIndex - (getLastRowNumInCurrentSheet()+1));
+					if (insert && currentSheetData.getFirstFooterLineIndex() > getLastRowNumInCurrentSheet()+1) {
+						appendEmptyRows(currentSheetData.getFirstFooterLineIndex() - (getLastRowNumInCurrentSheet()+1));
 					}
 	 			
 	 		} else {
@@ -1152,6 +1149,14 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
+	private int getLastRowNumInSheet(Sheet sheet) {
+		if (sheet.getPhysicalNumberOfRows()==0) {
+			return -1;
+		} else {
+			return sheet.getLastRowNum();
+		}
+	}
+	
 	private void createCellsInRows(Row [] newRows) {
 		for (Row row : newRows) {
 			int columnsToCreate = headerColumnIndent + headerColumnCount;
@@ -1186,7 +1191,7 @@ public class SpreadsheetFormatter implements Formatter {
 				row = currentSheetData.sheet.createRow(newRowIndex);
 			}
 			
-			Row templateRow = currentSheetData.sheet.getRow(templateCopiedRegionY1 + i);
+			Row templateRow = currentSheetData.sheet.getRow(currentSheetData.getTemplateCopiedRegionY1() + i);
 			if (insert && templateRow!=null) {
 				// copy from a template row
 				for (int j = 0; j < templateRow.getLastCellNum(); ++j) {
@@ -1195,7 +1200,7 @@ public class SpreadsheetFormatter implements Formatter {
 					if (cloverField!=null) {
 						Integer yOffset = cloverFieldToYOffsetMapping.get(cloverField);
 						if (yOffset!=null) {
-							templateCell = getCellByXY(j, templateCopiedRegionY1 + yOffset);
+							templateCell = getCellByXY(j, currentSheetData.getTemplateCopiedRegionY1() + yOffset);
 						}
 					}
 					if (templateCell==null) {
@@ -1222,9 +1227,10 @@ public class SpreadsheetFormatter implements Formatter {
 			int rowOffset = getLastRowNumInCurrentSheet() + rowsToCreate;
 			int colOffset = headerColumnIndent;
 			if (insert) {
+				int firstFooterLineIndex = currentSheetData.getFirstFooterLineIndex();
 				if (firstFooterLineIndex <= getLastRowNumInCurrentSheet()) {
 					currentSheetData.sheet.shiftRows(firstFooterLineIndex, getLastRowNumInCurrentSheet(), rowsToCreate);
-					templateCopiedRegionY1 += rowsToCreate;
+					currentSheetData.setTemplateCopiedRegionY1(currentSheetData.getTemplateCopiedRegionY1() + rowsToCreate);
 				}
 				
 				insertEmptyOrTemplateRows(firstFooterLineIndex, rowsToCreate);
@@ -1244,7 +1250,7 @@ public class SpreadsheetFormatter implements Formatter {
 						}
 					}
 				}
-				firstFooterLineIndex += rowsToCreate;
+				currentSheetData.setFirstFooterLineIndex(firstFooterLineIndex + rowsToCreate);
 			} else {
 				appendEmptyRows(rowsToCreate);
 			}
@@ -1356,41 +1362,17 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	@Override
-	public void flush() throws IOException {// TODO: implement me
+	public void flush() throws IOException {
 		
 		if (outputDataTarget!=null) {
 			if (outputDataTarget instanceof Object[]) {
 				FileOutputStream workbookOutputStream = (FileOutputStream) ((Object[]) outputDataTarget)[2];
 				if (workbookOutputStream.getChannel().isOpen()) {
-					for (int x = headerXYRange.x1; x < headerXYRange.x2; ++x) {
-						if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-							if (xToCloverFieldMapping.get(x) != null) {
-								currentSheetData.sheet.autoSizeColumn(x);
-							}
-						} else {
-							throw new UnsupportedOperationException("Not implemented yet"); // TODO
-						}
+					for (SheetData sheetData : sheetNameToSheetDataMap.values()) {
+						autosizeColumns(sheetData.sheet);
+						removeTemplateRowsIfNeeded(sheetData);
 					}
-					if (insert & templateWorkbook!=null) {
-						if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
-							int deletedRows = 0;
-							for (int i=0; i<mappingInfo.getStep(); ++i) {
-								Row templateRowToRemove = currentSheetData.sheet.getRow(templateCopiedRegionY1+i);
-								if (templateRowToRemove!=null) {
-									currentSheetData.sheet.removeRow(templateRowToRemove);
-									deletedRows++;
-								}
-							}
-							int rowsToShiftUpStart = templateCopiedRegionY1+1;
-							int rowsToShiftUpEnd = getLastRowNumInCurrentSheet();
-							if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
-								currentSheetData.sheet.shiftRows(templateCopiedRegionY1+1, getLastRowNumInCurrentSheet(), -deletedRows);
-							}
-						} else {
-							throw new UnsupportedOperationException("Not implemented yet"); // TODO
-						}
-					}
-					
+
 					URL url = (URL) ((Object[]) outputDataTarget)[0];
 					String file = (String) ((Object[]) outputDataTarget)[1];
 					OutputStream outputStream = FileUtils.getOutputStream(url, file, false, -1);
@@ -1404,6 +1386,48 @@ public class SpreadsheetFormatter implements Formatter {
 				workbookOutputStream.close();
 			}
 
+		}
+	}
+
+	/**
+	 * @param sheetData
+	 */
+	private void removeTemplateRowsIfNeeded(SheetData sheetData) {
+		if (insert & templateWorkbook!=null) {
+			if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
+				int deletedRows = 0;
+				for (int i=0; i<mappingInfo.getStep(); ++i) {
+					Row templateRowToRemove = sheetData.sheet.getRow(sheetData.getTemplateCopiedRegionY1()+i);
+					if (templateRowToRemove!=null) {
+						sheetData.sheet.removeRow(templateRowToRemove);
+						deletedRows++;
+					}
+				}
+				int rowsToShiftUpStart = sheetData.getTemplateCopiedRegionY1()+1;
+				int rowsToShiftUpEnd = getLastRowNumInSheet(sheetData.sheet);
+				if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
+					sheetData.sheet.shiftRows(sheetData.getTemplateCopiedRegionY1()+1, getLastRowNumInSheet(sheetData.sheet), -deletedRows);
+				}
+			} else {
+				throw new UnsupportedOperationException("Not implemented yet"); // TODO
+			}
+		}
+	}
+
+	/**
+	 * @param sheetData
+	 */
+	private void autosizeColumns(Sheet sheet) {
+		if (headerXYRange != null) { // mapping initialized at least
+			for (int x = headerXYRange.x1; x < headerXYRange.x2; ++x) {
+				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+					if (xToCloverFieldMapping.get(x) != null) {
+						sheet.autoSizeColumn(x);
+					}
+				} else {
+					throw new UnsupportedOperationException("Not implemented yet"); // TODO
+				}
+			}
 		}
 	}
 
@@ -1504,13 +1528,41 @@ public class SpreadsheetFormatter implements Formatter {
 	private static final class SheetData {
 
 		/** the sheet affected */
-		private Sheet sheet;
+		private final Sheet sheet;
 		/** the current row within the sheet */
 		private int currentRow;
+		private int firstFooterLineIndex;
+		private int templateCopiedRegionY1;
 
-		public SheetData(Sheet sheet, int currentRow) {
+		public SheetData(Sheet sheet, int currentRow, int firstFooterLineIndex, int templateCopiedRegionY1) {
 			this.sheet = sheet;
 			this.currentRow = currentRow;
+			this.firstFooterLineIndex = firstFooterLineIndex;
+			this.templateCopiedRegionY1 = templateCopiedRegionY1;
+		}
+
+		public int getCurrentRow() {
+			return currentRow;
+		}
+
+		public void setCurrentRow(int currentRow) {
+			this.currentRow = currentRow;
+		}
+
+		public int getFirstFooterLineIndex() {
+			return firstFooterLineIndex;
+		}
+
+		public void setFirstFooterLineIndex(int firstFooterLineIndex) {
+			this.firstFooterLineIndex = firstFooterLineIndex;
+		}
+
+		public int getTemplateCopiedRegionY1() {
+			return templateCopiedRegionY1;
+		}
+
+		public void setTemplateCopiedRegionY1(int templateCopiedRegionY1) {
+			this.templateCopiedRegionY1 = templateCopiedRegionY1;
 		}
 
 	}
