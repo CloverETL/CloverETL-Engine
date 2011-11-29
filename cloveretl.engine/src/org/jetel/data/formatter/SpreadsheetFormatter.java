@@ -49,11 +49,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.XLSFormatter.XLSType;
+import org.jetel.data.RecordKey;
 import org.jetel.data.parser.XLSMapping;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
-import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.BadDataFormatException;
@@ -74,6 +73,7 @@ public class SpreadsheetFormatter implements Formatter {
 	/** the value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
 	private static final short DEFAULT_CELL_STYLE_INDEX = 0;
+	private static final String CLOVER_FIELD_PREFIX = "$";
 
 	private SpreadsheetAttitude attitude;
 	private SpreadsheetFormat formatterType;
@@ -106,7 +106,10 @@ public class SpreadsheetFormatter implements Formatter {
 	
 	private Workbook templateWorkbook;
 	private String sheet;
+	private Map<String, SheetData> sheetNameToSheetDataMap = new HashMap<String, SheetData>();
+	private RecordKey sheetNameKeyRecord;
 	private XLSMapping mappingInfo;
+	private boolean mappingInitialized = false;
 	private Map<Integer, Integer> xToCloverFieldMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToXOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToYOffsetMapping = new HashMap<Integer, Integer>();
@@ -114,13 +117,13 @@ public class SpreadsheetFormatter implements Formatter {
 	private int minRecordFieldYOffset = 0;
 
 	private boolean append;
-	private boolean insert; // TODO: implement me
+	private boolean insert;
 	private boolean removeSheets;
 
 	/** the currently open workbook */
 	private Workbook workbook;
 	/** the sheet that is being used */
-	private Sheet currentSheet;
+	private SheetData currentSheetData;
 	private int firstFooterLineIndex;
 	/** the output stream used to output the workbook */
 	private Object outputDataTarget;
@@ -183,8 +186,10 @@ public class SpreadsheetFormatter implements Formatter {
 	
 	@Override
 	public void init(DataRecordMetadata metadata) {
+		mappingInitialized = false;
 		this.metadata = metadata;
-
+		this.sheetNameToSheetDataMap.clear();
+		
 		if (!StringUtils.isEmpty(sheet)) {
 			if (sheet.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 				String[] fields = sheet.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
@@ -441,9 +446,8 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		
-
-		
 		prepareCellStylesWithDataFormats(usedDataFields);
+		mappingInitialized = true;
 	}
 	
 	private class CellStyleFilter {
@@ -727,6 +731,17 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * Sets from which fields from input metadata will be created sheet name for different records
+	 * 
+	 * @param fieldNames
+	 */
+	public void setKeyFields(String[] fieldNames){
+		sheetNameKeyRecord = new RecordKey(fieldNames, metadata);
+		sheetNameKeyRecord.init();
+	}
+
+	
 	@Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {
 		if (outputDataTarget == null) {
@@ -757,47 +772,24 @@ public class SpreadsheetFormatter implements Formatter {
 				workbook.removeSheetAt(i);
 			}
 		}
-		prepareSelectedOrDefaultSheet();
-		initMapping();
-		if (!append && !insert) {
-			if (mappingInfo.isWriteHeader()) {
-				writeSheetHeader();
-			} else {
-				createInitialEmptyRows();
+		
+		//
+		// set up the formatter for writing multiple sheets
+		//
+		if (!StringUtils.isEmpty(sheet) && sheet.startsWith(CLOVER_FIELD_PREFIX)) {
+        	String[] fields = sheet.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+
+			for (int i = 0; i < fields.length; i++) {
+				fields[i] = fields[i].substring(1);
 			}
-		} else {
-	 		if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-					createInitialEmptyRows();
-					//check that appending does not overwrite anything
-					if (append) {
-						int rowsToAppend = 0; //a number of empty rows needed to append in order to avoid rewritting existing data
-						for (int x=headerXYRange.x1; x<=headerXYRange.x2; ++x) {
-							Integer fieldIndex = xToCloverFieldMapping.get(x);
-							if (fieldIndex!=null) {
-								Integer yOffset = cloverFieldToYOffsetMapping.get(fieldIndex);
-								if (yOffset < 0) {
-									for (int yDelta=-1; yDelta >= yOffset; --yDelta) {
-										Cell cell = getCellByXY(x, getLastRowNumInCurrentSheet()+1 + yDelta);
-										if (cell!=null && !cellIsEmpty(cell)) {
-											rowsToAppend = maximum(rowsToAppend, Math.abs(yOffset - yDelta)+1);
-										}
-									}
-								}
-							}
-						}
-						appendEmptyRows(rowsToAppend);
-					}
-					//check that insertion is not stopped by a missing rows at the end of file	
-					if (insert && firstFooterLineIndex > getLastRowNumInCurrentSheet()+1) {
-						appendEmptyRows(firstFooterLineIndex - (getLastRowNumInCurrentSheet()+1));
-					}
-	 			
-	 		} else {
-	 			throw new UnsupportedOperationException("Not yet implemented"); //TODO
-	 		}
 
-				
+			setKeyFields(fields);
+			sheetNameToSheetDataMap.clear();
+        }
 
+		
+		if (sheetNameKeyRecord==null) {
+			prepareSelectedOrDefaultSheet(sheetName);
 		}
 	}
 
@@ -811,56 +803,134 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	private void takeSheetOrPrepareSheet(DataRecord dataRecord) {
+		String selectedSheetName = null;
+		if (sheetNameKeyRecord!=null) {
+			if (dataRecord == null) {
+				throw new NullPointerException("dataRecord");
+			}
+			
+			selectedSheetName = sheetNameKeyRecord.getKeyString(dataRecord);
+		}
+
+		if (selectedSheetName==null) {
+			selectedSheetName = sheetName;
+		}
+
+		if (sheetNameToSheetDataMap.containsKey(selectedSheetName)) {
+			currentSheetData = sheetNameToSheetDataMap.get(selectedSheetName);
+		} else {
+			prepareSelectedOrDefaultSheet(selectedSheetName);
+		}
+	}
+
 	
-	private void prepareSelectedOrDefaultSheet() {
-		if (sheetName != null) {
-			currentSheet = workbook.getSheet(sheetName);
+	private void prepareSelectedOrDefaultSheet(String selectedSheetName) {
+		if (selectedSheetName==null) {
+			selectedSheetName = sheetName;
+		}
+		Sheet newSheet = null;
+		if (selectedSheetName != null) {
+			newSheet = workbook.getSheet(selectedSheetName);
 		} else if (sheetIndex >= 0) {
 			if (sheetIndex >= workbook.getNumberOfSheets()) {
 				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
 			}
 
-			currentSheet = workbook.getSheetAt(sheetIndex);
+			newSheet = workbook.getSheetAt(sheetIndex);
 		} 
 		
-		if (currentSheet==null){
-			if (sheetName!=null) {
-				currentSheet = workbook.createSheet(sheetName);
+		if (newSheet==null){
+			if (selectedSheetName!=null) {
+				newSheet = workbook.createSheet(selectedSheetName);
 			} else {
-				currentSheet = workbook.createSheet();
-				sheetName = currentSheet.getSheetName();
+				newSheet = workbook.createSheet();
+				sheetName = newSheet.getSheetName();
 			}
 		}
+		
+		currentSheetData = new SheetData(newSheet, 0);
+		sheetNameToSheetDataMap.put(newSheet.getSheetName(), currentSheetData);
 		
 		if (!append && !insert) {
 			int lastRowNum = getLastRowNumInCurrentSheet();
 			for (int i=0; i<=lastRowNum; ++i) {
-				Row row = currentSheet.getRow(i);
+				Row row = newSheet.getRow(i);
 				if (row!=null) {
-					currentSheet.removeRow(row);
+					newSheet.removeRow(row);
 				}
 			}
 		}
+		
+		if (!mappingInitialized) {
+			initMapping();
+		}
+		
+		if (!append && !insert) {
+			if (mappingInfo.isWriteHeader()) {
+				writeSheetHeader();
+			} else {
+				createInitialEmptyRows();
+			}
+		} else {
+	 		if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+					createInitialEmptyRows();
+					//check that appending does not overwrite anything
+					if (append) {
+						appendEmptyRowsToAvoidDataRewritting();
+					}
+					//check that insertion is not stopped by a missing rows at the end of file	
+					if (insert && firstFooterLineIndex > getLastRowNumInCurrentSheet()+1) {
+						appendEmptyRows(firstFooterLineIndex - (getLastRowNumInCurrentSheet()+1));
+					}
+	 			
+	 		} else {
+	 			throw new UnsupportedOperationException("Not yet implemented"); //TODO
+	 		}
+		}
 
+		
+	}
+
+	/**
+	 * 
+	 */
+	private void appendEmptyRowsToAvoidDataRewritting() {
+		int rowsToAppend = 0; //a number of empty rows needed to append in order to avoid rewritting existing data
+		for (int x=headerXYRange.x1; x<=headerXYRange.x2; ++x) {
+			Integer fieldIndex = xToCloverFieldMapping.get(x);
+			if (fieldIndex!=null) {
+				Integer yOffset = cloverFieldToYOffsetMapping.get(fieldIndex);
+				if (yOffset < 0) {
+					for (int yDelta=-1; yDelta >= yOffset; --yDelta) {
+						Cell cell = getCellByXY(x, getLastRowNumInCurrentSheet()+1 + yDelta);
+						if (cell!=null && !cellIsEmpty(cell)) {
+							rowsToAppend = maximum(rowsToAppend, Math.abs(yOffset - yDelta)+1);
+						}
+					}
+				}
+			}
+		}
+		appendEmptyRows(rowsToAppend);
 	}
 	
-	private void chooseSelectedOrDefaultSheet() {
-		if (sheetName != null) {
-			currentSheet = workbook.getSheet(sheetName);
-		} else if (sheetIndex >= 0) {
-			if (sheetIndex >= workbook.getNumberOfSheets()) {
-				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
-			}
-
-			currentSheet = workbook.getSheetAt(sheetIndex);
-		} else {
-			throw new JetelRuntimeException("A sheet selected for writting not found.");
-		}
-	}
+//	private void chooseSelectedOrDefaultSheet() {
+//		if (sheetName != null) {
+//			currentSheetData.sheet = workbook.getSheet(sheetName);
+//		} else if (sheetIndex >= 0) {
+//			if (sheetIndex >= workbook.getNumberOfSheets()) {
+//				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
+//			}
+//
+//			currentSheetData.sheet = workbook.getSheetAt(sheetIndex);
+//		} else {
+//			throw new JetelRuntimeException("A sheet selected for writting not found.");
+//		}
+//	}
 
 	private void createRegion(int rowCount, int columnCount) {
 		for (int i=0; i<rowCount; ++i) {
-			Row newRow = currentSheet.createRow(i);
+			Row newRow = currentSheetData.sheet.createRow(i);
 			for (int j=0; j<columnCount; ++j) {
 				newRow.createCell(j);
 			}
@@ -918,9 +988,9 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	private Cell createCell(int rowNumber, int colNumber) {
-		Row row = currentSheet.getRow(rowNumber);
+		Row row = currentSheetData.sheet.getRow(rowNumber);
 		if (row==null) {
-			row = currentSheet.createRow(rowNumber);
+			row = currentSheetData.sheet.createRow(rowNumber);
 		}
 		
 		Cell cell = row.getCell(colNumber);
@@ -951,7 +1021,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	private Cell getCellByRowAndColumn(int rowIndex, int columnIndex) {
-		Row row = currentSheet.getRow(rowIndex);
+		Row row = currentSheetData.sheet.getRow(rowIndex);
 		if (row==null) {
 			return null;
 		}
@@ -1011,7 +1081,7 @@ public class SpreadsheetFormatter implements Formatter {
 			for (HeaderGroup headerGroup : mappingInfo.getHeaderGroups()) {
 				for (HeaderRange range : headerGroup.getRanges()) {
 					if (range.getRowStart()!=range.getRowEnd() || range.getColumnStart()!=range.getColumnEnd()) {
-						currentSheet.addMergedRegion(new CellRangeAddress(range.getRowStart(), range.getRowEnd(), range.getColumnStart(), range.getColumnEnd()));
+						currentSheetData.sheet.addMergedRegion(new CellRangeAddress(range.getRowStart(), range.getRowEnd(), range.getColumnStart(), range.getColumnEnd()));
 					}
 					String dataLabel;
 					Integer cloverField = getCloverFieldByX1(range);
@@ -1075,10 +1145,10 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	private int getLastRowNumInCurrentSheet() {
-		if (currentSheet.getPhysicalNumberOfRows()==0) {
+		if (currentSheetData.sheet.getPhysicalNumberOfRows()==0) {
 			return -1;
 		} else {
-			return currentSheet.getLastRowNum();
+			return currentSheetData.sheet.getLastRowNum();
 		}
 	}
 	
@@ -1095,9 +1165,9 @@ public class SpreadsheetFormatter implements Formatter {
 		Row [] newRows = new Row[rowCount];
 		for (int i = 0; i < rowCount; ++i) {
 			int newRowIndex = index + i;
-			newRows[i] = currentSheet.getRow(newRowIndex);
+			newRows[i] = currentSheetData.sheet.getRow(newRowIndex);
 			if (newRows[i] == null) {
-				newRows[i] = currentSheet.createRow(newRowIndex);
+				newRows[i] = currentSheetData.sheet.createRow(newRowIndex);
 			}
 		}
 		createCellsInRows(newRows);
@@ -1111,12 +1181,12 @@ public class SpreadsheetFormatter implements Formatter {
 		int defaultColumnsToCreate = headerColumnIndent + headerColumnCount;
 		for (int i = 0; i < rowCount; ++i) {
 			int newRowIndex = index + i;
-			Row row = currentSheet.getRow(newRowIndex);
+			Row row = currentSheetData.sheet.getRow(newRowIndex);
 			if (row == null) {
-				currentSheet.createRow(newRowIndex);
+				currentSheetData.sheet.createRow(newRowIndex);
 			}
 			
-			Row templateRow = currentSheet.getRow(templateCopiedRegionY1 + i);
+			Row templateRow = currentSheetData.sheet.getRow(templateCopiedRegionY1 + i);
 			if (insert && templateRow!=null) {
 				// copy from a template row
 				for (int j = 0; j < templateRow.getLastCellNum(); ++j) {
@@ -1153,7 +1223,7 @@ public class SpreadsheetFormatter implements Formatter {
 			int colOffset = headerColumnIndent;
 			if (insert) {
 				if (firstFooterLineIndex <= getLastRowNumInCurrentSheet()) {
-					currentSheet.shiftRows(firstFooterLineIndex, getLastRowNumInCurrentSheet(), rowsToCreate);
+					currentSheetData.sheet.shiftRows(firstFooterLineIndex, getLastRowNumInCurrentSheet(), rowsToCreate);
 					templateCopiedRegionY1 += rowsToCreate;
 				}
 				
@@ -1190,8 +1260,8 @@ public class SpreadsheetFormatter implements Formatter {
 		if (record == null) {
 			throw new NullPointerException("record");
 		}
-
-		chooseSelectedOrDefaultSheet();
+		
+		takeSheetOrPrepareSheet(record);
 		
 		CellPosition cellOffset = createNextRecordRegion();
 		for (int i=0; i<record.getNumFields(); ++i) {
@@ -1204,7 +1274,7 @@ public class SpreadsheetFormatter implements Formatter {
 				int cellColumnIndex = cellOffset.col + translateXYtoColumnNumber(x, y);
 				Cell cell = getCellByRowAndColumn(cellRowIndex, cellColumnIndex);
 				if (cell==null) { //it may happen that existing rows with no data are read from XLS(X) file so that they contain no cells
-					if (cellRowIndex<=currentSheet.getLastRowNum() && cellColumnIndex<=(headerColumnIndent+headerColumnCount)) {
+					if (cellRowIndex<=currentSheetData.sheet.getLastRowNum() && cellColumnIndex<=(headerColumnIndent+headerColumnCount)) {
 						cell = createCell(cellRowIndex, cellColumnIndex);
 					} else {
 						throw new IllegalStateException("Unexpectedly not found a cell for a new record at coordinates: [row " + cellRowIndex + ", col:" + cellColumnIndex + "]");
@@ -1295,7 +1365,7 @@ public class SpreadsheetFormatter implements Formatter {
 					for (int x = headerXYRange.x1; x < headerXYRange.x2; ++x) {
 						if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
 							if (xToCloverFieldMapping.get(x) != null) {
-								currentSheet.autoSizeColumn(x);
+								currentSheetData.sheet.autoSizeColumn(x);
 							}
 						} else {
 							throw new UnsupportedOperationException("Not implemented yet"); // TODO
@@ -1305,16 +1375,16 @@ public class SpreadsheetFormatter implements Formatter {
 						if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
 							int deletedRows = 0;
 							for (int i=0; i<mappingInfo.getStep(); ++i) {
-								Row templateRowToRemove = currentSheet.getRow(templateCopiedRegionY1+i);
+								Row templateRowToRemove = currentSheetData.sheet.getRow(templateCopiedRegionY1+i);
 								if (templateRowToRemove!=null) {
-									currentSheet.removeRow(templateRowToRemove);
+									currentSheetData.sheet.removeRow(templateRowToRemove);
 									deletedRows++;
 								}
 							}
 							int rowsToShiftUpStart = templateCopiedRegionY1+1;
 							int rowsToShiftUpEnd = getLastRowNumInCurrentSheet();
 							if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
-								currentSheet.shiftRows(templateCopiedRegionY1+1, getLastRowNumInCurrentSheet(), -deletedRows);
+								currentSheetData.sheet.shiftRows(templateCopiedRegionY1+1, getLastRowNumInCurrentSheet(), -deletedRows);
 							}
 						} else {
 							throw new UnsupportedOperationException("Not implemented yet"); // TODO
@@ -1423,4 +1493,27 @@ public class SpreadsheetFormatter implements Formatter {
 		configureWorkbook();
 	}
 
+	/**
+	 * A structure used to save states when multiple sheet writing is enabled.
+	 *
+	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+	 *
+	 * @version 30th January 2009
+	 * @since 30th January 2009
+	 */
+	private static final class SheetData {
+
+		/** the sheet affected */
+		private Sheet sheet;
+		/** the current row within the sheet */
+		private int currentRow;
+
+		public SheetData(Sheet sheet, int currentRow) {
+			this.sheet = sheet;
+			this.currentRow = currentRow;
+		}
+
+	}
+
+	
 }
