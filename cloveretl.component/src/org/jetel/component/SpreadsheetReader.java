@@ -99,7 +99,9 @@ public class SpreadsheetReader extends Node {
         try {
         	spreadsheetReader = new SpreadsheetReader(xattribs.getString(XML_ID_ATTRIBUTE));
         	
-        	spreadsheetReader.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+        	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
+        		spreadsheetReader.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+        	}
         	spreadsheetReader.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
         	spreadsheetReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
         	spreadsheetReader.setPolicyType(xattribs.getString(XML_DATA_POLICY_ATTRIBUTE, null));
@@ -278,8 +280,8 @@ public class SpreadsheetReader extends Node {
 		try {
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
-				if (mapping.getOrientation() == SpreadsheetOrientation.VERTICAL && parserAttitude == SpreadsheetAttitude.STREAM) {
-					status.add(new ConfigurationProblem("Vertical reading is not supported with stream parser attitude!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				if (mapping.getOrientation() == SpreadsheetOrientation.HORIZONTAL && parserAttitude == SpreadsheetAttitude.STREAM) {
+					status.add(new ConfigurationProblem("Horizontal reading is not supported with streaming parser type!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
 				mapping.checkConfig(status);
 			}
