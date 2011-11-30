@@ -285,7 +285,7 @@ public class SpreadsheetReader extends Node {
 			}
 			prepareParser(mapping);
 			prepareReader();
-			reader.checkConfig(getOutMetadata().get(OUTPUT_PORT));
+			// reader.checkConfig(getOutMetadata().get(OUTPUT_PORT)); TODO do the check, but do not open input file 
 		} catch (ComponentNotReadyException e) {
 			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
