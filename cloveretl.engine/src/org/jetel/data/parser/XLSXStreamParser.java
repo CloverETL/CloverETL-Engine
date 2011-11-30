@@ -107,7 +107,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public DataRecord parseNext(DataRecord record) throws JetelException {
-		sheetContentHandler.setRecordRange(nextRecordStartRow, parent.mappingInfo.getStep());
+		sheetContentHandler.setRecordStartRow(nextRecordStartRow);
 		sheetContentHandler.setRecord(record);
 		try {
 			while (staxParser.hasNext() && !sheetContentHandler.isRecordFinished()) {
@@ -192,7 +192,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			try {
 				staxParser = xmlInputFactory.createXMLStreamReader(currentSheetInputStream);
 				xssfContentHandler = new XSSFSheetXMLHandler(sharedStringsTable, sheetContentHandler);
-				sheetContentHandler.setRecordRange(parent.startLine, parent.mappingInfo.getStep());
+				sheetContentHandler.setRecordStartRow(parent.startLine);
 				sheetContentHandler.prepareForNextSheet();
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Failed to create XML parser for sheet " + sheetIterator.getSheetName(), e);
@@ -319,7 +319,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			XSSFSheetXMLHandler xssfContentHandler = new XSSFSheetXMLHandler(sharedStringsTable, rowContentHandler);
 			int currentRow = startRow;
 			while (currentRow < endRow) {
-				rowContentHandler.setRecordRange(currentRow, 1);
+				rowContentHandler.setRecordStartRow(currentRow);
 				while (parser.hasNext() && !rowContentHandler.isRecordFinished()) {
 					processParserEvent(parser, xssfContentHandler);
 				}
@@ -390,7 +390,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			currentParseRow = -1;
 		}
 
-		public void setRecordRange(int startRow, int step) {
+		public void setRecordStartRow(int startRow) {
 			recordStartRow = startRow;
 			recordEndRow = startRow + parent.mapping.length - 1;
 			recordStarted = false;
@@ -445,19 +445,22 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			this.lastColumn = lastColumn;
 		}
 
-		@Override
-		public void setRecordRange(int startRow, int step) {
-			super.setRecordRange(startRow, step);
-			cellValues.clear();
-		}
-
 		public List<CellValue> getCellValues() {
 			return new ArrayList<XLSXStreamParser.CellValue>(cellValues);
 		}
 
 		@Override
+		public void setRecordStartRow(int startRow) {
+			recordStartRow = startRow;
+			recordEndRow = startRow;
+			recordStarted = false;
+			recordFinished = false;
+			cellValues.clear();
+		}
+		
+		@Override
 		public void cell(String cellReference, int cellType, String value, int styleIndex) {
-			if (currentParseRow == recordEndRow) {
+			if (currentParseRow == recordStartRow) {
 				int columnIndex = SpreadsheetUtils.getColumnIndex(cellReference);
 				if (columnIndex < firstColumn || columnIndex >= lastColumn) {
 					return;
@@ -530,7 +533,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			record = null;
 
 			int numberOfRows = nRec * parent.mappingInfo.getStep();
-			setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
+			setRecordStartRow(recordStartRow + numberOfRows);
 			
 			if (nRec != 1 || skipStartRow != currentParseRow) {
 				skipRecords = true;
