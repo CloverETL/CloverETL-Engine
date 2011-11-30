@@ -648,7 +648,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				try {
 					field.fromString(value);
 				} catch (Exception ex2) {
-					parent.handleException(new BadDataFormatException("1st try error: " + ex1.getMessage() + "\n2nd try error: " + ex2.getMessage() + "\n"), record, cloverFieldIndex, value);
+					parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n2nd try error: " + ex2 + "\n"), record, cloverFieldIndex, value);
 				}
 			}
 		}
