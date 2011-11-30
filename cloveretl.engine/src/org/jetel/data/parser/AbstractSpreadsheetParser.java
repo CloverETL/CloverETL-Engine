@@ -37,7 +37,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
 import org.jetel.data.parser.XLSMapping.SpreadsheetMappingMode;
-import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -297,11 +296,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				int row = range.getRowStart() - stats.getMappingMinRow();
 				int column = range.getColumnStart() - stats.getMappingMinColumn();
 
-				if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-					row += group.getSkip() - stats.getMinimalSkip();
-				} else {
-					column += group.getSkip();
-				}
+//				if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+//					row += group.getSkip() - stats.getMinimalSkip();
+//				} else {
+//					column += group.getSkip();
+//				}
 
 				mapping[row][column] = group.getCloverField();
 				if (unusedFields.isEmpty()) {
@@ -385,11 +384,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
-						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-							rowIndex += group.getSkip() - stats.getMinimalSkip();
-						} else {
-							columnIndex += group.getSkip();
-						}
+//						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+//							rowIndex += group.getSkip() - stats.getMinimalSkip();
+//						} else {
+//							columnIndex += group.getSkip();
+//						}
 
 						if (!unusedFields.remove(cloverIndex)) {
 							throw new ComponentNotReadyException("Ambiguous mapping!"); // TODO: improve!
@@ -420,11 +419,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd(); column++) {
 						int rowIndex = row - stats.getMappingMinRow();
 						int columnIndex = column - stats.getMappingMinColumn();
-						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-							rowIndex += group.getSkip() - stats.getMinimalSkip();
-						} else {
-							columnIndex += group.getSkip();
-						}
+//						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+//							rowIndex += group.getSkip() - stats.getMinimalSkip();
+//						} else {
+//							columnIndex += group.getSkip();
+//						}
 						if (unusedFields.isEmpty()) {
 							throw new ComponentNotReadyException("Fail!"); // TODO: Improve!
 						}

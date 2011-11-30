@@ -370,7 +370,8 @@ public class XLSMapping {
 //		}
 		
 		rowCount = maxReadRow - minReadRow + 1;
-		columnCount = maxReadColumn - mappingMinColumn + 1;
+//		columnCount = maxReadColumn - mappingMinColumn + 1;
+		columnCount = mappingMaxColumn - mappingMinColumn + 1;
 
 		return new Stats(nameMapping, autoNameMapping, startLine, rowCount, columnCount,
 				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn, minSkip);
