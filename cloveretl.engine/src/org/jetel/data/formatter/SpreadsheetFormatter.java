@@ -1371,7 +1371,7 @@ public class SpreadsheetFormatter implements Formatter {
 	@Override
 	public void flush() throws IOException {
 		
-		if (outputDataTarget!=null) {
+		if (outputDataTarget!=null && workbook!=null) {
 			if (outputDataTarget instanceof Object[]) {
 				FileOutputStream workbookOutputStream = (FileOutputStream) ((Object[]) outputDataTarget)[2];
 				if (workbookOutputStream.getChannel().isOpen()) {
