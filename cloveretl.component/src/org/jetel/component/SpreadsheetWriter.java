@@ -30,7 +30,6 @@ import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.data.formatter.provider.SpreadsheetFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.XLSMapping;
-import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -44,7 +43,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
-import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.SpreadsheetUtils.SpreadsheetWriteMode;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileURLParser;
@@ -55,7 +54,7 @@ import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * @author lkrejci & psimecek (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 5 Sep 2011
  */
@@ -66,14 +65,12 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	public static final String XML_TEMPLATE_FILE_URL_ATTRIBUTE = "templateFileURL";
 	public static final String XML_FORMATTER_TYPE_ATTRIBUTE = "formatterType";
-	public static final String XML_ATTITUDE_ATTRIBUTE = "writeMode";
+	public static final String XML_WRITE_MODE_ATTRIBUTE = "writeMode";
 	public static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public static final String XML_SHEET_ATTRIBUTE = "sheet";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
-	public static final String XML_APPEND_ATTRIBUTE = "append";
-	public static final String XML_INSERT_ATTRIBUTE = "insert";
 	public static final String XML_REMOVESHEETS_ATTRIBUTE = "removeSheets";
 	public static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRecords";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "numRecords";
@@ -103,8 +100,8 @@ public class SpreadsheetWriter extends Node {
 			if (xattribs.exists(XML_FORMATTER_TYPE_ATTRIBUTE)) {
 				spreadsheetWriter.setFormatterType(SpreadsheetFormat.valueOfIgnoreCase(xattribs.getString(XML_FORMATTER_TYPE_ATTRIBUTE)));
 			}
-			if (xattribs.exists(XML_ATTITUDE_ATTRIBUTE)) {
-				spreadsheetWriter.setAttitude(SpreadsheetAttitude.valueOfIgnoreCase(xattribs.getString(XML_ATTITUDE_ATTRIBUTE)));
+			if (xattribs.exists(XML_WRITE_MODE_ATTRIBUTE)) {
+				spreadsheetWriter.setWriteMode(SpreadsheetWriteMode.valueOfIgnoreCase(xattribs.getString(XML_WRITE_MODE_ATTRIBUTE)));
 			}
 
 			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
@@ -120,12 +117,6 @@ public class SpreadsheetWriter extends Node {
 
 			if (xattribs.exists(XML_SHEET_ATTRIBUTE)) {
 				spreadsheetWriter.setSheet(xattribs.getString(XML_SHEET_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_APPEND_ATTRIBUTE)) {
-				spreadsheetWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INSERT_ATTRIBUTE)) {
-				spreadsheetWriter.setInsert(xattribs.getBoolean(XML_INSERT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_REMOVESHEETS_ATTRIBUTE)) {
 				spreadsheetWriter.setRemoveSheets(xattribs.getBoolean(XML_REMOVESHEETS_ATTRIBUTE));
@@ -168,15 +159,13 @@ public class SpreadsheetWriter extends Node {
 
 	private boolean mkDirs;
 
-	private SpreadsheetAttitude attitude = SpreadsheetAttitude.IN_MEMORY;
+	private SpreadsheetWriteMode writeMode = SpreadsheetWriteMode.OVERWRITE_SHEET_IN_MEMORY;
 	private SpreadsheetFormat formatterType = SpreadsheetFormat.AUTO;
 
 	private String mapping;
 	private String mappingURL;
 
 	private String sheet;
-	private boolean append;
-	private boolean insert;
 	private boolean removeSheets;
 
 	private int recordSkip;
@@ -201,8 +190,8 @@ public class SpreadsheetWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	public void setAttitude(SpreadsheetAttitude attitude) {
-		this.attitude = attitude;
+	public void setWriteMode(SpreadsheetWriteMode writeMode) {
+		this.writeMode = writeMode;
 	}
 
 	public void setFormatterType(SpreadsheetFormat formatterType) {
@@ -227,14 +216,6 @@ public class SpreadsheetWriter extends Node {
 
 	public void setSheet(String sheet) {
 		this.sheet = sheet;
-	}
-
-	public void setAppend(boolean append) {
-		this.append = append;
-	}
-
-	public void setInsert(boolean insert) {
-		this.insert = insert;
 	}
 
 	public void setMkDirs(boolean mkDirs) {
@@ -289,7 +270,7 @@ public class SpreadsheetWriter extends Node {
 			FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDirs);
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
-				if (mapping.getOrientation() != XLSMapping.HEADER_ON_TOP && attitude == SpreadsheetAttitude.STREAM) {
+				if (mapping.getOrientation() != XLSMapping.HEADER_ON_TOP && writeMode.isStreamed()) {
 					status.add(new ConfigurationProblem("Vertical orientation is not supported with stream attitude!",
 							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
@@ -306,15 +287,15 @@ public class SpreadsheetWriter extends Node {
 			status.add(problem);
 		}
 		
-		if (attitude == SpreadsheetAttitude.STREAM) {
-			if (append) { // requires implementing workbook/sheet/row copying 
-				status.add(new ConfigurationProblem("Append is not supported with stream attitude!",
-						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-			}
-			if (insert) { // requires implementing workbook/sheet/row copying
-				status.add(new ConfigurationProblem("Insert is not supported with stream attitude!",
-						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-			}
+		if (writeMode.isStreamed()) {
+//			if (append) { // requires implementing workbook/sheet/row copying 
+//				status.add(new ConfigurationProblem("Append is not supported with stream attitude!",
+//						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+//			}
+//			if (insert) { // requires implementing workbook/sheet/row copying
+//				status.add(new ConfigurationProblem("Insert is not supported with stream attitude!",
+//						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+//			}
 			if (templateFileURL != null) { // requires implementing workbook/sheet/row copying
 				status.add(new ConfigurationProblem("Write using template is not supported with stream attitude!",
 						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
@@ -322,12 +303,12 @@ public class SpreadsheetWriter extends Node {
 		}
 		
 		try { // TODO: Really?
-			if (append && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
-				status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-						ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			if (writeMode.isAppend() && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
+				status.add("Appending is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
+						ConfigurationStatus.Priority.NORMAL, XML_WRITE_MODE_ATTRIBUTE);
 			}
 		} catch (MalformedURLException e) {
-			status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_WRITE_MODE_ATTRIBUTE);
 		}
 
 		return status;
@@ -341,7 +322,7 @@ public class SpreadsheetWriter extends Node {
 		super.init();
 
 		formatterProvider = new SpreadsheetFormatterProvider();
-		formatterProvider.setAttitude(attitude);
+		formatterProvider.setAttitude(writeMode.isStreamed() ? SpreadsheetAttitude.STREAM : SpreadsheetAttitude.IN_MEMORY);
 		formatterProvider.setFormatterType(resolveFormat(formatterType, fileURL));
 		
 		if (templateFileURL!=null) {
@@ -349,8 +330,9 @@ public class SpreadsheetWriter extends Node {
 		}
 		formatterProvider.setMapping(prepareMapping());
 		formatterProvider.setSheet(sheet);
-		formatterProvider.setAppend(append);
-		formatterProvider.setInsert(insert);
+		formatterProvider.setAppend(writeMode.isAppend());
+		formatterProvider.setInsert(writeMode.isInsert());
+		formatterProvider.setCreateFile(writeMode.isCreatingNewFile());
 		formatterProvider.setRemoveSheets(removeSheets);
 		prepareWriter();
 	}

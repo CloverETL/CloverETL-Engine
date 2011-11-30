@@ -99,6 +99,41 @@ public class SpreadsheetUtils {
         }
     }
 
+	public static enum SpreadsheetWriteMode {
+
+		OVERWRITE_SHEET_IN_MEMORY,
+		INSERT_INTO_SHEET_IN_MEMORY,
+		APPEND_TO_SHEET_IN_MEMORY,
+		CREATE_FILE_IN_STREAM,
+		CREATE_FILE_IN_MEMORY;
+
+        public static SpreadsheetWriteMode valueOfIgnoreCase(String string) {
+            for (SpreadsheetWriteMode parserType : values()) {
+                if (parserType.name().equalsIgnoreCase(string)) {
+                    return parserType;
+                }
+            }
+
+            return OVERWRITE_SHEET_IN_MEMORY;
+        }
+        
+        public boolean isStreamed() {
+        	return (this == CREATE_FILE_IN_STREAM);
+        }
+        
+        public boolean isAppend() {
+        	return (this == APPEND_TO_SHEET_IN_MEMORY);
+        }
+        
+        public boolean isInsert() {
+        	return (this == INSERT_INTO_SHEET_IN_MEMORY);
+        }
+        
+        public boolean isCreatingNewFile() {
+        	return (this == CREATE_FILE_IN_MEMORY || this == CREATE_FILE_IN_STREAM);
+        }
+    }
+
 	public static enum SpreadsheetFormat {
 
 		XLS, XLSX, AUTO;
