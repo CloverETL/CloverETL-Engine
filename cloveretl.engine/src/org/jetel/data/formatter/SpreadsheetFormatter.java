@@ -1513,14 +1513,17 @@ public class SpreadsheetFormatter implements Formatter {
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {
 				return createXlsxWorkbook(inputStream);
 			} else {
-				int windowSize;
-				if (mappingInfo!=null) {
-					windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+				if (inputStream==null) {
+					int windowSize;
+					if (mappingInfo!=null) {
+						windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+					} else {
+						windowSize = DEFAULT_STREAM_WINDOW_SIZE;
+					}
+					return new SXSSFWorkbook(windowSize);
 				} else {
-					windowSize = DEFAULT_STREAM_WINDOW_SIZE;
+					throw new IllegalArgumentException("Streaming is not supported on existing files");
 				}
-				XSSFWorkbook notStreamedWorkbook = createXlsxWorkbook(inputStream);
-				return new SXSSFWorkbook(notStreamedWorkbook, windowSize);
 			}
 		default:
 			throw new IllegalArgumentException("Unsupported format");
