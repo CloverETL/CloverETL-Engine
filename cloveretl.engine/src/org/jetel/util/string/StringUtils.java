@@ -920,6 +920,24 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Normalizes the name, inserts an underscore after each 
+	 * lower-case letter followed by an upper-case letter
+	 * and converts the result to upper-case. 
+	 * 
+	 * The proposed ID may not be unique!
+	 * 
+	 * @param name name of the component
+	 * @return proposal of the new ID of the component (not unique)
+	 */
+	public static String convertNameToId(String name) {
+		if (isBlank(name)) {
+			return null;
+		}
+		String id = normalizeName(name).replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase(); 
+		return id;
+	}
+
+	/**
 	 * Returns an array containing strings from originalNames
 	 * with numbers appended if necessary.
 	 * 
