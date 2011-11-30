@@ -74,6 +74,7 @@ public class SpreadsheetFormatter implements Formatter {
 	public static final String GENERAL_FORMAT_STRING = "General";
 	private static final short DEFAULT_CELL_STYLE_INDEX = 0;
 	private static final String CLOVER_FIELD_PREFIX = "$";
+	private static final int DEFAULT_STREAM_WINDOW_SIZE = 10;
 
 	private SpreadsheetAttitude attitude;
 	private SpreadsheetFormat formatterType;
@@ -831,10 +832,16 @@ public class SpreadsheetFormatter implements Formatter {
 			newSheet = workbook.getSheet(selectedSheetName);
 		} else if (sheetIndex >= 0) {
 			if (sheetIndex >= workbook.getNumberOfSheets()) {
-				throw new IndexOutOfBoundsException("sheetNumber >= " + workbook.getNumberOfSheets());
+				if (workbook.getNumberOfSheets()==0) {
+					throw new JetelRuntimeException("Sheet number cannot be specified when there are not existing sheets");
+				} else {
+					throw new JetelRuntimeException("Sheet index " + sheetIndex + " is bigger than a number of existing sheets (" + workbook.getNumberOfSheets() + ")");
+				}
 			}
-
 			newSheet = workbook.getSheetAt(sheetIndex);
+			if (newSheet!=null) {
+				sheetName = newSheet.getSheetName();
+			}
 		} 
 		
 		if (newSheet==null){
@@ -1457,15 +1464,13 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 			if (workbookInputStream.available() > 0) {
-				workbook = WorkbookFactory.create(workbookInputStream);
-				configureWorkbook();
+				workbook = newWorkbook(workbookInputStream);
 			} else {
-				newWorkbook();
+				workbook = newWorkbook(null);
 			}
+			configureWorkbook();
 		} catch (IOException ioex) {
 			throw new JetelRuntimeException("Problem while reading Excel file " + file);
-		} catch (InvalidFormatException e) {
-			throw new JetelRuntimeException("Invalid format of Excel file " + file);
 		}
 	}
 
@@ -1480,41 +1485,47 @@ public class SpreadsheetFormatter implements Formatter {
 		outputStream.close();
 	}
 
-	private void newWorkbook() {
+	private HSSFWorkbook createXlsWorkbook(InputStream inputStream) throws IOException {
+		if (inputStream == null) {
+			return new HSSFWorkbook();
+		} else {
+			return new HSSFWorkbook(inputStream);
+		}
+	}
+	
+	private XSSFWorkbook createXlsxWorkbook(InputStream inputStream) throws IOException {
+		if (inputStream == null) {
+			return new XSSFWorkbook();
+		} else {
+			return new XSSFWorkbook(inputStream);
+		}
+	}
+	
+	private Workbook newWorkbook(InputStream inputStream) throws IOException {
 		switch (formatterType) {
 		case XLS:
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {
-				workbook = new HSSFWorkbook();
+				return createXlsWorkbook(inputStream);
 			} else {
 				throw new IllegalArgumentException("Stream write for XLS files is not yet supported!");
 			}
-			break;
 		case XLSX:
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {
-				workbook = new XSSFWorkbook();
+				return createXlsxWorkbook(inputStream);
 			} else {
-//				int headerWindowSize = headerRowIndent + headerRowCount;
-//				int recordWindowSize;
-//				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-//					recordWindowSize = -minRecordFieldYOffset + mappingInfo.getStep()+1;
-//				} else {
-//					throw new UnsupportedOperationException("Not yet implemented"); //TODO
-//				}
-//				int windowsSize = maximum(headerWindowSize, recordWindowSize);
 				int windowSize;
 				if (mappingInfo!=null) {
 					windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
 				} else {
-					windowSize = 10;
+					windowSize = DEFAULT_STREAM_WINDOW_SIZE;
 				}
-				workbook = new SXSSFWorkbook(windowSize);
+				XSSFWorkbook notStreamedWorkbook = createXlsxWorkbook(inputStream);
+				return new SXSSFWorkbook(notStreamedWorkbook, windowSize);
 			}
-			break;
 		default:
 			throw new IllegalArgumentException("Unsupported format");
 		}
 			
-		configureWorkbook();
 	}
 
 	/**
