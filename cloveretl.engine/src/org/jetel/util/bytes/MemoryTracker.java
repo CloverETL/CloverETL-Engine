@@ -54,7 +54,7 @@ public class MemoryTracker {
 	 * Listener for a memory allocation event.
 	 * Should be called whenever a significant amount of memory is allocated. 
 	 */
-	public void memoryAllocated(Node node, int memorySize) {
+	public synchronized void memoryAllocated(Node node, int memorySize) {
 		if (node != null) {
 			Integer usedMemoryByNode = usedMemoryPerNode.get(node);
 			int newUsedMemoryByNode = memorySize;
@@ -71,7 +71,7 @@ public class MemoryTracker {
 	 * Listener for a memory de-allocation event.
 	 * Should be called whenever a significant amount of memory is de-allocated. 
 	 */
-	public void memoryDeallocated(Node node, int memorySize) {
+	public synchronized void memoryDeallocated(Node node, int memorySize) {
 		if (node != null) {
 			Integer usedMemoryByNode = usedMemoryPerNode.get(node);
 			if (usedMemoryByNode != null) {
@@ -88,7 +88,7 @@ public class MemoryTracker {
 	/**
 	 * @return number of bytes allocated in memory by the given node
 	 */
-	public int getUsedMemory(Node node) {
+	public synchronized int getUsedMemory(Node node) {
 		Integer usedMemory = usedMemoryPerNode.get(node);
 		return usedMemory != null ? usedMemory.intValue() : 0;
 	}
@@ -96,7 +96,7 @@ public class MemoryTracker {
 	/**
 	 * @return number of bytes allocated in memory by the graph
 	 */
-	public int getUsedMemory() {
+	public synchronized int getUsedMemory() {
 		return usedMemoryByGraph;
 	}
 	
