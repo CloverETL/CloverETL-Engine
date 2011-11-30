@@ -48,6 +48,7 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 	
 	private boolean append;
 	private boolean insert;
+	private boolean createFile;
 	private boolean removeSheets;
 
 	@Override
@@ -60,6 +61,7 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 		formatter.setMapping(mapping);
 		formatter.setAppend(append);
 		formatter.setInsert(insert);
+		formatter.setCreateFile(createFile);
 		formatter.setRemoveSheets(removeSheets);
 		return formatter;
 	}
@@ -99,5 +101,19 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 
 	public void setRemoveSheets(boolean removeSheets) {
 		this.removeSheets = removeSheets;
+	}
+
+	/**
+	 * @return the createFile
+	 */
+	public boolean isCreateFile() {
+		return createFile;
+	}
+
+	/**
+	 * @param createFile the createFile to set
+	 */
+	public void setCreateFile(boolean createFile) {
+		this.createFile = createFile;
 	}
 }

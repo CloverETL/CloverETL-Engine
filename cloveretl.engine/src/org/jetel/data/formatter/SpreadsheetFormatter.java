@@ -117,6 +117,7 @@ public class SpreadsheetFormatter implements Formatter {
 
 	private boolean append;
 	private boolean insert;
+	private boolean createFile;
 	private boolean removeSheets;
 
 	/** the currently open workbook */
@@ -231,6 +232,20 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
+	/**
+	 * @return the createFile
+	 */
+	public boolean isCreateFile() {
+		return createFile;
+	}
+
+	/**
+	 * @param createFile the createFile to set
+	 */
+	public void setCreateFile(boolean createFile) {
+		this.createFile = createFile;
+	}
+
 	private int getY1fromRange(HeaderRange headerRange) {
 		if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
 			return headerRange.getRowStart();
@@ -1462,7 +1477,11 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 			if (workbookInputStream.available() > 0) {
-				workbook = newWorkbook(workbookInputStream);
+				if (!createFile) {
+					workbook = newWorkbook(workbookInputStream);
+				} else {
+					workbook = newWorkbook(null); //ignore an existing file, rewrite it while flushing
+				}
 			} else {
 				workbook = newWorkbook(null);
 			}
