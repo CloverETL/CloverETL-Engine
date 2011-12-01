@@ -70,7 +70,6 @@ import org.jetel.util.string.StringUtils;
 public class SpreadsheetFormatter implements Formatter {
 	/** the value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
-	private static final short DEFAULT_CELL_STYLE_INDEX = 0;
 	private static final String CLOVER_FIELD_PREFIX = "$";
 	private static final int DEFAULT_STREAM_WINDOW_SIZE = 10;
 
