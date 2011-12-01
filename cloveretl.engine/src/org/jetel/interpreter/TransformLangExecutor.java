@@ -2105,7 +2105,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     			throw new TransformLangExecutorRuntimeException("Dictionary supports only non-null string keys");
     		}
     		
-    		final Object dictValue = d.getValue(((StringBuilder)key.getValue()).toString());
+    		final Object dictValue = d.getValue(key.getValue().toString());
     		stack.push(dictValue == null ? TLNullValue.getInstance() : new TLStringValue(dictValue.toString()));
     		break;
     	case CLVFDictionaryNode.OP_WRITE:
@@ -2114,7 +2114,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     		if (key.getType() != TLValueType.STRING) {
     			throw new TransformLangExecutorRuntimeException("Dictionary supports only string keys");
     		}
-    		final String keyToWrite = ((StringBuilder)key.getValue()).toString();
+    		final String keyToWrite = key.getValue().toString();
     		
     		node.jjtGetChild(1).jjtAccept(this, data);
     		value = stack.pop();
@@ -2125,7 +2125,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     			valueToWrite = null;
     		} else if (value.getType() == TLValueType.STRING) {
     			// convert string value to string
-    			valueToWrite = ((StringBuilder)value.getValue()).toString();
+    			valueToWrite = value.getValue().toString();
     		} else {
     			// anything non-null, non-string is error
     			throw new TransformLangExecutorRuntimeException("Dictionary supports only string values");
@@ -2145,7 +2145,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     			throw new TransformLangExecutorRuntimeException("Dictionary supports only non-null string keys");
     		}
     		
-    		final String keyToDelete = ((StringBuilder)key.getValue()).toString();
+    		final String keyToDelete = key.getValue().toString();
     		try {
 				d.setValue(keyToDelete, null);
 			} catch (ComponentNotReadyException e) {
