@@ -115,11 +115,11 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			throw new ComponentNotReadyException("No sheet to read from!");
 		}
 		
-		if (sheet.getLastRowNum() < endRow) {
+		if (sheet.getLastRowNum() < endRow - 1) {
 			throw new ComponentNotReadyException("Sheet does not contain header!");
 		}
 
-		int rowsToRead = endRow - startRow + 1;
+		int rowsToRead = endRow - startRow;
 		String[][] result = new String[rowsToRead][];
 		
 		List<String> rowResult = new ArrayList<String>();

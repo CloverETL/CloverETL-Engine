@@ -284,20 +284,15 @@ public class XLSMapping {
 		boolean nameMapping = false;
 		boolean autoNameMapping = false;
 		
-		int maxSkip = 0;
-		int minSkip = Integer.MAX_VALUE;
-		int maxReadRow = 0;
-		int maxReadColumn = 0;
-		int minReadRow = Integer.MAX_VALUE;
-		
 		int mappingMinRow = Integer.MAX_VALUE;
 		int mappingMaxRow = 0;
 		int mappingMinColumn = Integer.MAX_VALUE;
 		int mappingMaxColumn = 0;
 		
-		int startLine = Integer.MAX_VALUE;
-		int rowCount;
-		int columnCount;
+		int recordStartLine = Integer.MAX_VALUE;
+		int recordEndLine = 0;
+		
+		int maxSkip = 0;
 		
 		if (headerGroups.isEmpty()) {
 			mappingMinRow = 0;
@@ -324,57 +319,50 @@ public class XLSMapping {
 					if (range.getColumnEnd() > mappingMaxColumn) {
 						mappingMaxColumn = range.getColumnEnd();
 					}
-					if (range.getRowEnd() + group.getSkip() > maxReadRow) {
-						maxReadRow = range.getRowEnd() + group.getSkip();
+
+					int rangeStartLine;
+					int rangeEndLine;
+					if (getOrientation() == HEADER_ON_TOP) {
+						rangeStartLine = range.getRowStart();
+						rangeEndLine =  range.getRowEnd();
+					} else {
+						rangeStartLine = range.getColumnStart();
+						rangeEndLine =  range.getColumnEnd();
 					}
-					if (range.getColumnEnd() + group.getSkip() > maxReadColumn) {
-						maxReadColumn = range.getColumnEnd() + group.getSkip();
+					
+					rangeStartLine += group.getSkip();
+					rangeEndLine += group.getSkip();
+					
+					if (rangeStartLine < recordStartLine) {
+						recordStartLine = rangeStartLine;
 					}
-					if (range.getRowEnd() + group.getSkip() < minReadRow) {
-						minReadRow = range.getRowEnd() + group.getSkip();
-					}
-					if (range.getRowStart() + group.getSkip() < startLine) {
-						startLine = range.getRowStart() + group.getSkip();
+					if (rangeEndLine > recordEndLine) {
+						recordEndLine = rangeEndLine;
 					}
 				}
 				if (group.getSkip() > maxSkip) {
 					maxSkip = group.getSkip();
 				}
-				if (group.getSkip() < minSkip) {
-					minSkip = group.getSkip();
-				}
 			}
 		}
-//		if (getOrientation() == HEADER_ON_TOP) {
-//			mappingMinRow += minSkip;
-//		} else {
-//			mappingMinColumn += minSkip;
-//		}
 		
 		if (maxSkip != 0) {
 			autoNameMapping = false;
 		}
 		
-//		if (maxSkip == 0) {
-//			if (orientation == HEADER_ON_TOP) {
-//				startLine = mappingMinRow;
-//			} else {
-//				startLine = mappingMinColumn;
-//			}
-//		} else {
-//			if (orientation == HEADER_ON_TOP) {
-//				startLine = mappingMaxRow + 1;
-//			} else {
-//				startLine = mappingMaxColumn + 1;
-//			}
-//		}
+		int rowCount;
+		int columnCount;
 		
-		rowCount = maxReadRow - minReadRow + 1;
-//		columnCount = maxReadColumn - mappingMinColumn + 1;
-		columnCount = mappingMaxColumn - mappingMinColumn + 1;
+		if (getOrientation() == HEADER_ON_TOP) {
+			rowCount = recordEndLine - recordStartLine + 1;
+			columnCount = mappingMaxColumn - mappingMinColumn + 1;
+		} else {
+			rowCount = mappingMaxRow - mappingMaxRow + 1;
+			columnCount = recordEndLine - recordStartLine + 1;
+		}
 
-		return new Stats(nameMapping, autoNameMapping, startLine, rowCount, columnCount,
-				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn, minSkip);
+		return new Stats(nameMapping, autoNameMapping, recordStartLine, rowCount, columnCount,
+				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn);
 	}
 	
 	public static class HeaderGroup {
@@ -445,26 +433,24 @@ public class XLSMapping {
 		/** flag indicating that auto mapping is resolved as name mapping */
 		private final boolean autoNameMapping;
 		
-		/** starting line of read/write */
+		/** starting line of read/write. "line" means row or column for VERTICAL or HORIZONTAL orientation, resp. */
 		private final int startLine;
 		/** record height */
 		private final int rowCount;
 		/** record width */
 		private final int columnCount;
 
-		/** minimum row in mapping */
+		/** minimum row from all mapped ranges */
 		private final int mappingMinRow;
-		/** maximum row in mapping */
+		/** maximum row from all mapped ranges */
 		private final int mappingMaxRow;
-		/** minimum column in mapping */
+		/** minimum column from all mapped ranges */
 		private final int mappingMinColumn;
-		/** maximum column in mapping */
+		/** maximum column from all mapped ranges */
 		private final int mappingMaxColumn;
 		
-		private final int minimalSkip;
-		
 		private Stats(boolean nameMapping, boolean autoNameMapping, int startLine, int rowCount, int columnCount,
-				int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn, int minimalSkip) {
+				int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn) {
 			this.nameMapping = nameMapping;
 			this.autoNameMapping = autoNameMapping;
 			this.startLine = startLine;
@@ -474,7 +460,6 @@ public class XLSMapping {
 			this.mappingMaxRow = mappingMaxRow;
 			this.mappingMinColumn = mappingMinColumn;
 			this.mappingMaxColumn = mappingMaxColumn;
-			this.minimalSkip = minimalSkip;
 		}
 
 		public boolean useNameMapping() {
@@ -511,10 +496,6 @@ public class XLSMapping {
 
 		public int getMappingMaxColumn() {
 			return mappingMaxColumn;
-		}
-
-		public int getMinimalSkip() {
-			return minimalSkip;
 		}
 	}
 

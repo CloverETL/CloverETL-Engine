@@ -18,12 +18,15 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -31,6 +34,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.file.FileUtils;
 
 /**
  * @author tkramolis (info@cloveretl.com)
@@ -45,10 +49,27 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	private DataRecordMetadata stringMetadata;
 	
+	private String mapping1; 
+	private String mapping2;
+	private boolean mappingsInitialized;
+	
+	private void initMappings() throws IOException {
+		if (mappingsInitialized) {
+			mappingsInitialized = false;
+			return;
+		}
+		
+		URL currentDir = new File(".").toURI().toURL();
+		mapping1 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping1_multirow.xlsx.xml", "UTF-8");
+		mapping2 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping2_multirow.xlsx.xml", "UTF-8");
+	}
+	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		initEngine();
+
+		initMappings();
 		
 		String[] cloverFieldNames = {"A", "B", "C", "D", "E", "F", "G", "H"};
 		
@@ -130,7 +151,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 
 			for (int i = 0; i < parsers.length-1; i++) {
-				System.out.println(parsers[i+1].getClass().getSimpleName());
+//				System.out.println(parsers[i+1].getClass().getSimpleName());
 				assertTrue(
 						"Unequal record #" + recNum + " (0-based)\n" +
 						"Parser " + i + " (" + parsers[i].getClass().getSimpleName() + "):\n" + records[i] +
@@ -187,16 +208,27 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		expected[3] = new String[] {"Formátum", "Epizód darabszám", "Összes hossz", "Percdíj", "Össz ktg"};
 		for (AbstractSpreadsheetParser parser : prepareParsers(stringMetadata, null, "0", XLS_FILE, XLSX_FILE)) {
 			String[][] actual = parser.getHeader(6, 1, 10, 6);
-			assertEquals(parser.getClass().getSimpleName(), expected.length, actual.length);
-			for (int i = 0; i < expected.length; i++) {
-				String[] expectedRow = expected[i];
-				String[] actualRow = actual[i];
-				assertEquals(parser.getClass().getSimpleName() + " row " + i,
-						expectedRow.length, actualRow.length);
-				for (int j = 0; j < actualRow.length; j++) {
-					assertEquals(parser.getClass().getSimpleName() + " row " + i + " column " + j,
-							expectedRow[j], actualRow[j]);
-				}
+			assertEqual(expected, actual, parser);
+		}
+
+		expected = new String[1][];
+		expected[0] = new String[] {"Műsor címe", "Formátum", "Epizód darabszám", "Összes hossz"};
+		for (AbstractSpreadsheetParser parser : prepareParsers(stringMetadata, null, "0", XLS_FILE, XLSX_FILE)) {
+			String[][] actual = parser.getHeader(9, 0, 10, 4);
+			assertEqual(expected, actual, parser);
+		}
+	}
+
+	private void assertEqual(String[][] expected, String[][] actual, AbstractSpreadsheetParser parser) {
+		assertEquals(parser.getClass().getSimpleName(), expected.length, actual.length);
+		for (int i = 0; i < expected.length; i++) {
+			String[] expectedRow = expected[i];
+			String[] actualRow = actual[i];
+			assertEquals(parser.getClass().getSimpleName() + " row " + i,
+					expectedRow.length, actualRow.length);
+			for (int j = 0; j < actualRow.length; j++) {
+				assertEquals(parser.getClass().getSimpleName() + " row " + i + " column " + j,
+						expectedRow[j], actualRow[j]);
 			}
 		}
 	}
@@ -207,4 +239,65 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertEquals(parser.getClass().getSimpleName(), expected, parser.getSheetNames());
 		}
 	}
+	
+	public void testParsersWithMapping() throws Exception {
+		AbstractSpreadsheetParser parser;
+		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+//			System.out.println("Parser index: " + parserIndex);
+
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping1, stringMetadata));
+			parser.setSheet("0");
+			parser.init();
+			parser.preExecute();
+			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx")); // resolves name mapping
+			
+			DataRecord record = new DataRecord(stringMetadata);
+			record.init();
+			
+			for (int i = 2; i <= 7; i++) {
+				parser.parseNext(record);
+//				System.out.println(record);
+				assertRecordContent(record, "A"+i+"Value", "B"+i+"Value", "C"+(i+1)+"Value", i < 4 ? "D"+(i+1)+"Value" : null);
+			}
+			parser.parseNext(record);
+			assertRecordContent(record, null, "B8Value", "C9Value");
+			assertNull(parser.parseNext(record));
+			
+			parser.close();
+
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping2, stringMetadata));
+			parser.setSheet("0");
+			parser.init();
+			parser.preExecute();
+			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx"));	
+	
+			parser.parseNext(record);
+			assertRecordContent(record, "A5Value", "B5Value", "C7Value");
+			parser.parseNext(record);
+			assertRecordContent(record, "A7Value", "B7Value", "C9Value");
+			assertNull(parser.parseNext(record));
+			
+			parser.close();
+		}
+	}
+	
+	private AbstractSpreadsheetParser getParser(int parserIndex, DataRecordMetadata metadata, XLSMapping mappingInfo) {
+		switch (parserIndex) {
+			case 0: return new SpreadsheetStreamParser(metadata, mappingInfo);
+			case 1: return new SpreadsheetDOMParser(metadata, mappingInfo);
+		}
+		throw new IllegalArgumentException("parserIndex");
+	}
+	
+	private static void assertRecordContent(DataRecord record, String... fields) {
+		for (int i = 0; i < fields.length; i++) {
+			DataField field = record.getField(i);
+			if (!field.isNull()) {
+				assertEquals("Unexpected value in field \"" + field.getMetadata().getName() + "\":", fields[i], field.toString());
+			} else {
+				assertNull("Field \""+ field.getMetadata().getName() + "\" is null, expected value: " + fields[i], fields[i]);
+			}
+		}
+	}
+	
 }
