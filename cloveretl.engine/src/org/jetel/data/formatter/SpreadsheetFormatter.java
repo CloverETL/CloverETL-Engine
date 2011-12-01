@@ -127,7 +127,8 @@ public class SpreadsheetFormatter implements Formatter {
 	/** the output stream used to output the workbook */
 	private Object outputDataTarget;
 	private InputStream workbookInputStream;
-
+	private DataFormat dataFormat;
+	
 	private DataRecordMetadata metadata;
 
 	private int sheetIndex = -1;
@@ -140,6 +141,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private XYRange headerXYRange;
 	private int firstRecordBelowHeaderX = 0;
 	private int firstRecordBelowHeaderY = 0;
+	private String templateSheetName;
 	
 	public void setAttitude(SpreadsheetAttitude attitude) {
 		this.attitude = attitude;
@@ -457,8 +459,9 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		
-		prepareCellStylesWithDataFormats(usedDataFields);
+		cloverFieldToCellStyle.clear();
 		mappingInitialized = true;
+		templateSheetName = currentSheetData.sheet.getSheetName();
 	}
 	
 	private class CellStyleFilter {
@@ -703,43 +706,44 @@ public class SpreadsheetFormatter implements Formatter {
 		return null;
 	}
 	
-	/**
-	 * @param usedDataFields
-	 */
-	private void prepareCellStylesWithDataFormats(List<DataFieldMetadata> usedDataFields) {
-		DataFormat dataFormat = workbook.createDataFormat();
-
-		cloverFieldToCellStyle.clear();
-		for (DataFieldMetadata fieldMetadata : usedDataFields) {
-			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
-			int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
-			Cell templateCell = getCellByXY(x, y);
-			
-			CellStyle templateCellStyle;
-			if (templateCell!=null) {
-				templateCellStyle = templateCell.getCellStyle();
-			} else {
-				if (workbook.getNumCellStyles()==0) {
-					templateCellStyle = workbook.createCellStyle();
-				} else {
-					templateCellStyle = workbook.getCellStyleAt(DEFAULT_CELL_STYLE_INDEX);
-				}
-			}
-			
-			short modifiedDataFormat = dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING);
-			
-			CellStyleFilter cellStyleFilter = new CellStyleFilter(templateCellStyle);
-			cellStyleFilter.setDataFormat(modifiedDataFormat);
-			CellStyle cellStyle = findCellStyle(cellStyleFilter);
-			if (cellStyle==null) {
-				cellStyle = workbook.createCellStyle();
-				cellStyle.cloneStyleFrom(templateCellStyle);
-				cellStyle.setDataFormat(modifiedDataFormat);
-			}
-			
-
+	private CellStyle takeCellStyleOrPrepareCellStyle(DataFieldMetadata fieldMetadata, Cell cell) {
+		CellStyle cellStyle = cloverFieldToCellStyle.get(fieldMetadata.getNumber());
+		if (cellStyle==null) {
+			cellStyle = prepareCellStyle(fieldMetadata, cell);
 			cloverFieldToCellStyle.put(fieldMetadata.getNumber(), cellStyle);
 		}
+		return cellStyle;
+	}
+	
+	private CellStyle prepareCellStyle(DataFieldMetadata fieldMetadata, Cell cell) {
+		int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
+		int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
+		Sheet templateSheet = sheetNameToSheetDataMap.get(templateSheetName).sheet;
+		Cell templateCell = getCellByXY(templateSheet, x, y);
+
+		CellStyle templateCellStyle;
+		if (templateCell != null) {
+			templateCellStyle = templateCell.getCellStyle();
+		} else {
+			if (workbook.getNumCellStyles() == 0) {
+				templateCellStyle = workbook.createCellStyle();
+			} else {
+				templateCellStyle = cell.getCellStyle();
+			}
+		}
+
+		short modifiedDataFormat = dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING);
+
+		CellStyleFilter cellStyleFilter = new CellStyleFilter(templateCellStyle);
+		cellStyleFilter.setDataFormat(modifiedDataFormat);
+		CellStyle cellStyle = findCellStyle(cellStyleFilter);
+		if (cellStyle == null) {
+			cellStyle = workbook.createCellStyle();
+			cellStyle.cloneStyleFrom(templateCellStyle);
+			cellStyle.setDataFormat(modifiedDataFormat);
+		}
+		
+		return cellStyle;
 	}
 
 	/**
@@ -775,6 +779,7 @@ public class SpreadsheetFormatter implements Formatter {
 		} else {
 			throw new IllegalArgumentException(outputDataTarget.getClass() + " not supported as a data target");
 		}
+		dataFormat = workbook.createDataFormat();
 
 		if (removeSheets) { // remove all sheets in a workbook
 			// they must be removed from the last sheet to the first sheet, because Workbook
@@ -956,7 +961,11 @@ public class SpreadsheetFormatter implements Formatter {
 
 	
 	private Cell getCellByXY(int x, int y) {
-		return getCellByRowAndColumn(translateXYtoRowNumber(x, y), translateXYtoColumnNumber(x, y));
+		return getCellByXY(currentSheetData.sheet, x, y);
+	}
+	
+	private Cell getCellByXY(Sheet sheet, int x, int y) {
+		return getCellByRowAndColumn(sheet, translateXYtoRowNumber(x, y), translateXYtoColumnNumber(x, y));
 	}
 	
 	private void copyCell(Cell sourceCell, Cell targetCell) {
@@ -1038,7 +1047,10 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	private Cell getCellByRowAndColumn(int rowIndex, int columnIndex) {
-		Row row = currentSheetData.sheet.getRow(rowIndex);
+		return getCellByRowAndColumn(currentSheetData.sheet, rowIndex, columnIndex);
+	}
+	private Cell getCellByRowAndColumn(Sheet sheet, int rowIndex, int columnIndex) {
+		Row row = sheet.getRow(rowIndex);
 		if (row==null) {
 			return null;
 		}
@@ -1307,7 +1319,8 @@ public class SpreadsheetFormatter implements Formatter {
 					}
 				}
 				setCellValue(cell, dataField);
-				CellStyle cellStyle = cloverFieldToCellStyle.get(dataField.getMetadata().getNumber());
+//				CellStyle cellStyle = cloverFieldToCellStyle.get(dataField.getMetadata().getNumber());
+				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
 				if (cellStyle!=null) {
 					cell.setCellStyle(cellStyle);
 				}
