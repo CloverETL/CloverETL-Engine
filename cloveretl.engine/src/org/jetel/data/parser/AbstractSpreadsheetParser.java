@@ -37,6 +37,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
 import org.jetel.data.parser.XLSMapping.SpreadsheetMappingMode;
+import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -289,20 +290,12 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		Set<Integer> toRemove = new HashSet<Integer>();
-		Stats stats = mappingInfo.getStats();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			if (group.getCloverField() != XLSMapping.UNDEFINED) {
 				HeaderRange range = group.getRanges().get(0);
-				int row = range.getRowStart() - stats.getMappingMinRow();
-				int column = range.getColumnStart() - stats.getMappingMinColumn();
-
-//				if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-//					row += group.getSkip() - stats.getMinimalSkip();
-//				} else {
-//					column += group.getSkip();
-//				}
-
-				mapping[row][column] = group.getCloverField();
+				
+				setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, group.getCloverField());
+				
 				if (unusedFields.isEmpty()) {
 					throw new ComponentNotReadyException("Number of clover fields and cells must be the same");
 				}
@@ -371,9 +364,9 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				if ((group.getMappingMode() != SpreadsheetMappingMode.NAME || (stats.useAutoNameMapping() && group.getMappingMode() != SpreadsheetMappingMode.AUTO))) {
 					continue;
 				}
-				for (int row = range.getRowStart(); row <= range.getRowEnd() && row < headerCells.length; row++) {
+				for (int row = range.getRowStart(); row <= range.getRowEnd() && row - stats.getMappingMinRow() < headerCells.length; row++) {
 					String[] headerRow = headerCells[row - stats.getMappingMinRow()];
-					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column < headerRow.length; column++) {
+					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column - stats.getMappingMinColumn() < headerRow.length; column++) {
 						String header = headerRow[column - stats.getMappingMinColumn()]; // TODO: perform "name mangling"?
 
 						Integer cloverIndex = nameMap.get(header);
@@ -382,25 +375,17 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 							continue;
 						}
 
-						int rowIndex = row - stats.getMappingMinRow();
-						int columnIndex = column - stats.getMappingMinColumn();
-//						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-//							rowIndex += group.getSkip() - stats.getMinimalSkip();
-//						} else {
-//							columnIndex += group.getSkip();
-//						}
-
 						if (!unusedFields.remove(cloverIndex)) {
 							throw new ComponentNotReadyException("Ambiguous mapping!"); // TODO: improve!
 						}
 
-						mapping[rowIndex][columnIndex] = cloverIndex;
+						setMappingFieldIndex(row, column, group, cloverIndex);
 					}
 				}
 			}
 		}
 	}
-
+	
 	protected void resolveOrderMapping() throws ComponentNotReadyException {
 		Stats stats = mappingInfo.getStats();
 		
@@ -417,24 +402,38 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 				for (int row = range.getRowStart(); row <= range.getRowEnd(); row++) {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd(); column++) {
-						int rowIndex = row - stats.getMappingMinRow();
-						int columnIndex = column - stats.getMappingMinColumn();
-//						if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-//							rowIndex += group.getSkip() - stats.getMinimalSkip();
-//						} else {
-//							columnIndex += group.getSkip();
-//						}
 						if (unusedFields.isEmpty()) {
 							throw new ComponentNotReadyException("Fail!"); // TODO: Improve!
 						}
 
-						mapping[rowIndex][columnIndex] = unusedFields.remove(0); // TODO: check in checkConfig
+						setMappingFieldIndex(row, column, group, unusedFields.remove(0)); // TODO: check in checkConfig
 					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * Inserts Clover field index into mapping array.
+	 * @param rangeCellRow row of a cell C in some header range R
+	 * @param rangeCellColumn column of the cell C in header range R
+	 * @param group header group of header range R
+	 * @param cloverFieldIndex index of Clover metadata field to which cell C is mapped
+	 */
+	private void setMappingFieldIndex(int rangeCellRow, int rangeCellColumn, HeaderGroup group, int cloverFieldIndex) {
+		int mappingRow = rangeCellRow;
+		int mappingColumn = rangeCellColumn;
+		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+			mappingRow += group.getSkip() - mappingInfo.getStats().getStartLine();
+			mappingColumn -= mappingInfo.getStats().getMappingMinColumn();
+		} else {
+			mappingColumn += group.getSkip() - mappingInfo.getStats().getStartLine();
+			mappingRow -= mappingInfo.getStats().getMappingMinRow();
+		}
+		mapping[mappingRow][mappingColumn] = cloverFieldIndex;
+	}
+
+	
 	private void fillUnusedFields() {
 		unusedFields = new ArrayList<Integer>();
 		for (int i = 0; i < metadata.getNumFields(); i++) {

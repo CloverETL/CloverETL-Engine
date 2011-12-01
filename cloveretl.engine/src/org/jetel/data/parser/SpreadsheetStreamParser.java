@@ -113,6 +113,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
+		record.setToNull();
 		return currentHandler.parseNext(record);
 	}
 
