@@ -81,8 +81,8 @@ public class DBFAnalyzer {
 	}
 
 	void analyze(String dbfFileName) throws IOException,DBFErrorException{
-		FileChannel dbfFile=new FileInputStream(dbfFileName).getChannel();
-		analyze(dbfFile,new File(dbfFileName).getName());
+		FileChannel dbfFile = new FileInputStream(dbfFileName).getChannel();
+		analyze(dbfFile, new File(dbfFileName).getName(), null);
 		dbfFile.close();
 	}
 
@@ -98,8 +98,11 @@ public class DBFAnalyzer {
 		warnings.clear();
 	}
 	
-	public int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
-
+	public int analyze(ReadableByteChannel dbfFile, String dbfTableName) throws IOException, DBFErrorException {
+		return analyze(dbfFile, dbfTableName, null);
+	}
+	
+	public int analyze(ReadableByteChannel dbfFile, String dbfTableName, Charset selectedCharset) throws IOException, DBFErrorException {
 		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE_BASIC);
 	    buffer.order(ByteOrder.LITTLE_ENDIAN);
 	    int read = DBF_HEADER_SIZE_BASIC;
@@ -125,6 +128,12 @@ public class DBFAnalyzer {
        
 		buffer.position(10);
 		dbfRecSize=buffer.getShort();
+
+        if (selectedCharset == null) {
+	        charset = Charset.forName(HEADER_CHARACTER_ENCODING);
+        } else {
+        	charset = selectedCharset;
+        }
 
         int filedInfoLength=dbfDataOffset-DBF_HEADER_SIZE_BASIC;//dbfNumFields*DBF_FIELD_DEF_SIZE+1;
 		if (filedInfoLength < 0){
@@ -168,7 +177,7 @@ public class DBFAnalyzer {
 	        // read-in definition of individual fields
 	        int offset=0;
 	        dbfFields=new DBFFieldMetadata[dbfNumFields];
-	        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
+	        
 	        for(int i=0;i<dbfNumFields;i++){
 	            dbfFields[i]=new DBFFieldMetadata();
 	            buffer.limit(11+offset);
@@ -195,7 +204,6 @@ public class DBFAnalyzer {
 	        // read-in definition of individual fields
 	        int offset=DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED;
 	        dbfFields=new DBFFieldMetadata[dbfNumFields];
-	        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
 	        for(int i=0;i<dbfNumFields;i++){
 	            dbfFields[i]=new DBFFieldMetadata();
 	            buffer.limit(32+offset);
@@ -214,13 +222,16 @@ public class DBFAnalyzer {
 		}
 		
 		// let's construct the valid character decoder based on info found in table header
-		try{
-			charset=Charset.forName(DBFTypes.dbfCodepage2Java(dbfCodePage));
-		}catch (Exception ex){
-			System.err.println("Unsupported DBF codepage ID: "+dbfCodePage + "\n");
-			warnings.add("Unsupported DBF codepage ID: "+dbfCodePage);
-		}
-		return read;
+        if (selectedCharset == null) {
+    		try {
+    			charset=Charset.forName(DBFTypes.dbfCodepage2Java(dbfCodePage));
+    		} catch (Exception ex) {
+    			System.err.println("Unsupported DBF codepage ID: "+dbfCodePage + "\n");
+    			warnings.add("Unsupported DBF codepage ID: "+dbfCodePage);
+    		}
+        }
+
+        return read;
 	}
 
 	private int findSubRecordEofMark(ByteBuffer buffer) {
@@ -413,6 +424,11 @@ public class DBFAnalyzer {
 	public byte getDBFCodePage() {
 		return dbfCodePage;
 	}
+	
+	public Charset getCurrentCharset() {
+		return charset;
+	}
+	
 	/**
 	 * @return Returns the dbfDataOffset. If analyzed file has invalid header returns -1.
 	 */
