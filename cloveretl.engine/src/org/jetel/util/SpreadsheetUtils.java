@@ -129,6 +129,10 @@ public class SpreadsheetUtils {
         	return (this == INSERT_INTO_SHEET_IN_MEMORY);
         }
         
+        public boolean isOverwritingSheetOrFile() {
+        	return (this == OVERWRITE_SHEET_IN_MEMORY || isCreatingNewFile());
+        }
+        
         public boolean isCreatingNewFile() {
         	return (this == CREATE_FILE_IN_MEMORY || this == CREATE_FILE_IN_STREAM);
         }
