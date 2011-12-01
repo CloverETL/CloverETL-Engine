@@ -141,6 +141,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private int firstRecordBelowHeaderX = 0;
 	private int firstRecordBelowHeaderY = 0;
 	private String templateSheetName;
+	private int initialFirstFooterLineIndex;
+	private int initialTemplateCopiedRegionY1;
 	
 	public void setAttitude(SpreadsheetAttitude attitude) {
 		this.attitude = attitude;
@@ -378,8 +380,8 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 
 		if (insert) {
-			currentSheetData.setFirstFooterLineIndex(headerRowIndent + headerRowCount);
-			currentSheetData.setTemplateCopiedRegionY1(headerXYRange.y2+1);
+			initialFirstFooterLineIndex = headerRowIndent + headerRowCount;
+			initialTemplateCopiedRegionY1 = headerXYRange.y2+1;
 		}
 	}
 	
@@ -873,19 +875,13 @@ public class SpreadsheetFormatter implements Formatter {
 		currentSheetData = new SheetData(newSheet, 0, 0, 0);
 		sheetNameToSheetDataMap.put(newSheet.getSheetName(), currentSheetData);
 		
-		if (!append && !insert) {
-			int lastRowNum = getLastRowNumInCurrentSheet();
-			for (int i=0; i<=lastRowNum; ++i) {
-				Row row = newSheet.getRow(i);
-				if (row!=null) {
-					newSheet.removeRow(row);
-				}
-			}
-		}
-		
 		if (!mappingInitialized) {
 			initMapping();
 		}
+		
+		currentSheetData.setCurrentY(headerXYRange.y2);
+		currentSheetData.setFirstFooterLineIndex(initialFirstFooterLineIndex);
+		currentSheetData.setTemplateCopiedRegionY1(initialTemplateCopiedRegionY1);
 		
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
@@ -949,11 +945,17 @@ public class SpreadsheetFormatter implements Formatter {
 //		}
 //	}
 
-	private void createRegion(int rowCount, int columnCount) {
-		for (int i=0; i<rowCount; ++i) {
-			Row newRow = currentSheetData.sheet.createRow(i);
-			for (int j=0; j<columnCount; ++j) {
-				newRow.createCell(j);
+	private void createRegion(int firstRow, int firstColumn, int lastRow, int lastColumn) {
+		for (int i=firstRow; i<=lastRow; ++i) {
+			Row row = currentSheetData.sheet.getRow(i);
+			if (row==null) {
+				row = currentSheetData.sheet.createRow(i);
+			}
+			for (int j=firstColumn; j<=lastColumn; ++j) {
+				Cell cell = row.getCell(j);
+				if (cell==null) {
+					cell = row.createCell(j);
+				}
 			}
 		}
 	}
@@ -1102,7 +1104,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void writeSheetHeader() {
 
 		if (!append && !insert) {
-			createRegion(headerRowIndent + headerRowCount, headerColumnIndent + headerColumnCount);
+			createRegion(0, 0, headerRowIndent + headerRowCount-1, headerColumnIndent + headerColumnCount-1);
 			boolean boldStyleFound = false;
 			short boldStyle = 0;
 			
@@ -1188,29 +1190,26 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
-	private void createCellsInRows(Row [] newRows) {
-		for (Row row : newRows) {
-			int columnsToCreate = headerColumnIndent + headerColumnCount;
-			for (int j=0; j<columnsToCreate; ++j) {
-				row.createCell(j);
-			}
-		}
-	}
 	
-	private void insertEmptyRows(int index, int rowCount) {
-		Row [] newRows = new Row[rowCount];
+	private void insertEmptyOrPreserveRows(int index, int rowCount) {
+		int columnsToCreate = headerColumnIndent + headerColumnCount;
 		for (int i = 0; i < rowCount; ++i) {
 			int newRowIndex = index + i;
-			newRows[i] = currentSheetData.sheet.getRow(newRowIndex);
-			if (newRows[i] == null) {
-				newRows[i] = currentSheetData.sheet.createRow(newRowIndex);
+			Row row = currentSheetData.sheet.getRow(newRowIndex);
+			if (row == null) {
+				row = currentSheetData.sheet.createRow(newRowIndex);
+			}
+			for (int j=0; j<columnsToCreate; ++j) {
+				Cell cell = row.getCell(j);
+				if (cell == null) {
+					row.createCell(j);
+				}
 			}
 		}
-		createCellsInRows(newRows);
 	}
 	
 	private void appendEmptyRows(int rowCount) {
-		insertEmptyRows(getLastRowNumInCurrentSheet() + 1, rowCount);
+		insertEmptyOrPreserveRows(getLastRowNumInCurrentSheet() + 1, rowCount);
 	}
 	
 	void insertEmptyOrTemplateRows(int index, int rowCount) {
@@ -1255,7 +1254,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private CellPosition createNextRecordRegion() {
  		if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
  			int rowsToCreate = mappingInfo.getStep();
-			int rowOffset = getLastRowNumInCurrentSheet() + rowsToCreate;
+			int rowOffset = currentSheetData.getCurrentY() + rowsToCreate;
 			int colOffset = headerColumnIndent;
 			if (insert) {
 				int firstFooterLineIndex = currentSheetData.getFirstFooterLineIndex();
@@ -1283,7 +1282,8 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 				currentSheetData.setFirstFooterLineIndex(firstFooterLineIndex + rowsToCreate);
 			} else {
-				appendEmptyRows(rowsToCreate);
+				insertEmptyOrPreserveRows(currentSheetData.getCurrentY()+1, rowsToCreate);
+				currentSheetData.setCurrentY(currentSheetData.getCurrentY() + rowsToCreate);
 			}
 			
 			return new CellPosition(rowOffset, colOffset);
@@ -1311,14 +1311,13 @@ public class SpreadsheetFormatter implements Formatter {
 				int cellColumnIndex = cellOffset.col + translateXYtoColumnNumber(x, y);
 				Cell cell = getCellByRowAndColumn(cellRowIndex, cellColumnIndex);
 				if (cell==null) { //it may happen that existing rows with no data are read from XLS(X) file so that they contain no cells
-					if (cellRowIndex<=currentSheetData.sheet.getLastRowNum() && cellColumnIndex<=(headerColumnIndent+headerColumnCount)) {
+					if (cellRowIndex<=getLastRowNumInCurrentSheet() && cellColumnIndex<=(headerColumnIndent+headerColumnCount)) {
 						cell = createCell(cellRowIndex, cellColumnIndex);
 					} else {
 						throw new IllegalStateException("Unexpectedly not found a cell for a new record at coordinates: [row " + cellRowIndex + ", col:" + cellColumnIndex + "]");
 					}
 				}
 				setCellValue(cell, dataField);
-//				CellStyle cellStyle = cloverFieldToCellStyle.get(dataField.getMetadata().getNumber());
 				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
 				if (cellStyle!=null) {
 					cell.setCellStyle(cellStyle);
@@ -1573,23 +1572,23 @@ public class SpreadsheetFormatter implements Formatter {
 		/** the sheet affected */
 		private final Sheet sheet;
 		/** the current row within the sheet */
-		private int currentRow;
+		private int currentY;
 		private int firstFooterLineIndex;
 		private int templateCopiedRegionY1;
 
-		public SheetData(Sheet sheet, int currentRow, int firstFooterLineIndex, int templateCopiedRegionY1) {
+		public SheetData(Sheet sheet, int currentY, int firstFooterLineIndex, int templateCopiedRegionY1) {
 			this.sheet = sheet;
-			this.currentRow = currentRow;
+			this.currentY = currentY;
 			this.firstFooterLineIndex = firstFooterLineIndex;
 			this.templateCopiedRegionY1 = templateCopiedRegionY1;
 		}
 
-		public int getCurrentRow() {
-			return currentRow;
+		public int getCurrentY() {
+			return currentY;
 		}
 
-		public void setCurrentRow(int currentRow) {
-			this.currentRow = currentRow;
+		public void setCurrentY(int currentY) {
+			this.currentY = currentY;
 		}
 
 		public int getFirstFooterLineIndex() {
