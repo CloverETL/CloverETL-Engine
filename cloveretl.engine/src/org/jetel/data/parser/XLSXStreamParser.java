@@ -94,6 +94,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private final DataFormatter dataFormatter = new DataFormatter();
 
 	public XLSXStreamParser(SpreadsheetStreamParser parent, DataRecordMetadata metadata) {
+		if (metadata == null) {
+			throw new NullPointerException("Missing output metadata");
+		}
 		this.parent = parent;
 		this.metadata = metadata;
 	}
