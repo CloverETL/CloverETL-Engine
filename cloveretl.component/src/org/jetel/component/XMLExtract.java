@@ -1710,8 +1710,10 @@ public class XMLExtract extends Node {
                 }
             }
     		do {
-    			// parse the input source
-                parser.parse(m_inputSource, new SAXHandler(xmlAttributes));
+    			if (m_inputSource != null) {
+    				// parse the input source
+    				parser.parse(m_inputSource, new SAXHandler(xmlAttributes));
+    			}
                 
                 // get a next source
     		} while (nextSource());
@@ -1870,7 +1872,7 @@ public class XMLExtract extends Node {
 	private void prepareNextSource() throws ComponentNotReadyException {
         try {
             if(!nextSource()) {
-                throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
+                //throw new ComponentNotReadyException("FileURL attribute (" + inputFile + ") doesn't contain valid file url.");
             }
         } catch (JetelException e) {
             throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + inputFile + ") doesn't contain valid file url."*/, e);
