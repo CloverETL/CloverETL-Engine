@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <checkboxState>true</checkboxState>
+    <headerGroups>
+        <headerGroup skip="2">
+            <autoMappingType>NAME</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A1"/>
+                <headerRange begin="B1"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="3">
+            <autoMappingType>NAME</autoMappingType>
+            <headerRanges>
+                <headerRange begin="C2"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>

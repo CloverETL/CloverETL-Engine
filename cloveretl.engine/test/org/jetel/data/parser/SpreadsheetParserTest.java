@@ -51,6 +51,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	private String mapping1; 
 	private String mapping2;
+	private String mapping3;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -62,6 +63,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		URL currentDir = new File(".").toURI().toURL();
 		mapping1 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping1_multirow.xlsx.xml", "UTF-8");
 		mapping2 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping2_multirow.xlsx.xml", "UTF-8");
+		mapping3 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping3_Customers_02.xls.xml", "UTF-8");
 	}
 	
 	@Override
@@ -240,7 +242,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		}
 	}
 	
-	public void testParsersWithMapping() throws Exception {
+	public void testXlsxParsersWithMapping() throws Exception {
 		AbstractSpreadsheetParser parser;
 		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
 //			System.out.println("Parser index: " + parserIndex);
@@ -275,6 +277,32 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertRecordContent(record, "A5Value", "B5Value", "C7Value");
 			parser.parseNext(record);
 			assertRecordContent(record, "A7Value", "B7Value", "C9Value");
+			assertNull(parser.parseNext(record));
+			
+			parser.close();
+		}
+	}
+
+	public void testXlsParsersWithMapping() throws Exception {
+		AbstractSpreadsheetParser parser;
+		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+//			System.out.println("Parser index: " + parserIndex);
+
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping3, stringMetadata));
+			parser.setSheet("0");
+			parser.init();
+			parser.preExecute();
+			parser.setDataSource(new FileInputStream("data/xls/Customers_02.xls"));
+			
+			DataRecord record = new DataRecord(stringMetadata);
+			record.init();
+			
+			parser.parseNext(record);
+			assertRecordContent(record, "12", "New York", "6th Avenue");
+			parser.parseNext(record);
+			assertRecordContent(record, "23", "London", "Baker Street");
+			parser.parseNext(record);
+			assertRecordContent(record, "123", "Princeton", "Dirac Street");
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
