@@ -581,12 +581,7 @@ public class XMLExtract extends Node {
          */
         public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
             if (m_activeMapping != null) {
-            	String fullName;
-            	if (namespaceURI.isEmpty()) {
-            		fullName = localName;
-            	} else {
-            		fullName = "{" + namespaceURI + "}" + localName;
-            	}
+            	String fullName = "{" + namespaceURI + "}" + localName;
             	
             	// cache characters value if the xml field is referenced by descendant
                 if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.descendantReferences.containsKey(fullName)) {
