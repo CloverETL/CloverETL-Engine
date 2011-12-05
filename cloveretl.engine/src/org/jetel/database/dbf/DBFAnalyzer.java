@@ -181,7 +181,12 @@ public class DBFAnalyzer {
 	        for(int i=0;i<dbfNumFields;i++){
 	            dbfFields[i]=new DBFFieldMetadata();
 	            buffer.limit(11+offset);
-	            dbfFields[i].name=charset.decode(buffer).toString().trim();
+	            String name = charset.decode(buffer).toString();
+	            int pos = name.indexOf("\u0000"); // truncate the name at the first occurrence of 00 hex byte
+	            if (pos >= 0) {
+	            	name = name.substring(0, pos);
+	            }
+	            dbfFields[i].name=name.trim();
 	            buffer.limit(12+offset);
 	            dbfFields[i].type=charset.decode(buffer).get();
 	            buffer.limit(32+offset);
@@ -208,7 +213,12 @@ public class DBFAnalyzer {
 	            dbfFields[i]=new DBFFieldMetadata();
 	            buffer.limit(32+offset);
 	        	buffer.position(offset);
-	            dbfFields[i].name=charset.decode(buffer).toString().trim();
+	            String name = charset.decode(buffer).toString();
+	            int pos = name.indexOf("\u0000"); // truncate the name at the first occurrence of 00 hex byte
+	            if (pos >= 0) {
+	            	name = name.substring(0, pos);
+	            }
+	            dbfFields[i].name=name.trim();
 	            buffer.limit(33+offset);
 	            dbfFields[i].type=charset.decode(buffer).get();
 	            buffer.limit(34+offset);
