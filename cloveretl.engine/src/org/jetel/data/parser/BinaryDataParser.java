@@ -185,7 +185,7 @@ public class BinaryDataParser implements Parser {
 		buffer.compact();
 		//ensure that the buffer is big enough to bear 'requiredSize' bytes
 		if (buffer.capacity() < requiredSize) {
-			buffer.expand(requiredSize);
+			buffer.expand(0, requiredSize);
 		}
 		do {
 			size = reader.read(buffer.buf());

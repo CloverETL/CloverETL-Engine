@@ -343,15 +343,17 @@ public class CloverDataParser implements Parser {
 		int recordSize = recordBuffer.getInt();
 		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < recordSize) {
+			recordBuffer.compact();
+			
 			if (recordBuffer.capacity() < recordSize) {
-				recordBuffer.expand(recordSize);
+				recordBuffer.expand(0, recordSize);
 			}
-			try{
-				ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
-				recordBuffer.flip();
-			}catch(IOException ex){
+			try {
+				recordFile.read(recordBuffer.buf());
+			} catch(IOException ex) {
 				throw new JetelException(ex.getLocalizedMessage());
 			}
+			recordBuffer.flip();
 		}
 		record.deserialize(recordBuffer);
 		sourceRecordCounter++;

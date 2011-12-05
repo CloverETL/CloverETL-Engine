@@ -748,12 +748,12 @@ public class DataRecordTape {
 		}
 		
 		private void reloadBuffer(int requestedSize) throws IOException, InterruptedException {
-			//we have to ensure that the buffer is big enough to bear 'requestedSize' bytes
-			if (dataBuffer.capacity() < requestedSize) {
-				dataBuffer.expand(requestedSize);
-			}
 			try {
 				dataBuffer.compact();
+				//we have to ensure that the buffer is big enough to bear 'requestedSize' bytes
+				if (dataBuffer.capacity() < requestedSize) {
+					dataBuffer.expand(0, requestedSize);
+				}
 				tmpFileChannel.read(dataBuffer.buf());
 				dataBuffer.flip();
 			} catch (ClosedChannelException e) {
