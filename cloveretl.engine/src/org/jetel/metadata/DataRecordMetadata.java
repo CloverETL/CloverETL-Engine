@@ -1220,6 +1220,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	}
 
+	/**
+	 * Two metadata objects are equal if and only if both have same number of fields,
+	 * record types (delimited/fixed) and field types (string, integer, ...).
+	 * Field names are ignored.  
+	 */
+	@Override
 	public boolean equals(Object object) {
 		return equals(object, true);
 	}
