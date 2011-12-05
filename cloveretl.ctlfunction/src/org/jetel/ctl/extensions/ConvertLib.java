@@ -1152,7 +1152,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
 	public static final String getFieldName(TLFunctionCallContext context, DataRecord record, Integer position) {
 		if (position < 0 || position >= record.getNumFields()) {
-			throw new JetelRuntimeException("Field with index " + position + " does not exist in metadata " + record.getMetadata().getName());
+			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
 		}
 		return record.getField(position).getMetadata().getName();
 	}
@@ -1173,7 +1173,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
 	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, Integer position) {
 		if (position < 0 || position >= record.getNumFields()) {
-			throw new JetelRuntimeException("Field with index " + position + " does not exist in metadata " + record.getMetadata().getName());
+			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
 		}
 		return record.getField(position).getMetadata().getTypeAsString();
 	}
