@@ -169,10 +169,11 @@ public abstract class CloverBuffer {
     /**
      * That is attempt to track information about all clover buffers associated with a graph or node. 
      */
-    @Override
-    protected void finalize() throws Throwable {
-    	memoryDeallocated(capacity());
-    }
+//this was considered two dangerous, 
+//    @Override
+//    protected void finalize() throws Throwable {
+//    	memoryDeallocated(capacity());
+//    }
     
     /**
      * Returns the underlying NIO buffer instance.
