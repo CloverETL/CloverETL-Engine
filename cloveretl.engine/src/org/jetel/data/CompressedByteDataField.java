@@ -160,7 +160,7 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) {
 		dataLen = dataBuffer.remaining();
 		byte[] buf = new byte[dataLen];
 		dataBuffer.get(buf);
