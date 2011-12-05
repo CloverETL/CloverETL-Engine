@@ -55,22 +55,12 @@ public class ContextProvider {
     	if (node != null) {
         	return node.getGraph();
     	} else {
-	    	TransformationGraph graph = graphsCache.get(Thread.currentThread());
-	    	if (graph != null) {
-	    		return graph; 
-	    	} else {
-				logger.debug("ContextProvider was not able to provide requested graph. Current thread is not registered.");
-				return null;
-	    	}
+	    	return graphsCache.get(Thread.currentThread());
     	}
     }
 
 	public static synchronized Node getNode() {
-    	Node node = nodesCache.get(Thread.currentThread());
-    	if (node == null) {
-			logger.debug("ContextProvider was not able to provide requested node. Current thread is not registered.");
-    	}
-    	return node;
+    	return nodesCache.get(Thread.currentThread());
     }
 
 	public static synchronized void registerNode(Node node) {
