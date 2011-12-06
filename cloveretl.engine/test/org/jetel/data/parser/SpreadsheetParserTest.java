@@ -316,35 +316,43 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	public void testXlsParsersWithMoreComplexMapping() throws Exception {
 		AbstractSpreadsheetParser parser;
-		for (String file : Arrays.asList("data/xls/Customers_03.xls", "data/xls/Customers_03.xlsx")) {
-			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping4, stringMetadata));
-	
-				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
-				
-				parser.setSheet("0");
-				parser.init();
-				parser.preExecute();
-				parser.setDataSource(new FileInputStream(file));
-				
-				DataRecord record = new DataRecord(stringMetadata);
-				record.init();
-				
-				parser.parseNext(record);
-				System.out.println(record);
-				assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
-				parser.parseNext(record);
-				System.out.println(record);
-				assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
-				parser.parseNext(record);
-				assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
-				parser.parseNext(record);
-				assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
-				parser.parseNext(record);
-				assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
-				assertNull(parser.parseNext(record));
-				
-				parser.close();
+		for (int skip = 0; skip < 3; skip++) {
+			for (String file : Arrays.asList("data/xls/Customers_03.xls", "data/xls/Customers_03.xlsx")) {
+				for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+					parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping4, stringMetadata));
+		
+//					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+					
+					parser.setSheet("0");
+					parser.init();
+					parser.preExecute();
+					parser.setDataSource(new FileInputStream(file));
+					
+					DataRecord record = new DataRecord(stringMetadata);
+					record.init();
+					
+					parser.skip(skip);
+					
+					if (skip <= 0) {
+						parser.parseNext(record);
+						assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
+					}
+					if (skip <= 1) {
+						parser.parseNext(record);
+						assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+					}
+					if (skip <= 2) {
+						parser.parseNext(record);
+						assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
+					}
+					parser.parseNext(record);
+					assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
+					parser.parseNext(record);
+					assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
+					assertNull(parser.parseNext(record));
+					
+					parser.close();
+				}
 			}
 		}
 	}
