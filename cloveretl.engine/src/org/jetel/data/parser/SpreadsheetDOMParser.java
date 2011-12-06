@@ -20,9 +20,11 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -37,12 +39,15 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExcelUtils;
+import org.jetel.util.ExcelUtils.ExcelType;
 
 /**
  * XLS and XLSX in-memory parser.
  * 
  * @author Martin Janik
  * @author tkramolis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * @author sgerguri (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 11 Aug 2011
  */
@@ -56,17 +61,38 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private int nextRecordStartRow;
 	/** last row or last column in sheet (depends on orientation) */
 	private int lastLine;
+	
+	private String password;
 
 	private final DataFormatter dataFormatter = new DataFormatter();
 	private final static FormulaEval FORMULA_EVAL = new FormulaEval();
 	
-	public SpreadsheetDOMParser(DataRecordMetadata metadata, XLSMapping mappingInfo) {
+	public SpreadsheetDOMParser(DataRecordMetadata metadata, XLSMapping mappingInfo, String password) {
 		super(metadata, mappingInfo);
+		this.password = password;
 	}
 
 	@Override
 	protected void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
 		try {
+			if (!inputStream.markSupported()) {
+				inputStream = new PushbackInputStream(inputStream, 8);
+			}
+			
+			InputStream bufferedStream = null;
+			ExcelType documentType = ExcelUtils.getStreamType(inputStream);
+			if (ExcelUtils.getStreamType(inputStream) == ExcelType.XLS) {
+				bufferedStream = ExcelUtils.getBufferedStream(inputStream);
+				inputStream = ExcelUtils.getDecryptedXLSXStream(bufferedStream, password);
+				if (inputStream == null) {
+					bufferedStream.reset();
+					inputStream = bufferedStream;
+					Biff8EncryptionKey.setCurrentUserPassword(password);
+				}
+			} else if (documentType == ExcelType.INVALID) {
+				throw new ComponentNotReadyException("Your InputStream was neither an OLE2 stream, nor an OOXML stream");
+			}
+			
 			workbook = WorkbookFactory.create(inputStream);
 		} catch (Exception exception) {
 			throw new ComponentNotReadyException("Error opening the XLS(X) workbook!", exception);
@@ -290,6 +316,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		super.close();
 		workbook = null;
 		sheet = null;
+		Biff8EncryptionKey.setCurrentUserPassword(null);
 	}
 
 	/**

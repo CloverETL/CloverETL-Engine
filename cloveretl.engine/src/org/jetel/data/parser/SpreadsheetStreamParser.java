@@ -23,16 +23,18 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.List;
 
-import org.apache.poi.POIXMLDocument;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExcelUtils;
+import org.jetel.util.ExcelUtils.ExcelType;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 
 /**
  * @author lkrejci (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author sgerguri (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 26 Aug 2011
@@ -43,9 +45,12 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	private SpreadsheetStreamHandler xlsHandler;
 	private SpreadsheetStreamHandler xlsxHandler;
 	private SpreadsheetStreamHandler currentHandler;
+	
+	private String password;
 
-	public SpreadsheetStreamParser(DataRecordMetadata metadata, XLSMapping mappingInfo) {
+	public SpreadsheetStreamParser(DataRecordMetadata metadata, XLSMapping mappingInfo, String password) {
 		super(metadata, mappingInfo);
+		this.password = password;
 	}
 
 	@Override
@@ -81,9 +86,18 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			inputStream = new PushbackInputStream(inputStream, 8);
 		}
 		
-		if (POIFSFileSystem.hasPOIFSHeader(inputStream)) {
-			format = SpreadsheetFormat.XLS;
-		} else if (POIXMLDocument.hasOOXMLHeader(inputStream)) {
+		InputStream bufferedStream = null;
+		ExcelType documentType = ExcelUtils.getStreamType(inputStream);
+		if (documentType == ExcelType.XLS) {
+			bufferedStream = ExcelUtils.getBufferedStream(inputStream);
+			inputStream = ExcelUtils.getDecryptedXLSXStream(bufferedStream, password);
+			format = SpreadsheetFormat.XLSX;
+			if (inputStream == null) {
+				bufferedStream.reset();
+				inputStream = bufferedStream;
+				format = SpreadsheetFormat.XLS;
+			}
+		} else if (documentType == ExcelType.XLSX) {
 			format = SpreadsheetFormat.XLSX;
 		} else {
 			throw new ComponentNotReadyException("Your InputStream was neither an OLE2 stream, nor an OOXML stream");
@@ -93,7 +107,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			switch (format) {
 			case XLS:
 				if (xlsHandler == null) {
-					xlsHandler = new XLSStreamParser(this, metadata);
+					xlsHandler = new XLSStreamParser(this, metadata, password);
 					xlsHandler.init();
 				}
 				currentHandler = xlsHandler;
