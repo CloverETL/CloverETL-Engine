@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>2</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <checkboxState>false</checkboxState>
+    <headerGroups>
+        <headerGroup skip="7">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="E3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="5">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="F4"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="4">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="D3"/>
+                <headerRange begin="D2"/>
+                <headerRange begin="C2"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>

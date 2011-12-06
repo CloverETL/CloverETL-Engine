@@ -24,6 +24,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +90,16 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected final XLSMapping mappingInfo;
 	protected int[][] mapping;
 	protected int startLine;
+	
+	private static final Comparator<CellMappedByOrder> CELL_ORDER_COMPARATOR =
+			new Comparator<CellMappedByOrder>() {
+				@Override
+				public int compare(CellMappedByOrder c1, CellMappedByOrder c2) {
+					int rowDiff = c1.row - c2.row;
+					if (rowDiff != 0) return rowDiff;
+					return c1.column - c2.column;
+				}
+			};
 
 	public AbstractSpreadsheetParser(DataRecordMetadata metadata, XLSMapping mappingInfo) {
 		this.metadata = metadata;
@@ -389,27 +401,36 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected void resolveOrderMapping() throws ComponentNotReadyException {
 		Stats stats = mappingInfo.getStats();
 		
+		List<CellMappedByOrder> mappedCells = new ArrayList<CellMappedByOrder>();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			for (HeaderRange range : group.getRanges()) {
-				if (group.getCloverField() != XLSMapping.UNDEFINED) {
-					continue;
-				}
-				
-				if (group.getMappingMode() != SpreadsheetMappingMode.ORDER 
-						|| (stats.useAutoNameMapping() && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
-					continue;
-				}
+			if (group.getCloverField() != XLSMapping.UNDEFINED) {
+				continue;
+			}
+			
+			if (group.getMappingMode() != SpreadsheetMappingMode.ORDER 
+					|| (stats.useAutoNameMapping() && group.getMappingMode() == SpreadsheetMappingMode.AUTO)) {
+				continue;
+			}
 
+			for (HeaderRange range : group.getRanges()) {
 				for (int row = range.getRowStart(); row <= range.getRowEnd(); row++) {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd(); column++) {
-						if (unusedFields.isEmpty()) {
-							throw new ComponentNotReadyException("Fail!"); // TODO: Improve!
-						}
-
-						setMappingFieldIndex(row, column, group, unusedFields.remove(0)); // TODO: check in checkConfig
+						mappedCells.add(new CellMappedByOrder(row, column, group));
 					}
 				}
 			}
+		}
+
+		if (mappedCells.size() > unusedFields.size()) {
+			// TODO: check in checkConfig
+			throw new ComponentNotReadyException("Invalid cells mapping by order! There are " + mappedCells.size() +
+					" cells mapped by order, but only " + unusedFields.size() + " available metadata fields.");
+		}
+		
+		Collections.sort(mappedCells, CELL_ORDER_COMPARATOR);
+		
+		for (CellMappedByOrder cell : mappedCells) {
+			setMappingFieldIndex(cell.row, cell.column, cell.group, unusedFields.remove(0));
 		}
 	}
 
@@ -646,6 +667,18 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			sbKey.append("#");
 
 			return sbKey.append(sbValue.toString()).toString();
+		}
+	}
+	
+	private static class CellMappedByOrder {
+		public final int row;
+		public final int column;
+		public final HeaderGroup group;
+
+		public CellMappedByOrder(int row, int column, HeaderGroup group) {
+			this.row = row;
+			this.column = column;
+			this.group = group;
 		}
 	}
 }

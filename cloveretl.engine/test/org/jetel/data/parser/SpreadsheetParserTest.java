@@ -52,6 +52,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping1; 
 	private String mapping2;
 	private String mapping3;
+	private String mapping4;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -64,6 +65,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping1 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping1_multirow.xlsx.xml", "UTF-8");
 		mapping2 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping2_multirow.xlsx.xml", "UTF-8");
 		mapping3 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping3_Customers_02.xls.xml", "UTF-8");
+		mapping4 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping4_Customers_03.xml", "UTF-8");
 	}
 	
 	@Override
@@ -286,9 +288,10 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	public void testXlsParsersWithMapping() throws Exception {
 		AbstractSpreadsheetParser parser;
 		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-//			System.out.println("Parser index: " + parserIndex);
-
 			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping3, stringMetadata));
+
+//			System.out.println("Parser index: " + parserIndex + ", type: " + parser.getClass().getSimpleName());
+			
 			parser.setSheet("0");
 			parser.init();
 			parser.preExecute();
@@ -303,9 +306,46 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertRecordContent(record, "23", "London", "Baker Street");
 			parser.parseNext(record);
 			assertRecordContent(record, "123", "Princeton", "Dirac Street");
+			parser.parseNext(record);
+			assertRecordContent(record, "1234", "Washington", "Constitution Ave");
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
+		}
+	}
+	
+	public void testXlsParsersWithMoreComplexMapping() throws Exception {
+		AbstractSpreadsheetParser parser;
+		for (String file : Arrays.asList("data/xls/Customers_03.xls", "data/xls/Customers_03.xlsx")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping4, stringMetadata));
+	
+				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				DataRecord record = new DataRecord(stringMetadata);
+				record.init();
+				
+				parser.parseNext(record);
+				System.out.println(record);
+				assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
+				parser.parseNext(record);
+				System.out.println(record);
+				assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+				parser.parseNext(record);
+				assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
+				parser.parseNext(record);
+				assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
+				parser.parseNext(record);
+				assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
+				assertNull(parser.parseNext(record));
+				
+				parser.close();
+			}
 		}
 	}
 	

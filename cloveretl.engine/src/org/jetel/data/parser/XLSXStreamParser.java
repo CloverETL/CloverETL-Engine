@@ -21,7 +21,6 @@ package org.jetel.data.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,13 +46,14 @@ import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.SpreadsheetStreamParser.CellBuffers;
+import org.jetel.data.parser.SpreadsheetStreamParser.RecordFieldValueSetter;
 import org.jetel.data.parser.XSSFSheetXMLHandler.SheetContentsHandler;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SpreadsheetUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -67,7 +67,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 	private final static Log LOGGER = LogFactory.getLog(XLSXStreamParser.class);
 
-	private AbstractSpreadsheetParser parent;
+	private SpreadsheetStreamParser parent;
 
 	private OPCPackage opcPackage;
 	private XSSFReader reader;
@@ -81,10 +81,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private SheetIterator sheetIterator;
 	private InputStream currentSheetInputStream;
 
-	private CellValue[][] cellBuffers;
-	private int nextPartial = -1;
-
-	private DataRecordMetadata metadata;
+	private CellBuffers<CellValue> cellBuffers;
+//	private CellValue[][] cellBuffers;
+//	private int nextPartial = -1;
 
 	private int currentSheetIndex;
 
@@ -95,20 +94,15 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	/** the data formatter used to format cell values as strings */
 	private final DataFormatter dataFormatter = new DataFormatter();
 
-	public XLSXStreamParser(SpreadsheetStreamParser parent, DataRecordMetadata metadata) {
-		if (metadata == null) {
-			throw new NullPointerException("Missing output metadata");
-		}
+	public XLSXStreamParser(SpreadsheetStreamParser parent) {
 		this.parent = parent;
-		this.metadata = metadata;
 //		this.password = password;
 	}
 
 	@Override
 	public void init() throws ComponentNotReadyException {
 		xmlInputFactory = XMLInputFactory.newInstance();
-		int numberOfBuffers = (parent.mapping.length / parent.mappingInfo.getStep()) - (parent.mapping.length % parent.mappingInfo.getStep() == 0 ? 1 : 0);
-		cellBuffers = new CellValue[numberOfBuffers][metadata.getNumFields()];
+		cellBuffers = parent.new CellBuffers<CellValue>();
 	}
 
 	@Override
@@ -138,11 +132,6 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	@Override
 	public int skip(int nRec) throws JetelException {
 		sheetContentHandler.skipRecords(nRec);
-		if (cellBuffers.length > 0) {
-			for (int i = 0; i < Math.min(nRec, cellBuffers.length); i++) {
-				Arrays.fill(cellBuffers[getNextCellBufferIndex()], null);
-			}
-		}
 
 		try {
 			while (staxParser.hasNext() && sheetContentHandler.isSkipRecords()) {
@@ -205,6 +194,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			}
 
 			this.nextRecordStartRow = parent.startLine;
+			cellBuffers.clear();
 			return true;
 		}
 
@@ -249,6 +239,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			stylesTable = reader.getStylesTable();
 			sharedStringsTable = new ReadOnlySharedStringsTable(opcPackage);
 			sheetContentHandler = new RecordFillingContentHandler(stylesTable, dataFormatter, AbstractSpreadsheetParser.USE_DATE1904);
+			cellBuffers.init(CellValue.class, sheetContentHandler);
 		} catch (InvalidFormatException e) {
 			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
 		} catch (OpenXML4JException e) {
@@ -501,12 +492,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 	}
 
-	private int getNextCellBufferIndex() {
-		return nextPartial = ((nextPartial + 1) % cellBuffers.length);
-	}
-
-	// TODO: unify somehow with XLSStreamParser.RecordFillingHSSFListener, there is a lot of duplicated code :-/
-	private class RecordFillingContentHandler extends SheetRowContentHandler {
+	private class RecordFillingContentHandler extends SheetRowContentHandler implements RecordFieldValueSetter<CellValue> {
 
 		private DataRecord record;
 		private final boolean date1904;
@@ -529,15 +515,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 		public void setRecord(DataRecord record) {
 			this.record = record;
-			if (cellBuffers.length > 0) {
-				CellValue[] cellBuffer = cellBuffers[getNextCellBufferIndex()];
-				for (int i = 0; i < cellBuffer.length; i++) {
-					if (cellBuffer[i] != null) {
-						setFieldValue(i, cellBuffer[i]);
-						cellBuffer[i] = null;
-					}
-				}
-			}
+			cellBuffers.fillRecordFromBuffer(record);
 		}
 
 		public boolean isSkipRecords() {
@@ -585,16 +563,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			if (record != null && parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
 				setFieldValue(parent.mapping[mappingRow][shiftedColumnIndex], cellType, value, styleIndex);
 			} else {
-				int start = 1;
-				for (int i = 0; i < cellBuffers.length; i++) {
-					if ((mappingRow -= (parent.mappingInfo.getStep() * start++)) >= 0) {
-						if (parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
-							CellValue bufferedValue = new CellValue(-1, value, cellType, styleIndex);
-							cellBuffers[i][parent.mapping[mappingRow][shiftedColumnIndex]] = bufferedValue;
-							break;
-						}
-					}
-				}
+				cellBuffers.setCellBufferValue(mappingRow, shiftedColumnIndex, new CellValue(-1, value, cellType, styleIndex));
 			}
 		}
 		
@@ -630,7 +599,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			}
 		}
 
-		private void setFieldValue(int fieldIndex, CellValue cell) {
+		public void setFieldValue(int fieldIndex, CellValue cell) {
 			setFieldValue(fieldIndex, cell.type, cell.value, cell.styleIndex);
 		}
 

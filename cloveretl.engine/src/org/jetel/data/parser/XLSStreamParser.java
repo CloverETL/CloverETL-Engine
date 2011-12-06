@@ -21,7 +21,6 @@ package org.jetel.data.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -53,12 +52,13 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.SpreadsheetStreamParser.CellBuffers;
+import org.jetel.data.parser.SpreadsheetStreamParser.RecordFieldValueSetter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -67,7 +67,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class XLSStreamParser implements SpreadsheetStreamHandler {
 	
-	private AbstractSpreadsheetParser parent;
+	private SpreadsheetStreamParser parent;
 	private POIFSFileSystem fs;
 
 	private final static Set<Short> ACCEPTED_RECORDS = new HashSet<Short>();
@@ -93,15 +93,12 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	private final RecordFillingHSSFListener recordFillingListener;
 	private final FormatTrackingHSSFListener formatter;
 	
-	private DataRecordMetadata metadata;
-
 	private int currentSheetIndex = -1;
 
 	private int nextRecordStartRow;
 	
-	public XLSStreamParser(SpreadsheetStreamParser parent, DataRecordMetadata metadata, String password) {
+	public XLSStreamParser(SpreadsheetStreamParser parent, String password) {
 		this.parent = parent;
-		this.metadata = metadata;
 		recordFillingListener = new RecordFillingHSSFListener(AbstractSpreadsheetParser.USE_DATE1904);
 		formatter = new FormatTrackingHSSFListener(recordFillingListener);
 		Biff8EncryptionKey.setCurrentUserPassword(password);
@@ -275,7 +272,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	}
 
 	// TODO: unify somehow with XLSXStreamParser.RecordFillingContentHandler, there is a lot of duplicated code :-/
-	private class RecordFillingHSSFListener implements HSSFListener {
+	//			- some duplicated code already refactored into CellBuffers class
+	private class RecordFillingHSSFListener implements HSSFListener, RecordFieldValueSetter<Record> {
 
 		private final boolean date1904;
 
@@ -307,8 +305,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		private int lastColumn = -1;
 
-		private Record[][] cellBuffers;
-		private int nextPartial = -1;
+		private CellBuffers<Record> cellBuffers;
 
 		public RecordFillingHSSFListener(boolean date1904) {
 			this.date1904 = date1904;
@@ -316,29 +313,14 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		public void init() {
 			currentParseRow = 0;
-			int numberOfBuffers = (parent.mapping.length / parent.mappingInfo.getStep()) - (parent.mapping.length % parent.mappingInfo.getStep() == 0 ? 1 : 0);
-			cellBuffers = new Record[numberOfBuffers][metadata.getNumFields()];
-		}
-
-		private int getNextCellBufferIndex() {
-			return nextPartial = ((nextPartial + 1) % cellBuffers.length);
-		}
-
-		private void clearBuffers(int count) {
-			int buffersToClear = Math.min(count, cellBuffers.length);
-			if (cellBuffers.length > 0) {
-				for (int i = 0; i < buffersToClear; i++) {
-					Arrays.fill(cellBuffers[getNextCellBufferIndex()], null);
-				}
-			}
+			cellBuffers = parent.new CellBuffers<Record>();
+			cellBuffers.init(Record.class, this);
 		}
 
 		public void setRequestedSheetIndex(int requestedSheetIndex) {
 			this.requestedSheetIndex = requestedSheetIndex;
 
-			if (cellBuffers.length > 0) {
-				clearBuffers(cellBuffers.length);
-			}
+			cellBuffers.clear();
 			
 			recordStartRow = parent.startLine;
 			currentParseRow = 0;
@@ -391,8 +373,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			skipStartRow = recordStartRow;
 			recordToFill = null;
 			
-			clearBuffers(nRec);
-			
 			int numberOfRows = nRec * parent.mappingInfo.getStep();
 			setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
 			
@@ -414,15 +394,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		public void setRecord(DataRecord record) {
 			this.recordToFill = record;
-			if (cellBuffers.length > 0) {
-				Record[] cellBuffer = cellBuffers[getNextCellBufferIndex()];
-				for (int i = 0; i < cellBuffer.length; i++) {
-					if (cellBuffer[i] != null) {
-						setFieldValue(i, cellBuffer[i]);
-						cellBuffer[i] = null;
-					}
-				}
-			}
+			cellBuffers.fillRecordFromBuffer(record);
 		}
 
 		@Override
@@ -520,6 +492,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			if (currentParseRow < recordStartRow) {
 				return;
 			}
+			
 			if (columnIndex < parent.mappingMinColumn || columnIndex >= parent.mapping[0].length + parent.mappingMinColumn) {
 				return;
 			}
@@ -528,27 +501,18 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			int shiftedColumnIndex = columnIndex - parent.mappingMinColumn;
 			int shiftedRowIndex = currentParseRow - recordStartRow;
 
-			handleMissingCells(shiftedRowIndex, lastColumn, columnIndex);
+			handleMissingCells(shiftedRowIndex, lastColumn, shiftedColumnIndex);
 			lastColumn = shiftedColumnIndex;
 
 			// if record are being skipped, recordToFill is null, therefore we are interested only with buffering
 			if (recordToFill != null && parent.mapping[shiftedRowIndex][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
 				setFieldValue(parent.mapping[shiftedRowIndex][shiftedColumnIndex], cellRecord);
 			} else {
-				int start = 1;
-				
-				for (int i = 0; i < cellBuffers.length; i++) {
-					if ((shiftedRowIndex -= (parent.mappingInfo.getStep() * start++)) >= 0) {
-						if (parent.mapping[shiftedRowIndex][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
-							cellBuffers[i][parent.mapping[shiftedRowIndex][shiftedColumnIndex]] = cellRecord;
-							break;
-						}
-					}
-				}
+				cellBuffers.setCellBufferValue(shiftedRowIndex, shiftedColumnIndex, cellRecord);
 			}
 		}
 
-		private void setFieldValue(int cloverFieldIndex, Record cellRecord) {
+		public void setFieldValue(int cloverFieldIndex, Record cellRecord) {
 			if (!recordStarted) {
 				recordStarted = true;
 			}
@@ -846,13 +810,14 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
 	 */
-	private class MissingRecordAwareFactoryInputStream {
+	private static class MissingRecordAwareFactoryInputStream {
 		private final RecordFactoryInputStream recordFactory;
 
 		private int lastCellRow;
 		private int lastCellColumn;
 		private int endOfRowsCount;
 		private Record recordToProcess = null;
+		private boolean firstCell;
 
 		public MissingRecordAwareFactoryInputStream(RecordFactoryInputStream recordFactory) {
 			this.recordFactory = recordFactory;
@@ -932,9 +897,18 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 			// If we're on cells, and this cell isn't in the same row as the last one,
 			// then fire the dummy end-of-row records
-			if (thisRow > lastCellRow && lastCellRow > -1) {
-				endOfRowsCount = thisRow - lastCellRow;
+			if (thisRow > lastCellRow) {
+				if (lastCellRow > -1) {
+					endOfRowsCount = thisRow - lastCellRow;
+				} else if (firstCell) {
+					endOfRowsCount = thisRow;
+					firstCell = false;
+				}
+				
 			}
+//			if (thisRow > lastCellRow) {
+//				endOfRowsCount = thisRow - (lastCellRow >= 0 ? lastCellRow : 0);
+//			}
 
 			// If we've just finished with the cells, then fire the final dummy end-of-row record
 			if (lastCellRow != -1 && lastCellColumn != -1 && thisRow == -1) {
@@ -958,6 +932,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		private void resetCounts() {
 			lastCellRow = -1;
 			lastCellColumn = -1;
+			firstCell = true;
 		}
 	}
 

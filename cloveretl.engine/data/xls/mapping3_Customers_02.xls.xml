@@ -10,14 +10,14 @@
         <headerGroup skip="2">
             <autoMappingType>NAME</autoMappingType>
             <headerRanges>
-                <headerRange begin="A1"/>
-                <headerRange begin="B1"/>
+                <headerRange begin="C2"/>
+                <headerRange begin="D2"/>
             </headerRanges>
         </headerGroup>
         <headerGroup skip="3">
             <autoMappingType>NAME</autoMappingType>
             <headerRanges>
-                <headerRange begin="C2"/>
+                <headerRange begin="E3"/>
             </headerRanges>
         </headerGroup>
     </headerGroups>

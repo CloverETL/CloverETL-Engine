@@ -21,6 +21,8 @@ package org.jetel.data.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
@@ -107,14 +109,14 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			switch (format) {
 			case XLS:
 				if (xlsHandler == null) {
-					xlsHandler = new XLSStreamParser(this, metadata, password);
+					xlsHandler = new XLSStreamParser(this, password);
 					xlsHandler.init();
 				}
 				currentHandler = xlsHandler;
 				break;
 			case XLSX:
 				if (xlsxHandler == null) {
-					xlsxHandler = new XLSXStreamParser(this, metadata);
+					xlsxHandler = new XLSXStreamParser(this);
 					xlsxHandler.init();
 				}
 				currentHandler = xlsxHandler;
@@ -136,4 +138,85 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		super.close();
 		currentHandler.close();
 	}
+	
+	
+	/**
+	 * Intended to be used as a buffer of field values of records which parser will send to output after current parser record.
+	 * Result of refactoring of duplicated code in {@link XLSXStreamParser.RecordFillingContentHandler} and {@link XLSStreamParser.RecordFillingHSSFListener}.
+	 * 
+	 * @author tkramolis (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @param <T> type of row field value read from input file
+	 * @created Dec 6, 2011
+	 */
+	class CellBuffers<T> {
+
+		private T[][] cellBuffers;
+		private int nextPartial;
+		private RecordFieldValueSetter<T> fieldValueSetter;
+		
+		@SuppressWarnings("unchecked")
+		public void init(Class<T> clazz, RecordFieldValueSetter<T> fieldValueSetter) {
+			this.fieldValueSetter = fieldValueSetter;
+			int numberOfBuffers = (mapping.length / mappingInfo.getStep()) - (mapping.length % mappingInfo.getStep() == 0 ? 1 : 0);
+			cellBuffers = (T[][]) Array.newInstance(clazz, numberOfBuffers, metadata.getNumFields());
+		}
+		
+		public int getCount() {
+			return cellBuffers.length;
+		}
+		
+		/**
+		 * Returns index of cell buffer of future records.
+		 * @param recordOffset 0 means buffer of next record, 1 means buffer of record after next record, etc.
+		 */
+		private int getCellBufferIndex(int recordOffset) {
+			return (nextPartial + recordOffset) % cellBuffers.length;
+		}
+		
+		private T[] getBuffer(int recordOffset) {
+			return cellBuffers[getCellBufferIndex(recordOffset)];
+		}
+
+		private void moveToNextCellBuffer() {
+			Arrays.fill(cellBuffers[getCellBufferIndex(0)], null);
+			nextPartial = ((nextPartial + 1) % cellBuffers.length);
+		}
+
+		public void clear() {
+			for (int i = 0; i < cellBuffers.length; i++) {
+				Arrays.fill(cellBuffers[i], null);
+			}
+		}
+		
+		public void fillRecordFromBuffer(DataRecord record) {
+			if (getCount() > 0) {
+				T[] cellBuffer = getBuffer(0);
+				for (int i = 0; i < cellBuffer.length; i++) {
+					if (cellBuffer[i] != null) {
+						fieldValueSetter.setFieldValue(i, cellBuffer[i]);
+					}
+				}
+				moveToNextCellBuffer();
+			}
+		}
+		
+		public void setCellBufferValue(int mappingRow, int mappingColumn, T bufferCellValue) {
+			for (int i = 0; i < getCount(); i++) {
+				if ((mappingRow -= (mappingInfo.getStep())) >= 0) {
+					if (mapping[mappingRow][mappingColumn] != XLSMapping.UNDEFINED) {
+						getBuffer(i)[mapping[mappingRow][mappingColumn]] = bufferCellValue;
+						break;
+					}
+				}
+			}
+		}
+		
+	}
+
+	interface RecordFieldValueSetter<T> {
+		public void setFieldValue(int fieldIndex, T value);
+	}
+
 }
