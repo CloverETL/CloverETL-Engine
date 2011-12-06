@@ -20,13 +20,11 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.XLSFormatter;
+import org.jetel.data.formatter.SpreadsheetFormatter;
 import org.jetel.data.formatter.provider.SpreadsheetFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.XLSMapping;
@@ -46,7 +44,6 @@ import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetWriteMode;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -271,7 +268,7 @@ public class SpreadsheetWriter extends Node {
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
 				if (mapping.getOrientation() != XLSMapping.HEADER_ON_TOP && writeMode.isStreamed()) {
-					status.add(new ConfigurationProblem("Vertical orientation is not supported with stream attitude!",
+					status.add(new ConfigurationProblem("Horizontal orientation is not supported with stream attitude!",
 							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
 				mapping.checkConfig(status);
@@ -288,29 +285,19 @@ public class SpreadsheetWriter extends Node {
 		}
 		
 		if (writeMode.isStreamed()) {
-//			if (append) { // requires implementing workbook/sheet/row copying 
-//				status.add(new ConfigurationProblem("Append is not supported with stream attitude!",
-//						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-//			}
-//			if (insert) { // requires implementing workbook/sheet/row copying
-//				status.add(new ConfigurationProblem("Insert is not supported with stream attitude!",
-//						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-//			}
 			if (templateFileURL != null) { // requires implementing workbook/sheet/row copying
-				status.add(new ConfigurationProblem("Write using template is not supported with stream attitude!",
+				status.add(new ConfigurationProblem("Write using template is not supported with streaming mode!",
 						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
 		}
 		
-		try { // TODO: Really?
-			if (writeMode.isAppend() && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
-				status.add("Appending is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-						ConfigurationStatus.Priority.NORMAL, XML_WRITE_MODE_ATTRIBUTE);
+		if (templateFileURL!=null && fileURL!=null) {
+			if (resolveFormat(formatterType, fileURL)!=resolveTemplateFormat(formatterType, templateFileURL)) {
+				status.add(new ConfigurationProblem("Formats of template and an output file must match!",
+						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
-		} catch (MalformedURLException e) {
-			status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_WRITE_MODE_ATTRIBUTE);
 		}
-
+		
 		return status;
 	}
 
@@ -338,7 +325,15 @@ public class SpreadsheetWriter extends Node {
 	}
 		
 	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
-		if ((format == SpreadsheetFormat.AUTO && fileURL.matches(XLSFormatter.XLSX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
+		if ((format == SpreadsheetFormat.AUTO && fileURL.matches(SpreadsheetFormatter.XLSX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
+			return SpreadsheetFormat.XLSX;
+		} else {
+			return SpreadsheetFormat.XLS;
+		}
+	}
+	
+	public static SpreadsheetFormat resolveTemplateFormat(SpreadsheetFormat format, String templateFileURL) {
+		if ((format == SpreadsheetFormat.AUTO && templateFileURL.matches(SpreadsheetFormatter.XLTX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
 			return SpreadsheetFormat.XLSX;
 		} else {
 			return SpreadsheetFormat.XLS;
