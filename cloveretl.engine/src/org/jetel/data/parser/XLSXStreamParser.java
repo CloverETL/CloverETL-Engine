@@ -89,6 +89,8 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private int currentSheetIndex;
 
 	private int nextRecordStartRow;
+	
+//	private String password;
 
 	/** the data formatter used to format cell values as strings */
 	private final DataFormatter dataFormatter = new DataFormatter();
@@ -99,6 +101,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 		this.parent = parent;
 		this.metadata = metadata;
+//		this.password = password;
 	}
 
 	@Override
@@ -240,6 +243,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	@Override
 	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
 		try {
+//			inputStream = getDecryptedStream(inputStream);
 			opcPackage = OPCPackage.open(inputStream);
 			reader = new XSSFReader(opcPackage);
 			stylesTable = reader.getStylesTable();
@@ -256,6 +260,22 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		initializeSheetIterator();
 	}
 
+//	private InputStream getDecryptedStream(InputStream is) throws IOException {
+//		try {
+//			NPOIFSFileSystem fs = new NPOIFSFileSystem(is);
+//			EncryptionInfo info = new EncryptionInfo(fs);
+//			Decryptor decryptor = Decryptor.getInstance(info);
+//			
+//			if (!decryptor.verifyPassword(password == null ? Decryptor.DEFAULT_PASSWORD : password)) {
+//				throw new IOException("Incorrect password");
+//			}
+//			
+//			return decryptor.getDataStream(fs);
+//		} catch (GeneralSecurityException e) {
+//			throw new IOException("Unable to obtain decrypted stream");
+//		}
+//	}
+
 	@Override
 	public void close() throws IOException {
 		try {
@@ -264,6 +284,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			LOGGER.warn("Closing parser threw exception", e);
 		}
 		closeCurrentInputStream();
+//		password = null;
 	}
 
 	private static void processParserEvent(XMLStreamReader staxParser, XSSFSheetXMLHandler contentHandler)

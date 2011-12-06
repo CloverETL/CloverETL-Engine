@@ -104,25 +104,25 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		xlsParser.setDataSource(new FileInputStream(XLS_FILE));
 		
 		/* New ones */
-		AbstractSpreadsheetParser xlsxStreamParser = new SpreadsheetStreamParser(stringMetadata, null);
+		AbstractSpreadsheetParser xlsxStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
 		xlsxStreamParser.setSheet(sheetName);
 		xlsxStreamParser.init();
 		xlsxStreamParser.preExecute();
 		xlsxStreamParser.setDataSource(new FileInputStream(XLSX_FILE));
 		
-		AbstractSpreadsheetParser xlsStreamParser = new SpreadsheetStreamParser(stringMetadata, null);
+		AbstractSpreadsheetParser xlsStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
 		xlsStreamParser.setSheet(sheetName);
 		xlsStreamParser.init();
 		xlsStreamParser.preExecute();
 		xlsStreamParser.setDataSource(new FileInputStream(XLS_FILE));
 		
-		AbstractSpreadsheetParser inMemoryParser1 = new SpreadsheetDOMParser(stringMetadata, null);
+		AbstractSpreadsheetParser inMemoryParser1 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser1.setSheet(sheetName);
 		inMemoryParser1.init();
 		inMemoryParser1.preExecute();
 		inMemoryParser1.setDataSource(new FileInputStream(XLSX_FILE));
 	
-		AbstractSpreadsheetParser inMemoryParser2 = new SpreadsheetDOMParser(stringMetadata, null);
+		AbstractSpreadsheetParser inMemoryParser2 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser2.setSheet(sheetName);
 		inMemoryParser2.init();
 		inMemoryParser2.preExecute();
@@ -183,8 +183,8 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private List<AbstractSpreadsheetParser> prepareParsers(DataRecordMetadata metadata, XLSMapping mapping, String sheet,
 			String inputFile) throws Exception {
 		List<AbstractSpreadsheetParser> parsers = new ArrayList<AbstractSpreadsheetParser>();
-		parsers.add(new SpreadsheetStreamParser(metadata, mapping));
-		parsers.add(new SpreadsheetDOMParser(metadata, mapping));
+		parsers.add(new SpreadsheetStreamParser(metadata, mapping, null));
+		parsers.add(new SpreadsheetDOMParser(metadata, mapping, null));
 		for (AbstractSpreadsheetParser spreadsheetParser : parsers) {
 			spreadsheetParser.setSheet(sheet);
 			spreadsheetParser.init();
@@ -311,8 +311,8 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	private AbstractSpreadsheetParser getParser(int parserIndex, DataRecordMetadata metadata, XLSMapping mappingInfo) {
 		switch (parserIndex) {
-			case 0: return new SpreadsheetStreamParser(metadata, mappingInfo);
-			case 1: return new SpreadsheetDOMParser(metadata, mappingInfo);
+			case 0: return new SpreadsheetStreamParser(metadata, mappingInfo, null);
+			case 1: return new SpreadsheetDOMParser(metadata, mappingInfo, null);
 		}
 		throw new IllegalArgumentException("parserIndex");
 	}

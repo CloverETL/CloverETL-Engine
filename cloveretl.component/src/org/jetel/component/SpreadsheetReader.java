@@ -392,9 +392,9 @@ public class SpreadsheetReader extends Node {
 	private void prepareParser(XLSMapping parsedMapping) throws ComponentNotReadyException {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
         if (parserAttitude == SpreadsheetAttitude.IN_MEMORY) {
-            parser = new SpreadsheetDOMParser(metadata, parsedMapping);
+            parser = new SpreadsheetDOMParser(metadata, parsedMapping, password);
         } else {
-        	parser = new SpreadsheetStreamParser(metadata, parsedMapping);
+        	parser = new SpreadsheetStreamParser(metadata, parsedMapping, password);
         }
         
         if (sheet != null) {

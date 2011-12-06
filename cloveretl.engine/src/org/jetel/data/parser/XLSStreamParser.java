@@ -48,6 +48,7 @@ import org.apache.poi.hssf.record.RecordFormatException;
 import org.apache.poi.hssf.record.SSTRecord;
 import org.apache.poi.hssf.record.SharedFormulaRecord;
 import org.apache.poi.hssf.record.StringRecord;
+import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
@@ -98,11 +99,12 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	private int nextRecordStartRow;
 	
-	public XLSStreamParser(SpreadsheetStreamParser parent, DataRecordMetadata metadata) {
+	public XLSStreamParser(SpreadsheetStreamParser parent, DataRecordMetadata metadata, String password) {
 		this.parent = parent;
 		this.metadata = metadata;
 		recordFillingListener = new RecordFillingHSSFListener(AbstractSpreadsheetParser.USE_DATE1904);
 		formatter = new FormatTrackingHSSFListener(recordFillingListener);
+		Biff8EncryptionKey.setCurrentUserPassword(password);
 	}
 
 	@Override
@@ -184,7 +186,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	
 	@Override
 	public void close() throws IOException {
-		// do nothing
+		Biff8EncryptionKey.setCurrentUserPassword(null);
 	}
 
 	private void prepareRecordFactory() {
