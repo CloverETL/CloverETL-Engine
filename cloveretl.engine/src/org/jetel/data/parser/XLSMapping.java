@@ -357,7 +357,7 @@ public class XLSMapping {
 			rowCount = recordEndLine - recordStartLine + 1;
 			columnCount = mappingMaxColumn - mappingMinColumn + 1;
 		} else {
-			rowCount = mappingMaxRow - mappingMaxRow + 1;
+			rowCount = mappingMaxRow - mappingMinRow + 1;
 			columnCount = recordEndLine - recordStartLine + 1;
 		}
 
