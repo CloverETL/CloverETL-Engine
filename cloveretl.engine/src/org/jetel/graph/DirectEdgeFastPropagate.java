@@ -283,7 +283,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             readPointer=0;
             writePointer=0;
             for (int i = 0; i < size; i++) {
-                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
                 if (buffers[i] == null) {
                     throw new RuntimeException("Failed buffer allocation");
                 }

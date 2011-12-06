@@ -286,9 +286,10 @@ public final class Defaults {
 	public final static class Record {
 		public static void init() {
 			INITIAL_RECORD_SIZE = getIntProperties("Record.INTERNAL_RECORD_SIZE", 65536);
-			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 33554432);
+			RECORD_SIZE_LIMIT = getIntProperties("Record.RECORD_SIZE_LIMIT", 33554432);
+			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 65536);
 			INITIAL_FIELD_SIZE = getIntProperties("Record.INITIAL_FIELD_SIZE", 65536);
-			MAX_FIELD_SIZE = getIntProperties("Record.MAX_FIELD_SIZE", 33554432);
+			FIELD_SIZE_LIMIT = getIntProperties("Record.FIELD_SIZE_LIMIT", 33554432);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
 			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
@@ -308,8 +309,17 @@ public final class Defaults {
 		 * Determines maximum size of record (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int MAX_RECORD_SIZE;// = 33554432;
+		public static int RECORD_SIZE_LIMIT;// = 33554432;
 
+		/**
+		 * Obsolete constant, which was substituted by logicaly same constant {@link #RECORD_SIZE_LIMIT}.
+		 * In case this is used as buffer size of a ByteBuffer (container for serialized form of a data record)
+		 * {@link #INITIAL_RECORD_SIZE} should be used.
+		 * @deprecated use {@link #INITIAL_RECORD_SIZE} or {@link #RECORD_SIZE_LIMIT} instead
+		 */
+		@Deprecated
+		public static int MAX_RECORD_SIZE;// = 65536;
+		
 		/**
 		 * Should be used as initial size of CloverBuffer dedicated to handle a data field.
 		 * Determines expected upper bounds of field size (serialized) in bytes.<br>
@@ -322,7 +332,7 @@ public final class Defaults {
 		 * Determines maximum size of single field (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int MAX_FIELD_SIZE;// = 33554432;
+		public static int FIELD_SIZE_LIMIT;// = 33554432;
 
 		/**
 		 * Compression level for compressed data fields (CompressedByteField - cbyte). Should be set to a value from

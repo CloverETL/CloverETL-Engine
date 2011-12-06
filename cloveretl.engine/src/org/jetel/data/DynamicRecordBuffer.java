@@ -131,7 +131,7 @@ public class DynamicRecordBuffer {
         isClosed = false;
         readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
-        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
         awaitingData = false;
         bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();

@@ -118,7 +118,7 @@ public class SimpleGather extends Node {
 		InputPortDirect inputPorts[]= (InputPortDirect[])getInPorts().toArray(new InputPortDirect[0]);
 		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
-		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
 		readFromPort = 0;
 		inPort = inputPorts[readFromPort];
 		int lastReadPort = -1;

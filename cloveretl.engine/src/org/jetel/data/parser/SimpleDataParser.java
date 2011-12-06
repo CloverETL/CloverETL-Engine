@@ -368,7 +368,7 @@ public class SimpleDataParser extends AbstractTextParser {
 					}
 				}
 
-				if (fieldBuffer.length() > Defaults.Record.MAX_RECORD_SIZE) {
+				if (fieldBuffer.length() > Defaults.Record.RECORD_SIZE_LIMIT) {
 					parsingErrorFound("Field delimiter was not found", record, fieldIndex);
 					return null;
 				}

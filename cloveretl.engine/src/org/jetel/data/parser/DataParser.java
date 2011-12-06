@@ -408,8 +408,8 @@ public class DataParser extends AbstractTextParser {
 						//fieldDelimiter update
 						if(!skipLBlanks) {
 						    fieldBuffer.append((char) character);
-						    if (fieldBuffer.length() > Defaults.Record.MAX_FIELD_SIZE) {
-								return parsingErrorFound("Field delimiter was not found (this could be caused by insufficient field buffer size - Record.MAX_FIELD_SIZE=" + Defaults.Record.MAX_FIELD_SIZE + " - increase the constant if necessary)", record, fieldCounter);
+						    if (fieldBuffer.length() > Defaults.Record.FIELD_SIZE_LIMIT) {
+								return parsingErrorFound("Field delimiter was not found (this could be caused by insufficient field buffer size - Record.MAX_FIELD_SIZE=" + Defaults.Record.FIELD_SIZE_LIMIT + " - increase the constant if necessary)", record, fieldCounter);
 						    }
                         }
 
