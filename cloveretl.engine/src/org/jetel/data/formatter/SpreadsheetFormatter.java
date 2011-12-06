@@ -1619,12 +1619,12 @@ public class SpreadsheetFormatter implements Formatter {
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 			if (workbookInputStream.available() > 0) {
 				if (!createFile) {
-					workbook = newWorkbook(workbookInputStream);
-				} else {
-					workbook = newWorkbook(null); //ignore an existing file, rewrite it while flushing
+					workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+				} else {//ignore an existing file, rewrite it while flushing
+					workbook = newWorkbook(null, formatterType, attitude, mappingInfo); 
 				}
 			} else {
-				workbook = newWorkbook(null);
+				workbook = newWorkbook(null, formatterType, attitude, mappingInfo);
 			}
 			configureWorkbook();
 		} catch (IOException ioex) {
@@ -1643,7 +1643,7 @@ public class SpreadsheetFormatter implements Formatter {
 		outputStream.close();
 	}
 
-	private HSSFWorkbook createXlsWorkbook(InputStream inputStream) throws IOException {
+	private static HSSFWorkbook createXlsWorkbook(InputStream inputStream) throws IOException {
 		if (inputStream == null) {
 			return new HSSFWorkbook();
 		} else {
@@ -1651,7 +1651,7 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
-	private XSSFWorkbook createXlsxWorkbook(InputStream inputStream) throws IOException {
+	private static XSSFWorkbook createXlsxWorkbook(InputStream inputStream) throws IOException {
 		if (inputStream == null) {
 			return new XSSFWorkbook();
 		} else {
@@ -1659,7 +1659,7 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
-	private Workbook newWorkbook(InputStream inputStream) throws IOException {
+	public static Workbook newWorkbook(InputStream inputStream, SpreadsheetFormat formatterType, SpreadsheetAttitude attitude, XLSMapping mappingInfo) throws IOException {
 		switch (formatterType) {
 		case XLS:
 			if (attitude == SpreadsheetAttitude.IN_MEMORY) {

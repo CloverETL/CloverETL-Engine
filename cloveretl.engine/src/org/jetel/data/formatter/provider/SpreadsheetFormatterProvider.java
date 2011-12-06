@@ -77,7 +77,7 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 	public void setTemplateFile(URL contextURL, String templateFileURL) throws ComponentNotReadyException {
 		try {
 			InputStream stream = FileUtils.getInputStream(contextURL, templateFileURL);
-			this.templateWorkbook = WorkbookFactory.create(stream);
+			this.templateWorkbook = SpreadsheetFormatter.newWorkbook(stream, formatterType, attitude, mapping);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Failed to prepare template!", e);
 		}
