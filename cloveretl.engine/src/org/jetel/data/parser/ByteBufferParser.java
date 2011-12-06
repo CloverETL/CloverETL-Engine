@@ -200,7 +200,7 @@ public class ByteBufferParser implements Parser {
 		}
 		do {
 			size = reader.read(buffer.buf());
-			if (buffer.position() > requiredSize) {
+			if (buffer.position() >= requiredSize) {
 				break;
 			}
 			//data are not available, so let the other thread work now, we need to wait for a while
