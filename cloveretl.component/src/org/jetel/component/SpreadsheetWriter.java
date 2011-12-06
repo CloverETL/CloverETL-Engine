@@ -67,7 +67,6 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public static final String XML_SHEET_ATTRIBUTE = "sheet";
-	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_REMOVESHEETS_ATTRIBUTE = "removeSheets";
 	public static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRecords";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "numRecords";
@@ -268,7 +267,7 @@ public class SpreadsheetWriter extends Node {
 			XLSMapping mapping = prepareMapping();
 			if (mapping != null) {
 				if (mapping.getOrientation() != XLSMapping.HEADER_ON_TOP && writeMode.isStreamed()) {
-					status.add(new ConfigurationProblem("Horizontal orientation is not supported with stream attitude!",
+					status.add(new ConfigurationProblem("Horizontal orientation is not supported with streaming!",
 							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 				}
 				mapping.checkConfig(status);
@@ -311,16 +310,15 @@ public class SpreadsheetWriter extends Node {
 		formatterProvider = new SpreadsheetFormatterProvider();
 		formatterProvider.setAttitude(writeMode.isStreamed() ? SpreadsheetAttitude.STREAM : SpreadsheetAttitude.IN_MEMORY);
 		formatterProvider.setFormatterType(resolveFormat(formatterType, fileURL));
-		
-		if (templateFileURL!=null) {
-			formatterProvider.setTemplateFile(getGraph().getRuntimeContext().getContextURL(), templateFileURL);
-		}
 		formatterProvider.setMapping(prepareMapping());
 		formatterProvider.setSheet(sheet);
 		formatterProvider.setAppend(writeMode.isAppend());
 		formatterProvider.setInsert(writeMode.isInsert());
 		formatterProvider.setCreateFile(writeMode.isCreatingNewFile());
 		formatterProvider.setRemoveSheets(removeSheets);
+		if (templateFileURL!=null) {
+			formatterProvider.setTemplateFile(getGraph().getRuntimeContext().getContextURL(), templateFileURL);
+		}
 		prepareWriter();
 	}
 		
