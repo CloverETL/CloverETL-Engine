@@ -53,6 +53,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping2;
 	private String mapping3;
 	private String mapping4;
+	private String mapping5;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -66,6 +67,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping2 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping2_multirow.xlsx.xml", "UTF-8");
 		mapping3 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping3_Customers_02.xls.xml", "UTF-8");
 		mapping4 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping4_Customers_03.xml", "UTF-8");
+		mapping5 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping5_Customers_03_Horizontal.xml", "UTF-8");
 	}
 	
 	@Override
@@ -314,14 +316,25 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		}
 	}
 	
-	public void testXlsParsersWithMoreComplexMapping() throws Exception {
+	public void testParsersWithMoreComplexVerticalMapping() throws Exception {
+		testParsersWithMoreComplexMapping("data/xls/Customers_03.xls", mapping4, false);
+	}
+	
+	public void testParsersWithMoreComplexHorizontalMapping() throws Exception {
+		testParsersWithMoreComplexMapping("data/xls/Customers_03_Horizontal.xls", mapping5, true);
+	}
+	
+	private void testParsersWithMoreComplexMapping(String xlsFile, String mapping, boolean excludeStreamParser) throws Exception {
 		AbstractSpreadsheetParser parser;
 		for (int skip = 0; skip < 3; skip++) {
-			for (String file : Arrays.asList("data/xls/Customers_03.xls", "data/xls/Customers_03.xlsx")) {
+			for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
 				for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-					parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping4, stringMetadata));
+					parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping, stringMetadata));
+					if (parser instanceof SpreadsheetStreamParser && excludeStreamParser) {
+						continue;
+					}
 		
-//					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
 					
 					parser.setSheet("0");
 					parser.init();
