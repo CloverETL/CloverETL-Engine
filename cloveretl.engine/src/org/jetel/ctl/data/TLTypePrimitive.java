@@ -201,7 +201,7 @@ public abstract class TLTypePrimitive extends TLType {
 
 		@Override
 		public String name() {
-			return "double";
+			return "number";
 		}
 
 		@Override
