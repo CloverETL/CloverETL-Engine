@@ -94,8 +94,8 @@ public class StringUtils {
 		try {
 			// try to be fail-safe to prevent errors caused by missing locales etc.
 			LATIN_TRANSLITERATOR = Transliterator.getInstance("Latin");
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 	}
 	
