@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -77,6 +78,8 @@ public class ConvertLib extends TLFunctionLibrary {
 		    "byte2base64".equals(functionName) ? new Byte2Base64Function() : 
 		    "bits2str".equals(functionName) ? new Bits2StrFunction() : 
 		    "str2bits".equals(functionName) ? new Str2BitsFunction() : 
+      	    "str2byte".equals(functionName) ? new Str2ByteFunction() : 
+      	    "byte2str".equals(functionName) ? new Byte2StrFunction() : 
 		    "hex2byte".equals(functionName) ? new Hex2ByteFunction() : 
 		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
 		    "long2packDecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
@@ -973,6 +976,54 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(str2bits(context, stack.popString()));
+		}
+	}
+
+	@TLFunctionAnnotation("Converts string to byte according to given charset")
+	public static final byte[] str2byte(TLFunctionCallContext context, String src, String charset) {
+		try {
+			return src.getBytes(charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new TransformLangExecutorRuntimeException("str2byte - can't convert \"" + src + "\" " +
+					"with charset \"" + charset + ": unknown charset");
+
+		}
+	}
+
+	// STR2BYTE
+	public class Str2ByteFunction implements TLFunctionPrototype {
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			String charset = stack.popString();
+			String src = stack.popString();
+			stack.push(str2byte(context, src, charset));
+		}
+	}
+
+	@TLFunctionAnnotation("Converts byte to string according to given charset")
+	public static final String byte2str(TLFunctionCallContext context, byte[] src, String charset) {
+		try {
+			return new String(src, charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new TransformLangExecutorRuntimeException("byte2str - can't convert \"" + src + "\" " +
+					"with charset \"" + charset + ": unknown charset");
+
+		}
+	}
+
+	// BYTE2STR
+	public class Byte2StrFunction implements TLFunctionPrototype {
+
+		public void init(TLFunctionCallContext context) {
+		}
+
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			String charset = stack.popString();
+			byte[] src = stack.popByteArray();
+			stack.push(byte2str(context, src, charset));
 		}
 	}
 
