@@ -906,7 +906,11 @@ public class SpreadsheetFormatter implements Formatter {
 		if (append) {
 			currentSheetData.setCurrentY(currentSheetData.getLastLineNumber(mappingInfo.getOrientation()));
 		} else {
-			currentSheetData.setCurrentY(headerXYRange.y2);
+			if (mappingInfo.isWriteHeader()) {
+				currentSheetData.setCurrentY(headerXYRange.y2);
+			} else {
+				currentSheetData.setCurrentY(-1);
+			}
 		}
 		currentSheetData.setFirstFooterLineIndex(initialFirstFooterLineIndex);
 		currentSheetData.setTemplateCopiedRegionY1(initialTemplateCopiedRegionY1);
