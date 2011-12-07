@@ -1625,7 +1625,11 @@ public class SpreadsheetFormatter implements Formatter {
 				createSpreadsheetFileFromTemplate();
 			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
-			if (workbookInputStream.available() > 0) {
+//			if (workbookInputStream.available() > 0) { //did not work reliably for ZIP files => workaround below
+			int firstByte = workbookInputStream.read();
+			workbookInputStream.close();
+			workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
+			if (firstByte>=0) {
 				if (!createFile) {
 					workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
 				} else {//ignore an existing file, rewrite it while flushing
