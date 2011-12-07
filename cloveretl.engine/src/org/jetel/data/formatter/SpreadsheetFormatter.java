@@ -925,8 +925,8 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 			// check that insertion is not stopped by a missing rows at the end of file
 			int currentLastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
-			if (insert && currentSheetData.getFirstFooterLineIndex() > currentLastLineNumber + 1) {
-				appendEmptyLines(currentSheetData.getFirstFooterLineIndex() - (currentLastLineNumber + 1));
+			if (insert && currentSheetData.getFirstFooterLineIndex() > (currentLastLineNumber+1)) {
+				appendEmptyLines(currentSheetData.getFirstFooterLineIndex() - (currentLastLineNumber+1));
 			}
 		}
 
@@ -1256,9 +1256,11 @@ public class SpreadsheetFormatter implements Formatter {
 			if (row == null) {
 				row = currentSheetData.sheet.createRow(i);
 			}
-			Cell cell = row.getCell(index);
-			if (cell == null) {
-				currentSheetData.createCellAndRefreshLastColumnNumber(row, index);
+			for (int j=0; j<columnCount; ++j) {
+				Cell cell = row.getCell(index+j);
+				if (cell == null) {
+					currentSheetData.createCellAndRefreshLastColumnNumber(row, index+j);
+				}
 			}
 		}
 	}
@@ -1540,21 +1542,26 @@ public class SpreadsheetFormatter implements Formatter {
 				row = sheetData.sheet.createRow(x);
 			}
 			int lastColumnNumber = sheetData.getLastColumnNumber();
-			if (movementSize > 0) {
-				for (int movementIndex = lastColumnNumber; movementIndex >= index; --movementIndex) {
-					Integer cellY = findCellYOnLine(movementIndex, x);
-					if (cellY==null) {
-						cellY=movementIndex;
-					}
-					swapCells(sheetData, row, cellY, cellY + movementSize);
-				}
+			
+			if (lastColumnNumber < index) {
+				appendEmptyLines(index - lastColumnNumber);
 			} else {
-				for (int movementIndex = index; movementIndex <= lastColumnNumber; ++movementIndex) {
-					Integer cellY = findCellYOnLine(movementIndex, x);
-					if (cellY==null) {
-						cellY=movementIndex;
+				if (movementSize > 0) {
+					for (int movementIndex = lastColumnNumber; movementIndex >= index; --movementIndex) {
+						Integer cellY = findCellYOnLine(movementIndex, x);
+						if (cellY == null) {
+							cellY = movementIndex;
+						}
+						swapCells(sheetData, row, cellY, cellY + movementSize);
 					}
-					swapCells(sheetData, row, cellY, cellY + movementSize);
+				} else {
+					for (int movementIndex = index; movementIndex <= lastColumnNumber; ++movementIndex) {
+						Integer cellY = findCellYOnLine(movementIndex, x);
+						if (cellY==null) {
+							cellY=movementIndex;
+						}
+						swapCells(sheetData, row, cellY, cellY + movementSize);
+					}
 				}
 			}
 		}
