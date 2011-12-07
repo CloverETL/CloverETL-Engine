@@ -134,6 +134,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private SheetData currentSheetData;
 	/** the output stream used to output the workbook */
 	private Object outputDataTarget;
+	private boolean workbookNotFlushed = true;
 	private InputStream workbookInputStream;
 	private DataFormat dataFormat;
 	
@@ -778,11 +779,14 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 		
 		this.outputDataTarget = outputDataTarget;
+		workbookNotFlushed = true;
 		
 		if (outputDataTarget instanceof Object[]) {
 			URL url = (URL) ((Object[]) outputDataTarget)[0];
 			String file = (String) ((Object[]) outputDataTarget)[1];
-
+			OutputStream dataTargetOutputStream = (OutputStream) ((Object[]) outputDataTarget)[2];
+			dataTargetOutputStream.close();
+			
 			createWorkbook(url, file);
 		} else if (outputDataTarget instanceof WritableByteChannel) {
 			workbook = new XSSFWorkbook();
@@ -899,7 +903,11 @@ public class SpreadsheetFormatter implements Formatter {
 			initMapping();
 		}
 		
-		currentSheetData.setCurrentY(headerXYRange.y2);
+		if (append) {
+			currentSheetData.setCurrentY(currentSheetData.getLastLineNumber(mappingInfo.getOrientation()));
+		} else {
+			currentSheetData.setCurrentY(headerXYRange.y2);
+		}
 		currentSheetData.setFirstFooterLineIndex(initialFirstFooterLineIndex);
 		currentSheetData.setTemplateCopiedRegionY1(initialTemplateCopiedRegionY1);
 		
@@ -946,6 +954,7 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		appendEmptyLines(linesToAppend);
+		currentSheetData.setCurrentY(currentSheetData.getCurrentY() + linesToAppend);
 	}
 	
 //	private void chooseSelectedOrDefaultSheet() {
@@ -1490,8 +1499,7 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		if (outputDataTarget!=null && workbook!=null) {
 			if (outputDataTarget instanceof Object[]) {
-				FileOutputStream workbookOutputStream = (FileOutputStream) ((Object[]) outputDataTarget)[2];
-				if (workbookOutputStream.getChannel().isOpen()) {
+				if (workbookNotFlushed) {
 					for (SheetData sheetData : sheetNameToSheetDataMap.values()) {
 						autosizeColumns(sheetData.sheet);
 						removeTemplateLinesIfNeeded(sheetData);
@@ -1502,7 +1510,7 @@ public class SpreadsheetFormatter implements Formatter {
 					OutputStream outputStream = FileUtils.getOutputStream(url, file, false, -1);
 					workbook.write(outputStream);
 					outputStream.close();
-					workbookOutputStream.close();
+					workbookNotFlushed=false;
 				}
 			} else if (outputDataTarget instanceof WritableByteChannel) {
 				OutputStream workbookOutputStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
@@ -1614,7 +1622,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void createWorkbook(URL contextURL, String file) {
 		try {
 			if (templateWorkbook!=null) {
-				createSpreadsheetFileFromTemplate(contextURL, file);
+				createSpreadsheetFileFromTemplate();
 			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 			if (workbookInputStream.available() > 0) {
@@ -1637,10 +1645,20 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @param file
 	 * @throws IOException
 	 */
-	private void createSpreadsheetFileFromTemplate(URL contextURL, String file) throws IOException {
-		OutputStream outputStream = FileUtils.getOutputStream(contextURL, file, false, -1);
-		templateWorkbook.write(outputStream);
-		outputStream.close();
+	private void createSpreadsheetFileFromTemplate() throws IOException {
+		if (outputDataTarget instanceof Object[]) {
+			Object [] outputDataTargetArray = (Object[]) outputDataTarget;
+			URL url = (URL) outputDataTargetArray[0];
+			String file = (String) outputDataTargetArray[1];
+			
+			OutputStream workbookOutputStream = FileUtils.getOutputStream(url, file, false, -1);
+			templateWorkbook.write(workbookOutputStream);
+			workbookOutputStream.close();
+		} else if (outputDataTarget instanceof WritableByteChannel) {
+			OutputStream workbookOutputStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
+			workbook.write(workbookOutputStream);
+			workbookOutputStream.close();
+		}
 	}
 
 	private static HSSFWorkbook createXlsWorkbook(InputStream inputStream) throws IOException {
