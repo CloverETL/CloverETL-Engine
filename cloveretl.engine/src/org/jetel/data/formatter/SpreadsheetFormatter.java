@@ -727,10 +727,13 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	private CellStyle prepareCellStyle(DataFieldMetadata fieldMetadata, Cell cell) {
-		int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
-		int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
-		Sheet templateSheet = sheetNameToSheetDataMap.get(templateSheetName).sheet;
-		Cell templateCell = getCellByXY(templateSheet, x, y);
+		Cell templateCell = null;
+		if (insert) {
+			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
+			int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
+			Sheet templateSheet = sheetNameToSheetDataMap.get(templateSheetName).sheet;
+			templateCell = getCellByXY(templateSheet, x, y);
+		}
 
 		CellStyle templateCellStyle;
 		if (templateCell != null) {
@@ -1628,6 +1631,13 @@ public class SpreadsheetFormatter implements Formatter {
 
 	private void configureWorkbook() {
 		workbook.setForceFormulaRecalculation(true);
+		//in order to preserve default style
+		if (workbook.getNumberOfFonts()==0) {
+			workbook.createFont();
+		}
+		if (workbook.getNumCellStyles()==0) {
+			workbook.createCellStyle();
+		}
 	}
 	
 	private void createWorkbook(URL contextURL, String file) {
