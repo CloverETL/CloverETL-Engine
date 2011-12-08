@@ -21,6 +21,7 @@ package org.jetel.data.tape;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -376,10 +378,6 @@ public class DataRecordTape {
     public int getBufferSize() {
     	int result = dataBuffer.capacity();
     	
-    	for (DataChunk dataChunk : dataChunks) {
-    		result += dataChunk.getBufferSize();
-    	}
-    	
     	return result;
     }
 	
@@ -398,7 +396,20 @@ public class DataRecordTape {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
 	}
-    
+
+	/**
+	 * @deprecated use {@link #put(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public long put(ByteBuffer data) throws IOException, InterruptedException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(data);
+		long result = put(wrappedBuffer);
+		if (wrappedBuffer.buf() != data) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
+	}
+
 	/**
 	 * Stores data record in current/active chunk.
 	 * 
@@ -448,6 +459,19 @@ public class DataRecordTape {
         }else{
             return false;
         }
+    }
+    
+    /**
+     * @deprecated use {@link #reget(CloverBuffer)} instead
+     */
+    @Deprecated
+    public boolean reget(ByteBuffer data) {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(data);
+		boolean result = reget(wrappedBuffer);
+		if (wrappedBuffer.buf() != data) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
     }
     
 	/**
@@ -761,13 +785,6 @@ public class DataRecordTape {
 			}
 		}
 
-		/**
-		 * @return size of allocated memory in internal buffers (memory footprint)
-		 */
-		public int getBufferSize() {
-			return dataBuffer.capacity();
-		}
-		
 		@Override
 		public String toString(){
 		    return "start: "+offsetStart+" #records: "+nRecords+" length: "+length;

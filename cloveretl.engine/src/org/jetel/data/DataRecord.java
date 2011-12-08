@@ -294,7 +294,11 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 */
 	@Deprecated
 	public void deserialize(ByteBuffer buffer) {
-		deserialize(CloverBuffer.wrap(buffer));
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(buffer);
+		deserialize(wrappedBuffer);
+		if (wrappedBuffer.buf() != buffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
 	}
 
     public void deserialize(CloverBuffer buffer,int[] whichFields) {
@@ -303,6 +307,17 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
         }
     }
     
+    /**
+     * @deprecated use {@link #deserialize(CloverBuffer, int[])} instead
+     */
+    @Deprecated
+    public void deserialize(ByteBuffer buffer, int[] whichFields) {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(buffer);
+		deserialize(wrappedBuffer, whichFields);
+		if (wrappedBuffer.buf() != buffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+    }
 
 	/**
 	 *  Test two DataRecords for equality. Records must have the same metadata (be
@@ -532,7 +547,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 		CloverBuffer bufferWrapper = CloverBuffer.wrap(buffer);
 		serialize(bufferWrapper);
 		if (buffer != bufferWrapper.buf()) {
-			throw new JetelRuntimeException("Deprecated method invokation failed. Please use CloverBuffer instead of ByteBuffer.");
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
 		}
 	}
 
@@ -550,6 +565,17 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
         }
     }
 
+    /**
+     * @deprecated {@link #serialize(CloverBuffer, int[])} instead
+     */
+    @Deprecated
+    public void serialize(ByteBuffer buffer, int[] whichFields) {
+		CloverBuffer bufferWrapper = CloverBuffer.wrap(buffer);
+		serialize(bufferWrapper, whichFields);
+		if (buffer != bufferWrapper.buf()) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+    }
 
 	/**
 	 *  Assigns new metadata to this DataRecord. If the new

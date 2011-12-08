@@ -20,12 +20,14 @@ package org.jetel.data;
 
 import java.io.Serializable;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.CloverBuffer;
@@ -268,6 +270,18 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * @deprecated use {@link #fromByteBuffer(CloverBuffer, CharsetDecoder)} instead
+	 */
+	@Deprecated
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(dataBuffer);
+		fromByteBuffer(wrappedBuffer, decoder);
+		if (wrappedBuffer.buf() != dataBuffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+	}
+
+	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
 	 *
 	 * @param  encoder                       Charset encoder which could be used to encode characters
@@ -280,6 +294,18 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 		} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
+		}
+	}
+
+	/**
+	 * @deprecated use {@link #toByteBuffer(CloverBuffer, CharsetEncoder)} instead
+	 */
+	@Deprecated
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(dataBuffer);
+		toByteBuffer(wrappedBuffer, encoder);
+		if (wrappedBuffer.buf() != dataBuffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
 		}
 	}
 

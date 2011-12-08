@@ -253,6 +253,11 @@ public abstract class CloverBuffer {
     public abstract CloverBuffer setAutoShrink(boolean autoShrink);
 
     /**
+     * Turns on or off possibility of relocation underlying buffer at all.
+     */
+    public abstract CloverBuffer setRecapacityAllowed(boolean recapacityAllowed);
+
+    /**
      * Changes the capacity and limit of this buffer so this buffer get the
      * specified <tt>expectedRemaining</tt> room from the current position. This
      * method works even if you didn't set <tt>autoExpand</tt> to <tt>true</tt>.

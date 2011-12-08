@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -187,7 +188,20 @@ public class ByteBufferParser implements Parser {
 		}
 
 	}
-	
+
+	/**
+	 * @deprecated use {@link #getNext(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public boolean getNext(ByteBuffer recordBuffer) throws JetelException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(recordBuffer);
+		boolean result = getNext(wrappedBuffer);
+		if (wrappedBuffer.buf() != recordBuffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
+	}
+
 	private void reloadBuffer(int requiredSize) throws IOException {
 		if (eofReached) {
 			return;

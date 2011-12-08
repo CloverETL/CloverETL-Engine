@@ -357,4 +357,29 @@ public class CloverBufferTest extends CloverTestCase {
     	}
     }
 
+    public void testRecapacityAllowed() {
+    	ByteBuffer underlyingBuffer = ByteBuffer.allocate(100);
+    	CloverBuffer cloverBuffer = CloverBuffer.wrap(underlyingBuffer);
+    	cloverBuffer.setRecapacityAllowed(false);
+    	try {
+    		cloverBuffer.expand(101);
+    		assert false;
+    	} catch (IllegalStateException e) {
+    		//correct
+    	}
+    	
+    	for (int i = 0; i < 100; i++) {
+    		cloverBuffer.put((byte) 0);
+    	}
+    	
+    	try {
+    		cloverBuffer.put((byte) 0);
+    		assert false;
+    	} catch (BufferOverflowException e) {
+    		//correct
+    	}
+    	
+    	assertEquals(underlyingBuffer, cloverBuffer.buf());
+    }
+    
 }

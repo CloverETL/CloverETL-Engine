@@ -372,7 +372,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		CloverBuffer wrappedBuffer = CloverBuffer.wrap(record);
 		boolean result = readRecordDirect(wrappedBuffer);
 		if (wrappedBuffer.buf() != record) {
-			throw new JetelRuntimeException("Deprecated method invokation failed. Please use CloverBuffer instead of ByteBuffer.");
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
 		}
 		return result;
 	}
