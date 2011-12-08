@@ -1604,7 +1604,7 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void autosizeColumns(Sheet sheet) {
 		if (headerXYRange != null && mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) { // mapping initialized at least
-			for (int x = headerXYRange.x1; x < headerXYRange.x2; ++x) {
+			for (int x = headerXYRange.x1; x <= headerXYRange.x2; ++x) {
 				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
 					if (xToCloverFieldMapping.get(x) != null) {
 						sheet.autoSizeColumn(x);
