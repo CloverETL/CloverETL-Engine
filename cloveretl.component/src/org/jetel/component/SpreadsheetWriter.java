@@ -369,8 +369,8 @@ public class SpreadsheetWriter extends Node {
 		writer.setDictionary(getGraph().getDictionary());
 		writer.setOutputPort(getOutputPort(OUTPUT_PORT));
 		writer.setMkDir(mkDirs);
-		writer.setAppendData(true); // TODO: really?
-		writer.setUseChannel(false); // TODO: really?
+		writer.setAppendData(true);//in order to allow input stream opening
+		writer.setUseChannel(false);
 
 		writer.setSkip(recordSkip);
 		writer.setNumRecords(recordCount);
