@@ -1778,6 +1778,34 @@ public class StringUtils {
 	}
 
 	/**
+	 * This method copies substring of source to target.
+	 * 
+	 * @param target
+	 *            target to which save the substring
+	 * @param src
+	 *            source string
+	 * @param from
+	 *            positing at which start (zero based)
+	 * @param length
+	 *            number of characters to take
+	 * @return target containing substring of original or empty string if specified from/length values are out of
+	 *         ranges. If from+length exceeds src.lenght, target.lenght is only src.lenght-from
+	 * @throws IOException 
+	 * @since 23.5.2007
+	 */
+	public static Appendable subString(Appendable target, CharSequence src, int from, int length) throws IOException {
+		final int end = from + length;
+		final int maxLength = src.length();
+		for (int i = (from < 0 ? 0 : from); i < end; i++) {
+			if (i >= maxLength) {
+				break;
+			}
+			target.append(src.charAt(i));
+		}
+		return target;
+	}
+	
+	/**
 	 * Returns the index within input string of the first occurrence of the specified substring, starting at the
 	 * specified index.
 	 * 
