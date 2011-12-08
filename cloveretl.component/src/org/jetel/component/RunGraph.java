@@ -40,10 +40,10 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -63,6 +63,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.Concatenate;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -881,7 +882,7 @@ public class RunGraph extends Node{
 				return;
 			}
 			if (record.getField(DESC_FIELD).getValue() == null || 
-					((StringBuilder)(record.getField(2).getValue())).length() < 1) {
+					((CloverString)(record.getField(2).getValue())).length() < 1) {
 				record.getField(DESC_FIELD).setValue(description);
 			}
 		}
