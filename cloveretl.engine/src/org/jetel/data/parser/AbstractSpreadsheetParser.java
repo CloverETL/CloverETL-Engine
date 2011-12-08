@@ -365,6 +365,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveNameMapping() throws ComponentNotReadyException {
 		Map<String, Integer> nameMap = metadata.getFieldNamesMap();
+		Map<String, Integer> labelsMap = metadata.getFieldLabelsMap();
 		Stats stats = mappingInfo.getStats();
 		
 		String[][] headerCells = getHeader(stats.getMappingMinRow(), stats.getMappingMinColumn(), stats.getMappingMaxRow() + 1, stats.getMappingMaxColumn() + 1);
@@ -381,7 +382,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column - stats.getMappingMinColumn() < headerRow.length; column++) {
 						String header = headerRow[column - stats.getMappingMinColumn()]; // TODO: perform "name mangling"?
 
-						Integer cloverIndex = nameMap.get(header);
+						Integer cloverIndex = labelsMap.get(header);
+						if (cloverIndex == null) {
+							cloverIndex = nameMap.get(header);
+						}
 						if (cloverIndex == null) {
 							LOGGER.warn("There is no field \"" + header + "\" in output metadata");
 							continue;

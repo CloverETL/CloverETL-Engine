@@ -701,6 +701,19 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			}
 		}
 	}
+	
+	/**
+	 * @return a map mapping field labels to field ordinal numbers
+	 *
+	 * @since 8nd Dec 2011
+	 */
+	public Map<String, Integer> getFieldLabelsMap() {
+		if (fieldLabelsMap.isEmpty()) {
+			updateFieldLabelsMap();
+		}
+
+		return new HashMap<String, Integer>(fieldLabelsMap);
+	}
 
 	/**
 	 * @return a map mapping field ordinal numbers to field types
