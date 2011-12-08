@@ -3,7 +3,6 @@ package org.jetel.ctl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -25,8 +24,6 @@ import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
-import org.jetel.ctl.extensions.TLFunctionAnnotation;
-import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
