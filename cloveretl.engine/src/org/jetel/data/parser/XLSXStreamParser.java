@@ -32,6 +32,13 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.record.BoolErrRecord;
+import org.apache.poi.hssf.record.CellRecord;
+import org.apache.poi.hssf.record.FormulaRecord;
+import org.apache.poi.hssf.record.LabelSSTRecord;
+import org.apache.poi.hssf.record.NumberRecord;
+import org.apache.poi.hssf.record.Record;
+import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -88,15 +95,12 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private int currentSheetIndex;
 
 	private int nextRecordStartRow;
-	
-//	private String password;
 
 	/** the data formatter used to format cell values as strings */
 	private final DataFormatter dataFormatter = new DataFormatter();
 
 	public XLSXStreamParser(SpreadsheetStreamParser parent) {
 		this.parent = parent;
-//		this.password = password;
 	}
 
 	@Override
@@ -233,7 +237,6 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	@Override
 	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
 		try {
-//			inputStream = getDecryptedStream(inputStream);
 			opcPackage = OPCPackage.open(inputStream);
 			reader = new XSSFReader(opcPackage);
 			stylesTable = reader.getStylesTable();
@@ -251,22 +254,6 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		initializeSheetIterator();
 	}
 
-//	private InputStream getDecryptedStream(InputStream is) throws IOException {
-//		try {
-//			NPOIFSFileSystem fs = new NPOIFSFileSystem(is);
-//			EncryptionInfo info = new EncryptionInfo(fs);
-//			Decryptor decryptor = Decryptor.getInstance(info);
-//			
-//			if (!decryptor.verifyPassword(password == null ? Decryptor.DEFAULT_PASSWORD : password)) {
-//				throw new IOException("Incorrect password");
-//			}
-//			
-//			return decryptor.getDataStream(fs);
-//		} catch (GeneralSecurityException e) {
-//			throw new IOException("Unable to obtain decrypted stream");
-//		}
-//	}
-
 	@Override
 	public void close() throws IOException {
 		try {
@@ -275,7 +262,6 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			LOGGER.warn("Closing parser threw exception", e);
 		}
 		closeCurrentInputStream();
-//		password = null;
 	}
 
 	private static void processParserEvent(XMLStreamReader staxParser, XSSFSheetXMLHandler contentHandler)
@@ -561,7 +547,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			lastColumn = shiftedColumnIndex;
 
 			if (record != null && parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
-				setFieldValue(parent.mapping[mappingRow][shiftedColumnIndex], cellType, value, styleIndex);
+				setFieldValue(parent.mapping[mappingRow][shiftedColumnIndex], cellType, value, styleIndex); 
 			} else {
 				cellBuffers.setCellBufferValue(mappingRow, shiftedColumnIndex, new CellValue(-1, value, cellType, styleIndex));
 			}
@@ -593,7 +579,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null);
+						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 					}
 				}
 			}
@@ -639,10 +625,13 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				}
 			} catch (RuntimeException ex1) { // exception when trying get date or number from a different cell type
 				try {
-					field.fromString(value);
+//					field.fromString(value);
+					field.setNull(true);
 				} catch (Exception ex2) {
-					parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n2nd try error: " + ex2 + "\n"), record, cloverFieldIndex, value);
 				}
+				String cellCoordinates = SpreadsheetUtils.getColumnReference(lastColumn + parent.mappingMinColumn) + String.valueOf(currentParseRow);
+				parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n"), 
+						record, cloverFieldIndex, cellCoordinates, value);
 			}
 		}
 

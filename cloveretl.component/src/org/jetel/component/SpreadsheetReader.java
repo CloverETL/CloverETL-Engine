@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +41,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -90,7 +92,7 @@ public class SpreadsheetReader extends Node {
 	
     private final static int OUTPUT_PORT = 0;
 	private final static int INPUT_PORT = 0;
-	private final static int LOG_PORT = 1;
+	private final static int ERROR_PORT = 1;
     
     public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         SpreadsheetReader spreadsheetReader = null;
@@ -312,7 +314,7 @@ public class SpreadsheetReader extends Node {
 		}
 		
 		if (getOutPorts().size() == 2) {
-			if (checkLogPortMetadata()) {
+			if (checkErrorPortMetadata()) {
 				logging = true;
 			}
 		}
@@ -321,26 +323,23 @@ public class SpreadsheetReader extends Node {
 		prepareReader();
 	}
 	
-	/* TODO: Copied from DataReader, refactor when log port framework is developed */
-	private boolean checkLogPortMetadata() {
-        DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
+	private boolean checkErrorPortMetadata() {
+        DataRecordMetadata errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 
-        boolean ret = logMetadata.getNumFields() == 4 
-        	&& logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
-        	&& logMetadata.getField(1).getType() == DataFieldMetadata.INTEGER_FIELD
-            && isStringOrByte(logMetadata.getField(2))
-            && isStringOrByte(logMetadata.getField(3));
+        int errorNumFields = errorMetadata.getNumFields();
+        boolean ret = errorNumFields > 4
+        		&& errorMetadata.getFieldType(errorNumFields - 5) == DataFieldMetadata.INTEGER_FIELD
+        		&& errorMetadata.getFieldType(errorNumFields - 4) == DataFieldMetadata.INTEGER_FIELD
+        		&& errorMetadata.getFieldType(errorNumFields - 3) == DataFieldMetadata.STRING_FIELD
+        		&& errorMetadata.getFieldType(errorNumFields - 2) == DataFieldMetadata.STRING_FIELD
+        		&& errorMetadata.getFieldType(errorNumFields - 1) == DataFieldMetadata.STRING_FIELD;
         
         if(!ret) {
-            LOGGER.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
+            LOGGER.warn("Error port metadata have invalid format (expected data fields - integer (record number), integer (field number), string (cell coordinates), string (offending value), string (error message)");
         }
         
         return ret;
     }
-	
-	private boolean isStringOrByte(DataFieldMetadata field) {
-		return field.getType() == DataFieldMetadata.STRING_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD || field.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED;
-	}
 	
 	private void setCharSequenceToField(CharSequence charSeq, DataField field) {
 		if (charSeq == null) {
@@ -402,7 +401,10 @@ public class SpreadsheetReader extends Node {
         } else {
         	parser.setSheet(DEFAULT_SHEET_VALUE);
         }
-        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+        parser.setExceptionHandler(new SpreadsheetParserExceptionHandler(policyType));
+        if (policyType == PolicyType.STRICT) {
+        	maxErrorCount = -1;
+        }
     }
 	
 	private void prepareReader() {
@@ -451,10 +453,14 @@ public class SpreadsheetReader extends Node {
 		DataRecord record = new DataRecord(outPort.getMetadata());
 		record.init();
 
-		DataRecord logRecord = null;
+		DataRecord errorRecord = null;
+		DataRecordMetadata errorMetadata = null;
+		int errorMetadataFields = 0;
 		if (logging) {
-			logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
-			logRecord.init();
+			errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
+			errorMetadataFields = errorMetadata.getNumFields();
+			errorRecord = new DataRecord(errorMetadata);
+			errorRecord.init();
 		}
 
 		int errorCount = 0;
@@ -467,20 +473,22 @@ public class SpreadsheetReader extends Node {
 					}
 					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
-					if (policyType == PolicyType.STRICT) {
-						throw bdfe;
-					} else {
-						if (logging) {
-							// TODO refactor when log port framework is developed
-							((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
-							((IntegerDataField) logRecord.getField(1)).setValue(bdfe.getFieldNumber() + 1);
-							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
-							setCharSequenceToField(bdfe.getMessage(), logRecord.getField(3));
-							writeRecord(LOG_PORT, logRecord);
-						} else {
-							LOGGER.warn(bdfe.getMessage());
+					if (logging) {
+						SpreadsheetParserExceptionHandler exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
+						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
+							errorRecord.copyFieldsByName(record);
+							((IntegerDataField) errorRecord.getField(errorMetadataFields - 5)).setValue(bdfe.getRecordNumber());
+							((IntegerDataField) errorRecord.getField(errorMetadataFields - 4)).setValue(bdfe.getFieldNumber());
+							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(errorMetadataFields - 3));
+							setCharSequenceToField(bdfe.getOffendingValue(), errorRecord.getField(errorMetadataFields - 2));
+							setCharSequenceToField(bdfe.getMessage(), errorRecord.getField(errorMetadataFields - 1));
+							writeRecord(ERROR_PORT, errorRecord);
+							bdfe = bdfe.next();
 						}
-						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+					} else  {
+						if (policyType == PolicyType.STRICT) {
+							throw bdfe;
+						} else if (errorCount++ > maxErrorCount) {
 							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
 							return Result.ERROR;
 						}
@@ -495,8 +503,8 @@ public class SpreadsheetReader extends Node {
 		}
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-	
-    @Override
+
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		parser.postExecute();

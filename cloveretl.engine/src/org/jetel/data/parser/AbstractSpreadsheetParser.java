@@ -47,6 +47,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SpreadsheetIndexIterator;
@@ -217,13 +218,16 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	 */
 	protected abstract int getRecordStartRow();
 
-	protected void handleException(BadDataFormatException bdfe, DataRecord record, int cloverFieldIndex, String cellValue) {
+	protected void handleException(BadDataFormatException bdfe, DataRecord record, int cloverFieldIndex, String cellCoordinates, String cellValue) {
 		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep(); //TODO: check record numbering
 		bdfe.setRecordNumber(recordNumber);
 		bdfe.setFieldNumber(cloverFieldIndex);
 
 		if (exceptionHandler != null) { // use handler only if configured
 			exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex), record, recordNumber, cloverFieldIndex, cellValue, bdfe);
+			if (exceptionHandler instanceof SpreadsheetParserExceptionHandler) {
+				((SpreadsheetParserExceptionHandler) exceptionHandler).addOffendingCoordinates(cellCoordinates);
+			}
 		} else {
 			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex));
 		}

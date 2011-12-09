@@ -40,6 +40,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExcelUtils;
+import org.jetel.util.SpreadsheetUtils;
 import org.jetel.util.ExcelUtils.ExcelType;
 
 /**
@@ -200,7 +201,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 						try {
 							record.getField(cloverFieldIndex).setNull(true);
 						} catch (BadDataFormatException e) {
-							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null);
+							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 						}
 					}
 				}
@@ -230,7 +231,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 						try {
 							record.getField(cloverFieldIndex).setNull(true);
 						} catch (BadDataFormatException e) {
-							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null);
+							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 						}
 					}
 				}
@@ -254,7 +255,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				record.getField(cloverFieldIndex).setNull(true);
 				return;
 			} catch (BadDataFormatException e) {
-				handleException(new BadDataFormatException("There is no data cell for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null);
+				handleException(new BadDataFormatException("There is no data cell for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 				return;
 			}
 		}
@@ -282,11 +283,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				break;
 			}
 		} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
+			String errorMessage = exception.getMessage();
 			try {
-				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
+				record.getField(cloverFieldIndex).setNull(true);
+//				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
 			} catch (Exception ex) {
-				handleException(new BadDataFormatException(ex.getMessage()), record, cloverFieldIndex, cell.getStringCellValue());
 			}
+			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
+			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, cell.getStringCellValue());
 		}
 	}
 
