@@ -316,6 +316,9 @@ public class SpreadsheetReader extends Node {
 		if (getOutPorts().size() == 2) {
 			if (checkErrorPortMetadata()) {
 				logging = true;
+				if (policyType == PolicyType.STRICT) {
+					maxErrorCount = 1;
+				}
 			}
 		}
 		
@@ -402,9 +405,6 @@ public class SpreadsheetReader extends Node {
         	parser.setSheet(DEFAULT_SHEET_VALUE);
         }
         parser.setExceptionHandler(new SpreadsheetParserExceptionHandler(policyType));
-        if (policyType == PolicyType.STRICT) {
-        	maxErrorCount = -1;
-        }
     }
 	
 	private void prepareReader() {
@@ -464,6 +464,7 @@ public class SpreadsheetReader extends Node {
 		}
 
 		int errorCount = 0;
+		SpreadsheetParserExceptionHandler exceptionHandler = null;
 
 		try {
 			while (runIt) {
@@ -474,7 +475,9 @@ public class SpreadsheetReader extends Node {
 					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
 					if (logging) {
-						SpreadsheetParserExceptionHandler exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
+						if (exceptionHandler == null) {
+							exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
+						} 
 						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
 							errorRecord.copyFieldsByName(record);
 							((IntegerDataField) errorRecord.getField(errorMetadataFields - 5)).setValue(bdfe.getRecordNumber());
