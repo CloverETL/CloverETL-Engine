@@ -65,7 +65,7 @@ public class DataRecordTest extends CloverTestCase {
 		DataRecord deserializedRecord = new DataRecord(record.getMetadata());
 		deserializedRecord.init();
 
-		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		record.serialize(buffer);
 		buffer.flip();
 		deserializedRecord.deserialize(buffer);

@@ -462,7 +462,7 @@ public class Trash extends Node {
 
 		public void run() {
 			DataRecord record = new DataRecord(inPort.getMetadata());
-			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			if (mode.equals(Mode.VALIDATE_RECORDS)) {
 				record.init();
 			}

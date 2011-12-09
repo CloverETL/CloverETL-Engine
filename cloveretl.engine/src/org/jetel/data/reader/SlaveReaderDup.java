@@ -41,7 +41,7 @@ public class SlaveReaderDup implements InputReader {
 	protected RecordKey key;
 	private DataRecord[] rec = new DataRecord[2];
 	private FileRecordBuffer recBuf;
-	private CloverBuffer rawRec = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+	private CloverBuffer rawRec = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	private boolean firstRun;
 	private boolean getFirst;
 	DataRecord deserializedRec;

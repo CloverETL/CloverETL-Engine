@@ -273,7 +273,6 @@ public class DirectEdgeFastPropagate extends EdgeBase {
          *Constructor for the EdgeRecordBufferPool object
          *
          * @param  numBuffers  number of internal buffers allocated for storing DataRecords
-         * @param  bufferSize  size of 1 internal buffer - should be similar to org.jetel.data.Defaults.Record.MAX_RECORD_SIZE
          * @since              June 5, 2002
          */
         EdgeRecordBufferPool(int numBuffers) {
@@ -283,7 +282,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             readPointer=0;
             writePointer=0;
             for (int i = 0; i < size; i++) {
-                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
                 if (buffers[i] == null) {
                     throw new RuntimeException("Failed buffer allocation");
                 }

@@ -124,7 +124,7 @@ public class TextTableFormatter implements Formatter {
 
 		// create buffered output stream writer and buffers 
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.FIELD_SIZE_LIMIT);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.FIELD_INITIAL_SIZE, Defaults.Record.FIELD_LIMIT_SIZE);
 		//if mask is not given create default mask
 		if (mask == null) {
 			maskAnalize = new DataFieldParams[metadata.getNumFields()];

@@ -285,16 +285,16 @@ public final class Defaults {
 	 */
 	public final static class Record {
 		public static void init() {
-			INITIAL_RECORD_SIZE = getIntProperties("Record.INTERNAL_RECORD_SIZE", 65536);
-			RECORD_SIZE_LIMIT = getIntProperties("Record.RECORD_SIZE_LIMIT", 33554432);
+			RECORD_INITIAL_SIZE = getIntProperties("Record.RECORD_INITIAL_SIZE", 65536);
+			RECORD_LIMIT_SIZE = getIntProperties("Record.RECORD_LIMIT_SIZE", 33554432);
 			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 65536);
-			INITIAL_FIELD_SIZE = getIntProperties("Record.INITIAL_FIELD_SIZE", 65536);
-			FIELD_SIZE_LIMIT = getIntProperties("Record.FIELD_SIZE_LIMIT", 33554432);
+			FIELD_INITIAL_SIZE = getIntProperties("Record.FIELD_INITIAL_SIZE", 65536);
+			FIELD_LIMIT_SIZE = getIntProperties("Record.FIELD_LIMIT_SIZE", 33554432);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
 			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
 			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
-					Defaults.Record.INITIAL_RECORD_SIZE * 4);
+					Defaults.Record.RECORD_INITIAL_SIZE * 4);
 		}
 
 		/**
@@ -303,19 +303,19 @@ public final class Defaults {
 		 * Clover engine is able to handle even bigger records. Underlying buffer
 		 * may be re-allocated in the case a bigger record appears.  
 		 */
-		public static int INITIAL_RECORD_SIZE;// = 65536;
+		public static int RECORD_INITIAL_SIZE;// = 65536;
 		
 		/**
 		 * Determines maximum size of record (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int RECORD_SIZE_LIMIT;// = 33554432;
+		public static int RECORD_LIMIT_SIZE;// = 33554432;
 
 		/**
-		 * Obsolete constant, which was substituted by logicaly same constant {@link #RECORD_SIZE_LIMIT}.
+		 * Obsolete constant, which was substituted by logicaly same constant {@link #RECORD_LIMIT_SIZE}.
 		 * In case this is used as buffer size of a ByteBuffer (container for serialized form of a data record)
-		 * {@link #INITIAL_RECORD_SIZE} should be used.
-		 * @deprecated use {@link #INITIAL_RECORD_SIZE} or {@link #RECORD_SIZE_LIMIT} instead
+		 * {@link #RECORD_INITIAL_SIZE} should be used.
+		 * @deprecated use {@link #RECORD_INITIAL_SIZE} or {@link #RECORD_LIMIT_SIZE} instead
 		 */
 		@Deprecated
 		public static int MAX_RECORD_SIZE;// = 65536;
@@ -326,13 +326,13 @@ public final class Defaults {
 		 * Clover engine is able to handle even bigger fields. Underlying buffer
 		 * may be re-allocated in the case a bigger field appears.  
 		 */
-		public static int INITIAL_FIELD_SIZE;// = 65536;
+		public static int FIELD_INITIAL_SIZE;// = 65536;
 		
 		/**
 		 * Determines maximum size of single field (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
 		 */
-		public static int FIELD_SIZE_LIMIT;// = 33554432;
+		public static int FIELD_LIMIT_SIZE;// = 33554432;
 
 		/**
 		 * Compression level for compressed data fields (CompressedByteField - cbyte). Should be set to a value from
@@ -351,7 +351,7 @@ public final class Defaults {
 
 		/**
 		 * Size of internal buffer for temporary storing several data records.
-		 * Size should be at least INITIAL_RECORD_SIZE, better several times bigger
+		 * Size should be at least {@link #RECORD_INITIAL_SIZE}, better several times bigger
 		 */
 		public static int RECORDS_BUFFER_SIZE;
 
@@ -397,7 +397,7 @@ public final class Defaults {
 		/**
 		 * max length of field's value representation (bytes or characters).<br>
 		 * If your records contain long fields (usually text-memos), increase the limit here.
-		 * @deprecated use {@link Record#INITIAL_FIELD_SIZE} instead
+		 * @deprecated use {@link Record#FIELD_INITIAL_SIZE} instead
 		 */
 		@Deprecated
 		public static int FIELD_BUFFER_LENGTH;// = 512;
@@ -428,7 +428,7 @@ public final class Defaults {
 		/**
 		 * max length of field's value representation (bytes or characters).<br>
 		 * If your records contain long fields (usually text-memos), increase the limit here.
-		 * @deprecated use {@link Record#INITIAL_FIELD_SIZE} instead
+		 * @deprecated use {@link Record#FIELD_INITIAL_SIZE} instead
 		 */
 		@Deprecated
 		public static int FIELD_BUFFER_LENGTH;// = 512;
@@ -522,12 +522,14 @@ public final class Defaults {
 		
 		/**
 		 * Unit size of data buffer which keeps data records for sorting/hashing
+		 * @deprecated invalidated without substitution, consider to use {@link Record#RECORDS_BUFFER_SIZE}
 		 */
 		@Deprecated
 		public static int DATA_RECORDS_BUFFER_SIZE;// = 10 * 1048576; // 10MB
 		
 		/**
 		 * How many units (buffers) can be allocated
+		 * @deprecated invalidated without substitution
 		 */
 		@Deprecated
 		public static short MAX_BUFFERS_ALLOCATED;// = 99;
@@ -628,16 +630,16 @@ public final class Defaults {
 	public final static class Graph {
 		public static void init() {
 			DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE",
-					Defaults.Record.INITIAL_RECORD_SIZE * 4);
+					Defaults.Record.RECORD_INITIAL_SIZE * 4);
 			BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE",
-					Defaults.Record.INITIAL_RECORD_SIZE * 10);
+					Defaults.Record.RECORD_INITIAL_SIZE * 10);
 			DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = getIntProperties(
 					"Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
 		}
 
 		/**
 		 * Size of internal buffer of DirectEdge for storing data records when transmitted between two components. The
-		 * size should be at least INITIAL_RECORD_SIZE + 8, better several times bigger
+		 * size should be at least {@link Record#RECORD_INITIAL_SIZE}, better several times bigger
 		 */
 		public static int DIRECT_EDGE_INTERNAL_BUFFER_SIZE;
 
@@ -645,7 +647,7 @@ public final class Defaults {
 		 * Size of internal buffer of BufferedEdge for storing/caching data records. BufferedEdge is used when engine
 		 * needs to compensate fact that component reads data from two different ports and there might be some
 		 * interdependencies between the source data flows. The size should be at least
-		 * Defaults.Record.INITIAL_RECORD_SIZE*10, better several times bigger - 128kB or more
+		 * {@link Record#RECORD_INITIAL_SIZE}, better several times bigger - 128kB or more
 		 */
 		public static int BUFFERED_EDGE_INTERNAL_BUFFER_SIZE;
 

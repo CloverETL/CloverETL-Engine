@@ -146,7 +146,7 @@ public class Concatenate extends Node {
 
 		super.init();
 
-        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 
         if (recordBuffer == null) {
             throw new ComponentNotReadyException("Error allocating a data record buffer!");

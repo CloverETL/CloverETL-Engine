@@ -75,14 +75,14 @@ public class DirectDynamicRecordBuffer {
 		tmpFile.deleteOnExit();
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
 	public IndexKey writeRaw(DataRecord record) throws IOException {
         try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See Record.RECORD_LIMIT_SIZE parameter)");
         }
         recordBuffer.flip();
 		
@@ -105,7 +105,7 @@ public class DirectDynamicRecordBuffer {
 		try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)");
         }
         recordBuffer.flip();
         

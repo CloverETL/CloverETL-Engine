@@ -77,14 +77,14 @@ public class DataFormatter implements Formatter {
 	
 	public DataFormatter(){
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.FIELD_SIZE_LIMIT);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.FIELD_INITIAL_SIZE, Defaults.Record.FIELD_LIMIT_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		metadata = null;
 	}
 	
 	public DataFormatter(String charEncoder){
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
-		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.FIELD_SIZE_LIMIT);
+		fieldBuffer = CloverBuffer.allocateDirect(Defaults.Record.FIELD_INITIAL_SIZE, Defaults.Record.FIELD_LIMIT_SIZE);
 		charSet = charEncoder;
 		metadata = null;
 	}
@@ -280,7 +280,7 @@ public class DataFormatter implements Formatter {
 	 */
 	private void initFieldFiller() {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
+		char[] fillerArray = new char[Defaults.Record.FIELD_INITIAL_SIZE];
 		Arrays.fill(fillerArray, DEFAULT_FILLER_CHAR);
 
 		try {

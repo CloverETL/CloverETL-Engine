@@ -51,7 +51,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 	public LogOutByteChannel(Log logger, String charsetName){
 		this.logger = logger;
 		decoder = Charset.forName(charsetName).newDecoder();
-		charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE);
+		charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
 	}
 
 	/* (non-Javadoc)

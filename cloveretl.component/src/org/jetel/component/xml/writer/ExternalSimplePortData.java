@@ -62,7 +62,7 @@ public class ExternalSimplePortData extends ExternalPortData {
 		try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)");
         }
         byte[] serializedValue = new byte[recordBuffer.position()];
         recordBuffer.flip();

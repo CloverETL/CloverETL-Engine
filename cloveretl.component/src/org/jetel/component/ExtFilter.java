@@ -171,7 +171,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		boolean isData=true;
         DataRecord record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
         record.init();
-        CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+        CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
         
 		while(isData && runIt){
 			try{

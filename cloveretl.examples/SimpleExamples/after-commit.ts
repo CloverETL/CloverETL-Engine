@@ -4,7 +4,7 @@
 <TestScenario ident="simple-examples" description="Engine simple examples" useJMX="true">    
 
 
-<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf" defaultProperties="changedParams">	 
+<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
      <Property name="-P:DEFAULT_INTERNAL_IO_BUFFER_SIZE" value="89152" />
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
 	 <FlatFile outputFile="data-tmp/CzechRepublic.xml" supposedFile="supposed-out/CzechRepublic.HttpConnector.xml"/>

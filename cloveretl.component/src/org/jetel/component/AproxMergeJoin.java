@@ -843,7 +843,7 @@ public class AproxMergeJoin extends Node {
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
 	/**

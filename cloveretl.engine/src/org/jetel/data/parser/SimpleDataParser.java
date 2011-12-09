@@ -191,7 +191,7 @@ public class SimpleDataParser extends AbstractTextParser {
 		numFields = cfg.getMetadata().getNumFields();
 		cb = new char[8192];
 		isEOF = false;
-		fieldBuffer = new StringBuilder(Defaults.Record.INITIAL_FIELD_SIZE);
+		fieldBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
 
 		// create array of delimiters & initialize them
 		delimiters = new char[numFields][];
@@ -368,7 +368,7 @@ public class SimpleDataParser extends AbstractTextParser {
 					}
 				}
 
-				if (fieldBuffer.length() > Defaults.Record.RECORD_SIZE_LIMIT) {
+				if (fieldBuffer.length() > Defaults.Record.RECORD_LIMIT_SIZE) {
 					parsingErrorFound("Field delimiter was not found", record, fieldIndex);
 					return null;
 				}

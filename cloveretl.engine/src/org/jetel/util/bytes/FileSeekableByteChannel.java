@@ -118,7 +118,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 		
     	long shift = 0;
 		
-		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		CharBuffer charBuffer = CharBuffer.allocate(1);	// small buffer, so that byte channel position can be determined for each character
 		
 		CharsetDecoder charsetDecoder = channelCharset.newDecoder();
@@ -128,7 +128,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 
 		tmpByteBuffer.clear();
     	while (!endOfInput) { // one iteration for each byte buffer filling
-        	if (shift > Defaults.Record.RECORD_SIZE_LIMIT) {
+        	if (shift > Defaults.Record.RECORD_LIMIT_SIZE) {
         		throw new IOException("No record delimiter was found during file partitioning.");
         	}
         	
