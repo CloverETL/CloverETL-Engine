@@ -653,7 +653,15 @@ public abstract class CloverBuffer {
      */
     protected ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
     	memoryAllocated(capacity);
-    	return direct ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
+    	if (direct) {
+    		try {
+    			return ByteBuffer.allocateDirect(capacity);
+    		} catch (OutOfMemoryError e) {
+        		return ByteBuffer.allocate(capacity);
+    		}
+    	} else {
+    		return ByteBuffer.allocate(capacity);
+    	}
     }
 
     /**
