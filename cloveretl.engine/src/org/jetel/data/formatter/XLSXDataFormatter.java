@@ -352,7 +352,9 @@ public class XLSXDataFormatter extends XLSFormatter {
 			}
 
 			try {
-				workbook.write(outputStream);
+				if (outputStream != null) {
+					workbook.write(outputStream);
+				}
 			} catch (IOException exception) {
 				logger.error("Error closing the output stream!", exception);
 			}
