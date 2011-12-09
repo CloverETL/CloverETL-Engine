@@ -212,7 +212,12 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 	public static void checkDataRecord(DataRecord dataRecord, int seed, boolean big) {
 		for (DataField field : dataRecord) {
 			if (field instanceof StringDataField) {
-				if (!field.getValue().toString().equals(field.getMetadata().getName() + " data " + (big ? getBigString() : "") + (seed))) {
+				if (!field
+						.getValue()
+						.toString()
+						.equals(field
+								.getMetadata()
+								.getName() + " data " + (big ? getBigString() : "") + (seed))) {
 					throw new RuntimeException("unexpected record");
 				}
 				seed++;
