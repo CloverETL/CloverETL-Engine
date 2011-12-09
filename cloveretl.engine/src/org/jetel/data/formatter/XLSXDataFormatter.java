@@ -106,8 +106,13 @@ public class XLSXDataFormatter extends XLSFormatter {
 
 		try {
     		if (dataTarget instanceof Object[]) {
+    			Object[] args = (Object[])dataTarget;
     			URL url = (URL) ((Object[])dataTarget)[0];
         		String fName = (String) ((Object[])dataTarget)[1];
+        		if (args.length >= 3 && args[2] instanceof de.schlichtherle.io.FileOutputStream) {
+        			((de.schlichtherle.io.FileOutputStream) args[2]).close();
+        		}
+
         		// input stream
         		try {
             		InputStream inputStream = FileUtils.getInputStream(url, fName);
