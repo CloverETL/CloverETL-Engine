@@ -34,6 +34,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 /* JDBC_4_ANT_KEY_BEGIN */
 import java.sql.NClob;
 import java.sql.SQLClientInfoException;
@@ -622,6 +623,36 @@ public class DefaultConnection implements Connection {
 	public void setClientInfo(String name, String value)
 			throws SQLClientInfoException {
 		connection.setClientInfo(name, value);
+	}
+
+	@Override
+	public void setSchema(String schema) throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getSchema() throws SQLException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void abort(Executor executor) throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int getNetworkTimeout() throws SQLException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
   
 	/* JDBC_4_ANT_KEY_END */
