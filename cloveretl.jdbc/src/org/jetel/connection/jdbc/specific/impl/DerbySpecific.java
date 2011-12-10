@@ -65,6 +65,7 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 		return true;
 	}
 	
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BOOLEAN :
@@ -103,6 +104,7 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 		}
 	}
 	
+	@Override
 	public boolean isSchemaRequired() {
 		return true;
 	}

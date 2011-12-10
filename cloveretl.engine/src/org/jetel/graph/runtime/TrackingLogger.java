@@ -172,6 +172,7 @@ public class TrackingLogger implements NotificationListener {
 		logger.info("------------------------------** End of Summary **---------------------------");
 	}
 
+	@Override
 	public void handleNotification(Notification notification, Object handback) {
 		if(notification.getType().equals(CloverJMX.GRAPH_STARTED)) {
 			//printProcessingStatus(false);

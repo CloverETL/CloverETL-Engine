@@ -390,10 +390,12 @@ public class XPathParser implements Parser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		throw new JetelException("The method is not supported for this parser.");
 	}
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		try {
 			recordResult = xpathContext.getNext();
@@ -419,6 +421,7 @@ public class XPathParser implements Parser {
 		init();
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		try {
 			// parse xml mapping
@@ -434,14 +437,17 @@ public class XPathParser implements Parser {
 		    // error handler
 		    if (exceptionHandler instanceof StrictParserExceptionHandler) {
 				xPathEvaluator.getConfiguration().setErrorListener(new ErrorListener() {
+					@Override
 					public void warning(TransformerException exception)
 							throws TransformerException {
 							throw exception;
 					}
+					@Override
 					public void fatalError(TransformerException exception)
 							throws TransformerException {
 						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage()));
 					}
+					@Override
 					public void error(TransformerException exception)
 							throws TransformerException {
 						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage(), exception));
@@ -471,12 +477,14 @@ public class XPathParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		InputStream input;
 		if (inputDataSource instanceof InputStream) {
@@ -496,6 +504,7 @@ public class XPathParser implements Parser {
 	 *
 	 *@since    May 2, 2002
 	 */
+	@Override
 	public void close() {
 	}
 
@@ -503,6 +512,7 @@ public class XPathParser implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
+	@Override
 	public PolicyType getPolicyType() {
 		if (this.exceptionHandler != null) {
 			return this.exceptionHandler.getType();
@@ -511,11 +521,13 @@ public class XPathParser implements Parser {
 		}
 	}
 
-    public void setExceptionHandler(IParserExceptionHandler handler) {
+    @Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
 
-    public IParserExceptionHandler getExceptionHandler() {
+    @Override
+	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
 
@@ -525,6 +537,7 @@ public class XPathParser implements Parser {
 	 * @return Number of successfully skipped records.
 	 * @throws JetelException
 	 */
+	@Override
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
@@ -564,17 +577,20 @@ public class XPathParser implements Parser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		init();
 		//xpathContext.reset();
 		//isReseted = true;
 	}
 
+	@Override
 	public Object getPosition() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public void movePosition(Object position) {
 		// TODO Auto-generated method stub
 		

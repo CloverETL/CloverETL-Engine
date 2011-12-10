@@ -223,7 +223,8 @@ public class OracleDataWriter extends BulkLoader {
      *
      * @since    April 4, 2002
      */
-    public Result execute() throws Exception {
+    @Override
+	public Result execute() throws Exception {
     	super.execute();
 		int processExitValue = 0;
 		boolean unstableStdinIsUsed = false;
@@ -351,7 +352,8 @@ public class OracleDataWriter extends BulkLoader {
      * @exception  ComponentNotReadyException  Description of the Exception
      * @since                                  April 4, 2002
      */
-    public void init() throws ComponentNotReadyException {
+    @Override
+	public void init() throws ComponentNotReadyException {
         if (isInitialized()) return;
         super.init();
   
@@ -539,7 +541,8 @@ public class OracleDataWriter extends BulkLoader {
      * @return    Description of the Returned Value
      * @since     May 21, 2002
      */
-    public void toXML(Element xmlElement) {
+    @Override
+	public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
       
         xmlElement.setAttribute(XML_SQLLDR_ATTRIBUTE, loadUtilityPath);
@@ -780,7 +783,8 @@ public class OracleDataWriter extends BulkLoader {
         return status;
     }
     
-    public String getType(){
+    @Override
+	public String getType(){
         return COMPONENT_TYPE;
     }
 

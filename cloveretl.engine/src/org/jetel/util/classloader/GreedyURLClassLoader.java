@@ -93,6 +93,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
         this.greedy = greedy;
     }
 
+	@Override
 	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 		boolean useGreedyAlgorithm = greedy;
 		
@@ -166,6 +167,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
 		}
 	}
 
+	@Override
 	public synchronized void addURL(URL urlToAdd) {
 		super.addURL(urlToAdd);
 	}

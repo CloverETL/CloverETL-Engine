@@ -61,11 +61,13 @@ public class CloverIntegerConvertor implements IGenericConvertor {
         return result;
     }
 
-    public Object parse(String input) throws DataConversionException {
+    @Override
+	public Object parse(String input) throws DataConversionException {
         return parseXsdIntToInteger(input);
     }
 
-    public String print(Object obj) throws DataConversionException {
+    @Override
+	public String print(Object obj) throws DataConversionException {
         if (!(obj instanceof Integer)) {
             throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
         }
@@ -73,10 +75,12 @@ public class CloverIntegerConvertor implements IGenericConvertor {
         return printIntegerToXsdInt((Integer) obj);
     }
 
+	@Override
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.INTEGER_TYPE.equals(cloverDataTypeCriteria);
 	}
 	
+	@Override
 	public boolean supportsExternalSystemType(String externalTypeCriteria) {
 		return true;
 	}

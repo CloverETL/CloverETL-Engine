@@ -134,6 +134,7 @@ public class SimpleDataGenerator extends DataGenerator {
 		this.recordsNumber = recordsNumber;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
@@ -183,6 +184,7 @@ public class SimpleDataGenerator extends DataGenerator {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_PATTERN_ATTRIBUTE, pattern);

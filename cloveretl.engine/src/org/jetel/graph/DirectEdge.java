@@ -325,6 +325,7 @@ public class DirectEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
+	@Override
 	public void eof() throws InterruptedException {
 		if (writeBuffer.remaining() < ByteBufferUtils.SIZEOF_INT) {
             flushWriteBuffer();
@@ -339,6 +340,7 @@ public class DirectEdge extends EdgeBase {
         //do nothing
     }
     
+	@Override
 	public boolean hasData() {
         if(isClosed) return false;
         

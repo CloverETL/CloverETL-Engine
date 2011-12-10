@@ -95,6 +95,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getParentGraphTracking()
 	 */
+	@Override
 	public GraphTracking getParentGraphTracking() {
 		return parentGraphDetail;
 	}
@@ -102,6 +103,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getPhaseNum()
 	 */
+	@Override
 	public int getPhaseNum() {
 		return phaseNum;
 	}
@@ -109,6 +111,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getStartTime()
 	 */
+	@Override
 	public long getStartTime() {
 		return startTime;
 	}
@@ -116,6 +119,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getEndTime()
 	 */
+	@Override
 	public long getEndTime() {
 		return endTime;
 	}
@@ -123,6 +127,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getMemoryUtilization()
 	 */
+	@Override
 	public long getMemoryUtilization() {
 		return memoryUtilization;
 	}
@@ -130,6 +135,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getResult()
 	 */
+	@Override
 	public Result getResult() {
 		return result;
 	}
@@ -137,6 +143,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getExecutionTime()
 	 */
+	@Override
 	public long getExecutionTime() {
 		if (startTime == -1) {
 			return -1;
@@ -150,6 +157,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking()
 	 */
+	@Override
 	public NodeTracking[] getNodeTracking() {
 		return nodesDetails;
 	}
@@ -157,6 +165,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking(java.lang.String)
 	 */
+	@Override
 	public NodeTracking getNodeTracking(String nodeID) {
 		for (NodeTrackingDetail nodeDetail : nodesDetails) {
 			if(nodeID.equals(nodeDetail.getNodeID())) {

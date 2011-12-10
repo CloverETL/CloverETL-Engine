@@ -34,6 +34,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#initWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
+	@Override
 	public void initWatchDog(WatchDog watchDog) {
 		watchDog.setThreadManager(this);
 		watchDog.init();
@@ -42,6 +43,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#executeWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
+	@Override
 	public Future<Result> executeWatchDog(WatchDog watchDog) {
 		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
 		Thread watchdogThread = new Thread(futureTask, "WatchDog");
@@ -53,6 +55,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#executeNode(java.lang.Runnable)
 	 */
+	@Override
 	public void executeNode(Runnable node) {
 		Thread nodeThread = new Thread(node);
 		nodeThread.setContextClassLoader(node.getClass().getClassLoader());
@@ -76,6 +79,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#getFreeThreadsCount()
 	 */
+	@Override
 	public int getFreeThreadsCount() {
 		return Integer.MAX_VALUE;
 	}
@@ -83,6 +87,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#releaseNodeThreads(int)
 	 */
+	@Override
 	public void releaseNodeThreads(int nodeThreadsToRelease) {
 		// DO NOTHING
 	}
@@ -90,6 +95,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#free()
 	 */
+	@Override
 	public void free() {
 		// DO NOTHING
 	}
@@ -97,6 +103,7 @@ public class SimpleThreadManager implements IThreadManager {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#freeNow()
 	 */
+	@Override
 	public void freeNow() {
 		// DO NOTHING
 	}

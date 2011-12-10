@@ -53,7 +53,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     }
 
     
-    public Map<String, List<TLFunctionDescriptor>> getAllFunctions() {
+    @Override
+	public Map<String, List<TLFunctionDescriptor>> getAllFunctions() {
     	return Collections.unmodifiableMap(library);
     }
     
@@ -81,7 +82,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	registration.add(prototype);
     }
     
-    public void init() {
+    @Override
+	public void init() {
     	Class<? extends TLFunctionLibrary> clazz = getClass();
     	HashSet<String> initMethods = new HashSet<String>();
     	

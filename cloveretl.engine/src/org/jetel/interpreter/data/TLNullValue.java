@@ -46,10 +46,12 @@ public class TLNullValue extends TLValue {
 		return null;
 	}
 	
+	@Override
 	public Date getDate(){
 		throw new RuntimeException("this is a TLNull value");
 	}
 	    
+	@Override
 	public Numeric getNumeric(){
 	    throw new RuntimeException("this is a TLNull value");
 	}

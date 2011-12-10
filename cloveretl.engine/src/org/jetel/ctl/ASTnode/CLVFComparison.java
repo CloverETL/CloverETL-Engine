@@ -45,6 +45,7 @@ public class CLVFComparison extends SimpleNode {
 	}
 
 	/** Accept the visitor. * */
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
 			return visitor.visit(this, data);
@@ -58,6 +59,7 @@ public class CLVFComparison extends SimpleNode {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return super.toString() + " - " + TransformLangParserConstants.tokenImage[operator];
 	}

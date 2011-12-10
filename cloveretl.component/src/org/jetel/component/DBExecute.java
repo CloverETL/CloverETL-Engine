@@ -284,6 +284,7 @@ public class DBExecute extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September 27, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -1010,6 +1011,7 @@ public class DBExecute extends Node {
         return status;
    }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

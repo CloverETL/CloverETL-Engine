@@ -94,6 +94,7 @@ abstract public class Jetel2LdapData {
 		/**
 		 * 
 		 */
+		@Override
 		public void setAttribute(Attribute attr, DataField df)
 				throws BadDataFormatException {
 
@@ -126,6 +127,7 @@ abstract public class Jetel2LdapData {
 			}
 		}
 
+		@Override
 		public Object[] getvalues(DataField df) {
 			String stringValues = df.getValue().toString();
 			/*
@@ -151,6 +153,7 @@ abstract public class Jetel2LdapData {
 		/**
 		 * 
 		 */
+		@Override
 		public void setAttribute(Attribute attr, DataField df) throws BadDataFormatException {
 
 			/*
@@ -176,6 +179,7 @@ abstract public class Jetel2LdapData {
 			}
 		}
 
+		@Override
 		public Object[] getvalues(DataField df) {
 			return new Object[] { df.getValue() };
 		}

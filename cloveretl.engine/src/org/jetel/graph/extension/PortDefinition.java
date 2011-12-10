@@ -93,7 +93,8 @@ public class PortDefinition {
     public PortDefinition() {
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         return "PortDefinition#" + portIndex + " key:" + keysAttr + " parentKey:" + parentKeysAttr + " relationKeysStrings:" + relationKeysStrings;
     }
 

@@ -44,10 +44,12 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 		sourceRec = new DataRecord[1];
 	}
 
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		// do nothing
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		
 		// we will be running in one-function-a-time so we need global scope active
@@ -76,6 +78,7 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 			executor.execute();
 	}
 	
+	@Override
 	public boolean isValid(DataRecord source) {
 		sourceRec[0] = source;
 		// pass source as function parameter, but also as a global record

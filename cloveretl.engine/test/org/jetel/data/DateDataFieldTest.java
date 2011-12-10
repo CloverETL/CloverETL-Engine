@@ -40,6 +40,7 @@ public class DateDataFieldTest extends CloverTestCase {
 	private DateDataField aDateDataField4 = null;
 
 
+@Override
 protected void setUp() { 
 	initEngine();
 
@@ -69,6 +70,7 @@ protected void setUp() {
 
 
 
+@Override
 protected void tearDown() {
 	aDateDataField1 = null;
 	aDateDataField2 = null;

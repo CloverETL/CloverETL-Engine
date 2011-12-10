@@ -87,7 +87,8 @@ public class ComponentNotReadyException extends Exception {
       this.attributeName = attributeName;
   }
   
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer message = new StringBuffer(80);
         if (graphElement!=null){
             message.append("Element [").append(graphElement.getId()).append(':');

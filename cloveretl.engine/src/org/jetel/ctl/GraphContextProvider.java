@@ -44,6 +44,7 @@ public class GraphContextProvider implements TLContextProvider {
 		this.graph = graph;
 	}
 	
+	@Override
 	public List<DataRecordMetadata> getDataRecordMetadata() {
 		final List<DataRecordMetadata> meta = new LinkedList<DataRecordMetadata>();
 		final Iterator<String> mi = graph.getDataRecordMetadata();
@@ -54,10 +55,12 @@ public class GraphContextProvider implements TLContextProvider {
 		return meta;
 	}
 	
+	@Override
 	public Dictionary getDictionary() {
 		return graph.getDictionary();
 	}
 	
+	@Override
 	public List<LookupTable> getLookupTables() {
 		final List<LookupTable> lookups = new LinkedList<LookupTable>();
 		final Iterator<String> li = graph.getLookupTables();
@@ -68,6 +71,7 @@ public class GraphContextProvider implements TLContextProvider {
 		return lookups;
 	}
 	
+	@Override
 	public List<Sequence> getSequences() {
 		final Iterator<String> si = graph.getSequences();
 		final List<Sequence> sequences = new LinkedList<Sequence>();

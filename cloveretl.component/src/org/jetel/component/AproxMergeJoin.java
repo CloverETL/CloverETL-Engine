@@ -731,6 +731,7 @@ public class AproxMergeJoin extends Node {
 	
 
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
@@ -1010,6 +1011,7 @@ public class AproxMergeJoin extends Node {
         }
 	}
  
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
@@ -1240,7 +1242,8 @@ public class AproxMergeJoin extends Node {
         }
 	}
 
-    public String getType(){
+    @Override
+	public String getType(){
 		return COMPONENT_TYPE;
 	}
 

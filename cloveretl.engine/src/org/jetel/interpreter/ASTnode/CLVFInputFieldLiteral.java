@@ -44,6 +44,7 @@ public class CLVFInputFieldLiteral extends SimpleNode {
 	}
 	
 	/** Accept the visitor. **/
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
 	}

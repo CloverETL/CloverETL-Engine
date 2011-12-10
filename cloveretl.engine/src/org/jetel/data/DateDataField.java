@@ -112,6 +112,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	    this.dateFormatter = dateFormatter;
 	}
 
+	@Override
 	public DataField duplicate(){
 	    DateDataField newField = new DateDataField(metadata, value, dateFormatter);
 	    newField.setNull(isNull());
@@ -123,6 +124,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DateDataField){
 	        if (!fromField.isNull){
@@ -145,6 +147,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @exception  BadDataFormatException  Description of the Exception
 	 * @since                              April 23, 2002
 	 */
+	@Override
 	public void setValue(Object _value) throws BadDataFormatException {
         if(_value == null) {
             setNull(true);
@@ -209,6 +212,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @return    The Value value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public Object getValue() {
 		return isNull ? null : value;
 	}
@@ -216,7 +220,8 @@ public class DateDataField extends DataField implements Comparable<Object> {
     /**
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
-    public Object getValueDuplicate() {
+    @Override
+	public Object getValueDuplicate() {
         return isNull ? null : value.clone();
     }
 
@@ -236,6 +241,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  isNull  The new Null value
 	 * @since          October 29, 2002
 	 */
+	@Override
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (this.isNull) {
@@ -243,7 +249,8 @@ public class DateDataField extends DataField implements Comparable<Object> {
 		}
 	}
     
-    public void reset(){
+    @Override
+	public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
             }else if (metadata.isDefaultValueSet()){
@@ -264,6 +271,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @return    The Type value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public char getType() {
 		return DataFieldMetadata.DATE_FIELD;
 	}
@@ -277,6 +285,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @return    Description of the Returned Value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public String toString() {
 		if (value == null) {
 			return metadata.getNullValue();
@@ -285,6 +294,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 		return dateFormatter.format(value);
 	}
 
+	@Override
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -313,6 +323,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          April 23, 2002
 	 */
+	@Override
 	public void serialize(CloverBuffer buffer) {
 		try {
 			if (value != null) {
@@ -332,6 +343,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          April 23, 2002
 	 */
+	@Override
 	public void deserialize(CloverBuffer buffer) {
 		long tmpl = buffer.getLong();
 		if (tmpl == DATE_NULL_VAL_SERIALIZED) {
@@ -354,6 +366,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @return      Description of the Returned Value
 	 * @since       April 23, 2002
 	 */
+	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
@@ -375,6 +388,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @param  obj  Description of the Parameter
 	 * @return      Description of the Return Value
 	 */
+	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
 	    
@@ -393,6 +407,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	}
 
 	
+	@Override
 	public int hashCode(){
 		if (isNull) return 0;
 		return value.hashCode();
@@ -404,6 +419,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField
 	 */
+	@Override
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
 	}

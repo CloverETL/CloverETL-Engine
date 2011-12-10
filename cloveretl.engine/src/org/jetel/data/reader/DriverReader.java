@@ -54,6 +54,7 @@ public class DriverReader implements InputReader {
 		blocked = false;
 	}
 	
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
 		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
@@ -63,10 +64,12 @@ public class DriverReader implements InputReader {
 		blocked = false;
 	}
 	
+	@Override
 	public void free() {
 		inPort = null;
 	}
 
+	@Override
 	public boolean loadNextRun() throws InterruptedException, IOException {
 		if (inPort == null) {
 			return false;
@@ -101,14 +104,17 @@ public class DriverReader implements InputReader {
 		return true;
 	}
 
+	@Override
 	public void rewindRun() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public DataRecord getSample() {
 		return blocked ? rec[CURRENT] : rec[NEXT];
 	}
 
+	@Override
 	public DataRecord next() throws IOException, InterruptedException {
 		if (blocked || inPort == null) {
 			return null;
@@ -139,10 +145,12 @@ public class DriverReader implements InputReader {
 		rec[NEXT] = tmp;
 	}
 
+	@Override
 	public RecordKey getKey() {
 		return key;
 	}
 
+	@Override
 	public int compare(InputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
@@ -155,6 +163,7 @@ public class DriverReader implements InputReader {
 		return lastCompare = key.compare(other.getKey(), rec1, rec2);
 	}
 
+	@Override
 	public boolean hasData() {
 		return rec[NEXT] != null;
 	}		
@@ -164,6 +173,7 @@ public class DriverReader implements InputReader {
 		return getSample().toString();
 	}
 
+	@Override
 	public InputOrdering getOrdering() {
 		return inputOrdering;
 	}

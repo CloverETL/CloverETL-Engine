@@ -96,6 +96,7 @@ public class DataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init(DataRecordMetadata _metadata) {
 		// create array of delimiters & initialize them
 		// create array of field sizes & initialize them
@@ -145,6 +146,7 @@ public class DataFormatter implements Formatter {
 		}
 	}
 
+	@Override
 	public void reset() {
 		if (writer != null && writer.isOpen()) {
 			try{
@@ -160,7 +162,8 @@ public class DataFormatter implements Formatter {
 	/* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) throws IOException {
+    @Override
+	public void setDataTarget(Object out) throws IOException {
         close();
         
         // create buffered output stream reader 
@@ -179,6 +182,7 @@ public class DataFormatter implements Formatter {
 	 *
 	 * @since    March 28, 2002
 	 */
+	@Override
 	public void close() throws IOException {
 		if (writer == null || !writer.isOpen()) {
 			return;
@@ -188,6 +192,7 @@ public class DataFormatter implements Formatter {
 		writer = null;
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 		writeFooter();
@@ -200,6 +205,7 @@ public class DataFormatter implements Formatter {
 	 *
 	 * @since    March 28, 2002
 	 */
+	@Override
 	public void flush() throws IOException {
 		dataBuffer.flip();
 		writer.write(dataBuffer.buf());
@@ -212,6 +218,7 @@ public class DataFormatter implements Formatter {
 	 * @return Number of written bytes.
 	 * @throws IOException
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		int size;
 		int encLen = 0;
@@ -290,6 +297,7 @@ public class DataFormatter implements Formatter {
 		}
 	}
 
+	@Override
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
@@ -306,6 +314,7 @@ public class DataFormatter implements Formatter {
 			return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {

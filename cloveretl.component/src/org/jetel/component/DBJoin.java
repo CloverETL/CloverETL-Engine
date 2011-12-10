@@ -218,6 +218,7 @@ public class DBJoin extends Node {
 		this.transformation = transform;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -426,6 +427,7 @@ public class DBJoin extends Node {
         return status;
     }
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -600,6 +602,7 @@ public class DBJoin extends Node {
 		this.errorActionsString = string;		
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 

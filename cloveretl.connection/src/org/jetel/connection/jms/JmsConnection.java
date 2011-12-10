@@ -201,6 +201,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}*/
 
+	@Override
 	synchronized public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
 		super.init();
@@ -342,6 +343,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
+	@Override
 	synchronized public void free() {
         if(!isInitialized()) return;
         super.free();
@@ -379,6 +381,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		initSession();
 	}
 	
+	@Override
 	public synchronized void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
@@ -432,6 +435,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		}
 	}
 	
+	@Override
 	public DataRecordMetadata createMetadata(Properties parameters) {
 		throw new UnsupportedOperationException("JMS connection doesn't support operation 'createMetadata()'");
 	}
@@ -439,6 +443,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         //TODO

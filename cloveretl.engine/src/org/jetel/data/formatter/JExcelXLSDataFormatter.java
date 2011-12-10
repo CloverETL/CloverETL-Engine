@@ -114,6 +114,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
+	@Override
 	public void close() {
 		if (!open) return;
 		
@@ -148,6 +149,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
+	@Override
 	public void flush() throws IOException {
 		if (wb.getNumberOfSheets() > 0) {
 			wb.write();
@@ -157,6 +159,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.XLSFormatter#prepareSheet()
 	 */
+	@Override
 	public void prepareSheet(){
 		String tmpName = currentSheetName != null ? currentSheetName : sheetName;
 		if (!StringUtils.isEmpty(tmpName) && tmpName.length() > MAX_SHEET_NAME_LENGTH) {
@@ -260,6 +263,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
 	 */
+	@Override
 	public void setDataTarget(Object outputDataTarget) {
 		close();
 		Workbook oldWb = null;
@@ -326,6 +330,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         }
 	}
 
+	@Override
 	public void reset() {
 		if (open) {
 			try {
@@ -363,6 +368,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		if (multiSheetWriting) {
 			prepareSheet(record);

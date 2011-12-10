@@ -42,6 +42,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	private FileInputStream in2 = null;
 	private DataRecordMetadata metadata = null;
 	
+	@Override
 	protected void setUp() throws FileNotFoundException { 
 		initEngine();
 		
@@ -60,6 +61,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 		record.init();
 	}
 	
+	@Override
 	protected void tearDown() {
 		aFixLenDataParser.close();
 		aFixLenDataParser = null;

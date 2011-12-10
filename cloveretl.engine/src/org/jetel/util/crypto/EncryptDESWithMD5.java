@@ -41,7 +41,8 @@ public class EncryptDESWithMD5 implements EncryptAlgorithm {
 
     private static Log logger = LogFactory.getLog(EncryptDESWithMD5.class);
 
-    public SecretKey createSecretKey(String password) {
+    @Override
+	public SecretKey createSecretKey(String password) {
         PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray());
         SecretKeyFactory keyFac;
         try {
@@ -56,7 +57,8 @@ public class EncryptDESWithMD5 implements EncryptAlgorithm {
         }
     }
 
-    public Object createAlgorithmParameters() {
+    @Override
+	public Object createAlgorithmParameters() {
         //Salt
         byte[] salt = {
             (byte)0xc7, (byte)0x73, (byte)0x21, (byte)0x8c,
@@ -70,7 +72,8 @@ public class EncryptDESWithMD5 implements EncryptAlgorithm {
         return new PBEParameterSpec(salt, count);
     }
 
-    public Cipher createCipher() {
+    @Override
+	public Cipher createCipher() {
         try {
             return Cipher.getInstance("PBEWithMD5AndDES");
         } catch (NoSuchAlgorithmException e) {

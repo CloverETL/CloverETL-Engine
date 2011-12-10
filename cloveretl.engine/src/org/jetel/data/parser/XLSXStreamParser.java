@@ -585,6 +585,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			}
 		}
 
+		@Override
 		public void setFieldValue(int fieldIndex, CellValue cell) {
 			setFieldValue(fieldIndex, cell.type, cell.value, cell.styleIndex);
 		}

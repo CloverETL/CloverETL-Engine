@@ -33,7 +33,8 @@ public class CompareTest extends CloverTestCase {
     
     private RuleBasedCollator col=(RuleBasedCollator)RuleBasedCollator.getInstance();
     
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
     }
 

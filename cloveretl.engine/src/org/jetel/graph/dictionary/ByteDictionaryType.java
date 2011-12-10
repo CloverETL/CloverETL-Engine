@@ -99,6 +99,7 @@ public class ByteDictionaryType extends DictionaryType {
 		}
 	}
 	
+	@Override
 	public boolean isValidValue(Object value) {
 		return value == null 
 		|| value instanceof byte[];

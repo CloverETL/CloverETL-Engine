@@ -80,6 +80,7 @@ public class OracleConnection extends DefaultConnection {
 		return stmt;
 	}
 	
+	@Override
 	protected void optimizeConnection(OperationType operationType) {
 		switch (operationType) {
 		case READ:

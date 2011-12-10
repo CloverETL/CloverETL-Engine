@@ -41,26 +41,31 @@ public abstract class DataRecord2JmsMsgBase extends AbstractDataTransform implem
 	protected DataRecordMetadata metadata;
 	protected Session session;
 
+	@Override
 	public void init(DataRecordMetadata metadata, Session session, Properties props) throws ComponentNotReadyException {
 		errMsg = null;
 		this.metadata = metadata;
 		this.session = session;
 	}
 
+	@Override
 	public void preExecute(Session session) throws ComponentNotReadyException {
 		super.preExecute();
 		this.session = session;
 	}
 
+	@Override
 	@Deprecated
 	public Message createLastMsg(DataRecord record) throws JMSException {
 		return createLastMsg();
 	}
 
+	@Override
 	public Message createLastMsg() throws JMSException {
 		return null;
 	}
 
+	@Override
 	public String getErrorMsg() {
 		return errMsg;
 	}

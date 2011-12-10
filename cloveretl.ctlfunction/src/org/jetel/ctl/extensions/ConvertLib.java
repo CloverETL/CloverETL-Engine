@@ -207,10 +207,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Num2StrFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			num2strInit(context);
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
 				String locale;
@@ -250,10 +252,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	// DATE2STR
 	class Date2StrFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			date2strInit(context);
 		}
 	
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
 			
@@ -287,10 +291,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	// STR2DATE
 	class Str2DateFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			str2dateInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
 			
@@ -326,11 +332,13 @@ public class ConvertLib extends TLFunctionLibrary {
 	// DATE2NUM
 	class Date2NumFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			date2numInit(context);
 		}
 
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 2 && context.getParams()[2].isString()) {
 				final String locale = stack.popString();
@@ -425,10 +433,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Str2IntegerFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			str2integerInit(context);
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
 				String locale = null;
@@ -487,10 +497,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Str2LongFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			str2longInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
 				String locale = null;
@@ -545,10 +557,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Str2DoubleFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			str2doubleInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
 				String locale = null;
@@ -599,10 +613,12 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Str2DecimalFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			str2decimalInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
 				String locale;
@@ -632,9 +648,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	class Long2IntegerFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(long2integer(context, stack.popLong()));
 		}
@@ -649,9 +667,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Double2IntegerFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(double2integer(context, stack.popDouble()));
 		}
@@ -669,9 +689,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	class Decimal2IntegerFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(decimal2integer(context, stack.popDecimal()));
 		}
@@ -687,9 +709,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	class Double2LongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(double2long(context, stack.popDouble()));
 		}
@@ -708,9 +732,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	class Decimal2LongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(decimal2long(context, stack.popDecimal()));
 		}
@@ -730,9 +756,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	class Decimal2DoubleFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(decimal2double(context, stack.popDecimal()));
 		}
@@ -761,9 +789,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	class Num2BoolFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
 				stack.push(num2bool(context, stack.popInt()));
@@ -787,9 +817,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BOOL2NUM
 	class Bool2NumFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(bool2num(context, stack.popBoolean()));
 		}
@@ -810,9 +842,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// STR2BOOL
 	class Str2BoolFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(str2bool(context, stack.popString()));
 		}
@@ -857,9 +891,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// toString
 	class ToStringFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(toStringInternal(stack.pop()));
 		}
@@ -875,9 +911,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// Long2Date
 	class Long2DateFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(long2date(context, stack.popLong()));
 		}
@@ -893,9 +931,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// DATE2LONG
 	class Date2LongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(date2long(context, stack.popDate()));
 		}
@@ -910,9 +950,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BASE64BYTE
 	public class Base64ByteFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(base64byte(context, stack.popString()));
 		}
@@ -926,9 +968,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BYTE2BASE64
 	public class Byte2Base64Function implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(byte2base64(context, stack.popByteArray()));
 		}
@@ -946,9 +990,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BITS2STR
 	public class Bits2StrFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(bits2str(context, stack.popByteArray()));
 		}
@@ -968,9 +1014,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// STR2BITS
 	public class Str2BitsFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(str2bits(context, stack.popString()));
 		}
@@ -989,9 +1037,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BYTE2HEX
 	public class Byte2HexFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(byte2hex(context, stack.popByteArray()));
 		}
@@ -1011,9 +1061,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// HEX2BYTE
 	public class Hex2ByteFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(hex2byte(context, stack.popString()));
 		}
@@ -1031,9 +1083,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// LONG2PACKEDDECIMAL
 	class Long2PackedDecimalFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(long2packDecimal(context, stack.popLong()));
 		}
@@ -1047,9 +1101,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// PACKEDDECIMAL2LONG
 	class PackedDecimal2LongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(packDecimal2long(context, stack.popByteArray()));
 		}
@@ -1067,9 +1123,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	//XML2JSON
 	class Xml2JsonFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String input = stack.popString();
 			stack.push(xml2json(context, input));
@@ -1089,9 +1147,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	//JSON2XML
 	class Json2XmlFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String input = stack.popString();
 			stack.push(json2xml(context, input));
@@ -1112,9 +1172,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// MD5
 	class MD5Function implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if(context.getParams()[0].isString()) {
 				stack.push(md5(context, stack.popString()));
@@ -1137,9 +1199,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// SHA
 	class SHAFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if(context.getParams()[0].isString()) {
 				stack.push(sha(context, stack.popString()));
@@ -1160,9 +1224,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	//GETFIELDNAME
 	class GetFieldNameFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer position = stack.popInt();
 			DataRecord record = stack.popRecord();
@@ -1181,9 +1247,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	//GETFIELDTYPE
 	class GetFieldTypeFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer position = stack.popInt();
 			DataRecord record = stack.popRecord();

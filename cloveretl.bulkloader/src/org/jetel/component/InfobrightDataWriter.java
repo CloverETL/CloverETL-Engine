@@ -202,6 +202,7 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
 	
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
@@ -299,6 +300,7 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.Node#init()
 	 */
 	
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -485,6 +487,7 @@ public class InfobrightDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#execute()
 	 */
+	@Override
 	public Result execute() throws Exception {
 		Result result = Result.RUNNING;
 		Throwable ex = null;
@@ -542,6 +545,7 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
 	 */
 	
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 	}
@@ -573,6 +577,7 @@ public class InfobrightDataWriter extends Node {
 		logger.warn(this.getId() + " finished with error. The current transaction has been rolled back.");
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -581,6 +586,7 @@ public class InfobrightDataWriter extends Node {
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
 	
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_DATA_FORMAT_ATTRIBUTE, dataFormat.getBhDataFormat());
@@ -749,6 +755,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#debug(java.lang.String)
 		 */
 		
+		@Override
 		public void debug(String s) {
 			logger.debug(s);
 		}
@@ -757,6 +764,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String)
 		 */
 		
+		@Override
 		public void error(String s) {
 			logger.error(s);
 		}
@@ -765,6 +773,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#error(java.lang.String, java.lang.Throwable)
 		 */
 		
+		@Override
 		public void error(String s, Throwable cause) {
 			logger.error(s, cause);
 		}
@@ -773,6 +782,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#fatal(java.lang.String)
 		 */
 		
+		@Override
 		public void fatal(String s) {
 			logger.fatal(s);
 		}
@@ -781,6 +791,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#info(java.lang.String)
 		 */
 		
+		@Override
 		public void info(String s) {
 			logger.info(s);
 		}
@@ -789,6 +800,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#trace(java.lang.String)
 		 */
 		
+		@Override
 		public void trace(String s) {
 			logger.trace(s);
 		}
@@ -797,6 +809,7 @@ public class InfobrightDataWriter extends Node {
 		 * @see com.infobright.logging.EtlLogger#warn(java.lang.String)
 		 */
 		
+		@Override
 		public void warn(String s) {
 			logger.warn(s);
 		}
@@ -851,6 +864,7 @@ public class InfobrightDataWriter extends Node {
 			super.start();
 		}
 		
+		@Override
 		public void run() {
 			resultCode = Result.RUNNING;
 			try{
@@ -934,6 +948,7 @@ public class InfobrightDataWriter extends Node {
 			runIt=false;	
 		}
 		
+		@Override
 		public void run() {
             resultCode=Result.RUNNING;
 			try{

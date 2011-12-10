@@ -78,6 +78,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	 * Informix validation is different because Informix does not support selects in from
 	 * clause
 	 */
+	@Override
 	public String getValidateQuery(String query, QueryType queryType)
 			throws SQLException {
 
@@ -105,6 +106,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 
 	}
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.TIMESTAMP :

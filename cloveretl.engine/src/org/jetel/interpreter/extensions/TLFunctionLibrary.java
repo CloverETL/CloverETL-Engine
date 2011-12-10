@@ -38,7 +38,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
         library = new HashMap<String, TLFunctionPrototype>();
     }
 
-    public TLFunctionPrototype getFunction(String functionName) {
+    @Override
+	public TLFunctionPrototype getFunction(String functionName) {
         return library.get(functionName);
     }
 

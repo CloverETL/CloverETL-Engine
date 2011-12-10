@@ -38,6 +38,7 @@ public class DataRecordTest extends CloverTestCase {
 
 	private DataRecord record;
 
+	@Override
 	protected void setUp() {
 		initEngine();
 

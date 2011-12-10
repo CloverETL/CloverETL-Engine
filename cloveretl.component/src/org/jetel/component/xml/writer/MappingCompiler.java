@@ -114,6 +114,7 @@ public class MappingCompiler extends AbstractVisitor {
 		return tagger.getPartitionElementPortIndex();
 	}
 	
+	@Override
 	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		tagger.setMapping(mapping);

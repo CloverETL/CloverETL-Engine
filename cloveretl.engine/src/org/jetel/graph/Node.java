@@ -378,7 +378,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#preExecute()
      */
-    public void preExecute() throws ComponentNotReadyException {
+    @Override
+	public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
     	
         runResult = Result.RUNNING;
@@ -389,6 +390,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *
 	 *@since    April 2, 2002
 	 */
+	@Override
 	public void run() {
         runResult = Result.RUNNING; // set running result, so we know run() method was started
         
@@ -1201,7 +1203,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @see org.jetel.graph.GraphElement#reset()
      * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
      */
-    @Deprecated
+    @Override
+	@Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     	runIt = true;

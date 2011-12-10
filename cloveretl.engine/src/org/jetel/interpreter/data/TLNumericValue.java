@@ -66,26 +66,32 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 		this.value = value;
 	}
 
+	@Override
 	public Numeric getValue() {
 		return value;
 	}
 
+	@Override
 	public int getInt() {
 		return value.getInt();
 	}
 
+	@Override
 	public long getLong() {
 		return value.getLong();
 	}
 
+	@Override
 	public double getDouble() {
 		return value.getDouble();
 	}
 
+	@Override
 	public Numeric getNumeric() {
 		return value;
 	}
 
+	@Override
 	public void setValue(Object _value) {
 		if (_value instanceof Numeric) {
 			setValue((Numeric) _value);
@@ -105,11 +111,13 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 		}
 	}
 
+	@Override
 	public final void setValue(Numeric value) {
 		this.value.setValue(value);
 
 	}
 
+	@Override
 	public final void setValue(Number value) {
 		this.value.setValue(value);
 	}
@@ -153,6 +161,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 		return false;
 	}
 
+	@Override
 	public void copyToDataField(DataField field) {
 		if (field instanceof Numeric) {
 			field.setValue(value);
@@ -162,12 +171,14 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 
 	}
 
+	@Override
 	public TLValue duplicate() {
 		TLNumericValue<Numeric> newVal = new TLNumericValue<Numeric>(type);
 		newVal.value = value.duplicateNumeric();
 		return newVal;
 	}
 
+	@Override
 	public void setValue(DataField field) {
 		if (field instanceof Numeric)
 			this.value.setValue((Numeric) field);
@@ -180,72 +191,89 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 		return value.toString();
 	}
 
+	@Override
 	public void abs() {
 		value.abs();
 	}
 
+	@Override
 	public void add(Numeric a) {
 		value.add(a);
 	}
 
+	@Override
 	public int compareTo(Numeric value) {
 		return value.compareTo(value);
 	}
 
+	@Override
 	public void div(Numeric a) {
 		value.div(a);
 
 	}
 
+	@Override
 	public Numeric duplicateNumeric() {
 		return value.duplicateNumeric();
 	}
 
+	@Override
 	public BigDecimal getBigDecimal() {
 		return value.getBigDecimal();
 	}
 
+	@Override
 	public Decimal getDecimal() {
 		return value.getDecimal();
 	}
 
+	@Override
 	public Decimal getDecimal(int precision, int scale) {
 		return value.getDecimal(precision, scale);
 	}
 
+	@Override
 	public boolean isNull() {
 		return value.isNull();
 	}
 
+	@Override
 	public void mod(Numeric a) {
 		value.mod(a);
 	}
 
+	@Override
 	public void mul(Numeric a) {
 		value.mul(a);
 	}
 
+	@Override
 	public void neg() {
 		value.neg();
 	}
 
+	@Override
 	public void setNull() {
 		value.setNull();
 	}
 
+	@Override
 	public void setValue(int value) {
 		this.value.setValue(value);
 
 	}
 
+	@Override
 	public void setValue(long value) {
 		this.value.setValue(value);
 	}
 
+	@Override
 	public void setValue(double value) {
 		this.value.setValue(value);
 	}
 
+	@Override
 	public void sub(Numeric a) {
 		this.value.sub(a);
 	}

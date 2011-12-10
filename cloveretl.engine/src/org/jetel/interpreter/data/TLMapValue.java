@@ -46,7 +46,8 @@ public class TLMapValue extends TLContainerValue {
      * 
      * Returns CloverInteger containing length/size of map
      */
-    public Object getValue() {
+    @Override
+	public Object getValue() {
     	return valueMap;
     }
     
@@ -63,7 +64,8 @@ public class TLMapValue extends TLContainerValue {
         return val!=null ? val : TLNullValue.getInstance();
     }
     
-    public void setValue(TLValue value) {
+    @Override
+	public void setValue(TLValue value) {
     	setStoredValue(value);
     }
     
@@ -85,11 +87,13 @@ public class TLMapValue extends TLContainerValue {
         }
     }
     
-    public void setStoredValue(int index,TLValue value) {
+    @Override
+	public void setStoredValue(int index,TLValue value) {
         throw new UnsupportedOperationException();
     }
     
-    public void setStoredValue(TLValue key,TLValue value) {
+    @Override
+	public void setStoredValue(TLValue key,TLValue value) {
     	if(value==TLNullValue.getInstance()){
     		valueMap.remove(key);
     	}else if (value instanceof TLMapValue){
@@ -129,7 +133,8 @@ public class TLMapValue extends TLContainerValue {
     }
  
     
-    public int getLength() {
+    @Override
+	public int getLength() {
         return valueMap.size();
     }
    

@@ -53,7 +53,8 @@ public class CLVFDirectMapping extends SimpleNode {
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
+  @Override
+public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
   
@@ -195,7 +196,8 @@ public class CLVFDirectMapping extends SimpleNode {
        this.arity=arity;
    }
    
-   public void dump(String prefix) {
+   @Override
+public void dump(String prefix) {
 	    System.out.println(toString(prefix));
 	    if (children != null) {
 	      for (int i = 0; i < children.length; ++i) {

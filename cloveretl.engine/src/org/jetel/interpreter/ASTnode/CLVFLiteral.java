@@ -61,10 +61,12 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 	  }
 	
 	/** Accept the visitor. **/
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
 	}
 	
+	@Override
 	@SuppressWarnings("STCAL")
 	public void init() throws org.jetel.interpreter.TransformLangExecutorRuntimeException {
 		super.init();

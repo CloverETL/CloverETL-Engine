@@ -156,6 +156,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	/**  Main processing method for the WatchDog object */
+	@Override
 	public Result call() {
 		CURRENT_PHASE_LOCK.lock();
 		
@@ -652,11 +653,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return phaseStatus;
 	}
 
+	@Override
 	public void sendMessage(Message<?> msg) {
         inMsgQueue.add(msg);
     }
 
-    public Message<?>[] receiveMessage(GraphElement recipient, final long wait) {
+    @Override
+	public Message<?>[] receiveMessage(GraphElement recipient, final long wait) {
         Message<?>[] msg = null;
         synchronized (_MSG_LOCK) {
             msg=(Message[])outMsgMap.getAll(recipient, new Message[0]);
@@ -667,7 +670,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return msg;
     }
 
-    public boolean hasMessage(GraphElement recipient) {
+    @Override
+	public boolean hasMessage(GraphElement recipient) {
         synchronized (_MSG_LOCK ){
             return outMsgMap.containsKey(recipient);
         }

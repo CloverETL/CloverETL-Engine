@@ -96,6 +96,7 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 		}
 	}
 	
+	@Override
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 			case Types.BIT:

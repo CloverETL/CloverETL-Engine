@@ -57,6 +57,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSharedSequence(org.jetel.data.sequence.Sequence)
 	 */
+	@Override
 	public Sequence getSharedSequence(Sequence sequence) {
 		return sequence;
 	}
@@ -65,6 +66,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#freeSharedSequence(org.jetel.data.sequence.Sequence)
 	 */
+	@Override
 	public void freeSharedSequence(Sequence sequence) {
 		sequence.free();
 	}
@@ -74,6 +76,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * 
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
 	 */
+	@Override
 	public RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext givenRuntimeContext, String logFile) {
         RunResult rr = new RunResult();
 
@@ -220,6 +223,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		}
 	}
 
+	@Override
 	public void makeDirectories(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox directory may be created only in CloverETL Server environment!");
 	}
@@ -228,6 +232,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(long, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
@@ -236,6 +241,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(long, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
@@ -257,6 +263,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
 	 */
+	@Override
 	public OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterPartitioner output streams are available only in CloverETL Server environment!");
 	}
@@ -264,6 +271,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
 	 */
+	@Override
 	public InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterPartitioner input stream is available only in CloverETL Server environment!");
 	}
@@ -271,6 +279,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherInputStreams(long, java.lang.String)
 	 */
+	@Override
 	public InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterGather input streams are available only in CloverETL Server environment!");
 	}
@@ -278,6 +287,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherOutputStream(long, java.lang.String)
 	 */
+	@Override
 	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterGather output stream is available only in CloverETL Server environment!");
 	}
@@ -285,10 +295,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#isMaster(long)
 	 */
+	@Override
 	public boolean isPrimaryWorker(long runId) {
 		throw new UnsupportedOperationException("Primary worker does has sense only in CloverETL Server environment!");
 	}
 
+	@Override
 	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL,
 			SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException {
 		return null;
@@ -304,6 +316,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(long, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
 		return null;
 	}

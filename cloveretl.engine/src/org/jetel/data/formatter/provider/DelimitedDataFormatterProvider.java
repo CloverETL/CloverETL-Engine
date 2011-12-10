@@ -47,6 +47,7 @@ public class DelimitedDataFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		DelimitedDataFormatter formatter;
 		if (charEncoder == null) {

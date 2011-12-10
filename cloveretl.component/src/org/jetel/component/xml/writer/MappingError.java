@@ -49,6 +49,7 @@ public class MappingError {
 		return severity;
 	}
 
+	@Override
 	public String toString() {
 		return severity.toString() + ": " + message;
 	}

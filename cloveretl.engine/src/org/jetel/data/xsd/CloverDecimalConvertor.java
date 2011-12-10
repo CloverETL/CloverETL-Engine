@@ -70,11 +70,13 @@ public class CloverDecimalConvertor implements IGenericConvertor {
         return result;
     }
 
-    public Object parse(String input) throws DataConversionException {
+    @Override
+	public Object parse(String input) throws DataConversionException {
         return parseXsdDecimalToNumeric(input);
     }
 
-    public String print(Object obj) throws DataConversionException {
+    @Override
+	public String print(Object obj) throws DataConversionException {
         if (!(obj instanceof Numeric)) {
             throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
         }
@@ -82,10 +84,12 @@ public class CloverDecimalConvertor implements IGenericConvertor {
         return printNumericToXsdDecimal((Numeric) obj);
     }
 
+	@Override
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.DECIMAL_TYPE.equals(cloverDataTypeCriteria);
 	}
 	
+	@Override
 	public boolean supportsExternalSystemType(String externalTypeCriteria) {
 		return true;
 	}

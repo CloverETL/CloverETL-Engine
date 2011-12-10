@@ -63,10 +63,12 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 		super(executor, logger);
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return false;
 	}
 
+	@Override
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
 		super.init(numPartitions);
@@ -80,10 +82,12 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 		}
 	}
 
+	@Override
 	public int getOutputPort(DataRecord record) throws TransformException {
 		return getOutputPortImpl(getOuputPortFunction, record, NO_ARGUMENTS);
 	}
 
+	@Override
 	public int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
 		if (getOuputPortOnErrorFunction == null) {
 			// no custom error handling implemented, throw an exception so the transformation fails

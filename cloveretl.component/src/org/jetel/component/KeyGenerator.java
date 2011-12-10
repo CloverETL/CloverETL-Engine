@@ -334,6 +334,7 @@ import org.w3c.dom.Element;
 		}
 	}
 		
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -361,6 +362,7 @@ import org.w3c.dom.Element;
 		resultString=new StringBuffer(lenght);
 	}
 	
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_KEY_EXPRESSION_ATTRIBUTE,StringUtils.stringArraytoString(key,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
@@ -410,6 +412,7 @@ import org.w3c.dom.Element;
         return status;
     }
 
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

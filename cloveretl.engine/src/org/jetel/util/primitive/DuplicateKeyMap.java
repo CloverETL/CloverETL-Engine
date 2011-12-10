@@ -49,9 +49,12 @@ public class DuplicateKeyMap implements Map {
     protected int savedIndex;
     protected ArrayList savedData;
     protected static final Iterator emptyIterator = new Iterator() {
-        public boolean hasNext() { return false;}
-        public Object next() { return null;}
-        public void remove() {}
+        @Override
+		public boolean hasNext() { return false;}
+        @Override
+		public Object next() { return null;}
+        @Override
+		public void remove() {}
     };
     
     /**
@@ -70,7 +73,8 @@ public class DuplicateKeyMap implements Map {
      * 
      * @see java.util.Map#size()
      */
-    public int size() {
+    @Override
+	public int size() {
         return map.size();
     }
     
@@ -93,7 +97,8 @@ public class DuplicateKeyMap implements Map {
     /* (non-Javadoc)
      * @see java.util.Map#clear()
      */
-    public void clear() {
+    @Override
+	public void clear() {
         savedKey=savedData=null;
         savedIndex=-1;
         map.clear();
@@ -102,21 +107,24 @@ public class DuplicateKeyMap implements Map {
     /* (non-Javadoc)
      * @see java.util.Map#isEmpty()
      */
-    public boolean isEmpty() {
+    @Override
+	public boolean isEmpty() {
         return map.isEmpty();
     }
 
     /* (non-Javadoc)
      * @see java.util.Map#containsKey(java.lang.Object)
      */
-    public boolean containsKey(Object key) {
+    @Override
+	public boolean containsKey(Object key) {
         return map.containsKey(key);
     }
 
     /* (non-Javadoc)
      * @see java.util.Map#containsValue(java.lang.Object)
      */
-    public boolean containsValue(Object value) {
+    @Override
+	public boolean containsValue(Object value) {
         for(Iterator iter=map.values().iterator();iter.hasNext();){
             ArrayList container=(ArrayList)iter.next();
             if (container.contains(value)){
@@ -135,7 +143,8 @@ public class DuplicateKeyMap implements Map {
      * 
      * @see java.util.Map#values()
      */
-    public Collection values() {
+    @Override
+	public Collection values() {
         Collection col=new ArrayList((int)(1.6*(double)map.size()));
         for(Iterator iter=map.values().iterator();iter.hasNext();){
             ArrayList container=(ArrayList)iter.next();
@@ -147,7 +156,8 @@ public class DuplicateKeyMap implements Map {
     /* (non-Javadoc)
      * @see java.util.Map#putAll(java.util.Map)
      */
-    public void putAll(Map arg0) {
+    @Override
+	public void putAll(Map arg0) {
         Map.Entry entry;
       for(Iterator iter=arg0.entrySet().iterator();iter.hasNext();){
           entry=(Map.Entry)iter.next();
@@ -163,21 +173,24 @@ public class DuplicateKeyMap implements Map {
      * 
      * @see java.util.Map#entrySet()
      */
-    public Set entrySet() {
+    @Override
+	public Set entrySet() {
         return map.entrySet();
     }
 
     /* (non-Javadoc)
      * @see java.util.Map#keySet()
      */
-    public Set keySet() {
+    @Override
+	public Set keySet() {
        return map.keySet();
     }
 
     /* (non-Javadoc)
      * @see java.util.Map#get(java.lang.Object)
      */
-    public Object get(Object key) {
+    @Override
+	public Object get(Object key) {
         ArrayList data=(ArrayList)map.get(key);
         savedKeyIsNull = key == null;
         if (data!=null){
@@ -255,7 +268,8 @@ public class DuplicateKeyMap implements Map {
     /* (non-Javadoc)
      * @see java.util.Map#remove(java.lang.Object)
      */
-    public Object remove(Object key) {
+    @Override
+	public Object remove(Object key) {
         savedKey=null;
         return map.remove(key);
     }
@@ -275,7 +289,8 @@ public class DuplicateKeyMap implements Map {
     /* (non-Javadoc)
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
-    public Object put(Object arg0, Object arg1) {
+    @Override
+	public Object put(Object arg0, Object arg1) {
         ArrayList container=(ArrayList)map.get(arg0);
         if (container!=null){
             container.ensureCapacity(DEFAULT_CONTAINER_NEXT_SIZE);

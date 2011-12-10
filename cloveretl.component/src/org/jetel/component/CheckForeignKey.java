@@ -186,7 +186,8 @@ import org.w3c.dom.Element;
          * @exception ComponentNotReadyException
          *                Description of the Exception
          */
-        public void init() throws ComponentNotReadyException {
+        @Override
+		public void init() throws ComponentNotReadyException {
             if(isInitialized()) return;
     		super.init();
 
@@ -306,7 +307,8 @@ import org.w3c.dom.Element;
     	 * @return    Description of the Returned Value
     	 * @since     May 21, 2002
     	 */
-    	public void toXML(Element xmlElement) {
+    	@Override
+		public void toXML(Element xmlElement) {
     		super.toXML(xmlElement);
     		
     		if (primaryKeys != null) {
@@ -410,7 +412,8 @@ import org.w3c.dom.Element;
             return status;
         }
     
-    	public String getType(){
+    	@Override
+		public String getType(){
     		return COMPONENT_TYPE;
     	}
     

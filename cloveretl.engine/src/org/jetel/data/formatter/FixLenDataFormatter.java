@@ -176,6 +176,7 @@ public class FixLenDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		// create array of field sizes & initialize them
         
@@ -240,6 +241,7 @@ public class FixLenDataFormatter implements Formatter {
 		}			
 	}
 
+	@Override
 	public void reset() {
 		if (writer != null && writer.isOpen()) {
 			try {
@@ -253,6 +255,7 @@ public class FixLenDataFormatter implements Formatter {
 		dataBuffer.clear();
 	}
 	
+	@Override
 	public void finish() throws IOException {
 		flush();
 		writeFooter();
@@ -262,7 +265,8 @@ public class FixLenDataFormatter implements Formatter {
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) {
+    @Override
+	public void setDataTarget(Object out) {
         close();
 
         if (out == null) {
@@ -280,6 +284,7 @@ public class FixLenDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		int recPos = dataBuffer.position();
 		int totalLen = recordLength + (isRecordDelimiter ? recordDelimiter.length : 0);
@@ -347,6 +352,7 @@ public class FixLenDataFormatter implements Formatter {
 	/**
 	 *  Description of the Method
 	 */
+	@Override
 	public void close() {
 		if (writer == null || !writer.isOpen()) {
 			return;
@@ -375,6 +381,7 @@ public class FixLenDataFormatter implements Formatter {
 	/**
 	 *  Flushes the content of internal data buffer
 	 */
+	@Override
 	public void flush() {
 		try {
 			flushBuffer();
@@ -391,6 +398,7 @@ public class FixLenDataFormatter implements Formatter {
 		return(this.charSet);
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
@@ -407,6 +415,7 @@ public class FixLenDataFormatter implements Formatter {
 			return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {

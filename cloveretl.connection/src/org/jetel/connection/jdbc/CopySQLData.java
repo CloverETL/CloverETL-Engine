@@ -564,6 +564,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			Array fieldVal = resultSet.getArray(fieldSQL);
 			Object obj = fieldVal.getArray();
@@ -584,6 +585,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			Array fieldVal = statement.getArray(fieldSQL);
 			Object obj = fieldVal.getArray();
@@ -611,6 +613,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 		    	pStatement.setString(fieldSQL, field.toString());
@@ -664,6 +667,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			double i = resultSet.getDouble(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -673,6 +677,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException{
 			double i = statement.getDouble(fieldSQL);
 			if (statement.wasNull()) {
@@ -689,6 +694,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
@@ -744,6 +750,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			BigDecimal i = resultSet.getBigDecimal(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -753,6 +760,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			BigDecimal i = statement.getBigDecimal(fieldSQL);
 			if (statement.wasNull()) {
@@ -769,6 +777,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setBigDecimal(fieldSQL, ((Decimal) ((DecimalDataField) field).getValue()).getBigDecimalOutput());
@@ -823,6 +832,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			int i = resultSet.getInt(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -832,6 +842,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			int i = statement.getInt(fieldSQL);
 			if (statement.wasNull()) {
@@ -848,6 +859,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setInt(fieldSQL, ((IntegerDataField) field).getInt());
@@ -894,6 +906,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			long i = resultSet.getLong(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -903,6 +916,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			long i = statement.getLong(fieldSQL);
 			if (statement.wasNull()) {
@@ -919,6 +933,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				pStatement.setLong(fieldSQL, ((LongDataField) field).getLong());
@@ -973,6 +988,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			String fieldVal = resultSet.getString(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -984,6 +1000,7 @@ public abstract class CopySQLData {
 			}
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			String fieldVal = statement.getString(fieldSQL);
 			if (statement.wasNull()) {
@@ -1002,6 +1019,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 		    	pStatement.setString(fieldSQL, field.toString());
@@ -1060,6 +1078,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			Date date = resultSet.getDate(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -1070,6 +1089,7 @@ public abstract class CopySQLData {
 			
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			Date date = statement.getDate(fieldSQL);
 			if (statement.wasNull()) {
@@ -1087,6 +1107,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
@@ -1151,6 +1172,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			Date time = resultSet.getTime(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -1161,6 +1183,7 @@ public abstract class CopySQLData {
 			
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			Date time = statement.getTime(fieldSQL);
 			if (statement.wasNull()) {
@@ -1178,6 +1201,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
@@ -1245,6 +1269,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			Timestamp timestamp = resultSet.getTimestamp(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -1255,6 +1280,7 @@ public abstract class CopySQLData {
 			
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			Timestamp timestamp = statement.getTimestamp(fieldSQL);
 			if (statement.wasNull()) {
@@ -1272,6 +1298,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 			    if (inBatchUpdate){
@@ -1337,6 +1364,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			boolean b = resultSet.getBoolean(fieldSQL);
 			if (resultSet.wasNull()) {
@@ -1347,6 +1375,7 @@ public abstract class CopySQLData {
 			
 		}
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			boolean b = statement.getBoolean(fieldSQL);
 			if (statement.wasNull()) {
@@ -1364,6 +1393,7 @@ public abstract class CopySQLData {
 		 * @exception  SQLException  Description of Exception
 		 * @since                    October 7, 2002
 		 */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
 				boolean value = ((BooleanDataField) field).getBoolean();
@@ -1410,6 +1440,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
+		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
             byte[] i = resultSet.getBytes(fieldSQL);
             if (resultSet.wasNull()) {
@@ -1419,6 +1450,7 @@ public abstract class CopySQLData {
             }
         }
 
+		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
             byte[] i = statement.getBytes(fieldSQL);
             if (statement.wasNull()) {
@@ -1435,6 +1467,7 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
+		@Override
 		public void setSQL(PreparedStatement pStatement) throws SQLException {
             if (!field.isNull()) {
                 pStatement.setBytes(fieldSQL, (byte[]) ((ByteDataField) field).getValueDuplicate());
@@ -1484,7 +1517,8 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-    	public void setJetel(ResultSet resultSet) throws SQLException {
+    	@Override
+		public void setJetel(ResultSet resultSet) throws SQLException {
         	blob = resultSet.getBlob(fieldSQL);
 			if (blob != null) {
 				blob = new SerialBlob(blob);
@@ -1499,7 +1533,8 @@ public abstract class CopySQLData {
             }
         }
 
-    	public void setJetel(CallableStatement statement) throws SQLException {
+    	@Override
+		public void setJetel(CallableStatement statement) throws SQLException {
         	blob = statement.getBlob(fieldSQL);
 			if (blob != null) {
 				blob = new SerialBlob(blob);
@@ -1521,7 +1556,8 @@ public abstract class CopySQLData {
          * @exception  SQLException  Description of Exception
          * @since                    October 7, 2002
          */
-    	public void setSQL(PreparedStatement pStatement) throws SQLException {
+    	@Override
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
             if (!field.isNull()) {
                 pStatement.setBlob(fieldSQL, new SerialBlob(((ByteDataField) field).getByteArray()));
             } else {

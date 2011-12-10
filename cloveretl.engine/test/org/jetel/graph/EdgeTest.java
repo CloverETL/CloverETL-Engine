@@ -35,6 +35,7 @@ public class EdgeTest extends CloverTestCase {
 	    super(name);
 	}
 	
+	@Override
 	protected void setUp() { 
 		initEngine();
 	    
@@ -47,6 +48,7 @@ public class EdgeTest extends CloverTestCase {
 
 	}
 
+	@Override
 	protected void tearDown() {
 		aDelimitedDataRecordMetadata = null;
 		edge=null;
@@ -140,7 +142,8 @@ public class EdgeTest extends CloverTestCase {
 	        this.edge=edge;
 	    }
 	    
-	    public void run(){
+	    @Override
+		public void run(){
 	        for (int i=0;i<NUM_REC;i++){
 	            try{
 	                edge.writeRecord(record);
@@ -169,7 +172,8 @@ public class EdgeTest extends CloverTestCase {
 	        this.edge=edge;
 	    }
 	    
-	    public void run(){
+	    @Override
+		public void run(){
 	        counter=0;
 	        try{
 	            while(edge.readRecord(record)!=null){

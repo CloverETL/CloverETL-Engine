@@ -30,6 +30,7 @@ public abstract class TLTypePrimitive extends TLType {
 	public static final TLTypeDouble DOUBLE = new TLTypeDouble();
 	public static final TLTypeDecimal DECIMAL = new TLTypeDecimal();
 	
+	@Override
 	public abstract TLType promoteWith(TLType otherType);
 
 	
@@ -48,6 +49,7 @@ public abstract class TLTypePrimitive extends TLType {
 			return true;
 		}
 
+		@Override
 		public TLType promoteWith(TLType otherType) {
 			if (otherType.isNumeric()) {
 				return otherType;
@@ -106,6 +108,7 @@ public abstract class TLTypePrimitive extends TLType {
 			return false;
 		}
 
+		@Override
 		public TLType promoteWith(TLType otherType) {
 			if (otherType.isBoolean()) {
 				return this;
@@ -138,6 +141,7 @@ public abstract class TLTypePrimitive extends TLType {
 			return true;
 		}
 
+		@Override
 		public TLType promoteWith(TLType otherType) {
 			if (otherType.isInteger()) {
 				return this;
@@ -309,6 +313,7 @@ public abstract class TLTypePrimitive extends TLType {
 		throw new UnknownTypeException(type.name());
 	}
 
+	@Override
 	public boolean isPrimitive() {
 		return true;
 	}

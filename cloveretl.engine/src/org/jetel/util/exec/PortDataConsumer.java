@@ -96,6 +96,7 @@ public class PortDataConsumer implements DataConsumer {
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public void setInput(InputStream stream) {		
 		try {
 			parser.init();
@@ -113,6 +114,7 @@ public class PortDataConsumer implements DataConsumer {
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public boolean consume() throws JetelException {
 		if (parser.getNext(record) == null) {
 			return false;
@@ -130,6 +132,7 @@ public class PortDataConsumer implements DataConsumer {
 	 * @throws IOException 
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public void close() throws IOException {
 		parser.close();
 	}

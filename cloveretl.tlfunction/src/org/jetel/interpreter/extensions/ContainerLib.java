@@ -63,7 +63,8 @@ public class ContainerLib extends TLFunctionLibrary {
         super();
      }
 
-    public TLFunctionPrototype getFunction(String functionName) {
+    @Override
+	public TLFunctionPrototype getFunction(String functionName) {
         switch(Function.fromString(functionName)) {
         case REMOVEALL: return new RemoveAllFunction();
         case PUSH:  return new PushFunction();
@@ -80,7 +81,8 @@ public class ContainerLib extends TLFunctionLibrary {
        }
     }
     
-    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    @Override
+	public  Collection<TLFunctionPrototype> getAllFunctions() {
     	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
     	Function[] fun = Function.values();
     	for (Function function : fun) {

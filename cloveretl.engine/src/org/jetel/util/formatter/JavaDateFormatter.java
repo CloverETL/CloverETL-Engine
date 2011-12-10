@@ -54,10 +54,12 @@ class JavaDateFormatter implements DateFormatter {
 		this.dateFormat.setLenient(false);
 	}
 
+	@Override
 	public String format(Date value) {
 		return dateFormat.format(value);
 	}
 
+	@Override
 	public Date parseDate(String value) {
 		position.setIndex(0);
 		final Date date=dateFormat.parse(value,position);
@@ -67,14 +69,17 @@ class JavaDateFormatter implements DateFormatter {
 		return date;
 	}
 
+	@Override
 	public long parseMillis(String value) {
 		return parseDate(value).getTime();
 	}
 
+	@Override
 	public String getPattern() {
 		return ((SimpleDateFormat)dateFormat).toPattern();
 	}
 
+	@Override
 	public boolean tryParse(String value) {
 		position.setIndex(0);
 		dateFormat.parse(value,position);
@@ -84,6 +89,7 @@ class JavaDateFormatter implements DateFormatter {
 			return true;
 	}
 
+	@Override
 	public void setLenient(boolean lenient) {
 		dateFormat.setLenient(lenient);
 	}

@@ -52,6 +52,7 @@ public class IntegralLib extends TLFunctionLibrary {
     
 	private static String LIBRARY_NAME = "Integral";
 
+	@Override
 	public String getName() {
 		return LIBRARY_NAME;
 	}
@@ -83,10 +84,12 @@ public class IntegralLib extends TLFunctionLibrary {
 	
 	class CopyByNameFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 			copyByNameInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			DataRecord from = stack.popRecord();
 			DataRecord to = stack.popRecord();
@@ -104,9 +107,11 @@ public class IntegralLib extends TLFunctionLibrary {
 	
 	class CopyByPositionFunction implements TLFunctionPrototype {
 		
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			DataRecord from = stack.popRecord();
 			DataRecord to = stack.popRecord();

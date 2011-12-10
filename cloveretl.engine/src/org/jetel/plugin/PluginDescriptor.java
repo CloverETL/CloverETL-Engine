@@ -389,7 +389,8 @@ public class PluginDescriptor {
         return null;
     }
     
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer ret = new StringBuffer();
         
         ret.append("\tid - " + getId() + "\n");

@@ -143,6 +143,7 @@ public class DelimitedDataParser implements Parser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
@@ -170,6 +171,7 @@ public class DelimitedDataParser implements Parser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		return getNext0(record) ? record : null; 
 	}
@@ -190,6 +192,7 @@ public class DelimitedDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init()
 	throws ComponentNotReadyException {
 		if (metadata == null) {
@@ -225,6 +228,7 @@ public class DelimitedDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 		this.releaseInputSource = releaseInputSource;
 	}
@@ -232,6 +236,7 @@ public class DelimitedDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) {
 		if (releaseInputSource)	releaseDataSource();
 
@@ -301,6 +306,7 @@ public class DelimitedDataParser implements Parser {
 	 *
 	 *@since    May 2, 2002
 	 */
+	@Override
 	public void close() {
 		releaseDataSource();
 	}
@@ -616,6 +622,7 @@ public class DelimitedDataParser implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
+	@Override
 	public PolicyType getPolicyType() {
 		if (this.exceptionHandler != null) {
 			return this.exceptionHandler.getType();
@@ -624,12 +631,14 @@ public class DelimitedDataParser implements Parser {
 		}
 	}
 
-    public void setExceptionHandler(IParserExceptionHandler handler) {
+    @Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
 
 
-    public IParserExceptionHandler getExceptionHandler() {
+    @Override
+	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
 
@@ -640,6 +649,7 @@ public class DelimitedDataParser implements Parser {
 	 * @return Number of successfully skipped records.
 	 * @throws JetelException
 	 */
+	@Override
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
@@ -669,6 +679,7 @@ public class DelimitedDataParser implements Parser {
     /**
 	 * Reset parser for next graph execution. 
      */
+	@Override
 	public void reset() {
 		if (releaseInputSource)	
 			releaseDataSource();
@@ -682,10 +693,12 @@ public class DelimitedDataParser implements Parser {
 		bytesProcessed = 0;
 	}
 
+	@Override
 	public Object getPosition() {
 		return bytesProcessed;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {

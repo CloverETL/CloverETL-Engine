@@ -38,6 +38,7 @@ public class DataRecordTapeTest  extends CloverTestCase {
 	private final static String TEST_FILE = "tapeTest.tmp";
 	
 
+@Override
 protected void setUp() { 
 	initEngine();
     
@@ -60,6 +61,7 @@ protected void setUp() {
 
 
 
+@Override
 protected void tearDown() {
 	testRecordA=testRecordB = null;
 	(new File(TEST_FILE)).delete();

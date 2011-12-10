@@ -59,10 +59,12 @@ public class CloverByteArrayConvertor implements IGenericConvertor {
 		return result;
 	}
 
+	@Override
 	public Object parse(String input) throws DataConversionException {
 		return parseXsdBase64ToByteArray(input);
 	}
 
+	@Override
 	public String print(Object obj) throws DataConversionException {
 		if (!(obj instanceof byte[])) {
 			throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
@@ -71,11 +73,13 @@ public class CloverByteArrayConvertor implements IGenericConvertor {
 		return printByteArrayToXsdBase64((byte[]) obj);
 	}
 
+	@Override
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.BYTE_TYPE.equals(cloverDataTypeCriteria) || 
 		DataFieldMetadata.BYTE_COMPRESSED_TYPE.equals(cloverDataTypeCriteria);
 	}
 	
+	@Override
 	public boolean supportsExternalSystemType(String externalTypeCriteria) {
 		return true;
 	}

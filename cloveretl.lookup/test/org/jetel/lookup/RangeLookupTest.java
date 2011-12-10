@@ -36,6 +36,7 @@ public class RangeLookupTest extends CloverTestCase {
 	 * 
 	 * @see junit.framework.TestCase#setUp()
 	 */
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();	    
 	}

@@ -34,11 +34,13 @@ public class CLVFComparison extends SimpleNode implements TransformLangParserCon
 	}
 	
 	/** Accept the visitor. **/
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		return visitor.visit(this, data);
 	}
 	
-	 public String toString(){
+	 @Override
+	public String toString(){
 	      return super.toString()+" - "+TransformLangParserConstants.tokenImage[cmpType];
 	  }
 }

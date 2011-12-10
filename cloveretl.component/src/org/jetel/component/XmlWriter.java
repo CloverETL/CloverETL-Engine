@@ -266,6 +266,7 @@ public class XmlWriter extends Node {
 		OutputStream os = null; 
 		TransformerHandler th = null;
 			
+		@Override
 		public void close() {
 			if (os == null) {
 				return;
@@ -280,24 +281,29 @@ public class XmlWriter extends Node {
 			os = null;
 		}
 
+		@Override
 		public void flush() throws IOException {
 			if (os != null) os.flush();
 		}
 		
+		@Override
 		public void finish() throws IOException {
 			if (th!= null)
 				writeFooter();
 		}
 
+		@Override
 		public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		}
 
+		@Override
 		public void reset() {
 		}
 		/*
 		 * (non-Javadoc)
 		 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
 		 */
+		@Override
 		public void setDataTarget(Object outputDataTarget) {
 			close();
 			WritableByteChannel channel = null;
@@ -313,6 +319,7 @@ public class XmlWriter extends Node {
 		 * (non-Javadoc)
 		 * @see org.jetel.data.formatter.Formatter#writeHeader()
 		 */
+		@Override
 		public int writeHeader() throws IOException {
 			try {
 				th = createHeader(os);
@@ -326,6 +333,7 @@ public class XmlWriter extends Node {
 		 * (non-Javadoc)
 		 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 		 */
+		@Override
 		public int write(DataRecord record) throws IOException {
 			if (th == null)
 				writeHeader();
@@ -344,6 +352,7 @@ public class XmlWriter extends Node {
 		 * (non-Javadoc)
 		 * @see org.jetel.data.formatter.Formatter#writeFooter()
 		 */
+		@Override
 		public int writeFooter() throws IOException {
 			try {
 				if (th == null)
@@ -421,6 +430,7 @@ public class XmlWriter extends Node {
 		/** DefaultNamespace */
 		public String defaultNamespace;
 		
+		@Override
 		public String toString(){
 			return "PortDefinition#"+portIndex + " key:"+keysAttr+" parentKey:"+parentKeysAttr+" relationKeysStrings:"+relationKeysStrings ;
 		}
@@ -490,6 +500,7 @@ public class XmlWriter extends Node {
 			portDefinition.metadata = metadata; 
 		}
 		
+		@Override
 		public void run() {
 			while (runIt) {
 				try {
@@ -581,6 +592,7 @@ public class XmlWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -938,6 +950,7 @@ public class XmlWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -945,6 +958,7 @@ public class XmlWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	
@@ -1197,6 +1211,7 @@ public class XmlWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		
@@ -1245,6 +1260,7 @@ public class XmlWriter extends Node {
 		//Handler used at checkConfig to parse XML mapping and retrieve attributes names
 		private Set<String> attributesNames = new HashSet<String>();
 		
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
 			int length = atts.getLength(); 
 			for (int i=0; i<length; i++) { 

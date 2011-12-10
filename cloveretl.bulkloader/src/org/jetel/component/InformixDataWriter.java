@@ -246,7 +246,8 @@ public class InformixDataWriter extends BulkLoader {
      *
      * @since    April 4, 2002
      */
-    public Result execute() throws Exception {
+    @Override
+	public Result execute() throws Exception {
     	super.execute();
         ProcBox box;
         int processExitValue = 0;
@@ -793,7 +794,8 @@ public class InformixDataWriter extends BulkLoader {
         return status;
     }
     
-    public String getType(){
+    @Override
+	public String getType(){
         return COMPONENT_TYPE;
     }
 
@@ -935,14 +937,16 @@ public class InformixDataWriter extends BulkLoader {
     	/**
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
-    	public void setInput(InputStream stream) {
+    	@Override
+		public void setInput(InputStream stream) {
     		reader = new BufferedReader(new InputStreamReader(stream));
     	}
 
     	/**
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
-    	public boolean consume() throws JetelException {
+    	@Override
+		public boolean consume() throws JetelException {
     		if (useLoadUtility) {
     			return consumeLoad();
     		} else {
@@ -1139,7 +1143,8 @@ public class InformixDataWriter extends BulkLoader {
     	/**
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
-    	public void close() {
+    	@Override
+		public void close() {
     		if (dbParser != null) {
     			try {
 					dbParser.close();

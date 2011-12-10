@@ -92,6 +92,7 @@ public abstract class FixLenDataParser implements TextParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -124,6 +125,7 @@ public abstract class FixLenDataParser implements TextParser {
 		}
 	}
 
+	@Override
 	public void reset() {
 		if (releaseInputSource) releaseDataSource();
 		byteBuffer.clear();
@@ -133,10 +135,12 @@ public abstract class FixLenDataParser implements TextParser {
 		bytesProcessed = 0;
 	}
 
+	@Override
 	public Object getPosition() {
 		return bytesProcessed;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {
@@ -153,6 +157,7 @@ public abstract class FixLenDataParser implements TextParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 		this.releaseInputSource = releaseInputSource;
 	}
@@ -160,6 +165,7 @@ public abstract class FixLenDataParser implements TextParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) {
 		if (releaseInputSource) releaseDataSource();
 		byteBuffer.clear();
@@ -204,16 +210,19 @@ public abstract class FixLenDataParser implements TextParser {
 	/**
 	 * Release resources.
 	 */
+	@Override
 	public void close() {
 		releaseDataSource();
 	}
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord rec = new DataRecord(metadata);
 		rec.init();
 		return getNext(rec);
 	}
 
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		DataRecord retval; 
 		while (true) {
@@ -234,6 +243,7 @@ public abstract class FixLenDataParser implements TextParser {
 	protected abstract DataRecord parseNext(DataRecord record)
 	throws JetelException;
 
+	@Override
 	public abstract int skip(int nRec)
 	throws JetelException;
 
@@ -260,14 +270,17 @@ public abstract class FixLenDataParser implements TextParser {
 				fieldIdx, offendingValue.toString(), exception);
 	}
 		
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return exceptionHandler;
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		exceptionHandler = handler;
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
 		return exceptionHandler != null ? exceptionHandler.getType() : null;
 	}

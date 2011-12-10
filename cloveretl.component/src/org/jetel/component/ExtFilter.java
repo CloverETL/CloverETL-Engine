@@ -203,6 +203,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 *
 	 * @since    July 23, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -216,6 +217,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 * @return    Description of the Returned Value
 	 * @since     July 23, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		Document doc = xmlElement.getOwnerDocument();
@@ -289,6 +291,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		this.filterExpression = filterExpression;
 	}
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
@@ -297,6 +300,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		return filter;
 	}
 	
+	@Override
 	public void reset() throws ComponentNotReadyException  {
 		super.reset();
 		// Nothing more to reinitialize

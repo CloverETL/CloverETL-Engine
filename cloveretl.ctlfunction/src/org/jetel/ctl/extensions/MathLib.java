@@ -57,6 +57,7 @@ public class MathLib extends TLFunctionLibrary {
 	
 	private static String LIBRARY_NAME = "Math";
 
+	@Override
 	public String getName() {
 		return LIBRARY_NAME;
 	}
@@ -76,9 +77,11 @@ public class MathLib extends TLFunctionLibrary {
     // SQRT
     class SqrtFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			
 			if (context.getParams()[0].isDecimal()) {
@@ -106,10 +109,12 @@ public class MathLib extends TLFunctionLibrary {
     // LOG
     class LogFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			
     		if (context.getParams()[0].isDecimal()) {
     			stack.push(log(context, stack.popDecimal()));
@@ -134,10 +139,12 @@ public class MathLib extends TLFunctionLibrary {
     // LOG
     class Log10Function implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			
 			
 			if (context.getParams()[0].isDecimal()) {
@@ -163,9 +170,11 @@ public class MathLib extends TLFunctionLibrary {
     // EXP
     class ExpFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
     	
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isDecimal()) {
 				stack.push(exp(context, stack.popDecimal()));
@@ -190,10 +199,12 @@ public class MathLib extends TLFunctionLibrary {
     // FLOOR
     class FloorFunction implements TLFunctionPrototype { 
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			
 			if (context.getParams()[0].isDecimal()) {
 				stack.push(floor(context, stack.popDecimal()));
@@ -217,10 +228,12 @@ public class MathLib extends TLFunctionLibrary {
     // ROUND
     class RoundFunction implements TLFunctionPrototype { 
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			
 			if (context.getParams()[0].isDecimal()) {
 				stack.push(round(context, stack.popDecimal()));
@@ -244,10 +257,12 @@ public class MathLib extends TLFunctionLibrary {
     // CEIL
     class CeilFunction implements TLFunctionPrototype { 
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
 			
 			if (context.getParams()[0].isDecimal()) {
 				stack.push(ceil(context, stack.popDecimal()));
@@ -271,9 +286,11 @@ public class MathLib extends TLFunctionLibrary {
     // POW
     class PowFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isDecimal() || context.getParams()[1].isDecimal()) {
 				final BigDecimal pow = stack.popDecimal();
@@ -297,9 +314,11 @@ public class MathLib extends TLFunctionLibrary {
     // PI
     class PiFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(pi(context));
 		} 
@@ -314,9 +333,11 @@ public class MathLib extends TLFunctionLibrary {
     //  E
     class EFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(e(context));
 		} 
@@ -346,9 +367,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class AbsFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
 				stack.push(abs(context, stack.popInt()));
@@ -385,9 +408,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitOrFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				stack.push(bitOr(context, stack.popInt(), stack.popInt()));
@@ -415,9 +440,11 @@ public class MathLib extends TLFunctionLibrary {
 
 	class BitAndFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				stack.push(bitAnd(context, stack.popInt(), stack.popInt()));
@@ -443,9 +470,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitXorFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				stack.push(bitXor(context, stack.popInt(), stack.popInt()));
@@ -471,9 +500,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitLShiftFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
@@ -501,9 +532,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitRShiftFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
@@ -532,10 +565,12 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitNegateFunction implements TLFunctionPrototype {
     	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
     		if (context.getParams()[0].isInteger()) {
     			stack.push(bitNegate(context, stack.popInt()));
     			return;
@@ -560,9 +595,11 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitIsSetFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
 				int bitPosition = stack.popInt();
@@ -600,10 +637,12 @@ public class MathLib extends TLFunctionLibrary {
     
     class BitSetFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	public void execute(Stack stack, TLFunctionCallContext context) {
+    	@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
     		boolean value = stack.popBoolean();
     		int bitPosition = stack.popInt();
 			if (context.getParams()[0].isInteger()) {

@@ -65,7 +65,8 @@ public class DateLib extends TLFunctionLibrary {
         super();
      }
 
-    public TLFunctionPrototype getFunction(String functionName) {
+    @Override
+	public TLFunctionPrototype getFunction(String functionName) {
         switch(Function.fromString(functionName)) {
         case TODAY: return new TodayFunction();
         case DATEADD: return new DateaddFunction();
@@ -77,7 +78,8 @@ public class DateLib extends TLFunctionLibrary {
        }
     }
     
-    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    @Override
+	public  Collection<TLFunctionPrototype> getAllFunctions() {
     	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
     	Function[] fun = Function.values();
     	for (Function function : fun) {

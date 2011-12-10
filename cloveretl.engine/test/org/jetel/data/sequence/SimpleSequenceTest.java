@@ -45,6 +45,7 @@ public class SimpleSequenceTest extends CloverTestCase {
      */
 	private final static String SEQUENCE_FILE = "sequence4.dat";
 
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 	    
@@ -74,7 +75,8 @@ public class SimpleSequenceTest extends CloverTestCase {
             
     }
     
-    protected void tearDown(){
+    @Override
+	protected void tearDown(){
         sequence.free();
         (new File(SEQUENCE_FILE)).delete();
     }

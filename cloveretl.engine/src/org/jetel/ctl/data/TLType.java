@@ -137,6 +137,7 @@ public abstract class TLType {
 			// do not instantiate me, use constant
 		}
 		
+		@Override
 		public String name() {
 			return "null";
 		}
@@ -483,10 +484,12 @@ public abstract class TLType {
 			return symbol;
 		}
 		
+		@Override
 		public boolean isLogLevel() {
 			return false;
 		}
 		
+		@Override
 		public boolean isDateField() {
 			return true;
 		}
@@ -540,10 +543,12 @@ public abstract class TLType {
 			return "loglevel";
 		}
 		
+		@Override
 		public boolean isLogLevel() {
 			return true;
 		}
 		
+		@Override
 		public boolean isDateField() {
 			return false;
 		}

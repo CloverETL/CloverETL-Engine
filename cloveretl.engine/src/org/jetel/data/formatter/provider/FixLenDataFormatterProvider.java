@@ -53,6 +53,7 @@ public class FixLenDataFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		FixLenDataFormatter formatter;
 		if (charEncoder == null) {

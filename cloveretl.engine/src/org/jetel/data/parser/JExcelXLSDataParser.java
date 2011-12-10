@@ -161,6 +161,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	 * @param length number of rows
 	 * @return preview of current sheet
 	 */
+	@Override
 	public String[][] getPreview(int startRow, int length){
 		if (sheet == null) return null;
 		
@@ -188,6 +189,7 @@ public class JExcelXLSDataParser extends XLSParser {
 		return result;
 	}
 	
+	@Override
 	public String[][] getPreview(int length){
 		return getPreview(0, length);
 	}
@@ -437,6 +439,7 @@ public class JExcelXLSDataParser extends XLSParser {
 		}
 	}
 	
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
 

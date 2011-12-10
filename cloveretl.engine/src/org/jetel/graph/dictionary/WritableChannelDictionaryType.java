@@ -51,6 +51,7 @@ public class WritableChannelDictionaryType extends DictionaryType {
 		}
 	}
 	
+	@Override
 	public boolean isValidValue(Object value) {
 		return value == null || value instanceof WritableByteChannel || value instanceof OutputStream;
 	}

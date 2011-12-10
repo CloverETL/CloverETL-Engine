@@ -22,6 +22,7 @@ public class SQLDataParserTest extends CloverTestCase {
 
 	private DataRecord record;
 
+	@Override
 	@SuppressWarnings("deprecation")
 	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
 		initEngine();
@@ -48,6 +49,7 @@ public class SQLDataParserTest extends CloverTestCase {
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 	}
 
+	@Override
 	protected void tearDown() {
 		aParser2.close();
 		aParser2 = null;

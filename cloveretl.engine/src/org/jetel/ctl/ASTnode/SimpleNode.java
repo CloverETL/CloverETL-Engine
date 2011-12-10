@@ -63,20 +63,25 @@ public abstract class SimpleNode implements Node {
 		}
 	}
 
+	@Override
 	public void jjtOpen() {
 	}
 
+	@Override
 	public void jjtClose() {
 	}
 
+	@Override
 	public void jjtSetParent(Node n) {
 		parent = n;
 	}
 
+	@Override
 	public Node jjtGetParent() {
 		return parent;
 	}
 
+	@Override
 	public void jjtAddChild(Node n, int i) {
 		if (children == null) {
 			children = new Node[i + 1];
@@ -88,14 +93,17 @@ public abstract class SimpleNode implements Node {
 		children[i] = n;
 	}
 
+	@Override
 	public Node jjtGetChild(int i) {
 		return children[i];
 	}
 
+	@Override
 	public int jjtGetNumChildren() {
 		return (children == null) ? 0 : children.length;
 	}
 
+	@Override
 	public Node removeChild(int i) {
 		if (children == null || i >= children.length) {
 			return null;
@@ -166,6 +174,7 @@ public abstract class SimpleNode implements Node {
 	}
 	
 	/** Accept the visitor. * */
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
 			return visitor.visit(this, data);
@@ -199,6 +208,7 @@ public abstract class SimpleNode implements Node {
 	 * toString() is probably all you need to do.
 	 */
 
+	@Override
 	public String toString() {
 		return TransformLangParserTreeConstants.jjtNodeName[id]; 
 	}
@@ -230,6 +240,7 @@ public abstract class SimpleNode implements Node {
 	 * @see org.jetel.interpreter.Node#init()
 	 */
 
+	@Override
 	public void init() {
 		int i, k = jjtGetNumChildren();
 
@@ -311,6 +322,7 @@ public abstract class SimpleNode implements Node {
 		return type;
 	}
 
+	@Override
 	public void setChildren(Node[] children) {
 		this.children = children;
 	}

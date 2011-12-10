@@ -382,7 +382,8 @@ public class DBConnection extends GraphElement implements IConnection {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#init()
      */
-    synchronized public void init() throws ComponentNotReadyException {
+    @Override
+	synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
         
@@ -678,7 +679,8 @@ public class DBConnection extends GraphElement implements IConnection {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#toString()
      */
-    public String toString() {
+    @Override
+	public String toString() {
     	if (!isInitialized()) {
     		return "DBConnection id='" + getId() + "' - not initialized";
     	}
@@ -738,7 +740,8 @@ public class DBConnection extends GraphElement implements IConnection {
     /* (non-Javadoc)
      * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)
      */
-    public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
+    @Override
+	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
     	if (!isInitialized()) {
     		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
     	}

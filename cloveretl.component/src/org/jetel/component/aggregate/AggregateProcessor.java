@@ -587,15 +587,18 @@ public class AggregateProcessor {
 			this.outRecord = outRecord;
 			keyIterator = unsortedGroups.keySet().iterator();
 		}
+		@Override
 		public boolean hasNext() {
 			return keyIterator.hasNext();
 		}
 
+		@Override
 		public DataRecord next() {
 			unsortedGroups.get(keyIterator.next()).storeResult(outRecord);
 			return outRecord;
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("Removal of aggregation results is not supported");
 		}

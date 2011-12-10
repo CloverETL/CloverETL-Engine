@@ -37,11 +37,13 @@ public class CLVFListOfLiterals extends SimpleNode {
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
+  @Override
+public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
 
-  public void init(){
+  @Override
+public void init(){
 	super.init();
   	int i, k = jjtGetNumChildren();
 

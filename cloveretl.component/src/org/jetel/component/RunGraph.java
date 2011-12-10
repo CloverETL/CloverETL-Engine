@@ -820,6 +820,7 @@ public class RunGraph extends Node{
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.Node#reset()
 	 */
+	@Override
 	synchronized public void reset() throws ComponentNotReadyException {
 		super.reset();
 	}
@@ -937,6 +938,7 @@ public class RunGraph extends Node{
 			matcherFinishedStatus = patternFinishedStatus.matcher("");
 		}
 		
+		@Override
 		public boolean consume() throws JetelException {
 			String line = readAndWriteLine();
 			if (line == null) {
@@ -1003,6 +1005,7 @@ public class RunGraph extends Node{
 			this.linesRead = 0;
 		}
 		
+		@Override
 		public boolean consume() throws JetelException {
 			String line = readAndWriteLine();
 			if (line == null) {
@@ -1030,6 +1033,7 @@ public class RunGraph extends Node{
 		/**
 		 * @see org.jetel.util.exec.DataConsumer
 		 */
+		@Override
 		public void setInput(InputStream stream) {
 			reader = new BufferedReader(new InputStreamReader(stream));		
 		}
@@ -1037,6 +1041,7 @@ public class RunGraph extends Node{
 		/**
 		 * @see org.jetel.util.exec.DataConsumer
 		 */
+		@Override
 		public void close() {
 			if (writer != null) {
 				try {

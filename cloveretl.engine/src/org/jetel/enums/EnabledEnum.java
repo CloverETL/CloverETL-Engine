@@ -55,7 +55,8 @@ public enum EnabledEnum {
         return defaultValue;
     }
     
-    public String toString() {
+    @Override
+	public String toString() {
         return id;
     }
     

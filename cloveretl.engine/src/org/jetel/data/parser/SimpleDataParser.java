@@ -166,6 +166,7 @@ public class SimpleDataParser extends AbstractTextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
@@ -491,14 +492,17 @@ public class SimpleDataParser extends AbstractTextParser {
 		recordCounter = 0;// reset record counter
 	}
 
+	@Override
 	public Object getPosition() {
 		return 0;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public int skip(int rec) throws JetelException {
 		throw new UnsupportedOperationException();
 	}
@@ -520,6 +524,7 @@ public class SimpleDataParser extends AbstractTextParser {
 	/**
 	 * @return the cfg
 	 */
+	@Override
 	public TextParserConfiguration getConfiguration() {
 		return cfg;
 	}

@@ -448,6 +448,7 @@ public class TypeChecker extends NavigatingVisitor {
 		return data;
 	}
 	
+	@Override
 	public Object visit(CLVFConditionalFailExpression node, Object data) {
 		super.visit(node, data);
 		// if condition/expressions in error we propagate error

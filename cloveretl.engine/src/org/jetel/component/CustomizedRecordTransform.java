@@ -940,6 +940,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 * Use postExecute method.
 	 */
+	@Override
 	@Deprecated
 	public void finished() {
 	}
@@ -951,14 +952,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 		this.graph = graph;
 	}
 
+	@Override
 	public TransformationGraph getGraph() {
 		return (node != null) ? node.getGraph() : graph;
 	}
 
+	@Override
 	public String getMessage() {
 		return errorMessage;
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return Arrays.toString(semiResult);
 	}
@@ -969,6 +973,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @see org.jetel.component.RecordTransform#init(java.util.Properties, org.jetel.metadata.DataRecordMetadata[],
 	 *      org.jetel.metadata.DataRecordMetadata[])
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata)
 			throws ComponentNotReadyException {
 		if (sourcesMetadata == null || targetMetadata == null) {
@@ -988,12 +993,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#preExecute()
 	 */
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#postExecute(org.jetel.graph.TransactionMethod)
 	 */
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 	}
 	
@@ -1387,6 +1394,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		this.node = node;
 	}
 
+	@Override
 	public void signal(Object signalObject) {
 		// TODO Auto-generated method stub
 
@@ -1430,6 +1438,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @see org.jetel.component.RecordTransform#transform(org.jetel.data.DataRecord[], org.jetel.data.DataRecord[])
 	 */
+	@Override
 	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException {
 		for (boolean[] index : fieldResult) {
 			Arrays.fill(index, true);
@@ -1795,6 +1804,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 * Use preExecute method.
 	 */
+	@Override
 	@Deprecated
 	public void reset() {
 		errorMessage = null;

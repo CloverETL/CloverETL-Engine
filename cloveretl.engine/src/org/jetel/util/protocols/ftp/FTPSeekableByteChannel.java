@@ -147,26 +147,31 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 		PipedInputStream pis = new PipedInputStream();
 		final PipedOutputStream pos = new PipedOutputStream(pis);
 		new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					finished = false;
 					ftpClient.download(url.getPath(), pos, position, new FTPDataTransferListener() {
 						
+						@Override
 						public void transferred(int arg0) {
 							// TODO Auto-generated method stub
 							
 						}
 						
+						@Override
 						public void started() {
 							// TODO Auto-generated method stub
 							
 						}
 						
+						@Override
 						public void failed() {
 							// TODO Auto-generated method stub
 							
 						}
 						
+						@Override
 						public void completed() {
 							try {
 								pos.close();
@@ -177,6 +182,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 							
 						}
 						
+						@Override
 						public void aborted() {
 							// TODO Auto-generated method stub
 							
@@ -195,6 +201,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#position()
 	 */
+	@Override
 	public long position() throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -202,6 +209,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#position(long)
 	 */
+	@Override
 	public SeekableByteChannel position(long newPosition) throws IOException {
 		connect(newPosition);
 		return this;
@@ -210,6 +218,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#size()
 	 */
+	@Override
 	public long size() throws IOException {
 		return fileSize;
 	}
@@ -217,6 +226,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#truncate(long)
 	 */
+	@Override
 	public SeekableByteChannel truncate(long size) throws IOException {
 		throw new UnsupportedOperationException();
 	}
@@ -224,6 +234,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.ReadableByteChannel#read(java.nio.ByteBuffer)
 	 */
+	@Override
 	public int read(ByteBuffer dst) throws IOException {
 //		try {
 			return inputChannel.read(dst);
@@ -235,6 +246,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#close()
 	 */
+	@Override
 	public void close() throws IOException {
 //		if (ftpClient != null /*&& ftpClient.isConnected()*/) {
 //			try {
@@ -248,6 +260,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#isOpen()
 	 */
+	@Override
 	public boolean isOpen() {
 		return true;
 		//return ftpClient.isConnected();
@@ -256,6 +269,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
 	 */
+	@Override
 	public int write(ByteBuffer src) throws IOException {
 		throw new UnsupportedOperationException();
 	}

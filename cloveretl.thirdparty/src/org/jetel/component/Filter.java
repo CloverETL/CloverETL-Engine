@@ -140,6 +140,7 @@ public class Filter extends Node {
 	 *
 	 * @since    July 23, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -164,6 +165,7 @@ public class Filter extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     July 23, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILTEREXPRESSION_ATTRIBUTE,this.recordFilter.getFilterExpression());
@@ -212,7 +214,8 @@ public class Filter extends Node {
         return status;
     }
     
-    public String getType(){
+    @Override
+	public String getType(){
 		return COMPONENT_TYPE;
 	}
 

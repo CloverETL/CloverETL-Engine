@@ -122,6 +122,7 @@ public abstract class XLSFormatter implements Formatter {
 		this.removeSheets = removeSheets;
 	}
 
+	@Override
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException{
 		this.metadata = metadata;
 		this.includedFieldIndices = metadata.fieldsIndicesComplement(excludedFieldNames);
@@ -302,14 +303,17 @@ public abstract class XLSFormatter implements Formatter {
 		return cellCode.toString();
 	}
 	
+	@Override
 	public int writeHeader() throws IOException {
 		return 0;
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		return 0;
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 	}

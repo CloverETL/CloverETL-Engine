@@ -57,6 +57,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 		return new FirebirdConnection(dbConnection, operationType); 
 	}
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 			case Types.VARCHAR :
@@ -142,6 +143,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	/**
 	 * for MySQL a database is a catalog AND a schema
 	 */
+	@Override
 	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, null, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/); //fix by kokon - show only tables and views
 	}

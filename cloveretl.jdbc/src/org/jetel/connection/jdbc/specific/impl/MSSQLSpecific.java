@@ -60,10 +60,12 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 		return new MSSQLConnection(connection, operationType);
 	}
 
-    public String quoteIdentifier(String identifier) {
+    @Override
+	public String quoteIdentifier(String identifier) {
         return ('[' + identifier + ']');
     }
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.TIMESTAMP :

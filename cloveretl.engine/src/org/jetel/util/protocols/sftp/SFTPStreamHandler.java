@@ -42,7 +42,8 @@ public class SFTPStreamHandler extends URLStreamHandler {
 		return new SFTPConnection(url, proxy);
 	}
 
-    protected void parseURL(URL u, String spec, int start, int limit) {
+    @Override
+	protected void parseURL(URL u, String spec, int start, int limit) {
     	super.parseURL(u, spec, start, limit);
     	String protocol = u.getProtocol();
     	if (!(protocol.equals("sftp") || protocol.equals("scp"))) {

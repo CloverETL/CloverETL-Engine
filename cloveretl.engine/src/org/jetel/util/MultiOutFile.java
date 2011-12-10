@@ -83,10 +83,12 @@ public class MultiOutFile implements Iterator<String> {
 		return cnt;
 	}
 
+	@Override
 	public boolean hasNext() {
 		return digitCnt > 0 || counter == 0;
 	}
 
+	@Override
 	public String next() {
 		if (!hasNext()) {
 			throw new NoSuchElementException("no next file name; " + digitCnt + " digits specified in the file name mask:\""+mask+"\"");
@@ -100,6 +102,7 @@ public class MultiOutFile implements Iterator<String> {
 		return retval;
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();		
 	}

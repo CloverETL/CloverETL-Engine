@@ -195,6 +195,7 @@ public class ProcBox {
 		/**
 		 * @see java.lang.Thread#run()
 		 */
+		@Override
 		public void run() {
 			try {
 				producer.setOutput(stream);
@@ -233,6 +234,7 @@ public class ProcBox {
 		/**
 		 * @see java.lan.Thread#run()
 		 */
+		@Override
 		public void run() {
 			try {
 				consumer.setInput(stream);
@@ -256,9 +258,11 @@ public class ProcBox {
 		private InputStream stream;
 		private byte buf[] = new byte[Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE];
 		
+		@Override
 		public void setInput(InputStream stream) {
 			this.stream = stream;
 		}
+		@Override
 		public boolean consume() throws JetelException {
 			try {
 				return stream.read(buf) > -1;
@@ -266,6 +270,7 @@ public class ProcBox {
 				throw new JetelException("Error while reading input buffer", e);
 			}
 		}
+		@Override
 		public void close() {
 		}
 	}

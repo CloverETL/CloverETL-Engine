@@ -1403,6 +1403,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	
+	@Override
 	public int write(DataRecord record) throws IOException {
 		if (record == null) {
 			throw new NullPointerException("record");

@@ -157,6 +157,7 @@ public class MappingTagger extends AbstractVisitor {
 		return false;
 	}
 	
+	@Override
 	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		clear();

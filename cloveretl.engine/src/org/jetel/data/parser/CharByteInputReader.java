@@ -96,10 +96,12 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	/** used by DoubleMarkCharByteInputReader */
 	protected abstract int getMark();
 
+	@Override
 	public int getPosition() {
 		return inputBytesConsumed;
 	}
 
+	@Override
 	public void setPosition(int position) throws OperationNotSupportedException, IOException {
 		if (inputBytesConsumed != 0) {
 			throw new OperationNotSupportedException("setPosition() must be called before reading starts");
@@ -968,6 +970,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			endOfInput = false;
 		}
 
+		@Override
 		public int skip(int numBytes) {
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 			if (numBytes == 0) {
@@ -1019,6 +1022,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentCharMark = currentByteMark = INVALID_MARK;
 		}
 
+		@Override
 		public CharSequence getCharSequence(int relativeEnd) throws OperationNotSupportedException,
 				InvalidMarkException {
 			if (currentCharMark == INVALID_MARK) {

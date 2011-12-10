@@ -85,6 +85,7 @@ public abstract class DataRecordGenerate extends AbstractDataTransform implement
 	 *            Array of metadata objects
 	 * @return True if successfull, otherwise False
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
 		this.parameters = parameters;
 		this.targetMetadata = targetRecordsMetadata;
@@ -114,6 +115,7 @@ public abstract class DataRecordGenerate extends AbstractDataTransform implement
      *         < -1 -- fatal error / user defined
 	 * @see org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
+	@Override
 	public abstract int generate(DataRecord[] outputRecords) throws TransformException;
 
 	@Override
@@ -122,10 +124,12 @@ public abstract class DataRecordGenerate extends AbstractDataTransform implement
 		throw new TransformException("Generate failed!", exception);
 	}
 
+	@Override
 	public void signal(Object signalObject) {
 		// do nothing by default
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return null;
 	}

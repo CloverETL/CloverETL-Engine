@@ -87,6 +87,7 @@ public abstract class DataRecordTransform extends AbstractDataTransform implemen
 	 *            Array of metadata objects describing source data records
 	 * @return True if successfull, otherwise False
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata,
 			DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
 		this.parameters = parameters;
@@ -122,6 +123,7 @@ public abstract class DataRecordTransform extends AbstractDataTransform implemen
      *         < -1 -- fatal error / user defined
 	 * @see org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
+	@Override
 	public abstract int transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;
 
 	@Override
@@ -149,10 +151,12 @@ public abstract class DataRecordTransform extends AbstractDataTransform implemen
 		return true;
 	}
 
+	@Override
 	public void signal(Object signalObject) {
 		// do nothing by default
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return null;
 	}

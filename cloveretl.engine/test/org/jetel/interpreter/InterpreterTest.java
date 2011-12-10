@@ -72,6 +72,7 @@ public class InterpreterTest extends CloverTestCase {
 	private GregorianCalendar today;
 	static byte[] BYTEARRAY_INITVALUE = new byte[] {0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48};
 	
+	@Override
 	protected void setUp() {
 		initEngine();
 	    
@@ -176,6 +177,7 @@ public class InterpreterTest extends CloverTestCase {
 //        lkp.setLookupKey("nesmysl");
 	}
 	
+	@Override
 	protected void tearDown() {
 		metadata= null;
 		record=null;

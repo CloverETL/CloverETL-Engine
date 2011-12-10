@@ -262,6 +262,7 @@ public class DBFDataReader extends Node {
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -437,6 +438,7 @@ public class DBFDataReader extends Node {
         return status;
     }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

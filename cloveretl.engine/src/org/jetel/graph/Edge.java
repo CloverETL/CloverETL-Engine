@@ -147,6 +147,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @return    The Metadata value
 	 * @since     April 4, 2002
 	 */
+	@Override
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
@@ -155,6 +156,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.InputPort#getRecordCounter()
 	 */
+	@Override
 	public int getRecordCounter() {
 		return edge.getOutputRecordCounter();
 	}
@@ -162,20 +164,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     /* (non-Javadoc)
      * @see org.jetel.graph.OutputPort#getOutputRecordCounter()
      */
-    public int getOutputRecordCounter() {
+    @Override
+	public int getOutputRecordCounter() {
         return edge.getOutputRecordCounter();
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.InputPort#getInputRecordCounter()
      */
-    public int getInputRecordCounter() {
+    @Override
+	public int getInputRecordCounter() {
         return edge.getInputRecordCounter();
     }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.InputPort#getByteCounter()
 	 */
+	@Override
 	public long getByteCounter(){
 	    return edge.getOutputByteCounter();
     }
@@ -183,14 +188,16 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     /* (non-Javadoc)
      * @see org.jetel.graph.OutputPort#getOutputByteCounter()
      */
-    public long getOutputByteCounter(){
+    @Override
+	public long getOutputByteCounter(){
         return edge.getOutputByteCounter();
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.InputPort#getInputByteCounter()
      */
-    public long getInputByteCounter(){
+    @Override
+	public long getInputByteCounter(){
         return edge.getInputByteCounter();
     }
 
@@ -209,6 +216,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @return    The Reader value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	public Node getReader() {
 		return reader;
 	}
@@ -220,6 +228,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @return    The Writer value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	public Node getWriter() {
 		return writer;
 	}
@@ -232,11 +241,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since     June 6, 2002
      * @deprecated use hasData() method instead
 	 */
+	@Override
 	public boolean isOpen() {
 		return !isEOF();
 	}
 
-    public boolean isEOF() {
+    @Override
+	public boolean isEOF() {
         return edge.isEOF();
     }
 
@@ -247,6 +258,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  IOException  Description of Exception
 	 * @since                   April 2, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -344,6 +356,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since                            April 2, 2002
 	 */
 
+	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
 		return edge.readRecord(record);
 	}
@@ -359,6 +372,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
+	@Override
 	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 		return edge.readRecordDirect(record);
 	}
@@ -385,6 +399,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
+	@Override
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         if(edgeDebuger != null) edgeDebuger.writeRecord(record);
 		edge.writeRecord(record);
@@ -399,6 +414,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
+	@Override
 	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
         if(edgeDebuger != null) {
             edgeDebuger.writeRecord(record);
@@ -422,6 +438,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  _reader  Description of Parameter
 	 * @since           April 2, 2002
 	 */
+	@Override
 	public void connectReader(Node _reader, int portNum) {
 		this.reader = _reader;
         this.readerPort = portNum;
@@ -434,6 +451,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  _writer  Description of Parameter
 	 * @since           April 2, 2002
 	 */
+	@Override
 	public void connectWriter(Node _writer, int portNum) {
 		this.writer = _writer;
         this.writerPort = portNum;
@@ -445,6 +463,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 *
 	 * @deprecated 
 	 */
+	@Override
 	public void open() {
         //DO NOTHING
 	}
@@ -454,6 +473,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @throws IOException 
 	 * @deprecated use direct eof() method
 	 */
+	@Override
 	public void close() throws InterruptedException, IOException {
         eof();
 	}
@@ -461,22 +481,26 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     /* (non-Javadoc)
      * @see org.jetel.graph.OutputPort#eof()
      */
-    public void eof() throws InterruptedException, IOException {
+    @Override
+	public void eof() throws InterruptedException, IOException {
     	if (!eofSent) {
         	edge.eof();
         	eofSent = true;
     	}
     }
     
+	@Override
 	public boolean hasData(){
 		return edge.hasData();
 	}
 
-    public int getInputPortNumber() {
+    @Override
+	public int getInputPortNumber() {
         return readerPort;
     }
 
-    public int getOutputPortNumber() {
+    @Override
+	public int getOutputPortNumber() {
         return writerPort;
     }
 
@@ -493,7 +517,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#free()
      */
-    public void free() {
+    @Override
+	public void free() {
         if(!isInitialized()) return;
         super.free();
 

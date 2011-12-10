@@ -12,6 +12,7 @@ public class DecimalNumericTest extends CloverTestCase {
 	
 	Decimal anInt,aLong,aFloat,aDouble,aDefault,aDoubleIntInt,aDecimalIntInt,anIntInt;
 
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 	
@@ -547,6 +548,7 @@ public class DecimalNumericTest extends CloverTestCase {
 		assertEquals(aLong,l);
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

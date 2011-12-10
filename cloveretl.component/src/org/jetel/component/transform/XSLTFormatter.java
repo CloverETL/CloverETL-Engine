@@ -30,6 +30,7 @@ public class XSLTFormatter implements Formatter {
 	
 	private WritableByteChannel writableByteChannel;
 	
+	@Override
 	public void close() {
 		try {
 			writableByteChannel.close();
@@ -38,31 +39,39 @@ public class XSLTFormatter implements Formatter {
 		}
 	}
 	
+	@Override
 	public void finish() throws IOException {
 		close();
 	}
 	
+	@Override
 	public void flush() throws IOException {
 	}
 	
+	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 	}
 	
+	@Override
 	public void reset() {
 	}
 	
+	@Override
 	public void setDataTarget(Object outputDataTarget) {
 		writableByteChannel = (WritableByteChannel)outputDataTarget;
 	}
 	
+	@Override
 	public int write(DataRecord record) throws IOException {
 		return 0;
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		return 0;
 	}
 	
+	@Override
 	public int writeHeader() throws IOException {
 		return 0;
 	}

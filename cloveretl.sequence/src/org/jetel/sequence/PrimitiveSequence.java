@@ -130,21 +130,24 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     /**
      * @see org.jetel.data.sequence.Sequence#currentValueInt()
      */
-    public int currentValueInt() {
+    @Override
+	public int currentValueInt() {
         return (int) currentValueLong();
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueInt()
      */
-    public int nextValueInt() {
+    @Override
+	public int nextValueInt() {
         return (int) nextValueLong();
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#currentValueLong()
      */
-    public long currentValueLong() {
+    @Override
+	public long currentValueLong() {
         return alreadyIncremented ? value - step : value;
 
     }
@@ -152,7 +155,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueLong()
      */
-    public long nextValueLong() {
+    @Override
+	public long nextValueLong() {
     	long tmpVal=value;
         value += step;
         alreadyIncremented = true;
@@ -162,21 +166,24 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     /**
      * @see org.jetel.data.sequence.Sequence#currentValueString()
      */
-    public String currentValueString() {
+    @Override
+	public String currentValueString() {
         return Long.toString(currentValueLong());
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#nextValueString()
      */
-    public String nextValueString() {
+    @Override
+	public String nextValueString() {
         return Long.toString(nextValueLong());
     }
 
     /**
      * @see org.jetel.data.sequence.Sequence#resetValue()
      */
-    public void resetValue() {
+    @Override
+	public void resetValue() {
     	alreadyIncremented = false;
         value = start;
     }
@@ -184,7 +191,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     /**
      * @see org.jetel.data.sequence.Sequence#isPersistent()
      */
-    public boolean isPersistent() {
+    @Override
+	public boolean isPersistent() {
         return false;
     }
 
@@ -263,6 +271,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         }
     }
 
+	@Override
 	public boolean isShared() {
 		return false;
 	}

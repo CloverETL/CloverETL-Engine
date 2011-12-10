@@ -162,7 +162,8 @@ public class PluginClassLoader extends GreedyURLClassLoader {
         return retURLs.toArray(new URL[retURLs.size()]);
     }
     
-    public String toString(){
+    @Override
+	public String toString(){
     	return "PluginClassLoader:"+this.getPluginDescriptor().getId();
     }
 }

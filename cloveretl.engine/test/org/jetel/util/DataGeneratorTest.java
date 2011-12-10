@@ -35,7 +35,8 @@ public class DataGeneratorTest extends CloverTestCase {
 
 	DataGenerator dataGenerator = new DataGenerator();
 	
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
     }
 
@@ -61,7 +62,8 @@ public class DataGeneratorTest extends CloverTestCase {
     	}
     }
     
-    protected void tearDown(){
+    @Override
+	protected void tearDown(){
     }
 
 }

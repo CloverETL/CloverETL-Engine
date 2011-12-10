@@ -343,6 +343,7 @@ public class XLSXDataParser extends XLSParser {
 		return xlsMetadata;
 	}
 
+	@Override
 	public String[][] getPreview(int startRow, int length) {
 	    if (sheet == null) {
 			return null;
@@ -379,6 +380,7 @@ public class XLSXDataParser extends XLSParser {
 		return result;
 	}
 	
+	@Override
 	public String[][] getPreview(int length){
 		return getPreview(0, length);
 	}

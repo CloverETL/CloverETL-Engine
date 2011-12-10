@@ -47,6 +47,7 @@ public class StringDataProducer implements DataProducer {
 	/**
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public void setOutput(OutputStream stream) {
 		this.stream = stream;
 	}
@@ -54,6 +55,7 @@ public class StringDataProducer implements DataProducer {
 	/**
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public boolean produce() throws JetelException {
 		// all data are suppplied by one call to this method
 		if (input == null) {
@@ -71,6 +73,7 @@ public class StringDataProducer implements DataProducer {
 	/**
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public void close() {
 	}
 

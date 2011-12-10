@@ -274,6 +274,7 @@ public class XmlXPathReader extends Node {
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -317,6 +318,7 @@ public class XmlXPathReader extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 	    super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
@@ -427,6 +429,7 @@ public class XmlXPathReader extends Node {
         return status;
     }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

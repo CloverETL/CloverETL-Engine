@@ -86,6 +86,7 @@ public class NumberDictionaryType extends DictionaryType {
 	 * 
 	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
 	 */
+	@Override
 	public boolean isValidValue(Object value) {
 		return value == null
 				|| value instanceof Double;

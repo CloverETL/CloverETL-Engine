@@ -49,6 +49,7 @@ public class StructureFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		StructureFormatter formatter;
 		if (charEncoder == null) {

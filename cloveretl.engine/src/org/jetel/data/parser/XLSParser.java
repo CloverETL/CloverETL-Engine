@@ -112,14 +112,17 @@ public abstract class XLSParser implements Parser {
 		this.metadata = metadata;
 	}
 	
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
 	}
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
@@ -128,6 +131,7 @@ public abstract class XLSParser implements Parser {
 		return getNext(record);
 	}
 
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		setAutofillingSheetName(record);
@@ -173,6 +177,7 @@ public abstract class XLSParser implements Parser {
 	 */
 	protected abstract boolean getNextSheet();
 	
+	@Override
 	public PolicyType getPolicyType() {
         if(exceptionHandler != null) {
             return exceptionHandler.getType();
@@ -180,6 +185,7 @@ public abstract class XLSParser implements Parser {
         return null;
 	}
 
+	@Override
 	public void init()throws ComponentNotReadyException{
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -215,12 +221,15 @@ public abstract class XLSParser implements Parser {
         System.arraycopy(sheetNameTmp, 0, autofillingFieldPositions, 0, sheetNameLen);
 	}
 	
+	@Override
 	public abstract void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
 
+	@Override
 	public void setReleaseDataSource(boolean releaseDataSource)  {
 		this.releaseDataSource = releaseDataSource;
 	}
 
+	@Override
 	public int skip(int nRec) {
 		if (currentRow + nRec <= lastRow) {
 			currentRow += nRec;
@@ -539,10 +548,12 @@ public abstract class XLSParser implements Parser {
 	 */
 	public abstract String getSheetName(int index);
 
+	@Override
 	public Object getPosition() {
 		return ((incremental != null) ? incremental.getPosition() : null);
 	}
 
+	@Override
 	public void movePosition(Object position) {
 		if (!useIncrementalReading) return;
 		incremental = new Incremental(position.toString());
@@ -561,6 +572,7 @@ public abstract class XLSParser implements Parser {
 		}
 	}
 
+	@Override
 	public void reset() throws ComponentNotReadyException {
         sheetCounter = -1;
         recordCounter = 1;
@@ -573,6 +585,7 @@ public abstract class XLSParser implements Parser {
 		incremental = null;
 	}
 
+	@Override
 	public abstract void close();
 
 	public void useIncrementalReading(boolean useIncrementalReading) {

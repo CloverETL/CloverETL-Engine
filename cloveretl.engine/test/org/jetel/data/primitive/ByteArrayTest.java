@@ -16,6 +16,7 @@ public class ByteArrayTest extends CloverTestCase {
 	private String sBytes;
 	private ByteBuffer dataBuffer;
 
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 		
@@ -514,6 +515,7 @@ public class ByteArrayTest extends CloverTestCase {
 		assertEquals(byteArrayBytes.count, i-1);
 	}
 	
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

@@ -42,6 +42,7 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 	RecordComapratorAnyOrderType comaparator = new RecordComapratorAnyOrderType(new int[] {0,1});
 	OrderType[] orderings = new OrderType[2];
 	
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 		DataRecordMetadata metadata = new DataRecordMetadata("test", DataRecordMetadata.DELIMITED_RECORD);
@@ -53,6 +54,7 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		next.init();
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}

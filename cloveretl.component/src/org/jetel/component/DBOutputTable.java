@@ -401,6 +401,7 @@ public class DBOutputTable extends Node {
 	 *                Description of Exception
 	 * @since September 27, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		// get dbConnection from graph
@@ -1428,6 +1429,7 @@ public class DBOutputTable extends Node {
 		return status;
     }
 
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

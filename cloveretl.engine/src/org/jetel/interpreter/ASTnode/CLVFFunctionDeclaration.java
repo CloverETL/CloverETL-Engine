@@ -45,7 +45,8 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
+  @Override
+public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
   
@@ -62,7 +63,8 @@ public class CLVFFunctionDeclaration extends SimpleNode {
       varTypes[order]=type;
   }
   
-  public String toString(){
+  @Override
+public String toString(){
       int count=0;
       StringBuilder buffer=new StringBuilder(super.toString()).append(": ");
       while (varNames[count]!=null){

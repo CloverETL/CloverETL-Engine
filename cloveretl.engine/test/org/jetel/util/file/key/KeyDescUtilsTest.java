@@ -34,7 +34,8 @@ import org.jetel.util.string.Compare;
  */
 public class KeyDescUtilsTest extends CloverTestCase {
 
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
         initEngine();
     }

@@ -47,7 +47,8 @@ public class XsdMetadataTest extends CloverTestCase  {
 	
 	private final static String TEST_FILE = "XsdTest.xsd";
 	
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
 		initEngine();
 	    
         DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
@@ -66,7 +67,8 @@ public class XsdMetadataTest extends CloverTestCase  {
 		}
     }
     
-    protected void tearDown(){
+    @Override
+	protected void tearDown(){
     	boolean deleted = (new File(TEST_FILE)).delete();
 		 assertTrue("can't delete "+ TEST_FILE, deleted );
     }

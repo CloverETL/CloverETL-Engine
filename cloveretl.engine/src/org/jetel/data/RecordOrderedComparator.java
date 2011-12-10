@@ -84,6 +84,7 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
 	 *@param  record2  Description of the Parameter
 	 *@return          -1 ; 0 ; 1
 	 */
+	@Override
 	public int compare(Object o1, Object o2) {
         int compResult;
         final DataRecord record1 = (DataRecord) o1;
@@ -156,6 +157,7 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
      *            Second record
      * @return -1 ; 0 ; 1
      */
+	@Override
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 	
 		int compResult;

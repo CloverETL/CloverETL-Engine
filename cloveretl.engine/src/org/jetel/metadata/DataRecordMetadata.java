@@ -1267,6 +1267,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return true;
 	}
 
+	@Override
 	public int hashCode() {
 		int hashCode = 17;
 
@@ -1277,6 +1278,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return hashCode;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("DataRecordMetadata[");
@@ -1302,6 +1304,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @see java.lang.Iterable#iterator()
 	 */
+	@Override
 	public Iterator<DataFieldMetadata> iterator() {
 		return fields.iterator();
 	}

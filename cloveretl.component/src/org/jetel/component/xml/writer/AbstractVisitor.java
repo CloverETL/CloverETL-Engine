@@ -54,14 +54,22 @@ public abstract class AbstractVisitor implements MappingVisitor {
 	
 	protected XmlMapping mapping;
 	
+	@Override
 	public void visit(WildcardElement element) throws Exception {}
+	@Override
 	public void visit(Attribute element) throws Exception {}
+	@Override
 	public void visit(Element element) throws Exception {}
+	@Override
 	public void visit(Namespace element) throws Exception {}
+	@Override
 	public void visit(Value element) throws Exception {}
+	@Override
 	public void visit(Relation element) throws Exception {}
+	@Override
 	public void visit(Comment element) throws Exception {}
 	
+	@Override
 	public void visit(TemplateEntry objectTemplateEntry) throws Exception {
 		if (recursionStart == objectTemplateEntry) {
 			return;

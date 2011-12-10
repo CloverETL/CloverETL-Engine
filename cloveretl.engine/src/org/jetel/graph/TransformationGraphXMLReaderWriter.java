@@ -953,16 +953,20 @@ public class TransformationGraphXMLReaderWriter {
             super(id);
         }
 
-        public String getType() { return null; }
+        @Override
+		public String getType() { return null; }
 
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
 
-        public Result execute() { return Result.FINISHED_OK; }
+        @Override
+		public Result execute() { return Result.FINISHED_OK; }
 
-        public void init() throws ComponentNotReadyException { }
+        @Override
+		public void init() throws ComponentNotReadyException { }
 
-        public void free() {
+        @Override
+		public void free() {
             
         }
     }

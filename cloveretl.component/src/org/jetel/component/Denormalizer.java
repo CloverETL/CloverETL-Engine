@@ -488,6 +488,7 @@ public class Denormalizer extends Node {
     }
 
 	
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -655,6 +656,7 @@ public class Denormalizer extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (xformClass != null) {

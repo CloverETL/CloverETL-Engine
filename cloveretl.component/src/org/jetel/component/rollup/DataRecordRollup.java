@@ -45,7 +45,8 @@ public abstract class DataRecordRollup extends AbstractDataTransform implements 
 	/** a metadata of output data records */
 	protected DataRecordMetadata[] outputMetadata;
 
-    public final void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
+    @Override
+	public final void init(Properties parameters, DataRecordMetadata inputMetadata, DataRecordMetadata accumulatorMetadata,
             DataRecordMetadata[] outputMetadata) throws ComponentNotReadyException {
     	this.parameters = parameters;
     	this.inputMetadata = inputMetadata;

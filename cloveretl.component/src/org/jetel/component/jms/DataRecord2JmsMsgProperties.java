@@ -47,6 +47,7 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 	// index of field to be represented by message body.
 	protected int bodyField;
 
+	@Override
 	public void init(DataRecordMetadata metadata, Session session, Properties props)  throws ComponentNotReadyException {
 		super.init(metadata, session, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
@@ -65,6 +66,7 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 		}
 	}
 
+	@Override
 	public Message createMsg(DataRecord record) throws JMSException {
 		TextMessage msg = session.createTextMessage();
 		int fieldCnt = record.getNumFields();

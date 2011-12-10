@@ -51,6 +51,7 @@ public class DataFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		DataFormatter formatter;
 		if (charEncoder == null) {

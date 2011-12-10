@@ -317,6 +317,7 @@ public class AggregateFunctionOld implements Iterator {
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#remove()
 	 */
+	@Override
 	public void remove() {
 		throw new RuntimeException("Call of unimplemented method.");
 	}
@@ -324,6 +325,7 @@ public class AggregateFunctionOld implements Iterator {
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#hasNext()
 	 */
+	@Override
 	public boolean hasNext() {
 		return i.hasNext();
 	}
@@ -331,6 +333,7 @@ public class AggregateFunctionOld implements Iterator {
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#next()
 	 */
+	@Override
 	public Object next() {
 		int[] keyFields = recordKey.getKeyFields();
 		

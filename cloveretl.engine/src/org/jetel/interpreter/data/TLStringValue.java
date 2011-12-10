@@ -47,6 +47,7 @@ public class TLStringValue extends TLValue implements CharSequence {
 		this.value=value;
 	}
 	
+	@Override
 	public void setValue(TLValue value){
 		// this is fix for s=s assignment - if the value is actually us, we don't do anything
 		if (this == value) {
@@ -63,6 +64,7 @@ public class TLStringValue extends TLValue implements CharSequence {
 	}
 	
 	
+	@Override
 	public Object getValue(){
 		return value;
 	}
@@ -127,16 +129,19 @@ public class TLStringValue extends TLValue implements CharSequence {
 	}
 
 
+	@Override
 	public char charAt(int arg0) {
 		return value.charAt(arg0);
 	}
 
 
+	@Override
 	public int length() {
 		return value.length();
 	}
 
 
+	@Override
 	public CharSequence subSequence(int arg0, int arg1) {
 		return value.subSequence(arg0, arg1);
 	}

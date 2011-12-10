@@ -255,6 +255,7 @@ public class XSLTMappingTransition {
 		 * 
 		 * @param object - source data field
 		 */
+		@Override
 		public void setDataField(DataField sourceDataField) {
 			targetDataField.setValue(sourceDataField);
 		}
@@ -294,6 +295,7 @@ public class XSLTMappingTransition {
 		 * 
 		 * @param object - source data field
 		 */
+		@Override
 		public void setDataField(DataField sourceDataField) {
 			Object inValue = sourceDataField.getValue();
 			if (isFirst) isSourceString = !(sourceDataField instanceof ByteDataField);
@@ -358,6 +360,7 @@ public class XSLTMappingTransition {
 			}
 		}
 		
+		@Override
 		public Iterator<org.jetel.component.transform.XSLTMappingTransition.Mapping> iterator() {
 			return lMapping.iterator();
 		}

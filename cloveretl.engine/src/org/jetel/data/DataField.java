@@ -244,6 +244,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return    Description of the Returned Value
 	 * @since
 	 */
+	@Override
 	public abstract String toString();
 
 
@@ -312,6 +313,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return      Description of the Returned Value
 	 * @since       September 16, 2002
 	 */
+	@Override
 	public abstract boolean equals(Object obj);
 
 
@@ -326,6 +328,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  obj  Description of the Parameter
 	 * @return      Description of the Return Value
 	 */
+	@Override
 	public abstract int compareTo(Object obj);
 
 

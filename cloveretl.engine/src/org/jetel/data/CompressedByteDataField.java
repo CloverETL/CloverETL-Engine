@@ -55,6 +55,7 @@ public class CompressedByteDataField extends ByteDataField {
 		// dataLen is set when the setValue(byte[]) is called in the constructor of the super class
 	}
 	
+	@Override
 	public DataField duplicate(){
 		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata);
 		compressedByteDataField.setValue(this);
@@ -66,6 +67,7 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof CompressedByteDataField){
 	    	CompressedByteDataField compressedByteDataField = (CompressedByteDataField) fromField;
@@ -83,11 +85,13 @@ public class CompressedByteDataField extends ByteDataField {
         }
 	}
 	
+	@Override
 	public void setValue(byte[] value) {
 		dataLen = value == null ? 0 : value.length;
 		super.setValue(ZipUtils.compress(value));
 	}
 
+	@Override
 	public void setValue(byte value) {
 		dataLen = metadata.getSize();
 		if (dataLen <= 0) {
@@ -118,14 +122,17 @@ public class CompressedByteDataField extends ByteDataField {
         }
     }
 
+	@Override
 	public char getType() {
 		return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 	}
 
-    public Object getValueDuplicate() {
+    @Override
+	public Object getValueDuplicate() {
     	return getValue();
     }
 
+	@Override
 	public byte getByte(int position) {
         if(isNull) {
             return 0;
@@ -133,14 +140,17 @@ public class CompressedByteDataField extends ByteDataField {
 		return getByteArray()[position];
 	}
 
+	@Override
 	public byte[] getByteArray() {
 		return ZipUtils.decompress(super.value, dataLen);
 	}
 
+	@Override
 	public void fromString(CharSequence seq) {
 		fromString(seq, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
+	@Override
 	public void fromString(CharSequence seq, String charset) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 			setNull(true);
@@ -173,6 +183,7 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 
+	@Override
 	public void serialize(CloverBuffer buffer) {
         try {
             if(isNull) {
@@ -189,6 +200,7 @@ public class CompressedByteDataField extends ByteDataField {
     	}
 	}
 
+	@Override
 	public void deserialize(CloverBuffer buffer) {
 		dataLen = ByteBufferUtils.decodeLength(buffer);
 
@@ -210,6 +222,7 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
@@ -223,6 +236,7 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 
+	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
 		
@@ -258,6 +272,7 @@ public class CompressedByteDataField extends ByteDataField {
 		}
 	}
 	
+	@Override
 	public int getSizeSerialized() {
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);

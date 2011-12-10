@@ -123,6 +123,7 @@ public class NumberIterator implements Iterator<Integer>{
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#hasNext()
 	 */
+	@Override
 	public boolean hasNext() {
 		return next != null;
 	}
@@ -130,6 +131,7 @@ public class NumberIterator implements Iterator<Integer>{
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#next()
 	 */
+	@Override
 	public Integer next() {
 		tmp = next;
 		if (next == null) {
@@ -139,6 +141,7 @@ public class NumberIterator implements Iterator<Integer>{
 		return tmp;
 	}
 	
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
@@ -206,14 +209,17 @@ public class NumberIterator implements Iterator<Integer>{
 			}
 		}
 		
+		@Override
 		public boolean hasNext() {
 			return (next <= last);
 		}
 
+		@Override
 		public Integer next() {
 			return hasNext() ? next++ : null;
 		}
 		
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}

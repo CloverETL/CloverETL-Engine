@@ -184,6 +184,7 @@ public class Normalizer extends Node {
         throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordNormalize.");
     }
 		
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -385,6 +386,7 @@ public class Normalizer extends Node {
     }
 	
 	
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -500,6 +502,7 @@ public class Normalizer extends Node {
 		this.errorActionsString = string;		
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 

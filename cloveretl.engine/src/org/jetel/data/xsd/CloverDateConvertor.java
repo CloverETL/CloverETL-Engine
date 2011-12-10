@@ -71,11 +71,13 @@ public class CloverDateConvertor implements IGenericConvertor {
         return result;
     }
 
-    public Object parse(String input) throws DataConversionException {
+    @Override
+	public Object parse(String input) throws DataConversionException {
         return parseXsdDateToDate(input);
     }
 
-    public String print(Object obj) throws DataConversionException {
+    @Override
+	public String print(Object obj) throws DataConversionException {
         if (!(obj instanceof Date)) {
             throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
         }
@@ -83,10 +85,12 @@ public class CloverDateConvertor implements IGenericConvertor {
         return printDateToXsdDate((Date) obj);
     }
 
+	@Override
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.DATE_TYPE.equals(cloverDataTypeCriteria);
 	}
 
+	@Override
 	public boolean supportsExternalSystemType(String externalTypeCriteria) {
 		return XSDDataTypes.valueOf(externalTypeCriteria).equals(XSDDataTypes.date);
 	}

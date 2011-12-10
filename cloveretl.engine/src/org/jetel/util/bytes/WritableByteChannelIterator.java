@@ -35,10 +35,12 @@ public class WritableByteChannelIterator implements Iterator<WritableByteChannel
 		this.writableByteChannel = writableByteChannel;
 	}
 	
+	@Override
 	public boolean hasNext() {
 		return hasNext;
 	}
 
+	@Override
 	public WritableByteChannel next() {
 		if(hasNext) {
 			hasNext = false;
@@ -48,5 +50,6 @@ public class WritableByteChannelIterator implements Iterator<WritableByteChannel
 		}
 	}
 
+	@Override
 	public void remove() {}
 }

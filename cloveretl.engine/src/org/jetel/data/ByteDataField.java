@@ -104,6 +104,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		this.value = new byte[newValue.remaining()];
 	}
 
+	@Override
 	public DataField duplicate(){
 	    return new ByteDataField(metadata, value);
 	}
@@ -112,6 +113,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
 	        if (!fromField.isNull){
@@ -142,6 +144,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  _value  The new value
 	 *@since          October 29, 2002
 	 */
+	@Override
 	public void setValue(Object value) {
         if(value == null) {
 		    setNull(true);
@@ -213,7 +216,8 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		setNull(false);
 	}
 
-    public void reset(){
+    @Override
+	public void reset(){
          if (metadata.isNullable()){
              setNull(true);
          }else if (metadata.isDefaultValueSet()){
@@ -229,6 +233,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@return    The Type value
 	 *@since     October 29, 2002
 	 */
+	@Override
 	public char getType() {
 		return DataFieldMetadata.BYTE_FIELD;
 	}
@@ -240,6 +245,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@return    The Value value
 	 *@since     October 29, 2002
 	 */
+	@Override
 	public Object getValue() {
 		return isNull ? null : getByteArray();
 	}
@@ -247,7 +253,8 @@ public class ByteDataField extends DataField implements Comparable<Object> {
     /**
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
-    public Object getValueDuplicate() {
+    @Override
+	public Object getValueDuplicate() {
         if(isNull) {
             return null;
         }
@@ -288,7 +295,8 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@return    String representation of byte array
 	 *@since     October 29, 2002
 	 */
-    public String toString() {
+    @Override
+	public String toString() {
         return toString(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
     }
 
@@ -314,6 +322,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
         }
     }
 
+	@Override
 	public void fromString(CharSequence seq) {
 		fromString(seq, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
@@ -369,6 +378,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  buffer  Description of Parameter
 	 *@since          October 29, 2002
 	 */
+	@Override
 	public void serialize(CloverBuffer buffer) {
         try {
             if(isNull) {
@@ -391,6 +401,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  buffer  Description of Parameter
 	 *@since          October 29, 2002
 	 */
+	@Override
 	public void deserialize(CloverBuffer buffer) {
 		// encoded length is incremented by one, decrement it back to normal
 		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
@@ -407,6 +418,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
@@ -426,6 +438,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@param  obj  Description of the Parameter
 	 *@return      Description of the Return Value
 	 */
+	@Override
 	public int compareTo(Object obj) {
 		byte[] byteObj;
 		if (isNull) return -1;
@@ -460,6 +473,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
+	@Override
 	public int hashCode(){
 		 return Arrays.hashCode(this.value);
 	}
@@ -471,6 +485,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField
 	 */
+	@Override
 	public int getSizeSerialized() {
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);

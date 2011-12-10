@@ -172,6 +172,7 @@ public class Trash extends Node {
 		return status;
 	}
 	
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized()) {
 			return;
@@ -312,6 +313,7 @@ public class Trash extends Node {
 		}
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
@@ -373,6 +375,7 @@ public class Trash extends Node {
 		return trash;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -460,6 +463,7 @@ public class Trash extends Node {
 			this.inPort = inPort;
 		}
 
+		@Override
 		public void run() {
 			DataRecord record = new DataRecord(inPort.getMetadata());
 			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);

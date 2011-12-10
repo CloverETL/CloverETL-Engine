@@ -121,6 +121,7 @@ public class Concatenate extends Node {
 		super(id);
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}

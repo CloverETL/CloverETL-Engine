@@ -70,6 +70,7 @@ public class NumericFormat extends NumberFormat {
      * @return BigDecimal
      * @deprecated
      */
+	@Override
 	public Number parse(String source, ParsePosition parsePosition){
 		boolean exponentForm = false;
 		char decimalSeparator = dFormat.getDecimalFormatSymbols().getDecimalSeparator();
@@ -336,6 +337,7 @@ public class NumericFormat extends NumberFormat {
 	/* (non-Javadoc)
 	 * @see java.text.NumberFormat#format(double, java.lang.StringBuffer, java.text.FieldPosition)
 	 */
+	@Override
 	public StringBuffer format(double number, StringBuffer toAppendTo,
 			FieldPosition pos) {
 		return dFormat.format(number,toAppendTo,pos);
@@ -344,6 +346,7 @@ public class NumericFormat extends NumberFormat {
 	/* (non-Javadoc)
 	 * @see java.text.NumberFormat#format(long, java.lang.StringBuffer, java.text.FieldPosition)
 	 */
+	@Override
 	public StringBuffer format(long number, StringBuffer toAppendTo,
 			FieldPosition pos) {
 		return dFormat.format(number,toAppendTo,pos);
@@ -365,6 +368,7 @@ public class NumericFormat extends NumberFormat {
 		dFormat.applyPattern(pattern);
 	}
 	
+	@Override
 	public boolean equals(Object o){
 		if (!(o instanceof NumericFormat)) return false;
 		return dFormat.equals(((NumericFormat)o).dFormat);
@@ -410,6 +414,7 @@ public class NumericFormat extends NumberFormat {
 		dFormat.setPositiveSuffix(positiveSuffix);
 	}
 	
+	@Override
 	public int hashCode(){
 		return dFormat.hashCode();
 	}
@@ -422,34 +427,42 @@ public class NumericFormat extends NumberFormat {
 		dFormat.setDecimalSeparatorAlwaysShown(newValue);
 	}
 	
+	@Override
 	public int getMaximumFractionDigits(){
 		return dFormat.getMaximumFractionDigits();
 	}
 	
+	@Override
 	public void setMaximumFractionDigits(int newValue){
 		dFormat.setMaximumFractionDigits(newValue);
 	}
 	
+	@Override
 	public int getMaximumIntegerDigits(){
 		return dFormat.getMaximumIntegerDigits();
 	}
 	
+	@Override
 	public void setMaximumIntegerDigits(int newValue){
 		dFormat.setMaximumIntegerDigits(newValue);
 	}
 	
+	@Override
 	public int getMinimumFractionDigits(){
 		return dFormat.getMinimumFractionDigits();
 	}
 	
+	@Override
 	public void setMinimumFractionDigits(int newValue) {
 		dFormat.setMinimumFractionDigits(newValue);
 	}
 	
+	@Override
 	public int getMinimumIntegerDigits(){
 		return dFormat.getMinimumIntegerDigits();
 	}
 	
+	@Override
 	public void setMinimumIntegerDigits(int newValue) {
 		dFormat.setMinimumIntegerDigits(newValue);
 	}

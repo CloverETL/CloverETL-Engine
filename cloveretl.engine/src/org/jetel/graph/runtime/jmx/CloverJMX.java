@@ -70,6 +70,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getCloverVersion()
 	 */
+	@Override
 	public String getCloverVersion() {
 		// TODO Auto-generated method stub
 		return "<unknown clover engine version>";
@@ -78,6 +79,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#getGraphTracking()
 	 */
+	@Override
 	public GraphTracking getGraphTracking() {
 		return graphDetail;
 	}
@@ -85,6 +87,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#abortGraphExecution()
 	 */
+	@Override
 	public void abortGraphExecution() {
 		watchDog.abort();
 	}
@@ -92,6 +95,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#closeServer()
 	 */
+	@Override
 	synchronized public void closeServer() {
     	canClose = true;
     	this.notifyAll();
