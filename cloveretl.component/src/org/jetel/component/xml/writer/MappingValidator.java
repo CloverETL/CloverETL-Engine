@@ -98,6 +98,7 @@ public class MappingValidator extends AbstractVisitor {
 		warningsCount = 0;
 	}
 
+	@Override
 	public void setMapping(XmlMapping mapping) {
 		super.setMapping(mapping);
 		clear();

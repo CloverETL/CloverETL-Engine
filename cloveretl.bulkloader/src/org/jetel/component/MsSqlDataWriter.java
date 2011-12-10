@@ -609,6 +609,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * 
 	 * @since April 4, 2002
 	 */
+	@Override
 	public Result execute() throws Exception {
 		super.execute();
 		ProcBox box;
@@ -802,6 +803,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * @exception ComponentNotReadyException Description of the Exception
 	 * @since April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
 		super.init();
@@ -1140,6 +1142,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		return status;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}

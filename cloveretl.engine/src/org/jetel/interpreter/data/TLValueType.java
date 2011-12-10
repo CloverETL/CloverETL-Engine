@@ -52,7 +52,8 @@ public enum TLValueType {
     
     public final int code(){return code;}
     public final String getName(){return name;}
-    public String toString(){return name;}
+    @Override
+	public String toString(){return name;}
     public final boolean isPrimitive() {return primitive;}
     public final boolean isNumeric() {return numeric;}
     public final boolean isArray() {return array;}

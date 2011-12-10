@@ -150,6 +150,7 @@ public class Mapping implements Iterable<MappingAssignment> {
 	/**
 	 * Returns an iterator over this container.
 	 */
+	@Override
 	public Iterator<MappingAssignment> iterator() {
 		return assignments.iterator();
 	}

@@ -37,6 +37,7 @@ public class ByteDataFieldTest extends CloverTestCase {
 
 	protected ByteDataField byteField;
 
+	@Override
 	protected void setUp() {
 		initEngine();
 

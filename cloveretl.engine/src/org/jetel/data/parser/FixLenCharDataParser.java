@@ -99,6 +99,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.FixLenDataParser3#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init()
 			throws ComponentNotReadyException {
 		super.init();
@@ -109,6 +110,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.FixLenDataParser3#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) {
 		super.setDataSource(inputDataSource);
 		charBuffer.clear();
@@ -124,6 +126,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * @param bytes
 	 * @throws IOException 
 	 */
+	@Override
 	protected void discardBytes(int bytes) throws IOException {
 		while (bytes > 0) {
 			if (inChannel instanceof FileChannel) {
@@ -149,6 +152,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * @return null when no more data are available, output record otherwise.
 	 * @throws JetelException
 	 */
+	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		CharBuffer rawRec = null;
 		fieldIdx = -1;
@@ -207,34 +211,42 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		return record;
 	}
 
+	@Override
 	public boolean isEnableIncomplete() {
 		return enableIncomplete;
 	}
 
+	@Override
 	public void setEnableIncomplete(boolean enableIncomplete) {
 		this.enableIncomplete = enableIncomplete;
 	}
 
+	@Override
 	public boolean isSkipEmpty() {
 		return enableIncomplete;
 	}
 
+	@Override
 	public void setSkipEmpty(boolean skipEmpty) {
 		this.skipEmpty = skipEmpty;
 	}
 
+	@Override
 	public boolean isSkipLeadingBlanks() {
 		return skipLeadingBlanks;
 	}
 
+	@Override
 	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
 		this.skipLeadingBlanks = skipLeadingBlanks;
 	}
 
+	@Override
 	public boolean isSkipTrailingBlanks() {
 		return skipTrailingBlanks;
 	}
 
+	@Override
 	public void setSkipTrailingBlanks(boolean skipTrailingBlanks) {
 		this.skipTrailingBlanks = skipTrailingBlanks;
 	}
@@ -390,6 +402,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * @return Number of successfully skipped records.
 	 * @throws JetelException
 	 */
+	@Override
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
@@ -416,6 +429,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		super.reset();
 		charBuffer.clear();

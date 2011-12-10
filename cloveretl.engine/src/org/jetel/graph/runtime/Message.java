@@ -133,7 +133,8 @@ public class Message<T> implements Comparable<Message>{
         this.type = type;
     }
     
-    public int compareTo(Message to){
+    @Override
+	public int compareTo(Message to){
         int result=this.type.compareTo(to.type);
         if (result==0){
             result= this.priority-to.priority;

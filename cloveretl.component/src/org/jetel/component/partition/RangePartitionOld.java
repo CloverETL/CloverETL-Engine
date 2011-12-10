@@ -53,19 +53,23 @@ public class RangePartitionOld implements PartitionFunction{
         this.boundariesStr=boundariesStr;
     }
     
-    public void init(int numPartitions, RecordKey partitionKey){
+    @Override
+	public void init(int numPartitions, RecordKey partitionKey){
         this.numPorts=numPartitions;
         keyFields=partitionKey.getKeyFields();
 
     }
     
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 	}
 
-    public int getOutputPort(DataRecord record){
+    @Override
+	public int getOutputPort(DataRecord record){
         // create boundaries the first time this method is called
         if (boundaries==null){
             boundaries = new DataField[boundariesStr.length];
@@ -114,15 +118,18 @@ public class RangePartitionOld implements PartitionFunction{
     	// not used here
     }
 
-    public TransformationGraph getGraph() {
+    @Override
+	public TransformationGraph getGraph() {
     	// not used here
     	return null;
     }
 
-    public void setNode(Node node) {
+    @Override
+	public void setNode(Node node) {
     }
     
-    public Node getNode() {
+    @Override
+	public Node getNode() {
     	return null;
     }
     
@@ -148,6 +155,7 @@ public class RangePartitionOld implements PartitionFunction{
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return false;
 	}

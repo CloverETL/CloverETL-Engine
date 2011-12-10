@@ -885,6 +885,7 @@ final class BPage<K, V> implements Serializer<BPage<K, V>> {
 	 * @return deserialized object
 	 * 
 	 */
+	@Override
 	public BPage<K, V> deserialize(SerializerInput ois) throws IOException {
 
 		BPage<K, V> bpage = new BPage<K, V>();
@@ -952,6 +953,7 @@ final class BPage<K, V> implements Serializer<BPage<K, V>> {
 	 * @return a byte array representing the object's state
 	 * 
 	 */
+	@Override
 	public void serialize(SerializerOutput oos, BPage<K, V> obj) throws IOException {
 
 		// note: It is assumed that BPage instance doing the serialization is the parent
@@ -1379,6 +1381,7 @@ final class BPage<K, V> implements Serializer<BPage<K, V>> {
 			_index = index;
 		}
 
+		@Override
 		public boolean getNext(Tuple<K, V> tuple) throws IOException {
 			if (_index < _page._btree._pageSize) {
 				if (_page._keys[_index] == null) {
@@ -1396,6 +1399,7 @@ final class BPage<K, V> implements Serializer<BPage<K, V>> {
 			return true;
 		}
 
+		@Override
 		public boolean getPrevious(Tuple<K, V> tuple) throws IOException {
 			if (_index == _page._first) {
 

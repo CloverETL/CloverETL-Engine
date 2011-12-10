@@ -33,14 +33,17 @@ import org.jetel.mapping.MappingTarget;
  */
 public class MappingFilterAdapter implements MappingFilter {
 
+	@Override
 	public boolean checkAssignment(MappingAssignment assignment) {
 		return true;
 	}
 
+	@Override
 	public boolean checkSource(MappingSource source) {
 		return true;
 	}
 
+	@Override
 	public boolean checkTarget(MappingTarget target) {
 		return true;
 	}

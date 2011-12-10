@@ -61,11 +61,13 @@ public class CloverNumericConvertor implements IGenericConvertor {
         return result;
     }
 
-    public Object parse(String input) throws DataConversionException {
+    @Override
+	public Object parse(String input) throws DataConversionException {
         return parseXsdDoubleToDouble(input);
     }
 
-    public String print(Object obj) throws DataConversionException {
+    @Override
+	public String print(Object obj) throws DataConversionException {
         if (!(obj instanceof Double)) {
             throw new DataConversionException("Unsupported type by convertion: " + obj.getClass().getName());
         }
@@ -73,10 +75,12 @@ public class CloverNumericConvertor implements IGenericConvertor {
         return printDoubleToXsdDouble((Double) obj);
     }
 
+	@Override
 	public boolean supportsCloverType(String cloverDataTypeCriteria) {
 		return DataFieldMetadata.NUMERIC_TYPE.equals(cloverDataTypeCriteria);
 	}
 	
+	@Override
 	public boolean supportsExternalSystemType(String externalTypeCriteria) {
 		return true;
 	}

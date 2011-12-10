@@ -312,6 +312,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 * @return      True if they equals, false otherwise
 	 * @since       April 23, 2002
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (this==obj) return true;
 	    
@@ -343,6 +344,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(Object obj){
 	    if (this==obj) return 0;
 	    
@@ -639,6 +641,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 *
 	 * @return    Description of the Return Value
 	 */
+	@Override
 	public String toString() {
 		StringBuffer str = new StringBuffer(80);
 		for (int i = 0; i < fields.length; i++) {
@@ -677,6 +680,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode(){
 	    int hash=17;
 	    for (int i=0;i<fields.length;i++){
@@ -702,14 +706,17 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
      * Returns iterator over all contained data fields.
      * @see java.lang.Iterable#iterator()
      */
-    public Iterator<DataField> iterator() {
+    @Override
+	public Iterator<DataField> iterator() {
         return new Iterator<DataField>() {
             private int idx = 0;
-            public boolean hasNext() {
+            @Override
+			public boolean hasNext() {
                 return fields.length > idx;
             }
 
-            public DataField next() {
+            @Override
+			public DataField next() {
                 try {
                     return fields[idx++];
                 } catch(ArrayIndexOutOfBoundsException e) {
@@ -717,7 +724,8 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
                 }
             }
 
-            public void remove() {
+            @Override
+			public void remove() {
                 throw new UnsupportedOperationException();
             }
         };

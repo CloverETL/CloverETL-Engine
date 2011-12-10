@@ -417,6 +417,7 @@ public abstract class BulkLoader extends Node {
 	 * @author MVarecha - created from anonymous inner class
 	 */
 	private class PipeThread extends Thread {
+		@Override
 		public void run() {
 			try {
 				readFromPortAndWriteByFormatter();

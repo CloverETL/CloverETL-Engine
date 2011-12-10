@@ -63,6 +63,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		runIt = true;
 	}
 	
+	@Override
 	public void run() {
 		ContextProvider.registerNode(node);
 		MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
@@ -137,6 +138,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		}
 	}
 	
+	@Override
 	public void uncaughtException(Thread t, Throwable e) {
 		if (t == thread) {
 			fireWorkerCrashed(new CloverWorkerListener.Event(this, e));

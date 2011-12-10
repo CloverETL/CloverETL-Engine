@@ -132,6 +132,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		return recman;
 	}
 
+	@Override
 	public synchronized <A> long insert(A obj, Serializer<A> serializer) throws IOException {
 		checkIfClosed();
 		long recid = recman.insert(obj, serializer);
@@ -145,6 +146,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		return recid;
 	}
 
+	@Override
 	public synchronized <A> A fetch(long recid, Serializer<A> serializer, boolean disableCache) throws IOException {
 		if (disableCache) {
 			return recman.fetch(recid, serializer, disableCache);
@@ -153,6 +155,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		}
 	}
 
+	@Override
 	public synchronized void delete(long recid) throws IOException {
 		throw new UnsupportedOperationException("Not implemented!"); 
 		// Add memory handling when implementing this method
@@ -166,6 +169,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 //		}
 	}
 
+	@Override
 	public synchronized <A> void update(long recid, A obj, Serializer<A> serializer) throws IOException {
 		checkIfClosed();
 		CacheEntry entry = cacheGet(recid);
@@ -191,6 +195,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		evictIfNeeded();
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public synchronized <A> A fetch(long recid, Serializer<A> serializer) throws IOException {
 		checkIfClosed();
@@ -206,6 +211,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		}
 	}
 
+	@Override
 	public synchronized void close() throws IOException {
 		checkIfClosed();
 
@@ -214,6 +220,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		hash = null;
 	}
 
+	@Override
 	public synchronized void commit() throws IOException {
 		checkIfClosed();
 		updateCacheEntries();
@@ -223,6 +230,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		writeCache = 0;
 	}
 
+	@Override
 	public synchronized void rollback() throws IOException {
 		checkIfClosed();
 
@@ -235,12 +243,14 @@ public class CacheRecordManager extends RecordManagerImpl {
 		last = null;
 	}
 
+	@Override
 	public synchronized long getNamedObject(String name) throws IOException {
 		checkIfClosed();
 
 		return recman.getNamedObject(name);
 	}
 
+	@Override
 	public synchronized void setNamedObject(String name, long recid) throws IOException {
 		checkIfClosed();
 
@@ -424,6 +434,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 
 	}
 
+	@Override
 	public synchronized void clearCache() throws IOException {
 		// discard all cache entries since we don't know which entries
 		// where part of the transaction
@@ -436,6 +447,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 
 	}
 
+	@Override
 	public void defrag() throws IOException {
 		commit();
 		recman.defrag();

@@ -18,6 +18,7 @@ public class InterpreterTest extends CompilerTestCase {
 	
 	private TransformLangExecutor executor;
 	
+	@Override
 	public void executeCode(ITLCompiler compiler) {
 		TransformationGraph graph = createDefaultGraph();
 		inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)) };
@@ -41,6 +42,7 @@ public class InterpreterTest extends CompilerTestCase {
 		executor.executeFunction(transform, new Object[0]);
 	}
 	
+	@Override
 	protected Object getVariable(String varName) {
 		return executor.getVariableValue(varName);
 	}
@@ -98,6 +100,7 @@ public class InterpreterTest extends CompilerTestCase {
 		}
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		//FIXME: fix for memory leak - find that memory leak :-)

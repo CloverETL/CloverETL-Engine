@@ -43,6 +43,7 @@ public class CLVFVariableDeclaration extends SimpleNode implements TransformLang
 	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
+	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
 			return visitor.visit(this, data);
@@ -60,6 +61,7 @@ public class CLVFVariableDeclaration extends SimpleNode implements TransformLang
 		this.name = name;
 	}
 
+	@Override
 	public String toString() {
 		return super.toString() + " name \"" + name + "\"";
 	}

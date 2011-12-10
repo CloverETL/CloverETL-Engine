@@ -69,6 +69,7 @@ public class RandomLib extends TLFunctionLibrary {
 	
 	private static String LIBRARY_NAME = "Random";
 
+	@Override
 	public String getName() {
 		return LIBRARY_NAME;
 	}
@@ -86,10 +87,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// RANDOM
 	class RandomFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(random(context));
 		}
@@ -108,10 +111,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// RANDOM Gaussian
 	class RandomGaussianFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomGaussianInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(randomGaussian(context));
 		}
@@ -130,10 +135,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// RANDOM Boolean
 	class RandomBooleanFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomBooleanInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(randomBoolean(context));
 		}
@@ -157,10 +164,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// RANDOMINTEGER
 	class RandomIntegerFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomIntegerInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer max;
 			Integer min;
@@ -192,10 +201,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// RANDOMLONG
 	class RandomLongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomLongInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Long max;
 			Long min;
@@ -221,10 +232,12 @@ public class RandomLib extends TLFunctionLibrary {
 
 	class RandomStringFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomStringInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			Integer maxLength = stack.popInt();
 			Integer minLength = stack.popInt();
@@ -235,10 +248,12 @@ public class RandomLib extends TLFunctionLibrary {
 	// Random date
 	class RandomDateFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			randomDateInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
 			String format;
@@ -320,10 +335,12 @@ public class RandomLib extends TLFunctionLibrary {
 
 	class SetRandomSeedFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			setRandomSeedInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			setRandomSeed(context, stack.popLong());
 		}

@@ -85,6 +85,7 @@ public class LoggerDataConsumer implements DataConsumer {
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public void setInput(InputStream stream) {
 		reader = new BufferedReader(new InputStreamReader(stream));
 	}
@@ -92,6 +93,7 @@ public class LoggerDataConsumer implements DataConsumer {
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public boolean consume() throws JetelException {
 		String line;
 		try {
@@ -128,6 +130,7 @@ public class LoggerDataConsumer implements DataConsumer {
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
+	@Override
 	public void close() {
 	}
 

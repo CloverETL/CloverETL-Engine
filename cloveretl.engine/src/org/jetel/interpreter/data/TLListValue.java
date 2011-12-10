@@ -40,7 +40,8 @@ public class TLListValue extends TLContainerValue {
     }
     
     
-    public Object getValue() {
+    @Override
+	public Object getValue() {
     	return valueList;
     }
     
@@ -48,12 +49,14 @@ public class TLListValue extends TLContainerValue {
     	return valueList;
     }
     
-    public TLValue getStoredValue(int index) {
+    @Override
+	public TLValue getStoredValue(int index) {
       return valueList.get(index);
     }
     
     
-    public TLValue getStoredValue(TLValue key) {
+    @Override
+	public TLValue getStoredValue(TLValue key) {
         if (key.type.isNumeric()){
         	return getStoredValue(key.getNumeric().getInt());
         }else{
@@ -79,12 +82,14 @@ public class TLListValue extends TLContainerValue {
     }
     
     
-    public void setValue(TLValue value){
+    @Override
+	public void setValue(TLValue value){
     	setStoredValue(value);
     }
     
     
-    public Collection<TLValue> getCollection(){
+    @Override
+	public Collection<TLValue> getCollection(){
     	return valueList;
     }
     
@@ -97,7 +102,8 @@ public class TLListValue extends TLContainerValue {
      * Value is null, index >=0 -> remove item at location
      * 
      */
-    public void setStoredValue(int index, TLValue value) {
+    @Override
+	public void setStoredValue(int index, TLValue value) {
         if (value==TLNullValue.getInstance()) {
         		if (index<0)
         			valueList.remove(valueList.size()-1);
@@ -113,7 +119,8 @@ public class TLListValue extends TLContainerValue {
     
     
     
-    public void setStoredValue(TLValue key, TLValue value) {
+    @Override
+	public void setStoredValue(TLValue key, TLValue value) {
     	if (key.type.isNumeric()){
         	setStoredValue(key.getNumeric().getInt(),value);
         }else{
@@ -121,7 +128,8 @@ public class TLListValue extends TLContainerValue {
         }
     }
     
-    public int getLength() {
+    @Override
+	public int getLength() {
         return valueList.size();
     }
    
@@ -139,7 +147,8 @@ public class TLListValue extends TLContainerValue {
         }
     }
     
-    public TLValue duplicate(){
+    @Override
+	public TLValue duplicate(){
     	TLListValue newVal=new TLListValue(valueList.size());
     	for(TLValue item : valueList){
     		newVal.valueList.add(item.duplicate());
@@ -148,7 +157,8 @@ public class TLListValue extends TLContainerValue {
     }
     
     
-    public int compareTo(TLValue value){
+    @Override
+	public int compareTo(TLValue value){
     	if (value instanceof TLContainerValue){
     		TLValue maxVal1=Collections.max(valueList);
     		TLValue maxVal2=Collections.max(((TLContainerValue)value).getCollection());

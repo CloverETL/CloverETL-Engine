@@ -137,6 +137,7 @@ public class JmsWriter extends Node {
 		this.psorProperties = psorProperties;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -189,6 +190,7 @@ public class JmsWriter extends Node {
 		closeConnection();
 	}
 
+	@Override
 	synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     }
@@ -281,10 +283,12 @@ public class JmsWriter extends Node {
 		}
 	}
 	
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	
@@ -342,6 +346,7 @@ public class JmsWriter extends Node {
 		return jmsReader; 
 	}
 
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 

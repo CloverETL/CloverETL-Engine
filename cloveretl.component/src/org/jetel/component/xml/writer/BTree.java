@@ -398,6 +398,7 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 	 *            Lookup key.
 	 * @return Value associated with the key, or null if not found.
 	 */
+	@Override
 	public V find(K key) throws IOException {
 		if (key == null) {
 			throw new IllegalArgumentException("Argument 'key' is null");
@@ -536,6 +537,7 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 	/**
 	 * Implement Externalizable interface.
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		_comparator = (Comparator<K>) in.readObject();
@@ -548,6 +550,7 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 	/**
 	 * Implement Externalizable interface.
 	 */
+	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeObject(_comparator);
 		out.writeInt(_height);
@@ -567,10 +570,12 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 		private EmptyBrowser() {
 		}
 
+		@Override
 		public boolean getNext(Tuple<K, V> tuple) {
 			return false;
 		}
 
+		@Override
 		public boolean getPrevious(Tuple<K, V> tuple) {
 			return false;
 		}
@@ -581,6 +586,7 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 	 * 
 	 * @param listener
 	 */
+	@Override
 	public void addRecordListener(RecordListener<K, V> listener) {
 		recordListeners.add(listener);
 	}
@@ -590,10 +596,12 @@ class BTree<K, V> implements Externalizable, JdbmBase<K, V> {
 	 * 
 	 * @param listener
 	 */
+	@Override
 	public void removeRecordListener(RecordListener<K, V> listener) {
 		recordListeners.remove(listener);
 	}
 
+	@Override
 	public RecordManager getRecordManager() {
 		return _recman;
 	}

@@ -57,6 +57,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
 	 */
+	@Override
 	public int write(ByteBuffer src) throws IOException {
 		// src start position
 		int startPosition = src.position();
@@ -88,6 +89,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#close()
 	 */
+	@Override
 	public void close() throws IOException {
         // write unwritten line
         if (unwrittenLine != null && unwrittenLine.length() > 0) {
@@ -184,6 +186,7 @@ public class LogOutByteChannel implements WritableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#isOpen()
 	 */
+	@Override
 	public boolean isOpen() {
 		return true;	// logger is always open
 	}

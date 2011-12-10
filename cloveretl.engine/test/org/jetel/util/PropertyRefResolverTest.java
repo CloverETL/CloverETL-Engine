@@ -28,6 +28,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 
 	private PropertyRefResolver resolver;
 
+	@Override
 	protected void setUp() throws Exception {
 		initEngine();
 

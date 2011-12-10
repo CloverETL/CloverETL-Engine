@@ -62,6 +62,7 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
 	 *            Array of metadata objects describing source data records
 	 * @return True if successfull, otherwise False
 	 */
+	@Override
 	public boolean init(Properties parameters, DataRecordMetadata[] targetRecordsMetadata)
 			throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
@@ -81,6 +82,7 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
 	/**
 	 * Generate data for output records.
 	 */
+	@Override
 	public int generate(DataRecord[] outputRecords) throws TransformException {
 		return generateImpl(generateFunction, outputRecords, NO_ARGUMENTS);
 	}
@@ -108,10 +110,12 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
 		return (Integer) result;
 	}
 
+	@Override
 	public void signal(Object signalObject) {
 		// does nothing
 	}
 
+	@Override
 	public Object getSemiResult() {
 		return null;
 	}

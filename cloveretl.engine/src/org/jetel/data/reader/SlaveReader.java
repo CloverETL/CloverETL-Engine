@@ -64,6 +64,7 @@ public class SlaveReader implements InputReader {
 		this.needsRewind = true;
 	}
 	
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
 		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
@@ -73,6 +74,7 @@ public class SlaveReader implements InputReader {
 		this.needsRewind = true;
 	}
 	
+	@Override
 	public void free() {
 		inPort = null;
 	}
@@ -151,10 +153,12 @@ public class SlaveReader implements InputReader {
 		}
 	}
 
+	@Override
 	public void rewindRun() {
 		needsRewind = false;
 	}
 
+	@Override
 	public DataRecord getSample() {
 		if (firstRun) {
 			return null;
@@ -162,6 +166,7 @@ public class SlaveReader implements InputReader {
 		return rec[CURRENT];
 	}
 
+	@Override
 	public DataRecord next() throws IOException {
 		if (firstRun || needsRewind) {
 			return null;
@@ -170,10 +175,12 @@ public class SlaveReader implements InputReader {
 		return rec[CURRENT];
 	}
 
+	@Override
 	public RecordKey getKey() {
 		return key;
 	}
 	
+	@Override
 	public int compare(InputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
@@ -191,6 +198,7 @@ public class SlaveReader implements InputReader {
 		return key.compare(other.getKey(), rec1, rec2);
 	}
 
+	@Override
 	public boolean hasData() {
 		return rec[NEXT] != null || rec[CURRENT] != null;
 	}		
@@ -200,10 +208,12 @@ public class SlaveReader implements InputReader {
 		return getSample().toString();
 	}
 
+	@Override
 	public boolean loadNextRun() throws InterruptedException, IOException {
 		return keepLast ? loadNextRunKeepLast() : loadNextRunKeepFirst();
 	}
 
+	@Override
 	public InputOrdering getOrdering() {
 		return inputOrdering;
 	}

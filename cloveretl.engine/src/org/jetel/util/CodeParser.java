@@ -1095,6 +1095,7 @@ public class CodeParser {
 		 *
 		 * @return    Description of the Return Value
 		 */
+		@Override
 		public String toString() {
 			return "" + token + ":" + startOffset + ":" + endOffset;
 		}
@@ -1116,7 +1117,8 @@ public class CodeParser {
 	        this.direction=direction;
 	    }
 	    
-	   public boolean equals(Object obj) {
+	   @Override
+	public boolean equals(Object obj) {
 	        if (obj instanceof FieldReference){
 	            final FieldReference cmpTo=(FieldReference)obj;
 	            return (cmpTo.fieldNum==this.fieldNum && cmpTo.recNum==this.recNum && 
@@ -1125,7 +1127,8 @@ public class CodeParser {
 	        return false;
 	    }
 	   
-	   public int hashCode(){
+	   @Override
+	public int hashCode(){
 	       return this.fieldNum+this.recNum+direction.hashCode()+fieldName.hashCode();
 	   }
 	}

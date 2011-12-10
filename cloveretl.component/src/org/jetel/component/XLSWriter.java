@@ -446,7 +446,8 @@ public class XLSWriter extends Node {
 		this.tmpDir = tmpDir;
 	}
 
-    public void toXML(org.w3c.dom.Element xmlElement) {
+    @Override
+	public void toXML(org.w3c.dom.Element xmlElement) {
         super.toXML(xmlElement);
 
         xmlElement.setAttribute(XML_FORMATTER_ATTRIBUTE, formatterType.name());

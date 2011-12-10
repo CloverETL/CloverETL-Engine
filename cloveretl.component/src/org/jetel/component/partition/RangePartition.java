@@ -74,20 +74,24 @@ public class RangePartition implements PartitionFunction{
     	this(lookup, portField, NONEXISTENT_REJECTED_PORT);
     }
     
-    public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
+    @Override
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
         lookupTable.init();
         lookup = lookupTable.createLookup(partitionKey);
     }
     
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		lookupTable.preExecute();
 	}
 	
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		lookupTable.postExecute();
 	}
 
-    public int getOutputPort(DataRecord record){
+    @Override
+	public int getOutputPort(DataRecord record){
     	lookup.seek(record);
     	portRecord = lookup.hasNext() ? lookup.next() : null;
     	return portRecord != null ? ((Numeric)portRecord.getField(portField)).getInt() :
@@ -108,16 +112,19 @@ public class RangePartition implements PartitionFunction{
     	// not used here
     }
 
-    public TransformationGraph getGraph() {
+    @Override
+	public TransformationGraph getGraph() {
     	// not used here
     	return null;
     }
 
-    public void setNode(Node node) {
+    @Override
+	public void setNode(Node node) {
     	// not used here
     }
     
-    public Node getNode() {
+    @Override
+	public Node getNode() {
     	// not used here
     	return null;
     }
@@ -142,6 +149,7 @@ public class RangePartition implements PartitionFunction{
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return false;
 	}

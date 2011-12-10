@@ -40,6 +40,7 @@ public class BlockingQueue extends Queue {
 	 * If queue is full wait.
 	 * @see org.jetel.util.primitive.Queue#add(java.lang.Object)
 	 */
+	@Override
 	synchronized public boolean add(Object item) {
 		while(isFull()) {
 			try {
@@ -58,6 +59,7 @@ public class BlockingQueue extends Queue {
 	 * @return Oldest object in the FIFO, null upon empty FIFO
 	 * @see org.jetel.util.primitive.Queue#get()
 	 */
+	@Override
 	synchronized public Object get() {
 		while(isEmpty()) {
 			try {
@@ -90,6 +92,7 @@ public class BlockingQueue extends Queue {
 	/**
 	 * @see org.jetel.util.primitive.Queue#isEmpty()
 	 */
+	@Override
 	synchronized public boolean isEmpty() {
 		return super.isEmpty();
 	}
@@ -97,6 +100,7 @@ public class BlockingQueue extends Queue {
 	/**
 	 * @see org.jetel.util.primitive.Queue#isFull()
 	 */
+	@Override
 	synchronized public boolean isFull() {
 		return super.isFull();
 	}
@@ -104,6 +108,7 @@ public class BlockingQueue extends Queue {
 	/**
 	 * @see org.jetel.util.primitive.Queue#removeAll()
 	 */
+	@Override
 	synchronized public void removeAll() {
 		super.removeAll();
 	}
@@ -138,6 +143,7 @@ class Producent extends Thread {
 		this.queue = queue;
 	}
 
+	@Override
 	public void run() {
 		int i = 0;
 		for(;;) {
@@ -161,6 +167,7 @@ class Consument extends Thread {
 		this.queue = queue;
 	}
 
+	@Override
 	public void run() {
 		for(;;) {
 			System.out.println(queue.get());

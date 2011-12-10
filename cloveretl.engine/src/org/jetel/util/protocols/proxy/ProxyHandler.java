@@ -36,7 +36,8 @@ public class ProxyHandler extends URLStreamHandler {
 		throw new UnsupportedOperationException("The opentConnection method is not supported for the ProxyHandler!");
 	}
 	
-    protected void parseURL(URL u, String spec, int start, int limit) {
+    @Override
+	protected void parseURL(URL u, String spec, int start, int limit) {
     	super.parseURL(u, spec, start, limit);
     	String protocol = u.getProtocol();
     	if (ProxyProtocolEnum.fromString(protocol) == null) {

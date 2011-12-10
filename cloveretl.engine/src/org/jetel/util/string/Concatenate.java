@@ -72,6 +72,7 @@ public class Concatenate {
 	 * 
 	 * @return All appended items glued together
 	 */
+	@Override
 	public String toString() {
 		boolean first = true;
 		StringBuilder sb = new StringBuilder();

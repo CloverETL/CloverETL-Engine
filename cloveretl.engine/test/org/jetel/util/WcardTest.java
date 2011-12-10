@@ -33,7 +33,8 @@ public class WcardTest extends CloverTestCase {
 
 	private WcardPattern fgen;
 	
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
         fgen = new WcardPattern();
     }
@@ -51,7 +52,8 @@ public class WcardTest extends CloverTestCase {
 		}
     }
     
-    protected void tearDown(){
+    @Override
+	protected void tearDown(){
     }
 
 }

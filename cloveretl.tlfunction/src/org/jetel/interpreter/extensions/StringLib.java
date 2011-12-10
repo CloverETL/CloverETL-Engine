@@ -103,6 +103,7 @@ public class StringLib extends TLFunctionLibrary {
 		super();
 	}
 
+	@Override
 	public TLFunctionPrototype getFunction(String functionName) {
 		switch (Function.fromString(functionName)) {
 		case CONCAT:
@@ -170,6 +171,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
+	@Override
 	public Collection<TLFunctionPrototype> getAllFunctions() {
 		List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
 		Function[] fun = Function.values();

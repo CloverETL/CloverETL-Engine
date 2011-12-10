@@ -53,22 +53,27 @@ class JodaDateFormatter implements DateFormatter {
 		this.pattern=pattern;
 	}
 
+	@Override
 	public String format(Date value) {
 		return dateTimeFormatter.print(value.getTime());
 	}
 
+	@Override
 	public Date parseDate(String value) {
 		return new Date(parseMillis(value));
 	}
 
+	@Override
 	public long parseMillis(String value) {
 		return dateTimeFormatter.parseMillis(value);
 	}
 
+	@Override
 	public String getPattern() {
 		return pattern;
 	}
 
+	@Override
 	public boolean tryParse(String value) {
 		try{
 			dateTimeFormatter.parseMillis(value);
@@ -78,6 +83,7 @@ class JodaDateFormatter implements DateFormatter {
 		return true;
 	}
 
+	@Override
 	public void setLenient(boolean lenient) {
 		//DO NOTHING - no lenient parsing option
 	}

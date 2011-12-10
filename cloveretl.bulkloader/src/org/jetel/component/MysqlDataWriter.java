@@ -488,6 +488,7 @@ public class MysqlDataWriter extends BulkLoader {
 	 * 
 	 * @since April 4, 2002
 	 */
+	@Override
 	public Result execute() throws Exception {
 		super.execute();
 		ProcBox box;
@@ -1027,6 +1028,7 @@ public class MysqlDataWriter extends BulkLoader {
 		return status;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -1140,6 +1142,7 @@ public class MysqlDataWriter extends BulkLoader {
 		/**
 		 * @see org.jetel.util.exec.DataConsumer
 		 */
+		@Override
 		public void setInput(InputStream stream) {
 			reader = new BufferedReader(new InputStreamReader(stream));
 		}
@@ -1152,6 +1155,7 @@ public class MysqlDataWriter extends BulkLoader {
 		 * 
 		 * @see org.jetel.util.exec.DataConsumer
 		 */
+		@Override
 		public boolean consume() throws JetelException {
 			try {
 				String line;
@@ -1244,6 +1248,7 @@ public class MysqlDataWriter extends BulkLoader {
 		/**
 		 * @see org.jetel.util.exec.DataConsumer
 		 */
+		@Override
 		public void close() {
 			try {
 				if (reader != null) {

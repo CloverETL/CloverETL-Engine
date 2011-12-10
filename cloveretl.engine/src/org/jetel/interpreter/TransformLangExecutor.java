@@ -285,13 +285,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     /* *********************************************************** */
     /* it seems to be necessary to define a visit() method for SimpleNode */
 
-    public Object visit(SimpleNode node, Object data) {
+    @Override
+	public Object visit(SimpleNode node, Object data) {
 //        throw new TransformLangExecutorRuntimeException(node,
 //                "Error: Call to visit for SimpleNode");
         return data;
     }
 
-    public Object visit(CLVFStart node, Object data) {
+    @Override
+	public Object visit(CLVFStart node, Object data) {
 
         int i, k = node.jjtGetNumChildren();
 
@@ -301,7 +303,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data; // this value is ignored in this example
     }
     
-    public Object visit(CLVFStartExpression node, Object data) {
+    @Override
+	public Object visit(CLVFStartExpression node, Object data) {
 
         int i, k = node.jjtGetNumChildren();
 
@@ -312,7 +315,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
 
-    public Object visit(CLVFOr node, Object data) {
+    @Override
+	public Object visit(CLVFOr node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a=stack.pop();
         
@@ -337,7 +341,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFAnd node, Object data) {
+    @Override
+	public Object visit(CLVFAnd node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a=stack.pop();
 
@@ -361,7 +366,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFComparison node, Object data) {
+    @Override
+	public Object visit(CLVFComparison node, Object data) {
         int cmpResult = 2;
         boolean lValue = false;
         TLValue a;
@@ -524,7 +530,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFAddNode node, Object data) {
+    @Override
+	public Object visit(CLVFAddNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
@@ -577,7 +584,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFSubNode node, Object data) {
+    @Override
+	public Object visit(CLVFSubNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
@@ -617,7 +625,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFMulNode node, Object data) {
+    @Override
+	public Object visit(CLVFMulNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
@@ -644,7 +653,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
     }
 
-    public Object visit(CLVFDivNode node, Object data) {
+    @Override
+	public Object visit(CLVFDivNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
@@ -680,7 +690,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFModNode node, Object data) {
+    @Override
+	public Object visit(CLVFModNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
@@ -708,7 +719,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-     public Object visit(CLVFIsNullNode node, Object data) {
+     @Override
+	public Object visit(CLVFIsNullNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
@@ -725,7 +737,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFNVLNode node, Object data) {
+    @Override
+	public Object visit(CLVFNVLNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
@@ -742,7 +755,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    public Object visit(CLVFNVL2Node node, Object data) {
+    @Override
+	public Object visit(CLVFNVL2Node node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
@@ -755,12 +769,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFLiteral node, Object data) {
+    @Override
+	public Object visit(CLVFLiteral node, Object data) {
         stack.push(node.value);
         return data;
     }
 
-    public Object visit(CLVFInputFieldLiteral node, Object data) {
+    @Override
+	public Object visit(CLVFInputFieldLiteral node, Object data) {
     	if (inputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(node, "Cannot access input fields within this scope!");
     	}
@@ -842,7 +858,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
  
     
-    public Object visit(CLVFRegexLiteral node, Object data) {
+    @Override
+	public Object visit(CLVFRegexLiteral node, Object data) {
         stack.push(new TLObjectValue(node.matcher));
         return data;
     }
@@ -866,7 +883,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     
-    public Object visit(CLVFIffNode node, Object data) {
+    @Override
+	public Object visit(CLVFIffNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue condition = stack.pop();
 
@@ -886,7 +904,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFPrintErrNode node, Object data) {
+    @Override
+	public Object visit(CLVFPrintErrNode node, Object data) {
         node.childrenAccept(this, data);
         boolean printLocationFlag = false;
         
@@ -915,7 +934,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFPrintStackNode node, Object data) {
+    @Override
+	public Object visit(CLVFPrintStackNode node, Object data) {
         for (int i=stack.top;i>=0;i--){
             System.err.println("["+i+"] : "+stack.stack[i]);
         }
@@ -932,7 +952,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      * Transformation Language executor starts here.
      **************************************************************************/
 
-    public Object visit(CLVFForStatement node, Object data) {
+    @Override
+	public Object visit(CLVFForStatement node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data); // set up of the loop
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(1);
@@ -976,7 +997,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFForeachStatement node, Object data) {
+    @Override
+	public Object visit(CLVFForeachStatement node, Object data) {
         CLVFVariableLiteral varNode=(CLVFVariableLiteral)node.jjtGetChild(0);
         CLVFVariableLiteral arrayNode=(CLVFVariableLiteral)node.jjtGetChild(1);
         TLVariable variableToAssign = stack.getVar(varNode.localVar,
@@ -1029,7 +1051,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     
-    public Object visit(CLVFWhileStatement node, Object data) {
+    @Override
+	public Object visit(CLVFWhileStatement node, Object data) {
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(0);
         Node body;
@@ -1066,7 +1089,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFIfStatement node, Object data) {
+    @Override
+	public Object visit(CLVFIfStatement node, Object data) {
         boolean condition = false;
         node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
         TLValue conVal=stack.pop();
@@ -1090,7 +1114,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFDoStatement node, Object data) {
+    @Override
+	public Object visit(CLVFDoStatement node, Object data) {
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(1);
         Node body = node.jjtGetChild(0);
@@ -1119,7 +1144,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFSwitchStatement node, Object data) {
+    @Override
+	public Object visit(CLVFSwitchStatement node, Object data) {
         // get value of switch && push/leave it on stack
         boolean match=false;
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -1147,7 +1173,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFCaseExpression node, Object data) {
+    @Override
+	public Object visit(CLVFCaseExpression node, Object data) {
         // test if literal (as child 0) is equal to data on stack
         // if so, execute block (child 1)
         boolean match = false;
@@ -1172,6 +1199,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return TLBooleanValue.FALSE;
     }
 
+	@Override
 	public Object visit(CLVFTryCatchStatement node, Object data) {
 		try {
 			node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
@@ -1200,7 +1228,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     
 
-    public Object visit(CLVFIncrDecrStatement node, Object data) {
+    @Override
+	public Object visit(CLVFIncrDecrStatement node, Object data) {
         Node childNode = node.jjtGetChild(0);
             CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
             TLVariable var=stack.getVar(varNode.localVar, varNode.varSlot);
@@ -1218,7 +1247,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFBlock node, Object data) {
+    @Override
+	public Object visit(CLVFBlock node, Object data) {
         int childern = node.jjtGetNumChildren();
         for (int i = 0; i < childern; i++) {
             node.jjtGetChild(i).jjtAccept(this, data);
@@ -1237,19 +1267,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      * Loop & block & function control nodes
      */
 
-    public Object visit(CLVFBreakStatement node, Object data) {
+    @Override
+	public Object visit(CLVFBreakStatement node, Object data) {
         breakFlag = true; // we encountered break statement;
         breakType=BREAK_BREAK;
         return data;
     }
 
-    public Object visit(CLVFContinueStatement node, Object data) {
+    @Override
+	public Object visit(CLVFContinueStatement node, Object data) {
         breakFlag = true; // we encountered continue statement;
         breakType= BREAK_CONTINUE;
         return data;
     }
 
-    public Object visit(CLVFReturnStatement node, Object data) {
+    @Override
+	public Object visit(CLVFReturnStatement node, Object data) {
         if (node.jjtHasChildren()){
             node.jjtGetChild(0).jjtAccept(this, data);
         }
@@ -1258,7 +1291,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFBreakpointNode node, Object data) {
+    @Override
+	public Object visit(CLVFBreakpointNode node, Object data) {
         // list all variables
     	System.err.println("** list of global variables ***");
     	for (int i=0;i<stack.globalVarSlot.length;System.out.println(stack.globalVarSlot[i++]));
@@ -1273,7 +1307,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     /*
      * Variable declarations
      */
-    public Object visit(CLVFVarDeclaration node, Object data) {
+    @Override
+	public Object visit(CLVFVarDeclaration node, Object data) {
         TLValue value=null;
         // create global/local variable
         switch (node.type) {
@@ -1382,7 +1417,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFVariableLiteral node, Object data) {
+    @Override
+	public Object visit(CLVFVariableLiteral node, Object data) {
         TLVariable var = stack.getVar(node.localVar, node.varSlot);
         TLValue index = null;
         if (node.indexSet) {
@@ -1446,7 +1482,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return var;
     }
 
-    public Object visit(CLVFAssignment node, Object data) {
+    @Override
+	public Object visit(CLVFAssignment node, Object data) {
         CLVFVariableLiteral varNode = (CLVFVariableLiteral) node.jjtGetChild(0);
 
         TLVariable variableToAssign = stack.getVar(varNode.localVar,
@@ -1658,6 +1695,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     
+	@Override
 	public Object visit(CLVFDirectMapping node, Object data) {
 		DataField field = outputRecords[node.recordNo].getField(node.fieldNo);
 		TLValue value = null;
@@ -1738,7 +1776,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		return data;
 	}
 
-    public Object visit(CLVFWildCardMapping node, Object data) {
+    @Override
+	public Object visit(CLVFWildCardMapping node, Object data) {
     	if (!node.initialized) {
 			try {
 				node.custTrans.setLogger(logger);
@@ -1762,7 +1801,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     /*
 	 * Declaration & calling of Functions here
 	 */
-    public Object visit(CLVFFunctionCallStatement node, Object data) {
+    @Override
+	public Object visit(CLVFFunctionCallStatement node, Object data) {
         // EXTERNAL FUNCTION
         if (node.externalFunction != null) {
             // put call parameters on stack
@@ -1819,7 +1859,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object visit(CLVFFunctionDeclaration node, Object data) {
+    @Override
+	public Object visit(CLVFFunctionDeclaration node, Object data) {
         return data;
     }
 
@@ -1864,7 +1905,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
     
     
-    public Object visit(CLVFRaiseErrorNode node,Object data){
+    @Override
+	public Object visit(CLVFRaiseErrorNode node,Object data){
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
         throw new TransformLangExecutorRuntimeException(node,null,
@@ -1873,7 +1915,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
     
     
-    public Object visit(CLVFEvalNode node, Object data) {
+    @Override
+	public Object visit(CLVFEvalNode node, Object data) {
         // get TL expression
     	node.jjtGetChild(0).jjtAccept(this, data);
     	String src=stack.pop().toString();
@@ -1910,7 +1953,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     
     
-    public Object visit(CLVFSequenceNode node,Object data){
+    @Override
+	public Object visit(CLVFSequenceNode node,Object data){
         if (node.sequence==null){
             if (graph!=null){
                 node.sequence=graph.getSequence(node.sequenceName);
@@ -1988,7 +2032,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    public Object visit(CLVFLookupNode node, Object data) {
+    @Override
+	public Object visit(CLVFLookupNode node, Object data) {
 		DataRecord record = null;
 		if (node.lookupTable == null) {
 			node.lookupTable = graph.getLookupTable(node.lookupName);
@@ -2087,7 +2132,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		return data;
 	}
     
-    public Object visit(CLVFDictionaryNode node, Object data) {
+    @Override
+	public Object visit(CLVFDictionaryNode node, Object data) {
     	final Dictionary d = graph.getDictionary();
     	
     	if (d == null) {
@@ -2159,7 +2205,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     	return data;
     }
     
-    public Object visit(CLVFPrintLogNode node, Object data) {
+    @Override
+	public Object visit(CLVFPrintLogNode node, Object data) {
         if (runtimeLogger == null) {
             throw new TransformLangExecutorRuntimeException(node,
                     "Can NOT perform logging operation - no logger defined");
@@ -2189,21 +2236,25 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
 
-    public Object visit(CLVFImportSource node,Object data) {
+    @Override
+	public Object visit(CLVFImportSource node,Object data) {
         node.childrenAccept(this, data);
         return data;
     }
     
-    public Object visit(CLVFSymbolNameExp node,Object data) {
+    @Override
+	public Object visit(CLVFSymbolNameExp node,Object data) {
         stack.push(node.typeValue);
         return data;
     }
     
-    public Object visit(CLVFOperator node,Object data) {
+    @Override
+	public Object visit(CLVFOperator node,Object data) {
         return data;
     }
  
-    public Object visit(CLVFPostfixExpression node,Object data) {
+    @Override
+	public Object visit(CLVFPostfixExpression node,Object data) {
     	// get variable && put value on stack by executing child node
     	Node child=node.jjtGetChild(0);
     	if (! (child instanceof CLVFVariableLiteral)){
@@ -2242,7 +2293,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    public Object visit(CLVFUnaryExpression node,Object data) {
+    @Override
+	public Object visit(CLVFUnaryExpression node,Object data) {
     	int operatorType=((CLVFOperator)node.jjtGetChild(0)).kind;
     	Node child=node.jjtGetChild(1);
     	TLValue val;
@@ -2316,6 +2368,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 		return data;
 	}
 
+	@Override
 	public Object visit(CLVFListOfLiterals node, Object data) {
 		stack.push(node.value);
 		return data;

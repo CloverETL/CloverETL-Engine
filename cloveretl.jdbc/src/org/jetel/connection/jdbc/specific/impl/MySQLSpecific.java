@@ -71,6 +71,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#optimizeResultSet(java.sql.ResultSet, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
 	 */
+	@Override
 	public void optimizeResultSet(ResultSet res,OperationType operType){
 		switch(operType){
 		case READ:
@@ -97,6 +98,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
     	}
 	}
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.TIMESTAMP :
@@ -155,6 +157,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	/**
 	 * for MySQL a database is a catalog AND a schema
 	 */
+	@Override
 	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}

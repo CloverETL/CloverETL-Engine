@@ -22,6 +22,7 @@ import org.jetel.metadata.DataFieldMetadata;
 
 public class CompressedByteDataFieldTest extends ByteDataFieldTest {
 
+	@Override
 	protected ByteDataField instantiateDataField() {
 		return new CompressedByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
 	}

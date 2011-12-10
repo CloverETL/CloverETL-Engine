@@ -61,6 +61,7 @@ public class SlaveReaderDup implements InputReader {
 		this.firstRun = true;
 	}
 	
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
 		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
@@ -70,6 +71,7 @@ public class SlaveReaderDup implements InputReader {
 		this.firstRun = true;
 	}
 	
+	@Override
 	public void free() {
 		inPort = null;
 	}
@@ -80,6 +82,7 @@ public class SlaveReaderDup implements InputReader {
 		rec[NEXT] = tmp;
 	}
 
+	@Override
 	public boolean loadNextRun() throws InterruptedException, IOException {
 		getFirst = true;
 		if (inPort == null) {
@@ -115,11 +118,13 @@ public class SlaveReaderDup implements InputReader {
 		}
 	}
 
+	@Override
 	public void rewindRun() {
 		getFirst = true;
 		recBuf.rewind();
 	}
 
+	@Override
 	public DataRecord getSample() {
 		if (firstRun) {
 			return null;
@@ -127,6 +132,7 @@ public class SlaveReaderDup implements InputReader {
 		return rec[CURRENT];
 	}
 
+	@Override
 	public DataRecord next() throws IOException {
 		if (firstRun) {
 			return null;
@@ -144,10 +150,12 @@ public class SlaveReaderDup implements InputReader {
 		return deserializedRec;
 	}
 
+	@Override
 	public RecordKey getKey() {
 		return key;
 	}
 	
+	@Override
 	public int compare(InputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
@@ -165,6 +173,7 @@ public class SlaveReaderDup implements InputReader {
 		return key.compare(other.getKey(), rec1, rec2);
 	}
 	
+	@Override
 	public boolean hasData() {
 		return rec[NEXT] != null;
 	}		
@@ -174,6 +183,7 @@ public class SlaveReaderDup implements InputReader {
 		return getSample().toString();
 	}
 
+	@Override
 	public InputOrdering getOrdering() {
 		return inputOrdering;
 	}

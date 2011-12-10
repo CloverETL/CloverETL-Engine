@@ -194,6 +194,7 @@ public class HttpConnector extends Node {
 			this.outputField = outputField;
 		}
 
+		@Override
 		public void writeResponse(String response) throws IOException {
 			outputField.setValue(response);
 		}
@@ -212,6 +213,7 @@ public class HttpConnector extends Node {
 
 		}
 
+		@Override
 		public void writeResponse(String response) throws IOException {
 			// write response to a temporary file
 			final File tempFile = File.createTempFile(this.prefix, ".tmp", this.directory);

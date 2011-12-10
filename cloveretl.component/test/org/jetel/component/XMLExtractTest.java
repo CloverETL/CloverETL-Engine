@@ -66,10 +66,12 @@ public class XMLExtractTest extends CloverTestCase {
 	}
 	
 
+	@Override
 	protected void setUp() throws Exception {
 		System.out.println("------");
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 	}
 

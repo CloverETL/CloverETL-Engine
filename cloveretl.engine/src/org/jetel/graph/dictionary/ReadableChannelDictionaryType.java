@@ -85,6 +85,7 @@ public class ReadableChannelDictionaryType extends DictionaryType {
 		return new StringAsReadableChannel(data, charset);
 	}
 
+	@Override
 	public boolean isValidValue(Object value) {
 		return value == null 
 			|| value instanceof ReadableByteChannel

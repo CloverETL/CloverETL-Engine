@@ -132,6 +132,7 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 		return new CloverDate(datetime);
 	}
 	
+	@Override
 	public int compareTo(CloverDate o) {
 		if (datetime!=o.datetime){
 			return datetime>o.datetime ? 1 : -1;
@@ -174,6 +175,7 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 		 return (int)(datetime^datetime>>32);
 	}
 	
+	@Override
 	public String toString(){
 		return new Date(datetime).toString();
 	}

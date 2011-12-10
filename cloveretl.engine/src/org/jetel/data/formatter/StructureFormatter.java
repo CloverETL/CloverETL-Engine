@@ -107,6 +107,7 @@ public class StructureFormatter implements Formatter {
 		return maskBuilder.toString();
 	}
 
+	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		encoder = Charset.forName(charSet).newEncoder();
@@ -154,6 +155,7 @@ public class StructureFormatter implements Formatter {
 		}
 	}
 
+	@Override
 	public void reset() {
         if (writer != null && writer.isOpen()) {
     		try{
@@ -168,6 +170,7 @@ public class StructureFormatter implements Formatter {
 		fieldBuffer.clear();
 	}
 	
+	@Override
 	public void finish() throws IOException {
 		flush();
 		writeFooter();
@@ -177,7 +180,8 @@ public class StructureFormatter implements Formatter {
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) {
+    @Override
+	public void setDataTarget(Object out) {
         close();
         writer = (WritableByteChannel) out;
     }
@@ -185,6 +189,7 @@ public class StructureFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
+	@Override
 	public void close() {
         if (writer == null || !writer.isOpen()) {
             return;
@@ -200,6 +205,7 @@ public class StructureFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		lastIndex = 0;
         int sentBytes=0;
@@ -248,6 +254,7 @@ public class StructureFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
+	@Override
 	public void flush() throws IOException {
 		ByteBufferUtils.flush(dataBuffer.buf(), writer);
 	}
@@ -280,6 +287,7 @@ public class StructureFormatter implements Formatter {
 		}
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
@@ -296,6 +304,7 @@ public class StructureFormatter implements Formatter {
 			return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {

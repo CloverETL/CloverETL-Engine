@@ -47,7 +47,8 @@ public class CLVFVarDeclaration extends SimpleNode implements TransformLangParse
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
+  @Override
+public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
   
@@ -72,7 +73,8 @@ public class CLVFVarDeclaration extends SimpleNode implements TransformLangParse
   }
   
   
-  public String toString(){
+  @Override
+public String toString(){
       return super.toString()+" name \""+name+"\" type "+tokenImage[type];
   }
     

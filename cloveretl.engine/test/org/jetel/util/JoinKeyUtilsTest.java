@@ -29,6 +29,7 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 		meta4 = new DataRecordMetadata("slave3");
 	}
 
+	@Override
 	protected void setUp() throws Exception {
     	DataFieldMetadata f1 = new DataFieldMetadata("field1",";");
     	DataFieldMetadata f2 = new DataFieldMetadata("field2",";");

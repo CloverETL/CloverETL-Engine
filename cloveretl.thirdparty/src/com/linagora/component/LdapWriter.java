@@ -190,6 +190,7 @@ public class LdapWriter extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September, 2006
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -241,6 +242,7 @@ public class LdapWriter extends Node {
 	 *  matching the component.
 	 *  @param xmlElement the xmlElement to write to.
 	 */
+	@Override
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_LDAPURL_ATTRIBUTE,this.ldapUrl);
@@ -362,6 +364,7 @@ public class LdapWriter extends Node {
 	 * return the type (identifier) of the
 	 * component
 	 */
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

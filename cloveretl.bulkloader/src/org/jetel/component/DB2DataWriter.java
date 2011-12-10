@@ -1539,6 +1539,7 @@ public class DB2DataWriter extends Node {
 		box = new ProcBox(proc, null, consumer, errConsumer);
 		
 		new Thread(){
+			@Override
 			public void run() {
 				FileOutputStream fos = null;
 				try {
@@ -2098,6 +2099,7 @@ class DB2DataConsumer implements DataConsumer {
 		}
 	}
 	
+	@Override
 	public boolean consume() throws JetelException {
 		String line;
 		try {
@@ -2186,10 +2188,12 @@ class DB2DataConsumer implements DataConsumer {
 		return read;
 	}
 
+	@Override
 	public void setInput(InputStream stream) {
 		reader = new BufferedReader(new InputStreamReader(stream));
 	}
 
+	@Override
 	public void close() {
 	}
 

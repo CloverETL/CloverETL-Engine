@@ -193,6 +193,7 @@ public abstract class DataGenerator extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_RECORDS_NUMBER_ATTRIBUTE, String.valueOf(recordsNumber));

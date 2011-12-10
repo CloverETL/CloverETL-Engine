@@ -39,6 +39,7 @@ public class UtilLib extends TLFunctionLibrary {
     
 	private static String LIBRARY_NAME = "Util";
 
+	@Override
 	public String getName() {
 		return LIBRARY_NAME;
 	}
@@ -55,9 +56,11 @@ public class UtilLib extends TLFunctionLibrary {
 
     class SleepFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			long millis = stack.popLong();
 			sleep(context, millis);

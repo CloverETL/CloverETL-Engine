@@ -219,7 +219,8 @@ public final class IntegerDecimal implements Decimal {
     /* (non-Javadoc)
      * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
      */
-    public void setValue(Number value) {
+    @Override
+	public void setValue(Number value) {
        if (value instanceof Long) {
            setValue(((Long) value).longValue());
        } else if (value instanceof Integer) {
@@ -310,7 +311,8 @@ public final class IntegerDecimal implements Decimal {
     /* (non-Javadoc)
      * @see org.jetel.data.primitive.Numeric#setNull()
      */
-    public void setNull(){
+    @Override
+	public void setNull(){
         setNaN(true);
     }
 
@@ -509,7 +511,8 @@ public final class IntegerDecimal implements Decimal {
         fromString(buffer.toString(), numericFormatter);
     }
 
-    public int compareTo(Numeric value) {
+    @Override
+	public int compareTo(Numeric value) {
         if (isNull()) {
             return -1;
         }else if (value.isNull()) {

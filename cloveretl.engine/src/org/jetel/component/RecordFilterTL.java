@@ -42,10 +42,12 @@ public class RecordFilterTL implements RecordFilter {
 		
 	}
 	
+	@Override
 	public void init() throws ComponentNotReadyException {
 		filterExpression.init();
 	}
 
+	@Override
 	public boolean isValid(DataRecord record) {
 		input[0] = record;
 		executor.setInputRecords(input);
@@ -53,6 +55,7 @@ public class RecordFilterTL implements RecordFilter {
 		return executor.getResult() == TLBooleanValue.TRUE;
 	}
 
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		executor.setGraph(graph);
 	}

@@ -105,6 +105,7 @@ public class DBFDataParser implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
+	@Override
 	public PolicyType getPolicyType() {
 		if (this.exceptionHandler != null) {
 			return this.exceptionHandler.getType();
@@ -119,7 +120,8 @@ public class DBFDataParser implements Parser {
      * 
      * @see org.jetel.data.DataParser#close()
      */
-    public void close() {
+    @Override
+	public void close() {
         if(dbfFile == null || !dbfFile.isOpen()) {
             return;
         }
@@ -135,7 +137,8 @@ public class DBFDataParser implements Parser {
      * 
      * @see org.jetel.data.DataParser#getNext()
      */
-    public DataRecord getNext() throws JetelException {
+    @Override
+	public DataRecord getNext() throws JetelException {
         // create a new data record
         DataRecord record = new DataRecord(metadata);
         record.init();
@@ -154,7 +157,8 @@ public class DBFDataParser implements Parser {
      * 
      * @see org.jetel.data.DataParser#getNext(org.jetel.data.DataRecord)
      */
-    public DataRecord getNext(DataRecord record) throws JetelException {
+    @Override
+	public DataRecord getNext(DataRecord record) throws JetelException {
         record = parseNext(record);
         if (exceptionHandler != null) { //use handler only if configured
             while (exceptionHandler.isExceptionThrowed()) {
@@ -241,7 +245,8 @@ public class DBFDataParser implements Parser {
      * @see org.jetel.data.DataParser#open(java.lang.Object,
      *      org.jetel.metadata.DataRecordMetadata)
      */
-    public void init()
+    @Override
+	public void init()
             throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -255,6 +260,7 @@ public class DBFDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 		this.releaseInputSource = releaseInputSource;
 	}
@@ -262,7 +268,8 @@ public class DBFDataParser implements Parser {
     /* (non-Javadoc)
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
      */
-    public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+    @Override
+	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
         if (releaseInputSource) close();
         
         if (inputDataSource instanceof FileInputStream){
@@ -463,14 +470,17 @@ public class DBFDataParser implements Parser {
         return message.toString();
     }
 
-    public void setExceptionHandler(IParserExceptionHandler handler) {
+    @Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
 
-    public IParserExceptionHandler getExceptionHandler() {
+    @Override
+	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
 
+	@Override
 	public int skip(int nRec) throws JetelException {
 		for (int i = 0; i < nRec; i++) {
 			// just read record data, no parsing performed
@@ -485,15 +495,18 @@ public class DBFDataParser implements Parser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		recordCounter = 0;
 		bytesProcessed = 0;
 	}
 
+	@Override
 	public Object getPosition() {
 		return bytesProcessed;
 	}
 
+	@Override
 	public void movePosition(Object position) throws IOException {
 		int pos = 0;
 		if (position instanceof Integer) {

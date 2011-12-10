@@ -51,6 +51,7 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 	private String testFile1 = null;
 	private DataRecordMetadata metadata = null;
 
+	@Override
 	protected void setUp() throws IOException, ComponentNotReadyException {
 		initEngine();
 	    
@@ -109,6 +110,7 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 		testParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 	}
 
+	@Override
 	protected void tearDown() {
 		aParser3.close();
 		aParser3 = null;

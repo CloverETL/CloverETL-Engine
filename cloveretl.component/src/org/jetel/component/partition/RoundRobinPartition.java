@@ -42,18 +42,22 @@ public class RoundRobinPartition implements PartitionFunction{
     public RoundRobinPartition(){
     }
     
-    public void init(int numPartitions,RecordKey partitionKey){
+    @Override
+	public void init(int numPartitions,RecordKey partitionKey){
         this.numPorts=numPartitions;
         this.last=-1;
     }
     
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 	}
 
-    public int getOutputPort(DataRecord record){
+    @Override
+	public int getOutputPort(DataRecord record){
         last=(last+1)%numPorts;
         return last;
     }
@@ -72,15 +76,18 @@ public class RoundRobinPartition implements PartitionFunction{
     	// not used here
     }
 
-    public TransformationGraph getGraph() {
+    @Override
+	public TransformationGraph getGraph() {
     	// not used here
     	return null;
     }
 
-    public void setNode(Node node) {
+    @Override
+	public void setNode(Node node) {
     }
 
-    public Node getNode() {
+    @Override
+	public Node getNode() {
     	return null;
     }
 
@@ -108,6 +115,7 @@ public class RoundRobinPartition implements PartitionFunction{
 		throw new TransformException("Partitioning failed!", exception);
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return true;
 	}

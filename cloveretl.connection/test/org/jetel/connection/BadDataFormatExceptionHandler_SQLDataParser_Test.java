@@ -31,6 +31,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 	private static Log logger = LogFactory.getLog(BadDataFormatExceptionHandler_SQLDataParser_Test.class);
 
 
+	@Override
 	@SuppressWarnings("deprecation")
 	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
 		initEngine();
@@ -58,6 +59,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 		record.init();
 	}
 
+	@Override
 	protected void tearDown() {
 		aParser1.close();
 		aParser1 = null;

@@ -121,7 +121,8 @@ public class ExtDataGenerator extends DataGenerator {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
      */
-    public void postExecute() throws ComponentNotReadyException {
+    @Override
+	public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
     	
 		if (generatorClass != null) {
@@ -205,6 +206,7 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (generatorSource != null) {
@@ -218,6 +220,7 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized())
 			return;

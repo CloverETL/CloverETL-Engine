@@ -127,6 +127,7 @@ public class DataRecordGenerator implements Parser {
 		this.setSequenceFields(sequenceFields);
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		counter = 0;
 		specialValue = new Object[metadata.getNumFields()][4];
@@ -347,6 +348,7 @@ public class DataRecordGenerator implements Parser {
 	/**
 	 * Returns reusable instance of DataRecord filled according to preset rules.
 	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		return getNext(reusableRecord);
 	}
@@ -357,6 +359,7 @@ public class DataRecordGenerator implements Parser {
 	 * @return
 	 * @throws Exception
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		if (!initialized) {
 			throw new JetelException("Generator is not initialized!");
@@ -559,14 +562,17 @@ public class DataRecordGenerator implements Parser {
 		return null;
 	}
 
+	@Override
 	public void close() {
 		counter = recordNumber;
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return null;
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
 		return PolicyType.STRICT;
 	}
@@ -579,17 +585,21 @@ public class DataRecordGenerator implements Parser {
 		init();
 	}
 
+	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		// nonsence for this implementation
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 	}
 
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
 		// nonsence for this implementation
 	}
 
+	@Override
 	public int skip(int rec) throws JetelException {
 		if (counter + rec > recordNumber) {
 			int i = recordNumber - counter;
@@ -606,6 +616,7 @@ public class DataRecordGenerator implements Parser {
 	 * 
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		counter = 0;
 		
@@ -615,11 +626,13 @@ public class DataRecordGenerator implements Parser {
 		}
 	}
 
+	@Override
 	public Object getPosition() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public void movePosition(Object position) {
 		// TODO Auto-generated method stub
 

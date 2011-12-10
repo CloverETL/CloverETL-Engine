@@ -690,6 +690,7 @@ public class ExtXmlWriter extends Node {
 			this.inPort = inPort;
 		}
 
+		@Override
 		public void run() {
 			while (runIt) {
 				try {

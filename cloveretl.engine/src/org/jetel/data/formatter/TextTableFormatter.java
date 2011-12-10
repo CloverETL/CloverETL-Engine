@@ -117,6 +117,7 @@ public class TextTableFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		encoder = Charset.forName(charSet).newEncoder();
@@ -146,6 +147,7 @@ public class TextTableFormatter implements Formatter {
 		dataRecords = new LinkedList<DataRecord>();
 	}
 	
+	@Override
 	public void reset() {
 		if (writerChannel != null && writerChannel.isOpen()) {
 			try {
@@ -163,6 +165,7 @@ public class TextTableFormatter implements Formatter {
 		writeHeader = false;
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 		writeFooter();
@@ -172,7 +175,8 @@ public class TextTableFormatter implements Formatter {
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) {
+    @Override
+	public void setDataTarget(Object out) {
         close();
         writerChannel = (WritableByteChannel) out;
     }
@@ -180,6 +184,7 @@ public class TextTableFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
+	@Override
 	public void close() {
         if (writerChannel == null || !writerChannel.isOpen()) {
             return;
@@ -289,6 +294,7 @@ public class TextTableFormatter implements Formatter {
         return sentBytes;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		if (!setOutputFieldNames || !writeHeader || headerWritten) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
 		if (!isMaskAnalized()) {
@@ -349,6 +355,7 @@ public class TextTableFormatter implements Formatter {
         return sentBytes;
 	}
 	
+	@Override
 	public int writeFooter() throws IOException {
 		if (!setOutputFieldNames) return 0;
 		if (!writeHeader) {
@@ -414,6 +421,7 @@ public class TextTableFormatter implements Formatter {
 	 * @param record
 	 * @throws IOException 
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		int size;
 		if (dataRecords != null) {
@@ -485,6 +493,7 @@ public class TextTableFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
+	@Override
 	public void flush() throws IOException {
 		if (dataRecords != null && dataRecords.size()>0) {
 			if (!isMaskAnalized()) //xxx

@@ -123,12 +123,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertNull(getVariable(varName));
 	}
 
+	@Override
 	protected void setUp() {
 		// set default locale to English to prevent various parsing errors
 		Locale.setDefault(Locale.ENGLISH);
 		initEngine();
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		inputRecords = null;

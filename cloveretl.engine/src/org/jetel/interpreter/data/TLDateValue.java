@@ -62,6 +62,7 @@ public class TLDateValue extends TLValue {
 			throw new IllegalArgumentException("Can't assign value null to value type: " + type);
 	}
 	
+	@Override
 	public void setValue(TLValue _value){
 		if (_value.type==type)
 			setValue(_value.getDate());
@@ -82,10 +83,12 @@ public class TLDateValue extends TLValue {
 	}
 	
 	
+	@Override
 	public Object getValue(){
 		return value;
 	}
 	
+	@Override
 	public Date getDate(){
 		return value;
 	}
@@ -101,7 +104,8 @@ public class TLDateValue extends TLValue {
 
 	    }
 	 
-	 public void copyToDataField(DataField field) {
+	 @Override
+	public void copyToDataField(DataField field) {
 			if (value == null) {
 				field.setNull(true);
 			} else if (field.getMetadata().getType() == DataFieldMetadata.DATE_FIELD) {

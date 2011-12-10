@@ -78,6 +78,7 @@ public abstract class Ldap2JetelData {
 		 * @param df the field which has to be set
 		 * @param attr the LDAP attribute whose values have to be got 
 		 */
+		@Override
 		public void setField(DataField df, Attribute attr)
 				throws BadDataFormatException {
 
@@ -136,6 +137,7 @@ public abstract class Ldap2JetelData {
 		 * @param df the field which has to be set
 		 * @param attr the LDAP attribute whose values have to be got 
 		 */
+		@Override
 		public void setField(DataField df, Attribute attr) throws BadDataFormatException {
 			if (attr == null) { // attr not set in the LDAP directory
 				df.setNull(true);

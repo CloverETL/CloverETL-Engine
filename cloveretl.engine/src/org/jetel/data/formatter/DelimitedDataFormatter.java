@@ -78,6 +78,7 @@ public class DelimitedDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init(DataRecordMetadata metadata) {
 		encoder = Charset.forName(charSet).newEncoder();
 		encoder.reset();
@@ -93,6 +94,7 @@ public class DelimitedDataFormatter implements Formatter {
 		numFields=metadata.getNumFields(); // buffer numFields
 	}
 	
+	@Override
 	public void reset() {
 		if (writer != null && writer.isOpen()) {
 			try{
@@ -108,7 +110,8 @@ public class DelimitedDataFormatter implements Formatter {
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
-    public void setDataTarget(Object out) {
+    @Override
+	public void setDataTarget(Object out) {
         // close previous output
         close();
         
@@ -130,6 +133,7 @@ public class DelimitedDataFormatter implements Formatter {
 	 *
 	 * @since    March 28, 2002
 	 */
+	@Override
 	public void close() {
 		if (writer == null || !writer.isOpen()) {
 			return;
@@ -144,6 +148,7 @@ public class DelimitedDataFormatter implements Formatter {
 		writer = null;
 	}
 
+	@Override
 	public void finish() throws IOException {
 		flush();
 		writeFooter();
@@ -155,6 +160,7 @@ public class DelimitedDataFormatter implements Formatter {
 	 *
 	 * @since    March 28, 2002
 	 */
+	@Override
 	public void flush() throws IOException{
 		dataBuffer.flip();
 		writer.write(dataBuffer);
@@ -167,6 +173,7 @@ public class DelimitedDataFormatter implements Formatter {
 	 * @return Number of written bytes.
 	 * @throws IOException
 	 */
+	@Override
 	public int write(DataRecord record) throws IOException {
 		String fieldVal;
 		charBuffer.clear();
@@ -259,6 +266,7 @@ public class DelimitedDataFormatter implements Formatter {
 		return(this.charSet);
 	}
 
+	@Override
 	public int writeFooter() throws IOException {
 		if (footer == null && sFooter != null) {
 	    	try {
@@ -275,6 +283,7 @@ public class DelimitedDataFormatter implements Formatter {
 			return 0;
 	}
 
+	@Override
 	public int writeHeader() throws IOException {
 		if (header == null && sHeader != null) {
 	    	try {

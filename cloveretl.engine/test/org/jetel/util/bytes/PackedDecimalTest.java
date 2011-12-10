@@ -32,6 +32,7 @@ import org.jetel.test.CloverTestCase;
  */
 public class PackedDecimalTest extends CloverTestCase {
 	
+	@Override
 	protected void setUp() { 
 		initEngine();
 	}

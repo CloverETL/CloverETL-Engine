@@ -42,6 +42,7 @@ public class ObjectDictionaryType extends DictionaryType {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.dictionary.IDictionaryType#isValidValue(java.lang.Object)
 	 */
+	@Override
 	public boolean isValidValue(Object value) {
 		return true;
 	}

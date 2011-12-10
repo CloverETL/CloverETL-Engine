@@ -153,6 +153,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		indexKey.init();
 	}
 
+	@Override
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -164,6 +165,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return lookup;
 	}
 
+	@Override
 	public Lookup createLookup(RecordKey key) {
 		return createLookup(key, null);
 	}
@@ -175,6 +177,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 *                Description of Exception
 	 * @since May 2, 2002
 	 */
+	@Override
 	public synchronized void init() throws ComponentNotReadyException {
 		if (isInitialized()) {
 			// throw new IllegalStateException("The lookup table has already been initialized!");
@@ -372,6 +375,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		}
 	}
 
+	@Override
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
@@ -420,14 +424,17 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return status;
 	}
 
+	@Override
 	public boolean isPutSupported() {
 		return true;
 	}
 
+	@Override
 	public boolean isRemoveSupported() {
 		return true;
 	}
 
+	@Override
 	public boolean put(DataRecord dataRecord) {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -437,6 +444,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return true;
 	}
 
+	@Override
 	public boolean remove(DataRecord dataRecord) {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -445,6 +453,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return lookupTable.remove(dataRecord);
 	}
 
+	@Override
 	public boolean remove(HashKey key) {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -452,6 +461,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return lookupTable.remove(key.getRecordKey(), key.getDataRecord());
 	}
 
+	@Override
 	public Iterator<DataRecord> iterator() {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -491,6 +501,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.keyDuplicates = keyDuplicates;
 	}
 
+	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
 		if (!isInitialized()) {
 			throw new NotInitializedException(this);
@@ -518,10 +529,12 @@ class SimpleLookup implements Lookup {
 		this.duplicate = duplicate;
 	}
 
+	@Override
 	public RecordKey getKey() {
 		return key;
 	}
 
+	@Override
 	public LookupTable getLookupTable() {
 		return lookupTable;
 	}
@@ -530,6 +543,7 @@ class SimpleLookup implements Lookup {
 		this.lookupTable = lookupTable;
 	}
 
+	@Override
 	public int getNumFound() {
 		if (duplicate) {
 			return iterator != null ? iterator.size() : 0;
@@ -538,6 +552,7 @@ class SimpleLookup implements Lookup {
 		}
 	}
 
+	@Override
 	public void seek() {
 		if (duplicate) {
 			iterator = tableLookup.getAll();
@@ -547,11 +562,13 @@ class SimpleLookup implements Lookup {
 		}
 	}
 
+	@Override
 	public void seek(DataRecord keyRecord) {
 		tableLookup.setDataRecord(keyRecord);
 		seek();
 	}
 
+	@Override
 	public boolean hasNext() {
 		if (duplicate) {
 			return iterator == null ? false : iterator.hasNext();
@@ -560,6 +577,7 @@ class SimpleLookup implements Lookup {
 		}
 	}
 
+	@Override
 	public DataRecord next() {
 		if (duplicate) {
 			return iterator.next();
@@ -572,6 +590,7 @@ class SimpleLookup implements Lookup {
 		}
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("Method not supported!");
 	}

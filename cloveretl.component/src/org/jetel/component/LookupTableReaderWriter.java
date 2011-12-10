@@ -192,6 +192,7 @@ public class LookupTableReaderWriter extends Node {
         }
  	}
     
+	@Override
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_LOOKUP_TABLE_ATTRIBUTE,this.lookupTable.getId());

@@ -631,10 +631,12 @@ public class DataRecordMap {
 			seekInTable();
 		}
 
+		@Override
 		public boolean hasNext() {
 			return current != null;
 		}
 
+		@Override
 		public DataRecord next() {
 			if (current == null)
 				throw new NoSuchElementException();
@@ -682,6 +684,7 @@ public class DataRecordMap {
 			seekInBucket();
 		}
 
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -699,16 +702,19 @@ public class DataRecordMap {
 			current = next;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return next != null;
 		}
 
+		@Override
 		public DataRecord next() {
 			current = next;
 			seek();
 			return current.value;
 		}
 
+		@Override
 		public void remove() {
 			DataRecordMap.this.remove(current.value);
 		}

@@ -164,7 +164,8 @@ public class CTLAbstractTransformAdapter implements Transform {
     	}
     }
 
-    public String getMessage() {
+    @Override
+	public String getMessage() {
     	if (functionGetMessage == null) {
     		return null;
     	}

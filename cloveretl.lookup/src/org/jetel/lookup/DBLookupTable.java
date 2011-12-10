@@ -142,6 +142,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *
 	 *@return    The dbMetadata value
 	 */
+	@Override
 	public DataRecordMetadata getMetadata() {
 		if (dbMetadata == null){
 			for (DBLookup activeLookup : activeLookups) {
@@ -160,7 +161,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@exception  JetelException  Description of the Exception
 	 *@since                      May 2, 2002
 	 */
-    synchronized public void init() throws ComponentNotReadyException {
+    @Override
+	synchronized public void init() throws ComponentNotReadyException {
         if (isInitialized()) {
 //            throw new IllegalStateException("The lookup table has already been initialized!");
         	return;
@@ -362,7 +364,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		
 	}
     
-    public Iterator<DataRecord> iterator() {
+    @Override
+	public Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
         } else if (dbConnection == null) {
@@ -437,10 +440,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
    }
     
+	@Override
 	public Lookup createLookup(RecordKey key) throws ComponentNotReadyException {
 		return createLookup(key, null);
 	}
 	
+	@Override
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -465,26 +470,32 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         return lookup;
 	}
 	
+	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
 		throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
 	}
 	
+	@Override
 	public boolean isPutSupported() {
 		return false;
 	}
 	
-    public boolean isRemoveSupported() {
+    @Override
+	public boolean isRemoveSupported() {
         return false;
     }
     
+	@Override
 	public boolean put(DataRecord dataRecord) {
 		throw new UnsupportedOperationException(); 
 	}
 	
+	@Override
 	public boolean remove(DataRecord dataRecord) {
 		throw new UnsupportedOperationException(); 
 	}
 	
+	@Override
 	public boolean remove(HashKey key) {
 		throw new UnsupportedOperationException(); 
 	}
@@ -532,6 +543,7 @@ class DBLookup implements Lookup{
 		statement.init();
 	}
 	
+	@Override
 	public RecordKey getKey() {
 		return recordKey;
 	}
@@ -541,10 +553,12 @@ class DBLookup implements Lookup{
 		dbMetadata = lookupTable.getMetadata();
 	}
 	
+	@Override
 	public LookupTable getLookupTable() {
 		return lookupTable;
 	}
 
+	@Override
 	public int getNumFound() {
     	if (resultCache!=null){
     		return result != null ? result.size() : 0;
@@ -564,6 +578,7 @@ class DBLookup implements Lookup{
        throw new IllegalStateException("Looking up has been never performed. Call seek method first");
 	}
 
+	@Override
 	public void seek() {
 		if (resultCache == null && resultSet == null) {//first seek
 			if (cacheSize>0){
@@ -667,6 +682,7 @@ class DBLookup implements Lookup{
 		return true;
 	}
 
+	@Override
 	public void seek(DataRecord keyRecord) {
 		key.setDataRecord(keyRecord);
 		try {
@@ -677,6 +693,7 @@ class DBLookup implements Lookup{
 		seek();
 	}
 
+	@Override
 	public boolean hasNext() {
 		if (resultCache == null && resultSet == null) {
 			throw new IllegalStateException("Looking up has been never performed. Call seek method first");
@@ -685,6 +702,7 @@ class DBLookup implements Lookup{
 			result != null && no < result.size() && result.get(no) != NullRecord.NULL_RECORD;
 	}
 
+	@Override
 	public DataRecord next() {
 		if (resultCache == null && resultSet == null) {
 			throw new IllegalStateException("Looking up has been never performed. Call seek method first");
@@ -706,6 +724,7 @@ class DBLookup implements Lookup{
 		statement.close();
 	}
 	
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}

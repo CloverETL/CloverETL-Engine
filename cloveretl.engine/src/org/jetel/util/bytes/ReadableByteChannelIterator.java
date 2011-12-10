@@ -34,10 +34,12 @@ public class ReadableByteChannelIterator implements Iterator<ReadableByteChannel
 		this.readableByteChannel = readableByteChannel;
 	}
 	
+	@Override
 	public boolean hasNext() {
 		return hasNext;
 	}
 
+	@Override
 	public ReadableByteChannel next() {
 		if(hasNext) {
 			hasNext = false;
@@ -47,5 +49,6 @@ public class ReadableByteChannelIterator implements Iterator<ReadableByteChannel
 		}
 	}
 
+	@Override
 	public void remove() {}
 }

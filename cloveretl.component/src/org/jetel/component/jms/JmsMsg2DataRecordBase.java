@@ -35,10 +35,12 @@ public abstract class JmsMsg2DataRecordBase extends AbstractDataTransform implem
 	protected String errMsg;
 	protected TransformationGraph graph;
 
+	@Override
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {
 		errMsg = null;
 	}
 
+	@Override
 	public boolean endOfInput() {
 		return false;
 	}
@@ -47,6 +49,7 @@ public abstract class JmsMsg2DataRecordBase extends AbstractDataTransform implem
 		this.errMsg = errMsg;
 	}
 
+	@Override
 	public String getErrorMsg() {
 		return errMsg;
 	}

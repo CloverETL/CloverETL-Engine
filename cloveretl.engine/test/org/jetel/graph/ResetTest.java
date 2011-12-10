@@ -77,6 +77,7 @@ public class ResetTest extends CloverTestCase {
 				throw new IllegalStateException("Graphs directory " + graphsDir.getAbsolutePath() +" not found");
 			}
 			File[] graphFiles =graphsDir.listFiles(new FileFilter() {
+				@Override
 				public boolean accept(File pathname) {
 					return pathname.getName().endsWith(".grf") 
 							&& !pathname.getName().startsWith("TPCH")// ok, performance tests - last very long

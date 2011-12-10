@@ -519,6 +519,7 @@ public class MergeJoin extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -664,10 +665,12 @@ public class MergeJoin extends Node {
         }
     }    
 	
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
 	}
 	
+	@Override
 	public void free() {
 		super.free();
 		if (reader != null) {
@@ -694,6 +697,7 @@ public class MergeJoin extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
@@ -948,6 +952,7 @@ public class MergeJoin extends Node {
 		return status;
 	}
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

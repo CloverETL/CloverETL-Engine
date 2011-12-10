@@ -112,6 +112,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getParentPhaseTracking()
 	 */
+	@Override
 	public PhaseTracking getParentPhaseTracking() {
 		return parentPhaseDetail;
 	}
@@ -119,6 +120,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getResult()
 	 */
+	@Override
 	public Result getResult() {
 		return result;
 	}
@@ -130,6 +132,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking(int)
 	 */
+	@Override
 	public PortTracking getInputPortTracking(int portNumber) {
 		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
 			if (inputPortDetail.getIndex() == portNumber) {
@@ -146,6 +149,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking(int)
 	 */
+	@Override
 	public PortTracking getOutputPortTracking(int portNumber) {
 		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
 			if (outputPortDetail.getIndex() == portNumber) {
@@ -158,6 +162,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getTotalCPUTime()
 	 */
+	@Override
 	public long getTotalCPUTime() {
 		return totalCPUTime;
 	}
@@ -165,6 +170,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getTotalUserTime()
 	 */
+	@Override
 	public long getTotalUserTime() {
 		return totalUserTime;
 	}
@@ -172,6 +178,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getUsageCPU()
 	 */
+	@Override
 	public float getUsageCPU() {
 		return usageCPU;
 	}
@@ -179,6 +186,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getPeakUsageCPU()
 	 */
+	@Override
 	public float getPeakUsageCPU() {
 		return peakUsageCPU;
 	}
@@ -186,6 +194,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getPeakUsageUser()
 	 */
+	@Override
 	public float getPeakUsageUser() {
 		return peakUsageUser;
 	}
@@ -193,6 +202,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getUsageUser()
 	 */
+	@Override
 	public float getUsageUser() {
 		return usageUser;
 	}
@@ -200,6 +210,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getNodeID()
 	 */
+	@Override
 	public String getNodeID() {
 		return nodeId;
 	}
@@ -207,6 +218,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getNodeName()
 	 */
+	@Override
 	public String getNodeName() {
 		return nodeName;
 	}
@@ -219,6 +231,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking()
 	 */
+	@Override
 	public PortTracking[] getInputPortTracking() {
 		return inputPortsDetails;
 	}
@@ -227,6 +240,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking()
 	 */
+	@Override
 	public PortTracking[] getOutputPortTracking() {
 		return outputPortsDetails;
 	}
@@ -243,6 +257,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#hasPorts()
 	 */
+	@Override
 	public boolean hasPorts() {
 		return inputPortsDetails.length > 0 || outputPortsDetails.length > 0;
 	}

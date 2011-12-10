@@ -154,18 +154,22 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     	return additionalMessage;
     }
 
+	@Override
 	public boolean hasNext() {
 		return next != null;
 	}
 
+	@Override
 	public BadDataFormatException next() {
 		return next;
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterator<BadDataFormatException> iterator() {
 		List<BadDataFormatException> exceptions = new ArrayList<BadDataFormatException>();
 		BadDataFormatException ex = this;

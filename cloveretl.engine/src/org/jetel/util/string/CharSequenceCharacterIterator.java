@@ -46,14 +46,16 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#current()
      */
-    public char current() {
+    @Override
+	public char current() {
         return index<len ? buf.charAt(index) : DONE;
     }
 
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#first()
      */
-    public char first() {
+    @Override
+	public char first() {
         if (len>0){
             index=0;
             return buf.charAt(0);
@@ -65,28 +67,32 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#getBeginIndex()
      */
-    public int getBeginIndex() {
+    @Override
+	public int getBeginIndex() {
         return 0;
     }
 
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#getEndIndex()
      */
-    public int getEndIndex() {
+    @Override
+	public int getEndIndex() {
         return len;
     }
 
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#getIndex()
      */
-    public int getIndex() {
+    @Override
+	public int getIndex() {
         return index;
     }
 
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#last()
      */
-    public char last() {
+    @Override
+	public char last() {
         if (len>0){
             index=len-1;
             return buf.charAt(index);
@@ -99,7 +105,8 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#next()
      */
-    public char next() {
+    @Override
+	public char next() {
         index++;
         if (index>=len){
             index=getEndIndex();
@@ -111,7 +118,8 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#previous()
      */
-    public char previous() {
+    @Override
+	public char previous() {
         index--;
         if (index<0){
             index=0;
@@ -123,7 +131,8 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
     /* (non-Javadoc)
      * @see java.text.CharacterIterator#setIndex(int)
      */
-    public char setIndex(int position) {
+    @Override
+	public char setIndex(int position) {
         index=position;
         if (index>len || index < 0){
             throw new IllegalArgumentException("Invalid position: "+position);
@@ -133,7 +142,8 @@ public final class CharSequenceCharacterIterator implements CharacterIterator {
         return buf.charAt(index);
     }   
 
-    public Object clone(){
+    @Override
+	public Object clone(){
         return new CharSequenceCharacterIterator(this.buf);
     }
     

@@ -33,7 +33,8 @@ public class CLVFPlusPlusNode extends SimpleNode {
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
+  @Override
+public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
   

@@ -45,6 +45,7 @@ public class DataGenerator extends Random {
 	 * Set seed.
 	 * @param paramLong
 	 */
+	@Override
 	public void setSeed(long paramLong) {
 		super.setSeed(paramLong);
 		nextInt();

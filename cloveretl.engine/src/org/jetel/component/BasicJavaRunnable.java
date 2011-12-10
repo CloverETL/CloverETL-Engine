@@ -35,10 +35,12 @@ public abstract class BasicJavaRunnable extends AbstractDataTransform implements
 		this.graph = graph;
 	}
 	
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
 
+	@Override
 	public boolean init(Properties parameters) throws ComponentNotReadyException {
 		this.parameters = parameters;
 		return init();
@@ -48,11 +50,13 @@ public abstract class BasicJavaRunnable extends AbstractDataTransform implements
 		return true;
 	}
 
+	@Override
 	abstract public void run();
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.JavaRunnable#free()
 	 */
+	@Override
 	public void free() {}
 	
 }

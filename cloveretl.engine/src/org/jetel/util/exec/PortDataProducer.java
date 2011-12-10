@@ -74,6 +74,7 @@ public class PortDataProducer implements DataProducer {
 	/**
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public void setOutput(OutputStream stream) {
         formatter.init(metadata);
         try {
@@ -88,6 +89,7 @@ public class PortDataProducer implements DataProducer {
 	/**
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public boolean produce() throws JetelException	
 	{
 		try {
@@ -106,6 +108,7 @@ public class PortDataProducer implements DataProducer {
 	 * @throws IOException 
 	 * @see org.jetel.util.exec.DataProducer
 	 */
+	@Override
 	public void close() throws IOException {	
 		formatter.close();
 	}

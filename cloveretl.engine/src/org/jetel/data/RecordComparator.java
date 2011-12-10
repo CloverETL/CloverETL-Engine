@@ -122,6 +122,7 @@ public class RecordComparator implements Comparator {
 	 *@param  record2  Description of the Parameter
 	 *@return          -1 ; 0 ; 1
 	 */
+	@Override
 	public int compare(Object o1, Object o2) {
         int compResult;
         final DataRecord record1 = (DataRecord) o1;
@@ -255,6 +256,7 @@ public class RecordComparator implements Comparator {
 	/* (non-Javadoc) Implemented to satisfy Comparator interface
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj){
 		if (obj instanceof RecordComparator){
 			RecordComparator comp = (RecordComparator)obj;

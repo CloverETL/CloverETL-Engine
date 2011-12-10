@@ -459,7 +459,8 @@ public class RecordKey {
      * toString method: creates a String representation of the object
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("RecordKey[");
         if (keyFields == null) {

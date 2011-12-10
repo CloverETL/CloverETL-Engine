@@ -298,6 +298,7 @@ public class Element extends AbstractElement {
 			&& (children.isEmpty() || (children.size() == 1 && children.get(0).getType() == AbstractElement.VALUE));
 	}
 	
+	@Override
 	public String getPath() {
 		if (parent == null) {
 			return ""; 

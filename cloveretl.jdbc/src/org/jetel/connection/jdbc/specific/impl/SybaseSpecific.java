@@ -56,10 +56,12 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		return new SybaseConnection(dbConnection, operationType);
 	}
 
+	@Override
 	public String quoteIdentifier(String identifier) {
 		return "\"" + identifier + "\"";
 	}
 	
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BOOLEAN :

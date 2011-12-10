@@ -687,18 +687,22 @@ public class SQLUtil {
 			this.dbMetadata = dbMetadata;
 		}
 
+		@Override
 		public int getType(int column) throws SQLException {
 			return dbMetadata.getColumnType(column);
 		}
 
+		@Override
 		public int isNullable(int column) throws SQLException {
 			return dbMetadata.isNullable(column);
 		}
 
+		@Override
 		public int getPrecision(int column) throws SQLException {
 			return dbMetadata.getPrecision(column);
 		}
 
+		@Override
 		public int getScale(int column) throws SQLException {
 			return dbMetadata.getScale(column);
 		}
@@ -712,18 +716,22 @@ public class SQLUtil {
 			this.dbMetadata = dbMetadata;
 		}
 
+		@Override
 		public int getType(int param) throws SQLException {
 			return dbMetadata.getParameterType(param);
 		}
 
+		@Override
 		public int isNullable(int param) throws SQLException {
 			return dbMetadata.isNullable(param);
 		}
 
+		@Override
 		public int getPrecision(int param) throws SQLException {
 			return dbMetadata.getPrecision(param);
 		}
 
+		@Override
 		public int getScale(int param) throws SQLException {
 			return dbMetadata.getScale(param);
 		}

@@ -327,6 +327,7 @@ public class HashJoin extends Node {
 		}
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized())
 			return;
@@ -458,10 +459,12 @@ public class HashJoin extends Node {
 		}
 	}
 
+	@Override
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
 	}
 
+	@Override
 	public void free() {
 		hashMap = null;
 	}
@@ -766,6 +769,7 @@ public class HashJoin extends Node {
 	 * @return Description of the Returned Value
 	 * @since May 21, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
@@ -1048,6 +1052,7 @@ public class HashJoin extends Node {
 		return status;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
@@ -1079,6 +1084,7 @@ public class HashJoin extends Node {
 			metadata = inPort.getMetadata();
 		}
 
+		@Override
 		public void run() {
 			DataRecord record = new DataRecord(metadata);
 			record.init();

@@ -333,17 +333,21 @@ public class SFTPConnection extends URLConnection {
 			this.password = password;
 		}
 
+		@Override
 		public void showMessage(String message) {
 		}
 
+		@Override
 		public boolean promptPassphrase(String message) {
 			return true;
 		}
 
+		@Override
 		public boolean promptYesNo(String str) {
 			return true;
 		}
 
+		@Override
 		public String getPassphrase() {
 			return passphrase;
 		}
@@ -362,14 +366,17 @@ public class SFTPConnection extends URLConnection {
 			super(password);
 		}
 
+		@Override
 		public String getPassword() {
 			return null;
 		}
 
+		@Override
 		public boolean promptPassword(String message) {
 			return true;
 		}
 
+		@Override
 		public String[] promptKeyboardInteractive(String destination,
 				String name, String instruction, String[] prompt, boolean[] echo) {
 			return true ? new String[] { password } : null;
@@ -382,10 +389,12 @@ public class SFTPConnection extends URLConnection {
 			super(password);
 		}
 
+		@Override
 		public String getPassword() {
 			return password;
 		}
 
+		@Override
 		public boolean promptPassword(String message) {
 			return password != null;
 		}

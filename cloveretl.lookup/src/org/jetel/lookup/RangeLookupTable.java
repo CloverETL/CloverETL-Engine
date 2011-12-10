@@ -358,19 +358,23 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         }
     }
     
+	@Override
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
 
 
+	@Override
 	public boolean isPutSupported() {
 	    return true;
 	}
 
+	@Override
 	public boolean isRemoveSupported() {
         return true;
     }
 
+	@Override
 	public boolean put(DataRecord dataRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -381,6 +385,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return true;
 	}
 
+	@Override
 	public boolean remove(DataRecord dataRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -389,10 +394,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	    return lookupTable.remove(dataRecord);
 	}
 
+	@Override
 	public boolean remove(HashKey key) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -637,10 +644,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 
+	@Override
 	public Lookup createLookup(RecordKey key) {
 		return createLookup(key, null);
 	}
 
+	@Override
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -649,6 +658,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return new RangeLookup(this, key, keyRecord);
 	}
 
+	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
 		if (!isInitialized()) {
             throw new NotInitializedException(this);
@@ -707,14 +717,17 @@ class RangeLookup implements Lookup{
 		this.keyFields = key.getKeyFields();
 	}
 
+	@Override
 	public RecordKey getKey() {
 		return key;
 	}
 
+	@Override
 	public LookupTable getLookupTable() {
 		return lookupTable;
 	}
 	
+	@Override
 	public synchronized int getNumFound() {
 		int alreadyFound = numFound;
 		while (getNext() != null) {};
@@ -726,6 +739,7 @@ class RangeLookup implements Lookup{
 		return tmp;
 	}
 
+	@Override
 	public void seek() {
 		if (inRecord == null) throw new IllegalStateException("No key data for performing lookup");
 		for (int i = 0; i < startField.length; i++){
@@ -740,6 +754,7 @@ class RangeLookup implements Lookup{
 		next = getNext();
 	}
 
+	@Override
 	public void seek(DataRecord keyRecord) {
 		inRecord = keyRecord;
 		seek();
@@ -780,10 +795,12 @@ class RangeLookup implements Lookup{
 		return true;
 	}
 	
+	@Override
 	public boolean hasNext() {
 		return next != null;
 	}
 
+	@Override
 	public DataRecord next() {
 		if (next == null) {
 			throw new NoSuchElementException();
@@ -824,6 +841,7 @@ class RangeLookup implements Lookup{
 		return new int[]{startComp, endComp};
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("Method not supported!");
 	}
@@ -903,6 +921,7 @@ class RangeLookup implements Lookup{
 		 *  1							 0						-1(o1 is subinterval of o2)
 		 *  1							 1						 1
 		 */
+		@Override
 		public int compare(DataRecord o1, DataRecord o2) {
 			for (int i=0;i<startComparator.length;i++){
 				if (o1.getField(startFields[i]).isNull() && o2.getField(startFields[i]).isNull()) {

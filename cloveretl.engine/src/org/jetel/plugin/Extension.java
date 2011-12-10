@@ -105,7 +105,8 @@ public class Extension {
         return pointId;
     }
 
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuilder ret = new StringBuilder(getPointId() + " { ");
         
         for(String key : parameters.keySet()) {

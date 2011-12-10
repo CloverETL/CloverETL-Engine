@@ -36,7 +36,8 @@ public class FTPStreamHandler extends URLStreamHandler {
 		return new FTPConnection(url);
 	}
 	
-    protected void parseURL(URL u, String spec, int start, int limit) {
+    @Override
+	protected void parseURL(URL u, String spec, int start, int limit) {
     	super.parseURL(u, spec, start, limit);
     	String protocol = u.getProtocol();
     	if (!protocol.equals("ftp")) {

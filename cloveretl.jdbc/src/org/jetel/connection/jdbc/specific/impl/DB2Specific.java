@@ -56,10 +56,12 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
 	}
 	
+	@Override
 	public String quoteIdentifier(String identifier) {
         return ('"' + identifier + '"');
     }
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BOOLEAN :
@@ -107,6 +109,7 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		}
 	}
 	
+	@Override
 	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/);
 	}

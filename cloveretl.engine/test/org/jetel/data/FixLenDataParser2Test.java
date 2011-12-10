@@ -44,6 +44,7 @@ private FixLenDataParser aParser2 = null;
 private FixLenDataParser aParser3 = null;
 private DataRecord record;
 	
+@Override
 protected void setUp() { 
 	initEngine();
     
@@ -85,7 +86,8 @@ protected void setUp() {
 	}
 }
 	
-   protected void tearDown() {
+   @Override
+protected void tearDown() {
 		aParser3.close();
 		aParser3 = null;
 

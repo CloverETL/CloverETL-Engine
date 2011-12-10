@@ -175,6 +175,7 @@ public class AggregateOld extends Node {
 	/**
 	 * Initialize method of aggregate component
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -273,6 +274,7 @@ public class AggregateOld extends Node {
         return status;
     }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

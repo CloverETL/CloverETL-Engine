@@ -466,6 +466,7 @@ public class Dedup extends Node {
 	 *                Description of the Exception
 	 * @since April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if (isInitialized()) return;
 		super.init();
@@ -654,6 +655,7 @@ public class Dedup extends Node {
          return status;
      }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

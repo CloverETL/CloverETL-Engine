@@ -183,10 +183,12 @@ public class LdapReader extends Node {
 		this.passwd = passwd;
 	}
 	
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();

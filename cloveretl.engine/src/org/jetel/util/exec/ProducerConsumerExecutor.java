@@ -143,6 +143,7 @@ public class ProducerConsumerExecutor {
 		/**
 		 * @see java.lang.Thread#run()
 		 */
+		@Override
 		public void run() {
 			try {
 				producer.setOutput(stream);
@@ -184,6 +185,7 @@ public class ProducerConsumerExecutor {
 		/**
 		 * @see java.lan.Thread#run()
 		 */
+		@Override
 		public void run() {
 			try {
 				consumer.setInput(stream);
@@ -209,10 +211,12 @@ public class ProducerConsumerExecutor {
 		private InputStream stream;
 		private byte buf[] = new byte[Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE];
 
+		@Override
 		public void setInput(InputStream stream) {
 			this.stream = stream;
 		}
 
+		@Override
 		public boolean consume() throws JetelException {
 			try {
 				return stream.read(buf) > -1;
@@ -221,6 +225,7 @@ public class ProducerConsumerExecutor {
 			}
 		}
 
+		@Override
 		public void close() {
 		}
 	}

@@ -73,6 +73,7 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
 		}
 	}
 
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.TIMESTAMP :
@@ -88,7 +89,8 @@ public class MSSQLSpecific2005 extends AbstractJdbcSpecific {
 		return super.sqlType2str(sqlType);
 	}
 	
-    public String quoteIdentifier(String identifier) {
+    @Override
+	public String quoteIdentifier(String identifier) {
         return ('[' + identifier + ']');
     }
 	

@@ -33,12 +33,14 @@ public class DataRecordMetadataTest extends CloverTestCase {
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
 	private DataRecordMetadata aMixedDataRecordMetadata;
 	
+	@Override
 	protected void setUp() { 
 		initEngine();
 		aFixedDataRecordMetadata = new DataRecordMetadata("record1",DataRecordMetadata.FIXEDLEN_RECORD);
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 	}
 
+	@Override
 	protected void tearDown() {
 		aFixedDataRecordMetadata = null;
 		aDelimitedDataRecordMetadata = null;

@@ -164,6 +164,7 @@ public class DataParser extends AbstractTextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
@@ -333,6 +334,7 @@ public class DataParser extends AbstractTextParser {
 	/**
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
+	@Override
 	public void close() throws IOException {
 		if(reader != null && reader.isOpen()) {
 			reader.close();

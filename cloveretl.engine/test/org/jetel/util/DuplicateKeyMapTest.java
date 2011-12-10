@@ -31,7 +31,8 @@ import org.jetel.util.primitive.DuplicateKeyMap;
 public class DuplicateKeyMapTest extends CloverTestCase {
 
     DuplicateKeyMap map;
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
         map=new DuplicateKeyMap(new HashMap());
         
@@ -47,7 +48,8 @@ public class DuplicateKeyMapTest extends CloverTestCase {
         
     }
 
-    protected void tearDown() throws Exception {
+    @Override
+	protected void tearDown() throws Exception {
         super.tearDown();
         map.clear();
     }

@@ -513,6 +513,7 @@ public class StructureWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
 	 */
+	@Override
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
@@ -709,6 +710,7 @@ public class StructureWriter extends Node {
 			this.formatter = formatter;
 		}
 
+		@Override
 		public void run() {
 			DataRecord record = new DataRecord(inputPort.getMetadata());
 			record.init();

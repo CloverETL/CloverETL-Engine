@@ -146,7 +146,8 @@ public class SpeedLimiter extends Node {
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#reset()
 	 */
-    synchronized public void reset() throws ComponentNotReadyException {
+    @Override
+	synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     }
 	

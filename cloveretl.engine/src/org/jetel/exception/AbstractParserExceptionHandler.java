@@ -39,7 +39,8 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     
     protected BadDataFormatException exception = null;
     
-    public void handleException() {
+    @Override
+	public void handleException() {
         exceptionThrowed = false;
         handle();
         exception = null;
@@ -47,7 +48,8 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     
     abstract protected void handle();
     
-    public void populateHandler(
+    @Override
+	public void populateHandler(
             String errorMessage,
             DataRecord record,
             int recordNumber,
@@ -67,7 +69,8 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         }
     }
     
-    public String getErrorMessage() {
+    @Override
+	public String getErrorMessage() {
 		if (exception == null)	return "";
 		StringBuilder errorMess = new StringBuilder();
 		for (BadDataFormatException ex : exception) {
@@ -82,28 +85,35 @@ public abstract class AbstractParserExceptionHandler implements IParserException
 		return errorMess.toString();
 	}
     
-     public BadDataFormatException getException() {
+     @Override
+	public BadDataFormatException getException() {
     	return exception;
     }
 
-    public DataRecord getRecord() {
+    @Override
+	public DataRecord getRecord() {
         return record;
     }
     
-    public int getRecordNumber() {
+    @Override
+	public int getRecordNumber() {
         return recordNumber;
     }
 
-    public boolean isExceptionThrowed() {
+    @Override
+	public boolean isExceptionThrowed() {
         return exceptionThrowed;
     }
         
-    public abstract PolicyType getType();
+    @Override
+	public abstract PolicyType getType();
 
+	@Override
 	public String getRawRecord() {
 		return rawRecord;
 	}
 
+	@Override
 	public void setRawRecord(String rawRecord) {
 		this.rawRecord = rawRecord;
 	}

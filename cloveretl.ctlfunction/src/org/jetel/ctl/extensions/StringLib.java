@@ -91,6 +91,7 @@ public class StringLib extends TLFunctionLibrary {
 	
 	private static String LIBRARY_NAME = "String";
 
+	@Override
 	public String getName() {
 		return LIBRARY_NAME;
 	}
@@ -110,9 +111,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ConcatFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String[] args = new String[context.getParams().length];
 			for (int i=args.length-1; i>=0; i--) {
@@ -131,9 +134,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class UpperCaseFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(upperCase(context, stack.popString()));
 		}
@@ -147,9 +152,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class LowerCaseFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(lowerCase(context, stack.popString()));
 		}
@@ -164,9 +171,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class SubstringFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final int length = stack.popInt();
 			final int from = stack.popInt();
@@ -195,9 +204,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class LeftFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			int params = context.getParams().length;
 			final boolean spacePad = params > 2 ? stack.popBoolean() : false;
@@ -231,9 +242,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RightFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			int params = context.getParams().length;
 			final boolean spacePad = params > 2 ? stack.popBoolean() : false;
@@ -256,9 +269,11 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	class TrimFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(trim(context, stack.popString()));
 		}
@@ -292,9 +307,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class LengthFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isString()) {
 				stack.push(length(context, stack.popString()));
@@ -342,10 +359,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	class ReplaceFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			replaceInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String replacement = stack.popString();
 			final String regex = stack.popString();
@@ -374,10 +393,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	class SplitFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			splitInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String regex = stack.popString();
 			final String input = stack.popString();
@@ -394,9 +415,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CharAtFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			int pos = stack.popInt();
 			String input = stack.popString();
@@ -413,9 +436,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsBlankFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isBlank(context, stack.popString()));
 		}
@@ -431,9 +456,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsAsciiFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isAscii(context, stack.popString()));
 		}
@@ -448,9 +475,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsNumberFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isNumber(context, stack.popString()));
 		}
@@ -465,9 +494,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsIntegerFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isInteger(context, stack.popString()));
 		}
@@ -482,9 +513,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsLongFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isLong(context, stack.popString()));
 		}
@@ -510,10 +543,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IsDateFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			isDateInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 
 			String locale = null;
@@ -538,9 +573,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveDiacriticFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(removeDiacritic(context, stack.popString()));
 		}
@@ -554,9 +591,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveBlankSpaceFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(removeBlankSpace(context, stack.popString()));
 		}
@@ -570,9 +609,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveNonPrintableFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(removeNonPrintable(context, stack.popString()));
 		}
@@ -587,9 +628,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class RemoveNonAsciiFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(removeNonAscii(context, stack.popString()));
 		}
@@ -611,9 +654,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length == 1) {
 				stack.push(getAlphanumericChars(context, stack.popString()));
@@ -638,9 +683,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class TranslateFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String replacement = stack.popString();
 			final String match = stack.popString();
@@ -685,9 +732,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class JoinFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[1].isList()) {
 				final List<Object> values = stack.popList();
@@ -715,9 +764,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class IndexOfFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			int from = 0;
 
@@ -740,9 +791,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CountCharFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String character = stack.popString();
 			String input = stack.popString();
@@ -772,10 +825,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	class FindFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			findInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
@@ -799,10 +854,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	class MatchesFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			matchesInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
@@ -834,10 +891,12 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	class ChopFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 			chopInit(context);
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length == 1) {
 				stack.push(chop(context, stack.popString()));
@@ -873,9 +932,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	class CutFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final List<Object> indices = stack.popList();
 			final String input = stack.popString();
@@ -903,9 +964,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class IsUrlFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(isUrl(context, url));
@@ -923,9 +986,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlProtocolFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlProtocol(context, url));
@@ -944,9 +1009,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlUserInfo implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlUserInfo(context, url));
@@ -964,9 +1031,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlHostFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlHost(context, url));
@@ -984,9 +1053,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlPortFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlPort(context, url));
@@ -1004,9 +1075,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlPathFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlPath(context, url));
@@ -1025,9 +1098,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlQueryFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlQuery(context, url));
@@ -1046,9 +1121,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class GetUrlRefFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(getUrlRef(context, url));
@@ -1074,9 +1151,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class EscapeUrlFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(escapeUrl(context, url));
@@ -1117,9 +1196,11 @@ public class StringLib extends TLFunctionLibrary {
 	
 	class UnescapeUrlFunction implements TLFunctionPrototype {
 	
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 		
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(unescapeUrl(context, url));

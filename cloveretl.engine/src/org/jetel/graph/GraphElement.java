@@ -106,7 +106,8 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#checkConfig()
      */
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    @Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         checked = true;
         return status;
     }
@@ -114,14 +115,16 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#init()
      */
-    synchronized public void init() throws ComponentNotReadyException {
+    @Override
+	synchronized public void init() throws ComponentNotReadyException {
         initialized = true;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#preExecute()
      */
-    synchronized public void preExecute() throws ComponentNotReadyException {
+    @Override
+	synchronized public void preExecute() throws ComponentNotReadyException {
     	if (!firstRun) {
     		//this is necessary for backward compatibility for graph elements 
 			//with obsoleted reset() method already implemented
@@ -132,7 +135,8 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#postExecute()
      */
-    public void postExecute() throws ComponentNotReadyException {
+    @Override
+	public void postExecute() throws ComponentNotReadyException {
     	firstRun = false;
     }
     
@@ -156,7 +160,8 @@ public abstract class GraphElement implements IGraphElement {
      * @see org.jetel.graph.IGraphElement#reset()
      * @deprecated see {@link org.jetel.graph.IGraphElement#preExecute()} and {@link org.jetel.graph.IGraphElement#postExecute()} methods 
      */
-    @Deprecated
+    @Override
+	@Deprecated
     synchronized public void reset() throws ComponentNotReadyException {
         if(!isInitialized()) {
         	String msg = "Graph element " + this + " is not initialized, cannot be reset before initialization or after element was released.";
@@ -168,63 +173,72 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#free()
      */
-    synchronized public void free() {
+    @Override
+	synchronized public void free() {
         initialized = false;
     }
     
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#getGraph()
      */
-    public TransformationGraph getGraph() {
+    @Override
+	public TransformationGraph getGraph() {
         return graph;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#setGraph(org.jetel.graph.TransformationGraph)
      */
-    public void setGraph(TransformationGraph graph) {
+    @Override
+	public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#getId()
      */
-    public String getId() {
+    @Override
+	public String getId() {
         return id;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#getName()
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return name;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#setName(java.lang.String)
      */
-    public void setName(String name) {
+    @Override
+	public void setName(String name) {
         this.name = name;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#isChecked()
      */
-    public boolean isChecked() {
+    @Override
+	public boolean isChecked() {
         return checked;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#isInited()
      */
-    public boolean isInitialized() {
+    @Override
+	public boolean isInitialized() {
         return initialized;
     }
     
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#firstRun()
      */
-    public boolean firstRun() {
+    @Override
+	public boolean firstRun() {
     	return firstRun;
     }
     

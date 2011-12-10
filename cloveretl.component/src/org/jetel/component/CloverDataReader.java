@@ -266,6 +266,7 @@ public class CloverDataReader extends Node {
 		return aDataReader;
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 	    super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);

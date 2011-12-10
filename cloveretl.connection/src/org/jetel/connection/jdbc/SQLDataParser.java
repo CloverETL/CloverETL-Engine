@@ -116,6 +116,7 @@ public class SQLDataParser implements Parser {
 	 *@since                   May 2, 2002
 	 */
 
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
@@ -157,6 +158,7 @@ public class SQLDataParser implements Parser {
 	 * @since                   August 21, 2002
 	 */
 
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord localOutRecord=new DataRecord(metadata);
 		localOutRecord.init();
@@ -250,6 +252,7 @@ public class SQLDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
@@ -259,12 +262,14 @@ public class SQLDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		if (dbConnection != null) close();
 		
@@ -329,6 +334,7 @@ public class SQLDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#close()
 	 */
+	@Override
 	public void close() {
 		if (dbConnection == null) return;//not initialized yet
 		try {
@@ -352,21 +358,25 @@ public class SQLDataParser implements Parser {
 	    this.fetchSize = fetchSize;
 	}
 
-    public void setExceptionHandler(IParserExceptionHandler handler) {
+    @Override
+	public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
 
-    public IParserExceptionHandler getExceptionHandler() {
+    @Override
+	public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
 
-    public PolicyType getPolicyType() {
+    @Override
+	public PolicyType getPolicyType() {
         if(exceptionHandler != null) {
             return exceptionHandler.getType();
         }
         return null;
     }
 
+	@Override
 	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
@@ -375,6 +385,7 @@ public class SQLDataParser implements Parser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		try {
 			if (resultSet != null) {
@@ -398,10 +409,12 @@ public class SQLDataParser implements Parser {
 		this.parentNode = parentNode;
 	}
 
+	@Override
 	public Object getPosition() {
 		return incremental != null ? incremental.getPosition() : null;
 	}
 
+	@Override
 	public void movePosition(Object position) {
 		if (incremental != null) {
 			incremental.setValues((Properties)position);

@@ -77,6 +77,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getParentNodeTracking()
 	 */
+	@Override
 	public NodeTracking getParentNodeTracking() {
 		return parentNodeDetail;
 	}
@@ -84,6 +85,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getIndex()
 	 */
+	@Override
 	public int getIndex() {
 		return index;
 	}
@@ -91,48 +93,56 @@ public abstract class PortTrackingDetail implements PortTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalRecords()
 	 */
+	@Override
 	public int getTotalRecords() {
 		return totalRecords;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalBytes()
 	 */
+	@Override
 	public long getTotalBytes() {
 		return totalBytes;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordFlow()
 	 */
+	@Override
 	public int getRecordFlow() {
 		return recordFlow;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getRecordPeak()
 	 */
+	@Override
 	public int getRecordPeak() {
 		return recordPeak;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getByteFlow()
 	 */
+	@Override
 	public int getByteFlow() {
 		return byteFlow;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getBytePeak()
 	 */
+	@Override
 	public int getBytePeak() {
 		return bytePeak;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getWaitingRecords()
 	 */
+	@Override
 	public int getWaitingRecords() {
 		return waitingRecords;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getAverageWaitingRecords()
 	 */
+	@Override
 	public int getAverageWaitingRecords() {
 		return averageWaitingRecords;
 	}
@@ -182,6 +192,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 		this.usedMemory = usedMemory;
 	}
 
+	@Override
 	abstract public String getType();
 	
 	abstract void gatherTrackingDetails();

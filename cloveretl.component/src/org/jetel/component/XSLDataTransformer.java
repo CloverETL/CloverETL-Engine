@@ -290,6 +290,7 @@ public class XSLDataTransformer extends Node {
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -383,7 +384,8 @@ public class XSLDataTransformer extends Node {
 		if (mapping == null && (xmlInputFile == null || xmlOutputFile == null)) throw new ComponentNotReadyException(ERR_MAPPING_FILE_NOT_FOUND);
 	}
 	
-    public void reset() throws ComponentNotReadyException {
+    @Override
+	public void reset() throws ComponentNotReadyException {
     	super.reset();
     }
 
@@ -392,6 +394,7 @@ public class XSLDataTransformer extends Node {
 	 *
 	 * @return    Description of the Returned Value
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
         xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE, mapping);
@@ -476,6 +479,7 @@ public class XSLDataTransformer extends Node {
             return status;
        }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

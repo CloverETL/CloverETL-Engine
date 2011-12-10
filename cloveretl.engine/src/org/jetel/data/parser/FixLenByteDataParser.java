@@ -78,6 +78,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.FixLenDataParser3#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setDataSource(Object inputDataSource) {
 		super.setDataSource(inputDataSource);
 		dataPos = 0;
@@ -90,6 +91,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * @param bytes
 	 * @throws IOException 
 	 */
+	@Override
 	protected void discardBytes(int bytes) throws IOException {
 		while (bytes > 0) {
 			if (inChannel instanceof FileChannel) {
@@ -115,6 +117,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * @return null when no more data are available, output record otherwise.
 	 * @throws JetelException
 	 */
+	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		if (getData(recordLength) != recordLength) {
 			if (byteBuffer.remaining() != 0) {
@@ -158,6 +161,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * @return Number of successfully skipped records.
 	 * @throws JetelException
 	 */
+	@Override
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
@@ -214,6 +218,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		super.reset();
 		dataPos = 0;

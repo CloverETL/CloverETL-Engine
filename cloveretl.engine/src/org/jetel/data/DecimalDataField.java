@@ -152,6 +152,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	/**
 	 * @see org.jetel.data.DataField#copy()
 	 */
+	@Override
 	public DataField duplicate() {
 	    DecimalDataField newField = new DecimalDataField(metadata, value, numericFormatter, precision, scale);
 	    newField.setNull(isNull());
@@ -160,7 +161,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	    return newField;
 	}
 	
-    public Numeric duplicateNumeric() {
+    @Override
+	public Numeric duplicateNumeric() {
         return value.duplicateNumeric();
     }
     
@@ -168,6 +170,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DecimalDataField){
 	        if (!fromField.isNull) {
@@ -191,6 +194,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  _value  The new Value value
 	 *@since          March 28, 2002
 	 */
+	@Override
 	public void setValue(Object _value) {
 		if (_value == null) {
 		    setNull(true);
@@ -233,6 +237,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  value  The new Double value
 	 *@since         August 19, 2002
 	 */
+	@Override
 	public void setValue(double _value) {
 		if (Double.isNaN(_value)) {
 		    setNull(true);
@@ -250,6 +255,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  value  The new Int value
 	 *@since         August 19, 2002
 	 */
+	@Override
 	public void setValue(int _value) {
 		if (_value == Integer.MIN_VALUE) {
 		    setNull(true);
@@ -266,6 +272,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  value  The new Int value
 	 *@since         August 19, 2002
 	 */
+	@Override
 	public void setValue(long _value) {
 		if (_value == Long.MIN_VALUE) {
 		    setNull(true);
@@ -275,7 +282,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		setNull(false);
 	}
 
-    public void setValue(Numeric _value) {
+    @Override
+	public void setValue(Numeric _value) {
         if (_value == null || _value.isNull()) {
             setNull(true);
             return;
@@ -284,7 +292,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
         setNull(false);
     }
 
-    public void setValue(Number value) {
+    @Override
+	public void setValue(Number value) {
         if (value == null) {
             setNull(true);
             return;
@@ -299,6 +308,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  isNull  The new Null value
 	 *@since          October 29, 2002
 	 */
+	@Override
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (this.isNull) {
@@ -306,11 +316,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		}
 	}
 
-    public void setNull() {
+    @Override
+	public void setNull() {
         setNull(true);
     }
     
-    public void reset(){
+    @Override
+	public void reset(){
         if (metadata.isNullable()){
             setNull(true);
         }else if (metadata.isDefaultValueSet()){
@@ -326,6 +338,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    The Type value
 	 *@since     March 28, 2002
 	 */
+	@Override
 	public char getType() {
 		return DataFieldMetadata.DECIMAL_FIELD;
 	}
@@ -337,6 +350,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    The Value value
 	 *@since     March 28, 2002
 	 */
+	@Override
 	public Object getValue() {
 		if(isNull) {
 			return null;
@@ -347,7 +361,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
     /**
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
-    public Object getValueDuplicate() {
+    @Override
+	public Object getValueDuplicate() {
         if(isNull) {
             return null;
         }
@@ -360,6 +375,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    The Double value
 	 *@since     August 19, 2002
 	 */
+	@Override
 	public double getDouble() {
 		if (isNull) {
 		    return Double.NaN;
@@ -374,6 +390,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    The Int value
 	 *@since     August 19, 2002
 	 */
+	@Override
 	public int getInt() {
 		if(isNull) {
 			return Integer.MIN_VALUE;
@@ -387,6 +404,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    The Int value
 	 *@since     August 19, 2002
 	 */
+	@Override
 	public long getLong() {
 		if(isNull) {
 			return Long.MIN_VALUE;
@@ -400,6 +418,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return    Description of the Returned Value
 	 *@since     March 28, 2002
 	 */
+	@Override
 	public String toString() {
 		if(isNull) {
 			return metadata.getNullValue();
@@ -449,6 +468,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		}
 	}
 
+	@Override
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -513,6 +533,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  buffer  Description of Parameter
 	 *@since          April 23, 2002
 	 */
+	@Override
 	public void serialize(CloverBuffer buffer) {
 		try {
 			value.serialize(buffer);
@@ -528,6 +549,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  buffer  Description of Parameter
 	 *@since          April 23, 2002
 	 */
+	@Override
 	public void deserialize(CloverBuffer buffer) {
 		value.deserialize(buffer);
         setNull(value.isNaN());
@@ -541,6 +563,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@return      Description of the Returned Value
 	 *@since       April 23, 2002
 	 */
+	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj == null) return false;
 	    
@@ -560,6 +583,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@param  obj  Object representing numeric value
 	 *@return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
+	@Override
 	public int compareTo(Object obj) {
 		if (obj == null) return 1;
 		if (isNull) return -1;
@@ -567,6 +591,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		return value.compareTo(obj);
 	}
 
+	@Override
 	public int compareTo(Numeric _value){
 	    if (isNull) {
 	        return -1;
@@ -577,6 +602,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	    }
 	}
 
+	@Override
 	public int hashCode(){
         return value.hashCode();
 	}
@@ -588,10 +614,12 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField
 	 */
+	@Override
 	public int getSizeSerialized() {
 		return value.getSizeSerialized();
 	}
 
+	@Override
 	public void add(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -600,6 +628,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
             value.add(a);
 	}
 
+	@Override
 	public void sub(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -608,6 +637,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
             value.sub(a);
 	}
 
+	@Override
 	public void mul(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -616,6 +646,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
             value.mul(a);
 	}
 
+	@Override
 	public void div(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -624,11 +655,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
             value.div(a);
 	}
 
+	@Override
 	public void abs() {
         if(isNull) return;
 		value.abs();
 	}
 
+	@Override
 	public void mod(Numeric a) {
         if(isNull) return;
         if(a.isNull())
@@ -637,15 +670,18 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
             value.mod(a);
 	}
 
+	@Override
 	public void neg() {
         if(isNull) return;
 		value.neg();
 	}
 
+	@Override
 	public Decimal getDecimal() {
 		return value;
 	}
 
+	@Override
 	public Decimal getDecimal(int precision, int scale) {
         if(precision == this.precision && scale == this.scale) {
             return value;
@@ -653,6 +689,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
         return DecimalFactory.getDecimal(value, precision, scale);
 	}
 
+	@Override
 	public BigDecimal getBigDecimal() {
 		if (isNull) {
 			return null;

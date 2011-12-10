@@ -208,6 +208,7 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  record2  Description of the Parameter
 	 * @return          -1 ; 0 ; 1
 	 */
+	@Override
 	public int compare(DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return 0;
 		int compResult;
@@ -261,6 +262,7 @@ public class RecordOrderedKey extends RecordKey {
 	 * @param  record2    Second record
 	 * @return            -1 ; 0 ; 1
 	 */
+	@Override
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return 0;
 		int compResult;

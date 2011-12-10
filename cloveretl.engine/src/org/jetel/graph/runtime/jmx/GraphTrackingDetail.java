@@ -97,6 +97,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking(int)
 	 */
+	@Override
 	public PhaseTracking getPhaseTracking(int phaseNum) {
 		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
 			if (phaseDetail.getPhaseNum() == phaseNum) {
@@ -109,6 +110,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking()
 	 */
+	@Override
 	public PhaseTracking[] getPhaseTracking() {
 		return phasesDetails;
 	}
@@ -116,6 +118,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getRunningPhaseTracking()
 	 */
+	@Override
 	public PhaseTracking getRunningPhaseTracking() {
 		return runningPhaseDetail;
 	}
@@ -123,6 +126,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getGraphName()
 	 */
+	@Override
 	public String getGraphName() {
 		return graphName;
 	}
@@ -130,6 +134,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getStartTime()
 	 */
+	@Override
 	public long getStartTime() {
 		return startTime;
 	}
@@ -137,6 +142,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getEndTime()
 	 */
+	@Override
 	public long getEndTime() {
 		return endTime;
 	}
@@ -144,6 +150,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getExecutionTime()
 	 */
+	@Override
 	public long getExecutionTime() {
 		if (startTime == -1) {
 			return -1;
@@ -162,6 +169,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
 	 */
+	@Override
 	public Result getResult() {
 		return result;
 	}

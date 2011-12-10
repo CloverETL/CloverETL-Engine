@@ -92,6 +92,7 @@ public class Phase extends GraphElement implements Comparable {
 	 * @param  graph  The new Graph value
 	 * @since         April 5, 2002
 	 */
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		super.setGraph(graph);
 		
@@ -131,6 +132,7 @@ public class Phase extends GraphElement implements Comparable {
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       April 10, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -338,6 +340,7 @@ public class Phase extends GraphElement implements Comparable {
 	 *
 	 * @return    Description of the Return Value
 	 */
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
@@ -479,7 +482,8 @@ public class Phase extends GraphElement implements Comparable {
      *
      * @since    April 2, 2002
      */
-    public void free() {
+    @Override
+	public void free() {
         
         //free all nodes in this phase
         for(Node node : nodes.values()) {
@@ -524,6 +528,7 @@ public class Phase extends GraphElement implements Comparable {
 	 * @param  to  Description of the Parameter
 	 * @return     Description of the Return Value
 	 */
+	@Override
 	public int compareTo(Object to) {
 		int toPhaseNum = ((Phase) to).getPhaseNum();
 		if (phaseNum > toPhaseNum) {

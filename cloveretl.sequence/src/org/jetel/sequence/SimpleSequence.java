@@ -164,7 +164,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
 
     }
     
-    synchronized public long currentValueLong(){
+    @Override
+	synchronized public long currentValueLong(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't get currentValue for non-initialized sequence "+getId());
         }
@@ -172,7 +173,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
         return alreadyIncremented ? sequenceValue - step : sequenceValue;
     }
     
-    synchronized public long nextValueLong(){
+    @Override
+	synchronized public long nextValueLong(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't call nextValue for non-initialized sequence "+getId());
         }
@@ -189,26 +191,31 @@ public class SimpleSequence extends GraphElement implements Sequence {
         return tmpVal;
     }
     
-    public int currentValueInt(){
+    @Override
+	public int currentValueInt(){
         return (int) currentValueLong();
     }
     
-    public int nextValueInt(){
+    @Override
+	public int nextValueInt(){
         return (int) nextValueLong();
     }
     
-    public String currentValueString(){
+    @Override
+	public String currentValueString(){
         return Long.toString(currentValueLong());
     }
     
-    public String nextValueString(){
+    @Override
+	public String nextValueString(){
         return Long.toString(nextValueLong());
     }
     
     /* (non-Javadoc)
      * @see org.jetel.data.sequence.Sequence#resetValue()
      */
-    synchronized public void resetValue(){
+    @Override
+	synchronized public void resetValue(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't reset non-initialized sequence "+getId());
         }
@@ -217,7 +224,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
         flushValue(sequenceValue);
     }
 
-    public boolean isPersistent(){
+    @Override
+	public boolean isPersistent(){
         return true;
     }
     
@@ -225,7 +233,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * Initializes sequence object. It is called after the sequence class is instantiated.
      * All necessary internal initialization should be performed in this method.
      */
-    synchronized public void init() throws ComponentNotReadyException {
+    @Override
+	synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		
@@ -285,7 +294,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * Closes the sequence (current instance). All internal resources should be freed in
      * this method.
      */
-    synchronized public void free() {
+    @Override
+	synchronized public void free() {
         if(!isInitialized()) return;
         super.free();
 
@@ -380,6 +390,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         return status;
     }
 
+	@Override
 	public boolean isShared() {
 		return true;
 	}

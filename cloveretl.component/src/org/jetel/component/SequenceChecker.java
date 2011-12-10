@@ -219,6 +219,7 @@ public class SequenceChecker extends Node {
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  January 5, 2007
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -260,6 +261,7 @@ public class SequenceChecker extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     January 5, 2007
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (keyFieldNames != null) {
@@ -352,6 +354,7 @@ public class SequenceChecker extends Node {
             return status;
        }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}

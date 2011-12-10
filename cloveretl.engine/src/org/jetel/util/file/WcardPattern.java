@@ -783,6 +783,7 @@ public class WcardPattern {
 		/**
 		 * Part of FilenameFilter interface.
 		 */
+		@Override
 		public boolean accept(File dir, String name) {
 			return rePattern.matcher(name).matches();
 		}

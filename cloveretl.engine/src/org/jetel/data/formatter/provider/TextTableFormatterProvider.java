@@ -50,6 +50,7 @@ public class TextTableFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		TextTableFormatter formatter;
 		if (charEncoder == null) {

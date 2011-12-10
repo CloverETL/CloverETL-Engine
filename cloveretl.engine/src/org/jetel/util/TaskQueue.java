@@ -66,6 +66,7 @@ public class TaskQueue extends Thread {
 		}
 	}
 
+	@Override
 	public void run() {
 		Runnable aTask = null;
 		while (!terminated) {
@@ -92,6 +93,7 @@ public class TaskQueue extends Thread {
 	public void finish() {
 		// we finish by adding a "last cancel" task and disabling all new tasks
 		addTask(new Runnable() {
+			@Override
 			public void run() {
 				cancel();
 			}

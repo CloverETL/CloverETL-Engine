@@ -35,7 +35,8 @@ public class ByteBufferUtilsTest extends CloverTestCase {
 
     CloverBuffer buffer;
 
-    protected void setUp() throws Exception {
+    @Override
+	protected void setUp() throws Exception {
         super.setUp();
         buffer=CloverBuffer.allocateDirect(512);
     }

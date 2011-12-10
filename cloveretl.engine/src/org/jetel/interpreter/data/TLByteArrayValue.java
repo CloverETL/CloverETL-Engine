@@ -65,6 +65,7 @@ public class TLByteArrayValue extends TLContainerValue {
 		numValue=new TLNumericValue(TLValueType.INTEGER);
 	}
 	
+	@Override
 	public void setValue(TLValue value){
 		if (value == TLNullValue.getInstance()){
 			this.value.reset();
@@ -82,6 +83,7 @@ public class TLByteArrayValue extends TLContainerValue {
 	}
 	
 	
+	@Override
 	public Object getValue(){
 		return value;
 	}

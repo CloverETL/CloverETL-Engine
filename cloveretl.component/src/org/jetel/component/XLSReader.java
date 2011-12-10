@@ -391,7 +391,8 @@ public class XLSReader extends Node {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
 	}
 	
-    public void toXML(Element xmlElement) {
+    @Override
+	public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
 
         xmlElement.setAttribute(XML_PARSER_ATTRIBUTE, parserType.name());

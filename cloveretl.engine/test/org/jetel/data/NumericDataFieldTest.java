@@ -41,6 +41,7 @@ public class NumericDataFieldTest  extends CloverTestCase {
 
 	
 
+@Override
 protected void setUp() { 
 	initEngine();
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'i',(short)3);
@@ -62,6 +63,7 @@ protected void setUp() {
 
 
 
+@Override
 protected void tearDown() {
 	aNumericDataField1 = null;
 	aNumericDataField2 = null;

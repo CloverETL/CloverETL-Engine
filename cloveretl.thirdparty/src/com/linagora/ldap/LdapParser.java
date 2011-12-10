@@ -138,6 +138,7 @@ public class LdapParser implements Parser {
 	 * This function try to contact the LDAP server and perform the search query.
 	 * ComponentNotReadyException exception are raised for each caught exceptions.
 	 */
+	@Override
 	public void init() 
 		throws ComponentNotReadyException {
 
@@ -230,16 +231,19 @@ public class LdapParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 	
     /* (non-Javadoc)
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
      */
-    public void setDataSource(Object inputDataSource) {
+    @Override
+	public void setDataSource(Object inputDataSource) {
         throw new UnsupportedOperationException();
     }
 
+	@Override
 	public void close() {
 		try {
 			ldapManager.close();
@@ -257,6 +261,7 @@ public class LdapParser implements Parser {
 	 *                Description of Exception
 	 * @since August 27, 2006
 	 */
+	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord localOutRecord = new DataRecord(metadata);
 		localOutRecord.init();
@@ -273,6 +278,7 @@ public class LdapParser implements Parser {
 	 *@exception  SQLException  Description of Exception
 	 *@since                   Angust 27, 2006
 	 */
+	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
         if(exceptionHandler != null ) {  //use handler only if configured
@@ -394,10 +400,12 @@ public class LdapParser implements Parser {
 		return message.toString();
 	}
 
+	@Override
 	public IParserExceptionHandler getExceptionHandler() {
 		return exceptionHandler;
 	}
 
+	@Override
 	public PolicyType getPolicyType() {
         if(exceptionHandler != null) {
             return exceptionHandler.getType();
@@ -405,10 +413,12 @@ public class LdapParser implements Parser {
         return null;
 	}
 
+	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
 	}
 
+	@Override
 	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException();
 	}
@@ -417,16 +427,19 @@ public class LdapParser implements Parser {
 	 * (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#reset()
 	 */
+	@Override
 	public void reset() {
 		resultDn = dnList.iterator();
 		recordCounter = 0;
 	}
 
+	@Override
 	public Object getPosition() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public void movePosition(Object position) {
 		// TODO Auto-generated method stub
 		

@@ -514,6 +514,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			}
 		}
 
+		@Override
 		public void setFieldValue(int cloverFieldIndex, Record cellRecord) {
 			if (!recordStarted) {
 				recordStarted = true;

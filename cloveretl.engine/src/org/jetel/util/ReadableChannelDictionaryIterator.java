@@ -215,9 +215,11 @@ public class ReadableChannelDictionaryIterator {
 			this.charset = charset;
 		}
 		
+		@Override
 		public boolean hasNext() {
 			return counter < value.length;
 		}
+		@Override
 		public ReadableByteChannel next() {
 			try {
 				return Channels.newChannel(new ByteArrayInputStream(value[counter++].toString().getBytes(charset)));
@@ -225,6 +227,7 @@ public class ReadableChannelDictionaryIterator {
 				throw new RuntimeException(e);
 			}
 		}
+		@Override
 		public void remove() {
 		}
 	}
@@ -236,12 +239,15 @@ public class ReadableChannelDictionaryIterator {
 			this.value = value;
 		}
 		
+		@Override
 		public boolean hasNext() {
 			return counter < value.size();
 		}
+		@Override
 		public ReadableByteChannel next() {
 			return Channels.newChannel(new ByteArrayInputStream(value.get(counter++)));
 		}
+		@Override
 		public void remove() {
 		}
 	}
@@ -255,15 +261,18 @@ public class ReadableChannelDictionaryIterator {
 			hasNext = true;
 		}
 		
+		@Override
 		public boolean hasNext() {
 			return hasNext;
 		}
+		@Override
 		public ReadableByteChannel next() {
 			if (!hasNext()) return null;
 			hasNext = false;
 			return rch;
 		}
 		
+		@Override
 		public void remove() {
 			hasNext = false;
 		}

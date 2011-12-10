@@ -162,6 +162,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * 
 	 * @since April 4, 2002
 	 */
+	@Override
 	public Result execute() throws Exception {
 		super.execute();
 		ProcBox box;
@@ -655,6 +656,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return status;
 	}
 
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}

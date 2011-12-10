@@ -54,11 +54,13 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		return new PostgreConnection(connection, operationType);
 	}
 
-    public String quoteIdentifier(String identifier) {
+    @Override
+	public String quoteIdentifier(String identifier) {
         return ('"' + identifier + '"');
     }
 
     
+	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
 		case Types.BIT:
@@ -120,7 +122,8 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 	}
 
 	
-  public ArrayList<String> getSchemas(java.sql.Connection connection)
+  @Override
+public ArrayList<String> getSchemas(java.sql.Connection connection)
       throws SQLException {
 
     ArrayList<String> tmp;
@@ -142,7 +145,8 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
   }
 	
 	
-  public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+  @Override
+public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
     return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/);
   }
 

@@ -383,7 +383,8 @@ public class XMLExtract extends Node {
 		/**
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
          */
-        public void startElement(String namespaceURI, String localName, String qualifiedName, Attributes attributes) throws SAXException {
+        @Override
+		public void startElement(String namespaceURI, String localName, String qualifiedName, Attributes attributes) throws SAXException {
             m_level++;
             m_grabCharacters = true;
             
@@ -568,7 +569,8 @@ public class XMLExtract extends Node {
         /**
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
-        public void characters(char[] data, int offset, int length) throws SAXException {
+        @Override
+		public void characters(char[] data, int offset, int length) throws SAXException {
             // Save the characters into the buffer, endElement will store it into the field
             if (m_activeMapping != null && m_grabCharacters) {
                 m_characters.append(data, offset, length);
@@ -579,7 +581,8 @@ public class XMLExtract extends Node {
         /**
          * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
          */
-        public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
+        @Override
+		public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
             if (m_activeMapping != null) {
             	String fullName = "{" + namespaceURI + "}" + localName;
             	
@@ -1772,7 +1775,8 @@ public class XMLExtract extends Node {
     /**
      * Perform sanity checks.
      */
-    public void init() throws ComponentNotReadyException {
+    @Override
+	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 
@@ -1941,7 +1945,8 @@ public class XMLExtract extends Node {
 		return result;
 	}
 	
-    public String getType() {
+    @Override
+	public String getType() {
         return COMPONENT_TYPE;
     }
     
@@ -2075,6 +2080,7 @@ public class XMLExtract extends Node {
 		private Set<String> attributeNames = new HashSet<String>();
 		private Set<String> cloverAttributes = new HashSet<String>();
 		
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
 			int length = atts.getLength(); 
 			for (int i=0; i<length; i++) {

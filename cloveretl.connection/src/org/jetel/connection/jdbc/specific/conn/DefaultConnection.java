@@ -107,6 +107,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#clearWarnings()
 	 */
+	@Override
 	public void clearWarnings() throws SQLException {
 		connection.clearWarnings();
 	}
@@ -114,6 +115,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#close()
 	 */
+	@Override
 	public void close() throws SQLException {
 		connection.close();
 	}
@@ -121,6 +123,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#commit()
 	 */
+	@Override
 	public void commit() throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.commit();
@@ -130,6 +133,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#createStatement()
 	 */
+	@Override
 	public Statement createStatement() throws SQLException {
 		Statement statement;
 
@@ -155,6 +159,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#createStatement(int, int, int)
 	 */
+	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		return optimizeStatement(connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
 	}
@@ -162,6 +167,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#createStatement(int, int)
 	 */
+	@Override
 	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
 		return optimizeStatement(connection.createStatement(resultSetType, resultSetConcurrency));
 	}
@@ -169,6 +175,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getAutoCommit()
 	 */
+	@Override
 	public boolean getAutoCommit() throws SQLException {
 		return connection.getAutoCommit();
 	}
@@ -176,6 +183,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getCatalog()
 	 */
+	@Override
 	public String getCatalog() throws SQLException {
 		return connection.getCatalog();
 	}
@@ -183,6 +191,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getHoldability()
 	 */
+	@Override
 	public int getHoldability() throws SQLException {
 		return connection.getHoldability();
 	}
@@ -190,6 +199,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getMetaData()
 	 */
+	@Override
 	public DatabaseMetaData getMetaData() throws SQLException {
 		return connection.getMetaData();
 	}
@@ -197,6 +207,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getTransactionIsolation()
 	 */
+	@Override
 	public int getTransactionIsolation() throws SQLException {
 		return connection.getTransactionIsolation();
 	}
@@ -204,6 +215,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getTypeMap()
 	 */
+	@Override
 	public Map<String, Class<?>> getTypeMap() throws SQLException {
 		return connection.getTypeMap();
 	}
@@ -211,6 +223,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#getWarnings()
 	 */
+	@Override
 	public SQLWarning getWarnings() throws SQLException {
 		return connection.getWarnings();
 	}
@@ -218,6 +231,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#isClosed()
 	 */
+	@Override
 	public boolean isClosed() throws SQLException {
 		return connection.isClosed();
 	}
@@ -225,6 +239,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#isReadOnly()
 	 */
+	@Override
 	public boolean isReadOnly() throws SQLException {
 		return connection.isReadOnly();
 	}
@@ -232,6 +247,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#nativeSQL(java.lang.String)
 	 */
+	@Override
 	public String nativeSQL(String sql) throws SQLException {
 		return connection.nativeSQL(sql);
 	}
@@ -239,6 +255,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareCall(java.lang.String, int, int, int)
 	 */
+	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
 			throws SQLException {
 		return (CallableStatement) optimizeStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
@@ -247,6 +264,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareCall(java.lang.String, int, int)
 	 */
+	@Override
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
 		return (CallableStatement) optimizeStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency));
 	}
@@ -254,6 +272,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareCall(java.lang.String)
 	 */
+	@Override
 	public CallableStatement prepareCall(String sql) throws SQLException {
 		return (CallableStatement) optimizeStatement(connection.prepareCall(sql));
 	}
@@ -261,6 +280,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int, int, int)
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
 			throws SQLException {
 		return (PreparedStatement) optimizeStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
@@ -269,6 +289,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int, int)
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
 		return (PreparedStatement) optimizeStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency));
 	}
@@ -276,6 +297,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int)
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
 		return (PreparedStatement) optimizeStatement(connection.prepareStatement(sql, autoGeneratedKeys));
 	}
@@ -283,6 +305,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, int[])
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
 		PreparedStatement statement;
 		if(autoGeneratedKeysType == AutoGeneratedKeysType.SINGLE) {
@@ -303,6 +326,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String, java.lang.String[])
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
 		PreparedStatement statement;
 		if(autoGeneratedKeysType == AutoGeneratedKeysType.SINGLE) {
@@ -323,6 +347,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#prepareStatement(java.lang.String)
 	 */
+	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
 		PreparedStatement statement;
 		switch (operationType) {
@@ -347,6 +372,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
 	 */
+	@Override
 	public void releaseSavepoint(Savepoint savepoint) throws SQLException {
 		connection.releaseSavepoint(savepoint);
 	}
@@ -354,6 +380,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#rollback()
 	 */
+	@Override
 	public void rollback() throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.rollback();
@@ -363,6 +390,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#rollback(java.sql.Savepoint)
 	 */
+	@Override
 	public void rollback(Savepoint savepoint) throws SQLException {
 		if (isTransactionsSupported()) {
 			connection.rollback(savepoint);
@@ -372,6 +400,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setAutoCommit(boolean)
 	 */
+	@Override
 	public void setAutoCommit(boolean autoCommit) throws SQLException {
 // pnajvar-
 // following check for transactions support causes problems and it seems to work fine without it
@@ -384,6 +413,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setCatalog(java.lang.String)
 	 */
+	@Override
 	public void setCatalog(String catalog) throws SQLException {
 		connection.setCatalog(catalog);
 	}
@@ -391,6 +421,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setHoldability(int)
 	 */
+	@Override
 	public void setHoldability(int holdability) throws SQLException {
 		connection.setHoldability(holdability);
 	}
@@ -398,6 +429,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setReadOnly(boolean)
 	 */
+	@Override
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		connection.setReadOnly(readOnly);
 	}
@@ -405,6 +437,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setSavepoint()
 	 */
+	@Override
 	public Savepoint setSavepoint() throws SQLException {
 		return connection.setSavepoint();
 	}
@@ -412,6 +445,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setSavepoint(java.lang.String)
 	 */
+	@Override
 	public Savepoint setSavepoint(String name) throws SQLException {
 		return connection.setSavepoint(name);
 	}
@@ -419,6 +453,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
+	@Override
 	public void setTransactionIsolation(int level) throws SQLException {
 		connection.setTransactionIsolation(level);
 	}
@@ -426,6 +461,7 @@ public class DefaultConnection implements Connection {
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#setTypeMap(java.util.Map)
 	 */
+	@Override
 	public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
 		connection.setTypeMap(map);
 	}
@@ -562,10 +598,12 @@ public class DefaultConnection implements Connection {
 	}
 
 /* JDBC_4_ANT_KEY_BEGIN */
+	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 	    return iface.isAssignableFrom(getClass()) || connection.isWrapperFor(iface);
 	}
 
+	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 	    if (iface.isAssignableFrom(getClass())) {
 	        return iface.cast(this);
@@ -576,49 +614,60 @@ public class DefaultConnection implements Connection {
 	    }
 	}
 
+	@Override
 	public Array createArrayOf(String typeName, Object[] elements)
 			throws SQLException {
 		return connection.createArrayOf(typeName, elements);
 	}
 
+	@Override
 	public Blob createBlob() throws SQLException {
 		return connection.createBlob();
 	}
 
+	@Override
 	public Clob createClob() throws SQLException {
 		return connection.createClob();
 	}
 
+	@Override
 	public NClob createNClob() throws SQLException {
 		return connection.createNClob();
 	}
 
+	@Override
 	public SQLXML createSQLXML() throws SQLException {
 		return connection.createSQLXML();
 	}
 
+	@Override
 	public Struct createStruct(String typeName, Object[] attributes)
 			throws SQLException {
 		return connection.createStruct(typeName, attributes);
 	}
 
+	@Override
 	public Properties getClientInfo() throws SQLException {
 		return connection.getClientInfo();
 	}
 
+	@Override
 	public String getClientInfo(String name) throws SQLException {
 		return connection.getClientInfo(name);
 	}
 
+	@Override
 	public boolean isValid(int timeout) throws SQLException {
 		return connection.isValid(timeout);
 	}
 
+	@Override
 	public void setClientInfo(Properties properties)
 			throws SQLClientInfoException {
 		connection.setClientInfo(properties);
 	}
 
+	@Override
 	public void setClientInfo(String name, String value)
 			throws SQLClientInfoException {
 		connection.setClientInfo(name, value);

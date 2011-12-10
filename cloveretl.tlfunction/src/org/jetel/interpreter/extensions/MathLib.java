@@ -73,7 +73,8 @@ public class MathLib extends TLFunctionLibrary {
         }
     }
     
-    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    @Override
+	public  Collection<TLFunctionPrototype> getAllFunctions() {
     	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
     	Function[] fun = Function.values();
     	for (Function function : fun) {
@@ -88,7 +89,8 @@ public class MathLib extends TLFunctionLibrary {
         
     }
 
-    public TLFunctionPrototype getFunction(String functionName) {
+    @Override
+	public TLFunctionPrototype getFunction(String functionName) {
         switch(Function.fromString(functionName)) {
         case SQRT: return new SqrtFunction();
         case LOG: return new LogFunction();

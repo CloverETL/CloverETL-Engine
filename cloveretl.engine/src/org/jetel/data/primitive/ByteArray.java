@@ -242,6 +242,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * 
 	 * @return   string value to be returned
 	 */
+	@Override
 	public String toString() {
 		return new String(value, 0, count);
 	}
@@ -400,6 +401,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof ByteArray || obj instanceof byte[]) {
 			return compareTo(obj) == 0;
@@ -412,6 +414,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(Object obj) {
 		byte[] byteObj;
 		int oCount;
@@ -447,6 +450,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode() {
 	    int hash=5381;
 		for (int i=0; i<count; i++){
@@ -1303,6 +1307,7 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * Byte array iterator.
 	 */
+	@Override
 	public Iterator<Byte> iterator() {
 		return new ByteIterator(this);
 	}
@@ -1320,15 +1325,18 @@ public class ByteArray implements Comparable, Iterable {
 			this.byteArray = byteArray;
 		}	
 		
+		@Override
 		public boolean hasNext() {
 			return index < byteArray.count;
 		}
 
+		@Override
 		public Byte next() {
 			if (index >= byteArray.count) return null;
 			return Byte.valueOf(byteArray.value[index++]);
 		}
 
+		@Override
 		public void remove() {
 			byteArray.deleteByteAt(index);
 		}

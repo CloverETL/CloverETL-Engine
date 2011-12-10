@@ -164,6 +164,7 @@ public class JmsReader extends Node {
 		this.psorProperties = psorProperties;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -223,6 +224,7 @@ public class JmsReader extends Node {
 		closeConnection();
 	}
 
+	@Override
 	synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     }
@@ -335,10 +337,12 @@ public class JmsReader extends Node {
 		}
 	}
 	
+	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	
@@ -405,6 +409,7 @@ public class JmsReader extends Node {
 		return jmsReader; 
 	}
 
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
@@ -470,6 +475,7 @@ public class JmsReader extends Node {
 		/**
 		 * @see java.lan.Thread#run()
 		 */
+		@Override
 		public void run() {
 			while (runIt) {
 				try {

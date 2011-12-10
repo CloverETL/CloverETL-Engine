@@ -184,6 +184,7 @@ public class BitArray implements Serializable{
 	 *
 	 *@return    String representation of BitArray
 	 */
+	@Override
 	public String toString() {
 		StringBuffer str = new StringBuffer(length * 2 + 1);
 		str.append("|");

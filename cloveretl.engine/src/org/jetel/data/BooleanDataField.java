@@ -71,6 +71,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	    booleanFormatter = BooleanFormatterFactory.createFormatter(_metadata.getFormatStr());
 	}
 	
+	@Override
 	public DataField duplicate(){
 	    BooleanDataField newField=new BooleanDataField(metadata,value);
 	    newField.setNull(isNull());
@@ -81,6 +82,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof BooleanDataField){
        		this.value = ((BooleanDataField)fromField).value;
@@ -96,6 +98,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @param  _value                      The new Value value
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
+	@Override
 	public void setValue(Object _value) throws BadDataFormatException {
         if(_value == null) {
             setNull(true);
@@ -128,6 +131,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @return    The Value value
 	 * @since     April 23, 2002
 	 */
+	@Override
 	public Object getValue() {
 		return isNull ? null : Boolean.valueOf(value);
 	}
@@ -135,7 +139,8 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
     /**
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
-    public Object getValueDuplicate() {
+    @Override
+	public Object getValueDuplicate() {
         return getValue();
     }
 
@@ -153,6 +158,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @param  isNull  The new Null value
 	 */
+	@Override
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (this.isNull) {
@@ -160,7 +166,8 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		}
 	}
     
-    public void reset(){
+    @Override
+	public void reset(){
             if (metadata.isNullable()){
                 setNull(true);
             }else if (metadata.isDefaultValueSet()){
@@ -175,6 +182,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @return    The Type value
 	 */
+	@Override
 	public char getType() {
 		return DataFieldMetadata.BOOLEAN_FIELD;
 	}
@@ -183,6 +191,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * Returns value in String format.
 	 * @return    
 	 */
+	@Override
 	public String toString() {
 		if (isNull()) {
 			return metadata.getNullValue();
@@ -191,6 +200,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
+	@Override
 	public void fromString(CharSequence seq) {
 		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
 		    setNull(true);
@@ -212,6 +222,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @param  buffer  
 	 */
+	@Override
 	public void serialize(CloverBuffer buffer) {
 		try {
 			if (isNull())
@@ -229,6 +240,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 *
 	 * @param  buffer
 	 */
+	@Override
 	public void deserialize(CloverBuffer buffer) {
 		byte tmpl = buffer.get();
 		if (tmpl == (byte)-1) {
@@ -239,6 +251,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		setNull(false);
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 	    if (obj==null) return false;
 	    
@@ -262,6 +275,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @param  obj  
 	 * @return      
 	 */
+	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
 	    
@@ -278,6 +292,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		}else throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
 	}
 
+	@Override
 	public int hashCode(){
 		if (isNull) return 123;
 		Boolean v = Boolean.valueOf(value);
@@ -290,6 +305,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField
 	 */
+	@Override
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
 	}

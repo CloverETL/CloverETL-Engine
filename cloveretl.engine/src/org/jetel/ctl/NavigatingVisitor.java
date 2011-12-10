@@ -41,70 +41,85 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return node;
 	}
 
+	@Override
 	public Object visit(CLVFStart node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFStartExpression node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFImportSource node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFFunctionDeclaration node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFVariableDeclaration node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFAssignment node, Object data) {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFOr node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFAnd node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFComparison node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFAddNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFSubNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFMulNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFDivNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFModNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFPostfixExpression node, Object data) {
 
 		return visitNode(node, data);
@@ -115,102 +130,122 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 	
+	@Override
 	public Object visit(CLVFUnaryStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFUnaryNonStatement node, Object data) {
 		
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFLiteral node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFListOfLiterals node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFBlock node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFIfStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFSwitchStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFCaseStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFWhileStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFForStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFForeachStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFDoStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
 
+	@Override
 	public Object visit(CLVFBreakStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFContinueStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFReturnStatement node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFIsNullNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFNVLNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFNVL2Node node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFIIfNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFPrintStackNode node, Object data) {
 
 		return visitNode(node, data);
@@ -221,11 +256,13 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFRaiseErrorNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFPrintErrNode node, Object data) {
 
 		return visitNode(node, data);
@@ -236,16 +273,19 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFPrintLogNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 	
+	@Override
 	public Object visit(CLVFSequenceNode node, Object data) {
 
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFLookupNode node, Object data) {
 
 		return visitNode(node, data);
@@ -257,64 +297,79 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 	
+	@Override
 	public Object visit(SimpleNode node, Object data) {
 		throw new UnsupportedOperationException("Unreachable code");
 	}
 	
+	@Override
 	public Object visit(CLVFConditionalExpression node, Object data) {
 		return visitNode(node,data);
 	}
 	
+	@Override
 	public Object visit(CLVFConditionalFailExpression node, Object data) {
 		return visitNode(node, data);
 	}
 
 
+	@Override
 	public Object visit(CLVFFieldAccessExpression node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFArrayAccessExpression node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFArguments node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFIdentifier node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFType node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFDateField node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFParameters node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFFunctionCall node, Object data) {
 		return visitNode(node,data);
 	}
 	
+	@Override
 	public Object visit(CLVFLogLevel node, Object data) {
 		return visitNode(node,data);
 	}
 
+	@Override
 	public Object visit(CLVFInFunction node, Object data) {
 		return visitNode(node,data);
 	}
 	
 	/* ************************ Synthetic nodes ********************/
+	@Override
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}

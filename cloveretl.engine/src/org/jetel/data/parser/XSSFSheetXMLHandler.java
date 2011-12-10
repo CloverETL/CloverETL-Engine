@@ -145,6 +145,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		return false;
 	}
 
+	@Override
 	public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
 
 		if (isTextTag(name)) {
@@ -193,6 +194,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		}
 	}
 
+	@Override
 	public void endElement(String uri, String localName, String name) throws SAXException {
 		String thisStr = null;
 		int cellType;
@@ -263,6 +265,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	/**
 	 * Captures characters only if a suitable element is open. Originally was just "v"; extended for inlineStr also.
 	 */
+	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		if (vIsOpen) {
 			value.append(ch, start, length);

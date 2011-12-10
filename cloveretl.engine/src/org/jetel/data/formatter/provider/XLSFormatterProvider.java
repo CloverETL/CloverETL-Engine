@@ -65,6 +65,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 * 
 	 * @return data formatter
 	 */
+	@Override
 	public Formatter getNewFormatter() {
 		XLSFormatter formatter = useXLSX ? new XLSXDataFormatter(append, removeSheets) : new JExcelXLSDataFormatter(charset, append, removeSheets);
 		formatter.setSheetName(sheetName);

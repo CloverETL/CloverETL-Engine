@@ -38,6 +38,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	private IntegerDataField anIntegerDataField3 = null;
 	private IntegerDataField anIntegerDataField4 = null;
 
+	@Override
 	protected void setUp() { 
 		initEngine();
 		
@@ -57,6 +58,7 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 		anIntegerDataField4 = new IntegerDataField(delimFieldMeta2);
 	}
 	
+	@Override
 	protected void tearDown() {
 		anIntegerDataField1 = null;
 		anIntegerDataField2 = null;

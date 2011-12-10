@@ -612,6 +612,7 @@ public class ASTBuilder extends NavigatingVisitor {
 	/**
 	 * Computes case statements indices
 	 */
+	@Override
 	public Object visit(CLVFSwitchStatement node, Object data) {
 		super.visit(node,data);
 		

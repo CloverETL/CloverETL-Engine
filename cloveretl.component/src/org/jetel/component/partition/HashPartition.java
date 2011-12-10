@@ -45,18 +45,22 @@ public class HashPartition implements PartitionFunction{
     public HashPartition(){
     }
     
-    public void init(int numPartitions, RecordKey partitionKey){
+    @Override
+	public void init(int numPartitions, RecordKey partitionKey){
         this.numPorts=numPartitions;
         hashKey=new HashKey(partitionKey,null);
     }
 
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 	}
 
+	@Override
 	public void postExecute() throws ComponentNotReadyException {
 	}
 
-    public int getOutputPort(DataRecord record){
+    @Override
+	public int getOutputPort(DataRecord record){
         hashKey.setDataRecord(record);
         //int hash=hashKey.hashCode(); 
         //int value=(hash)&0x0FF;//// take only last 8 bits
@@ -77,16 +81,19 @@ public class HashPartition implements PartitionFunction{
     	// not used here
     }
 
-    public TransformationGraph getGraph() {
+    @Override
+	public TransformationGraph getGraph() {
     	// not used here
     	return null;
     }
 
-    public void setNode(Node node) {
+    @Override
+	public void setNode(Node node) {
     	// not used here
     }
     
-    public Node getNode() {
+    @Override
+	public Node getNode() {
     	// not used here
     	return null;
     }
@@ -113,6 +120,7 @@ public class HashPartition implements PartitionFunction{
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean supportsDirectRecord() {
 		return false;
 	}

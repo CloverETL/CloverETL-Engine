@@ -271,7 +271,8 @@ public class SimpleCache {
          * total size is checked before calling method LinkedHashMap.put and, 
          * when it is greater then maximal size the eldest entry is removed
          */
-        protected boolean removeEldestEntry(Map.Entry eldest) {
+        @Override
+		protected boolean removeEldestEntry(Map.Entry eldest) {
          	remove = totalSize > max_entries;
 //        	if (remove) {
 //	        	tmp = eldest.getValue();

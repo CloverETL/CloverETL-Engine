@@ -45,7 +45,8 @@ public class SandboxStreamHandler extends URLStreamHandler {
 		return new SandboxConnection(graph, url);
 	}
 	
-    protected void parseURL(URL url, String spec, int start, int limit) {
+    @Override
+	protected void parseURL(URL url, String spec, int start, int limit) {
     	super.parseURL(url, spec, start, limit);
 
     	if (!SandboxUrlUtils.isSandboxUrl(url)) {

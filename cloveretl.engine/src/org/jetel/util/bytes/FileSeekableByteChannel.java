@@ -49,6 +49,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#position()
 	 */
+	@Override
 	public long position() throws IOException {
 		return fileChannel.position();
 	}
@@ -56,6 +57,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#position(long)
 	 */
+	@Override
 	public SeekableByteChannel position(long newPosition) throws IOException {
 		fileChannel.position(newPosition);
 		return this;
@@ -64,6 +66,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#size()
 	 */
+	@Override
 	public long size() throws IOException {
 		return fileChannel.size();
 	}
@@ -71,6 +74,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.bytes.SeekableByteChannel#truncate(long)
 	 */
+	@Override
 	public SeekableByteChannel truncate(long size) throws IOException {
 		fileChannel.truncate(size);
 		return this;
@@ -79,6 +83,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.ReadableByteChannel#read(java.nio.ByteBuffer)
 	 */
+	@Override
 	public int read(ByteBuffer dst) throws IOException {
 		return fileChannel.read(dst);
 	}
@@ -86,6 +91,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#close()
 	 */
+	@Override
 	public void close() throws IOException {
 		fileChannel.close();
 	}
@@ -93,6 +99,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.Channel#isOpen()
 	 */
+	@Override
 	public boolean isOpen() {
 		return fileChannel.isOpen();
 	}
@@ -100,6 +107,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 	/* (non-Javadoc)
 	 * @see java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)
 	 */
+	@Override
 	public int write(ByteBuffer src) throws IOException {
 		return fileChannel.write(src);
 	}

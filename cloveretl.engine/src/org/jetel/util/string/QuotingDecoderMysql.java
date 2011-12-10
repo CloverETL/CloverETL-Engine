@@ -29,6 +29,7 @@ public class QuotingDecoderMysql extends QuotingDecoder {
 		super();
 	}
 
+	@Override
 	public CharSequence decode(CharSequence quoted) {
 		quoted = super.decode(quoted);	// remove eventual quotes
 

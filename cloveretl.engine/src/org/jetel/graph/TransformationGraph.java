@@ -383,6 +383,7 @@ public final class TransformationGraph extends GraphElement {
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       Sept. 16, 2005
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
 		try {
 			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
@@ -947,7 +948,8 @@ public final class TransformationGraph extends GraphElement {
     /**
      * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
      */
-    public void free() {
+    @Override
+	public void free() {
 		try {
 			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 			ContextProvider.registerGraph(this);
@@ -1056,7 +1058,8 @@ public final class TransformationGraph extends GraphElement {
     	phase.deleteEdge(edge);
     }
     
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    @Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
 		try {

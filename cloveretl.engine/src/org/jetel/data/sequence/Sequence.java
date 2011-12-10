@@ -37,13 +37,15 @@ public interface Sequence extends IGraphElement {
      * kept in directory and accessed by client's transformations by their names.
      * @return sequence name 
      */
-    public String getName();
+    @Override
+	public String getName();
     
     /**
      * Method allows to set the name of sequence.
      * @param sequenceName 	new name of the sequence instance
      */
-    public void setName(String sequenceName);
+    @Override
+	public void setName(String sequenceName);
     
     /**
      * @return current value of the sequence
@@ -82,14 +84,16 @@ public interface Sequence extends IGraphElement {
      * All necessary internal initialization should be performed in this method.
      * NOTE: copy from GraphElement
      */
-    public abstract void init() throws ComponentNotReadyException;
+    @Override
+	public abstract void init() throws ComponentNotReadyException;
 
     /**
      * Closes the sequence (current instance). All internal resources should be freed in
      * this method.
      * NOTE: copy from GraphElement
      */
-    public abstract void free();
+    @Override
+	public abstract void free();
 
     /**
      * Is this sequence shared via an authority (i.e. server).

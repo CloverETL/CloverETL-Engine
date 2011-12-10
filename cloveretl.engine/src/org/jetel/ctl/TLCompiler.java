@@ -111,6 +111,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param code
 	 * @return list of error messages (empty when no errors)
 	 */
+	@Override
 	public List<ErrorMessage> validateExpression(String code) {
 		try {
 			return validateExpression(new ByteArrayInputStream(code.getBytes("UTF-8")));
@@ -125,6 +126,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param input
 	 * @return list of error messages (empty when no errors)
 	 */
+	@Override
 	public List<ErrorMessage> validateExpression(InputStream input) {
 		if (parser == null) {
 			parser = new TransformLangParser(graph, problemReporter, input, encoding);
@@ -167,6 +169,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param code
 	 * @return	list of error messages (empty when no errors)
 	 */
+	@Override
 	public List<ErrorMessage> validate(String code) {
 		try {
 			return validate(new ByteArrayInputStream(code.getBytes("UTF-8")));
@@ -181,6 +184,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param input
 	 * @return list of error messages (empty when no errors)
 	 */
+	@Override
 	public List<ErrorMessage> validate(InputStream input) {
 		if (parser == null) {
 			parser = new TransformLangParser(graph, problemReporter, input, encoding);
@@ -229,6 +233,7 @@ public class TLCompiler implements ITLCompiler {
 	 * The result is identical to calling {@link #compile(InputStream, Class)} 
 	 * with encoding=UTF-8
 	 */
+	@Override
 	public List<ErrorMessage> compile(String code, Class<?> targetInterface, String componentId) {
 		try {
 			return compile(new ByteArrayInputStream(code.getBytes("UTF-8")), targetInterface, componentId);
@@ -264,6 +269,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param syntheticReturnType	Expected type of expression (as well as return type of synthetic function).
 	 * @return Compilation error messages as return by {@link #compile(String, Class, String)}.
 	 */
+	@Override
 	public List<ErrorMessage> compileExpression(String code, Class<?> targetInterface, String componentId, String syntheticFunctionName, Class<?> syntheticReturnType) {
 		final String wrappedCode = wrapExpression(code,syntheticFunctionName, syntheticReturnType);
 		logger.trace("Component '" + componentId + "' uses CTL expression. Creating synthetic function '" + syntheticFunctionName + "'");
@@ -287,6 +293,7 @@ public class TLCompiler implements ITLCompiler {
 				" }";
 	}
 
+	@Override
 	public String convertToJava(String ctlCode, Class<?> targetInterface, String componentId) throws ErrorMessageException {
 		throw new UnsupportedOperationException();
 	}
@@ -296,6 +303,7 @@ public class TLCompiler implements ITLCompiler {
 	 * 			This method calls {@link TransformLangExecutor#init()} automatically.  
 	 * 
 	 */
+	@Override
 	public Object getCompiledCode() {
 		final TransformLangExecutor executor = new TransformLangExecutor(parser,graph);
 		if (this.ast instanceof CLVFStart ) {
@@ -321,6 +329,7 @@ public class TLCompiler implements ITLCompiler {
 	 * Sets tabulator size (in characters) for the parser to correctly calculate
 	 * error position.
 	 */
+	@Override
 	public void setTabSize(int size) {
 		this.tabSize = size;
 	}
@@ -329,6 +338,7 @@ public class TLCompiler implements ITLCompiler {
 	/**
 	 * @return	Expression AST root created during {@link #validateExpression(InputStream)}
 	 */
+	@Override
 	public CLVFStartExpression getExpression() {
 		return (CLVFStartExpression)ast;
 	}
@@ -336,6 +346,7 @@ public class TLCompiler implements ITLCompiler {
 	/**
 	 * @return	AST root created during {@link #validate(InputStream)}
 	 */
+	@Override
 	public CLVFStart getStart() {
 		return (CLVFStart)ast;
 	}
@@ -345,6 +356,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @return Number of critical errors from the last validate call.
 	 * 
 	 */
+	@Override
 	public int errorCount() {
 		return problemReporter.errorCount();
 	}
@@ -352,11 +364,13 @@ public class TLCompiler implements ITLCompiler {
 	/**
 	 * @return List of errors/warnings from the last validate call.
 	 */
+	@Override
 	public List<ErrorMessage> getDiagnosticMessages() {
 		return problemReporter.getDiagnosticMessages();
 	}
 
 
+	@Override
 	public int warningCount() {
 		return problemReporter.warningCount();
 	}

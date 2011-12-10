@@ -93,6 +93,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 		super(append, removeSheets);
 	}
 
+	@Override
 	public void setDataTarget(Object dataTarget) {
 		if (dataTarget == null) {
 			throw new NullPointerException("dataTarget");
@@ -276,6 +277,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 		}
 	}
 
+	@Override
 	public int write(DataRecord dataRecord) throws IOException {
 		if (dataRecord == null) {
 			throw new NullPointerException("dataRecord");
@@ -337,10 +339,12 @@ public class XLSXDataFormatter extends XLSFormatter {
 		return 0;
 	}
 
+	@Override
 	public void flush() throws IOException {
 		// do nothing, this functionality is not supported
 	}
 
+	@Override
 	public void close() {
 		if (workbook != null) {
 			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD && sheetData != null) {
@@ -361,6 +365,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 		}
 	}
 
+	@Override
 	public void reset() {
 		workbook = null;
 		sheet = null;

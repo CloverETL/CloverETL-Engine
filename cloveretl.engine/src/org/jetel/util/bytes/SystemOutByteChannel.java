@@ -41,14 +41,17 @@ public class SystemOutByteChannel implements WritableByteChannel {
 		channel = Channels.newChannel(System.out);
 	}
 	
+	@Override
 	public int write(ByteBuffer src) throws IOException {
 		return channel.write(src);
 	}
 
+	@Override
 	public void close() throws IOException {
 		// don't close System.out
 	}
 
+	@Override
 	public boolean isOpen() {
 		return true; // System.out is always open
 	}

@@ -51,6 +51,7 @@ public class HashKey {
 	 *
 	 * @return    Description of the Return Value
 	 */
+	@Override
 	public int hashCode() {
 		int hash = 17;
 		int[] keyFields = recKey.getKeyFields();
@@ -71,6 +72,7 @@ public class HashKey {
 	 *
 	 * @see Object#equals(Object)
 	 */
+	@Override
 	public boolean equals(Object object) {
         if (object == this) {
             return true;
@@ -134,6 +136,7 @@ public class HashKey {
 		this.recKey = key;
 	}
 	
+	@Override
 	public String toString(){
 		StringBuffer strBuf=new StringBuffer();
 		int[] keyFields = recKey.getKeyFields();

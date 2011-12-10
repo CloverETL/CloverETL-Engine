@@ -114,7 +114,8 @@ public class ConvertLib extends TLFunctionLibrary {
         super();
      }
 
-    public TLFunctionPrototype getFunction(String functionName) {
+    @Override
+	public TLFunctionPrototype getFunction(String functionName) {
         switch(Function.fromString(functionName)) {
         case NUM2STR: return new Num2StrFunction();
         case DATE2STR: return new Date2StrFunction();
@@ -145,7 +146,8 @@ public class ConvertLib extends TLFunctionLibrary {
        }
     }
     
-    public  Collection<TLFunctionPrototype> getAllFunctions() {
+    @Override
+	public  Collection<TLFunctionPrototype> getAllFunctions() {
     	List<TLFunctionPrototype> ret = new ArrayList<TLFunctionPrototype>();
     	Function[] fun = Function.values();
     	for (Function function : fun) {

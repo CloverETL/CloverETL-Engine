@@ -64,6 +64,7 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 	protected CharsetDecoder decoder = null;
 	protected Charset usedByteMsgCharset = null;
 	
+	@Override
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {
 		super.init(metadata, props);
 		String bodyFieldName = props.getProperty(PROPNAME_BODYFIELD);
@@ -92,6 +93,7 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		record.init();
 	}
 
+	@Override
 	public DataRecord extractRecord(Message msg) throws JMSException {
 		record.reset();
 		for (Enumeration<?> names = msg.getPropertyNames(); names.hasMoreElements();) {

@@ -513,6 +513,7 @@ public class LookupJoin extends Node {
         return status;
 	}
 
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -619,6 +620,7 @@ public class LookupJoin extends Node {
 		this.errorActionsString = string;		
 	}
 
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 

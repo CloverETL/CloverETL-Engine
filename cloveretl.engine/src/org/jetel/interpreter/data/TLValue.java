@@ -136,6 +136,7 @@ public abstract class TLValue implements Comparable<TLValue>{
     }
 
 
+	@Override
 	public abstract int compareTo(TLValue arg0);
     
 	@Override public abstract String toString(); 

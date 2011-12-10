@@ -339,6 +339,7 @@ public class RecordFilterOld {
 		 *
 		 * @return    Description of the Return Value
 		 */
+		@Override
 		public String toString() {
 			return fieldNo + ":" + comparison + ":" + value;
 		}
@@ -372,6 +373,7 @@ public class RecordFilterOld {
 		 *
 		 * @return    Description of the Return Value
 		 */
+		@Override
 		public String toString() {
 			return p.toString();
 		}
@@ -393,6 +395,7 @@ public class RecordFilterOld {
 		 * @param  obj  Description of the Parameter
 		 * @return      Description of the Return Value
 		 */
+		@Override
 		public boolean equals(Object obj) {
 			Matcher m = p.matcher(((StringDataField) obj).getCharSequence());
 			return m.matches();

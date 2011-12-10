@@ -233,7 +233,8 @@ public class SAXHandler extends SAXContentHandler {
     /**
      * @see org.xml.sax.ContentHandler#characters(char[], int, int)
      */
-    public void characters(char[] data, int offset, int length) throws SAXException {
+    @Override
+	public void characters(char[] data, int offset, int length) throws SAXException {
         // Save the characters into the buffer, endElement will store it
         // into the field
         if (m_activeMapping != null && m_grabCharacters) {
@@ -245,7 +246,8 @@ public class SAXHandler extends SAXContentHandler {
     /**
      * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
      */
-    public void endElement(String prefix, String namespace, String localName) throws SAXException {
+    @Override
+	public void endElement(String prefix, String namespace, String localName) throws SAXException {
         if (m_activeMapping != null) {
             //use fields mapping
             Map<String, String> xml2clover = m_activeMapping.getXml2CloverFieldsMap();

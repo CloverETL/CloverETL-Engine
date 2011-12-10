@@ -198,6 +198,7 @@ public class Sort extends Node {
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  April 4, 2002
 	 */
+	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
@@ -223,6 +224,7 @@ public class Sort extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
+	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (sortKeys != null) {
@@ -312,6 +314,7 @@ public class Sort extends Node {
             return status;
        }
 	
+	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
@@ -348,7 +351,8 @@ public class Sort extends Node {
         this.useI18N = useI18N;
     }
     
-    public void reset() throws ComponentNotReadyException {
+    @Override
+	public void reset() throws ComponentNotReadyException {
     	super.reset();
     }
 }
