@@ -493,13 +493,16 @@ public class SpreadsheetReader extends Node {
 					} else  {
 						if (policyType == PolicyType.STRICT) {
 							throw bdfe;
-						} else if (errorCount++ > maxErrorCount) {
-							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							return Result.ERROR;
+						} else {
+							errorCount++;
 						}
 					}
 				}
-				SynchronizeUtils.cloverYield();
+				if (errorCount > maxErrorCount) {
+					LOGGER.error("DataPaser (" + getName() + "): Max error count exceeded.");
+					return Result.ERROR;
+				}
+				SynchronizeUtils.cloverYield();				
 			}
 		} catch (Exception e) {
 			throw e;
