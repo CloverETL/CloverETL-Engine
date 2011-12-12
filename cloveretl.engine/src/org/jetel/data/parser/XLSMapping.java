@@ -77,6 +77,7 @@ public class XLSMapping {
 	private static final String XML_HEADER_GROUP_CLOVER_FIELD = "cloverField";
 	private static final String XML_HEADER_GROUP_SKIP = "skip";
 	private static final String XML_HEADER_GROUP_AUTO_MAPPING_TYPE = "autoMappingType";
+	private static final String XML_HEADER_GROUP_FORMAT_FIELD = "formatField";
 	private static final String XML_HEADER_RANGES = "headerRanges";
 	private static final String XML_HEADER_RANGE_BEGIN = "begin";
 	private static final String XML_HEADER_RANGE_END = "end";
@@ -103,9 +104,9 @@ public class XLSMapping {
 		this.orientation = HEADER_ON_TOP;
 		this.headerGroups = new ArrayList<HeaderGroup> ();
 		DataFieldMetadata [] dataFields = metaData.getFields();
-		for (int i=0; i<dataFields.length; ++i) {
+		for (int i = 0; i < dataFields.length; ++i) {
 			DataFieldMetadata dataField = dataFields[i];
-			headerGroups.add(new HeaderGroup(0, dataField.getNumber(), SpreadsheetMappingMode.AUTO, Collections.singletonList(new HeaderRange(0, 0, i, i))));
+			headerGroups.add(new HeaderGroup(0, dataField.getNumber(), SpreadsheetMappingMode.AUTO, UNDEFINED, Collections.singletonList(new HeaderRange(0, 0, i, i))));
 		}
 		this.writeHeader = true;
 		this.stats = resolveMappingStats();
@@ -217,6 +218,7 @@ public class XLSMapping {
 			int cloverFieldIndex = UNDEFINED;
 			SpreadsheetMappingMode mappingMode = DEFAULT_AUTO_MAPPING_MODE;
 			List<HeaderRange> headerRanges = null;
+			int formatFieldIndex = UNDEFINED;
 
 			NodeList groupProperties = group.getChildNodes();
 			for (int j = 0; j < groupProperties.getLength(); j++) {
@@ -226,23 +228,28 @@ public class XLSMapping {
 				if (XML_HEADER_RANGES.equals(propertyName)) {
 					headerRanges = parseHeaderRanges(property.getChildNodes());
 				} else if (XML_HEADER_GROUP_CLOVER_FIELD.equals(propertyName) && property.getFirstChild() != null) {
-					
-					int isInteger = StringUtils.isInteger(property.getFirstChild().getNodeValue()); 
-					if (isInteger == 0 || isInteger == 1) {
-						cloverFieldIndex = Integer.parseInt(property.getFirstChild().getNodeValue());
-					} else {
-						Integer index = fieldMap.get(property.getFirstChild().getNodeValue());
-						cloverFieldIndex = index != null ? index : UNDEFINED; //TODO: fail instead?
-					}
+					cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
 				} else if (XML_HEADER_GROUP_AUTO_MAPPING_TYPE.equals(propertyName) && property.getFirstChild() != null) {
 					mappingMode = SpreadsheetMappingMode.valueOfIgnoreCase(property.getFirstChild().getNodeValue());
+				} else if (XML_HEADER_GROUP_FORMAT_FIELD.equals(propertyName) && property.getFirstChild() != null) {
+					formatFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
 				}
 			}
 			
-			headerGroupList.add(new HeaderGroup(skip, cloverFieldIndex, mappingMode, headerRanges));
+			headerGroupList.add(new HeaderGroup(skip, cloverFieldIndex, mappingMode, formatFieldIndex, headerRanges));
 		}
 		
 		return headerGroupList;
+	}
+
+	private static int getCloverFieldIndex(Map<String, Integer> fieldMap, String field) {
+		int isInteger = StringUtils.isInteger(field); 
+		if (isInteger == 0 || isInteger == 1) {
+			return Integer.parseInt(field);
+		} else {
+			Integer index = fieldMap.get(field);
+			return index != null ? index : UNDEFINED; //TODO: fail instead?
+		}
 	}
 	
 	private static List<HeaderRange> parseHeaderRanges(NodeList headerRanges) {
@@ -283,6 +290,7 @@ public class XLSMapping {
 	private Stats resolveMappingStats() {
 		boolean nameMapping = false;
 		boolean autoNameMapping = false;
+		boolean formatMapping = false;
 		
 		int mappingMinRow = Integer.MAX_VALUE;
 		int mappingMaxRow = 0;
@@ -304,6 +312,9 @@ public class XLSMapping {
 				}
 				if (!autoNameMapping && group.getMappingMode() == SpreadsheetMappingMode.AUTO) {
 					autoNameMapping = true;
+				}
+				if (!formatMapping && group.getFormatField() != UNDEFINED) {
+					formatMapping = true;
 				}
 
 				for (HeaderRange range : group.getRanges()) {
@@ -361,7 +372,7 @@ public class XLSMapping {
 			columnCount = recordEndLine - recordStartLine + 1;
 		}
 
-		return new Stats(nameMapping, autoNameMapping, recordStartLine, rowCount, columnCount,
+		return new Stats(nameMapping, autoNameMapping, formatMapping, recordStartLine, rowCount, columnCount,
 				mappingMinRow, mappingMaxRow, mappingMinColumn, mappingMaxColumn);
 	}
 	
@@ -369,13 +380,15 @@ public class XLSMapping {
 		private final int skip;
 		private final int cloverField;
 		private final SpreadsheetMappingMode mappingMode;
+		private final int formatField;
 		
 		private final List<HeaderRange> ranges;
 		
-		public HeaderGroup(int skip, int cloverField, SpreadsheetMappingMode mappingMode, List<HeaderRange> ranges) {
+		public HeaderGroup(int skip, int cloverField, SpreadsheetMappingMode mappingMode, int formatField, List<HeaderRange> ranges) {
 			this.skip = skip;
 			this.cloverField = cloverField;
 			this.mappingMode = mappingMode;
+			this.formatField = formatField;
 			this.ranges = Collections.unmodifiableList(ranges);
 		}
 
@@ -391,6 +404,10 @@ public class XLSMapping {
 			return mappingMode;
 		}
 
+		public int getFormatField() {
+			return formatField;
+		}
+		
 		public List<HeaderRange> getRanges() {
 			return ranges;
 		}
@@ -432,6 +449,8 @@ public class XLSMapping {
 		private final boolean nameMapping;
 		/** flag indicating that auto mapping is resolved as name mapping */
 		private final boolean autoNameMapping;
+		/** flag indicating that format mapping is set somewhere in the mapping */
+		private final boolean formatMapping;
 		
 		/** starting line of read/write. "line" means row or column for VERTICAL or HORIZONTAL orientation, resp. */
 		private final int startLine;
@@ -449,10 +468,11 @@ public class XLSMapping {
 		/** maximum column from all mapped ranges */
 		private final int mappingMaxColumn;
 		
-		private Stats(boolean nameMapping, boolean autoNameMapping, int startLine, int rowCount, int columnCount,
+		private Stats(boolean nameMapping, boolean autoNameMapping, boolean formatMapping, int startLine, int rowCount, int columnCount,
 				int mappingMinRow, int mappingMaxRow, int mappingMinColumn, int mappingMaxColumn) {
 			this.nameMapping = nameMapping;
 			this.autoNameMapping = autoNameMapping;
+			this.formatMapping = formatMapping;
 			this.startLine = startLine;
 			this.rowCount = rowCount;
 			this.columnCount = columnCount;
@@ -468,6 +488,10 @@ public class XLSMapping {
 
 		public boolean useAutoNameMapping() {
 			return autoNameMapping;
+		}
+		
+		public boolean isFormatMapping() {
+			return formatMapping;
 		}
 		
 		public int getStartLine() {

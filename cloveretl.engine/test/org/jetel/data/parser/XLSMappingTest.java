@@ -120,6 +120,7 @@ public class XLSMappingTest extends CloverTestCase {
 							+ "<headerRanges>"
 								+ "<headerRange begin=\"A1\"/>"
 							+ "</headerRanges>"
+							+ "<formatField>G</formatField>"
 						+ "</headerGroup>"
 						+ "<headerGroup>"
 							+ "<autoMappingType>NAME</autoMappingType>"
@@ -143,6 +144,7 @@ public class XLSMappingTest extends CloverTestCase {
 			// Group 0
 			HeaderGroup group = groups.get(0);
 			assertEquals(XLSMapping.UNDEFINED, group.getCloverField());
+			assertEquals(XLSMapping.UNDEFINED, group.getFormatField());
 			assertEquals(5, group.getSkip());
 			assertEquals(SpreadsheetMappingMode.ORDER, group.getMappingMode());
 
@@ -171,6 +173,7 @@ public class XLSMappingTest extends CloverTestCase {
 			// Group 1
 			group = groups.get(1);
 			assertEquals(5, group.getCloverField());
+			assertEquals(6, group.getFormatField());
 			assertEquals(XLSMapping.DEFAULT_SKIP, group.getSkip());
 			assertEquals(SpreadsheetMappingMode.AUTO, group.getMappingMode());
 
@@ -186,6 +189,7 @@ public class XLSMappingTest extends CloverTestCase {
 			// Group 2
 			group = groups.get(2);
 			assertEquals(XLSMapping.UNDEFINED, group.getCloverField());
+			assertEquals(XLSMapping.UNDEFINED, group.getFormatField());
 			assertEquals(XLSMapping.DEFAULT_SKIP, group.getSkip());
 			assertEquals(SpreadsheetMappingMode.NAME, group.getMappingMode());
 

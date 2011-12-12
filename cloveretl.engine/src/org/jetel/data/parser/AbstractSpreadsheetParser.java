@@ -90,6 +90,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected DataRecordMetadata metadata;
 	protected final XLSMapping mappingInfo;
 	protected int[][] mapping;
+	protected int[][] formatsMapping;
 	protected int startLine;
 	
 	private static final Comparator<CellMappedByOrder> CELL_ORDER_COMPARATOR =
@@ -288,6 +289,9 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			startLine = stats.getStartLine();
 			
 			mapping = new int[stats.getRowCount()][stats.getColumnCount()];
+			if (stats.isFormatMapping()) {
+				formatsMapping = new int[stats.getRowCount()][stats.getColumnCount()];
+			}
 			clearMapping();
 			
 			if (!stats.useAutoNameMapping() && !stats.useNameMapping()) {
@@ -302,25 +306,32 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			Arrays.fill(mapping[i], -1);
 		}
 		fillUnusedFields();
+		if (formatsMapping != null) {
+			for (int i = 0; i < formatsMapping.length; i++) {
+				Arrays.fill(formatsMapping[i], -1);
+			}
+		}
 	}
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		Set<Integer> toRemove = new HashSet<Integer>();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			if (group.getCloverField() != XLSMapping.UNDEFINED) {
-				HeaderRange range = group.getRanges().get(0);
-				
-				setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, group.getCloverField());
-				
-				if (unusedFields.isEmpty()) {
-					throw new ComponentNotReadyException("Number of clover fields and cells must be the same");
-				}
-				if (!toRemove.add(group.getCloverField())) {
-					throw new ComponentNotReadyException("Field '" + metadata.getField(group.getCloverField()).getName() + "' already used!");
-				}
-			}
+			processFieldMapping(group.getCloverField(), mapping, toRemove, group);
+			processFieldMapping(group.getFormatField(), formatsMapping, toRemove, group);
 		}
 		unusedFields.removeAll(toRemove);
+	}
+
+	private void processFieldMapping(int field, int[][] mappingArray, Set<Integer> toRemove, HeaderGroup group) throws ComponentNotReadyException {
+		if (field != XLSMapping.UNDEFINED) {
+			HeaderRange range = group.getRanges().get(0);
+			
+			setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, field, mappingArray);
+			
+			if (unusedFields.isEmpty() || !toRemove.add(field)) {
+				throw new ComponentNotReadyException("Field '" + metadata.getField(field).getName() + "' already used!");
+			}
+		}
 	}
 
 	/*
@@ -399,7 +410,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 							throw new ComponentNotReadyException("Ambiguous mapping!"); // TODO: improve!
 						}
 
-						setMappingFieldIndex(row, column, group, cloverIndex);
+						setMappingFieldIndex(row, column, group, cloverIndex, mapping);
 					}
 				}
 			}
@@ -438,7 +449,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		Collections.sort(mappedCells, CELL_ORDER_COMPARATOR);
 		
 		for (CellMappedByOrder cell : mappedCells) {
-			setMappingFieldIndex(cell.row, cell.column, cell.group, unusedFields.remove(0));
+			setMappingFieldIndex(cell.row, cell.column, cell.group, unusedFields.remove(0), mapping);
 		}
 	}
 
@@ -449,7 +460,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	 * @param group header group of header range R
 	 * @param cloverFieldIndex index of Clover metadata field to which cell C is mapped
 	 */
-	private void setMappingFieldIndex(int rangeCellRow, int rangeCellColumn, HeaderGroup group, int cloverFieldIndex) {
+	private void setMappingFieldIndex(int rangeCellRow, int rangeCellColumn, HeaderGroup group, int cloverFieldIndex, int[][] mappingArray) {
 		int mappingRow = rangeCellRow;
 		int mappingColumn = rangeCellColumn;
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
@@ -459,7 +470,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			mappingColumn += group.getSkip() - mappingInfo.getStats().getStartLine();
 			mappingRow -= mappingInfo.getStats().getMappingMinRow();
 		}
-		mapping[mappingRow][mappingColumn] = cloverFieldIndex;
+		mappingArray[mappingRow][mappingColumn] = cloverFieldIndex;
 	}
 
 	
