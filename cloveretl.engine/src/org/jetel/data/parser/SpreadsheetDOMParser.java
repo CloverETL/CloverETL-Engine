@@ -286,11 +286,10 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			String errorMessage = exception.getMessage();
 			try {
 				record.getField(cloverFieldIndex).setNull(true);
-//				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
 			} catch (Exception ex) {
 			}
 			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
-			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, cell.getStringCellValue());
+			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
 		}
 	}
 
