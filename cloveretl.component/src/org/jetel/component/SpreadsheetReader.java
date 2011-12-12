@@ -498,7 +498,7 @@ public class SpreadsheetReader extends Node {
 						}
 					}
 				}
-				if (errorCount > maxErrorCount) {
+				if (errorCount > maxErrorCount && policyType != PolicyType.LENIENT) {
 					LOGGER.error("DataPaser (" + getName() + "): Max error count exceeded.");
 					return Result.ERROR;
 				}
