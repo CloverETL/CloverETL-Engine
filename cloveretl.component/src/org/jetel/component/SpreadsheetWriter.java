@@ -20,6 +20,10 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -37,6 +41,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
@@ -81,6 +86,21 @@ public class SpreadsheetWriter extends Node {
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
 	private static final int OUTPUT_LOG_PORT = 1;
+	
+	private static final HashSet<Character> supportedTypes;
+	
+	static {
+		supportedTypes = new HashSet<Character>(9);
+		supportedTypes.add(DataFieldMetadata.DATE_FIELD);
+		supportedTypes.add(DataFieldMetadata.DATETIME_FIELD);
+		supportedTypes.add(DataFieldMetadata.BYTE_FIELD);
+		supportedTypes.add(DataFieldMetadata.STRING_FIELD);
+		supportedTypes.add(DataFieldMetadata.DECIMAL_FIELD);
+		supportedTypes.add(DataFieldMetadata.INTEGER_FIELD);
+		supportedTypes.add(DataFieldMetadata.LONG_FIELD);
+		supportedTypes.add(DataFieldMetadata.NUMERIC_FIELD);
+		supportedTypes.add(DataFieldMetadata.BOOLEAN_FIELD);
+	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
@@ -261,6 +281,15 @@ public class SpreadsheetWriter extends Node {
 		if (!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 0, 1)) {
 			return status;
 		}
+		
+		Map<String, Character> unsupportedTypes = inputMetadataCorrect(getInputPort(0).getMetadata());
+		if (unsupportedTypes != null) {
+			StringBuffer errorMessage = new StringBuffer("Input port metadata contain the following unsupported types: ");
+			for (String fieldName : unsupportedTypes.keySet()) {
+				errorMessage.append(fieldName + " - " + DataFieldMetadata.type2Str(unsupportedTypes.get(fieldName)));
+			}
+			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
 
 		try {
 			FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDirs);
@@ -299,6 +328,19 @@ public class SpreadsheetWriter extends Node {
 		
 		return status;
 	}
+	
+	private Map<String, Character> inputMetadataCorrect(DataRecordMetadata metadata) {
+		HashMap<String, Character> incorrectFields = new HashMap<String, Character>();
+		char fieldType;
+		for (DataFieldMetadata field : metadata.getFields()) {
+			fieldType = field.getType();
+			if (!supportedTypes.contains(fieldType)) {
+				incorrectFields.put(field.getName(), fieldType);
+			}
+		}
+		
+		return incorrectFields.isEmpty() ? null : incorrectFields;
+	}
 
 	@Override
 	public void init() throws ComponentNotReadyException {
@@ -321,7 +363,7 @@ public class SpreadsheetWriter extends Node {
 		}
 		prepareWriter();
 	}
-		
+
 	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
 		if ((format == SpreadsheetFormat.AUTO && fileURL.matches(SpreadsheetFormatter.XLSX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
 			return SpreadsheetFormat.XLSX;
