@@ -133,7 +133,8 @@ public class ExtXmlWriter extends Node {
 	
 	private static Log logger = LogFactory.getLog(ExtXmlWriter.class);
 	
-
+	private Throwable throwableException = null;
+	
 	public ExtXmlWriter(String id) {
 		super(id);
 	}
@@ -422,7 +423,7 @@ public class ExtXmlWriter extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-	private void loadDataToCache() {
+	private void loadDataToCache() throws Exception {
 		List<InputReader> readers = new ArrayList<InputReader>();
 		for (PortData portData : portDataMap.values()) {
 			if (portData.readInputPort()) {
@@ -433,7 +434,7 @@ public class ExtXmlWriter extends Node {
 		manageReaders(readers);
 	}
 	
-	private void readRemainingData() {
+	private void readRemainingData() throws Exception {
 		List<InputReader> readers = new ArrayList<InputReader>();
 		for (InputPort inPort : inPorts.values()) {
 			if (!inPort.isEOF()) {
@@ -444,7 +445,7 @@ public class ExtXmlWriter extends Node {
 		manageReaders(readers);
 	}
 	
-	private void manageReaders(List<InputReader> readers) {
+	private void manageReaders(List<InputReader> readers) throws Exception {
 		for (InputReader reader : readers) {
 			reader.start();
 		}
@@ -456,6 +457,12 @@ public class ExtXmlWriter extends Node {
 					inputReader.interrupt();
 					break;
 				}
+				
+				if (throwableException != null) {
+					//inputReader.interrupt();
+					throw new Exception(throwableException);
+				}
+				
 				killIt = !runIt;
 				try {
 					inputReader.join(1000);
@@ -707,6 +714,9 @@ public class ExtXmlWriter extends Node {
 					return;
 				} catch (Exception e) {
 					logger.error(getId() + ": thread failed", e);
+					return;
+				} catch (Throwable e) {
+					throwableException = e;
 					return;
 				}
 			}
