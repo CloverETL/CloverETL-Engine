@@ -40,8 +40,8 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExcelUtils;
-import org.jetel.util.SpreadsheetUtils;
 import org.jetel.util.ExcelUtils.ExcelType;
+import org.jetel.util.SpreadsheetUtils;
 
 /**
  * XLS and XLSX in-memory parser.
@@ -183,34 +183,33 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			return null;
 		}
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-			return parseVertical(record);
+			return parse(record, nextRecordStartRow, mappingMinColumn);
 		} else {
-			return parseHorizontal(record);
+			return parse(record, mappingMinRow, nextRecordStartRow);
 		}
 	}
 
-	private DataRecord parseVertical(DataRecord record) {
-		int cloverFieldIndex;
+	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn) {
 		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];
-			Row row = sheet.getRow(nextRecordStartRow + mappingRowIndex);
+			int[] formatRecordRow = formatsMapping != null ? formatsMapping[mappingRowIndex] : null;
+			Row row = sheet.getRow(recordStartRow + mappingRowIndex);
 			
 			if (row == null) {
-				for (int column = 0; column < recordRow.length; column++) {
-					if ((cloverFieldIndex = recordRow[column]) != XLSMapping.UNDEFINED) {
-						try {
-							record.getField(cloverFieldIndex).setNull(true);
-						} catch (BadDataFormatException e) {
-							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
-						}
-					}
-				}
+				processNullRow(record, recordRow);
+				processNullRow(record, formatRecordRow);
 				continue;
 			}
 			
-			for (int column = mappingMinColumn; column < recordRow.length + mappingMinColumn; column++) {
-				if ((cloverFieldIndex = recordRow[column - mappingMinColumn]) != XLSMapping.UNDEFINED) {
+			int cloverFieldIndex;
+			for (int column = startColumn; column < recordRow.length + startColumn; column++) {
+				if ((cloverFieldIndex = recordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
 					fillCloverField(row.getCell(column), record, cloverFieldIndex);					
+				}
+				if (formatRecordRow != null) {
+					if ((cloverFieldIndex = formatRecordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
+						fillFormatField(row.getCell(column), record, cloverFieldIndex);					
+					}
 				}
 			}
 		}
@@ -219,34 +218,19 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		return record;
 	}
 
-	private DataRecord parseHorizontal(DataRecord record) {
-		int cloverFieldIndex;
-		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
-			int[] recordRow = mapping[mappingRowIndex];
-			Row row = sheet.getRow(mappingMinRow + mappingRowIndex);
-			
-			if (row == null) {
-				for (int column = 0; column < recordRow.length; column++) {
-					if ((cloverFieldIndex = recordRow[column]) != XLSMapping.UNDEFINED) {
-						try {
-							record.getField(cloverFieldIndex).setNull(true);
-						} catch (BadDataFormatException e) {
-							handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
-						}
+	private void processNullRow(DataRecord record, int[] recordRow) {
+		if (recordRow != null) {
+			for (int column = 0; column < recordRow.length; column++) {
+				int cloverFieldIndex;
+				if ((cloverFieldIndex = recordRow[column]) != XLSMapping.UNDEFINED) {
+					try {
+						record.getField(cloverFieldIndex).setNull(true);
+					} catch (BadDataFormatException e) {
+						handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 					}
-				}
-				continue;
-			}
-			
-			for (int column = nextRecordStartRow; column < recordRow.length + nextRecordStartRow; column++) {
-				if ((cloverFieldIndex = recordRow[column - nextRecordStartRow]) != XLSMapping.UNDEFINED) {
-					fillCloverField(row.getCell(column), record, cloverFieldIndex);					
 				}
 			}
 		}
-
-		nextRecordStartRow += mappingInfo.getStep();
-		return record;
 	}
 
 	private void fillCloverField(Cell cell, DataRecord record, int cloverFieldIndex) {
@@ -293,6 +277,18 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		}
 	}
 
+	private void fillFormatField(Cell cell, DataRecord record, int cloverFieldIndex) {
+		String formatString = cell != null ? cell.getCellStyle().getDataFormatString() : null;
+		try {
+			// formatString may be null, or namely "GENERAL"
+			record.getField(cloverFieldIndex).setValue(formatString);
+		} catch (RuntimeException exception) {
+			String errorMessage = "Failed to set cell format to field; cause: " + exception;
+			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
+			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, formatString);
+		}
+	}
+	
 	@Override
 	public int skip(int nRec) throws JetelException {
 		int numberOfRows = nRec * mappingInfo.getStep();

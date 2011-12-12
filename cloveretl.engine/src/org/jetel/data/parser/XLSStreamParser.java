@@ -335,16 +335,22 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		public void handleMissingCells(int mappingRow, int first, int last) {
 			int[] mappingPart = parent.mapping[mappingRow];
-			int cloverFieldIndex;
+			int[] formatsMappingPart = parent.formatsMapping != null ? parent.formatsMapping[mappingRow] : null;
 			for (int i = first + 1; i < last; i++) {
-				cloverFieldIndex = mappingPart[i];
-				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
-					try {
-						recordToFill.getField(cloverFieldIndex).setNull(true);
-					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
-								recordToFill, cloverFieldIndex, null, null);
-					}
+				setFieldToNull(mappingPart, i);
+				setFieldToNull(formatsMappingPart, i);
+			}
+		}
+
+		private void setFieldToNull(int[] mappingArray, int i) {
+			int cloverFieldIndex;
+			cloverFieldIndex = mappingArray[i];
+			if (cloverFieldIndex != XLSMapping.UNDEFINED) {
+				try {
+					recordToFill.getField(cloverFieldIndex).setNull(true);
+				} catch (BadDataFormatException e) {
+					parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
+							recordToFill, cloverFieldIndex, null, null);
 				}
 			}
 		}
@@ -360,6 +366,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public void finishRecord() {
 			for (int i = currentParseRow; i <= recordEndRow; i++) {
 				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
+				handleMissingCells(i - recordStartRow, lastColumn, parent.formatsMapping[0].length);
 			}
 		}
 
