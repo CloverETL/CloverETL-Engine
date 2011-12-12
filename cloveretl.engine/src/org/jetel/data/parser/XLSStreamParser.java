@@ -523,10 +523,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			DataField field = recordToFill.getField(cloverFieldIndex);
 			short sid = cellRecord.getSid();
 
-//			String cellType;
-//			String actualCellValue;
-//			String cellCoordinates;
-//			CellRecord record;
 			switch (field.getType()) {
 			case DataFieldMetadata.DATE_FIELD:
 			case DataFieldMetadata.DATETIME_FIELD:
@@ -542,15 +538,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				default:
 					notifyExceptionHandler(cloverFieldIndex, field, cellRecord, "Date");
 					return;
-//					field.setNull(true);
-//					cellType = cellTypeToString(sid);
-//					actualCellValue = actualCellValue(cellRecord);
-//					record = "UNKNOWN".equals(cellType) ? null : (CellRecord) cellRecord;
-//					cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(record.getColumn()) + String.valueOf(record.getRow());
-//					parent.handleException(new BadDataFormatException("Cannot get Date value from type " + cellType + " cell", actualCellValue(cellRecord)), 
-//							recordToFill, cloverFieldIndex, cellCoordinates, actualCellValue);
-//					return;
-//					throw new IllegalStateException("Cannot get Date value from type " + cellTypeToString(sid) + " cell");
 				}
 
 				field.setValue(DateUtil.getJavaDate(date, date1904)); // TODO: really use this method?
@@ -577,15 +564,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				default:
 					notifyExceptionHandler(cloverFieldIndex, field, cellRecord, "String");
 					return;
-//					field.setNull(true);
-//					cellType = cellTypeToString(sid);
-//					actualCellValue = actualCellValue(cellRecord);
-//					record = "UNKNOWN".equals(cellType) ? null : (CellRecord) cellRecord;
-//					cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(record.getColumn()) + String.valueOf(record.getRow());
-//					parent.handleException(new BadDataFormatException("Cannot get String value from type " + cellType + " cell"), 
-//							recordToFill, cloverFieldIndex, cellCoordinates, actualCellValue);
-//					return;
-//					throw new IllegalStateException("Cannot get String value from type " + cellTypeToString(sid) + " cell");
 				}
 
 				field.fromString(value);
@@ -622,15 +600,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				default:
 					notifyExceptionHandler(cloverFieldIndex, field, cellRecord, "Number");
 					return;
-//					field.setNull(true);
-//					cellType = cellTypeToString(sid);
-//					actualCellValue = actualCellValue(cellRecord);
-//					record = "UNKNOWN".equals(cellType) ? null : (CellRecord) cellRecord;
-//					cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(record.getColumn()) + String.valueOf(record.getRow());
-//					parent.handleException(new BadDataFormatException("Cannot get Number value from type " + cellType + " cell"), 
-//							recordToFill, cloverFieldIndex, cellCoordinates, actualCellValue);
-//					return;
-//					throw new IllegalStateException("Cannot get Number value from type " + cellTypeToString(sid) + " cell");
 				}
 
 				field.setValue(number);				
@@ -640,15 +609,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					field.setValue(((BoolErrRecord) cellRecord).getBooleanValue());
 				} else {
 					notifyExceptionHandler(cloverFieldIndex, field, cellRecord, "Boolean");
-//					field.setNull(true);
-//					cellType = cellTypeToString(sid);
-//					actualCellValue = actualCellValue(cellRecord);
-//					record = "UNKNOWN".equals(cellType) ? null : (CellRecord) cellRecord;
-//					cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(record.getColumn()) + String.valueOf(record.getRow());
-//					parent.handleException(new BadDataFormatException("Cannot get Boolean value from type " + cellType + " cell"), 
-//							recordToFill, cloverFieldIndex, cellCoordinates, actualCellValue);
-//					return;
-//					throw new IllegalStateException("Cannot get Boolean value from type " + cellTypeToString(sid) + " cell");
 				}
 				break;
 			}
@@ -666,11 +626,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			switch(sid) {
 			case NumberRecord.sid:
 				cellType = "NUMERIC";
-				actualValue = String.valueOf(((NumberRecord) record).getValue());
+				actualValue = formatter.formatNumberDateCell((NumberRecord) record);
 				break;
 			case FormulaRecord.sid:
 				cellType = "FORMULA";
-				actualValue = String.valueOf(((FormulaRecord) record).getValue());
+				actualValue = formatter.formatNumberDateCell((FormulaRecord) record);
 				break;
 			case LabelSSTRecord.sid:
 				cellType = "STRING";
@@ -699,42 +659,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from type " + cellType + " cell"), 
 					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
 		}
-
-//		private String actualCellValue(Record cellRecord) {
-//			switch(cellRecord.getSid()) {
-//			case NumberRecord.sid:
-//				return String.valueOf(((NumberRecord) cellRecord).getValue());
-//			case FormulaRecord.sid:
-//				return String.valueOf(((FormulaRecord) cellRecord).getValue());
-//			case LabelSSTRecord.sid:
-//				return sstRecord.getString(((LabelSSTRecord) cellRecord).getSSTIndex()).getString();
-//			case StringRecord.sid:
-//				return ((StringRecord) cellRecord).getString();
-//			case BoolErrRecord.sid:
-//				BoolErrRecord record = (BoolErrRecord) cellRecord;
-//				if (record.isBoolean()) {
-//					return String.valueOf(record.getBooleanValue());
-//				} else {
-//					return String.valueOf(record.getErrorValue());
-//				}
-//			default:
-//				return null;
-//			}
-//		}
-
-//		private String cellTypeToString(int cellType) {
-//			switch (cellType) {
-//			case BoolErrRecord.sid:
-//				return "BOOLEAN";
-//			case LabelSSTRecord.sid:
-//			case StringRecord.sid:
-//				return "STRING";
-//			case NumberRecord.sid:
-//				return "NUMERIC";
-//			default:
-//				return "UNKNOWN";
-//			}
-//		}
+		
 	}
 
 	private static class HeaderHSSFListener implements HSSFListener {
