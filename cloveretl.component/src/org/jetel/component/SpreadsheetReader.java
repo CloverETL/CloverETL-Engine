@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
@@ -39,7 +37,6 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
@@ -317,10 +314,11 @@ public class SpreadsheetReader extends Node {
 		if (getOutPorts().size() == 2) {
 			if (checkErrorPortMetadata()) {
 				logging = true;
-				if (policyType == PolicyType.STRICT) {
-					maxErrorCount = 1;
-				}
 			}
+		}
+		
+		if (policyType == PolicyType.STRICT) {
+			maxErrorCount = 1;
 		}
 		
 		prepareParser(prepareMapping());
@@ -479,7 +477,7 @@ public class SpreadsheetReader extends Node {
 					if (logging) {
 						if (exceptionHandler == null) {
 							exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
-						} 
+						}
 						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
 							errorRecord.copyFieldsByName(record);
 							((IntegerDataField) errorRecord.getField(0)).setValue(bdfe.getRecordNumber());
@@ -497,11 +495,13 @@ public class SpreadsheetReader extends Node {
 							errorCount++;
 						}
 					}
+					if ((policyType == PolicyType.STRICT && errorCount == maxErrorCount) ||
+						(policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount)) {
+							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
+							return Result.ERROR;
+					}
 				}
-				if (errorCount > maxErrorCount && policyType != PolicyType.LENIENT) {
-					LOGGER.error("DataPaser (" + getName() + "): Max error count exceeded.");
-					return Result.ERROR;
-				}
+				
 				SynchronizeUtils.cloverYield();				
 			}
 		} catch (Exception e) {
