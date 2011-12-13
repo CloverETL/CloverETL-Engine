@@ -723,7 +723,6 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void instantiateProperties(NodeList propertyElements) throws  XMLConfigurationException {
-		PropertyRefResolver propertiesRefResolver = new PropertyRefResolver();
 		List<String> unresolvedUrls = new ArrayList<String>();
 	    // loop through all property elements & create appropriate properties
 	    for (int i = 0; i < propertyElements.getLength(); i++) {
@@ -731,7 +730,7 @@ public class TransformationGraphXMLReaderWriter {
 	        // process property from file, if fileURL contains property reference, skip it for now
 	        if (propertyElement.hasAttribute("fileURL")) {
 	        	String fileURL = propertyElement.getAttribute("fileURL");
-        		if (propertiesRefResolver.containsProperty(fileURL)) {
+        		if (PropertyRefResolver.containsProperty(fileURL)) {
         			unresolvedUrls.add(fileURL);
         			continue;
         		}
@@ -753,11 +752,11 @@ public class TransformationGraphXMLReaderWriter {
 	    
 	    // now try to resolve properties from file which have fileURL with property reference
 	    while (!unresolvedUrls.isEmpty()) {
-	    	propertiesRefResolver = new PropertyRefResolver(graph.getGraphProperties());
+	    	PropertyRefResolver propertiesRefResolver = new PropertyRefResolver(graph.getGraphProperties());
 	    	List<String> stillUnresolvedUrls = new ArrayList<String>();
 		    for (String url : unresolvedUrls) {
 		    	String resolvedUrl = propertiesRefResolver.resolveRef(url);
-		    	if (propertiesRefResolver.containsProperty(resolvedUrl)) {
+		    	if (PropertyRefResolver.containsProperty(resolvedUrl)) {
 		    		stillUnresolvedUrls.add(resolvedUrl);
 		    	} else {
 		        	try {
