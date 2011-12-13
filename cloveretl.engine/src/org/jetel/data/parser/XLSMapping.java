@@ -71,7 +71,7 @@ public class XLSMapping {
 	private static final String XPATH_GLOBAL_ATTRIBUTES = "/mapping/globalAttributes/";
 	private static final String XPATH_STEP_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "step/text()";
 	private static final String XPATH_ORIENTATION_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "orientation/text()";
-	private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader/text()";
+	private static final String XPATH_WRITE_HEADER_ATTRIBUTE = XPATH_GLOBAL_ATTRIBUTES + "writeHeader[text() = \"true\"]";
 
 	private static final String XML_HEADER_GROUP = "headerGroup";
 	private static final String XML_HEADER_GROUP_CLOVER_FIELD = "cloverField";
