@@ -444,13 +444,8 @@ public class SpreadsheetFormatter implements Formatter {
 			firstRecordXYRange = null;
 			skipAfterHeaderLines = 0;
 		} else {
-			if (!mappingInfo.isWriteHeader()) {
-				minY=0;
-				maxYIncludingSkip=0;
-			}
-			
 			int recordHeight = maxYIncludingSkip - minYIncludingSkip + 1;
-			int recordPartOnHeaderLinesHeight = maxY - minYIncludingSkip;
+			int recordPartOnHeaderLinesHeight = maxY - minYIncludingSkip + 1;
 			skipAfterHeaderLines = recordHeight - recordPartOnHeaderLinesHeight - mappingInfo.getStep();
 			if (skipAfterHeaderLines<0) {
 				skipAfterHeaderLines=0;
@@ -1029,11 +1024,10 @@ public class SpreadsheetFormatter implements Formatter {
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
 				writeSheetHeader();
-				currentSheetData.setCurrentY(headerXYRange.y2 + skipAfterHeaderLines);
 			} else {
-				createInitialEmptyLines();
-				currentSheetData.setCurrentY(-1);
+				createHeaderRegion();
 			}
+			currentSheetData.setCurrentY(headerXYRange.y2 + skipAfterHeaderLines);
 		} else {
 			createInitialEmptyLines();
 			// check that appending does not overwrite anything
@@ -1327,7 +1321,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void writeSheetHeader() {
 
 		if (!append && !insert) {
-			createRegion(0, 0, translateXYtoRowNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines), translateXYtoColumnNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines));
+			createHeaderRegion();
 			boolean boldStyleFound = false;
 			short boldStyle = 0;
 			
@@ -1353,6 +1347,13 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 			}
 		}
+	}
+
+	/**
+	 * 
+	 */
+	private void createHeaderRegion() {
+		createRegion(0, 0, translateXYtoRowNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines), translateXYtoColumnNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines));
 	}
 
 	private void insertEmptyOrPreserveLines(int index, int lineCount) {
