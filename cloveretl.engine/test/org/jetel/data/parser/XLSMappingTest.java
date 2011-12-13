@@ -54,6 +54,7 @@ public class XLSMappingTest extends CloverTestCase {
 					+ "<globalAttributes>"
 						+ "<step>1</step>"
 						+ "<orientation>VERTICAL</orientation>"
+						+ "<writeHeader>true</writeHeader>"
 					+ "</globalAttributes>"
 					+ "<headerGroups>"
 						+ "<headerGroup>"
@@ -70,6 +71,7 @@ public class XLSMappingTest extends CloverTestCase {
 
 			assertEquals(SpreadsheetOrientation.VERTICAL, mapping.getOrientation());
 			assertEquals(1, mapping.getStep());
+			assertEquals(true, mapping.isWriteHeader());
 
 			List<HeaderGroup> groups = mapping.getHeaderGroups();
 			assertNotNull(groups);
@@ -105,6 +107,7 @@ public class XLSMappingTest extends CloverTestCase {
 					+ "<globalAttributes>"
 						+ "<step>17</step>"
 						+ "<orientation>VERTICAL</orientation>"
+						+ "<writeHeader>false</writeHeader>"
 					+ "</globalAttributes>"
 					+ "<headerGroups>"
 						+ "<headerGroup skip=\"5\">"
@@ -136,6 +139,7 @@ public class XLSMappingTest extends CloverTestCase {
 			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata);
 			assertEquals(SpreadsheetOrientation.VERTICAL, mapping.getOrientation());
 			assertEquals(17, mapping.getStep());
+			assertEquals(false, mapping.isWriteHeader());
 
 			List<HeaderGroup> groups = mapping.getHeaderGroups();
 			assertNotNull(groups);
