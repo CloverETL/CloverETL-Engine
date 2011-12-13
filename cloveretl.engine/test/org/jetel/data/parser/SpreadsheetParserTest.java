@@ -54,6 +54,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping3;
 	private String mapping4;
 	private String mapping5;
+	private String mapping6;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -68,6 +69,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping3 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping3_Customers_02.xls.xml", "UTF-8");
 		mapping4 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping4_Customers_03.xml", "UTF-8");
 		mapping5 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping5_Customers_03_Horizontal.xml", "UTF-8");
+		mapping6 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping6_excel-types-nocurrency.xml", "UTF-8");
 	}
 	
 	@Override
@@ -77,7 +79,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 
 		initMappings();
 		
-		String[] cloverFieldNames = {"A", "B", "C", "D", "E", "F", "G", "H"};
+		String[] cloverFieldNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
 		
 		stringMetadata = new DataRecordMetadata("md", DataRecordMetadata.DELIMITED_RECORD);
 		for (int i = 0; i < cloverFieldNames.length; i++) {
@@ -157,7 +159,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 
 			for (int i = 0; i < parsers.length-1; i++) {
-//				System.out.println(parsers[i+1].getClass().getSimpleName());
 				assertTrue(
 						"Unequal record #" + recNum + " (0-based)\n" +
 						"Parser " + i + " (" + parsers[i].getClass().getSimpleName() + "):\n" + records[i] +
@@ -334,7 +335,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 						continue;
 					}
 		
-					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+//					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
 					
 					parser.setSheet("0");
 					parser.init();
@@ -389,4 +390,52 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		}
 	}
 	
+	
+	public void testCellFormatReading() throws Exception {
+		AbstractSpreadsheetParser parser;
+		String xlsFile = "data/xls/excel-types-nocurrency.xls";
+		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping6, stringMetadata));
+	
+				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				DataRecord record = new DataRecord(stringMetadata);
+				record.init();
+				
+				String general = "GENERAL";
+				String number = "#,##0.00";
+				String currency = "_-* #,##0.00\" Kč\"_-;\\-* #,##0.00\" Kč\"_-;_-* \\-??\" Kč\"_-;_-@_-";
+				String date = "D\". \"MMMM\\ YYYY;@";
+				String time = "H:MM:SS\\ AM/PM;@";
+				String percent = "0.00%";
+				String fraction = "#\\ ?/2";
+				String math = "0.00E+00";
+				String text = "@";
+				String special = "[<=9999999]###\\ ##\\ ##;##\\ ##\\ ##\\ ##";
+				
+				parser.parseNext(record);
+				System.out.println(record);
+				assertRecordContent(record, "něco", general, number, currency, date, time, percent, fraction, math, "text", text, special);
+
+				parser.parseNext(record);
+				assertRecordContent(record, "další", general, number, currency, date, time, percent, fraction, math, "neoc", text, special);
+				
+				parser.parseNext(record);
+				assertRecordContent(record, null, null, number, currency, date, time, percent, fraction, math, "dále", text, special);
+				
+				for (int i = 3; i < 10; i++) {
+					assertNotNull(parser.parseNext(record));
+				}
+				assertNull(parser.parseNext(record));
+				
+				parser.close();
+			}
+		}
+	}
 }

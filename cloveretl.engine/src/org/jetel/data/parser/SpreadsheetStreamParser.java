@@ -21,7 +21,6 @@ package org.jetel.data.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -152,15 +151,17 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	 */
 	class CellBuffers<T> {
 
-		private T[][] cellBuffers;
+		private CellBuffer<T>[][] cellBuffers;
 		private int nextPartial;
 		private RecordFieldValueSetter<T> fieldValueSetter;
+		private RecordFieldValueSetter<T> fieldValueAsFormatSetter;
 		
 		@SuppressWarnings("unchecked")
-		public void init(Class<T> clazz, RecordFieldValueSetter<T> fieldValueSetter) {
+		public void init(Class<T> clazz, RecordFieldValueSetter<T> fieldValueSetter, RecordFieldValueSetter<T> fieldValueAsFormatSetter) {
 			this.fieldValueSetter = fieldValueSetter;
+			this.fieldValueAsFormatSetter = fieldValueAsFormatSetter;
 			int numberOfBuffers = (mapping.length / mappingInfo.getStep()) - (mapping.length % mappingInfo.getStep() == 0 ? 1 : 0);
-			cellBuffers = (T[][]) Array.newInstance(clazz, numberOfBuffers, metadata.getNumFields());
+			cellBuffers = new CellBuffer[numberOfBuffers][metadata.getNumFields()];
 		}
 		
 		public int getCount() {
@@ -175,7 +176,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			return (nextPartial + recordOffset) % cellBuffers.length;
 		}
 		
-		private T[] getBuffer(int recordOffset) {
+		private CellBuffer<T>[] getBuffer(int recordOffset) {
 			return cellBuffers[getCellBufferIndex(recordOffset)];
 		}
 
@@ -192,10 +193,10 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		
 		public void fillRecordFromBuffer(DataRecord record) {
 			if (getCount() > 0) {
-				T[] cellBuffer = getBuffer(0);
+				CellBuffer<T>[] cellBuffer = getBuffer(0);
 				for (int i = 0; i < cellBuffer.length; i++) {
 					if (cellBuffer[i] != null) {
-						fieldValueSetter.setFieldValue(i, cellBuffer[i]);
+						cellBuffer[i].setValueToField(i);
 					}
 				}
 				moveToNextCellBuffer();
@@ -205,8 +206,17 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		public void setCellBufferValue(int mappingRow, int mappingColumn, T bufferCellValue) {
 			for (int i = 0; i < getCount(); i++) {
 				if ((mappingRow -= (mappingInfo.getStep())) >= 0) {
-					if (mapping[mappingRow][mappingColumn] != XLSMapping.UNDEFINED) {
-						getBuffer(i)[mapping[mappingRow][mappingColumn]] = bufferCellValue;
+					int valueField = mapping[mappingRow][mappingColumn];
+					int formatField = formatMapping != null ? formatMapping[mappingRow][mappingColumn] : XLSMapping.UNDEFINED;
+					
+					if (valueField != XLSMapping.UNDEFINED) {
+						getBuffer(i)[mapping[mappingRow][mappingColumn]] = new CellBuffer<T>(bufferCellValue, fieldValueSetter);
+					}
+					if (formatField != XLSMapping.UNDEFINED) {
+						getBuffer(i)[formatMapping[mappingRow][mappingColumn]] = new CellBuffer<T>(bufferCellValue, fieldValueAsFormatSetter);
+					}
+					
+					if (valueField != XLSMapping.UNDEFINED || formatField != XLSMapping.UNDEFINED) {
 						break;
 					}
 				}
@@ -214,6 +224,21 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		}
 		
 	}
+
+	private static class CellBuffer<T> {
+		private final T value;
+		private final RecordFieldValueSetter<T> valueSetter;
+
+		public CellBuffer(T value, RecordFieldValueSetter<T> valueSetter) {
+			this.value = value;
+			this.valueSetter = valueSetter;
+		}
+		
+		public void setValueToField(int fieldIndex) {
+			valueSetter.setFieldValue(fieldIndex, value);
+		}
+	}
+	
 
 	interface RecordFieldValueSetter<T> {
 		public void setFieldValue(int fieldIndex, T value);

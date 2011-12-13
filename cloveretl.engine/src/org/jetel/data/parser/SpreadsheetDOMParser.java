@@ -192,7 +192,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn) {
 		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];
-			int[] formatRecordRow = formatsMapping != null ? formatsMapping[mappingRowIndex] : null;
+			int[] formatRecordRow = formatMapping != null ? formatMapping[mappingRowIndex] : null;
 			Row row = sheet.getRow(recordStartRow + mappingRowIndex);
 			
 			if (row == null) {

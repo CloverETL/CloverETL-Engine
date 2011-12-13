@@ -32,13 +32,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hssf.record.BoolErrRecord;
-import org.apache.poi.hssf.record.CellRecord;
-import org.apache.poi.hssf.record.FormulaRecord;
-import org.apache.poi.hssf.record.LabelSSTRecord;
-import org.apache.poi.hssf.record.NumberRecord;
-import org.apache.poi.hssf.record.Record;
-import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -242,7 +235,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			stylesTable = reader.getStylesTable();
 			sharedStringsTable = new ReadOnlySharedStringsTable(opcPackage);
 			sheetContentHandler = new RecordFillingContentHandler(stylesTable, dataFormatter, AbstractSpreadsheetParser.USE_DATE1904);
-			cellBuffers.init(CellValue.class, sheetContentHandler);
+			cellBuffers.init(CellValue.class, sheetContentHandler, sheetContentHandler.getFieldValueToFormatSetter());
 		} catch (InvalidFormatException e) {
 			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
 		} catch (OpenXML4JException e) {
@@ -423,13 +416,19 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			// Do nothing, not interested
 		}
 
+		protected String getFormatString(int styleIndex) {
+			XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
+			String formatString = style.getDataFormatString();
+			if (formatString == null) {
+				formatString = BuiltinFormats.getBuiltinFormat(style.getDataFormat());
+			}
+			return formatString;
+		}
+		
 		protected String formatNumericToString(String value, int styleIndex) {
 			XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
-			short formatIndex = style.getDataFormat();
-			String formatString = style.getDataFormatString();
-			if (formatString == null)
-				formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
-			return formatter.formatRawCellContents(Double.parseDouble(value), formatIndex, formatString);
+			String formatString = getFormatString(styleIndex);
+			return formatter.formatRawCellContents(Double.parseDouble(value), style.getDataFormat(), formatString);
 		}
 
 	}
@@ -488,6 +487,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		private int skipStartRow;
 		private boolean skipRecords = false;
 
+		private final RecordFieldValueSetter<CellValue> fieldValueToFormatSetter = new FieldValueToFormatSetter();
+		
+		
 		public RecordFillingContentHandler(StylesTable stylesTable, DataFormatter formatter, boolean date1904) {
 			super(stylesTable, formatter);
 			this.date1904 = date1904;
@@ -545,12 +547,20 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex);
 			lastColumn = shiftedColumnIndex;
-
-			if (record != null && parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
-				setFieldValue(parent.mapping[mappingRow][shiftedColumnIndex], cellType, value, styleIndex); 
-			} else {
-				cellBuffers.setCellBufferValue(mappingRow, shiftedColumnIndex, new CellValue(-1, value, cellType, styleIndex));
+			
+			CellValue cellValue = new CellValue(-1, value, cellType, styleIndex);
+			cellBuffers.setCellBufferValue(mappingRow, shiftedColumnIndex, cellValue);
+			if (record != null) {
+				if (parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
+					setFieldValue(parent.mapping[mappingRow][shiftedColumnIndex], cellValue);
+				}
+				if (parent.formatMapping != null) {
+					if (parent.formatMapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
+						fieldValueToFormatSetter.setFieldValue(parent.formatMapping[mappingRow][shiftedColumnIndex], cellValue);
+					}
+				}
 			}
+			
 		}
 		
 		@Override
@@ -648,6 +658,20 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				return "UNKNOWN";
 			}
 		}
+		
+		protected RecordFieldValueSetter<CellValue> getFieldValueToFormatSetter() {
+			return fieldValueToFormatSetter;
+		}
+		
+		private class FieldValueToFormatSetter implements RecordFieldValueSetter<CellValue> {
+			@Override
+			public void setFieldValue(int cloverFieldIndex, CellValue cellValue) {
+				DataField field = record.getField(cloverFieldIndex);
+				String format = getFormatString(cellValue.styleIndex);
+				field.fromString(format);
+			}
+		}
+		
 	}
 
 	private static class CellValue {

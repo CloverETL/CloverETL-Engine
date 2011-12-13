@@ -90,7 +90,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected DataRecordMetadata metadata;
 	protected final XLSMapping mappingInfo;
 	protected int[][] mapping;
-	protected int[][] formatsMapping;
+	protected int[][] formatMapping;
 	protected int startLine;
 	
 	private static final Comparator<CellMappedByOrder> CELL_ORDER_COMPARATOR =
@@ -290,7 +290,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			
 			mapping = new int[stats.getRowCount()][stats.getColumnCount()];
 			if (stats.isFormatMapping()) {
-				formatsMapping = new int[stats.getRowCount()][stats.getColumnCount()];
+				formatMapping = new int[stats.getRowCount()][stats.getColumnCount()];
 			}
 			clearMapping();
 			
@@ -306,9 +306,9 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			Arrays.fill(mapping[i], -1);
 		}
 		fillUnusedFields();
-		if (formatsMapping != null) {
-			for (int i = 0; i < formatsMapping.length; i++) {
-				Arrays.fill(formatsMapping[i], -1);
+		if (formatMapping != null) {
+			for (int i = 0; i < formatMapping.length; i++) {
+				Arrays.fill(formatMapping[i], -1);
 			}
 		}
 	}
@@ -317,7 +317,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		Set<Integer> toRemove = new HashSet<Integer>();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			processFieldMapping(group.getCloverField(), mapping, toRemove, group);
-			processFieldMapping(group.getFormatField(), formatsMapping, toRemove, group);
+			processFieldMapping(group.getFormatField(), formatMapping, toRemove, group);
 		}
 		unusedFields.removeAll(toRemove);
 	}
