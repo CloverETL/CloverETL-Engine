@@ -456,8 +456,8 @@ public class SpreadsheetFormatter implements Formatter {
 				skipAfterHeaderLines=0;
 			}
 			headerXYRange = new XYRange(minX, minY, maxX, maxY);
-			int firstRecordY1 = minYIncludingSkip+1;
-			int firstRecordY2 = maximum(maxYIncludingSkip+1, firstRecordY1 + mappingInfo.getStep()-1);
+			int firstRecordY1 = minYIncludingSkip;
+			int firstRecordY2 = maximum(maxYIncludingSkip, firstRecordY1 + mappingInfo.getStep()-1);
 			firstRecordXYRange = new XYRange(minX, firstRecordY1, maxX, firstRecordY2);
 		}
 
@@ -537,7 +537,7 @@ public class SpreadsheetFormatter implements Formatter {
 					int recordFieldXOffset = recordFieldX - firstRecordXYRange.x1; //x coordinate minus x-indentation
 					cloverFieldToXOffsetMapping.put(cloverField, recordFieldXOffset);
 					int headerBottomPlusSkip = getY2fromRange(range) + group.getSkip();
-					int recordFieldYOffset = (headerBottomPlusSkip + 1) - firstRecordXYRange.y2; //y coordinate of cell under header of this column minus y bound to the entire header
+					int recordFieldYOffset = headerBottomPlusSkip - firstRecordXYRange.y2; //y coordinate of cell under header of this column minus y bound to the entire header
 					cloverFieldToYOffsetMapping.put(cloverField, recordFieldYOffset);
 					minRecordFieldYOffset = minimum(minRecordFieldYOffset, recordFieldYOffset);
 					templateCellsToCopy.add(new RelativeCellPosition(recordFieldXOffset, recordFieldYOffset));
@@ -559,7 +559,7 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		
-		int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines+1;
+		int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines;
 		int defaultTemplateEndY   = defaultTemplateStartY + mappingInfo.getStep(); 
 		for (int y=defaultTemplateStartY; y<defaultTemplateEndY; ++y) {
 			int maximalX;
@@ -1534,11 +1534,11 @@ public class SpreadsheetFormatter implements Formatter {
 						throw new IllegalStateException("Unexpectedly not found a cell for a new record at coordinates: [X: " + cellX + ", Y:" + cellY + "]");
 					}
 				}
-//				setCellValue(cell, dataField);
-//				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
-//				if (cellStyle!=null) {
-//					cell.setCellStyle(cellStyle);
-//				}
+				setCellValue(cell, dataField);
+				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
+				if (cellStyle!=null) {
+					cell.setCellStyle(cellStyle);
+				}
 			}
 			
 		}
