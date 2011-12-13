@@ -75,7 +75,7 @@ public class PropertyRefResolver {
 	/** the regex pattern used to find CTL expressions */
 	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
 	/** the regex pattern used to find property references */
-	private final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 
 	/** the CTL expression evaluator used to evaluate CTL expressions */
 	private final CTLExpressionEvaluator expressionEvaluator = new CTLExpressionEvaluator();
@@ -438,10 +438,11 @@ public class PropertyRefResolver {
 	}
 
 	/**
-	 * @param value
-	 * @return <code>true</code> if value contains at least one parameter.
+	 * Indicates if given string contains also property reference (that needs to be de-referenced)
+	 * @param value value to inspect
+	 * @return <code>true</code> if value contains reference to at least one property.
 	 */
-	public boolean containsProperty(String value){
+	public static boolean containsProperty(String value){
 		return propertyPattern.matcher(value).find();
 	}
 }
