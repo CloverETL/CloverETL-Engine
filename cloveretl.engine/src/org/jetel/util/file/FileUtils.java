@@ -1100,7 +1100,12 @@ public class FileUtils {
 			createDir = fileTmp;
 			fileTmp = fileTmp.getParentFile();
 		}
-		if (createDir != null && !file.mkdirs()) throw new ComponentNotReadyException("Cannot create directory: " + file);
+		if (createDir != null && !file.mkdirs()) {
+			if (!file.exists()) {
+				// dir still doesn't exist - throw ex.
+				throw new ComponentNotReadyException("Cannot create directory: " + file);
+			}
+		}
 		return createDir;
 	}
 	
