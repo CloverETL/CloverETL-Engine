@@ -106,7 +106,7 @@ public class XLSMapping {
 		DataFieldMetadata [] dataFields = metaData.getFields();
 		for (int i = 0; i < dataFields.length; ++i) {
 			DataFieldMetadata dataField = dataFields[i];
-			headerGroups.add(new HeaderGroup(0, dataField.getNumber(), SpreadsheetMappingMode.AUTO, UNDEFINED, Collections.singletonList(new HeaderRange(0, 0, i, i))));
+			headerGroups.add(new HeaderGroup(1, dataField.getNumber(), SpreadsheetMappingMode.AUTO, UNDEFINED, Collections.singletonList(new HeaderRange(0, 0, i, i))));
 		}
 		this.writeHeader = true;
 		this.stats = resolveMappingStats();
