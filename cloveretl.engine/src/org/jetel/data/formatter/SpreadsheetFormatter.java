@@ -18,7 +18,6 @@
  */
 package org.jetel.data.formatter;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,9 +27,13 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -86,7 +89,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private SpreadsheetFormat formatterType;
 
 
-	private class CellPosition {
+	private static class CellPosition {
 		final int x;
 		final int y;
 
@@ -95,9 +98,70 @@ public class SpreadsheetFormatter implements Formatter {
 			this.y = y;
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + x;
+			result = prime * result + y;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CellPosition other = (CellPosition) obj;
+			if (x != other.x)
+				return false;
+			if (y != other.y)
+				return false;
+			return true;
+		}
+		
+	}
+
+	private static class RelativeCellPosition {
+		final int relativeX;
+		final int relativeY;
+
+		public RelativeCellPosition(int relativeX, int relativeY) {
+			this.relativeX = relativeX;
+			this.relativeY = relativeY;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + relativeX;
+			result = prime * result + relativeY;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RelativeCellPosition other = (RelativeCellPosition) obj;
+			if (relativeX != other.relativeX)
+				return false;
+			if (relativeY != other.relativeY)
+				return false;
+			return true;
+		}
+		
 	}
 	
-	private class XYRange {
+	private static class XYRange {
 		final int x1;
 		final int y1;
 		final int x2;
@@ -117,7 +181,9 @@ public class SpreadsheetFormatter implements Formatter {
 	private RecordKey sheetNameKeyRecord;
 	private XLSMapping mappingInfo;
 	private boolean mappingInitialized = false;
-	private Map<Integer, Integer> xToCloverFieldMapping = new HashMap<Integer, Integer>();
+	private Map<CellPosition, Integer> headerRangePositionToCloverFieldMapping = new HashMap<CellPosition, Integer>();
+	private Set<RelativeCellPosition> templateCellsToCopy = new LinkedHashSet<SpreadsheetFormatter.RelativeCellPosition>();
+	private Map<Integer, Integer> xOffsetToMinimalYOffset = new HashMap<Integer,Integer>();
 	private Map<Integer, Integer> cloverFieldToXOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToYOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, CellStyle> cloverFieldToCellStyle = new HashMap<Integer, CellStyle>();
@@ -143,16 +209,12 @@ public class SpreadsheetFormatter implements Formatter {
 	private int sheetIndex = -1;
 	private String sheetName;
 
-	private int headerRowCount = 0;
-	private int headerColumnCount = 0;
-	private int headerRowIndent = 0;
-	private int headerColumnIndent = 0;
 	private XYRange headerXYRange;
-	private int firstRecordBelowHeaderX = 0;
-	private int firstRecordBelowHeaderY = 0;
+	private XYRange firstRecordXYRange;
+	private int skipAfterHeaderLines;
 	private String templateSheetName;
 	private int initialFirstFooterLineIndex;
-	private int initialTemplateCopiedRegionY1;
+	private int initialTemplateCopiedRegionY2;
 	
 	public void setAttitude(SpreadsheetAttitude attitude) {
 		this.attitude = attitude;
@@ -186,12 +248,18 @@ public class SpreadsheetFormatter implements Formatter {
 		this.removeSheets = removeSheets;
 	}
 
-	private Integer getCloverFieldByX1(HeaderRange range) {
+	private Integer getCloverFieldByHeaderX1andY1(HeaderRange range) {
+		int x;
+		int y;
 		if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-			return xToCloverFieldMapping.get(range.getColumnStart());
+			x = range.getColumnStart();
+			y = range.getRowStart();
 		} else {
-			return xToCloverFieldMapping.get(range.getRowEnd());
+			x = range.getRowStart();
+			y = range.getColumnStart();
 		}
+		
+		return headerRangePositionToCloverFieldMapping.get(new CellPosition(x, y));
 	}
 	
 	@Override
@@ -279,6 +347,10 @@ public class SpreadsheetFormatter implements Formatter {
 		return maximum(y, getY2fromRange(headerRange) + skip);
 	}
 	
+	private int getMinY(int y, HeaderRange headerRange, int skip) {
+		return minimum(y, getY2fromRange(headerRange) + skip);
+	}
+	
 	private int getMaxX(int x, HeaderRange headerRange) {
 		return maximum(x, getX2fromRange(headerRange));
 	}
@@ -351,47 +423,47 @@ public class SpreadsheetFormatter implements Formatter {
 	private void computeHeaderAndRecordBounds() {
 		int maxX = 0;
 		int maxY = 0;
-		int maxYIncluingSkip = 0;
+		int maxYIncludingSkip = 0;
+		int minYIncludingSkip = Integer.MAX_VALUE;
 		int minX = Integer.MAX_VALUE;
 		int minY = Integer.MAX_VALUE;
 		
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			for (HeaderRange range : group.getRanges()) {
 				maxX = getMaxX(maxX, range);
-				maxYIncluingSkip = getMaxY(maxYIncluingSkip, range, group.getSkip());
+				maxYIncludingSkip = getMaxY(maxYIncludingSkip, range, group.getSkip());
+				minYIncludingSkip = getMinY(minYIncludingSkip, range, group.getSkip());
 				maxY = getMaxY(maxY, range, 0);
 				minX = getMinX(minX, range);
 				minY = getMinY(minY, range);
 			}
 		}
 		
-		if (minX==Integer.MAX_VALUE || minY==Integer.MAX_VALUE) {
-			headerRowCount = 0;
-			headerColumnCount = 0;
-			headerRowIndent = 0;
-			headerColumnIndent = 0;
-			firstRecordBelowHeaderX = 0;
-			firstRecordBelowHeaderY = 0;
+		if (minX==Integer.MAX_VALUE || minY==Integer.MAX_VALUE || minYIncludingSkip==Integer.MAX_VALUE) {
+			headerXYRange = null;
+			firstRecordXYRange = null;
+			skipAfterHeaderLines = 0;
 		} else {
-			firstRecordBelowHeaderX = minX;
-			firstRecordBelowHeaderY = maxYIncluingSkip;
 			if (!mappingInfo.isWriteHeader()) {
 				minY=0;
-				maxYIncluingSkip=0;
+				maxYIncludingSkip=0;
 			}
-			int headerRowMin = translateXYtoRowNumber(minX, minY);
-			int headerColumnMin = translateXYtoColumnNumber(minX, minY);
 			
-			headerRowCount = translateXYtoRowNumber(maxX, maxYIncluingSkip) - headerRowMin + 1;
-			headerRowIndent = headerRowMin;
-			headerColumnCount = translateXYtoColumnNumber(maxX, maxYIncluingSkip) - headerColumnMin + 1;
-			headerColumnIndent = headerColumnMin;
-			headerXYRange = new XYRange(minX, minY, maxX, maxYIncluingSkip);
+			int recordHeight = maxYIncludingSkip - minYIncludingSkip + 1;
+			int recordPartOnHeaderLinesHeight = maxY - minYIncludingSkip;
+			skipAfterHeaderLines = recordHeight - recordPartOnHeaderLinesHeight - mappingInfo.getStep();
+			if (skipAfterHeaderLines<0) {
+				skipAfterHeaderLines=0;
+			}
+			headerXYRange = new XYRange(minX, minY, maxX, maxY);
+			int firstRecordY1 = minYIncludingSkip+1;
+			int firstRecordY2 = maximum(maxYIncludingSkip+1, firstRecordY1 + mappingInfo.getStep()-1);
+			firstRecordXYRange = new XYRange(minX, firstRecordY1, maxX, firstRecordY2);
 		}
 
 		if (insert) {
-			initialFirstFooterLineIndex = headerXYRange.y2+1;
-			initialTemplateCopiedRegionY1 = headerXYRange.y2+1;
+			initialFirstFooterLineIndex = firstRecordXYRange.y1;
+			initialTemplateCopiedRegionY2 = firstRecordXYRange.y2;
 		}
 	}
 	
@@ -402,12 +474,15 @@ public class SpreadsheetFormatter implements Formatter {
 		Stats stats = mappingInfo.getStats();
 		computeHeaderAndRecordBounds();
 		
-		xToCloverFieldMapping.clear();
+		headerRangePositionToCloverFieldMapping.clear();
+		xOffsetToMinimalYOffset.clear();
 		cloverFieldToXOffsetMapping.clear();
 		cloverFieldToYOffsetMapping.clear();
+		templateCellsToCopy.clear();
 		minRecordFieldYOffset = 0;
 
 		List<DataFieldMetadata> usedDataFields = new ArrayList<DataFieldMetadata>();
+		Map<Integer,Integer> templateColumnsFieldCount = new HashMap<Integer,Integer>();
 		
 		LinkedHashMap<String, DataFieldMetadata> cloverFields = new LinkedHashMap<String, DataFieldMetadata>();
 		for (DataFieldMetadata dataField : metadata.getFields()) {
@@ -456,19 +531,61 @@ public class SpreadsheetFormatter implements Formatter {
 				
 				if (cloverField != XLSMapping.UNDEFINED) {
 					usedDataFields.add(metadata.getField(cloverField));
-					for (int x = getX1fromRange(range); x<=getX2fromRange(range); ++x) {
-						xToCloverFieldMapping.put(x, cloverField);
-					}
 					
-					int recordFieldXOffset = getX1fromRange(range) - firstRecordBelowHeaderX; //x coordinate minus x-indentation
+					headerRangePositionToCloverFieldMapping.put(new CellPosition(getX1fromRange(range), getY1fromRange(range)), cloverField);
+					int recordFieldX = getX1fromRange(range);
+					int recordFieldXOffset = recordFieldX - firstRecordXYRange.x1; //x coordinate minus x-indentation
 					cloverFieldToXOffsetMapping.put(cloverField, recordFieldXOffset);
 					int headerBottomPlusSkip = getY2fromRange(range) + group.getSkip();
-					int recordFieldYOffset = headerBottomPlusSkip - firstRecordBelowHeaderY; //y coordinate of cell under header of this column minus y bound to the entire header
+					int recordFieldYOffset = (headerBottomPlusSkip + 1) - firstRecordXYRange.y2; //y coordinate of cell under header of this column minus y bound to the entire header
 					cloverFieldToYOffsetMapping.put(cloverField, recordFieldYOffset);
 					minRecordFieldYOffset = minimum(minRecordFieldYOffset, recordFieldYOffset);
+					templateCellsToCopy.add(new RelativeCellPosition(recordFieldXOffset, recordFieldYOffset));
+					Integer templateColumnFieldCount = templateColumnsFieldCount.get(recordFieldX);
+					if (templateColumnFieldCount==null) {
+						templateColumnFieldCount = 0;
+					}
+					templateColumnsFieldCount.put(recordFieldX, templateColumnFieldCount+1);
 				}
 			}
 		}
+		
+		for (Integer cloverFieldIndex : cloverFieldToYOffsetMapping.keySet()) {
+			Integer yOffset = cloverFieldToYOffsetMapping.get(cloverFieldIndex);
+			Integer xOffset = cloverFieldToXOffsetMapping.get(cloverFieldIndex);
+			Integer currentYOffsetMinimum = xOffsetToMinimalYOffset.get(xOffset);
+			if (currentYOffsetMinimum==null || currentYOffsetMinimum > yOffset ) {
+				xOffsetToMinimalYOffset.put(xOffset, yOffset);
+			}
+		}
+		
+		int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines+1;
+		int defaultTemplateEndY   = defaultTemplateStartY + mappingInfo.getStep(); 
+		for (int y=defaultTemplateStartY; y<defaultTemplateEndY; ++y) {
+			int maximalX;
+			if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+				Row row = currentSheetData.sheet.getRow(y);
+				if (row==null) {
+					maximalX=-1;
+				} else {
+					maximalX = currentSheetData.getLastCellNumber(row);
+				}
+			} else {
+				maximalX = currentSheetData.getLastRowNumber();
+			}
+			for (int x=0; x<=maximalX; ++x) {
+				Integer templateColumnFieldCount = templateColumnsFieldCount.get(x);
+				if (templateColumnFieldCount==null) {
+					templateColumnFieldCount=0;
+				}
+				RelativeCellPosition relativePosition = new RelativeCellPosition(x - firstRecordXYRange.x1, y - firstRecordXYRange.y2);
+				if (templateColumnFieldCount<mappingInfo.getStep() && getCellByXY(x, y)!=null && !templateCellsToCopy.contains(relativePosition)) {
+					templateCellsToCopy.add(relativePosition);
+					templateColumnsFieldCount.put(x, templateColumnFieldCount+1);
+				}
+			}
+		}
+
 		
 		cloverFieldToCellStyle.clear();
 		mappingInitialized = true;
@@ -729,8 +846,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private CellStyle prepareCellStyle(DataFieldMetadata fieldMetadata, Cell cell) {
 		Cell templateCell = null;
 		if (insert) {
-			int x = headerXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
-			int y = currentSheetData.getTemplateCopiedRegionY1() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
+			int x = firstRecordXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldMetadata.getNumber());
+			int y = currentSheetData.getTemplateCopiedRegionY2() + cloverFieldToYOffsetMapping.get(fieldMetadata.getNumber());
 			Sheet templateSheet = sheetNameToSheetDataMap.get(templateSheetName).sheet;
 			templateCell = getCellByXY(templateSheet, x, y);
 		}
@@ -841,7 +958,7 @@ public class SpreadsheetFormatter implements Formatter {
 
 	private void createEmptyRowsForHeaderOnLeft() {
 		int firstRowToCreateNumber = currentSheetData.sheet.getLastRowNum()+1;
-		int lastRowToCreateNumber = headerXYRange.y2;
+		int lastRowToCreateNumber = translateXYtoRowNumber(firstRecordXYRange.x2, firstRecordXYRange.y2);
 		for (int i=firstRowToCreateNumber; i<lastRowToCreateNumber; ++i) {
 			currentSheetData.sheet.createRow(i);
 		}
@@ -906,34 +1023,29 @@ public class SpreadsheetFormatter implements Formatter {
 			initMapping();
 		}
 		
-		if (append) {
-			currentSheetData.setCurrentY(currentSheetData.getLastLineNumber(mappingInfo.getOrientation()));
-		} else {
-			if (mappingInfo.isWriteHeader()) {
-				currentSheetData.setCurrentY(headerXYRange.y2);
-			} else {
-				currentSheetData.setCurrentY(-1);
-			}
-		}
 		currentSheetData.setFirstFooterLineIndex(initialFirstFooterLineIndex);
-		currentSheetData.setTemplateCopiedRegionY1(initialTemplateCopiedRegionY1);
+		currentSheetData.setTemplateCopiedRegionY2(initialTemplateCopiedRegionY2);
 		
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
 				writeSheetHeader();
+				currentSheetData.setCurrentY(headerXYRange.y2 + skipAfterHeaderLines);
 			} else {
 				createInitialEmptyLines();
+				currentSheetData.setCurrentY(-1);
 			}
 		} else {
 			createInitialEmptyLines();
 			// check that appending does not overwrite anything
 			if (append) {
 				appendEmptyLinesToAvoidDataRewritting();
-			}
-			// check that insertion is not stopped by a missing rows at the end of file
-			int currentLastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
-			if (insert && currentSheetData.getFirstFooterLineIndex() > (currentLastLineNumber+1)) {
-				appendEmptyLines(currentSheetData.getFirstFooterLineIndex() - (currentLastLineNumber+1));
+				currentSheetData.setCurrentY(currentSheetData.getLastLineNumber(mappingInfo.getOrientation()));
+			} else {
+				// check that insertion is not stopped by a missing rows at the end of file
+				int currentLastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
+				if (insert && currentSheetData.getFirstFooterLineIndex() > (currentLastLineNumber+1)) {
+					appendEmptyLines(currentSheetData.getFirstFooterLineIndex() - (currentLastLineNumber+1));
+				}
 			}
 		}
 
@@ -945,10 +1057,10 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void appendEmptyLinesToAvoidDataRewritting() {
 		int linesToAppend = 0; //a number of empty rows needed to append in order to avoid rewritting existing data
-		for (int x=headerXYRange.x1; x<=headerXYRange.x2; ++x) {
-			Integer fieldIndex = xToCloverFieldMapping.get(x);
-			if (fieldIndex!=null) {
+//		for (int x=headerXYRange.x1; x<=headerXYRange.x2; ++x) {
+		for (Integer fieldIndex : cloverFieldToYOffsetMapping.keySet()) {
 				Integer yOffset = cloverFieldToYOffsetMapping.get(fieldIndex);
+				int x = firstRecordXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldIndex);
 				if (yOffset < 0) {
 					for (int yDelta=-1; yDelta >= yOffset; --yDelta) {
 						int currentLastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
@@ -958,10 +1070,8 @@ public class SpreadsheetFormatter implements Formatter {
 						}
 					}
 				}
-			}
 		}
 		appendEmptyLines(linesToAppend);
-		currentSheetData.setCurrentY(currentSheetData.getCurrentY() + linesToAppend);
 	}
 	
 //	private void chooseSelectedOrDefaultSheet() {
@@ -1134,6 +1244,19 @@ public class SpreadsheetFormatter implements Formatter {
 		return createCell(rowNumber, colNumber);
 	}
 	
+	private void swapCells(int sourceX, int sourceY, int targetX, int targetY) {
+		Cell sourceCell = getCellByXY(sourceX, sourceY);
+		Cell targetCell = getCellByXY(targetX, targetY);
+		if (sourceCell==null) {
+			sourceCell = createCellXY(sourceX, sourceY);
+		}
+		if (targetCell==null) {
+			targetCell = createCellXY(targetX, targetY);
+		}
+		
+		swapCells(sourceCell, targetCell);
+	}
+	
 	private void copyCell(int sourceX, int sourceY, int targetX, int targetY) {
 		Cell sourceCell = getCellByXY(sourceX, sourceY);
 		Cell targetCell = getCellByXY(targetX, targetY);
@@ -1204,7 +1327,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void writeSheetHeader() {
 
 		if (!append && !insert) {
-			createRegion(0, 0, headerRowIndent + headerRowCount-1, headerColumnIndent + headerColumnCount-1);
+			createRegion(0, 0, translateXYtoRowNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines), translateXYtoColumnNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines));
 			boolean boldStyleFound = false;
 			short boldStyle = 0;
 			
@@ -1214,7 +1337,7 @@ public class SpreadsheetFormatter implements Formatter {
 						currentSheetData.sheet.addMergedRegion(new CellRangeAddress(range.getRowStart(), range.getRowEnd(), range.getColumnStart(), range.getColumnEnd()));
 					}
 					String dataLabel;
-					Integer cloverField = getCloverFieldByX1(range);
+					Integer cloverField = getCloverFieldByHeaderX1andY1(range);
 					if (cloverField!=null) {
 						dataLabel = metadata.getField(cloverField).getLabel();
 						if (dataLabel==null) {
@@ -1241,7 +1364,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	private void insertEmptyOrPreserveRows(int index, int rowCount) {
-		int columnsToCreate = headerColumnIndent + headerColumnCount;
+		int columnsToCreate = translateXYtoColumnNumber(firstRecordXYRange.x2, firstRecordXYRange.y2);
 		for (int i = 0; i < rowCount; ++i) {
 			int rowIndex = index + i;
 			Row row = currentSheetData.sheet.getRow(rowIndex);
@@ -1279,120 +1402,102 @@ public class SpreadsheetFormatter implements Formatter {
 	void insertEmptyOrTemplateLines(int index, int lineCount) {
 		
 		if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
-			int lastLineNum = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
-			if (index <= lastLineNum) {
-				currentSheetData.sheet.shiftRows(index, lastLineNum, lineCount);
-				currentSheetData.setTemplateCopiedRegionY1(currentSheetData.getTemplateCopiedRegionY1() + lineCount);
-			}
-
-			
-			int defaultColumnsToCreate = headerXYRange.x2+1;
-			for (int i = 0; i < lineCount; ++i) {
-				int newRowIndex = index + i;
-				Row row = currentSheetData.sheet.getRow(newRowIndex);
-				if (row == null) {
-					row = currentSheetData.sheet.createRow(newRowIndex);
-				}
-				
-				Row templateRow = currentSheetData.sheet.getRow(currentSheetData.getTemplateCopiedRegionY1() + i);
-				if (insert && templateRow!=null) {
-					
-					// copy from a template row
-					for (int j = 0; j < templateRow.getLastCellNum(); ++j) {
-						Cell templateCell = findTemplateCell(j);
-						if (templateCell != null) {
-							Cell cell = currentSheetData.createCellAndRefreshLastColumnNumber(row, j); 
-							copyCell(templateCell, cell);
-						}
-					}
-				} else {
-					//or create an empty row of default width
-					for (int j=0; j<defaultColumnsToCreate; ++j) {
-						currentSheetData.createCellAndRefreshLastColumnNumber(row, j);
-					}
-				}
-			}
-			if (minRecordFieldYOffset<0) {
-				for (int x=headerXYRange.x1; x<headerXYRange.x2; ++x) {
-					Integer cloverFieldIndex = xToCloverFieldMapping.get(x);
-					if (cloverFieldIndex!=null) {
-						Integer yOffset = cloverFieldToYOffsetMapping.get(cloverFieldIndex);
-						if (yOffset!=null && yOffset<0) {
-							for (int yDelta=-1; yDelta>=yOffset; --yDelta) {
-								copyCell(x, index+yDelta, x, index+yDelta+lineCount);
-							}
-						}
-						
-					}
-				}
-			}
-
+			shiftRows(currentSheetData, index, lineCount);
 		}
 		else {
 			shiftColumns(currentSheetData, index, lineCount);
-			if (insert) {
-				for (int i = 0; i < lineCount; ++i) {
-					for (int x=0; x<=currentSheetData.getLastRowNumber(); ++x) {
-						int lineY = index + i;
-						Cell cell = findCellOnLine(lineY, x);
-						if (cell!=null) {
-							Cell templateCell = findTemplateCell(x);
-							if (templateCell != null) {
-								copyCell(templateCell, cell);
-							}
-						}
-					}
-				}
-			}
-			
 		}
+		int lastRecordLine = index + lineCount - 1;
+		for (RelativeCellPosition relativeCellPosition : templateCellsToCopy) {
+			int templateCellX = firstRecordXYRange.x1 + relativeCellPosition.relativeX;
+			int templateCellY = currentSheetData.getTemplateCopiedRegionY2() + relativeCellPosition.relativeY;
+			int recordCellX = firstRecordXYRange.x1 + relativeCellPosition.relativeX;
+			int recordCellY = lastRecordLine + relativeCellPosition.relativeY;
+			copyCell(templateCellX, templateCellY, recordCellX, recordCellY);
+		}
+//			for (int j = 0; i < currentSheetData.getLastColumnNumber(i))
+//			for (Integer cloverFieldIndex : cloverFieldToYOffsetMapping.keySet()) {
+//				int lineY = index + i;
+//				Cell cell = findCellOnLine(lineY, cloverFieldIndex);
+//				if (cell != null) {
+//					Cell templateCell = findTemplateCell(cloverFieldIndex);
+//					if (templateCell != null) {
+//						copyCell(templateCell, cell);
+//					}
+//				}
+//			}
 		
 	}
 
 	/**
-	 * @param x
+	 * @param index
+	 * @param lineCount
 	 */
-	private Cell findTemplateCell(int x) {
-		Cell templateCell = null;
-		Integer cloverField = xToCloverFieldMapping.get(x);
-		if (cloverField!=null) {
-			Integer yOffset = cloverFieldToYOffsetMapping.get(cloverField);
-			if (yOffset!=null) {
-				templateCell = getCellByXY(x, currentSheetData.getTemplateCopiedRegionY1() + yOffset);
+	private void shiftRows(SheetData sheetData, int index, int lineCount) {
+		int lastLineNum = sheetData.getLastLineNumber(mappingInfo.getOrientation());
+		if (index <= lastLineNum) {
+			sheetData.sheet.shiftRows(index, lastLineNum, lineCount);
+			sheetData.setTemplateCopiedRegionY2(sheetData.getTemplateCopiedRegionY2() + lineCount);
+		}
+		for (int i = 0; i < lineCount; ++i) {
+			int newRowIndex = index + i;
+			Row row = sheetData.sheet.getRow(newRowIndex);
+			if (row == null) {
+				row = sheetData.sheet.createRow(newRowIndex);
+			}
+			for (int j = 0; j <=firstRecordXYRange.x2; ++j) {
+				sheetData.createCellAndRefreshLastColumnNumber(row, j);
 			}
 		}
-		return templateCell;
-	}
-	
-	private Integer findCellYOnLine(int lineY, int x) {
-		Integer dataFieldIndex = xToCloverFieldMapping.get(x);
-		if (dataFieldIndex!=null) {
-			DataFieldMetadata dataFieldMetadata = metadata.getField(dataFieldIndex);
-			Integer yOffset = cloverFieldToYOffsetMapping.get(dataFieldMetadata.getNumber());
-			if (yOffset!=null) {
-				return (lineY + yOffset); 
+		if (minRecordFieldYOffset<0) {
+			int lastRecordLine = index + lineCount - 1;
+			for (Entry<Integer, Integer> entry : xOffsetToMinimalYOffset.entrySet()) {
+				int x = firstRecordXYRange.x1 + entry.getKey();
+				int yOffset = entry.getValue();
+				for (int yDelta = 0; yDelta < lineCount; ++yDelta) {
+					swapCells(x, lastRecordLine, x, lastRecordLine + yDelta+yOffset);
+				}
 			}
 		}
-		return null;
-		
 	}
 	
-	private Cell findCellOnLine(int lineY, int x) {
-		Integer cellY = findCellYOnLine(lineY, x);
-		if (cellY!=null) {
-			return getCellByXY(x, cellY);
-		}
-		return null;
-	}
+//	private Integer findCellYOnLine(int lineY, int cloverFieldIndex) {
+//		Integer yOffset = cloverFieldToYOffsetMapping.get(cloverFieldIndex);
+//		if (yOffset != null) {
+//			return (lineY + yOffset);
+//		}
+//		return null;
+//		
+//	}
+//
+//	
+//	private Integer findCellX(int cloverFieldIndex) {
+//		Integer xOffset = cloverFieldToXOffsetMapping.get(cloverFieldIndex);
+//		if (xOffset != null) {
+//			return (firstRecordXYRange.x1 + xOffset);
+//		}
+//		return null;
+//		
+//	}
+//
+//	
+//	private Cell findCellOnLine(int lineY, int cloverFieldIndex) {
+//		Integer cellY = findCellYOnLine(lineY, cloverFieldIndex);
+//		Integer cellX = findCellX(cloverFieldIndex);
+//		if (cellY!=null && cellX!=null) {
+//			return getCellByXY(cellX, cellY);
+//		}
+//		return null;
+//	}
 	
 	private CellPosition createNextRecordRegion() {
  			int linesToCreate = mappingInfo.getStep();
 			int recordOffsetY = currentSheetData.getCurrentY() + linesToCreate;
-			int recordOffsetX = headerXYRange.x1;
+			int recordOffsetX = firstRecordXYRange.x1;
 			if (insert) {
 				int firstFooterLineIndex = currentSheetData.getFirstFooterLineIndex();
 				insertEmptyOrTemplateLines(firstFooterLineIndex, linesToCreate);
-				recordOffsetY = firstFooterLineIndex;
+				recordOffsetY = firstFooterLineIndex + linesToCreate - 1;
 				currentSheetData.setFirstFooterLineIndex(firstFooterLineIndex + linesToCreate);
 			} else {
 				insertEmptyOrPreserveLines(currentSheetData.getCurrentY()+1, linesToCreate);
@@ -1423,17 +1528,17 @@ public class SpreadsheetFormatter implements Formatter {
 				Cell cell = getCellByXY(cellX, cellY);
 				if (cell==null) { //it may happen that existing rows with no data are read from XLS(X) file so that they contain no cells
 					int lastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
-					if (cellX<=headerXYRange.x2 && cellY<=lastLineNumber) {
+					if (cellX<=firstRecordXYRange.x2 && cellY<=lastLineNumber) {
 						cell = createCellXY(cellX, cellY);
 					} else {
 						throw new IllegalStateException("Unexpectedly not found a cell for a new record at coordinates: [X: " + cellX + ", Y:" + cellY + "]");
 					}
 				}
-				setCellValue(cell, dataField);
-				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
-				if (cellStyle!=null) {
-					cell.setCellStyle(cellStyle);
-				}
+//				setCellValue(cell, dataField);
+//				CellStyle cellStyle = takeCellStyleOrPrepareCellStyle(dataField.getMetadata(), cell);
+//				if (cellStyle!=null) {
+//					cell.setCellStyle(cellStyle);
+//				}
 			}
 			
 		}
@@ -1554,20 +1659,17 @@ public class SpreadsheetFormatter implements Formatter {
 			if (lastColumnNumber < index) {
 				appendEmptyLines(index - lastColumnNumber);
 			} else {
+				Integer minimalYOffset = xOffsetToMinimalYOffset.get(x-firstRecordXYRange.x1);
+				if (minimalYOffset == null) {
+					minimalYOffset = 0;
+				}
+				int cellY = index + minimalYOffset;
 				if (movementSize > 0) {
-					for (int movementIndex = lastColumnNumber; movementIndex >= index; --movementIndex) {
-						Integer cellY = findCellYOnLine(movementIndex, x);
-						if (cellY == null) {
-							cellY = movementIndex;
-						}
-						swapCells(sheetData, row, cellY, cellY + movementSize);
+					for (int movementIndex = lastColumnNumber; movementIndex >= cellY; --movementIndex) {
+						swapCells(sheetData, row, movementIndex, movementIndex + movementSize);
 					}
 				} else {
-					for (int movementIndex = index; movementIndex <= lastColumnNumber; ++movementIndex) {
-						Integer cellY = findCellYOnLine(movementIndex, x);
-						if (cellY==null) {
-							cellY=movementIndex;
-						}
+					for (int movementIndex = cellY; movementIndex <= lastColumnNumber; ++movementIndex) {
 						swapCells(sheetData, row, cellY, cellY + movementSize);
 					}
 				}
@@ -1582,20 +1684,28 @@ public class SpreadsheetFormatter implements Formatter {
 		if (insert & templateWorkbook!=null) {
 			if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
 				int deletedRows = 0;
-				for (int i=0; i<mappingInfo.getStep(); ++i) {
-					Row templateRowToRemove = sheetData.sheet.getRow(sheetData.getTemplateCopiedRegionY1()+i);
-					if (templateRowToRemove!=null) {
-						sheetData.sheet.removeRow(templateRowToRemove);
-						deletedRows++;
+//				for (int i=0; i<mappingInfo.getStep(); ++i) {
+//					Row templateRowToRemove = sheetData.sheet.getRow(sheetData.getTemplateCopiedRegionY2()+i);
+//					if (templateRowToRemove!=null) {
+//						sheetData.sheet.removeRow(templateRowToRemove);
+//						deletedRows++;
+//					}
+//				}
+//				int rowsToShiftUpStart = sheetData.getTemplateCopiedRegionY2()+1;
+//				int rowsToShiftUpEnd = sheetData.getLastRowNumber();
+//				if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
+//					sheetData.sheet.shiftRows(sheetData.getTemplateCopiedRegionY2()+1, sheetData.getLastRowNumber(), -deletedRows);
+//				}
+				int lastRowIndex = sheetData.getLastRowNumber();
+				shiftRows(sheetData, sheetData.getTemplateCopiedRegionY2()+1, -mappingInfo.getStep());
+				for (int rowToDeleteIndex = lastRowIndex; rowToDeleteIndex > lastRowIndex-mappingInfo.getStep(); --rowToDeleteIndex) {
+					Row row = sheetData.sheet.getRow(rowToDeleteIndex);
+					if (row!=null) {
+						sheetData.sheet.removeRow(row);
 					}
 				}
-				int rowsToShiftUpStart = sheetData.getTemplateCopiedRegionY1()+1;
-				int rowsToShiftUpEnd = sheetData.getLastRowNumber();
-				if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
-					sheetData.sheet.shiftRows(sheetData.getTemplateCopiedRegionY1()+1, sheetData.getLastRowNumber(), -deletedRows);
-				}
 			} else {
-				shiftColumns(sheetData, sheetData.getTemplateCopiedRegionY1(), -mappingInfo.getStep());
+				shiftColumns(sheetData, sheetData.getTemplateCopiedRegionY2()+1, -mappingInfo.getStep());
 			}
 		}
 	}
@@ -1604,12 +1714,11 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @param sheetData
 	 */
 	private void autosizeColumns(Sheet sheet) {
-		if (headerXYRange != null && mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) { // mapping initialized at least
-			for (int x = headerXYRange.x1; x <= headerXYRange.x2; ++x) {
+		if (firstRecordXYRange != null && mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) { // mapping initialized at least
+			for (Integer cloverFieldIndex : cloverFieldToXOffsetMapping.keySet()) {
+				int x = firstRecordXYRange.x1 + cloverFieldToXOffsetMapping.get(cloverFieldIndex);
 				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-					if (xToCloverFieldMapping.get(x) != null) {
-						sheet.autoSizeColumn(x);
-					}
+					sheet.autoSizeColumn(x);
 				}
 			}
 		}
@@ -1736,30 +1845,30 @@ public class SpreadsheetFormatter implements Formatter {
 	/**
 	 * A structure used to save states when multiple sheet writing is enabled.
 	 *
-	 * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
+	 * @author Pavel Simecek 
 	 *
-	 * @version 30th January 2009
-	 * @since 30th January 2009
 	 */
 	private static final class SheetData {
 
+		//TODO: unpublish sheet
+		
 		/** the sheet affected */
-		private final Sheet sheet;
+		public final Sheet sheet;
 		/** the current row within the sheet */
 		private int currentY;
 		private int firstFooterLineIndex;
-		private int templateCopiedRegionY1;
+		private int templateCopiedRegionY2;
 		
 		final int COLUMN_NUMBER_NOT_INITIALIZED = Integer.MIN_VALUE; 
 		final int NO_COLUMN = -1; 
 		private int lastColumnNumber = COLUMN_NUMBER_NOT_INITIALIZED;
 		private Map<Integer, Integer> lastCellNumberInRow = new HashMap<Integer, Integer>();
 
-		public SheetData(Sheet sheet, int currentY, int firstFooterLineIndex, int templateCopiedRegionY1) {
+		public SheetData(Sheet sheet, int currentY, int firstFooterLineIndex, int templateCopiedRegionY2) {
 			this.sheet = sheet;
 			this.currentY = currentY;
 			this.firstFooterLineIndex = firstFooterLineIndex;
-			this.templateCopiedRegionY1 = templateCopiedRegionY1;
+			this.templateCopiedRegionY2 = templateCopiedRegionY2;
 		}
 
 		public int getCurrentY() {
@@ -1778,12 +1887,12 @@ public class SpreadsheetFormatter implements Formatter {
 			this.firstFooterLineIndex = firstFooterLineIndex;
 		}
 
-		public int getTemplateCopiedRegionY1() {
-			return templateCopiedRegionY1;
+		public int getTemplateCopiedRegionY2() {
+			return templateCopiedRegionY2;
 		}
 
-		public void setTemplateCopiedRegionY1(int templateCopiedRegionY1) {
-			this.templateCopiedRegionY1 = templateCopiedRegionY1;
+		public void setTemplateCopiedRegionY2(int templateCopiedRegionY1) {
+			this.templateCopiedRegionY2 = templateCopiedRegionY1;
 		}
 
 		private int initializeLastCellNumber(Row row) {
