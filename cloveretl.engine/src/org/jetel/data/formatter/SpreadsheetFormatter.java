@@ -211,7 +211,6 @@ public class SpreadsheetFormatter implements Formatter {
 
 	private XYRange headerXYRange;
 	private XYRange firstRecordXYRange;
-	private int skipAfterHeaderLines;
 	private String templateSheetName;
 	private int initialFirstFooterLineIndex;
 	private int initialTemplateCopiedRegionY2;
@@ -442,16 +441,12 @@ public class SpreadsheetFormatter implements Formatter {
 		if (minX==Integer.MAX_VALUE || minY==Integer.MAX_VALUE || minYIncludingSkip==Integer.MAX_VALUE) {
 			headerXYRange = null;
 			firstRecordXYRange = null;
-			skipAfterHeaderLines = 0;
 		} else {
-			int recordHeight = maxYIncludingSkip - minYIncludingSkip + 1;
-			int recordPartOnHeaderLinesHeight = maxY - minYIncludingSkip + 1;
-			skipAfterHeaderLines = recordHeight - recordPartOnHeaderLinesHeight - mappingInfo.getStep();
-			if (skipAfterHeaderLines<0) {
-				skipAfterHeaderLines=0;
-			}
 			headerXYRange = new XYRange(minX, minY, maxX, maxY);
+			
 			int firstRecordY1 = minYIncludingSkip;
+			//When a step is really high (higher than a record itself), it is desired to define a
+			//bottom of the first record so that empty lines complement the step.
 			int firstRecordY2 = maximum(maxYIncludingSkip, firstRecordY1 + mappingInfo.getStep()-1);
 			firstRecordXYRange = new XYRange(minX, firstRecordY1, maxX, firstRecordY2);
 		}
@@ -555,7 +550,8 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 		
 		if (templateWorkbook!=null && insert) {
-			int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines+1; //by deafult, template lines are expected right after header
+			//by default, template lines are expected to be at last "step" lines of the first record (fits in most realistic cases with straight-lined records)
+			int defaultTemplateStartY = firstRecordXYRange.y2-mappingInfo.getStep()+1; 
 			int defaultTemplateEndY   = defaultTemplateStartY + mappingInfo.getStep(); 
 			for (int y=defaultTemplateStartY; y<defaultTemplateEndY; ++y) {
 				int maximalX;
@@ -1029,7 +1025,7 @@ public class SpreadsheetFormatter implements Formatter {
 			} else {
 				createHeaderRegion();
 			}
-			currentSheetData.setCurrentY(headerXYRange.y2 + skipAfterHeaderLines);
+			currentSheetData.setCurrentY(firstRecordXYRange.y2-mappingInfo.getStep());
 		} else {
 			createInitialEmptyLines();
 			// check that appending does not overwrite anything
@@ -1355,7 +1351,10 @@ public class SpreadsheetFormatter implements Formatter {
 	 * 
 	 */
 	private void createHeaderRegion() {
-		createRegion(0, 0, translateXYtoRowNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines), translateXYtoColumnNumber(headerXYRange.x2, headerXYRange.y2 + skipAfterHeaderLines));
+		int headerY2PlusSkip = maximum(headerXYRange.y2, firstRecordXYRange.y2 - mappingInfo.getStep());
+		int rows = translateXYtoRowNumber(headerXYRange.x2, headerY2PlusSkip);
+		int columns = translateXYtoColumnNumber(headerXYRange.x2, headerY2PlusSkip);
+		createRegion(0, 0, rows, columns);
 	}
 
 	private void insertEmptyOrPreserveLines(int index, int lineCount) {
@@ -1519,15 +1518,15 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		takeSheetOrPrepareSheet(record);
 		
-		CellPosition cellOffset = createNextRecordRegion();
+		CellPosition recordOffset = createNextRecordRegion();
 		for (int i=0; i<record.getNumFields(); ++i) {
 			DataField dataField = record.getField(i);
-			Integer recordX = cloverFieldToXOffsetMapping.get(dataField.getMetadata().getNumber());
-			Integer recordY = cloverFieldToYOffsetMapping.get(dataField.getMetadata().getNumber());
-			if (recordX!=null && recordY!=null) {
+			Integer cellInRecordXOffset = cloverFieldToXOffsetMapping.get(dataField.getMetadata().getNumber());
+			Integer cellInRecordYOffset = cloverFieldToYOffsetMapping.get(dataField.getMetadata().getNumber());
+			if (cellInRecordXOffset!=null && cellInRecordYOffset!=null) {
 				//normally either cellOffset.x or cellOffset.y should be zero depending on orientation
-				int cellX = recordX + cellOffset.x;
-				int cellY = recordY + cellOffset.y;
+				int cellX = cellInRecordXOffset + recordOffset.x;
+				int cellY = cellInRecordYOffset + recordOffset.y;
 				Cell cell = getCellByXY(cellX, cellY);
 				if (cell==null) { //it may happen that existing rows with no data are read from XLS(X) file so that they contain no cells
 					int lastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
@@ -1686,19 +1685,6 @@ public class SpreadsheetFormatter implements Formatter {
 	private void removeTemplateLinesIfNeeded(SheetData sheetData) {
 		if (insert & templateWorkbook!=null) {
 			if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
-				int deletedRows = 0;
-//				for (int i=0; i<mappingInfo.getStep(); ++i) {
-//					Row templateRowToRemove = sheetData.sheet.getRow(sheetData.getTemplateCopiedRegionY2()+i);
-//					if (templateRowToRemove!=null) {
-//						sheetData.sheet.removeRow(templateRowToRemove);
-//						deletedRows++;
-//					}
-//				}
-//				int rowsToShiftUpStart = sheetData.getTemplateCopiedRegionY2()+1;
-//				int rowsToShiftUpEnd = sheetData.getLastRowNumber();
-//				if (rowsToShiftUpStart <= rowsToShiftUpEnd) {
-//					sheetData.sheet.shiftRows(sheetData.getTemplateCopiedRegionY2()+1, sheetData.getLastRowNumber(), -deletedRows);
-//				}
 				int lastRowIndex = sheetData.getLastRowNumber();
 				shiftRows(sheetData, sheetData.getTemplateCopiedRegionY2()+1, -mappingInfo.getStep());
 				for (int rowToDeleteIndex = lastRowIndex; rowToDeleteIndex > lastRowIndex-mappingInfo.getStep(); --rowToDeleteIndex) {
