@@ -68,8 +68,6 @@ import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
-import com.googlecode.sardine.model.Getlastmodified;
-
 /**
  * @author psimecek & lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
