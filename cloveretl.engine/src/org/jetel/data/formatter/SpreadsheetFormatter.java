@@ -554,29 +554,31 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		
-		int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines;
-		int defaultTemplateEndY   = defaultTemplateStartY + mappingInfo.getStep(); 
-		for (int y=defaultTemplateStartY; y<defaultTemplateEndY; ++y) {
-			int maximalX;
-			if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
-				Row row = currentSheetData.sheet.getRow(y);
-				if (row==null) {
-					maximalX=-1;
+		if (templateWorkbook!=null && insert) {
+			int defaultTemplateStartY = headerXYRange.y2+skipAfterHeaderLines+1; //by deafult, template lines are expected right after header
+			int defaultTemplateEndY   = defaultTemplateStartY + mappingInfo.getStep(); 
+			for (int y=defaultTemplateStartY; y<defaultTemplateEndY; ++y) {
+				int maximalX;
+				if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+					Row row = currentSheetData.sheet.getRow(y);
+					if (row==null) {
+						maximalX=-1;
+					} else {
+						maximalX = currentSheetData.getLastCellNumber(row);
+					}
 				} else {
-					maximalX = currentSheetData.getLastCellNumber(row);
+					maximalX = currentSheetData.getLastRowNumber();
 				}
-			} else {
-				maximalX = currentSheetData.getLastRowNumber();
-			}
-			for (int x=0; x<=maximalX; ++x) {
-				Integer templateColumnFieldCount = templateColumnsFieldCount.get(x);
-				if (templateColumnFieldCount==null) {
-					templateColumnFieldCount=0;
-				}
-				RelativeCellPosition relativePosition = new RelativeCellPosition(x - firstRecordXYRange.x1, y - firstRecordXYRange.y2);
-				if (templateColumnFieldCount<mappingInfo.getStep() && getCellByXY(x, y)!=null && !templateCellsToCopy.contains(relativePosition)) {
-					templateCellsToCopy.add(relativePosition);
-					templateColumnsFieldCount.put(x, templateColumnFieldCount+1);
+				for (int x=0; x<=maximalX; ++x) {
+					Integer templateColumnFieldCount = templateColumnsFieldCount.get(x);
+					if (templateColumnFieldCount==null) {
+						templateColumnFieldCount=0;
+					}
+					RelativeCellPosition relativePosition = new RelativeCellPosition(x - firstRecordXYRange.x1, y - firstRecordXYRange.y2);
+					if (templateColumnFieldCount<mappingInfo.getStep() && getCellByXY(x, y)!=null && !templateCellsToCopy.contains(relativePosition)) {
+						templateCellsToCopy.add(relativePosition);
+						templateColumnsFieldCount.put(x, templateColumnFieldCount+1);
+					}
 				}
 			}
 		}
