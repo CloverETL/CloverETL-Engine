@@ -54,6 +54,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -367,17 +368,16 @@ public class DataIntersection extends Node {
 					errorLog.write(semiResult.toString());
 				}
 				errorLog.write("\n");
-			}else{
+			} else {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
-				//logger.warn(message);
+				//only in case non empty message given from transformation, the message is printed out
+				if (!StringUtils.isEmpty(transformation.getMessage())) {
+					logger.warn(message);
+				}
 			}
-		}else{
-			if (errorLog != null){
-				errorLog.flush();
-				errorLog.close();
-			}
+		} else {
 			throw new TransformException(message);
 		}
 	}
