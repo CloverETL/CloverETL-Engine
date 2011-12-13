@@ -308,6 +308,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		private int lastColumn = -1;
 
 		private CellBuffers<Record> cellBuffers;
+		private FieldValueToFormatSetter fieldValueToFormatSetter = new FieldValueToFormatSetter();
 
 		public RecordFillingHSSFListener(boolean date1904) {
 			this.date1904 = date1904;
@@ -316,7 +317,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public void init() {
 			currentParseRow = 0;
 			cellBuffers = parent.new CellBuffers<Record>();
-			cellBuffers.init(Record.class, this);
+			cellBuffers.init(Record.class, this, fieldValueToFormatSetter);
 		}
 
 		public void setRequestedSheetIndex(int requestedSheetIndex) {
@@ -335,7 +336,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		public void handleMissingCells(int mappingRow, int first, int last) {
 			int[] mappingPart = parent.mapping[mappingRow];
-			int[] formatsMappingPart = parent.formatsMapping != null ? parent.formatsMapping[mappingRow] : null;
+			int[] formatsMappingPart = parent.formatMapping != null ? parent.formatMapping[mappingRow] : null;
 			for (int i = first + 1; i < last; i++) {
 				setFieldToNull(mappingPart, i);
 				setFieldToNull(formatsMappingPart, i);
@@ -343,14 +344,16 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		}
 
 		private void setFieldToNull(int[] mappingArray, int i) {
-			int cloverFieldIndex;
-			cloverFieldIndex = mappingArray[i];
-			if (cloverFieldIndex != XLSMapping.UNDEFINED) {
-				try {
-					recordToFill.getField(cloverFieldIndex).setNull(true);
-				} catch (BadDataFormatException e) {
-					parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
-							recordToFill, cloverFieldIndex, null, null);
+			if (mappingArray != null) {
+				int cloverFieldIndex;
+				cloverFieldIndex = mappingArray[i];
+				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
+					try {
+						recordToFill.getField(cloverFieldIndex).setNull(true);
+					} catch (BadDataFormatException e) {
+						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
+								recordToFill, cloverFieldIndex, null, null);
+					}
 				}
 			}
 		}
@@ -366,7 +369,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public void finishRecord() {
 			for (int i = currentParseRow; i <= recordEndRow; i++) {
 				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
-				handleMissingCells(i - recordStartRow, lastColumn, parent.formatsMapping[0].length);
+				handleMissingCells(i - recordStartRow, lastColumn, parent.formatMapping[0].length);
 			}
 		}
 
@@ -513,12 +516,19 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			handleMissingCells(shiftedRowIndex, lastColumn, shiftedColumnIndex);
 			lastColumn = shiftedColumnIndex;
 
-			// if record are being skipped, recordToFill is null, therefore we are interested only with buffering
-			if (recordToFill != null && parent.mapping[shiftedRowIndex][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
-				setFieldValue(parent.mapping[shiftedRowIndex][shiftedColumnIndex], cellRecord);
-			} else {
-				cellBuffers.setCellBufferValue(shiftedRowIndex, shiftedColumnIndex, cellRecord);
+			// if records are being skipped, recordToFill is null, therefore we are interested only with buffering
+			cellBuffers.setCellBufferValue(shiftedRowIndex, shiftedColumnIndex, cellRecord);
+			if (recordToFill != null) {
+				if (parent.mapping[shiftedRowIndex][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
+					setFieldValue(parent.mapping[shiftedRowIndex][shiftedColumnIndex], cellRecord);
+				}
+				if (parent.formatMapping != null) {
+					if (parent.formatMapping[shiftedRowIndex][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
+						fieldValueToFormatSetter.setFieldValue(parent.formatMapping[shiftedRowIndex][shiftedColumnIndex], cellRecord);
+					}
+				}
 			}
+		
 		}
 
 		@Override
@@ -666,7 +676,18 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from type " + cellType + " cell"), 
 					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
 		}
+
 		
+		private class FieldValueToFormatSetter implements RecordFieldValueSetter<Record> {
+
+			@Override
+			public void setFieldValue(int cloverFieldIndex, Record cellRecord) {
+				DataField field = recordToFill.getField(cloverFieldIndex);
+				String format = formatter.getFormatString((CellValueRecordInterface) cellRecord);
+				field.fromString(format);
+			}
+		
+		}
 	}
 
 	private static class HeaderHSSFListener implements HSSFListener {
