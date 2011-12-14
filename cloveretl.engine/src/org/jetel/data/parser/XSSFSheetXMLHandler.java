@@ -59,7 +59,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	 * These are the different kinds of cells we support. We keep track of the current one between the start and end.
 	 */
 	enum XSSFDataType {
-		BOOLEAN, ERROR, INLINE_STRING, SST_STRING, NUMBER,
+		BOOLEAN, ERROR, INLINE_STRING, SST_STRING, NUMBER, FORMULA,
 	}
 
 	public static final String CELL_VALUE_TRUE = "TRUE";
@@ -75,7 +75,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	// Set when V start element is seen
 	private boolean vIsOpen;
 	// Set when F start element is seen
-	//private boolean fIsOpen; // TODO remove this and everything concerning formulae
+	private boolean fIsOpen;
 	// Set when an Inline String "is" is seen
 	private boolean isIsOpen;
 	// Set when a header/footer element is seen
@@ -87,11 +87,12 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 
 	// Used to format numeric cell values.
 	private int styleIndex;
+	private boolean formulasNotResults;
 	private String cellRef;
 
 	// Gathers characters as they are seen.
 	private StringBuffer value = new StringBuffer();
-	//private StringBuffer formula = new StringBuffer();
+	private StringBuffer formula = new StringBuffer();
 	private StringBuffer headerFooter = new StringBuffer();
 	
 	private int lastRow = -1;
@@ -155,7 +156,41 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		} else if ("is".equals(name)) {
 			// Inline string outer tag
 			isIsOpen = true;
-		} else if ("oddHeader".equals(name) || "evenHeader".equals(name) || "firstHeader".equals(name) || "firstFooter".equals(name) || "oddFooter".equals(name) || "evenFooter".equals(name)) {
+		} else if ("f".equals(name)) {
+	          // Clear contents cache
+	          formula.setLength(0);
+	          
+	          // Mark us as being a formula if not already
+	          if(nextDataType == XSSFDataType.NUMBER) {
+	             nextDataType = XSSFDataType.FORMULA;
+	          }
+	          
+	          // Decide where to get the formula string from
+	          String type = attributes.getValue("t");
+	          if(type != null && type.equals("shared")) {
+	             // Is it the one that defines the shared, or uses it?
+	             String ref = attributes.getValue("ref");
+	             String si = attributes.getValue("si");
+	             
+	             if(ref != null) {
+	                // This one defines it
+	                // TODO Save it somewhere
+	                fIsOpen = true;
+	             } else {
+	                // This one uses a shared formula
+	                // TODO Retrieve the shared formula and tweak it to 
+	                //  match the current cell
+	                if(formulasNotResults) {
+	                   System.err.println("Warning - shared formulas not yet supported!");
+	                } else {
+	                   // It's a shared formula, so we can't get at the formula string yet
+	                   // However, they don't care about the formula string, so that's ok!
+	                }
+	             }
+	          } else {
+	             fIsOpen = true;
+	          }
+	    } else if ("oddHeader".equals(name) || "evenHeader".equals(name) || "firstHeader".equals(name) || "firstFooter".equals(name) || "oddFooter".equals(name) || "evenFooter".equals(name)) {
 			hfIsOpen = true;
 			// Clear contents cache
 			headerFooter.setLength(0);
@@ -185,6 +220,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 				nextDataType = XSSFDataType.INLINE_STRING;
 			} else if ("s".equals(cellType)) {
 				nextDataType = XSSFDataType.SST_STRING;
+			} else if ("str".equals(cellType)) {
+				nextDataType = XSSFDataType.FORMULA;
 			}
 			
 			if (cellStyleStr != null) {
@@ -215,6 +252,15 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 				thisStr = "ERROR:" + value.toString();
 				cellType = Cell.CELL_TYPE_ERROR;
 				break;
+				
+			case FORMULA:
+                if(formulasNotResults) {
+                   thisStr = formula.toString();
+                } else {
+                   thisStr = value.toString();
+                }
+                cellType = Cell.CELL_TYPE_FORMULA;
+                break;
 
 			case INLINE_STRING:
 				// TODO: Can these ever have formatting on them?
