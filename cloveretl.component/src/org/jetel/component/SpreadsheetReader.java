@@ -490,7 +490,7 @@ public class SpreadsheetReader extends Node {
 						}
 					} else  {
 						if (policyType == PolicyType.STRICT) {
-							LOGGER.error("Error: " + bdfe.getMessage());
+							LOGGER.error("Error: " + bdfe);
 							throw bdfe;
 						} else {
 							errorCount++;
@@ -499,7 +499,7 @@ public class SpreadsheetReader extends Node {
 					if ((policyType == PolicyType.STRICT && errorCount == maxErrorCount) ||
 						(policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount)) {
 							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							LOGGER.error("Error: " + bdfe.getMessage());
+							LOGGER.error("Error: " + bdfe);
 							return Result.ERROR;
 					}
 				}
