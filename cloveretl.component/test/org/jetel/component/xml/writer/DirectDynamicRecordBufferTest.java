@@ -53,10 +53,10 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		record.init();
 		record.reset();
 		
-		for (int iteration = 0; iteration < 3; iteration++) {
+//		for (int iteration = 0; iteration < 3; iteration++) {
 		
 			List<IndexKey> positions = new ArrayList<IndexKey>();
-//			for (int innerIteration = 0; innerIteration < 3; innerIteration++) {
+			for (int innerIteration = 0; innerIteration < 3; innerIteration++) {
 				for (int i = 0; i < NUM_RECORDS; i++) {
 					DynamicRecordBuffer1Test.populateDataRecord(record, i, true);
 					IndexKey indexKey = buffer.writeRaw(record);
@@ -73,11 +73,11 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 						DynamicRecordBuffer1Test.checkDataRecord(record, i, true);
 					}
 				}
-//			}
+			}
 			
 			positions.clear();
 			buffer.clear();
-		}
+//		}
 		
 		buffer.close();
 	}
