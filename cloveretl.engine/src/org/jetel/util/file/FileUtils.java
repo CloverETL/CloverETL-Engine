@@ -110,6 +110,11 @@ public class FileUtils {
 	private static final String FILE_PROTOCOL = "file";
 	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
+	// archive protocol names
+	private static final String TAR_PROTOCOL = "tar";
+	private static final String GZIP_PROTOCOL = "gzip";
+	private static final String ZIP_PROTOCOL = "zip";
+	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
 	private static final Log log = LogFactory.getLog(FileUtils.class);
@@ -1291,7 +1296,16 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public static boolean isServerURL(URL url) throws IOException {
+		
 		return url != null && !url.getProtocol().equals(FILE_PROTOCOL);
+	}
+	
+	public static boolean isArchiveURL(URL url) {
+		String protocol = null;
+		if (url != null) {
+			protocol = url.getProtocol();
+		}
+		return protocol.equals(TAR_PROTOCOL) || protocol.equals(GZIP_PROTOCOL) || protocol.equals(ZIP_PROTOCOL);
 	}
 	
 	/**
