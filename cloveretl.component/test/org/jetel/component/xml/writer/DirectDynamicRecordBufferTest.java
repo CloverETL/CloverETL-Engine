@@ -44,8 +44,8 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 	}
 
 	public void testFirstUsage() throws IOException {
-		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
-		buffer.init();
+//		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
+//		buffer.init();
 		
 		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		
@@ -53,7 +53,9 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		record.init();
 		record.reset();
 		
-//		for (int iteration = 0; iteration < 3; iteration++) {
+		for (int iteration = 0; iteration < 3; iteration++) {
+			DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
+			buffer.init();
 		
 			List<IndexKey> positions = new ArrayList<IndexKey>();
 			for (int innerIteration = 0; innerIteration < 3; innerIteration++) {
@@ -75,11 +77,11 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 				}
 			}
 			
-			positions.clear();
-			buffer.clear();
-//		}
+//			buffer.clear();
+			buffer.close();
+		}
 		
-		buffer.close();
+//		buffer.close();
 	}
 	
 	public void testSecondUsage() throws IOException {
