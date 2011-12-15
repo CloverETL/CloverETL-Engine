@@ -474,11 +474,13 @@ public class SpreadsheetReader extends Node {
 					}
 					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
+					BadDataFormatException lastException = null;
 					if (logging) {
 						if (exceptionHandler == null) {
 							exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
 						}
 						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
+							lastException = bdfe;
 							errorRecord.copyFieldsByName(record);
 							((IntegerDataField) errorRecord.getField(0)).setValue(bdfe.getRecordNumber());
 							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(errorMetadataFields - 4));
@@ -493,13 +495,14 @@ public class SpreadsheetReader extends Node {
 							LOGGER.error("Error: " + bdfe);
 							throw bdfe;
 						} else {
+							lastException = bdfe;
 							errorCount++;
 						}
 					}
 					if ((policyType == PolicyType.STRICT && errorCount == maxErrorCount) ||
 						(policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount)) {
 							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							LOGGER.error("Error: " + bdfe);
+							LOGGER.error("Error: " + lastException);
 							return Result.ERROR;
 					}
 				}
