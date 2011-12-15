@@ -1415,18 +1415,6 @@ public class SpreadsheetFormatter implements Formatter {
 			int recordCellY = lastRecordLine + relativeCellPosition.relativeY;
 			copyCell(templateCellX, templateCellY, recordCellX, recordCellY);
 		}
-//			for (int j = 0; i < currentSheetData.getLastColumnNumber(i))
-//			for (Integer cloverFieldIndex : cloverFieldToYOffsetMapping.keySet()) {
-//				int lineY = index + i;
-//				Cell cell = findCellOnLine(lineY, cloverFieldIndex);
-//				if (cell != null) {
-//					Cell templateCell = findTemplateCell(cloverFieldIndex);
-//					if (templateCell != null) {
-//						copyCell(templateCell, cell);
-//					}
-//				}
-//			}
-		
 	}
 
 	/**
