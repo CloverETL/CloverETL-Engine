@@ -95,7 +95,10 @@ public class StringUtils {
 			// try to be fail-safe to prevent errors caused by missing locales etc.
 			LATIN_TRANSLITERATOR = Transliterator.getInstance("Latin");
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Log logger = LogFactory.getLog(StringUtils.class);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Failed to load transliterator", t);
+			}
 		}
 	}
 	
