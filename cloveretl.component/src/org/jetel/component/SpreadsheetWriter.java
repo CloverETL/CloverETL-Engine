@@ -193,6 +193,7 @@ public class SpreadsheetWriter extends Node {
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionOutFields;
 	private String partitionUnassignedFileName;
+	private LookupTable lookupTable = null;
 
 	private SpreadsheetFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
@@ -418,11 +419,16 @@ public class SpreadsheetWriter extends Node {
 		writer.setNumRecords(recordCount);
 		writer.setRecordsPerFile(recordsPerFile);
 
-		if (partitionKey != null) {
-			LookupTable lookupTable = getGraph().getLookupTable(partition);
+		if (partition != null) {
+			lookupTable = getGraph().getLookupTable(partition);
 			if (lookupTable == null) {
 				throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
 			}
+		} else {
+			lookupTable = null;
+		}
+		
+		if (partitionKey != null) {
 			writer.setLookupTable(lookupTable);
 			writer.setPartitionKeyNames(partitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			writer.setPartitionFileTag(partitionFileTagType);
