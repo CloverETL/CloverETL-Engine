@@ -186,19 +186,19 @@ public class DirectDynamicRecordBuffer {
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-
-		try {
-			if (tmpFileChannel != null) {
-				tmpFileChannel.close();
-			}
-			tmpFile.delete();
-	
-			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tempDirectory != null ? new File(tempDirectory) : null);
-			tmpFile.deleteOnExit();
-			tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
-		} catch (Exception e) {
-			throw new JetelRuntimeException(e);
-		}
+//
+//		try {
+//			if (tmpFileChannel != null) {
+//				tmpFileChannel.close();
+//			}
+//			tmpFile.delete();
+//	
+//			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tempDirectory != null ? new File(tempDirectory) : null);
+//			tmpFile.deleteOnExit();
+//			tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
+//		} catch (Exception e) {
+//			throw new JetelRuntimeException(e);
+//		}
 	}
 	
 	public void reset() {
