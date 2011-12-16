@@ -49,6 +49,7 @@ import org.apache.poi.hssf.record.SSTRecord;
 import org.apache.poi.hssf.record.SharedFormulaRecord;
 import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
@@ -472,9 +473,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 			case FormulaRecord.sid:
 				FormulaRecord frec = (FormulaRecord) record;
-
-				if (Double.isNaN(frec.getValue())) {
-					// Formula result is a string -- which is stored in the next record
+				if (frec.getCachedResultType() == HSSFCell.CELL_TYPE_STRING) {
 					outputNextStringRecord = true;
 					stringFormulaColumnIndex = frec.getColumn();
 				} else {
@@ -567,8 +566,21 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					value = formatter.formatNumberDateCell((NumberRecord) cellRecord);
 					break;
 				case FormulaRecord.sid:
-					value = formatter.formatNumberDateCell((FormulaRecord) cellRecord);
-					break;
+					FormulaRecord frec = (FormulaRecord) cellRecord;
+					switch (frec.getCachedResultType()) {
+					case HSSFCell.CELL_TYPE_NUMERIC:
+						value = formatter.formatNumberDateCell((frec));
+						break;
+					case HSSFCell.CELL_TYPE_BOOLEAN:
+						value = String.valueOf(frec.getCachedBooleanValue());
+						break;
+					case HSSFCell.CELL_TYPE_ERROR:
+						value = String.valueOf(frec.getCachedErrorValue());
+						break;
+					case HSSFCell.CELL_TYPE_BLANK:
+						value = "";
+						break;
+					}
 				case LabelSSTRecord.sid:
 					value = sstRecord.getString(((LabelSSTRecord) cellRecord).getSSTIndex()).getString();
 					break;
@@ -624,6 +636,12 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			case DataFieldMetadata.BOOLEAN_FIELD:
 				if (sid == BoolErrRecord.sid) {
 					field.setValue(((BoolErrRecord) cellRecord).getBooleanValue());
+				} else if (sid == FormulaRecord.sid) {
+					FormulaRecord frec = (FormulaRecord) cellRecord;
+					int resultType = frec.getCachedResultType();
+					if (resultType == HSSFCell.CELL_TYPE_BOOLEAN) {
+						field.setValue(frec.getCachedBooleanValue());
+					}				
 				} else {
 					notifyExceptionHandler(cloverFieldIndex, field, cellRecord, "Boolean");
 				}
@@ -647,8 +665,23 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				break;
 			case FormulaRecord.sid:
 				cellType = "FORMULA";
-				actualValue = formatter.formatNumberDateCell((FormulaRecord) record);
-				break;
+				FormulaRecord frec = (FormulaRecord) record;
+				int fresultType = frec.getCachedResultType();
+				// We don't check for STRING formulas here as these are always "translated" to StringRecord instead
+				switch (fresultType) {
+				case HSSFCell.CELL_TYPE_NUMERIC:
+					actualValue = formatter.formatNumberDateCell(frec);
+					break;
+				case HSSFCell.CELL_TYPE_BOOLEAN:
+					actualValue = String.valueOf(frec.getCachedBooleanValue());
+					break;
+				case HSSFCell.CELL_TYPE_ERROR:
+					actualValue = String.valueOf(frec.getCachedErrorValue());
+					break;
+				case HSSFCell.CELL_TYPE_BLANK:
+					actualValue = "";
+					break;
+				}
 			case LabelSSTRecord.sid:
 				cellType = "STRING";
 				actualValue = sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
@@ -789,9 +822,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 			case FormulaRecord.sid:
 				FormulaRecord frec = (FormulaRecord) record;
-
-				if (Double.isNaN(frec.getValue())) {
-					// Formula result is a string -- this is stored in the next record
+				if (frec.getCachedResultType() == HSSFCell.CELL_TYPE_STRING) {
 					outputNextStringRecord = true;
 					stringFormulaColumnIndex = frec.getColumn();
 				} else {
@@ -843,7 +874,18 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			case NumberRecord.sid:
 				return formatter.formatNumberDateCell((NumberRecord) record);
 			case FormulaRecord.sid:
-				return formatter.formatNumberDateCell((FormulaRecord) record);
+				FormulaRecord frec = (FormulaRecord) record;
+				int fresultType = frec.getCachedResultType();
+				switch (fresultType) {
+				case HSSFCell.CELL_TYPE_NUMERIC:
+					return formatter.formatNumberDateCell(frec);
+				case HSSFCell.CELL_TYPE_BOOLEAN:
+					return String.valueOf(frec.getCachedBooleanValue());
+				case HSSFCell.CELL_TYPE_ERROR:
+					return String.valueOf(frec.getCachedErrorValue());
+				case HSSFCell.CELL_TYPE_BLANK:
+					return "";
+				}				
 			case LabelSSTRecord.sid:
 				return sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
 			case StringRecord.sid:
@@ -949,6 +991,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					}
 					break;
 
+				case StringRecord.sid:
+					// If the previous record was a FormulaRecord of type STRING, the resultant value is stored here.
+					// We need to process the record to see if we expected this record or not.
+					recordToProcess = record;
+					return;
 				case SharedFormulaRecord.sid:
 					// SharedFormulaRecord occurs after the first FormulaRecord of the cell range.
 					// There are probably (but not always) more cell records after this
