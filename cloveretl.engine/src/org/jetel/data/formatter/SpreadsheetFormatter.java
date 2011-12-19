@@ -1047,14 +1047,13 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void appendEmptyLinesToAvoidDataRewritting() {
 		int linesToAppend = 0; //a number of empty rows needed to append in order to avoid rewritting existing data
-//		for (int x=headerXYRange.x1; x<=headerXYRange.x2; ++x) {
 		for (Integer fieldIndex : cloverFieldToYOffsetMapping.keySet()) {
 				Integer yOffset = cloverFieldToYOffsetMapping.get(fieldIndex);
 				int x = firstRecordXYRange.x1 + cloverFieldToXOffsetMapping.get(fieldIndex);
 				if (yOffset < 0) {
 					for (int yDelta=-1; yDelta >= yOffset; --yDelta) {
 						int currentLastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
-						Cell cell = getCellByXY(x, currentLastLineNumber+1 + yDelta);
+						Cell cell = getCellByXY(x, currentLastLineNumber + mappingInfo.getStep() + yDelta);
 						if (cell!=null && !cellIsEmpty(cell)) {
 							linesToAppend = maximum(linesToAppend, Math.abs(yOffset - yDelta)+1);
 						}
