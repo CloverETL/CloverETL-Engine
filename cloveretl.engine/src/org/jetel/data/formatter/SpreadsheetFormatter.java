@@ -284,6 +284,8 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 			}
 		}
+		
+		cloverFieldToCellStyle.clear();
 	}
 
 	private int maximum(int value1, int value2) {
@@ -891,6 +893,7 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		this.outputDataTarget = outputDataTarget;
 		workbookNotFlushed = true;
+		cloverFieldToCellStyle.clear();
 		
 		if (outputDataTarget instanceof Object[]) {
 			URL url = (URL) ((Object[]) outputDataTarget)[0];
