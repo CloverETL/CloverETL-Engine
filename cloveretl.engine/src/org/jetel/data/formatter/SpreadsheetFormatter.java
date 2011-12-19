@@ -988,12 +988,8 @@ public class SpreadsheetFormatter implements Formatter {
 		if (selectedSheetName != null) {
 			newSheet = workbook.getSheet(selectedSheetName);
 		} else if (sheetIndex >= 0) {
-			if (sheetIndex >= workbook.getNumberOfSheets()) {
-				if (workbook.getNumberOfSheets()==0) {
-					throw new JetelRuntimeException("Sheet number cannot be specified when there are not existing sheets");
-				} else {
-					throw new JetelRuntimeException("Sheet index " + sheetIndex + " is bigger than a number of existing sheets (" + workbook.getNumberOfSheets() + ")");
-				}
+			while (workbook.getNumberOfSheets() <= sheetIndex) {
+				workbook.createSheet(); //create enough sheets to make an index valid
 			}
 			newSheet = workbook.getSheetAt(sheetIndex);
 			if (newSheet!=null) {
