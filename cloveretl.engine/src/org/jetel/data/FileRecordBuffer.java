@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -194,6 +196,17 @@ public class FileRecordBuffer {
 		}
 	}
 
+	/**
+	 * @deprecated use {@link #push(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public void push(ByteBuffer data) throws IOException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(data);
+		push(wrappedBuffer);
+		if (wrappedBuffer.buf() != data) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+	}
 
 	/**
 	 *  Checks whether in memory buffer has to be reloaded/flushed
@@ -260,7 +273,19 @@ public class FileRecordBuffer {
 		return data;
 	}
 
-
+	/**
+	 * @deprecated use {@link #shift(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public ByteBuffer shift(ByteBuffer data) throws IOException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(data);
+		CloverBuffer result = shift(wrappedBuffer);
+		if (wrappedBuffer.buf() != data) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result.buf();
+	}
+	
 	/**
 	 *  Reads next record from the buffer but leaves the record there - FIFO order.
 	 *  Subsequent calls to this method returns the same record.	

@@ -505,14 +505,14 @@ public class DynamicLib extends TLFunctionLibrary {
 		return ((Comparable) value1).compareTo(value2);
 	}
 	
-	@TLFunctionAnnotation("Returns the value of a field as a string")
+	@TLFunctionAnnotation("Compares the value of record1.index1 with record2.index2. The values must be comparable. Returns a negative integer, zero, or a positive integer as the first value is less than, equal to, or greater than second value.")
 	public static final int compare(TLFunctionCallContext context, DataRecord record1, int fieldIndex1, DataRecord record2, int fieldIndex2) {
 		Object value1 = getFieldValue(record1, fieldIndex1);
 		Object value2 = getFieldValue(record2, fieldIndex2);
 		return compare(value1, value2);
 	}
 	
-	@TLFunctionAnnotation("Returns the value of a field as a string")
+	@TLFunctionAnnotation("Compares the value of record1.name1 with record2.name2. The values must be comparable. Returns a negative integer, zero, or a positive integer as the first value is less than, equal to, or greater than second value.")
 	public static final int compare(TLFunctionCallContext context, DataRecord record1, String fieldName1, DataRecord record2, String fieldName2) {
 		Object value1 = getFieldValue(record1, fieldName1);
 		Object value2 = getFieldValue(record2, fieldName2);

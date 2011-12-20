@@ -76,7 +76,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		DataRecord record = new DataRecord(getMetadata());
 		record.init();
 		
-		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		
 		for (int i = 0; i < 5; i++) {
 			populateDataRecord(record, i, (i % 2) == 0);
@@ -212,7 +212,11 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 	public static void checkDataRecord(DataRecord dataRecord, int seed, boolean big) {
 		for (DataField field : dataRecord) {
 			if (field instanceof StringDataField) {
-				if (!field.getValue().toString().equals(field.getMetadata().getName() + " data " + (big ? getBigString() : "") + (seed))) {
+				Object value = field.getValue();
+				String strValue = value.toString();
+				DataFieldMetadata fieldMetadata = field.getMetadata();
+				String fieldName = fieldMetadata.getName();
+				if (!strValue.equals(fieldName + " data " + (big ? getBigString() : "") + (seed))) {
 					throw new RuntimeException("unexpected record");
 				}
 				seed++;

@@ -18,6 +18,7 @@
  */
 package org.jetel.data;
 
+import java.nio.ByteBuffer;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -232,6 +234,17 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		}else{
 		    return false;
 		}
+	}
+
+	@Override
+	@Deprecated
+	public boolean get(ByteBuffer recordDataBuffer) {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(recordDataBuffer);
+		boolean result = get(wrappedBuffer);
+		if (wrappedBuffer.buf() != recordDataBuffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
 	}
 
 	/**

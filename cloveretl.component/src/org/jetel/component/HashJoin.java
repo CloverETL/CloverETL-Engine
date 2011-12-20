@@ -717,13 +717,12 @@ public class HashJoin extends Node {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
-				//logger.warn(message);
+				//only in case non empty message given from transformation, the message is printed out
+				if (!StringUtils.isEmpty(transformation.getMessage())) {
+					logger.warn(message);
+				}
 			}
 		} else {
-			if (errorLog != null) {
-				errorLog.flush();
-				errorLog.close();
-			}
 			throw new TransformException(message);
 		}
 	}

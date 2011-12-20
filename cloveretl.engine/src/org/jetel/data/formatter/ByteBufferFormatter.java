@@ -20,12 +20,14 @@ package org.jetel.data.formatter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -123,6 +125,19 @@ public class ByteBufferFormatter implements Formatter {
         buffer.put(record);
         
         return recordSize + lengthSize;
+	}
+
+	/**
+	 * @deprecated use {@link #write(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public int write(ByteBuffer record) throws IOException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(record);
+		int result = write(wrappedBuffer);
+		if (wrappedBuffer.buf() != record) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
 	}
 
 	@Override

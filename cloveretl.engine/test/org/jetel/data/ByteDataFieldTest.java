@@ -168,7 +168,7 @@ public class ByteDataFieldTest extends CloverTestCase {
 
 	public void test_serialize() {
 		ByteDataField deserializedByteField = (ByteDataField) byteField.duplicate();
-		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE);
+		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.FIELD_INITIAL_SIZE);
 
 		byteField.setValue(byteArray);
 		byteField.serialize(buffer);

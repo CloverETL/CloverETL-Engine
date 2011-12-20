@@ -112,7 +112,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		if (channel instanceof FileChannel) {
 			((FileChannel)channel).position(position);
 		} else {
-			ByteBuffer buf = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+			ByteBuffer buf = ByteBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 			int bytesRemaining = position;
 			while (bytesRemaining > 0) {
 				buf.clear();
@@ -208,7 +208,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public ByteInputReader(int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE);
+			byteBuffer = ByteBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
@@ -361,8 +361,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public CharInputReader(Charset charset, int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
-			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
+			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
 			this.charset = charset;
 			if (charset == null) {
@@ -554,8 +554,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public SingleByteCharsetInputReader(Charset charset, int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
-			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = ByteBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			channel = null;
 			this.charset = charset;
 			if (charset == null) {
@@ -810,8 +810,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
 			int maxBytesPerChar = Math.round(charset.newEncoder().maxBytesPerChar());
-			byteBuffer = ByteBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE));
-			charBuffer = CharBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE + MIN_BUFFER_OPERATION_SIZE);
+			byteBuffer = ByteBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE));
+			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			decoder = charset.newDecoder();
 			decoder.onMalformedInput(CodingErrorAction.REPORT);
 			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);

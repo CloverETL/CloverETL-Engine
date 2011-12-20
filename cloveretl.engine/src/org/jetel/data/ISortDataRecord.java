@@ -19,6 +19,7 @@
 package org.jetel.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -72,6 +73,12 @@ public interface ISortDataRecord {
 	 *@return             True if there was next record or False
 	 */
 	public boolean get(CloverBuffer recordDataBuffer) throws IOException, InterruptedException;
+
+	/**
+	 * @deprecated use {@link #get(CloverBuffer)} instead
+	 */
+	@Deprecated
+	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException;
 
 	/**
 	 * Resets all resources (buffers, collections of internal sorter, etc), so component can

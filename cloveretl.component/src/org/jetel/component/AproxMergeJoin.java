@@ -447,17 +447,16 @@ public class AproxMergeJoin extends Node {
 					errorLog.write(semiResult.toString());
 				}
 				errorLog.write("\n");
-			}else{
+			} else {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
-				//logger.warn(message);
+				//only in case non empty message given from transformation, the message is printed out
+				if (!StringUtils.isEmpty(transformation.getMessage())) {
+					logger.warn(message);
+				}
 			}
-		}else{
-			if (errorLog != null){
-				errorLog.flush();
-				errorLog.close();
-			}
+		} else {
 			throw new TransformException(message);
 		}
 	}
@@ -844,7 +843,7 @@ public class AproxMergeJoin extends Node {
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
-		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
 	/**

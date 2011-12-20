@@ -57,6 +57,7 @@ import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -321,19 +322,17 @@ public class Normalizer extends Node {
 				}
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write("\n");
-			}else{
+			} else {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
-				//logger.warn(message);
+				//only in case non empty message given from transformation, the message is printed out
+				if (!StringUtils.isEmpty(norm.getMessage())) {
+					logger.warn(message);
+				}
 			}
-		}else{
-			if (errorLog != null){
-				errorLog.flush();
-				errorLog.close();
-			}
+		} else {
 			throw new TransformException(message);
-			
 		}
 	}
 
@@ -376,8 +375,8 @@ public class Normalizer extends Node {
 	    norm.finished();
 
     	try {
-		    if (errorLog != null){
-				errorLog.flush();
+		    if (errorLog != null) {
+				errorLog.close();
 			}
     	}
     	catch (Exception e) {

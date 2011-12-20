@@ -55,8 +55,8 @@ public class DynamicRecordBufferTest extends CloverTestCase {
 		buffer = new DynamicRecordBuffer(32000);
 		buffer.init();
 		
-		byteBuffer1 = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
-		byteBuffer2 = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE);
+		byteBuffer1 = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
+		byteBuffer2 = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		
 		byteBuffer1.asCharBuffer().append("THIS IS A TESTING DATA STRING THIS IS A TESTING DATA STRING");
 		byteBuffer1.flip();
