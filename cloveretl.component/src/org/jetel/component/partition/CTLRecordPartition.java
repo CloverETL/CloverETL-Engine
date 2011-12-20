@@ -18,6 +18,8 @@
  */
 package org.jetel.component.partition;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -151,6 +153,18 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	@Deprecated
+	public int getOutputPort(ByteBuffer directRecord) throws TransformException {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	@Deprecated
+	public int getOutputPortOnError(Exception exception, ByteBuffer directRecord) throws TransformException {
+		return getOutputPortOnError(exception);
+	}
+	
 	@Override
 	protected final DataRecord getInputRecord(int index) {
 		if (inputRecord == null) {
