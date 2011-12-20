@@ -3,6 +3,7 @@ package org.jetel.ctl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -24,6 +25,8 @@ import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
+import org.jetel.ctl.extensions.TLFunctionAnnotation;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
@@ -123,14 +126,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertNull(getVariable(varName));
 	}
 
-	@Override
+	private void checkArray(String varName, byte[] expected) {
+		byte[] actual = (byte[]) getVariable(varName);
+		assertTrue("Arrays do not match; expected: " + byteArrayAsString(expected) + " but was " + byteArrayAsString(actual), Arrays.equals(actual, expected));
+	}
+
+	private static String byteArrayAsString(byte[] array) {
+		final StringBuilder sb = new StringBuilder("[");
+		for (final byte b : array) {
+			sb.append(b);
+			sb.append(", ");
+		}
+		sb.delete(sb.length() - 2, sb.length());
+		sb.append(']');
+		return sb.toString();
+	}
+
 	protected void setUp() {
 		// set default locale to English to prevent various parsing errors
 		Locale.setDefault(Locale.ENGLISH);
 		initEngine();
 	}
 
-	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		inputRecords = null;
@@ -2766,6 +2783,57 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
 	}
 	
+	public void test_convertlib_str2byte() {
+		doCompile("test_convertlib_str2byte");
+
+		checkArray("utf8Hello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
+		checkArray("utf8Horse", new byte[] { 80, -59, -103, -61, -83, 108, 105, -59, -95, 32, -59, -66, 108, 117, -59, -91, 111, 117, -60, -115, 107, -61, -67, 32, 107, -59, -81, -59, -120, 32, 112, -60, -101, 108, 32, -60, -113, -61, -95, 98, 108, 115, 107, -61, -87, 32, -61, -77, 100, 121 });
+		checkArray("utf8Math", new byte[] { -62, -67, 32, -30, -123, -109, 32, -62, -68, 32, -30, -123, -107, 32, -30, -123, -103, 32, -30, -123, -101, 32, -30, -123, -108, 32, -30, -123, -106, 32, -62, -66, 32, -30, -123, -105, 32, -30, -123, -100, 32, -30, -123, -104, 32, -30, -126, -84, 32, -62, -78, 32, -62, -77, 32, -30, -128, -96, 32, -61, -105, 32, -30, -122, -112, 32, -30, -122, -110, 32, -30, -122, -108, 32, -30, -121, -110, 32, -30, -128, -90, 32, -30, -128, -80, 32, -50, -111, 32, -50, -110, 32, -30, -128, -109, 32, -50, -109, 32, -50, -108, 32, -30, -126, -84, 32, -50, -107, 32, -50, -106, 32, -49, -128, 32, -49, -127, 32, -49, -126, 32, -49, -125, 32, -49, -124, 32, -49, -123, 32, -49, -122, 32, -49, -121, 32, -49, -120, 32, -49, -119 });
+
+		checkArray("utf16Hello", new byte[] { -2, -1, 0, 72, 0, 101, 0, 108, 0, 108, 0, 111, 0, 32, 0, 87, 0, 111, 0, 114, 0, 108, 0, 100, 0, 33 });
+		checkArray("utf16Horse", new byte[] { -2, -1, 0, 80, 1, 89, 0, -19, 0, 108, 0, 105, 1, 97, 0, 32, 1, 126, 0, 108, 0, 117, 1, 101, 0, 111, 0, 117, 1, 13, 0, 107, 0, -3, 0, 32, 0, 107, 1, 111, 1, 72, 0, 32, 0, 112, 1, 27, 0, 108, 0, 32, 1, 15, 0, -31, 0, 98, 0, 108, 0, 115, 0, 107, 0, -23, 0, 32, 0, -13, 0, 100, 0, 121 });
+		checkArray("utf16Math", new byte[] { -2, -1, 0, -67, 0, 32, 33, 83, 0, 32, 0, -68, 0, 32, 33, 85, 0, 32, 33, 89, 0, 32, 33, 91, 0, 32, 33, 84, 0, 32, 33, 86, 0, 32, 0, -66, 0, 32, 33, 87, 0, 32, 33, 92, 0, 32, 33, 88, 0, 32, 32, -84, 0, 32, 0, -78, 0, 32, 0, -77, 0, 32, 32, 32, 0, 32, 0, -41, 0, 32, 33, -112, 0, 32, 33, -110, 0, 32, 33, -108, 0, 32, 33, -46, 0, 32, 32, 38, 0, 32, 32, 48, 0, 32, 3, -111, 0, 32, 3, -110, 0, 32, 32, 19, 0, 32, 3, -109, 0, 32, 3, -108, 0, 32, 32, -84, 0, 32, 3, -107, 0, 32, 3, -106, 0, 32, 3, -64, 0, 32, 3, -63, 0, 32, 3, -62, 0, 32, 3, -61, 0, 32, 3, -60, 0, 32, 3, -59, 0, 32, 3, -58, 0, 32, 3, -57, 0, 32, 3, -56, 0, 32, 3, -55 });
+
+		checkArray("macHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
+		checkArray("macHorse", new byte[] { 80, -34, -110, 108, 105, -28, 32, -20, 108, 117, -23, 111, 117, -117, 107, -7, 32, 107, -13, -53, 32, 112, -98, 108, 32, -109, -121, 98, 108, 115, 107, -114, 32, -105, 100, 121 });
+
+		checkArray("asciiHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
+
+		checkArray("isoHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
+		checkArray("isoHorse", new byte[] { 80, -8, -19, 108, 105, -71, 32, -66, 108, 117, -69, 111, 117, -24, 107, -3, 32, 107, -7, -14, 32, 112, -20, 108, 32, -17, -31, 98, 108, 115, 107, -23, 32, -13, 100, 121 });
+
+		checkArray("cpHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
+		checkArray("cpHorse", new byte[] { 80, -8, -19, 108, 105, -102, 32, -98, 108, 117, -99, 111, 117, -24, 107, -3, 32, 107, -7, -14, 32, 112, -20, 108, 32, -17, -31, 98, 108, 115, 107, -23, 32, -13, 100, 121 });
+	}
+
+	public void test_convertlib_byte2str() {
+		doCompile("test_convertlib_byte2str");
+
+		String hello = "Hello World!";
+		String horse = "Příliš žluťoučký kůň pěl ďáblské ódy";
+		String math = "½ ⅓ ¼ ⅕ ⅙ ⅛ ⅔ ⅖ ¾ ⅗ ⅜ ⅘ € ² ³ † × ← → ↔ ⇒ … ‰ Α Β – Γ Δ € Ε Ζ π ρ ς σ τ υ φ χ ψ ω";
+
+		check("utf8Hello", hello);
+		check("utf8Horse", horse);
+		check("utf8Math", math);
+
+		check("utf16Hello", hello);
+		check("utf16Horse", horse);
+		check("utf16Math", math);
+
+		check("macHello", hello);
+		check("macHorse", horse);
+
+		check("asciiHello", hello);
+
+		check("isoHello", hello);
+		check("isoHorse", horse);
+
+		check("cpHello", hello);
+		check("cpHorse", horse);
+
+	}
+
 	public void test_conditional_fail() {
 		doCompile("test_conditional_fail");
 		check("result", 3);
