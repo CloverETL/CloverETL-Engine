@@ -37,10 +37,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.codec.language.DoubleMetaphone;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 
 import com.ibm.icu.text.Normalizer;
+import com.ibm.icu.text.Transliterator;
 
 /**
  * Helper class with some useful methods regarding string/text manipulation
@@ -84,6 +87,17 @@ public class StringUtils {
 	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+");
 	
 	private static final int MAX_OBJECT_NAME_LENGTH = 250;
+	
+	private static Transliterator LATIN_TRANSLITERATOR = null;
+
+	static {
+		try {
+			// try to be fail-safe to prevent errors caused by missing locales etc.
+			LATIN_TRANSLITERATOR = Transliterator.getInstance("Latin");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 	
 	private final static char[] vowels = {'A', 'E', 'I', 'O', 'U'};
 
@@ -893,8 +907,11 @@ public class StringUtils {
 			// trim whitespace first
 			originalName = originalName.trim();
 			
+			// first transliterate to Latin characters
+			result = StringUtils.transliterateToLatin(originalName);
+			
 			// must be done before removing invalid, can be swapped with removing non-printable
-			result = StringUtils.removeDiacritic(originalName);
+			result = StringUtils.removeDiacritic(result);
 			// must be done before removing invalid, can be swapped with removing diacritic
 			result = StringUtils.removeNonPrintable(result);
 			
@@ -1362,6 +1379,28 @@ public class StringUtils {
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Replaces the characters from non-latin alphabets
+	 * with their Latin counterparts.
+	 * 
+	 * @param str input string
+	 * @return transliterated string
+	 */
+	public static String transliterateToLatin(String str) {
+		if ((LATIN_TRANSLITERATOR == null) || (str == null)) {
+			return str;
+		}
+		try {
+			return LATIN_TRANSLITERATOR.transliterate(str);
+		} catch (Exception ex) {
+			Log logger = LogFactory.getLog(StringUtils.class);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Failed to transliterate " + str, ex);
+			}
+			return str;
+		}
 	}
 
 	/**

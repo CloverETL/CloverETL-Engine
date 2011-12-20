@@ -1,4 +1,4 @@
-#MAX_RECORD_SIZE - this limits the maximum size of data record in binary form. The binary form is the form used by Clover 
+#RECORD_SIZE_LIMIT - this limits the maximum size of data record in binary form. The binary form is the form used by Clover 
 #when manipulating data.
 #Parsers are here to convert text representation or database representation of data records to Clover's internal. 
 #Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
@@ -7,7 +7,7 @@
 #This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
 #dedicated to persist records are initially allocated to Record.INITIAL_RECORD_SIZE size
 #and can grow if necessary. This is a limit for the buffer growing.
-Record.MAX_RECORD_SIZE = 33554432
+Record.RECORD_SIZE_LIMIT = 33554432
 
 #INITIAL_RECORD_SIZE - this is expected upper bounds of record size in binary form. The binary form is the form
 #used by Clover when manipulating data.
@@ -16,7 +16,7 @@ Record.MAX_RECORD_SIZE = 33554432
 #increase startup speed in case processing of big records.
 Record.INITIAL_RECORD_SIZE = 65536
 
-#MAX_FIELD_SIZE - this limits the maximum size of a field in binary form. The binary form is the form used by Clover 
+#FIELD_SIZE_LIMIT - this limits the maximum size of a field in binary form. The binary form is the form used by Clover 
 #when manipulating data.
 #Parsers are here to convert text representation or database representation of data records to Clover's internal. 
 #Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
@@ -25,7 +25,7 @@ Record.INITIAL_RECORD_SIZE = 65536
 #This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
 #dedicated to persist fields are initially allocated to Record.INITIAL_FIELD_SIZE size
 #and can grow if necessary. This is a limit for the buffer growing.
-Record.MAX_FIELD_SIZE = 33554432
+Record.FIELD_SIZE_LIMIT = 33554432
 
 #INITIAL_FIELD_SIZE - this is expected upper bounds of field size in binary form. The binary form is the form
 #used by Clover when manipulating data.

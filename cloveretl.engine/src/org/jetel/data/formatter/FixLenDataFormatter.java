@@ -194,7 +194,7 @@ public class FixLenDataFormatter implements Formatter {
         }
 		recordLength = metadata.getRecordSize() > 0 ? metadata.getRecordSize() : metadata.getRecordSizeStripAutoFilling(); 
 
-		if (recordLength + (isRecordDelimiter ? recordDelimiter.length : 0) > Defaults.Record.MAX_RECORD_SIZE) {
+		if (recordLength + (isRecordDelimiter ? recordDelimiter.length : 0) > Defaults.Record.RECORD_SIZE_LIMIT) {
 			throw new RuntimeException("Output buffer too small to hold data record " + metadata.getName());			
 		}
 

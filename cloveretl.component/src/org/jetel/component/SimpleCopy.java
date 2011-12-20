@@ -118,7 +118,7 @@ public class SimpleCopy extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
 	}
 
 	@Override

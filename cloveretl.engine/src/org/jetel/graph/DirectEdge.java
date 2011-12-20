@@ -112,7 +112,7 @@ public class DirectEdge extends EdgeBase {
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
-		tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+		tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
 		isClosed=false;
 	    readerWait=false;
 	    writerWait=false;
