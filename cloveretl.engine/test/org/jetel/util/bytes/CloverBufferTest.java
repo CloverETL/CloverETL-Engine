@@ -328,9 +328,9 @@ public class CloverBufferTest extends CloverTestCase {
 
     	CloverBuffer.allocate(1, 1);
     	
-		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.MAX_RECORD_SIZE);
+		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
     	
-    	for (int i = 0; i < Defaults.Record.MAX_RECORD_SIZE; i++) {
+    	for (int i = 0; i < Defaults.Record.RECORD_SIZE_LIMIT; i++) {
         	buffer.put((byte) 0);
     	}
     	
@@ -345,7 +345,7 @@ public class CloverBufferTest extends CloverTestCase {
     	buffer.limit(100);
     	buffer.shrink();
 
-    	for (int i = 0; i < Defaults.Record.MAX_RECORD_SIZE; i++) {
+    	for (int i = 0; i < Defaults.Record.RECORD_SIZE_LIMIT; i++) {
         	buffer.put((byte) 0);
     	}
     	

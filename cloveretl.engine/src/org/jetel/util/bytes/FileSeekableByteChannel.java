@@ -136,7 +136,7 @@ public class FileSeekableByteChannel implements SeekableByteChannel {
 
 		tmpByteBuffer.clear();
     	while (!endOfInput) { // one iteration for each byte buffer filling
-        	if (shift > Defaults.Record.MAX_RECORD_SIZE) {
+        	if (shift > Defaults.Record.RECORD_SIZE_LIMIT) {
         		throw new IOException("No record delimiter was found during file partitioning.");
         	}
         	
