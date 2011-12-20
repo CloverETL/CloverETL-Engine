@@ -29,6 +29,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 
 /**
  * This class provides static methods for working with ByteBuffer in association
@@ -151,7 +152,19 @@ public final class ByteBufferUtils {
             buffer.put((byte) length);
         }
     }
-    
+
+    /**
+     * @deprecated use {@link #encodeLength(CloverBuffer, int)} instead
+     */
+    @Deprecated
+    public static final void encodeLength(ByteBuffer buffer, int length) {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(buffer);
+		encodeLength(wrappedBuffer, length);
+		if (wrappedBuffer.buf() != buffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+    }
+
     /**
      * Decode previously encoded length (int value)
      * 
@@ -181,6 +194,19 @@ public final class ByteBufferUtils {
        return length;
     }
     
+    /**
+     * @deprecated use {@link #decodeLength(CloverBuffer)} instead
+     */
+    @Deprecated
+    public static final int decodeLength(ByteBuffer buffer) {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(buffer);
+		int result = decodeLength(wrappedBuffer);
+		if (wrappedBuffer.buf() != buffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
+    }
+
     /**
      * Returns how many bytes are needed to encode
      * length (value) using algorithm above

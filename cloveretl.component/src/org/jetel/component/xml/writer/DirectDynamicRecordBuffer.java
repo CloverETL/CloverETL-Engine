@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -75,14 +76,14 @@ public class DirectDynamicRecordBuffer {
 		tmpFile.deleteOnExit();
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
 	public IndexKey writeRaw(DataRecord record) throws IOException {
         try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See Record.RECORD_LIMIT_SIZE parameter)");
         }
         recordBuffer.flip();
 		
@@ -105,7 +106,7 @@ public class DirectDynamicRecordBuffer {
 		try {
             record.serialize(recordBuffer);
         } catch (BufferOverflowException ex) {
-            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+            throw new IOException("Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)");
         }
         recordBuffer.flip();
         
@@ -180,11 +181,24 @@ public class DirectDynamicRecordBuffer {
 		
 		currentWritePosition = 0;
 		
-		try {
-			tmpFileChannel.truncate(0);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			tmpFileChannel.truncate(0);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		try {
+//			if (tmpFileChannel != null) {
+//				tmpFileChannel.close();
+//			}
+//			tmpFile.delete();
+//	
+//			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tempDirectory != null ? new File(tempDirectory) : null);
+//			tmpFile.deleteOnExit();
+//			tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
+//		} catch (Exception e) {
+//			throw new JetelRuntimeException(e);
+//		}
 	}
 	
 	public void reset() {

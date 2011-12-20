@@ -506,7 +506,7 @@ public class TargetFile {
             		} else {
                        	bbOutputStream = new RestrictedByteArrayOutputStream();
                        	if (field != null) 
-                       		((RestrictedByteArrayOutputStream)bbOutputStream).setMaxArrayLength(Defaults.Record.FIELD_SIZE_LIMIT);
+                       		((RestrictedByteArrayOutputStream)bbOutputStream).setMaxArrayLength(Defaults.Record.FIELD_LIMIT_SIZE);
             		}
             	}
         		setDataTarget(Channels.newChannel(bbOutputStream));

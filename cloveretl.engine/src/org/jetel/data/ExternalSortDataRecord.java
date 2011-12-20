@@ -19,9 +19,11 @@
 package org.jetel.data;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -119,7 +121,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			sorter.setCaseSensitive(caseSensitive);
 		}
 		
-		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
 	@Override
@@ -191,6 +193,17 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}else{
 		    return false;
 		}		
+	}
+
+	@Override
+	@Deprecated
+	public boolean get(ByteBuffer recordDataBuffer) throws IOException, InterruptedException {
+		CloverBuffer wrappedBuffer = CloverBuffer.wrap(recordDataBuffer);
+		boolean result = get(wrappedBuffer);
+		if (wrappedBuffer.buf() != recordDataBuffer) {
+			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
+		}
+		return result;
 	}
 
 	@Override

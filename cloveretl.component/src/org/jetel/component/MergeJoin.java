@@ -369,17 +369,16 @@ public class MergeJoin extends Node {
 					errorLog.write(semiResult.toString());
 				}
 				errorLog.write("\n");
-			}else{
+			} else {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
-				//logger.warn(message);
+				//only in case non empty message given from transformation, the message is printed out
+				if (!StringUtils.isEmpty(transformation.getMessage())) {
+					logger.warn(message);
+				}
 			}
-		}else{
-			if (errorLog != null){
-				errorLog.flush();
-				errorLog.close();
-			}
+		} else {
 			throw new TransformException(message);
 		}
 	}

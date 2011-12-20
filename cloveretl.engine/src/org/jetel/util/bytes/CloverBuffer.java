@@ -90,21 +90,31 @@ public abstract class CloverBuffer {
 
 	/**
 	 * Allocates new direct clover buffer with given capacity.
+	 * If JVM is out of direct memory, non-direct (heap) memory is used instead.
 	 * @param capacity initial capacity of allocated buffer
 	 * @return allocated clover buffer instance
 	 */
 	public static CloverBuffer allocateDirect(int capacity) {
-		return allocator.allocate(capacity, true);
+		try {
+			return allocator.allocate(capacity, true);
+		} catch (OutOfMemoryError e) {
+			return allocator.allocate(capacity, false);
+		}
 	}
 
 	/**
 	 * Allocates new direct clover buffer with given capacity.
+	 * If JVM is out of direct memory, non-direct (heap) memory is used instead.
 	 * @param capacity initial capacity of allocated buffer
 	 * @param maximumCapacity the limit for inner buffer capacity, buffer expansion is limited
 	 * @return allocated clover buffer instance
 	 */
 	public static CloverBuffer allocateDirect(int capacity, int maximumCapacity) {
-		return allocator.allocate(capacity, maximumCapacity, true);
+		try {
+			return allocator.allocate(capacity, maximumCapacity, true);
+		} catch (OutOfMemoryError e) {
+			return allocator.allocate(capacity, maximumCapacity, false);
+		}
 	}
 
 	/**
@@ -114,7 +124,11 @@ public abstract class CloverBuffer {
 	 * @return allocated clover buffer instance
 	 */
 	public static CloverBuffer allocate(int capacity, boolean direct) {
-		return allocator.allocate(capacity, direct);
+		if (direct) {
+			return allocateDirect(capacity);
+		} else {
+			return allocate(capacity);
+		}
 	}
 
 	/**
@@ -125,7 +139,11 @@ public abstract class CloverBuffer {
 	 * @return allocated clover buffer instance
 	 */
 	public static CloverBuffer allocate(int capacity, int maximumCapacity, boolean direct) {
-		return allocator.allocate(capacity, maximumCapacity, direct);
+		if (direct) {
+			return allocateDirect(capacity, maximumCapacity);
+		} else {
+			return allocate(capacity, maximumCapacity);
+		}
 	}
 
     /**
@@ -251,6 +269,11 @@ public abstract class CloverBuffer {
      * Turns on or off <tt>autoShrink</tt>.
      */
     public abstract CloverBuffer setAutoShrink(boolean autoShrink);
+
+    /**
+     * Turns on or off possibility of relocation underlying buffer at all.
+     */
+    public abstract CloverBuffer setRecapacityAllowed(boolean recapacityAllowed);
 
     /**
      * Changes the capacity and limit of this buffer so this buffer get the
@@ -630,7 +653,15 @@ public abstract class CloverBuffer {
      */
     protected ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
     	memoryAllocated(capacity);
-    	return direct ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
+    	if (direct) {
+    		try {
+    			return ByteBuffer.allocateDirect(capacity);
+    		} catch (OutOfMemoryError e) {
+        		return ByteBuffer.allocate(capacity);
+    		}
+    	} else {
+    		return ByteBuffer.allocate(capacity);
+    	}
     }
 
     /**

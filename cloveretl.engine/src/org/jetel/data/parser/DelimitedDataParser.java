@@ -46,8 +46,7 @@ import org.jetel.util.string.StringUtils;
 /**
  *  Parsing delimited text data. Supports delimiters with the length of up to 32
  *  characters. Delimiter for each individual field must be specified - through
- *  metadata definition. The maximum length of one parseable field is denoted by
- *  <b>FIELD_BUFFER_LENGTH</b> . Parser handles quoted strings (single or double).
+ *  metadata definition. Parser handles quoted strings (single or double).
  *  This class is using the new IO (NIO) features
  *  introduced in Java 1.4 - directly mapped byte buffers & character
  *  encoders/decoders
@@ -129,7 +128,7 @@ public class DelimitedDataParser implements Parser {
 		this.qdecoder = qdecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldStringBuffer = new StringBuilder(Defaults.Record.INITIAL_FIELD_SIZE);
+		fieldStringBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
 		delimiterCandidateBuffer = new char [DELIMITER_CANDIDATE_BUFFER_LENGTH];
 		decoder = Charset.forName(charsetDecoder).newDecoder();
 	}

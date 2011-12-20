@@ -306,6 +306,15 @@ public class LookupJoin extends Node {
     	super.postExecute();
     	transformation.postExecute();
         transformation.finished();
+        
+    	try {
+		    if (errorLog != null) {
+				errorLog.close();
+			}
+    	} catch (Exception e) {
+    		//maybe this should be only logged and post execution should continue
+    		throw new ComponentNotReadyException(e);
+    	}
     }
     
 	@Override
@@ -393,19 +402,17 @@ public class LookupJoin extends Node {
 										errorLog.write(semiResult.toString());
 									}
 									errorLog.write("\n");
-								}else{
+								} else {
 									//CL-2020
 									//if no error log is defined, the message is quietly ignored
 									//without messy logging in console
-									//logger.warn(message);
+									//only in case non empty message given from transformation, the message is printed out
+									if (!StringUtils.isEmpty(transformation.getMessage())) {
+										logger.warn(message);
+									}
 								}
-							}else{
-								if (errorLog != null){
-									errorLog.flush();
-									errorLog.close();
-								}
+							} else {
 								throw new TransformException(message);
-								
 							}
 		                }
 					}else{

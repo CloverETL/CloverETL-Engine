@@ -34,6 +34,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 /* JDBC_4_ANT_KEY_BEGIN */
 import java.sql.NClob;
 import java.sql.SQLClientInfoException;
@@ -672,6 +673,7 @@ public class DefaultConnection implements Connection {
 			throws SQLClientInfoException {
 		connection.setClientInfo(name, value);
 	}
-  
+
+
 	/* JDBC_4_ANT_KEY_END */
 }

@@ -40,7 +40,7 @@ public class CRC32 extends AggregateFunction {
 	
 	private int loopCount = 0;
 	private java.util.zip.CRC32 crc32;
-	CloverBuffer dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_FIELD_SIZE, Defaults.Record.FIELD_SIZE_LIMIT);
+	CloverBuffer dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.FIELD_INITIAL_SIZE, Defaults.Record.FIELD_LIMIT_SIZE);
 	private CharsetEncoder encoder;
 
 	// Is input nullable?
@@ -115,8 +115,9 @@ public class CRC32 extends AggregateFunction {
 		}
 		dataBuffer.clear();
 		input.toByteBuffer(dataBuffer, encoder);
-		byte[] array = new byte[dataBuffer.position()];
-		System.arraycopy(dataBuffer.array(), 0, array, 0, array.length);
+		dataBuffer.flip();
+		byte[] array = new byte[dataBuffer.limit()];
+		dataBuffer.get(array);
 		crc32.update(array);
 		loopCount++;
 	}

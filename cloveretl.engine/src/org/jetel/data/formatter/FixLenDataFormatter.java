@@ -108,7 +108,7 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	private void initFieldFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
+		char[] fillerArray = new char[Defaults.Record.FIELD_INITIAL_SIZE];
 		Arrays.fill(fillerArray, filler);
 		
 		try {
@@ -123,7 +123,7 @@ public class FixLenDataFormatter implements Formatter {
 	 */
 	private void initRecordFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.Record.INITIAL_FIELD_SIZE];
+		char[] fillerArray = new char[Defaults.Record.FIELD_INITIAL_SIZE];
 		Arrays.fill(fillerArray, filler);
 		
 		try {
@@ -194,7 +194,7 @@ public class FixLenDataFormatter implements Formatter {
         }
 		recordLength = metadata.getRecordSize() > 0 ? metadata.getRecordSize() : metadata.getRecordSizeStripAutoFilling(); 
 
-		if (recordLength + (isRecordDelimiter ? recordDelimiter.length : 0) > Defaults.Record.RECORD_SIZE_LIMIT) {
+		if (recordLength + (isRecordDelimiter ? recordDelimiter.length : 0) > Defaults.Record.RECORD_LIMIT_SIZE) {
 			throw new RuntimeException("Output buffer too small to hold data record " + metadata.getName());			
 		}
 

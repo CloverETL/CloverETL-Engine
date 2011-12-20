@@ -130,7 +130,7 @@ public class ResetTest extends CloverTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		initEngine("test/org/jetel/graph/ResetTestDefault.properties");
+		initEngine();
 	}
 
 	protected static String getTestName(String basePath, File graphFile, boolean batchMode) {

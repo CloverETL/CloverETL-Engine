@@ -20,7 +20,7 @@
 <Property fileURL="httpParams.prm" id="GraphParameter1"/>
 <Property fileURL="workspace.prm" id="GraphParameter6"/>
 <Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="108" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="HttpConnector with dynamic request" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="643" x="347" y="255">
-<attr name="text"><![CDATA[Request body can be also sent through input port. Server answer can be sent  directly to the output port  (phase 2), or it can be saved to file and output field gets only information where the answer is saved (phase 3). In the first case it can be needed to increase some default properties (e.g. Record.MAX_RECORD_SIZE and DEFAULT_INTERNAL_IO_BUFFER_SIZE).]]></attr>
+<attr name="text"><![CDATA[Request body can be also sent through input port. Server answer can be sent  directly to the output port  (phase 2), or it can be saved to file and output field gets only information where the answer is saved (phase 3).]]></attr>
 </Note>
 <Dictionary/>
 </Global>

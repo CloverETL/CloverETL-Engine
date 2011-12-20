@@ -41,7 +41,7 @@ public class ArchiveFlushTest extends CloverTestCase {
 	private final static String SCENARIOS_RELATIVE_PATH = "../cloveretl.test.scenarios/";
 	
 	public void testFlushed() throws Exception {
-		initEngine("test/org/jetel/graph/ResetTestDefault.properties");
+		initEngine();
 		final String baseDir = new File(SCENARIOS_RELATIVE_PATH).getAbsolutePath();
 		
 		GraphRuntimeContext graphCtx = new GraphRuntimeContext();

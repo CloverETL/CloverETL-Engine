@@ -377,7 +377,7 @@
 			<keep name="com.opensys.cloveretl.connection.domino.*"><method name="*"/></keep>
 			
 			<keep name="com.opensys.cloveretl.data.cobol.CobolData"><method name="*"/></keep>
-			<keep name="com.opensys.cloveretl.data.cobol.CobolData2CloverMetadata"><method name="*"/></keep>
+			<keep name="com.opensys.cloveretl.data.cobol.CobolData2CloverMetadata"><field access="public"/><method name="*"/></keep>
 			<keep name="com.opensys.cloveretl.data.cobol.CopyBookParser"><method name="*"/></keep>
 			<keep name="com.opensys.cloveretl.data.cobol.StripLineNumbers"><method name="*"/></keep>
 				

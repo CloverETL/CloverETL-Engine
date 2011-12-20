@@ -413,7 +413,7 @@ public class Denormalizer extends Node {
 				}
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write("\n");
-			}else{
+			} else {
 				//CL-2020
 				//if no error log is defined, the message is quietly ignored
 				//without messy logging in console
@@ -422,13 +422,8 @@ public class Denormalizer extends Node {
 					logger.warn(message);
 				}
 			}
-		}else{
-			if (errorLog != null){
-				errorLog.flush();
-				errorLog.close();
-			}
+		} else {
 			throw new TransformException(message);
-			
 		}
 	}
 	

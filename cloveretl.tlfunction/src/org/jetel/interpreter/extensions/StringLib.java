@@ -18,6 +18,7 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -313,7 +314,12 @@ public class StringLib extends TLFunctionLibrary {
 			if (params[0].type != TLValueType.STRING) {
 				throw new TransformLangExecutorRuntimeException(params, "substring - wrong type of literal(s)");
 			}
-			strBuf.append(((TLStringValue) params[0]).getCharSequence(), from, from + length);
+
+			try {
+				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), from, length);
+			} catch (IOException e) {
+				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+			}
 			return val;
 		}
 
@@ -352,7 +358,11 @@ public class StringLib extends TLFunctionLibrary {
 				throw new TransformLangExecutorRuntimeException(params, "left - wrong type of literal(s)");
 			}
 
-			strBuf.append(((TLStringValue) params[0]).getCharSequence(), 0, length);
+			try {
+				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), 0, length);
+			} catch (IOException e) {
+				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+			}
 			return val;
 		}
 
@@ -394,8 +404,11 @@ public class StringLib extends TLFunctionLibrary {
 			CharSequence src = ((TLStringValue) params[0]).getCharSequence();
 			int from = src.length() - length;
 
-			strBuf.append(src, from, from + length);
-			
+			try {
+				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), from, length);
+			} catch (IOException e) {
+				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+			}
 			return val;
 		}
 

@@ -189,7 +189,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
     @Override
     public final CloverBuffer capacity(int newCapacity) {
         if (!recapacityAllowed) {
-            throw new IllegalStateException("Derived buffers and their parent can't be expanded.");
+            throw new IllegalStateException("Recapacity of this CloverBuffer is not allowed.");
         }
 
         // Allocate a new buffer and transfer all settings to it.
@@ -259,7 +259,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
     @Override
     public final CloverBuffer setAutoExpand(boolean autoExpand) {
         if (!recapacityAllowed) {
-            throw new IllegalStateException("Derived buffers and their parent can't be expanded.");
+            throw new IllegalStateException("Recapacity of this CloverBuffer is not allowed.");
         }
         this.autoExpand = autoExpand;
         return this;
@@ -271,12 +271,18 @@ public class DynamicCloverBuffer extends CloverBuffer {
     @Override
     public final CloverBuffer setAutoShrink(boolean autoShrink) {
         if (!recapacityAllowed) {
-            throw new IllegalStateException("Derived buffers and their parent can't be shrinked.");
+            throw new IllegalStateException("Recapacity of this CloverBuffer is not allowed.");
         }
         this.autoShrink = autoShrink;
         return this;
     }
 
+    @Override
+    public CloverBuffer setRecapacityAllowed(boolean recapacityAllowed) {
+    	this.recapacityAllowed = recapacityAllowed;
+    	return this;
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -297,8 +303,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
     private void expand(int pos, int expectedRemaining, boolean autoExpand) {
         if (!recapacityAllowed) {
-            throw new IllegalStateException(
-                    "Derived buffers and their parent can't be expanded.");
+            throw new IllegalStateException("Recapacity of this CloverBuffer is not allowed.");
         }
 
         int end = pos + expectedRemaining;
@@ -329,8 +334,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
     public final CloverBuffer shrink() {
 
         if (!recapacityAllowed) {
-            throw new IllegalStateException(
-                    "Derived buffers and their parent can't be expanded.");
+            throw new IllegalStateException("Recapacity of this CloverBuffer is not allowed.");
         }
 
         int position = position();

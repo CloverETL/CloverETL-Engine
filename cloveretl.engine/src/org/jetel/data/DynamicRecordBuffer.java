@@ -105,7 +105,7 @@ public class DynamicRecordBuffer {
 	 *      NULL (the system default will be used)
 	 *@param  initialBufferSize  The initial size of internal in memory buffer - two
      *          buffers of exactly the same size are created - one for reading, one
-     *          for writing. The size should be at least MAX_RECORD_SIZE+4
+     *          for writing.
 	 */
 	public DynamicRecordBuffer(String tempDirectory, int initialBufferSize) {
 		this.tempDirectory = tempDirectory;
@@ -131,7 +131,7 @@ public class DynamicRecordBuffer {
         isClosed = false;
         readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
-        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+        tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
         awaitingData = false;
         bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();

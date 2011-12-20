@@ -554,11 +554,11 @@ public class JmsConnection extends GraphElement implements IConnection {
 		for (int i=0; i< libs.length; i++) {
 			String libraryURLString = libs[i];
 			try {
-				result.add(new URL(contextURL, libraryURLString));
+				result.add(FileUtils.getFileURL(contextURL, libraryURLString));
 			} catch (MalformedURLException e) {
 				// maybe it is ULR created via File class (no protocol)
 				try {
-					File f = new File(new URL(contextURL, "file:" + libraryURLString).getFile());
+					File f = new File(FileUtils.getFileURL(contextURL, "file:" + libraryURLString).getFile());
 					if (!f.exists())
 						throw new IllegalStateException("Library "+f+" doesn't exist");
 					result.add(f.toURI().toURL());

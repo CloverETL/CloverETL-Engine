@@ -112,7 +112,7 @@ public class DirectEdge extends EdgeBase {
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
-		tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.INITIAL_RECORD_SIZE, Defaults.Record.RECORD_SIZE_LIMIT);
+		tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		isClosed=false;
 	    readerWait=false;
 	    writerWait=false;
@@ -237,7 +237,7 @@ public class DirectEdge extends EdgeBase {
             record.serialize(tmpDataRecord);
         } catch (BufferOverflowException ex) {
             throw new IOException(
-                    "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)"+
+                    "Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)"+
                     "\n [actual record size: "+record.getSizeSerialized()+" bytes]");
         }
         tmpDataRecord.flip();
@@ -287,7 +287,7 @@ public class DirectEdge extends EdgeBase {
             writeBuffer.put(record);
         } catch (BufferOverflowException ex) {
             throw new IOException(
-                    "WriteBuffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)"+
+                    "WriteBuffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)"+
                     "\n [actual record size: "+record.rewind().remaining()+" bytes]");
         }
 
