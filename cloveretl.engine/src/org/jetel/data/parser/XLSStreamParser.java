@@ -577,10 +577,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					case HSSFCell.CELL_TYPE_ERROR:
 						value = String.valueOf(frec.getCachedErrorValue());
 						break;
-					case HSSFCell.CELL_TYPE_BLANK:
+					default: // HSSFCell.CELL_TYPE_BLANK
 						value = "";
 						break;
 					}
+					break;
 				case LabelSSTRecord.sid:
 					value = sstRecord.getString(((LabelSSTRecord) cellRecord).getSSTIndex()).getString();
 					break;
@@ -678,10 +679,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				case HSSFCell.CELL_TYPE_ERROR:
 					actualValue = String.valueOf(frec.getCachedErrorValue());
 					break;
-				case HSSFCell.CELL_TYPE_BLANK:
+				default: // HSSFCell.CELL_TYPE_BLANK
 					actualValue = "";
 					break;
 				}
+				break;
 			case LabelSSTRecord.sid:
 				cellType = "STRING";
 				actualValue = sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
@@ -883,9 +885,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					return String.valueOf(frec.getCachedBooleanValue());
 				case HSSFCell.CELL_TYPE_ERROR:
 					return String.valueOf(frec.getCachedErrorValue());
-				case HSSFCell.CELL_TYPE_BLANK:
+				default: // HSSFCell.CELL_TYPE_BLANK
 					return "";
-				}				
+				}
 			case LabelSSTRecord.sid:
 				return sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
 			case StringRecord.sid:
