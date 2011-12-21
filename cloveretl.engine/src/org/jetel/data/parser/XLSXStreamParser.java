@@ -467,7 +467,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				}
 
 				String formattedValue = value;
-				if (cellType == Cell.CELL_TYPE_NUMERIC) {
+				if (cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)) {
 					formattedValue = formatNumericToString(value, styleIndex);
 				}
 				if (cellType != Cell.CELL_TYPE_BLANK) {
