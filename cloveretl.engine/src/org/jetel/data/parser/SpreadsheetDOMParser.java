@@ -179,12 +179,15 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
-		if (nextRecordStartRow > lastLine - mapping.length + 1) {
-			return null;
-		}
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+			if (nextRecordStartRow > lastLine - mapping.length + 1) {
+				return null;
+			}
 			return parse(record, nextRecordStartRow, mappingMinColumn);
 		} else {
+			if (nextRecordStartRow > lastLine - mapping[0].length + 1) {
+				return null;
+			}
 			return parse(record, mappingMinRow, nextRecordStartRow);
 		}
 	}
