@@ -459,7 +459,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 		
 		@Override
-		public void cell(String cellReference, int cellType, String value, int styleIndex) {
+		public void cell(String cellReference, int cellType, int formulaType, String value, int styleIndex) {
 			if (currentParseRow == recordStartRow) {
 				int columnIndex = SpreadsheetUtils.getColumnIndex(cellReference);
 				if (columnIndex < firstColumn || columnIndex >= lastColumn) {
@@ -471,7 +471,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					formattedValue = formatNumericToString(value, styleIndex);
 				}
 				if (cellType != Cell.CELL_TYPE_BLANK) {
-					cellValues.add(new CellValue(columnIndex, formattedValue, cellType, styleIndex));
+					cellValues.add(new CellValue(columnIndex, formattedValue, cellType, formulaType, styleIndex));
 				}
 			}
 		}
@@ -531,7 +531,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 
 		@Override
-		public void cell(String cellReference, int cellType, String value, int styleIndex) {
+		public void cell(String cellReference, int cellType, int formulaType, String value, int styleIndex) {
 			if (currentParseRow < recordStartRow) {
 				// not interested yet, skip
 				return;
@@ -548,7 +548,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex);
 			lastColumn = shiftedColumnIndex;
 			
-			CellValue cellValue = new CellValue(-1, value, cellType, styleIndex);
+			CellValue cellValue = new CellValue(-1, value, cellType, formulaType, styleIndex);
 			cellBuffers.setCellBufferValue(mappingRow, shiftedColumnIndex, cellValue);
 			if (record != null) {
 				if (parent.mapping[mappingRow][shiftedColumnIndex] != XLSMapping.UNDEFINED) {
@@ -597,10 +597,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 		@Override
 		public void setFieldValue(int fieldIndex, CellValue cell) {
-			setFieldValue(fieldIndex, cell.type, cell.value, cell.styleIndex);
+			setFieldValue(fieldIndex, cell.type, cell.formulaType, cell.value, cell.styleIndex);
 		}
 
-		private void setFieldValue(int cloverFieldIndex, int cellType, String value, int styleIndex) {
+		private void setFieldValue(int cloverFieldIndex, int cellType, int formulaType, String value, int styleIndex) {
 			if (!recordStarted) {
 				recordStarted = true;
 			}
@@ -618,7 +618,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					field.fromString(cellType == Cell.CELL_TYPE_NUMERIC ? formatNumericToString(value, styleIndex) : value);
+					field.fromString(cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)? formatNumericToString(value, styleIndex) : value);
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
@@ -678,12 +678,14 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		public final int columnIndex;
 		public final String value;
 		public final int type;
+		public final int formulaType;
 		public final int styleIndex;
 
-		CellValue(int columnIndex, String value, int type, int styleIndex) {
+		CellValue(int columnIndex, String value, int type, int formulaType, int styleIndex) {
 			this.columnIndex = columnIndex;
 			this.value = value;
 			this.type = type;
+			this.formulaType = formulaType;
 			this.styleIndex = styleIndex;
 		}
 	}

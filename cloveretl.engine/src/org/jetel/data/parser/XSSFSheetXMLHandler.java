@@ -95,6 +95,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	private StringBuffer formula = new StringBuffer();
 	private StringBuffer headerFooter = new StringBuffer();
 	
+	private int formulaType; // Cell.CELL_TYPE* of cashed formula value
+	
 	private int lastRow = -1;
 	
 //	private int numberOfMissingRows;
@@ -162,6 +164,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	          
 	          // Mark us as being a formula if not already
 	          if(nextDataType == XSSFDataType.NUMBER) {
+	        	 formulaType = Cell.CELL_TYPE_NUMERIC;
 	             nextDataType = XSSFDataType.FORMULA;
 	          }
 	          
@@ -222,6 +225,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 				nextDataType = XSSFDataType.SST_STRING;
 			} else if ("str".equals(cellType)) {
 				nextDataType = XSSFDataType.FORMULA;
+				formulaType = Cell.CELL_TYPE_STRING; // at least I hope so...
 			}
 			
 			if (cellStyleStr != null) {
@@ -294,7 +298,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			}
 
 			// Output
-			output.cell(cellRef, cellType, thisStr, styleIndex);
+			output.cell(cellRef, cellType, formulaType, thisStr, styleIndex);
+			formulaType = -1;
 		} else if ("is".equals(name)) {
 			isIsOpen = false;
 		} else if ("row".equals(name)) {
@@ -332,7 +337,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		public void endRow();
 
 		/** A cell, with the given unformatted value, was encountered */
-		public void cell(String cellReference, int cellType, String value, int styleIndex);
+		public void cell(String cellReference, int cellType, int formulaType, String value, int styleIndex);
 
 		/** A header or footer has been encountered */
 		public void headerFooter(String text, boolean isHeader, String tagName);

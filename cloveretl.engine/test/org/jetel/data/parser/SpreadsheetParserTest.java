@@ -420,7 +420,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				String special = "[<=9999999]###\\ ##\\ ##;##\\ ##\\ ##\\ ##";
 				
 				parser.parseNext(record);
-				System.out.println(record);
+				//System.out.println(record);
 				assertRecordContent(record, "něco", general, number, currency, date, time, percent, fraction, math, "text", text, special);
 
 				parser.parseNext(record);
