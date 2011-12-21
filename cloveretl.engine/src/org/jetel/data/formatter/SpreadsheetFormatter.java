@@ -447,12 +447,12 @@ public class SpreadsheetFormatter implements Formatter {
 			int firstRecordY1 = minYIncludingSkip;
 			//When a step is really high (higher than a record itself), it is desired to define a
 			//bottom of the first record so that empty lines complement the step.
-			int firstRecordY2 = maximum(maxYIncludingSkip, firstRecordY1 + mappingInfo.getStep()-1);
+			int firstRecordY2 = maximum(maxYIncludingSkip, minYIncludingSkip + mappingInfo.getStep() - 1);
 			firstRecordXYRange = new XYRange(minX, firstRecordY1, maxX, firstRecordY2);
 		}
 
 		if (insert) {
-			initialFirstFooterLineIndex = firstRecordXYRange.y1;
+			initialFirstFooterLineIndex = firstRecordXYRange.y2 - mappingInfo.getStep() + 1;
 			initialTemplateCopiedRegionY2 = firstRecordXYRange.y2;
 		}
 	}
@@ -1649,18 +1649,19 @@ public class SpreadsheetFormatter implements Formatter {
 				if (minimalYOffset == null) {
 					minimalYOffset = 0;
 				}
-				int cellY = index + minimalYOffset;
+				int cellY = maximum(0, index + minimalYOffset);
 				if (movementSize > 0) {
 					for (int movementIndex = lastColumnNumber; movementIndex >= cellY; --movementIndex) {
 						swapCells(sheetData, row, movementIndex, movementIndex + movementSize);
 					}
 				} else {
 					for (int movementIndex = cellY; movementIndex <= lastColumnNumber; ++movementIndex) {
-						swapCells(sheetData, row, cellY, cellY + movementSize);
+						swapCells(sheetData, row, movementIndex, movementIndex + movementSize);
 					}
 				}
 			}
 		}
+		sheetData.setTemplateCopiedRegionY2(sheetData.getTemplateCopiedRegionY2() + movementSize);
 	}
 	
 	/**
