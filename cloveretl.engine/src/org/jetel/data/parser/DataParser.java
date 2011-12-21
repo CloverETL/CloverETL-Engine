@@ -40,6 +40,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
@@ -74,7 +75,7 @@ public class DataParser extends AbstractTextParser {
 
 	private StringBuilder fieldBuffer;
 
-	private CharBuffer recordBuffer;
+	private CloverBuffer recordBuffer;
 
 	private CharsetDecoder decoder;
 
@@ -186,7 +187,7 @@ public class DataParser extends AbstractTextParser {
 		charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
 		charBuffer.flip(); // initially empty 
 		fieldBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
-		recordBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+		recordBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		numFields = cfg.getMetadata().getNumFields();
 		isAutoFilling = new boolean[numFields];
@@ -548,7 +549,7 @@ public class DataParser extends AbstractTextParser {
     		character = charBuffer.get();
     		if (cfg.isVerbose()) {
 	    		try {
-	    			recordBuffer.put(character);
+	    			recordBuffer.putChar(character);
 	    		} catch (BufferOverflowException e) {
 	    			throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 	    		}
@@ -598,7 +599,7 @@ public class DataParser extends AbstractTextParser {
 			final int ret = charBuffer.get();
 			if (cfg.isVerbose()) {
 				try {
-					recordBuffer.put((char) ret);
+					recordBuffer.putChar((char) ret);
 				} catch (BufferOverflowException e) {
 					throw new RuntimeException("Parse error: The size of data buffer for data record is only " + recordBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 				}
@@ -823,7 +824,7 @@ public class DataParser extends AbstractTextParser {
 	public String getLastRawRecord() {
 		if (cfg.isVerbose()) {
 			recordBuffer.flip();
-			String lastRawRecord = recordBuffer.toString();
+			String lastRawRecord = recordBuffer.asCharBuffer().toString();
 			recordBuffer.position(recordBuffer.limit()); //it is necessary for repeated invocation of this method for the same record
 			return lastRawRecord;
 		} else {
