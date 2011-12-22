@@ -93,7 +93,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected int[][] formatMapping;
 	protected int startLine;
 	
-	private static final Comparator<CellMappedByOrder> CELL_ORDER_COMPARATOR =
+	private static final Comparator<CellMappedByOrder> VERTICAL_CELL_ORDER_COMPARATOR =
 			new Comparator<CellMappedByOrder>() {
 				@Override
 				public int compare(CellMappedByOrder c1, CellMappedByOrder c2) {
@@ -103,6 +103,16 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				}
 			};
 
+	private static final Comparator<CellMappedByOrder> HORIZONTAL_CELL_ORDER_COMPARATOR =
+			new Comparator<CellMappedByOrder>() {
+				@Override
+				public int compare(CellMappedByOrder c1, CellMappedByOrder c2) {
+					int colDiff = c1.column - c2.column;
+					if (colDiff != 0) return colDiff;
+					return c1.row - c2.row;
+				}
+			};
+	
 	public AbstractSpreadsheetParser(DataRecordMetadata metadata, XLSMapping mappingInfo) {
 		this.metadata = metadata;
 		if (mappingInfo == null) {
@@ -446,7 +456,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					" cells mapped by order, but only " + unusedFields.size() + " available metadata fields.");
 		}
 		
-		Collections.sort(mappedCells, CELL_ORDER_COMPARATOR);
+		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+			Collections.sort(mappedCells, VERTICAL_CELL_ORDER_COMPARATOR);
+		} else {
+			Collections.sort(mappedCells, HORIZONTAL_CELL_ORDER_COMPARATOR);
+		}
 		
 		for (CellMappedByOrder cell : mappedCells) {
 			setMappingFieldIndex(cell.row, cell.column, cell.group, unusedFields.remove(0), mapping);
