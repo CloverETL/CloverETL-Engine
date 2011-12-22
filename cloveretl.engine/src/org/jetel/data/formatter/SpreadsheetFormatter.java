@@ -1710,7 +1710,33 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 			}
 		}
+		shiftMergedRegionsWhileShiftingColumns(sheetData, index, movementSize);
 		sheetData.setTemplateCopiedRegionY2(sheetData.getTemplateCopiedRegionY2() + movementSize);
+	}
+
+	/**
+	 * @param sheetData
+	 * @param index
+	 * @param movementSize
+	 */
+	private void shiftMergedRegionsWhileShiftingColumns(SheetData sheetData, int index, int movementSize) {
+		List<Integer> regionsToRemove = new ArrayList<Integer>();
+		List<CellRangeAddress> regionsToAdd = new ArrayList<CellRangeAddress>(); 
+		for (int i=0; i<sheetData.sheet.getNumMergedRegions(); ++i) {
+			CellRangeAddress regionRangeAddress = sheetData.sheet.getMergedRegion(i);
+			if (regionRangeAddress.getLastColumn() >= index) {
+				regionsToRemove.add(i);
+				CellRangeAddress cellRangeAddress = new CellRangeAddress(regionRangeAddress.getFirstRow(), regionRangeAddress.getLastRow(), regionRangeAddress.getFirstColumn()+movementSize, regionRangeAddress.getLastColumn()+movementSize);
+				regionsToAdd.add(cellRangeAddress);
+			}
+		}
+		for (Integer regionToRemove : regionsToRemove) {
+			sheetData.sheet.removeMergedRegion(regionToRemove);
+		}
+		
+		for (CellRangeAddress regionToAdd : regionsToAdd) {
+			sheetData.sheet.addMergedRegion(regionToAdd);
+		}
 	}
 	
 	/**
