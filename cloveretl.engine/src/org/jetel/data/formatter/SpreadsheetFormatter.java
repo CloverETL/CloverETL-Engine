@@ -86,7 +86,43 @@ public class SpreadsheetFormatter implements Formatter {
 	private SpreadsheetAttitude attitude;
 	private SpreadsheetFormat formatterType;
 
+	
+	private static class Interval {
+		final int min;
+		final int max;
+		
+		public Interval(int min, int max) {
+			this.min = min;
+			this.max = max;
+		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + max;
+			result = prime * result + min;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Interval other = (Interval) obj;
+			if (max != other.max)
+				return false;
+			if (min != other.min)
+				return false;
+			return true;
+		}
+		
+	}
+	
 	private static class CellPosition {
 		final int x;
 		final int y;
@@ -181,7 +217,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private boolean mappingInitialized = false;
 	private Map<CellPosition, Integer> headerRangePositionToCloverFieldMapping = new HashMap<CellPosition, Integer>();
 	private Set<RelativeCellPosition> templateCellsToCopy = new LinkedHashSet<SpreadsheetFormatter.RelativeCellPosition>();
-	private Map<Integer, Integer> xOffsetToMinimalYOffset = new HashMap<Integer,Integer>();
+	private Map<Integer, Interval> xOffsetToMinimalYInterval = new HashMap<Integer,Interval>();
 	private Map<Integer, Integer> cloverFieldToXOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToYOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, CellStyle> cloverFieldToCellStyle = new HashMap<Integer, CellStyle>();
@@ -465,7 +501,7 @@ public class SpreadsheetFormatter implements Formatter {
 		computeHeaderAndRecordBounds();
 		
 		headerRangePositionToCloverFieldMapping.clear();
-		xOffsetToMinimalYOffset.clear();
+		xOffsetToMinimalYInterval.clear();
 		cloverFieldToXOffsetMapping.clear();
 		cloverFieldToYOffsetMapping.clear();
 		templateCellsToCopy.clear();
@@ -543,9 +579,13 @@ public class SpreadsheetFormatter implements Formatter {
 		for (Integer cloverFieldIndex : cloverFieldToYOffsetMapping.keySet()) {
 			Integer yOffset = cloverFieldToYOffsetMapping.get(cloverFieldIndex);
 			Integer xOffset = cloverFieldToXOffsetMapping.get(cloverFieldIndex);
-			Integer currentYOffsetMinimum = xOffsetToMinimalYOffset.get(xOffset);
-			if (currentYOffsetMinimum==null || currentYOffsetMinimum > yOffset ) {
-				xOffsetToMinimalYOffset.put(xOffset, yOffset);
+			Interval currentYInterval = xOffsetToMinimalYInterval.get(xOffset);
+			if (currentYInterval==null) {
+				xOffsetToMinimalYInterval.put(xOffset, new Interval(yOffset, yOffset));
+			} else if (currentYInterval.min > yOffset) {
+				xOffsetToMinimalYInterval.put(xOffset, new Interval(yOffset, currentYInterval.max));
+			} else if (currentYInterval.max < yOffset) {
+				xOffsetToMinimalYInterval.put(xOffset, new Interval(currentYInterval.min, yOffset));
 			}
 		}
 		
@@ -1436,12 +1476,16 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 		}
 		if (minRecordFieldYOffset<0) {
-			int lastRecordLine = index + lineCount - 1;
-			for (Entry<Integer, Integer> entry : xOffsetToMinimalYOffset.entrySet()) {
+			//when a record is not a straight line, newly created empty cells must be moved to positions defined by mapping
+			int previousRecordBottom = index + mappingInfo.getStep() - 1;
+			for (Entry<Integer, Interval> entry : xOffsetToMinimalYInterval.entrySet()) {
 				int x = firstRecordXYRange.x1 + entry.getKey();
-				int yOffset = entry.getValue();
-				for (int yDelta = 0; yDelta < lineCount; ++yDelta) {
-					swapCells(x, lastRecordLine, x, lastRecordLine + yDelta+yOffset);
+				int firstCellYToMove = index - 1;
+				int lastCellYToMove = previousRecordBottom + entry.getValue().min;
+				for (int y = firstCellYToMove; y >= lastCellYToMove; --y) {
+					int emptyCellY = y + lineCount;;
+					int previousRecordCellY = y;
+					swapCells(x, emptyCellY, x, previousRecordCellY);
 				}
 			}
 		}
@@ -1645,7 +1689,11 @@ public class SpreadsheetFormatter implements Formatter {
 			if (lastColumnNumber < index) {
 				appendEmptyLines(index - lastColumnNumber);
 			} else {
-				Integer minimalYOffset = xOffsetToMinimalYOffset.get(x-firstRecordXYRange.x1);
+				Integer minimalYOffset = null; 
+				Interval yInterval = xOffsetToMinimalYInterval.get(x-firstRecordXYRange.x1);
+				if (yInterval!=null) {
+					minimalYOffset = yInterval.min; 
+				}
 				if (minimalYOffset == null) {
 					minimalYOffset = 0;
 				}
