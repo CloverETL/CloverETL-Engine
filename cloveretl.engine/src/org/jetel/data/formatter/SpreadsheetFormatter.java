@@ -1679,6 +1679,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 	
 	private void shiftColumns(SheetData sheetData, int index, int movementSize) {
+		int previousRecordBottom = index + mappingInfo.getStep() - 1;
 		for (int x=0; x<=sheetData.getLastRowNumber(); ++x) {
 			Row row = sheetData.sheet.getRow(x);
 			if (row==null) {
@@ -1686,8 +1687,8 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 			int lastColumnNumber = sheetData.getLastColumnNumber();
 			
-			if (lastColumnNumber < index) {
-				appendEmptyLines(index - lastColumnNumber);
+			if (lastColumnNumber < previousRecordBottom) {
+				appendEmptyLines(previousRecordBottom - lastColumnNumber);
 			} else {
 				Integer minimalYOffset = null; 
 				Interval yInterval = xOffsetToMinimalYInterval.get(x-firstRecordXYRange.x1);
@@ -1697,7 +1698,7 @@ public class SpreadsheetFormatter implements Formatter {
 				if (minimalYOffset == null) {
 					minimalYOffset = 0;
 				}
-				int cellY = maximum(0, index + minimalYOffset);
+				int cellY = maximum(0, previousRecordBottom + minimalYOffset);
 				if (movementSize > 0) {
 					for (int movementIndex = lastColumnNumber; movementIndex >= cellY; --movementIndex) {
 						swapCells(sheetData, row, movementIndex, movementIndex + movementSize);
