@@ -345,7 +345,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	 * @since     March 28, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public Integer getValue() {
 		if (isNull) {
 			return null;
 		}
@@ -356,7 +356,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
+	public Integer getValueDuplicate() {
         return getValue();
     }
 

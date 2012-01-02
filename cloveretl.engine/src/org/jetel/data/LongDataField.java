@@ -356,7 +356,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 * @since     March 28, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public Long getValue() {
 		if (isNull) {
 			return null;
 		}
@@ -367,7 +367,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
+	public Long getValueDuplicate() {
         return getValue();
     }
 
