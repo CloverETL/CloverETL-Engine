@@ -21,6 +21,7 @@ package org.jetel.data.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +72,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	public SpreadsheetDOMParser(DataRecordMetadata metadata, XLSMapping mappingInfo, String password) {
 		super(metadata, mappingInfo);
 		this.password = password;
+		dataFormatter.addFormat("General", new DecimalFormat("#.############"));
 	}
 
 	@Override
