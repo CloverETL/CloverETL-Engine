@@ -1349,7 +1349,7 @@ public class XMLExtract extends Node {
 					final String content = xattribs.getString(
 							XML_NAMESPACE_BINDINGS_ATTRIBUTE, null);
 					if (content != null) {
-						props.load(new ByteArrayInputStream(content.getBytes()));
+						props.load(new StringReader(content));
 					}
 				} catch (IOException e) {
 					throw new XMLConfigurationException("Unable to initialize namespace bindings",e);

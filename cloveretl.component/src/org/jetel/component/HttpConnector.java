@@ -20,13 +20,13 @@ package org.jetel.component;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -805,7 +805,7 @@ public class HttpConnector extends Node {
 		if (!StringUtils.isEmpty(rawRequestProperties)) {
 			requestProperties = new Properties();
 			try {
-				requestProperties.load(new ByteArrayInputStream(rawRequestProperties.getBytes("ISO-8859-1")));
+				requestProperties.load(new StringReader(rawRequestProperties));
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request properties reading.", e);
 			}
