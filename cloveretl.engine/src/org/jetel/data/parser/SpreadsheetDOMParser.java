@@ -252,24 +252,36 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		char type = metadata.getField(cloverFieldIndex).getType();
 
 		try {
-			switch (type) {
-			case DataFieldMetadata.DATE_FIELD:
-			case DataFieldMetadata.DATETIME_FIELD:
-				record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
-				break;
-			case DataFieldMetadata.BYTE_FIELD:
-			case DataFieldMetadata.STRING_FIELD:
-				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL));
-				break;
-			case DataFieldMetadata.DECIMAL_FIELD:
-			case DataFieldMetadata.INTEGER_FIELD:
-			case DataFieldMetadata.LONG_FIELD:
-			case DataFieldMetadata.NUMERIC_FIELD:
-				record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
-				break;
-			case DataFieldMetadata.BOOLEAN_FIELD:
-				record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
-				break;
+			try {
+				
+				switch (type) {
+				case DataFieldMetadata.DATE_FIELD:
+				case DataFieldMetadata.DATETIME_FIELD:
+					record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
+					break;
+				case DataFieldMetadata.BYTE_FIELD:
+				case DataFieldMetadata.STRING_FIELD:
+					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL));
+					break;
+				case DataFieldMetadata.DECIMAL_FIELD:
+				case DataFieldMetadata.INTEGER_FIELD:
+				case DataFieldMetadata.LONG_FIELD:
+				case DataFieldMetadata.NUMERIC_FIELD:
+					record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
+					break;
+				case DataFieldMetadata.BOOLEAN_FIELD:
+					record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
+					break;
+				}
+				
+			} catch (IllegalStateException e) {
+				// Thrown by cell.get*CellValue if cell value type expected here in code is different than the actual cell value.
+				// If the actual cell value is empty string (after trimming), interpret it as null, otherwise rethrow the exception.
+				if (cell.getCellType() == Cell.CELL_TYPE_STRING && "".equals(cell.getStringCellValue().trim())) {
+					record.getField(cloverFieldIndex).setNull(true);
+				} else {
+					throw e;
+				}
 			}
 		} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
 			String errorMessage = exception.getMessage();
