@@ -231,6 +231,8 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			if (cellStyleStr != null) {
 				// Number, but almost certainly with a special style or format
 				styleIndex = Integer.parseInt(cellStyleStr);
+			} else {
+				styleIndex = 0; // set default style
 			}
 		}
 	}
