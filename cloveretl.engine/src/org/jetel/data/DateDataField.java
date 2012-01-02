@@ -213,7 +213,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @since     April 23, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public Date getValue() {
 		return isNull ? null : value;
 	}
 
@@ -221,8 +221,8 @@ public class DateDataField extends DataField implements Comparable<Object> {
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
-        return isNull ? null : value.clone();
+	public Date getValueDuplicate() {
+        return isNull ? null : new Date(value.getTime());
     }
 
 	/**

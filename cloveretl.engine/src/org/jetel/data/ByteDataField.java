@@ -246,7 +246,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@since     October 29, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public byte[] getValue() {
 		return isNull ? null : getByteArray();
 	}
 
@@ -254,7 +254,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
+	public byte[] getValueDuplicate() {
         if(isNull) {
             return null;
         }

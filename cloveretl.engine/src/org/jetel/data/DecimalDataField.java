@@ -351,7 +351,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@since     March 28, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public Decimal getValue() {
 		if(isNull) {
 			return null;
 		}
@@ -362,7 +362,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
+	public Decimal getValueDuplicate() {
         if(isNull) {
             return null;
         }

@@ -231,12 +231,12 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since     April 23, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public CharSequence getValue() {
 	    return (isNull ? null : value);
 	}
 
     @Override
-	public Object getValueDuplicate() {
+	public CharSequence getValueDuplicate() {
         return (isNull ? null : new CloverString(value));
     }
 

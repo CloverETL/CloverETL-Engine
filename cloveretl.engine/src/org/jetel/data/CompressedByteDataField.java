@@ -128,7 +128,7 @@ public class CompressedByteDataField extends ByteDataField {
 	}
 
     @Override
-	public Object getValueDuplicate() {
+	public byte[] getValueDuplicate() {
     	return getValue();
     }
 

@@ -132,7 +132,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @since     April 23, 2002
 	 */
 	@Override
-	public Object getValue() {
+	public Boolean getValue() {
 		return isNull ? null : Boolean.valueOf(value);
 	}
 
@@ -140,7 +140,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     @Override
-	public Object getValueDuplicate() {
+	public Boolean getValueDuplicate() {
         return getValue();
     }
 
