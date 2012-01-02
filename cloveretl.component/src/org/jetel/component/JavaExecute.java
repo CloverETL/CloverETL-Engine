@@ -18,8 +18,8 @@
  */
 package org.jetel.component;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -325,7 +325,7 @@ public class JavaExecute extends Node {
             	internalProperties = new Properties();
             	String stringProperties = xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null);
             	if (stringProperties != null) {
-            		internalProperties.load(new ByteArrayInputStream(stringProperties.getBytes()));
+            		internalProperties.load(new StringReader(stringProperties));
             	}
     		} catch (IOException e){
     			throw new RuntimeException("Unexpected IO exception in byte array reading.");
