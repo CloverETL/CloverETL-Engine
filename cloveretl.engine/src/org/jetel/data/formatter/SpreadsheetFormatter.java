@@ -1578,10 +1578,15 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 
+	
 	private void setCellValue(Cell cell, DataField dataField) {
 		
 		if (dataField.getValue()==null) {
 			cell.setCellValue(dataField.getMetadata().getNullValue());
+			if ("".equals(dataField.getMetadata().getNullValue())) {
+				cell.setCellType(Cell.CELL_TYPE_BLANK);
+			}
+
 			return;
 		}
 		
