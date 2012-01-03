@@ -399,12 +399,22 @@ public class XMLExtract extends Node {
             m_characters.setLength(0);
             m_hasCharacters = false;
             
-            final String universalName = augmentURI(namespaceURI) + localName; 
+            final String universalName = augmentURI(namespaceURI) + localName;
             Mapping mapping = null;
             if (m_activeMapping == null) {
                 mapping = (Mapping) m_elementPortMap.get(universalName);
+                
+                // CL-2053 - backward compatibility (part 1/2)
+                if (mapping == null) {
+                	mapping = (Mapping) m_elementPortMap.get("{}" + localName);
+                }
             } else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
                 mapping = (Mapping) m_activeMapping.getChildMapping(universalName);
+                
+                // CL-2053 - backward compatibility (part 2/2)
+                if (mapping == null) {
+                	mapping = (Mapping) m_activeMapping.getChildMapping("{}" + localName);
+                }
             }
             if (mapping != null) {
                 // We have a match, start converting all child nodes into
