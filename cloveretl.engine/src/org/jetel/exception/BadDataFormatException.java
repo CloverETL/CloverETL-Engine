@@ -48,6 +48,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     
     private BadDataFormatException next = null;
     
+    private String recordName = null;
+    
 	public BadDataFormatException() {
 		super();
 	}
@@ -93,6 +95,20 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 	public CharSequence getRawRecord() {
 		return rawRecord;
 	}
+	
+	/**
+	 * @return the recordName
+	 */
+	public String getRecordName() {
+		return recordName;
+	}
+
+	/**
+	 * @param recordName the recordName to set
+	 */
+	public void setRecordName(String recordName) {
+		this.recordName = recordName;
+	}
 
 	public String getSimpleMessage() {
 		return super.getMessage();
@@ -119,6 +135,11 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         if(recordNumber > -1) {
             ret.append(" of record # ");
             ret.append(recordNumber);
+        }
+        
+        if (recordName != null) {
+        	ret.append(" of type ");
+        	ret.append(recordName);
         }
         
         if(offendingValue != null) {
