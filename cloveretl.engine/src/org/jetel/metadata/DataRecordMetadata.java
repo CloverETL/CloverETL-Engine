@@ -46,6 +46,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  * A class that represents metadata describing a data record.
  * 
+ * For possible concurrency problem see {@link #structureChanged()}.
+ * 
  * @author David Pavlis, Javlin a.s. &lt;david.pavlis@javlin.eu&gt;
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
  * 
@@ -94,13 +96,13 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	@SuppressWarnings("Se")
 	private List<DataFieldMetadata> fields = new ArrayList<DataFieldMetadata>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldNamesMap = new ConcurrentHashMap<String, Integer>();
+	private Map<String, Integer> fieldNamesMap = new HashMap<String, Integer>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldLabelsMap = new ConcurrentHashMap<String, Integer>();
+	private Map<String, Integer> fieldLabelsMap = new HashMap<String, Integer>();
 	@SuppressWarnings("Se")
-	private Map<Integer, String> fieldTypes = new ConcurrentHashMap<Integer, String>();
+	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldOffset = new ConcurrentHashMap<String, Integer>();
+	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
 
 	/** an array of field names specifying a primary key */
 	private String[] keyFieldNames = null;
@@ -619,6 +621,26 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	/**
 	 * Call if the structure of the metadata changes (a field was added/removed).
+	 * 
+	 * Indexes are re-created by this call. Common use case is that DataRecordMedatada is first filled with all data,
+	 * indexes are created and then data are only retrieved.
+	 * 
+	 * Current implementation can cause concurrency problem as unsynchronized {@link java.util.HashMap} is used for
+	 * indexes.
+	 * 
+	 * Problems would most probably manifest when some thread will not see index in state left by previous
+	 * {@link #structureChanged()} call done by other thread but in some older/inconsistent state. As time between
+	 * initialization of metadata
+	 * structure and using the indexes shall be long enough for HashMap to synchronize without explicit synchronization,
+	 * probability of occurrence of this problem is considered to be small. Therefore, risk of this failure is accepted.
+	 * 
+	 * Reasons are for using unsynchronized HashMap:
+	 * 
+	 * <li>performance (among wrapping by {@link java.util.Collections#synchronizedMap(Map)}
+	 * 
+	 * <li>easines of implementation (among using {@link java.util.concurrent.ConcurrentHashMap} which does not allow
+	 * null values - a wrapper would be needed but it is too complex to implement)
+	 * 
 	 */
 	private synchronized void structureChanged() {
 		recordSize = -1;
