@@ -105,7 +105,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/** an array of field names specifying a primary key */
 	private String[] keyFieldNames = null;
 
-	private BitArray fieldNullSwitch = new BitArray();
 	private short numNullableFields = 0;
 
 	private TypedProperties recordProperties = new TypedProperties();
@@ -628,24 +627,14 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		updateFieldLabelsMap();
 		updateFieldTypes();
 		updateFieldOffset();
-		updateFieldNullSwitch();
+		updateFieldNumbers();
 	}
 
-	private void updateFieldNullSwitch() {
-		fieldNullSwitch.resize(fields.size());
-		numNullableFields = 0;
-
+	private void updateFieldNumbers() {
 		int count = 0;
 
 		for (DataFieldMetadata fieldMeta : fields) {
-			fieldMeta.setNumber(count);
-
-			if (fieldMeta.isNullable()) {
-				fieldNullSwitch.set(count);
-				numNullableFields++;
-			}
-
-			count++;
+			fieldMeta.setNumber(count++);
 		}
 	}
 
@@ -785,15 +774,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		recordKey.init();
 
 		return recordKey;
-	}
-
-	/**
-	 * @return a <code>BitArray</code> where bits are set for fields which may contain a NULL value.
-	 *
-	 * @since 18th January 2007
-	 */
-	public BitArray getFieldsNullSwitches() {
-		return fieldNullSwitch;
 	}
 
 	/**
