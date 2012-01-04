@@ -62,8 +62,8 @@ goto cmdLineArgs
 :DBFAnalyzer
 
 set CLOVER_ENGINE_JAR=%CLOVER_HOME%\lib\cloveretl.engine.jar
-set COMMONS_LOGGING_JAR=%CLOVER_HOME%\lib\commons-logging.jar
-set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.12.jar
+set COMMONS_LOGGING_JAR=%CLOVER_HOME%\lib\commons-logging-1.1.1.jar
+set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.15.jar
 
 echo "%JAVA_CMD%" -classpath "%CLOVER_ENGINE_JAR%;%COMMONS_LOGGING_JAR%;%LOG4J_JAR%" org.jetel.database.dbf.DBFAnalyzer %CMD_LINE_ARGS%
 "%JAVA_CMD%" -classpath "%CLOVER_ENGINE_JAR%;%COMMONS_LOGGING_JAR%;%LOG4J_JAR%" org.jetel.database.dbf.DBFAnalyzer %CMD_LINE_ARGS%

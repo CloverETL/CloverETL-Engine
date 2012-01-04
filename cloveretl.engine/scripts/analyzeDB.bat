@@ -65,8 +65,8 @@ goto cmdLineArgs
 
 set CLOVER_ENGINE_JAR=%CLOVER_HOME%\lib\cloveretl.engine.jar
 set CLOVER_CONNECTION_JAR=%CLOVER_HOME%\plugins\org.jetel.connection\cloveretl.connection.jar
-set COMMONS_LOGGING_JAR=%CLOVER_HOME%\lib\commons-logging.jar
-set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.12.jar
+set COMMONS_LOGGING_JAR=%CLOVER_HOME%\lib\commons-logging-1.1.1.jar
+set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.15.jar
 
 set CLOVER_PLUGINS_DIR=%CLOVER_HOME%\plugins
 
