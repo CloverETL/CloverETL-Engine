@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -93,13 +94,13 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	@SuppressWarnings("Se")
 	private List<DataFieldMetadata> fields = new ArrayList<DataFieldMetadata>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldNamesMap = new HashMap<String, Integer>();
+	private Map<String, Integer> fieldNamesMap = new ConcurrentHashMap<String, Integer>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldLabelsMap = new HashMap<String, Integer>();
+	private Map<String, Integer> fieldLabelsMap = new ConcurrentHashMap<String, Integer>();
 	@SuppressWarnings("Se")
-	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
+	private Map<Integer, String> fieldTypes = new ConcurrentHashMap<Integer, String>();
 	@SuppressWarnings("Se")
-	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
+	private Map<String, Integer> fieldOffset = new ConcurrentHashMap<String, Integer>();
 
 	/** an array of field names specifying a primary key */
 	private String[] keyFieldNames = null;
@@ -527,9 +528,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the position of the field within the data record or -1 if no such field exists
 	 */
 	public int getFieldPosition(String fieldName) {
-		if (fieldNamesMap.isEmpty()) {
-			updateFieldNamesMap();
-		}
 
 		Integer position = fieldNamesMap.get(fieldName);
 
@@ -554,9 +552,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the position of the field within the data record or -1 if no such field exists
 	 */
 	public int getFieldPositionByLabel(String label) {
-		if (fieldLabelsMap.isEmpty()) {
-			updateFieldLabelsMap();
-		}
 
 		Integer position = fieldLabelsMap.get(label);
 
@@ -626,14 +621,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * Call if the structure of the metadata changes (a field was added/removed).
 	 */
-	private void structureChanged() {
+	private synchronized void structureChanged() {
 		recordSize = -1;
 
-		fieldNamesMap.clear();
-		fieldLabelsMap.clear();
-		fieldTypes.clear();
-		fieldOffset.clear();
+		updateFieldNamesMap();
+		updateFieldLabelsMap();
+		updateFieldTypes();
+		updateFieldOffset();
+		updateFieldNullSwitch();
+	}
 
+	private void updateFieldNullSwitch() {
 		fieldNullSwitch.resize(fields.size());
 		numNullableFields = 0;
 
@@ -648,6 +646,14 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			}
 
 			count++;
+		}
+	}
+
+	private void updateFieldTypes() {
+		fieldTypes.clear();
+
+		for (int i = 0; i < fields.size(); i++) {
+			fieldTypes.put(i, Character.toString(fields.get(i).getType()));
 		}
 	}
 
@@ -670,10 +676,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @since 2nd May 2002
 	 */
 	public Map<String, Integer> getFieldNamesMap() {
-		if (fieldNamesMap.isEmpty()) {
-			updateFieldNamesMap();
-		}
-
 		return new HashMap<String, Integer>(fieldNamesMap);
 	}
 
@@ -681,7 +683,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * Used to populate the fieldNamesMap map if empty.
 	 */
 	private void updateFieldNamesMap() {
-		assert (fieldNamesMap.isEmpty());
+		fieldNamesMap.clear();
 
 		for (int i = 0; i < fields.size(); i++) {
 			fieldNamesMap.put(fields.get(i).getName(), i);
@@ -692,7 +694,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * Used to populate the fieldLabelsMap map if empty.
 	 */
 	private void updateFieldLabelsMap() {
-		assert (fieldLabelsMap.isEmpty());
+		fieldLabelsMap.clear();
 		
 		for (int i = 0; i < fields.size(); i++) {
 			String label = fields.get(i).getLabelOrName();
@@ -708,10 +710,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @since 8nd Dec 2011
 	 */
 	public Map<String, Integer> getFieldLabelsMap() {
-		if (fieldLabelsMap.isEmpty()) {
-			updateFieldLabelsMap();
-		}
-
 		return new HashMap<String, Integer>(fieldLabelsMap);
 	}
 
@@ -721,12 +719,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @since 2nd May 2002
 	 */
 	public Map<Integer, String> getFieldTypes() {
-		if (fieldTypes.isEmpty()) {
-			for (int i = 0; i < fields.size(); i++) {
-				fieldTypes.put(i, Character.toString(fields.get(i).getType()));
-			}
-		}
-
 		return new HashMap<Integer, String>(fieldTypes);
 	}
 
@@ -742,15 +734,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			return -1;
 		}
 
-		if (fieldOffset.isEmpty()) {
-			int offset = 0;
-
-			for (DataFieldMetadata field : fields) {
-				fieldOffset.put(field.getName(), offset + field.getShift());
-				offset += field.getSize();
-			}
-		}
-
 		Integer offset = fieldOffset.get(fieldName);
 
 		if (offset != null) {
@@ -758,6 +741,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 
 		return -1;
+	}
+
+	private void updateFieldOffset() {
+		int offset = 0;
+		fieldOffset.clear();
+
+		for (DataFieldMetadata field : fields) {
+			fieldOffset.put(field.getName(), offset + field.getShift());
+			offset += field.getSize();
+		}
 	}
 
 	/**
