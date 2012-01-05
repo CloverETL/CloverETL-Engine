@@ -138,6 +138,7 @@ public class AnalyzeDB {
 			    config.setProperty("jdbcSpecific", argv[++i]);
 			} else if (argv[i].equalsIgnoreCase("-database")) {
 			    config.setProperty("database", argv[++i]);
+			    optionSwitch |= 0x03;
 			} else if (argv[i].equalsIgnoreCase("-d")) {
 				delimiter = argv[++i];
 			} else if (argv[i].equalsIgnoreCase("-o")) {
@@ -161,6 +162,7 @@ public class AnalyzeDB {
 					stream.close();
 					if (config.getProperty("dbDriver") != null) optionSwitch |= 0x01; 
 					if (config.getProperty("dbURL") != null) optionSwitch |= 0x02;
+					if (config.getProperty("database") != null) optionSwitch |= 0x03;
 				}catch(Exception ex){
 					System.err.println("[Error] "+ex.getMessage());
 					System.exit(-1);
