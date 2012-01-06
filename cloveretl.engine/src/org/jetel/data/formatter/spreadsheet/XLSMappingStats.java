@@ -20,7 +20,9 @@ package org.jetel.data.formatter.spreadsheet;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,8 +65,8 @@ public class XLSMappingStats {
 
 	}
 
-	private String getCellStringValueByRowAndColumn(SheetData sheetData, int row, int column) {
-		Cell cell = sheetData.getCellByRowAndColumn(row, column);
+	private String getCellStringValueByRowAndColumn(SheetData sheetData, int x, int y) {
+		Cell cell = sheetData.getCellByXY(x, y);
 		if (cell==null) {
 			return null;
 		}
@@ -78,11 +80,15 @@ public class XLSMappingStats {
 
 	}
 	
-	private DataFieldMetadata takeNextFieldByName(SheetData sheetData, LinkedHashMap<String,DataFieldMetadata> cloverFields, HeaderRange range) {
+	private DataFieldMetadata takeNextFieldByName(LinkedHashMap<String,DataFieldMetadata> cloverFields, Map<String, String> labelsToNames, CellPosition cellPosition, SheetData sheetData) {
 		if (cloverFields.size()!=0) {
-			String dataFieldMetaDataKey = getCellStringValueByRowAndColumn(sheetData, range.getRowStart(), range.getColumnStart());
-			if (dataFieldMetaDataKey!=null) {
-				DataFieldMetadata dataFieldMetaData = cloverFields.remove(dataFieldMetaDataKey);
+			String cellContent = getCellStringValueByRowAndColumn(sheetData, cellPosition.x, cellPosition.y);
+			if (cellContent!=null) {
+				DataFieldMetadata dataFieldMetaData = cloverFields.remove(cellContent);
+				if (dataFieldMetaData==null) {
+					String possibleFieldName = labelsToNames.get(cellContent);
+					dataFieldMetaData = cloverFields.remove(possibleFieldName);
+				}
 				return dataFieldMetaData;
 			} else {
 				return null;
@@ -132,6 +138,58 @@ public class XLSMappingStats {
 		}
 	}
 	
+	private static class CellPositionAndSkip implements Comparable<CellPositionAndSkip>{
+		final CellPosition cellPosition;
+		final int skip;
+		public CellPositionAndSkip(CellPosition cellPosition, int skip) {
+			this.cellPosition = cellPosition;
+			this.skip = skip;
+		}
+		@Override
+		public int compareTo(CellPositionAndSkip o) {
+			int cellPositionComparison = cellPosition.compareTo(o.cellPosition);
+			if (cellPositionComparison!=0) {
+				return cellPositionComparison;
+			} else {
+				if (skip == o.skip) {
+					return 0;
+				} else if (skip < o.skip) {
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+		}
+		
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((cellPosition == null) ? 0 : cellPosition.hashCode());
+			result = prime * result + skip;
+			return result;
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CellPositionAndSkip other = (CellPositionAndSkip) obj;
+			if (cellPosition == null) {
+				if (other.cellPosition != null)
+					return false;
+			} else if (!cellPosition.equals(other.cellPosition))
+				return false;
+			if (skip != other.skip)
+				return false;
+			return true;
+		}
+	}
+	
 	public void init(XLSMapping mappingInfo, DataRecordMetadata metadata, SheetData sheetData, boolean insert, boolean hasTemplateWorkbook) {
 		CoordsTransformations transformations = new CoordsTransformations(mappingInfo.getOrientation());
 		Stats stats = mappingInfo.getStats();
@@ -148,70 +206,112 @@ public class XLSMappingStats {
 		Map<Integer,Integer> templateColumnsFieldCount = new HashMap<Integer,Integer>();
 		
 		LinkedHashMap<String, DataFieldMetadata> cloverFields = new LinkedHashMap<String, DataFieldMetadata>();
+		Map<String, String> labelsToNames = new HashMap<String, String>();
 		for (DataFieldMetadata dataField : metadata.getFields()) {
 			cloverFields.put(dataField.getName(), dataField);
+			labelsToNames.put(dataField.getLabel(), dataField.getName());
 		}
 		
+		List<HeaderGroup> groupsToMapExplicitly = new ArrayList<HeaderGroup>(); 
+		List<HeaderGroup> groupsToMapByName = new ArrayList<HeaderGroup>(); 
+		List<HeaderGroup> groupsToMapByOrder = new ArrayList<HeaderGroup>(); 
+		
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			for (HeaderRange range : group.getRanges()) {
-				
-				int cloverField = XLSMapping.UNDEFINED;
-				if (group.getCloverField() != XLSMapping.UNDEFINED) {
-					cloverField = group.getCloverField();
-				} else {
-					switch (group.getMappingMode()) {
-					case AUTO:
-						if (stats.useAutoNameMapping()) {
-							// name mapping
-							DataFieldMetadata dataFieldMetadataByName = takeNextFieldByName(sheetData, cloverFields, range);
-							if (dataFieldMetadataByName!=null) {
-								cloverField = dataFieldMetadataByName.getNumber();
-							}
-						} else {
-							// order mapping
-							DataFieldMetadata dataFieldMetadata = takeNextFieldInOrder(cloverFields);
-							if (dataFieldMetadata!=null) {
-								cloverField = dataFieldMetadata.getNumber();
-							}
-						}
-						break;
-					case NAME:
-						// order mapping
-						DataFieldMetadata dataFieldMetadataByName = takeNextFieldByName(sheetData, cloverFields, range);
-						if (dataFieldMetadataByName!=null) {
-							cloverField = dataFieldMetadataByName.getNumber();
-						}
-						break;
-					case ORDER:
-						// order mapping
-						DataFieldMetadata dataFieldMetadata = takeNextFieldInOrder(cloverFields);
-						if (dataFieldMetadata!=null) {
-							cloverField = dataFieldMetadata.getNumber();
-						}
-						break;
+			if (group.getCloverField() != XLSMapping.UNDEFINED) {
+				groupsToMapExplicitly.add(group);
+			} else {
+				switch (group.getMappingMode()) {
+				case AUTO:
+					if (stats.useAutoNameMapping()) {
+						groupsToMapByName.add(group);
+					} else {
+						groupsToMapByOrder.add(group);
 					}
-				}
-				
-				if (cloverField != XLSMapping.UNDEFINED) {
-					usedDataFields.add(metadata.getField(cloverField));
-					
-					XYRange firstRecordXYRange = this.getFirstRecordXYRange();
-					this.addCloverFieldForHeaderPosition(transformations.getX1fromRange(range), transformations.getY1fromRange(range), cloverField);
-					int recordFieldX = transformations.getX1fromRange(range);
-					int recordFieldXOffset = recordFieldX - firstRecordXYRange.x1; //x coordinate minus x-indentation
-					int headerBottomPlusSkip = transformations.getY2fromRange(range) + group.getSkip();
-					int recordFieldYOffset = headerBottomPlusSkip - firstRecordXYRange.y2; //y coordinate of cell under header of this column minus y bound to the entire header
-					this.addXYOffsetsForCloverField(cloverField, recordFieldXOffset, recordFieldYOffset);
-					this.setMinRecordFieldYOffset(transformations.minimum(this.getMinRecordFieldYOffset(), recordFieldYOffset));
-					this.addTemplateCellToCopy(new RelativeCellPosition(recordFieldXOffset, recordFieldYOffset));
-					Integer templateColumnFieldCount = templateColumnsFieldCount.get(recordFieldX);
-					if (templateColumnFieldCount==null) {
-						templateColumnFieldCount = 0;
-					}
-					templateColumnsFieldCount.put(recordFieldX, templateColumnFieldCount+1);
+					break;
+				case NAME:
+					groupsToMapByName.add(group);
+					break;
+				case ORDER:
+					groupsToMapByOrder.add(group);
+					break;
 				}
 			}
 		}
+			
+		Map<Integer, CellPositionAndSkip> cloverFieldMapping = new HashMap<Integer, XLSMappingStats.CellPositionAndSkip>();
+		
+		for (HeaderGroup group : groupsToMapExplicitly) {
+			for (HeaderRange range : group.getRanges()) {
+				int cloverField = group.getCloverField();
+				DataFieldMetadata dataField = metadata.getField(cloverField);
+				if (dataField!=null) {
+					cloverFields.remove(dataField.getName());
+				}
+				else {
+					cloverField = XLSMapping.UNDEFINED;
+				}
+				if (cloverField != XLSMapping.UNDEFINED) {
+					cloverFieldMapping.put(cloverField, new CellPositionAndSkip(new CellPosition(transformations.getX1fromRange(range), transformations.getY1fromRange(range)), group.getSkip()));
+				}
+			}
+		}
+
+		 
+		
+		List<CellPositionAndSkip> cellsToUseForNameMapping = getAllCellsFromRanges(transformations, groupsToMapByName);
+		for (CellPositionAndSkip cellPositionAndSkip : cellsToUseForNameMapping) {
+			int cloverField = XLSMapping.UNDEFINED;
+			DataFieldMetadata dataFieldMetadataByName = takeNextFieldByName(cloverFields, labelsToNames, cellPositionAndSkip.cellPosition, sheetData);
+			if (dataFieldMetadataByName!=null) {
+				cloverField = dataFieldMetadataByName.getNumber();
+			}
+			if (cloverField != XLSMapping.UNDEFINED) {
+				cloverFieldMapping.put(cloverField, cellPositionAndSkip);
+			}
+		}
+		
+
+		List<CellPositionAndSkip> cellsToUseForOrderMapping = getAllCellsFromRanges(transformations, groupsToMapByOrder); 
+		
+		Collections.sort(cellsToUseForOrderMapping);
+		
+		for (CellPositionAndSkip cellPositionAndSkip : cellsToUseForOrderMapping) {
+			int cloverField = XLSMapping.UNDEFINED;
+			DataFieldMetadata dataFieldMetadata = takeNextFieldInOrder(cloverFields);
+			if (dataFieldMetadata!=null) {
+				cloverField = dataFieldMetadata.getNumber();
+			}
+			if (cloverField != XLSMapping.UNDEFINED) {
+				cloverFieldMapping.put(cloverField, cellPositionAndSkip);
+			}
+			
+		}
+		
+		
+		for (Integer cloverField : cloverFieldMapping.keySet()) {
+			if (cloverField != XLSMapping.UNDEFINED) {
+				CellPositionAndSkip cellPositionAndSkip = cloverFieldMapping.get(cloverField);
+				int skip = cellPositionAndSkip.skip;
+				CellPosition cellPosition = cellPositionAndSkip.cellPosition;
+				usedDataFields.add(metadata.getField(cloverField));
+				
+				XYRange firstRecordXYRange = this.getFirstRecordXYRange();
+				this.addCloverFieldForHeaderPosition(cellPosition.x, cellPosition.y, cloverField);
+				int recordFieldX = cellPosition.x;
+				int recordFieldXOffset = recordFieldX - firstRecordXYRange.x1; //x coordinate minus x-indentation
+				int headerBottomPlusSkip = cellPosition.y + skip;
+				int recordFieldYOffset = headerBottomPlusSkip - firstRecordXYRange.y2; //y coordinate of cell under header of this column minus y bound to the entire header
+				this.addXYOffsetsForCloverField(cloverField, recordFieldXOffset, recordFieldYOffset);
+				this.setMinRecordFieldYOffset(transformations.minimum(this.getMinRecordFieldYOffset(), recordFieldYOffset));
+				this.addTemplateCellToCopy(new RelativeCellPosition(recordFieldXOffset, recordFieldYOffset));
+				Integer templateColumnFieldCount = templateColumnsFieldCount.get(recordFieldX);
+				if (templateColumnFieldCount==null) {
+					templateColumnFieldCount = 0;
+				}
+				templateColumnsFieldCount.put(recordFieldX, templateColumnFieldCount+1);
+			}
+		}
+
 		
 		for (Integer cloverFieldIndex : this.getRegisteredCloverFields()) {
 			Integer yOffset = this.getYOffsetForCloverField(cloverFieldIndex);
@@ -259,6 +359,24 @@ public class XLSMappingStats {
 
 		
 		this.setTemplateSheetName(sheetData.getSheetName());
+	}
+
+	/**
+	 * @param transformations
+	 * @param groupsToMapByName
+	 */
+	private List<CellPositionAndSkip> getAllCellsFromRanges(CoordsTransformations transformations, List<HeaderGroup> groupsToMapByName) {
+		List<CellPositionAndSkip> result = new ArrayList<CellPositionAndSkip>();
+		for (HeaderGroup group : groupsToMapByName) {
+			for (HeaderRange range : group.getRanges()) {
+				for (int x=transformations.getX1fromRange(range); x<=transformations.getX2fromRange(range); ++x) {
+					for (int y=transformations.getY1fromRange(range); y<=transformations.getY2fromRange(range); ++y) {
+						result.add(new CellPositionAndSkip(new CellPosition(x, y), group.getSkip()));
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	

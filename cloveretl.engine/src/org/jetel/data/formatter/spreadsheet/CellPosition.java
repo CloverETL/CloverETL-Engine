@@ -18,7 +18,7 @@
  */
 package org.jetel.data.formatter.spreadsheet;
 
-public class CellPosition {
+public class CellPosition implements Comparable<CellPosition>{
 	public final int x;
 	public final int y;
 
@@ -50,6 +50,24 @@ public class CellPosition {
 		if (y != other.y)
 			return false;
 		return true;
+	}
+
+	@Override
+	public int compareTo(CellPosition o) {
+		if (this.equals(o)) {
+			return 0;
+		}
+		if (this.x < o.x) {
+			return -1;
+		} else if (this.x > o.x) {
+			return 1;
+		} else if (this.y < o.y) {
+			return -1;
+		} else if (this.y > o.y) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 	
 }
