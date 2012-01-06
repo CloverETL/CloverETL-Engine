@@ -41,6 +41,9 @@ public class CellOperations {
 		targetCell.setCellStyle(sourceCell.getCellStyle());
 		switch (sourceCell.getCellType()) {
 		case Cell.CELL_TYPE_BLANK:
+			targetCell.setCellValue("");
+			targetCell.setCellType(Cell.CELL_TYPE_BLANK);
+			break;
 		case Cell.CELL_TYPE_STRING:
 			targetCell.setCellValue(sourceCell.getStringCellValue());
 			break;
