@@ -403,7 +403,7 @@ public final class SheetData {
 					}
 				} else {
 					for (int movementIndex = cellY; movementIndex <= lastColumnNumber; ++movementIndex) {
-						swapCells(row, movementIndex, movementIndex + movementSize);
+						copyCell(row, movementIndex, movementIndex + movementSize);
 					}
 				}
 			}
@@ -444,6 +444,17 @@ public final class SheetData {
 		CellOperations.swapCells(sourceCell, targetCell);
 	}
 
+	public void copyCell(Row row, int sourceCellIndex, int targetCellIndex) {
+		Cell sourceCell = row.getCell(sourceCellIndex);
+		if (sourceCell==null) {
+			sourceCell = createCellAndRefreshLastColumnNumber(row, sourceCellIndex);
+		}
+		Cell targetCell = row.getCell(targetCellIndex);
+		if (targetCell == null) {
+			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
+		}
+		CellOperations.copyCell(sourceCell, targetCell);
+	}
 
 	public void autosizeColumns() {
 		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
