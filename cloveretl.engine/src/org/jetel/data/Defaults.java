@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
@@ -42,9 +43,20 @@ public final class Defaults {
 	private static Properties properties;
 	private static Log logger = LogFactory.getLog(Defaults.class);
 
+	/**
+	 * Returns snapshot of engine properties.
+	 * If the engine properties are stored as separated properties and defaults (@see java.util.Properties), this method returns merged properties.
+	 */
 	public static Properties getPropertiesSnapshot() {
 		Properties p = new Properties();
-		p.putAll(properties);
+		Set<String> keys = properties.stringPropertyNames();
+		// must be implemented in this complex way, otherwise Properties.defaults would be ignored
+		for (String key : keys) {
+			String v = properties.getProperty(key); // must be getProperty, otherwise Properties.defaults would be ignored 
+			if (v != null) {
+				p.put(key, v);
+			} 
+		}// for
 		return p;
 	}
 
