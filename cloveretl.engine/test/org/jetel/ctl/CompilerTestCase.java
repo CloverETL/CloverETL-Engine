@@ -714,6 +714,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_parser");		
 	}
 
+	public void test_ref_res_import() {
+		System.out.println("\nSpecial character resolving (import) test:");
+
+		URL importLoc = getClass().getSuperclass().getResource("test_ref_res.ctl");
+		String expStr = "import '" + importLoc + "';\n";
+		doCompile(expStr, "test_ref_res_import");
+	}
+
+	public void test_ref_res_noimport() {
+		System.out.println("\nSpecial character resolving (no import) test:");
+		doCompile("test_ref_res");		
+	}
+	
 	public void test_import() {
 		System.out.println("\nImport test:");
 
@@ -731,7 +744,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"}\n";
 		doCompile(expStr, "test_import");
 	}
-
+	
 	public void test_scope() throws ComponentNotReadyException, TransformException {
 		System.out.println("\nMapping test:");
 		// String expStr =
