@@ -57,51 +57,77 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * A class that handles writing of records (arguments of its method write()) into a given output stream in XLS(X)
+ * format (the output stream can be given using the setDataTarget() method). 
+ * 
  * @author psimecek & lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 6 Sep 2011
  */
 public class SpreadsheetFormatter implements Formatter {
 
-    public static final String XLSX_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss][Xx]$";
+    /** A pattern matching XLSX file extension */
+	public static final String XLSX_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss][Xx]$";
+	/** A pattern matching XLTX file extension */
     public static final String XLTX_FILE_PATTERN = "^.*\\.[Xx][Ll][Tt][Xx]$";
 
-	/** the value specifying that no data format is used/set */
+	/** A value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
+	/** A prefix of a sheet name specifying that a reference to the column should be used */  
 	private static final String CLOVER_FIELD_PREFIX = "$";
+	/** Default number of rows of an in-memory window, while streaming writign is used */ 
 	private static final int DEFAULT_STREAM_WINDOW_SIZE = 10;
 
+	/** sets whether the formatter operates data in-memory or with a streaming approach */
 	private SpreadsheetAttitude attitude;
+	/** Sets which format should be used (XLS, XLSX or automatic detection using file extensions */
 	private SpreadsheetFormat formatterType;
 
-	
+	/** A library of SheetData affiliated to sheets that have been created or used during the current formatter run. */ 
 	private SheetDataLibrary sheetDataLibrary = new SheetDataLibrary();
+	/** A workbook containing template file to be used as a template for writing records */
 	private Workbook templateWorkbook;
+	/** A sheet name set in a SpreadsheetWriter component */
 	private String sheet;
+	/** A key for sheet partitioning */
 	private RecordKey sheetNameKeyRecord;
+	/** A model of mapping of metadata to table columns */ 
 	private XLSMapping mappingInfo;
+	/** A helper static class with transformation over table coordinates with respect to spreadsheet orientation */
 	private CoordsTransformations transformations;
+	/** A statistic computed from mappingInfo used for writing a record according to a specified mapping */
 	private XLSMappingStats mappingStats = new XLSMappingStats();
+	/** A flag preventing repeated computation of mappingStats */
 	private boolean mappingStatsInitialized = false;
 
+	/** A flag saying whether formatter works in an append mode (data are appended to the end of table) */
 	private boolean append;
+	/** A flag saying whether formatter works in an insertion mode (data are inserted just below the header) */
 	private boolean insert;
+	/** A flag saying whether a new file must be created (and an old file must be deleted) before writing begins */ 
 	private boolean createFile;
+	/** A flag saying whether all sheets should be removed before writing begins */
 	private boolean removeSheets;
 
-	/** the currently open workbook */
+	/** A workbook for a currently open spreadsheet */
 	private Workbook workbook;
-	/** the sheet that is being used */
+	/** SheetData for a sheet that is currently being used */
 	private SheetData currentSheetData;
-	/** the output stream used to output the workbook */
+	/** A representation of an output stream used for flushing of the workbook in the end*/
 	private Object outputDataTarget;
+	/** A boolean flag preventing repeated flushing of the workbook */
 	private boolean workbookNotFlushed = true;
+	/** An input stream used for reading of a workbook into the memory */
 	private InputStream workbookInputStream;
+	/** A library of cell styles used for different metadata fields. When the insertion mode is on, the library is filled according to the first record under the header */
 	private CellStyleLibrary cellStyleLibrary = new CellStyleLibrary();
-	
+
+	/** Record metadata of input data */
 	private DataRecordMetadata metadata;
 
+	/** Index of sheet set by user */
 	private int sheetIndex = -1;
+	/** Sheet name derived either from a sheet name given by user or from sheetIndex or by creation of a new sheet */ 
 	private String sheetName;
 
 	public void setAttitude(SpreadsheetAttitude attitude) {
@@ -153,12 +179,24 @@ public class SpreadsheetFormatter implements Formatter {
 		return mappingStats.getCloverFieldForHeaderPosition(x, y);
 	}
 	
+	/**
+	 * Initialization method.
+	 * 
+	 * Resets the formatter so that it is prepared for writing another file.
+	 */
 	@Override
 	public void init(DataRecordMetadata metadata) {
 		mappingStatsInitialized = false;
 		this.metadata = metadata;
 		sheetDataLibrary.clear();
-		
+		deriveSheetName();
+		cellStyleLibrary.clear();
+	}
+
+	/**
+	 * Derives sheet name with respect of setting in a SpreadsheetWriter component 
+	 */
+	private void deriveSheetName() {
 		if (!StringUtils.isEmpty(sheet)) {
 			if (sheet.startsWith(Defaults.CLOVER_FIELD_INDICATOR)) {
 				String[] fields = sheet.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
@@ -169,7 +207,7 @@ public class SpreadsheetFormatter implements Formatter {
 				int result = StringUtils.isInteger(sheet);
 				if (result == 0 || result == 1) {
 					sheetIndex = Integer.parseInt(sheet);
-				} else {
+				} else { //allows to read "[1]" as a sheet named "1"
 					if (sheet.charAt(0) == XLSMapping.ESCAPE_START) {
 						sheetName = sheet.substring(1, sheet.length() - 1);
 					} else {
@@ -178,19 +216,17 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 			}
 		}
-		
-		cellStyleLibrary.clear();
 	}
 	
 	/**
-	 * @return the createFile
+	 * @return whether a new file should be created or not
 	 */
 	public boolean isCreateFile() {
 		return createFile;
 	}
 
 	/**
-	 * @param createFile the createFile to set
+	 * @param createFile sets whether a new file should be created or not
 	 */
 	public void setCreateFile(boolean createFile) {
 		this.createFile = createFile;
@@ -200,7 +236,7 @@ public class SpreadsheetFormatter implements Formatter {
 	
 
 	/**
-	 * Sets from which fields from input metadata will be created sheet name for different records
+	 * Sets from which fields from input metadata will be created sheet name for different records (enables so called sheet partitioning)
 	 * 
 	 * @param fieldNames
 	 */
@@ -209,7 +245,12 @@ public class SpreadsheetFormatter implements Formatter {
 		sheetNameKeyRecord.init();
 	}
 
-	
+	/**
+	 * Sets an output stream for writting data. Initializes a workbook representing a written spreadsheet
+	 * and prepares the default sheet to write to.
+	 * 
+	 * It also resets some structures that may not be reset without having spreadsheet output stream specified.
+	 */
 	@Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {
 		if (outputDataTarget == null) {
@@ -260,14 +301,15 @@ public class SpreadsheetFormatter implements Formatter {
 			sheetDataLibrary.clear();
         }
 
-		
+		//prepare the default sheet and initialize mapping statistic data
 		if (sheetNameKeyRecord==null) {
 			prepareSelectedOrDefaultSheet(sheetName);
 		}
 	}
 
 	/**
-	 * Under some circumstances there may not be enough rows to write a record 
+	 * Under some circumstances there may not be enough rows to write a record (e.g. empty sheet, no header and the the record shape spread over several lines).
+	 * In such a case, some initial empty lines must be created.  
 	 */
 	private void createInitialEmptyLines() {
  		if (mappingInfo.getOrientation() != XLSMapping.HEADER_ON_TOP) {
@@ -279,6 +321,9 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * When table has a header on the left side (horizontal writing), this method is intended to create rows so that the header fits into them. 
+	 */
 	private void createEmptyRowsForHeaderOnLeft() {
 		int firstRowToCreateNumber = currentSheetData.getLastRowNumber()+1;
 		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
@@ -288,6 +333,11 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * Either takes a prepared sheet from a SheetData library or prepares new SheetData (over an existing or a brand new sheet) and returns them
+	 * @param dataRecord
+	 * 		a data record used for sheet partitioning (a current sheet name is derived from it)
+	 */
 	private void takeSheetOrPrepareSheet(DataRecord dataRecord) {
 		String selectedSheetName = null;
 		if (sheetNameKeyRecord!=null) {
@@ -309,7 +359,16 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
-	
+	/**
+	 * Prepares new SheetData for a sheet (no matter if existing or not) of a given name.
+	 * If a sheet does not exist, a new sheet of a given name is created.
+	 * If the method is called for the first time, statistic data about mapping are initialized (with respect to a selected sheet).
+	 * If the formatter does not work in an insertion or append mode, a header is written to the selected sheet at the end.
+	 * In all modes, initial empty space can be created in order to allow writting of curved records. 
+	 * 
+	 * @param selectedSheetName
+	 * 		A sheet name used for sheet selection. Can be null when a new sheet should be created or sheetIndex should be used instead.
+	 */
 	private void prepareSelectedOrDefaultSheet(String selectedSheetName) {
 		if (selectedSheetName==null) {
 			selectedSheetName = sheetName;
@@ -380,7 +439,9 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	/**
-	 * 
+	 * When appending a curved record we must be sure that we do not overwrite any existing data in a sheet.
+	 * For that purpose we append empty lines and move y-coordinate or writing lower.
+	 * In most of cases (flat records), this method will not do anything, this is really only for exotic cases. 
 	 */
 	private void appendEmptyLinesToAvoidDataRewritting() {
 		int linesToAppend = 0; //a number of empty rows needed to append in order to avoid rewritting existing data
@@ -401,6 +462,14 @@ public class SpreadsheetFormatter implements Formatter {
 		currentSheetData.appendEmptyLines(linesToAppend);
 	}
 
+	/**
+	 * Creates a region full of empty cells in a rectangle given by bounds on row and column numbers  
+	 * 
+	 * @param firstRow
+	 * @param firstColumn
+	 * @param lastRow
+	 * @param lastColumn
+	 */
 	private void createRegion(int firstRow, int firstColumn, int lastRow, int lastColumn) {
 		for (int i=firstRow; i<=lastRow; ++i) {
 			Row row = currentSheetData.getRow(i);
@@ -416,6 +485,10 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 
+	/**
+	 * If formatter does not run in a append or insertion modes, this method writes header to the sheet
+     * contained in currentSheetData.
+	 */
 	private void writeSheetHeader() {
 
 		if (!append && !insert) {
@@ -448,7 +521,7 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	/**
-	 * 
+	 * Creates a new region of empty cells for writing a header 
 	 */
 	private void createHeaderRegion() {
 		XYRange headerXYRange = mappingStats.getHeaderXYRange();
@@ -459,21 +532,48 @@ public class SpreadsheetFormatter implements Formatter {
 		createRegion(0, 0, rows, columns);
 	}
 	
+	/**
+	 * Creates a new region of empty cells for writing a next record.
+	 * 
+	 * In case of normal or append modes, new only empty lines are added. This is a relatively trivial operation.
+	 * 
+	 * Insertion mode is very non-trivial in this case. 
+	 * It is necessary to create empty lines so that they match a record shape. In a typical case of flat records,
+	 * this would be trivial too. Nevertheless, since curved records are allowed too, swapping of cells in order to move
+	 * newly created empty cells becomes non-trivial. Additionally, it is requested that cell styles are copied from a
+	 * template line (i.e. from a line with the first record under the header of a default sheet when a workbook
+	 * is being opened.    
+	 * 
+	 * @return a reference point for writing a record. In combination with relative coordinates of fields stored
+	 * 		in mappingStats this value can be used for assigning 
+	 */
 	private CellPosition createNextRecordRegion() {
- 			int linesToCreate = mappingInfo.getStep();
-			int recordOffsetY = currentSheetData.getCurrentY() + linesToCreate;
-			int recordOffsetX = mappingStats.getFirstRecordXYRange().x1;
-			if (insert) {
-				currentSheetData.insertEmptyOrTemplateLines(currentSheetData.getCurrentY()+1, linesToCreate);
-			} else {
-				currentSheetData.insertEmptyOrPreserveLines(currentSheetData.getCurrentY()+1, linesToCreate);
-			}
-			currentSheetData.setCurrentY(currentSheetData.getCurrentY() + linesToCreate);
-			
-			return new CellPosition(recordOffsetX, recordOffsetY);
-	}
+		int linesToCreate = mappingInfo.getStep();
+		int recordOffsetY = currentSheetData.getCurrentY() + linesToCreate;
+		int recordOffsetX = mappingStats.getFirstRecordXYRange().x1;
+		if (insert) {
+			currentSheetData.insertEmptyOrTemplateLines(currentSheetData.getCurrentY() + 1, linesToCreate);
+		} else {
+			currentSheetData.insertEmptyOrPreserveLines(currentSheetData.getCurrentY() + 1, linesToCreate);
+		}
+		currentSheetData.setCurrentY(currentSheetData.getCurrentY() + linesToCreate);
+
+		return new CellPosition(recordOffsetX, recordOffsetY);
+	}	
 	
-	
+	/**
+	 * Writes data record into a sheet.
+	 * 
+	 * Formatter mode may affect a place where records are written to.
+	 * 
+	 * Normally, records are written just below a header (any header is not written then just below a place where a virtual header would be placed)
+	 * and overwrite existing data.
+	 * 
+	 * In an append mode, the end of table is detected when preparing sheet and records are than written under the end of the table
+	 * 
+	 * In an insertion mode, records are written just below a header (just like in a normal mode), but additionally, all previously existing data are
+	 * shifted lower to prevent them from re-writing.
+	 */
 	@Override
 	public int write(DataRecord record) throws IOException {
 		if (record == null) {
@@ -483,27 +583,40 @@ public class SpreadsheetFormatter implements Formatter {
 		takeSheetOrPrepareSheet(record);
 		
 		CellPosition recordOffset = createNextRecordRegion();
+		
+		//after creation of new empty space it takes all data field and writes them into
+		//position computed from a recordOffsert and mappingStats (mappingStats contain relative positions of cells for data fields in a record)
 		for (int i=0; i<record.getNumFields(); ++i) {
 			DataField dataField = record.getField(i);
+			//cellInRecordXOffset is a positive value, in simple cases it will typically obtain values from a sequence 0, 1, 2, 3, 4, ...
 			Integer cellInRecordXOffset = mappingStats.getXOffsetForCloverField(dataField.getMetadata().getNumber());
+			//cellInRecordYOffset is never positive value and it is non-zero (i.e. negative value) only for multi-line or curved records
+			//for one-line flat records with vertical orientation (header on top of a table) cellInRecordYOffset is always zero
 			Integer cellInRecordYOffset = mappingStats.getYOffsetForCloverField(dataField.getMetadata().getNumber());
+			//if there is no mapping on a field, no position is stored for it in mappingStats
 			if (cellInRecordXOffset!=null && cellInRecordYOffset!=null) {
-				//normally either cellOffset.x or cellOffset.y should be zero depending on orientation
-				int cellX = cellInRecordXOffset + recordOffset.x;
-				int cellY = cellInRecordYOffset + recordOffset.y;
+				int cellX = recordOffset.x + cellInRecordXOffset;
+				int cellY = recordOffset.y + cellInRecordYOffset;
 				Cell cell = currentSheetData.getCellByXY(cellX, cellY);
-				if (cell==null) { //it may happen that existing rows with no data are read from XLS(X) file so that they contain no cells
+				if (cell==null) { //it may happen that existing rows with null cells are read from XLS(X) file - in such a case a cell must be created
 					int lastLineNumber = currentSheetData.getLastLineNumber(mappingInfo.getOrientation());
+					//we check, whether a null cell is in a region with existing or newly written data
 					if (cellX<=mappingStats.getFirstRecordXYRange().x2 && cellY<=lastLineNumber) {
 						cell = currentSheetData.createCellXY(cellX, cellY);
 					} else {
+						//if not, the position where the formatter tries to write is considered illegal (this allowed to
+						//find a lot of bugs in a development time - really good to check).
 						throw new IllegalStateException("Unexpectedly not found a cell for a new record at coordinates: [X: " + cellX + ", Y:" + cellY + "]");
 					}
 				}
+				//finally, set the value
 				CellOperations.setCellValue(cell, dataField);
+				//Afterwards, set a cell style for a given field. If a template line is specified, it takes template styles into account too.
+				//When writing the first record, takeCellStyleOrPrepareCellStyle will prepare all styles.
+				//When writing later records, no style creation is performed in takeCellStyleOrPrepareCellStyle - it only returns previously created styles.
 				SheetData templateSheet = null;
 				if (mappingStats.getTemplateSheetName()!=null) {
-					sheetDataLibrary.getSheetData(mappingStats.getTemplateSheetName());
+					templateSheet = sheetDataLibrary.getSheetData(mappingStats.getTemplateSheetName());
 				}
 				CellStyle cellStyle = cellStyleLibrary.takeCellStyleOrPrepareCellStyle(workbook, mappingStats, currentSheetData, templateSheet, dataField.getMetadata(), cell, insert);
 				if (cellStyle!=null) {
@@ -525,14 +638,6 @@ public class SpreadsheetFormatter implements Formatter {
 		this.init(metadata);
 	}
 
-	private URL getContextUrlFromOutputDataTarget(Object outputDataTarget) {
-		return (URL) ((Object[]) outputDataTarget)[0];
-	}
-	
-	private String getFilePathFromOutputDataTarget(Object outputDataTarget) {
-		return (String) ((Object[]) outputDataTarget)[1];
-	}
-	
 	@Override
 	public void close() throws IOException {
 		flush();
@@ -541,7 +646,7 @@ public class SpreadsheetFormatter implements Formatter {
 
 	@Override
 	public void flush() throws IOException {
-		
+		//flush performs writing into a stream. Before that _no_data_ have been written yet. They are all written at once 
 		if (outputDataTarget!=null && workbook!=null) {
 			if (outputDataTarget instanceof Object[]) {
 				if (workbookNotFlushed) {
@@ -568,6 +673,8 @@ public class SpreadsheetFormatter implements Formatter {
 
 
 	/**
+	 * If a formatter runs in an insertion mode and a template file  
+	 * 
 	 * @param sheetData
 	 */
 	private void removeTemplateLinesIfNeeded(SheetData sheetData) {
@@ -591,6 +698,11 @@ public class SpreadsheetFormatter implements Formatter {
 		close();
 	}
 
+	/**
+	 * Sets formula recalculation and creates one new font and one new style
+	 * if no fonts and styles exist (in order to have them as a default font
+	 * and style)  
+	 */
 	private void configureWorkbook() {
 		workbook.setForceFormulaRecalculation(true);
 		//in order to preserve default style
@@ -602,6 +714,15 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
+	/**
+	 * Creates a new workbook.
+	 * If template file is specified, its content is copied to a given path as a new file.
+	 * If the file exists, it is read in using an input stream.
+	 * If the file does not exist, it created in the flush() method at the end of writing.
+	 * 
+	 * @param contextURL
+	 * @param file
+	 */
 	private void createWorkbook(URL contextURL, String file) {
 		try {
 			if (templateWorkbook!=null) {
@@ -664,6 +785,17 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 	}
 	
+	/**
+	 * Creates a new workbook of type given by a formatterType. When streaming is enabled, the input stream is null and
+	 * formatter type is XLSX, it creates a streamed workbook with a proper window size computed from mappingInfo. 
+	 * 
+	 * @param inputStream
+	 * @param formatterType
+	 * @param attitude
+	 * @param mappingInfo
+	 * @return
+	 * @throws IOException
+	 */
 	public static Workbook newWorkbook(InputStream inputStream, SpreadsheetFormat formatterType, SpreadsheetAttitude attitude, XLSMapping mappingInfo) throws IOException {
 		switch (formatterType) {
 		case XLS:
