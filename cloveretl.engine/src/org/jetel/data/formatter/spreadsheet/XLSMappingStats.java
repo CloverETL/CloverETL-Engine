@@ -44,6 +44,7 @@ public class XLSMappingStats {
 	private Map<Integer, Interval> xOffsetToMinimalYInterval = new HashMap<Integer,Interval>();
 	private Map<Integer, Integer> cloverFieldToXOffsetMapping = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> cloverFieldToYOffsetMapping = new HashMap<Integer, Integer>();
+	private Map<Integer, Integer> dataFieldIndexToFormatFieldIndexMapping = new HashMap<Integer, Integer>();
 	private int minRecordFieldYOffset = 0;
 	private XYRange headerXYRange;
 	private XYRange firstRecordXYRange;
@@ -138,15 +139,19 @@ public class XLSMappingStats {
 		}
 	}
 	
-	private static class CellPositionAndSkip implements Comparable<CellPositionAndSkip>{
+	private static class CellPositionAndHeaderGroupInfo implements Comparable<CellPositionAndHeaderGroupInfo>{
 		final CellPosition cellPosition;
 		final int skip;
-		public CellPositionAndSkip(CellPosition cellPosition, int skip) {
+		final int formatField;
+		
+		public CellPositionAndHeaderGroupInfo(CellPosition cellPosition, int skip, int formatField) {
 			this.cellPosition = cellPosition;
 			this.skip = skip;
+			this.formatField = formatField;
 		}
+		
 		@Override
-		public int compareTo(CellPositionAndSkip o) {
+		public int compareTo(CellPositionAndHeaderGroupInfo o) {
 			int cellPositionComparison = cellPosition.compareTo(o.cellPosition);
 			if (cellPositionComparison!=0) {
 				return cellPositionComparison;
@@ -178,7 +183,7 @@ public class XLSMappingStats {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			CellPositionAndSkip other = (CellPositionAndSkip) obj;
+			CellPositionAndHeaderGroupInfo other = (CellPositionAndHeaderGroupInfo) obj;
 			if (cellPosition == null) {
 				if (other.cellPosition != null)
 					return false;
@@ -200,6 +205,7 @@ public class XLSMappingStats {
 		this.removeAllYOffsetsForCloverFields();
 		this.removeAllYIntervalsForXOffsets();
 		this.removeAllTemplateCellsToCopy();
+		this.removeAllFormatFieldIndicesForDataFields();
 		this.setMinRecordFieldYOffset(0);
 
 		List<DataFieldMetadata> usedDataFields = new ArrayList<DataFieldMetadata>();
@@ -238,7 +244,7 @@ public class XLSMappingStats {
 			}
 		}
 			
-		Map<Integer, CellPositionAndSkip> cloverFieldMapping = new HashMap<Integer, XLSMappingStats.CellPositionAndSkip>();
+		Map<Integer, CellPositionAndHeaderGroupInfo> cloverFieldMapping = new HashMap<Integer, XLSMappingStats.CellPositionAndHeaderGroupInfo>();
 		
 		for (HeaderGroup group : groupsToMapExplicitly) {
 			for (HeaderRange range : group.getRanges()) {
@@ -251,38 +257,41 @@ public class XLSMappingStats {
 					cloverField = XLSMapping.UNDEFINED;
 				}
 				if (cloverField != XLSMapping.UNDEFINED) {
-					cloverFieldMapping.put(cloverField, new CellPositionAndSkip(new CellPosition(transformations.getX1fromRange(range), transformations.getY1fromRange(range)), group.getSkip()));
+					cloverFieldMapping.put(cloverField, new CellPositionAndHeaderGroupInfo(new CellPosition(transformations.getX1fromRange(range), transformations.getY1fromRange(range)), group.getSkip(), group.getFormatField()));
+					updateFormatFieldStatsIfDefined(cloverField, group.getFormatField());
 				}
 			}
 		}
 
 		 
 		
-		List<CellPositionAndSkip> cellsToUseForNameMapping = getAllCellsFromRanges(transformations, groupsToMapByName);
-		for (CellPositionAndSkip cellPositionAndSkip : cellsToUseForNameMapping) {
+		List<CellPositionAndHeaderGroupInfo> cellsToUseForNameMapping = getAllCellsFromRanges(transformations, groupsToMapByName);
+		for (CellPositionAndHeaderGroupInfo cellPositionAndHeaderGroupInfo : cellsToUseForNameMapping) {
 			int cloverField = XLSMapping.UNDEFINED;
-			DataFieldMetadata dataFieldMetadataByName = takeNextFieldByName(cloverFields, labelsToNames, cellPositionAndSkip.cellPosition, sheetData);
+			DataFieldMetadata dataFieldMetadataByName = takeNextFieldByName(cloverFields, labelsToNames, cellPositionAndHeaderGroupInfo.cellPosition, sheetData);
 			if (dataFieldMetadataByName!=null) {
 				cloverField = dataFieldMetadataByName.getNumber();
 			}
 			if (cloverField != XLSMapping.UNDEFINED) {
-				cloverFieldMapping.put(cloverField, cellPositionAndSkip);
+				cloverFieldMapping.put(cloverField, cellPositionAndHeaderGroupInfo);
+				updateFormatFieldStatsIfDefined(cloverField, cellPositionAndHeaderGroupInfo.formatField);
 			}
 		}
 		
 
-		List<CellPositionAndSkip> cellsToUseForOrderMapping = getAllCellsFromRanges(transformations, groupsToMapByOrder); 
+		List<CellPositionAndHeaderGroupInfo> cellsToUseForOrderMapping = getAllCellsFromRanges(transformations, groupsToMapByOrder); 
 		
 		Collections.sort(cellsToUseForOrderMapping);
 		
-		for (CellPositionAndSkip cellPositionAndSkip : cellsToUseForOrderMapping) {
+		for (CellPositionAndHeaderGroupInfo cellPositionAndHeaderGroupInfo : cellsToUseForOrderMapping) {
 			int cloverField = XLSMapping.UNDEFINED;
 			DataFieldMetadata dataFieldMetadata = takeNextFieldInOrder(cloverFields);
 			if (dataFieldMetadata!=null) {
 				cloverField = dataFieldMetadata.getNumber();
 			}
 			if (cloverField != XLSMapping.UNDEFINED) {
-				cloverFieldMapping.put(cloverField, cellPositionAndSkip);
+				cloverFieldMapping.put(cloverField, cellPositionAndHeaderGroupInfo);
+				updateFormatFieldStatsIfDefined(cloverField, cellPositionAndHeaderGroupInfo.formatField);
 			}
 			
 		}
@@ -290,7 +299,7 @@ public class XLSMappingStats {
 		
 		for (Integer cloverField : cloverFieldMapping.keySet()) {
 			if (cloverField != XLSMapping.UNDEFINED) {
-				CellPositionAndSkip cellPositionAndSkip = cloverFieldMapping.get(cloverField);
+				CellPositionAndHeaderGroupInfo cellPositionAndSkip = cloverFieldMapping.get(cloverField);
 				int skip = cellPositionAndSkip.skip;
 				CellPosition cellPosition = cellPositionAndSkip.cellPosition;
 				usedDataFields.add(metadata.getField(cloverField));
@@ -312,7 +321,6 @@ public class XLSMappingStats {
 			}
 		}
 
-		
 		for (Integer cloverFieldIndex : this.getRegisteredCloverFields()) {
 			Integer yOffset = this.getYOffsetForCloverField(cloverFieldIndex);
 			Integer xOffset = this.getXOffsetForCloverField(cloverFieldIndex);
@@ -362,16 +370,26 @@ public class XLSMappingStats {
 	}
 
 	/**
+	 * @param group
+	 * @param cloverField
+	 */
+	private void updateFormatFieldStatsIfDefined(int dataField, int formatField) {
+		if (formatField != XLSMapping.UNDEFINED) {
+			addFormatFieldIndexForDataField(dataField, formatField);
+		}
+	}
+	
+	/**
 	 * @param transformations
 	 * @param groupsToMapByName
 	 */
-	private List<CellPositionAndSkip> getAllCellsFromRanges(CoordsTransformations transformations, List<HeaderGroup> groupsToMapByName) {
-		List<CellPositionAndSkip> result = new ArrayList<CellPositionAndSkip>();
+	private List<CellPositionAndHeaderGroupInfo> getAllCellsFromRanges(CoordsTransformations transformations, List<HeaderGroup> groupsToMapByName) {
+		List<CellPositionAndHeaderGroupInfo> result = new ArrayList<CellPositionAndHeaderGroupInfo>();
 		for (HeaderGroup group : groupsToMapByName) {
 			for (HeaderRange range : group.getRanges()) {
 				for (int x=transformations.getX1fromRange(range); x<=transformations.getX2fromRange(range); ++x) {
 					for (int y=transformations.getY1fromRange(range); y<=transformations.getY2fromRange(range); ++y) {
-						result.add(new CellPositionAndSkip(new CellPosition(x, y), group.getSkip()));
+						result.add(new CellPositionAndHeaderGroupInfo(new CellPosition(x, y), group.getSkip(), group.getFormatField()));
 					}
 				}
 			}
@@ -445,6 +463,18 @@ public class XLSMappingStats {
 		cloverFieldToYOffsetMapping.clear();
 	}
 
+	public Integer getFormatFieldIndexForDataField(int dataFieldIndex) {
+		return dataFieldIndexToFormatFieldIndexMapping.get(dataFieldIndex);
+	}
+
+	private void addFormatFieldIndexForDataField(int dataFieldIndex, int formatFieldIndex) {
+		dataFieldIndexToFormatFieldIndexMapping.put(dataFieldIndex, formatFieldIndex);
+	}
+	
+	private void removeAllFormatFieldIndicesForDataFields() {
+		dataFieldIndexToFormatFieldIndexMapping.clear();
+	}
+	
 	public int getMinRecordFieldYOffset() {
 		return minRecordFieldYOffset;
 	}
@@ -492,4 +522,6 @@ public class XLSMappingStats {
 	public void setInitialTemplateCopiedRegionY2(int initialTemplateCopiedRegionY2) {
 		this.initialTemplateCopiedRegionY2 = initialTemplateCopiedRegionY2;
 	}
+	
+	
 }

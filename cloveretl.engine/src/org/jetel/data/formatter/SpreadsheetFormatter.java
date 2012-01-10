@@ -54,6 +54,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -611,23 +612,53 @@ public class SpreadsheetFormatter implements Formatter {
 				}
 				//finally, set the value
 				CellOperations.setCellValue(cell, dataField);
-				//Afterwards, set a cell style for a given field. If a template line is specified, it takes template styles into account too.
-				//When writing the first record, takeCellStyleOrPrepareCellStyle will prepare all styles.
-				//When writing later records, no style creation is performed in takeCellStyleOrPrepareCellStyle - it only returns previously created styles.
-				SheetData templateSheet = null;
-				if (mappingStats.getTemplateSheetName()!=null) {
-					templateSheet = sheetDataLibrary.getSheetData(mappingStats.getTemplateSheetName());
-				}
-				CellStyle cellStyle = cellStyleLibrary.takeCellStyleOrPrepareCellStyle(workbook, mappingStats, currentSheetData, templateSheet, dataField.getMetadata(), cell, insert);
-				if (cellStyle!=null) {
-					cell.setCellStyle(cellStyle);
-				}
+				//Afterwards, set a cell style for a given field
+				setProperStyleToCell(cell, dataField, record);
 			}
 			
 		}
 
 		
 		return 0;
+	}
+
+	/**
+	 * Searches, if a cell style has already been created for a specified dataField. If yes, it sets this
+	 * style to a given cell. If not, it searches whether the needed style is already present in a workbook
+	 * and creates a new one if no such style is found.
+	 * 
+	 * If a template line is specified, it takes template styles into account when creating new styles.
+	 * 
+	 * Performance note:
+	 *   This method is called only from a write() method.
+	 *   When writing the first record, takeCellStyleOrPrepareCellStyle will prepare all styles.
+	 *   When writing later records, no style creation is performed in takeCellStyleOrPrepareCellStyle - it only returns previously created styles.
+	 *   There is one exception to this rule: when a field format arrives in an special data field of a record, then formatStringFromRecord
+	 *   will contain information about number/data format which has the following consequences:
+	 *      (1) Computation costs raise, because cellStyleLibrary tries to search for a corresponding style with the same format.
+	 *	    (2) If no such a style is found, it is created.
+	 *
+	 * @param cell
+	 * @param dataField
+	 * @param record
+	 */
+	private void setProperStyleToCell(Cell cell, DataField dataField, DataRecord record) {
+		SheetData templateSheet = null;
+		if (mappingStats.getTemplateSheetName()!=null) {
+			templateSheet = sheetDataLibrary.getSheetData(mappingStats.getTemplateSheetName());
+		}
+		Integer formatFieldIndex = mappingStats.getFormatFieldIndexForDataField(dataField.getMetadata().getNumber());
+		String formatStringFromRecord = null;
+		if (formatFieldIndex!=null) {
+			Object formatFieldValue = record.getField(formatFieldIndex).getValue();
+			if (formatFieldValue!=null && formatFieldValue instanceof CloverString && !"".equals(((CloverString)formatFieldValue).toString())) {
+				formatStringFromRecord = ((CloverString) formatFieldValue).toString();
+			}
+		}
+		CellStyle cellStyle = cellStyleLibrary.takeCellStyleOrPrepareCellStyle(cell, formatStringFromRecord, dataField.getMetadata(), workbook, mappingStats, currentSheetData, templateSheet, insert);
+		if (cellStyle!=null) {
+			cell.setCellStyle(cellStyle);
+		}
 	}
 
 

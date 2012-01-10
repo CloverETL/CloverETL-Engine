@@ -328,16 +328,16 @@ public class CellStyleLibrary {
 			return correspondingCellStyle.getIndex();
 		}
 		
-		public CellStyle takeCellStyleOrPrepareCellStyle(Workbook workbook, XLSMappingStats mappingStats, SheetData referenceSheetData, SheetData templateSheetData, DataFieldMetadata fieldMetadata, Cell cell, boolean insert) {
+		public CellStyle takeCellStyleOrPrepareCellStyle(Cell cell, String formatStringFromRecord, DataFieldMetadata fieldMetadata, Workbook workbook, XLSMappingStats mappingStats, SheetData referenceSheetData, SheetData templateSheetData, boolean insert) {
 			CellStyle cellStyle = this.getCellStyle(fieldMetadata.getNumber());
-			if (cellStyle==null) {
-				cellStyle = prepareCellStyle(workbook, mappingStats, referenceSheetData, templateSheetData, fieldMetadata, cell, insert);
+			if (cellStyle==null || formatStringFromRecord!=null) {
+				cellStyle = prepareCellStyle(cell, formatStringFromRecord, fieldMetadata, workbook, mappingStats, referenceSheetData, templateSheetData, insert);
 				this.addCellStyle(fieldMetadata.getNumber(), cellStyle);
 			}
 			return cellStyle;
 		}
 		
-		public CellStyle prepareCellStyle(Workbook workbook, XLSMappingStats mappingStats, SheetData referenceSheetData, SheetData templateSheetData, DataFieldMetadata fieldMetadata, Cell cell, boolean insert) {
+		public CellStyle prepareCellStyle(Cell cell, String formatStringFromRecord, DataFieldMetadata fieldMetadata, Workbook workbook, XLSMappingStats mappingStats, SheetData referenceSheetData, SheetData templateSheetData, boolean insert) {
 			Cell templateCell = null;
 			if (insert) {
 				XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
@@ -359,7 +359,14 @@ public class CellStyleLibrary {
 				}
 			}
 
-			short modifiedDataFormat = dataFormat.getFormat((fieldMetadata.getFormatStr() != null) ? fieldMetadata.getFormatStr() : SpreadsheetFormatter.GENERAL_FORMAT_STRING);
+			String formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
+			if (formatStringFromRecord!=null && !"".equals(formatStringFromRecord)) {
+				formatStr = formatStringFromRecord;
+			} else if (fieldMetadata.getFormatStr()!=null && !"".equals(fieldMetadata.getFormatStr())){
+				formatStr = fieldMetadata.getFormatStr(); 
+			}
+			
+			short modifiedDataFormat = dataFormat.getFormat(formatStr);
 
 			CellStyleFilter cellStyleFilter = new CellStyleFilter(templateCellStyle);
 			cellStyleFilter.setDataFormat(modifiedDataFormat);
