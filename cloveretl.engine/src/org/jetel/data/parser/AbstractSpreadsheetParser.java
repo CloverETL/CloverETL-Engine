@@ -24,14 +24,13 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,7 +80,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	private SpreadsheetIndexIterator sheetIndexIterator;
 	private List<String> sheetNames;
 
-	private List<Integer> unusedFields;
+	private BitSet unusedFields;
 	
 	protected int mappingMinRow; // 0-based
 	protected int mappingMinColumn;// 0-based
@@ -325,26 +324,31 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	}
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
-		Set<Integer> toRemove = new HashSet<Integer>();
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			processFieldMapping(group.getCloverField(), mapping, toRemove, group);
-			processFieldMapping(group.getFormatField(), formatMapping, toRemove, group);
+			processFieldMapping(group.getCloverField(), mapping, group);
+			processFieldMapping(group.getFormatField(), formatMapping, group);
 		}
-		unusedFields.removeAll(toRemove);
 	}
 
-	private void processFieldMapping(int field, int[][] mappingArray, Set<Integer> toRemove, HeaderGroup group) throws ComponentNotReadyException {
+	private void processFieldMapping(int field, int[][] mappingArray, HeaderGroup group) throws ComponentNotReadyException {
 		if (field != XLSMapping.UNDEFINED) {
 			HeaderRange range = group.getRanges().get(0);
-			
 			setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, field, mappingArray);
-			
-			if (unusedFields.isEmpty() || !toRemove.add(field)) {
-				throw new ComponentNotReadyException("Field '" + metadata.getField(field).getName() + "' already used!");
-			}
 		}
 	}
 
+	private void processFieldMapping(int field, int[][] mappingArray, int row, int column, HeaderGroup group) throws ComponentNotReadyException {
+		if (field != XLSMapping.UNDEFINED) {
+			if (!unusedFields.get(field)) {
+				throw new ComponentNotReadyException("Field '" + metadata.getField(field).getName() + "' already used!");
+			}
+
+			setMappingFieldIndex(row, column, group, field, mappingArray);
+			
+			unusedFields.clear(field);
+		}
+	}
+	
 	/*
 	 * @Override protected void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException { if
 	 * (fieldNames == null) { throw new NullPointerException("fieldNames"); }
@@ -422,11 +426,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 							continue;
 						}
 
-						if (!unusedFields.remove(cloverIndex)) {
-							throw new ComponentNotReadyException("Ambiguous mapping!"); // TODO: improve!
-						}
-
-						setMappingFieldIndex(row, column, group, cloverIndex, mapping);
+						processFieldMapping(cloverIndex, mapping, row, column, group);
+						processFieldMapping(group.getFormatField(), formatMapping, row, column, group);
 					}
 				}
 			}
@@ -456,10 +457,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			}
 		}
 
-		if (mappedCells.size() > unusedFields.size()) {
-			// TODO: check in checkConfig
+		if (mappedCells.size() > unusedFields.cardinality()) {
+			// TODO: check in checkConfig. (Note: this check is not sufficient since there can still be unresolved "format" fields) 
 			throw new ComponentNotReadyException("Invalid cells mapping by order! There are " + mappedCells.size() +
-					" cells mapped by order, but only " + unusedFields.size() + " available metadata fields.");
+					" cells mapped by order, but only " + unusedFields.cardinality() + " available metadata fields left.");
 		}
 		
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
@@ -468,8 +469,14 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			Collections.sort(mappedCells, HORIZONTAL_CELL_ORDER_COMPARATOR);
 		}
 		
+		int nextUnusedField = unusedFields.nextSetBit(0);
 		for (CellMappedByOrder cell : mappedCells) {
-			setMappingFieldIndex(cell.row, cell.column, cell.group, unusedFields.remove(0), mapping);
+			if (nextUnusedField < 0) {
+				throw new ComponentNotReadyException("Invalid cells mapping by order! There are more cells mapped by order then unused metadata fields.");
+			}
+			processFieldMapping(nextUnusedField, mapping, cell.row, cell.column, cell.group);
+			processFieldMapping(cell.group.getFormatField(), formatMapping, cell.row, cell.column, cell.group);
+			nextUnusedField = unusedFields.nextSetBit(nextUnusedField);
 		}
 	}
 
@@ -495,10 +502,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	
 	private void fillUnusedFields() {
-		unusedFields = new ArrayList<Integer>();
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			unusedFields.add(i);
-		}
+		unusedFields = new BitSet(metadata.getNumFields());
+		unusedFields.flip(0, metadata.getNumFields());
 	}
 
 	@Override
