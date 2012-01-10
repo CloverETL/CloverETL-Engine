@@ -10,6 +10,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.Scope;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
@@ -82,8 +83,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 this.token_source.input_stream.setTabSize(size);
         }
 
-    @Override
-	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
@@ -585,7 +585,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                                 String importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
 
                                 if (propertyRefResolver != null) {
-                                        importSourceCode = propertyRefResolver.resolveRef(importSourceCode);
+                                        importSourceCode = propertyRefResolver.resolveRef(importSourceCode, RefResFlag.SPEC_CHARACTERS_OFF);
                                 }
 
                                 stream = new ByteArrayInputStream(importSourceCode.getBytes("UTF-8"));
