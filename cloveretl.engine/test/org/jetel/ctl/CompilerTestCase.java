@@ -651,6 +651,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_raise_error_terminal");
 	}
 
+	public void test_raise_error_nonliteral() {
+		// test case for issue CL-2071
+		doCompile("test_raise_error_nonliteral");
+	}
+
 	public void test_case_unique_check() {
 		// test case for issue 2515
 		doCompileExpectErrors("test_case_unique_check", Arrays.asList("Duplicate case", "Duplicate case"));

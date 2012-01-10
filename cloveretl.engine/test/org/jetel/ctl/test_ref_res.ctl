@@ -14,3 +14,7 @@ function long VipStr2Long(string sValue, string sIntermediair, string sElement, 
 }
 
 long value = VipStr2Long("123456", "", "", false);
+
+function integer transform() {
+	return 0;
+}
