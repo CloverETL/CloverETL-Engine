@@ -51,6 +51,7 @@ import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SpreadsheetIndexIterator;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Common superclass of spreadsheet parsers.
@@ -405,14 +406,19 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				for (int row = range.getRowStart(); row <= range.getRowEnd() && row - stats.getMappingMinRow() < headerCells.length; row++) {
 					String[] headerRow = headerCells[row - stats.getMappingMinRow()];
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column - stats.getMappingMinColumn() < headerRow.length; column++) {
-						String header = headerRow[column - stats.getMappingMinColumn()]; // TODO: perform "name mangling"?
-
-						Integer cloverIndex = labelsMap.get(header);
+						String header = headerRow[column - stats.getMappingMinColumn()];
+						String normalizedHeader = StringUtils.normalizeName(header);
+						
+						Integer cloverIndex = nameMap.get(normalizedHeader);
 						if (cloverIndex == null) {
-							cloverIndex = nameMap.get(header);
+							cloverIndex = labelsMap.get(header);
 						}
 						if (cloverIndex == null) {
-							LOGGER.warn("There is no field \"" + header + "\" in output metadata");
+							if (normalizedHeader.equals(header)) {
+								LOGGER.warn("There is no field with name or label \"" + header + "\" in output metadata");
+							} else {
+								LOGGER.warn("There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
+							}
 							continue;
 						}
 
