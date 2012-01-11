@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
@@ -73,7 +74,7 @@ public class SpreadsheetReader extends Node {
     public static final String XML_PASSWORD_ATTRIBUTE = "password";
     public static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
     public static final String XML_SHEET_ATTRIBUTE = "sheet";
-    public static final String XML_CHARSET_ATTRIBUTE = "charset";
+    public static final String XML_CHARSET_ATTRIBUTE = "charset"; // TODO remove
     public static final String XML_DATA_POLICY_ATTRIBUTE = "dataPolicy";
     public static final String XML_MAPPING_ATTRIBUTE = "mapping";
     public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
@@ -452,6 +453,7 @@ public class SpreadsheetReader extends Node {
 		DataRecordMetadata recordMetadata = outPort.getMetadata();
 		DataRecord record = new DataRecord(recordMetadata);
 		record.init();
+		record.setToNull();
 
 		DataRecord errorRecord = null;
 		DataRecordMetadata errorMetadata = null;
