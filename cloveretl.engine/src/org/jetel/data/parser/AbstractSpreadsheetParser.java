@@ -325,28 +325,20 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			processFieldMapping(group.getCloverField(), mapping, group);
-			processFieldMapping(group.getFormatField(), formatMapping, group);
+			if (group.getCloverField() != XLSMapping.UNDEFINED) { // is mapping mode EXPLICIT?
+				processFieldMapping(group.getCloverField(), mapping, group);
+				processFieldMapping(group.getFormatField(), formatMapping, group);
+			}
 		}
 	}
 
 	private void processFieldMapping(int field, int[][] mappingArray, HeaderGroup group) throws ComponentNotReadyException {
-		if (field != XLSMapping.UNDEFINED) {
-			HeaderRange range = group.getRanges().get(0);
-			setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, field, mappingArray);
-		}
+		HeaderRange range = group.getRanges().get(0);
+		setMappingFieldIndex(range.getRowStart(), range.getColumnStart(), group, field, mappingArray);
 	}
 
 	private void processFieldMapping(int field, int[][] mappingArray, int row, int column, HeaderGroup group) throws ComponentNotReadyException {
-		if (field != XLSMapping.UNDEFINED) {
-			if (!unusedFields.get(field)) {
-				throw new ComponentNotReadyException("Field '" + metadata.getField(field).getName() + "' already used!");
-			}
-
-			setMappingFieldIndex(row, column, group, field, mappingArray);
-			
-			unusedFields.clear(field);
-		}
+		setMappingFieldIndex(row, column, group, field, mappingArray);
 	}
 	
 	/*
@@ -487,17 +479,24 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	 * @param group header group of header range R
 	 * @param cloverFieldIndex index of Clover metadata field to which cell C is mapped
 	 */
-	private void setMappingFieldIndex(int rangeCellRow, int rangeCellColumn, HeaderGroup group, int cloverFieldIndex, int[][] mappingArray) {
-		int mappingRow = rangeCellRow;
-		int mappingColumn = rangeCellColumn;
-		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-			mappingRow += group.getSkip() - mappingInfo.getStats().getStartLine();
-			mappingColumn -= mappingInfo.getStats().getMappingMinColumn();
-		} else {
-			mappingColumn += group.getSkip() - mappingInfo.getStats().getStartLine();
-			mappingRow -= mappingInfo.getStats().getMappingMinRow();
+	private void setMappingFieldIndex(int rangeCellRow, int rangeCellColumn, HeaderGroup group, int cloverFieldIndex, int[][] mappingArray) throws ComponentNotReadyException {
+		if (cloverFieldIndex != XLSMapping.UNDEFINED) {
+			if (!unusedFields.get(cloverFieldIndex)) {
+				throw new ComponentNotReadyException("Field '" + metadata.getField(cloverFieldIndex).getName() + "' already used!");
+			}
+			
+			int mappingRow = rangeCellRow;
+			int mappingColumn = rangeCellColumn;
+			if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
+				mappingRow += group.getSkip() - mappingInfo.getStats().getStartLine();
+				mappingColumn -= mappingInfo.getStats().getMappingMinColumn();
+			} else {
+				mappingColumn += group.getSkip() - mappingInfo.getStats().getStartLine();
+				mappingRow -= mappingInfo.getStats().getMappingMinRow();
+			}
+			mappingArray[mappingRow][mappingColumn] = cloverFieldIndex;
+			unusedFields.clear(cloverFieldIndex);
 		}
-		mappingArray[mappingRow][mappingColumn] = cloverFieldIndex;
 	}
 
 	
