@@ -82,9 +82,11 @@ public enum DataFieldFormatType {
 	private static DataFieldFormatType getFormatTypeFromPrefix(String formatString) {
 		if (formatString!=null) {
 	    	int delimiterPos = formatString.indexOf(prefixDelimiter);
-	    	String potentialPrefix = formatString.substring(0, delimiterPos).toLowerCase();
-	    	if (delimiterPos != -1 && isExistingPrefix(potentialPrefix)) {
-	    		return prefixToDataFieldFormatMap.get(potentialPrefix);
+	    	if (delimiterPos != -1) {
+		    	String potentialPrefix = formatString.substring(0, delimiterPos).toLowerCase();
+		    	if (isExistingPrefix(potentialPrefix)) {
+		    		return prefixToDataFieldFormatMap.get(potentialPrefix);
+		    	}
 	    	}
 		}
 		
