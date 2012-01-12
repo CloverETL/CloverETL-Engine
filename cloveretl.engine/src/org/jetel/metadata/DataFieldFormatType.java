@@ -64,6 +64,10 @@ public enum DataFieldFormatType {
 		return formatPrefix;
 	}
 	
+	public String prependFormatPrefix(String formatStr) {
+		return this.formatPrefix + prefixDelimiter + formatStr;
+	}
+	
 	public String getFormatPrefixWithDelimiter() {
 		return formatPrefix + prefixDelimiter;
 	}
