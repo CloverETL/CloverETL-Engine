@@ -325,7 +325,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			if (group.getCloverField() != XLSMapping.UNDEFINED) { // is mapping mode EXPLICIT?
+			if (group.getCloverField() != XLSMapping.UNDEFINED || group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
 				processFieldMapping(group.getCloverField(), mapping, group);
 				processFieldMapping(group.getFormatField(), formatMapping, group);
 			}
