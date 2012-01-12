@@ -181,6 +181,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
+		record.setToNull();
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			if (nextRecordStartRow > lastLine - mapping.length + 1) {
 				return null;

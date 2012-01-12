@@ -453,7 +453,6 @@ public class SpreadsheetReader extends Node {
 		DataRecordMetadata recordMetadata = outPort.getMetadata();
 		DataRecord record = new DataRecord(recordMetadata);
 		record.init();
-		record.setToNull();
 
 		DataRecord errorRecord = null;
 		DataRecordMetadata errorMetadata = null;

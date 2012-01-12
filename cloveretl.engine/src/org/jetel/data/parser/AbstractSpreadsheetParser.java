@@ -403,6 +403,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					String[] headerRow = headerCells[row - stats.getMappingMinRow()];
 					for (int column = range.getColumnStart(); column <= range.getColumnEnd() && column - stats.getMappingMinColumn() < headerRow.length; column++) {
 						String header = headerRow[column - stats.getMappingMinColumn()];
+						
+						if (header == null) {
+							continue;
+						}
+						
 						String normalizedHeader = StringUtils.normalizeName(header);
 						
 						Integer cloverIndex = nameMap.get(normalizedHeader);
@@ -625,6 +630,8 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		int nextSheet = sheetIndexIterator.next();
 
 		if (setCurrentSheet(nextSheet)) {
+			LOGGER.debug("Reading sheet " + nextSheet);
+			
 			currentSheetIndex = nextSheet;
 			Stats stats = mappingInfo.getStats();
 
