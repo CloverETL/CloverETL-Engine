@@ -702,7 +702,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @return true iff formatStr is not null and is not empty
 	 */
 	public boolean hasFormat() {
-		return StringUtils.isEmpty(formatStr);
+		return !StringUtils.isEmpty(formatStr);
 	}
 	
 	/**
