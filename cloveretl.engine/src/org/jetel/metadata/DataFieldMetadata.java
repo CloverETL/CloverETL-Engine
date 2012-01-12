@@ -38,8 +38,6 @@ import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
-import static org.jetel.metadata.BinaryFormat.BINARY_FORMAT_PREFIX;
-
 /**
  * A class that represents metadata describing one particular data field.<br>
  * Handles encoding of characters.
@@ -698,6 +696,43 @@ public class DataFieldMetadata implements Serializable {
 			return true; 
 		}
 		return (type == BYTE_FIELD || type == BYTE_FIELD_COMPRESSED);
+	}
+	
+	/**
+	 * @return true iff formatStr is not null and is not empty
+	 */
+	public boolean hasFormat() {
+		return StringUtils.isEmpty(formatStr);
+	}
+	
+	/**
+	 * Returns a type of a data field format obtained by analysis of
+	 * a prefix of getFormarStr(). No prefix with a format type
+	 * results in a default format type (DataFieldFormatType.DEFAULT_FORMAT_TYPE).
+	 * 
+	 * Returns null for getFormatStr() being null or an empty string.
+	 *   
+	 * @return a type of a data field format (or null if the field has no format)
+	 */
+	public DataFieldFormatType getFormatType() {
+		return DataFieldFormatType.getFormatType(getFormatStr());
+	}
+	
+	/**
+	 * Returns a formatting string of a given type. A purpose of this method is to prevent
+	 * usage of incompatible formatting string types.
+	 * 
+	 * The type of a formatting string is checked (using its prefix) 
+	 *   - If the formatting string stored in meta-data has a different type, either
+	 *     an empty string is returned or conversion is performed.
+	 *   - If the formatting string stored in meta-data matches a type given in argument,
+	 *     the formatting string with no prefix is returned
+	 * 
+	 * @param dataFieldFormat
+	 * @return
+	 */
+	public String getFormat(DataFieldFormatType dataFieldFormat) {
+		return dataFieldFormat.getFormat(getFormatStr());
 	}
 	
 	/**
