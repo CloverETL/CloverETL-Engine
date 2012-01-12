@@ -109,6 +109,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private boolean createFile;
 	/** A flag saying whether all sheets should be removed before writing begins */
 	private boolean removeSheets;
+	/** A flag saying whether all rows should be removed from all used sheets before writing begins */
+	private boolean removeRows;
 
 	/** A workbook for a currently open spreadsheet */
 	private Workbook workbook;
@@ -164,6 +166,10 @@ public class SpreadsheetFormatter implements Formatter {
 
 	public void setRemoveSheets(boolean removeSheets) {
 		this.removeSheets = removeSheets;
+	}
+
+	public void setRemoveRows(boolean removeRows) {
+		this.removeRows = removeRows;
 	}
 
 	private Integer getCloverFieldByHeaderX1andY1(HeaderRange range) {
@@ -411,6 +417,10 @@ public class SpreadsheetFormatter implements Formatter {
 			mappingStatsInitialized = true;
 		}
 		
+		if (removeRows) {
+			removeAllRowsAndMergedRegions(currentSheetData);
+		}
+		
 		
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
@@ -437,6 +447,21 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 
 		
+	}
+
+	/**
+	 * 
+	 */
+	private void removeAllRowsAndMergedRegions(SheetData sheetData) {
+		for (int i=0; i<sheetData.getMergedRegionsCount(); ++i) {
+			sheetData.removeMergedRegion(i);
+		}
+		for (int i=0; i<=sheetData.getLastRowNumber(); ++i) {
+			Row row = sheetData.getRow(i);
+			if (row!=null) {
+				sheetData.removeRow(row);
+			}
+		}
 	}
 
 	/**

@@ -50,6 +50,7 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 	private boolean insert;
 	private boolean createFile;
 	private boolean removeSheets;
+	private boolean removeRows;
 
 	@Override
 	public Formatter getNewFormatter() {
@@ -63,6 +64,7 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 		formatter.setInsert(insert);
 		formatter.setCreateFile(createFile);
 		formatter.setRemoveSheets(removeSheets);
+		formatter.setRemoveRows(removeRows);
 		return formatter;
 	}
 	
@@ -101,6 +103,10 @@ public class SpreadsheetFormatterProvider implements FormatterProvider {
 
 	public void setRemoveSheets(boolean removeSheets) {
 		this.removeSheets = removeSheets;
+	}
+
+	public void setRemoveRows(boolean removeRows) {
+		this.removeRows = removeRows;
 	}
 
 	/**

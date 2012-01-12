@@ -138,6 +138,31 @@ public class SpreadsheetUtils {
         }
     }
 
+	public static enum SpreadsheetExistingSheetsActions {
+
+		DO_NOTHING,
+		CLEAR_SHEETS,
+		REMOVE_SHEETS;
+
+        public static SpreadsheetExistingSheetsActions valueOfIgnoreCase(String string) {
+            for (SpreadsheetExistingSheetsActions parserType : values()) {
+                if (parserType.name().equalsIgnoreCase(string)) {
+                    return parserType;
+                }
+            }
+
+            return DO_NOTHING;
+        }
+        
+        public boolean isRemovingAllRows() {
+        	return (this == CLEAR_SHEETS);
+        }
+        
+        public boolean isRemovingAllSheets() {
+        	return (this == REMOVE_SHEETS);
+        }
+    }
+
 	public static enum SpreadsheetFormat {
 
 		XLS, XLSX, AUTO;
