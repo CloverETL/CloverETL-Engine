@@ -430,7 +430,12 @@ public class SpreadsheetFormatter implements Formatter {
 			}
 			currentSheetData.setCurrentY(mappingStats.getFirstRecordXYRange().y2-mappingInfo.getStep());
 		} else {
-			createInitialEmptyLines();
+			if (currentSheetData.getLastRowNumber()==-1 && mappingInfo.isWriteHeader()) {
+				//even appending and insertion may write new header, when a target sheet is empty
+				writeSheetHeader();
+			} else {
+				createInitialEmptyLines();
+			}
 			// check that appending does not overwrite anything
 			if (append) {
 				appendEmptyLinesToAvoidDataRewritting();
@@ -512,35 +517,32 @@ public class SpreadsheetFormatter implements Formatter {
 	}
 
 	/**
-	 * If formatter does not run in a append or insertion modes, this method writes header to the sheet
-     * contained in currentSheetData.
+	 * This method writes header to the sheet contained in currentSheetData.
 	 */
 	private void writeSheetHeader() {
 
-		if (!append && !insert) {
-			createHeaderRegion();
-			boolean boldStyleFound = false;
-			short boldStyle = 0;
-			
-			for (HeaderGroup headerGroup : mappingInfo.getHeaderGroups()) {
-				for (HeaderRange range : headerGroup.getRanges()) {
-					if (range.getRowStart()!=range.getRowEnd() || range.getColumnStart()!=range.getColumnEnd()) {
-						currentSheetData.addMergedRegion(new CellRangeAddress(range.getRowStart(), range.getRowEnd(), range.getColumnStart(), range.getColumnEnd()));
+		createHeaderRegion();
+		boolean boldStyleFound = false;
+		short boldStyle = 0;
+
+		for (HeaderGroup headerGroup : mappingInfo.getHeaderGroups()) {
+			for (HeaderRange range : headerGroup.getRanges()) {
+				if (range.getRowStart() != range.getRowEnd() || range.getColumnStart() != range.getColumnEnd()) {
+					currentSheetData.addMergedRegion(new CellRangeAddress(range.getRowStart(), range.getRowEnd(), range.getColumnStart(), range.getColumnEnd()));
+				}
+				String dataLabel;
+				Integer cloverField = getCloverFieldByHeaderX1andY1(range);
+				if (cloverField != null) {
+					dataLabel = metadata.getField(cloverField).getLabel();
+					if (dataLabel == null) {
+						dataLabel = metadata.getField(cloverField).getName();
 					}
-					String dataLabel;
-					Integer cloverField = getCloverFieldByHeaderX1andY1(range);
-					if (cloverField!=null) {
-						dataLabel = metadata.getField(cloverField).getLabel();
-						if (dataLabel==null) {
-							dataLabel = metadata.getField(cloverField).getName();
-						}
-						CellOperations.setStringToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), dataLabel);
-						if (!boldStyleFound) {
-							boldStyle = cellStyleLibrary.findOrCreateBoldStyle(workbook, currentSheetData, range.getRowStart(), range.getColumnStart());
-							boldStyleFound = true;
-						}
-						CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
+					CellOperations.setStringToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), dataLabel);
+					if (!boldStyleFound) {
+						boldStyle = cellStyleLibrary.findOrCreateBoldStyle(workbook, currentSheetData, range.getRowStart(), range.getColumnStart());
+						boldStyleFound = true;
 					}
+					CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
 				}
 			}
 		}
