@@ -41,10 +41,12 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetAttitude;
+import org.jetel.util.SpreadsheetUtils.SpreadsheetExistingSheetsActions;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetFormat;
 import org.jetel.util.SpreadsheetUtils.SpreadsheetWriteMode;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -72,7 +74,7 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public static final String XML_SHEET_ATTRIBUTE = "sheet";
-	public static final String XML_REMOVESHEETS_ATTRIBUTE = "removeSheets";
+	public static final String XML_EXISTING_SHEETS_ACTIONS_ATTRIBUTE = "existingSheetsActions";
 	public static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRecords";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "numRecords";
 	public static final String XML_RECORDS_PER_FILE = "numFileRecords";
@@ -134,8 +136,8 @@ public class SpreadsheetWriter extends Node {
 			if (xattribs.exists(XML_SHEET_ATTRIBUTE)) {
 				spreadsheetWriter.setSheet(xattribs.getString(XML_SHEET_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_REMOVESHEETS_ATTRIBUTE)) {
-				spreadsheetWriter.setRemoveSheets(xattribs.getBoolean(XML_REMOVESHEETS_ATTRIBUTE));
+			if (xattribs.exists(XML_EXISTING_SHEETS_ACTIONS_ATTRIBUTE)) {
+				spreadsheetWriter.setExistingSheetsActions(SpreadsheetExistingSheetsActions.valueOfIgnoreCase(xattribs.getString(XML_EXISTING_SHEETS_ACTIONS_ATTRIBUTE)));
 			}
 
 			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
@@ -182,7 +184,7 @@ public class SpreadsheetWriter extends Node {
 	private String mappingURL;
 
 	private String sheet;
-	private boolean removeSheets;
+	private SpreadsheetExistingSheetsActions existingSheetsActions = SpreadsheetExistingSheetsActions.DO_NOTHING;
 
 	private int recordSkip;
 	private int recordCount;
@@ -235,12 +237,12 @@ public class SpreadsheetWriter extends Node {
 		this.sheet = sheet;
 	}
 
-	public void setMkDirs(boolean mkDirs) {
-		this.mkDirs = mkDirs;
+	public void setExistingSheetsActions(SpreadsheetExistingSheetsActions existingSheetsActions) {
+		this.existingSheetsActions = existingSheetsActions;
 	}
 
-	public void setRemoveSheets(boolean removeSheets) {
-		this.removeSheets = removeSheets;
+	public void setMkDirs(boolean mkDirs) {
+		this.mkDirs = mkDirs;
 	}
 
 	public void setRecordSkip(int recordSkip) {
@@ -283,13 +285,22 @@ public class SpreadsheetWriter extends Node {
 			return status;
 		}
 		
-		Map<String, Character> unsupportedTypes = inputMetadataCorrect(getInputPort(0).getMetadata());
-		if (unsupportedTypes != null) {
-			StringBuffer errorMessage = new StringBuffer("Input port metadata contain the following unsupported types: ");
-			for (String fieldName : unsupportedTypes.keySet()) {
-				errorMessage.append(fieldName + " - " + DataFieldMetadata.type2Str(unsupportedTypes.get(fieldName)));
+		Map<String, Character> fieldsOfUnsupportedType = checkInputDataFieldsTypes(getInputPort(0).getMetadata());
+		if (!fieldsOfUnsupportedType.isEmpty()) {
+			StringBuilder errorMessage = new StringBuilder("Input port metadata contain the following unsupported types: ");
+			for (String fieldName : fieldsOfUnsupportedType.keySet()) {
+				errorMessage.append("\n" + fieldName + " - " + DataFieldMetadata.type2Str(fieldsOfUnsupportedType.get(fieldName)));
 			}
 			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		
+		Map<String, DataFieldFormatType> fieldsWithUnsupportedFormats = checkInputDataFieldsFormats(getInputPort(0).getMetadata());
+		if (!fieldsWithUnsupportedFormats.isEmpty()) {
+			StringBuilder errorMessage = new StringBuilder("Input port metadata contain the following fields with unsupported formatting strings (try to prepend \"" + DataFieldFormatType.EXCEL.getFormatPrefixWithDelimiter() + "\" to threir formatting strings):");
+			for (String fieldName : fieldsWithUnsupportedFormats.keySet()) {
+				errorMessage.append("\n" + fieldName + " - " + fieldsWithUnsupportedFormats.get(fieldName).getLongName());
+			}
+			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
 		}
 
 		try {
@@ -330,17 +341,32 @@ public class SpreadsheetWriter extends Node {
 		return status;
 	}
 	
-	private Map<String, Character> inputMetadataCorrect(DataRecordMetadata metadata) {
-		HashMap<String, Character> incorrectFields = new HashMap<String, Character>();
+	private Map<String, Character> checkInputDataFieldsTypes(DataRecordMetadata metadata) {
+		HashMap<String, Character> result = new HashMap<String, Character>();
 		char fieldType;
 		for (DataFieldMetadata field : metadata.getFields()) {
 			fieldType = field.getType();
 			if (!supportedTypes.contains(fieldType)) {
-				incorrectFields.put(field.getName(), fieldType);
+				result.put(field.getName(), fieldType);
 			}
 		}
 		
-		return incorrectFields.isEmpty() ? null : incorrectFields;
+		return result;
+	}
+
+	private Map<String, DataFieldFormatType> checkInputDataFieldsFormats(DataRecordMetadata metadata) {
+		HashMap<String, DataFieldFormatType> result = new HashMap<String, DataFieldFormatType>();
+		for (DataFieldMetadata field : metadata.getFields()) {
+			if (field.hasFormat()) {
+				DataFieldFormatType formatType = field.getFormatType();
+				if (formatType!=DataFieldFormatType.EXCEL) {
+					//unsupported data field format type
+					result.put(field.getName(), formatType);
+				}
+			}
+		}
+		
+		return result;
 	}
 
 	@Override
@@ -358,7 +384,8 @@ public class SpreadsheetWriter extends Node {
 		formatterProvider.setAppend(writeMode.isAppend());
 		formatterProvider.setInsert(writeMode.isInsert());
 		formatterProvider.setCreateFile(writeMode.isCreatingNewFile());
-		formatterProvider.setRemoveSheets(removeSheets);
+		formatterProvider.setRemoveSheets(existingSheetsActions.isRemovingAllSheets());
+		formatterProvider.setRemoveRows(existingSheetsActions.isRemovingAllRows());
 		if (templateFileURL!=null) {
 			formatterProvider.setTemplateFile(getGraph().getRuntimeContext().getContextURL(), templateFileURL);
 		}
