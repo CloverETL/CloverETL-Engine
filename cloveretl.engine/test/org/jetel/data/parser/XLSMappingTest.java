@@ -179,7 +179,7 @@ public class XLSMappingTest extends CloverTestCase {
 			assertEquals(5, group.getCloverField());
 			assertEquals(6, group.getFormatField());
 			assertEquals(XLSMapping.DEFAULT_SKIP, group.getSkip());
-			assertEquals(SpreadsheetMappingMode.AUTO, group.getMappingMode());
+			assertEquals(SpreadsheetMappingMode.EXPLICIT, group.getMappingMode());
 
 			ranges = group.getRanges();
 			assertNotNull(ranges);
