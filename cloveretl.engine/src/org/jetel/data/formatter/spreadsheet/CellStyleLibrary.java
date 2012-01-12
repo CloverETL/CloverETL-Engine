@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jetel.data.formatter.SpreadsheetFormatter;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 
 public class CellStyleLibrary {
@@ -363,7 +364,11 @@ public class CellStyleLibrary {
 			if (formatStringFromRecord!=null && !"".equals(formatStringFromRecord)) {
 				formatStr = formatStringFromRecord;
 			} else if (fieldMetadata.getFormatStr()!=null && !"".equals(fieldMetadata.getFormatStr())){
-				formatStr = fieldMetadata.getFormatStr(); 
+				formatStr = fieldMetadata.getFormat(DataFieldFormatType.EXCEL);
+				if (formatStr.isEmpty()) {
+					//if no compatible format is found, try to use a field format as is (for users who forget writing an Excel format prefix
+					formatStr = fieldMetadata.getFormatStr(); 
+				}
 			}
 			
 			short modifiedDataFormat = dataFormat.getFormat(formatStr);
