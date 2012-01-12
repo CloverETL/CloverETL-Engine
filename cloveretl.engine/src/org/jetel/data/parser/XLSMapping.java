@@ -227,8 +227,12 @@ public class XLSMapping {
 			
 				if (XML_HEADER_RANGES.equals(propertyName)) {
 					headerRanges = parseHeaderRanges(property.getChildNodes());
-				} else if (XML_HEADER_GROUP_CLOVER_FIELD.equals(propertyName) && property.getFirstChild() != null) {
-					cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
+				} else if (XML_HEADER_GROUP_CLOVER_FIELD.equals(propertyName)) {
+					// let's have Explicit mode even if cloverField tag is empty
+					mappingMode = SpreadsheetMappingMode.EXPLICIT;
+					if (property.getFirstChild() != null) {
+						cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
+					}
 				} else if (XML_HEADER_GROUP_AUTO_MAPPING_TYPE.equals(propertyName) && property.getFirstChild() != null) {
 					mappingMode = SpreadsheetMappingMode.valueOfIgnoreCase(property.getFirstChild().getNodeValue());
 				} else if (XML_HEADER_GROUP_FORMAT_FIELD.equals(propertyName) && property.getFirstChild() != null) {
@@ -541,7 +545,7 @@ public class XLSMapping {
 
 	public static enum SpreadsheetMappingMode {
 
-		ORDER, NAME, AUTO;
+		ORDER, NAME, AUTO, EXPLICIT;
 
 		public static SpreadsheetMappingMode valueOfIgnoreCase(String string) {
 			for (SpreadsheetMappingMode orientation : values()) {
