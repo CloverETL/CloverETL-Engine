@@ -641,8 +641,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				} catch (Exception ex2) {
 				}
 				String cellCoordinates = SpreadsheetUtils.getColumnReference(lastColumn + parent.mappingMinColumn) + String.valueOf(currentParseRow);
-				parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n"), 
-						record, cloverFieldIndex, cellCoordinates, value);
+//				parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n"),
+//						record, cloverFieldIndex, cellCoordinates, value);
+				parent.handleException(new BadDataFormatException(ex1.getMessage()), record, cloverFieldIndex, cellCoordinates, value);
 			}
 		}
 
