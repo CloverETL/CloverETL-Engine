@@ -235,15 +235,17 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		bdfe.setFieldNumber(cloverFieldIndex);
 
 		if (exceptionHandler != null) { // use handler only if configured
-			exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex), record, recordNumber, cloverFieldIndex, cellValue, bdfe);
+//			exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex), record, recordNumber, cloverFieldIndex, cellValue, bdfe);
+			exceptionHandler.populateHandler(bdfe.getMessage(), record, recordNumber, cloverFieldIndex, cellValue, bdfe);
 			if (exceptionHandler instanceof SpreadsheetParserExceptionHandler) {
 				((SpreadsheetParserExceptionHandler) exceptionHandler).addOffendingCoordinates(cellCoordinates);
 			}
 		} else {
-			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex));
+//			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex));
+			throw new RuntimeException(bdfe.getMessage());
 		}
 	}
-
+	
 	private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
 		StringBuffer message = new StringBuffer();
 		message.append(exceptionMessage);

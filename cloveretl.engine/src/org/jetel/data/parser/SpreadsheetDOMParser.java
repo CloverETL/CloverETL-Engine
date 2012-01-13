@@ -252,25 +252,34 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 
 		char type = metadata.getField(cloverFieldIndex).getType();
 
-		try {
+		String expectedType = null;
+//		try {
 			try {
 				
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
+					expectedType = "date";
 					record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
+					expectedType = "byte";
 				case DataFieldMetadata.STRING_FIELD:
+					expectedType = "string";
 					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL));
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
+					expectedType = "decimal";
 				case DataFieldMetadata.INTEGER_FIELD:
+					expectedType = "integer";
 				case DataFieldMetadata.LONG_FIELD:
+					expectedType = "long";
 				case DataFieldMetadata.NUMERIC_FIELD:
+					expectedType = "number";
 					record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
+					expectedType = "boolean";
 					record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
 					break;
 				}
@@ -281,17 +290,37 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				if (cell.getCellType() == Cell.CELL_TYPE_STRING && "".equals(cell.getStringCellValue().trim())) {
 					record.getField(cloverFieldIndex).setNull(true);
 				} else {
-					throw e;
+//					throw e;
+					String errorMessage = "Cannot get " + expectedType + " value from type " + cellTypeToString(cell.getCellType()) + " cell";
+					try {
+						record.getField(cloverFieldIndex).setNull(true);
+					} catch (Exception ex) {
+					}
+					String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
+					handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
 				}
 			}
-		} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
-			String errorMessage = exception.getMessage();
-			try {
-				record.getField(cloverFieldIndex).setNull(true);
-			} catch (Exception ex) {
-			}
-			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
-			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
+//		} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
+//			String errorMessage = exception.getMessage();
+//			try {
+//				record.getField(cloverFieldIndex).setNull(true);
+//			} catch (Exception ex) {
+//			}
+//			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
+//			handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
+//		}
+	}
+	
+	private String cellTypeToString(int cellType) {
+		switch (cellType) {
+		case Cell.CELL_TYPE_BOOLEAN:
+			return "BOOLEAN";
+		case Cell.CELL_TYPE_STRING:
+			return "STRING";
+		case Cell.CELL_TYPE_NUMERIC:
+			return "NUMERIC";
+		default:
+			return "UNKNOWN";
 		}
 	}
 
