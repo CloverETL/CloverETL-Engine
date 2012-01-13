@@ -33,6 +33,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -282,8 +284,8 @@ public class SAXHandler extends SAXContentHandler {
                                         + m_characters
                                         .substring(m_characters
                                         .lastIndexOf(":") + 1);
-                                DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
-                                field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
+                                DateFormatter formatter = field.getMetadata().createDateFormatter();
+                                field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
                             } catch (Exception ex2) {
                                 // Oh well we tried, throw the originating
                                 // exception

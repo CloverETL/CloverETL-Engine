@@ -18,6 +18,9 @@
  */
 package org.jetel.util.formatter;
 
+import org.jetel.data.DataField;
+import org.jetel.metadata.DataFieldFormatType;
+
 /**
  * Date utility class.
  *
@@ -35,18 +38,21 @@ public final class DateUtils {
 	 * @param formatString a format string to be stripped of the prefix
 	 *
 	 * @return the format string with the prefix stripped
+	 * 
+	 * @deprecated use directly {@link DataFieldFormatType} instead
 	 */
+	@Deprecated
 	public static String stripFormatPrefix(String formatString) {
 		if (formatString == null) {
 			return null;
 		}
 
-		if (formatString.startsWith(DateFormatterFactory.JAVA_FORMAT_PREFIX)) {
-			return formatString.substring(DateFormatterFactory.JAVA_FORMAT_PREFIX.length());
+		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
+			return DataFieldFormatType.JAVA.getFormat(formatString);
 		}
 
-		if (formatString.startsWith(DateFormatterFactory.JODA_FORMAT_PREFIX)) {
-			return formatString.substring(DateFormatterFactory.JODA_FORMAT_PREFIX.length());
+		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+			return DataFieldFormatType.JODA.getFormat(formatString);
 		}
 
 		return formatString;

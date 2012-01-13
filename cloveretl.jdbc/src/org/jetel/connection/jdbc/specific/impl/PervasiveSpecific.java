@@ -84,8 +84,7 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 			return Types.BIT;
         case DataFieldMetadata.BYTE_FIELD:
         case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-        	if (!StringUtils.isEmpty(field.getFormatStr())
-					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
+        	if (field.hasFormat() && field.getFormat().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
         		return Types.BLOB;
         	}
             return field.isFixed() ? Types.BINARY : Types.LONGVARBINARY;

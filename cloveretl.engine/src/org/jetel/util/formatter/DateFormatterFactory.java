@@ -21,6 +21,7 @@ package org.jetel.util.formatter;
 import java.util.Locale;
 
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -35,10 +36,6 @@ import org.jetel.util.string.StringUtils;
  */
 public final class DateFormatterFactory {
 
-	/** the Java prefix specifying date format strings used by the Java's DateFormat class */
-	public static final String JAVA_FORMAT_PREFIX = "java:";
-	/** the Joda-Time prefix specifying date format strings used by the Joda-Time's DateTimeFormatter class */
-	public static final String JODA_FORMAT_PREFIX = "joda:";
 
 	public static DateFormatter getFormatter(String formatString, Locale locale) {
 		if (locale == null) {
@@ -47,14 +44,14 @@ public final class DateFormatterFactory {
 
 		if (StringUtils.isEmpty(formatString)) {
 			return new JavaDateFormatter(locale);
-		} else if (formatString.startsWith(JODA_FORMAT_PREFIX)) {
-			return new JodaDateFormatter(formatString.substring(JODA_FORMAT_PREFIX.length()), locale);
+		} else if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale);
 		} else {
-			if (formatString.startsWith(JAVA_FORMAT_PREFIX)) {
-				formatString = formatString.substring(JAVA_FORMAT_PREFIX.length());
+			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
+				formatString = DataFieldFormatType.JAVA.getFormat(formatString);
 			}
 
-			return new JavaDateFormatter(formatString, locale);
+			return new JavaDateFormatter(locale);
 		}
 	}
 

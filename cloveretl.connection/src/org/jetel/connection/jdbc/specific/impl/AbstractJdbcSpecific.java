@@ -253,7 +253,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	 */
 	@Override
 	public CopySQLData createCopyObject(int sqlType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex) {
-		String format = fieldMetadata.getFormatStr();
+		String format = fieldMetadata.getFormat();
 		char jetelType = fieldMetadata.getType();
 		CopySQLData obj = null;
 		switch (sqlType) {

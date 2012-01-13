@@ -43,6 +43,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -205,8 +206,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 			DataFieldMetadata fieldMetadata = metadata.getField(includedFieldIndices[i]);
 
 			CellStyle cellStyle = workbook.createCellStyle();
-			cellStyle.setDataFormat(dataFormat.getFormat((fieldMetadata.getFormatStr() != null)
-					? fieldMetadata.getFormatStr() : GENERAL_FORMAT_STRING));
+			cellStyle.setDataFormat(dataFormat.getFormat(getExcelFormat(fieldMetadata)));
 
 			cellStyles[i] = cellStyle;
 		}
@@ -266,6 +266,24 @@ public class XLSXDataFormatter extends XLSFormatter {
 		}
 	}
 
+	/**
+	 * Extract excel related format string from a clover field metadata.
+	 */
+	private static String getExcelFormat(DataFieldMetadata fieldMetadata) {
+		String format;
+		if (fieldMetadata.hasFormat()) {
+			format = fieldMetadata.getFormat(DataFieldFormatType.EXCEL);
+			if (StringUtils.isEmpty(format)) {
+				//if no compatible format is found, try to use a field format as is (for users who forget writing an Excel format prefix)
+				//TODO what about to try convert java format to excel format?
+				format = fieldMetadata.getFormat();
+			}
+		} else {
+			format = GENERAL_FORMAT_STRING;
+		}
+		return format;
+	}
+	
 	@Override
 	public void prepareSheet(DataRecord dataRecord) {
 		if (dataRecord == null) {

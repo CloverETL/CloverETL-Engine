@@ -363,10 +363,11 @@ public class CellStyleLibrary {
 			String formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
 			if (formatStringFromRecord!=null && !"".equals(formatStringFromRecord)) {
 				formatStr = formatStringFromRecord;
-			} else if (fieldMetadata.getFormatStr()!=null && !"".equals(fieldMetadata.getFormatStr())){
+			} else if (fieldMetadata.hasFormat()) {
 				formatStr = fieldMetadata.getFormat(DataFieldFormatType.EXCEL);
 				if (formatStr.isEmpty()) {
-					//if no compatible format is found, try to use a field format as is (for users who forget writing an Excel format prefix
+					//if no compatible format is found, try to use a field format as is (for users who forget writing an Excel format prefix)
+					//TODO what about to try convert java format to excel format?
 					formatStr = fieldMetadata.getFormatStr(); 
 				}
 			}

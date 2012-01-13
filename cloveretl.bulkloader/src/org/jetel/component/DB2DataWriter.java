@@ -1056,7 +1056,7 @@ public class DB2DataWriter extends Node {
 		for (int i=0; i< out.getNumFields(); i++){
 			field = out.getField(i);
 			if (field.getType() == DataFieldMetadata.DATE_FIELD || field.getType() == DataFieldMetadata.DATETIME_FIELD) {
-				formatString = field.getFormatStr();
+				formatString = field.getFormat();
 				isDate = formatString == null || 
 						 formatString.contains("G") || formatString.contains("y") || 
 						 formatString.contains("M") || formatString.contains("w") || 

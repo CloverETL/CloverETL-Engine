@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
@@ -67,7 +68,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	public DateDataField(DataFieldMetadata metadata, boolean plain) {
         super(metadata);
         // create a date formatter based on the format string and locale
-        dateFormatter = DateFormatterFactory.getFormatter(metadata.getFormatStr(), metadata.getLocaleStr());
+        dateFormatter = metadata.createDateFormatter();
         this.reset();
     }
 
