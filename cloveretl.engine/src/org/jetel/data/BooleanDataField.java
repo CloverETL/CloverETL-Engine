@@ -68,7 +68,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	    super(_metadata);
 	    setValue(_value);
 	    
-	    booleanFormatter = BooleanFormatterFactory.createFormatter(_metadata.getFormatStr());
+	    booleanFormatter = BooleanFormatterFactory.createFormatter(_metadata.getFormat());
 	}
 	
 	@Override

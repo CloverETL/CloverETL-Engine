@@ -34,6 +34,8 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -572,6 +574,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * This method should not be called directly, use {@link #getFormat(DataFieldFormatType)} instead.
 	 * @return the format pattern which will be used when outputting field's value as a string, or <code>null</code> if
 	 * no format pattern is set for this field
 	 */
@@ -676,17 +679,6 @@ public class DataFieldMetadata implements Serializable {
 	}
 	
 	/**
-	 * Returns the part of the format string 
-	 * which follows after the "BINARY:" prefix.
-	 * Returns an empty string if the format is not binary.
-	 *  
-	 * @return binary format parameters
-	 */
-	public String getBinaryFormatParams() {
-		return BinaryFormat.getBinaryFormatParams(formatStr);
-	}
-	
-	/**
 	 * Determines whether the field is byte-based.
 	 * 
 	 * @return <code>true</code> if this data field is byte-based, <code>false</code> otherwise
@@ -735,6 +727,34 @@ public class DataFieldMetadata implements Serializable {
 		return dataFieldFormat.getFormat(getFormatStr());
 	}
 	
+	/**
+	 * Returns a formatting string of the default type ({@link DataFieldFormatType#DEFAULT_FORMAT_TYPE}).
+	 * A purpose of this method is to prevent usage of incompatible formatting string types.
+	 * <p>
+	 * Equivalent call:<br>
+	 * {@link #getFormat(DataFieldFormatType.DEFAULT_FORMAT_TYPE)}
+	 * 
+	 * 
+	 * @param dataFieldFormat
+	 * @return
+	 * @see #getFormat(DataFieldFormatType)
+	 */
+	public String getFormat() {
+		return getFormat(DataFieldFormatType.DEFAULT_FORMAT_TYPE);
+	}
+	
+	/**
+	 * Prepare a DateFormatter instance based on format string and locale.
+	 * Available only for date field metadata.
+	 * @return DateFormatter instance for this date field metadata
+	 */
+	public DateFormatter createDateFormatter() {
+		if (getType() != DATE_FIELD) {
+			throw new UnsupportedOperationException("DateFormatter is available only for date field metadata.");
+		}
+		return DateFormatterFactory.getFormatter(getFormatStr(), getLocaleStr());
+	}
+
 	/**
 	 * Sets the position of the field in a data record (used only when dealing with fixed-size type of record).
 	 * 

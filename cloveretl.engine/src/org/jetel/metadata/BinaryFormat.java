@@ -41,7 +41,7 @@ public enum BinaryFormat {
 	FLOAT_BIG_ENDIAN("Float, big-endian (4 bytes)", ByteOrder.BIG_ENDIAN, 4),
 	FLOAT_LITTLE_ENDIAN("Float, little-endian (4 bytes)", ByteOrder.LITTLE_ENDIAN, 4);
 	
-	public static final String BINARY_FORMAT_PREFIX = "BINARY:";
+	public static final String BINARY_FORMAT_PREFIX = DataFieldFormatType.BINARY.getFormatPrefixWithDelimiter();
 
 	public final String description;
 	public final ByteOrder byteOrder;

@@ -18,8 +18,7 @@
  */
 package org.jetel.metadata;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Pavel Simecek (pavel.simecek@javlin.eu)
@@ -39,21 +38,13 @@ public enum DataFieldFormatType {
 	private final String longName;
 	private static final String prefixDelimiter = ":";
 	
-	static Map<String, DataFieldFormatType> prefixToDataFieldFormatMap = new HashMap<String, DataFieldFormatType>();
-	
-	static {
-		for (DataFieldFormatType dataFieldFormat : DataFieldFormatType.values()) {
-			prefixToDataFieldFormatMap.put(dataFieldFormat.formatPrefix, dataFieldFormat);
-		}
-	}
-	
-	static boolean isExistingPrefix(String prefix) {
-		return prefixToDataFieldFormatMap.containsKey(prefix);
-	}
-	
 	DataFieldFormatType(String formatPrefix, String longName) {
 		this.formatPrefix = formatPrefix;
 		this.longName = longName;
+	}
+
+	public static boolean isExistingPrefix(String prefix) {
+		return guessFormatType(prefix) != null;
 	}
 	
 	public String getLongName() { 
@@ -65,7 +56,7 @@ public enum DataFieldFormatType {
 	}
 	
 	public String prependFormatPrefix(String formatStr) {
-		return this.formatPrefix + prefixDelimiter + formatStr;
+		return this.formatPrefix + prefixDelimiter + (!StringUtils.isEmpty(formatStr) ? formatStr : "");
 	}
 	
 	public String getFormatPrefixWithDelimiter() {
@@ -84,14 +75,23 @@ public enum DataFieldFormatType {
 	    	int delimiterPos = formatString.indexOf(prefixDelimiter);
 	    	if (delimiterPos != -1) {
 		    	String potentialPrefix = formatString.substring(0, delimiterPos).toLowerCase();
-		    	if (isExistingPrefix(potentialPrefix)) {
-		    		return prefixToDataFieldFormatMap.get(potentialPrefix);
-		    	}
+		    	return guessFormatType(potentialPrefix);
 	    	}
 		}
 		
 		return null;
-		
+	}
+	
+	/**
+	 * @return format type instance based on the given prefix or null if does not exist
+	 */
+	private static DataFieldFormatType guessFormatType(String prefix) {
+		for (DataFieldFormatType dataFieldFormat : DataFieldFormatType.values()) {
+			if (dataFieldFormat.formatPrefix.equalsIgnoreCase(prefix)) {
+				return dataFieldFormat;
+			}
+		}
+		return null;
 	}
 	
 	/**

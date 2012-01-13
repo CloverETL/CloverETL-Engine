@@ -120,9 +120,9 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		case Types.BIT:
 			return "TINYINT(1)";
 		case Types.DATE:
-			if (field.getFormatStr() != null) {
+			if (field.hasFormat()) {
 				Pattern p = Pattern.compile("[y]{1,4}");
-				Matcher m = p.matcher(field.getFormatStr());
+				Matcher m = p.matcher(field.getFormat());
 				if (m.matches()) {
 					return "YEAR";
 				}

@@ -242,13 +242,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		if (!(field.isNumeric() || field.getType() == DataFieldMetadata.DATE_FIELD || field.getType() == DataFieldMetadata.DATETIME_FIELD)){
 			return null;
 		}
-		String format = field.getFormatStr() ;
+		String format = field.getFormat();
 		if (field.isNumeric()) {
 			return format != null ? new WritableCellFormat(new NumberFormat(format)) : null;
 		}
 		//DateDataField
 		if (format != null) {
-			return new WritableCellFormat(new DateFormat(DateUtils.stripFormatPrefix(format)));
+			return new WritableCellFormat(new DateFormat(format));
 		}
 		//format is null
 		if (field.getLocaleStr() != null) {

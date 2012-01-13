@@ -492,7 +492,7 @@ public abstract class BulkLoader extends Node {
 				field.getType() == DataFieldMetadata.DATETIME_FIELD) {
 			boolean isDate = field.isDateFormat();
 			boolean isTime = field.isTimeFormat();
-			boolean isOnlyYearFormat = isDate && field.getFormatStr().matches("(y|Y)*");
+			boolean isOnlyYearFormat = isDate && field.getFormat().matches("(y|Y)*");
 
 			// if formatStr is undefined then DEFAULT_DATETIME_FORMAT is assigned
 			if (isOnlyYearFormat && yearFm != null) {

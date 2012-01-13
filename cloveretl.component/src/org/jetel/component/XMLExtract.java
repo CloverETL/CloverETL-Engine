@@ -76,6 +76,8 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -739,8 +741,8 @@ public class XMLExtract extends Node {
 			                            + m_characters
 			                            .substring(m_characters
 			                            .lastIndexOf(":") + 1);
-			                    DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
-			                    field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
+			                    DateFormatter formatter = field.getMetadata().createDateFormatter();
+			                    field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
 			                } catch (Exception ex2) {
 			                    // Oh well we tried, throw the originating
 			                    // exception

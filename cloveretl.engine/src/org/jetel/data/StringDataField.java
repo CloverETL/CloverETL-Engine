@@ -83,7 +83,7 @@ public class StringDataField extends DataField implements CharSequence{
         }
         // handle format string
         String regExp;
-        regExp = _metadata.getFormatStr();
+        regExp = _metadata.getFormat();
         if ((regExp != null) && (regExp.length() != 0)) {
         	stringFormat = StringFormat.create(regExp);
         } 

@@ -32,6 +32,7 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
+import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -80,7 +81,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
         super(_metadata);
         
     	if (_metadata.isByteBased()) {
-    		String typeStr = _metadata.getBinaryFormatParams();
+    		String typeStr = _metadata.getFormat(DataFieldFormatType.BINARY);
     		try {
 				binaryFormat = BinaryFormat.valueOf(typeStr);
 			} catch (IllegalArgumentException iae) {
@@ -102,7 +103,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
     	if (plain || _metadata.isByteBased()) {
         	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
-        	numericFormatter = NumericFormatterFactory.getFormatter(_metadata.getFormatStr(), _metadata.getLocaleStr());
+        	numericFormatter = NumericFormatterFactory.getFormatter(_metadata.getFormat(), _metadata.getLocaleStr());
         }
         
     }

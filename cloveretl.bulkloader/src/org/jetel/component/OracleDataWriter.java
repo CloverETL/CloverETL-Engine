@@ -885,7 +885,7 @@ public class OracleDataWriter extends BulkLoader {
 				} else {
 					ret.append(" TIMESTAMP \"");
 				}
-				ret.append(javaDatePattern2Oracle(fields[i].getFormatStr()));
+				ret.append(javaDatePattern2Oracle(fields[i].getFormat()));
 				ret.append("\"");
 			}
 			if (fields[i].isDelimited()) {
