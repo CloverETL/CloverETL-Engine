@@ -3746,10 +3746,10 @@ void ControlConstant()          : {/*@bgen(jjtree) Literal */
 	    <LONG_VAR> {  jjtn000.setType(TLTypePrimitive.LONG); }	   | 
 	    <STRING_VAR> { jjtn000.setType(TLTypePrimitive.STRING); }	  ) 
 	]	")"
+	"." FunctionCall(null)
 	{
 		jjtn000.end(token.endLine,token.endColumn);
-	}
-	"." FunctionCall(null)/*@bgen(jjtree)*/
+	}/*@bgen(jjtree)*/
          {
            jjtree.closeNodeScope(jjtn000, true);
            jjtc000 = false;
