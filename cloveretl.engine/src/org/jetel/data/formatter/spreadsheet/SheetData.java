@@ -142,6 +142,21 @@ public final class SheetData {
 		this.templateCopiedRegionY2 = templateCopiedRegionY1;
 	}
 
+
+	private void removeCell(int rowNumber, int colNumber) {
+		Row row = getRow(rowNumber);
+		if (row!=null) {
+			Cell cell = row.getCell(colNumber);
+			if (cell!=null) {
+				row.removeCell(cell);
+			}
+		}
+		
+		//find new last cell in a row
+		int lastCellNumber;
+		for (lastCellNumber=colNumber-1; lastCellNumber>=0 && row.getCell(lastCellNumber)==null; --lastCellNumber);
+		setLastCellNumber(row, lastCellNumber);			
+	}
 	
 	private Cell createCell(int rowNumber, int colNumber) {
 		Row row = getRow(rowNumber);
@@ -380,31 +395,37 @@ public final class SheetData {
 		int previousRecordBottom = index + mappingInfo.getStep() - 1;
 		for (int x=0; x<=getLastRowNumber(); ++x) {
 			Row row = getRow(x);
-			if (row==null) {
+			if (row == null) {
 				row = createRow(x);
 			}
 			int lastColumnNumber = getLastCellNumber(row);
-			
-			if (lastColumnNumber < previousRecordBottom) {
-				appendEmptyLines(previousRecordBottom - lastColumnNumber);
+			if (lastColumnNumber<previousRecordBottom && movementSize > 0) {
+				//create empty cells where cells are expected:
+				for (int i=lastColumnNumber+1; i<=previousRecordBottom; ++i) {
+					createCellAndRefreshLastColumnNumber(row, i);
+				}
+				lastColumnNumber = getLastCellNumber(row);
+			}
+
+			Integer minimalYOffset = null;
+			Interval yInterval = mappingStats.getMinimalYIntervalForXOffset(x - mappingStats.getFirstRecordXYRange().x1);
+			if (yInterval != null) {
+				minimalYOffset = yInterval.min;
+			}
+			if (minimalYOffset == null) {
+				minimalYOffset = 0;
+			}
+			int cellY = transformations.maximum(0, previousRecordBottom + minimalYOffset);
+			if (movementSize > 0) {
+				for (int movementIndex = lastColumnNumber; movementIndex >= cellY; --movementIndex) {
+					swapCells(row, movementIndex, movementIndex + movementSize);
+				}
 			} else {
-				Integer minimalYOffset = null; 
-				Interval yInterval = mappingStats.getMinimalYIntervalForXOffset(x-mappingStats.getFirstRecordXYRange().x1);
-				if (yInterval!=null) {
-					minimalYOffset = yInterval.min; 
+				for (int movementIndex = cellY; movementIndex <= lastColumnNumber; ++movementIndex) {
+					copyCell(row, movementIndex, movementIndex + movementSize);
 				}
-				if (minimalYOffset == null) {
-					minimalYOffset = 0;
-				}
-				int cellY = transformations.maximum(0, previousRecordBottom + minimalYOffset);
-				if (movementSize > 0) {
-					for (int movementIndex = lastColumnNumber; movementIndex >= cellY; --movementIndex) {
-						swapCells(row, movementIndex, movementIndex + movementSize);
-					}
-				} else {
-					for (int movementIndex = cellY; movementIndex <= lastColumnNumber; ++movementIndex) {
-						copyCell(row, movementIndex, movementIndex + movementSize);
-					}
+				for (int deletionIndex = lastColumnNumber + movementSize + 1; deletionIndex <= lastColumnNumber; ++deletionIndex) {
+					removeCell(x, deletionIndex);
 				}
 			}
 		}
@@ -446,14 +467,15 @@ public final class SheetData {
 
 	public void copyCell(Row row, int sourceCellIndex, int targetCellIndex) {
 		Cell sourceCell = row.getCell(sourceCellIndex);
-		if (sourceCell==null) {
-			sourceCell = createCellAndRefreshLastColumnNumber(row, sourceCellIndex);
-		}
 		Cell targetCell = row.getCell(targetCellIndex);
 		if (targetCell == null) {
 			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
 		}
-		CellOperations.copyCell(sourceCell, targetCell);
+		if (sourceCell == null) {
+			targetCell.setCellValue("");
+		} else {
+			CellOperations.copyCell(sourceCell, targetCell);
+		}
 	}
 
 	public void autosizeColumns() {
