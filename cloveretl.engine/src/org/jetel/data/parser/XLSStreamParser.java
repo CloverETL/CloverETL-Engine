@@ -182,6 +182,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
 		fs = new POIFSFileSystem(inputStream);
 		prepareRecordFactory();
+		currentSheetIndex = -1;
 	}
 	
 	@Override
