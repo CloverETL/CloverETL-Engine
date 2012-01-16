@@ -128,7 +128,7 @@ public class SpreadsheetReader extends Node {
             	spreadsheetReader.setSkipRecords(xattribs.getInteger(XML_SKIP_RECORDS_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE)){
 				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE));
