@@ -20,10 +20,8 @@ package org.jetel.util.formatter;
 
 import java.util.Locale;
 
-import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.MiscUtils;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Factory for internally used date formatters.
@@ -38,20 +36,12 @@ public final class DateFormatterFactory {
 
 
 	public static DateFormatter getFormatter(String formatString, Locale locale) {
-		if (locale == null) {
-			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
-		}
-
-		if (StringUtils.isEmpty(formatString)) {
-			return new JavaDateFormatter(locale);
-		} else if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
 			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale);
+		} else if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
+				return new JavaDateFormatter(DataFieldFormatType.JAVA.getFormat(formatString), locale);
 		} else {
-			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
-				formatString = DataFieldFormatType.JAVA.getFormat(formatString);
-			}
-
-			return new JavaDateFormatter(formatString, locale);
+			return new JavaDateFormatter(locale);
 		}
 	}
 

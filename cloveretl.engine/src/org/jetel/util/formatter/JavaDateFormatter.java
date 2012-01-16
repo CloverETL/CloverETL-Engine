@@ -40,18 +40,26 @@ class JavaDateFormatter implements DateFormatter {
 	/** classic Java date format */
 	private final DateFormat dateFormat;
 	private ParsePosition position=new ParsePosition(0);
-
+	private Locale locale;
+	
 	public JavaDateFormatter() {
-		this(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE));
+		this(null);
 	}
 
 	public JavaDateFormatter(Locale locale) {
-		this(Defaults.DEFAULT_DATE_FORMAT, locale);
+		this(null, locale);
 	}
 
 	public JavaDateFormatter(String pattern, Locale locale) {
+		if (locale == null) {
+			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
+		}
+		if (pattern == null) {
+			pattern = Defaults.DEFAULT_DATE_FORMAT;
+		}
 		this.dateFormat = new SimpleDateFormat(pattern, locale);
 		this.dateFormat.setLenient(false);
+		this.locale = locale;
 	}
 
 	@Override
@@ -79,6 +87,11 @@ class JavaDateFormatter implements DateFormatter {
 		return ((SimpleDateFormat)dateFormat).toPattern();
 	}
 
+	@Override
+	public Locale getLocale() {
+		return locale;
+	}
+	
 	@Override
 	public boolean tryParse(String value) {
 		position.setIndex(0);
