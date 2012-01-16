@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
@@ -392,6 +391,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
+		if (obj == null) return 1;
 	    
 		if (obj instanceof java.util.Date){
 			return value.compareTo((java.util.Date) obj);

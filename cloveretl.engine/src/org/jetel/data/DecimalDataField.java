@@ -596,7 +596,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	public int compareTo(Numeric _value){
 	    if (isNull) {
 	        return -1;
-	    } else if (_value.isNull()) {
+	    } else if (_value == null || _value.isNull()) {
 	        return 1;
 	    } else {
 	        return value.compareTo(_value);

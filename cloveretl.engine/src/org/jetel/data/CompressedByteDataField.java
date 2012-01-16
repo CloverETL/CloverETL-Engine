@@ -239,6 +239,7 @@ public class CompressedByteDataField extends ByteDataField {
 	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
+		if (obj == null) return 1;
 		
 		byte[] left;
 		byte[] right;
