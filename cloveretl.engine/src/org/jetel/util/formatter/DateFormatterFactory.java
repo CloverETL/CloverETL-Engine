@@ -51,7 +51,7 @@ public final class DateFormatterFactory {
 				formatString = DataFieldFormatType.JAVA.getFormat(formatString);
 			}
 
-			return new JavaDateFormatter(locale);
+			return new JavaDateFormatter(formatString, locale);
 		}
 	}
 
