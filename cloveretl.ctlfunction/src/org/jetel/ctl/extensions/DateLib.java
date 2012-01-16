@@ -133,6 +133,9 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Returns the difference between dates")
     public static final Long dateDiff(TLFunctionCallContext context, Date lhs, Date rhs, DateFieldEnum unit) {
+    	if (unit == DateFieldEnum.MILLISEC) { // CL-1087
+    		return lhs.getTime() - rhs.getTime();
+    	}
 		long diffSec = (lhs.getTime() - rhs.getTime()) / 1000L;
         long diff = 0;
         
