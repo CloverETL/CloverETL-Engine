@@ -1972,10 +1972,10 @@ void ControlConstant() #Literal : {}
 	    <LONG_VAR> {  jjtThis.setType(TLTypePrimitive.LONG); }	   | 
 	    <STRING_VAR> { jjtThis.setType(TLTypePrimitive.STRING); }	  ) 
 	]	")"
+	"." FunctionCall(null)
 	{
 		jjtThis.end(token.endLine,token.endColumn);
 	}
-	"." FunctionCall(null)
 	 {
 	   		CLVFFunctionCall opFunc = (CLVFFunctionCall)jjtThis.jjtGetChild(0);
 	   		jjtThis.removeChild(0);

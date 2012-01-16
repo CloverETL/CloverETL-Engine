@@ -4080,9 +4080,9 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
       }
       jj_consume_token(CLOSE_PAR);
-                jjtn000.end(token.endLine,token.endColumn);
       jj_consume_token(DOT);
       FunctionCall(null);
+                jjtn000.end(token.endLine,token.endColumn);
            jjtree.closeNodeScope(jjtn000, true);
            jjtc000 = false;
                         CLVFFunctionCall opFunc = (CLVFFunctionCall)jjtn000.jjtGetChild(0);
