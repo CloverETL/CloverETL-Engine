@@ -39,18 +39,26 @@ class JodaDateFormatter implements DateFormatter {
 	/** Joda-Time date time formatter */
 	private final DateTimeFormatter dateTimeFormatter;
 	private String pattern;
+	private Locale locale;
 
 	public JodaDateFormatter() {
-		this(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE));
+		this(null);
 	}
 
 	public JodaDateFormatter(Locale locale) {
-		this(Defaults.DEFAULT_DATE_FORMAT, locale);
+		this(null, locale);
 	}
 
 	public JodaDateFormatter(String pattern, Locale locale) {
+		if (pattern == null) {
+			pattern = Defaults.DEFAULT_DATE_FORMAT;
+		}
+		if (locale == null) {
+			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
+		}
 		this.dateTimeFormatter = DateTimeFormat.forPattern(pattern).withLocale(locale);
-		this.pattern=pattern;
+		this.pattern = pattern;
+		this.locale = locale;
 	}
 
 	@Override
@@ -73,6 +81,11 @@ class JodaDateFormatter implements DateFormatter {
 		return pattern;
 	}
 
+	@Override
+	public Locale getLocale() {
+		return locale;
+	}
+	
 	@Override
 	public boolean tryParse(String value) {
 		try{
