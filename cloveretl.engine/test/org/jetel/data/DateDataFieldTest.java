@@ -190,7 +190,7 @@ public void test_1_DateDataField() {
 		String as400DateFormat = "yyyy-MM-dd-HH.mm.ss.SSS000";
 		String as400TestDate = "2002-07-10-22.36.15.129000";
 
-		DataFieldMetadata javaDateMetadataDefault = new DataFieldMetadata("date", ";");
+		DataFieldMetadata javaDateMetadataDefault = new DataFieldMetadata("date", DataFieldMetadata.DATE_FIELD, ";");
 		javaDateMetadataDefault.setFormatStr(as400DateFormat);
 		DateDataField javaDateDataFieldDefault = new DateDataField(javaDateMetadataDefault);
 
@@ -201,7 +201,7 @@ public void test_1_DateDataField() {
 			// OK
 		}
 
-		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", ";");
+		DataFieldMetadata javaDateMetadataPrefix = new DataFieldMetadata("date", DataFieldMetadata.DATE_FIELD, ";");
 		javaDateMetadataPrefix.setFormatStr(DataFieldFormatType.JAVA.getFormatPrefixWithDelimiter() + as400DateFormat);
 		DateDataField javaDateDataFieldPrefix = new DateDataField(javaDateMetadataPrefix);
 
@@ -212,7 +212,7 @@ public void test_1_DateDataField() {
 			// OK
 		}
 
-		DataFieldMetadata jodaDateMetadata = new DataFieldMetadata("date", ";");
+		DataFieldMetadata jodaDateMetadata = new DataFieldMetadata("date", DataFieldMetadata.DATE_FIELD, ";");
 		jodaDateMetadata.setFormatStr(DataFieldFormatType.JODA.getFormatPrefixWithDelimiter() + as400DateFormat);
 		DateDataField jodaDateDataField = new DateDataField(jodaDateMetadata);
 
