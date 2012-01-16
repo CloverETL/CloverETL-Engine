@@ -442,6 +442,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	public int compareTo(Object obj) {
 		byte[] byteObj;
 		if (isNull) return -1;
+		if (obj == null) return 1;
 		
 		if (obj instanceof ByteDataField){
 			if (!((ByteDataField) obj).isNull()) {
