@@ -1406,6 +1406,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 				field.setLabel(equal ? null : fieldNames[i]);
 			}
 		}
+		metadata.structureChanged();
 	}
 
 	/**
