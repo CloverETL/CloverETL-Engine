@@ -272,5 +272,29 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		aMixedDataRecordMetadata.checkConfig(status);
 		assertEquals(0, status.size());
 	}
+	
+	public void test_normalize() {
+		DataRecordMetadata metadata = new DataRecordMetadata("_");
+		metadata.setLabel("Žluťoučký kůň");
+		String[] labels = new String[] {"políčko", "políčko 1", "políčko1", "políčko2", "políčko", "políčko 1", "#políčko", "$políčko1", "!políčko_1", "políčko 4", "&políčko"};
+		for (String label: labels) {
+			DataFieldMetadata field = new DataFieldMetadata("_", "|");
+			field.setLabel(label);
+			metadata.addField(field);
+		}
+		
+		metadata.normalize();
+		
+		String[] expected = new String[] {"policko", "policko_1", "policko1", "policko2", "policko_2", "policko_1_1", "policko_3", "policko1_1", "policko_1_2", "policko_4", "policko_5"};
+		
+		assertEquals("Zlutoucky_kun", metadata.getName());
+		
+		for (int i = 0; i < expected.length; i++) {
+			assertEquals(expected[i], metadata.getField(i).getName());
+		}
+		
+		assertNotNull(metadata.getField("policko"));
+		assertNotNull(metadata.getFieldByLabel("políčko"));
+	}
 
 }
