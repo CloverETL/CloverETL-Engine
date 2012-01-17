@@ -87,7 +87,6 @@ public class SpreadsheetWriter extends Node {
 	private static Log LOGGER = LogFactory.getLog(SpreadsheetWriter.class);
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
-	private static final int OUTPUT_LOG_PORT = 1;
 	
 	private static final HashSet<Character> supportedTypes;
 	
