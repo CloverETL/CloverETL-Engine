@@ -144,6 +144,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String NAME_ATTR = "name"; 
 	private static final String LABEL_ATTR = "label"; 
     private static final String TYPE_ATTR = "type";
+    private static final String CARDINALITY_TYPE_ATTR = "cardinalityType";
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
     public  static final String FIELD_DELIMITER_ATTR = "fieldDelimiter";
@@ -481,7 +482,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recordName = itemValue;
 			} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
 				recordLabel = itemValue;
-			} else if (itemName.equalsIgnoreCase("type")) {
+			} else if (itemName.equalsIgnoreCase(TYPE_ATTR)) {
 				recordType = itemValue;
 			} else if (itemName.equalsIgnoreCase("locale")) {
 				recLocaleStr = itemValue;
@@ -593,6 +594,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String autoFilling = null;
 			String trim = null;
 			char fieldType = ' ';
+			DataFieldCardinalityType cardinalityType = null;
 			Properties fieldProperties = new Properties();
 
 			for (int j = 0; j < attributes.getLength(); j++) {
@@ -601,6 +603,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
                             .getNodeValue());
 				if (itemName.equalsIgnoreCase("type")) {
 					fieldType = getFieldType(itemValue);
+				} else if (itemName.equalsIgnoreCase(CARDINALITY_TYPE_ATTR)) {
+					cardinalityType = DataFieldCardinalityType.fromString(itemValue);
 				} else if (itemName.equalsIgnoreCase("name")) {
 					name = itemValue;
 				} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
@@ -689,6 +693,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			// set properties
 			field.setFieldProperties(fieldProperties);
 
+			// set cardinality type
+			if (cardinalityType != null) {
+				field.setCardinalityType(cardinalityType);
+			}
 			// set the label
 			if (label != null) {
 				field.setLabel(label);
