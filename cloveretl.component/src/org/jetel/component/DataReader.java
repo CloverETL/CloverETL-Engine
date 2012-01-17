@@ -160,6 +160,7 @@ public class DataReader extends Node {
 	private Boolean skipLeadingBlanks;
 	private Boolean skipTrailingBlanks;
 	private Boolean trim;
+	private boolean quotedStringsHasDefaultValue = true;
 	
 	//is the second port attached? - logging is enabled
 	boolean logging = false;
@@ -367,14 +368,15 @@ public class DataReader extends Node {
 		parserCfg.setCharset(charset);
 		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
         parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        if (getOutMetadata().get(0).isQuotedStrings()) {
-        	parserCfg.setQuotedStrings(true);
+        if (quotedStringsHasDefaultValue) {
+			//quoted strings has default value -> set the quoted string field from metadata
+        	parserCfg.setQuotedStrings(getOutMetadata().get(0).isQuotedStrings());
         	parserCfg.setQuoteChar(getOutMetadata().get(0).getQuoteChar());
-        }
-        else {
-	        parserCfg.setQuotedStrings(quotedStrings);
-	        parserCfg.setQuoteChar(quoteChar);
-        }
+		} else {
+			//quoted string is set by the user
+			parserCfg.setQuotedStrings(quotedStrings);
+			parserCfg.setQuoteChar(quoteChar);
+		}
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTrim(trim);
@@ -504,6 +506,7 @@ public class DataReader extends Node {
 			}
 			if (xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)){
 				aDataReader.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+				aDataReader.quotedStringsHasDefaultValue = false;
 			}
 			if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
 				aDataReader.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));

@@ -248,7 +248,7 @@ public class DelimitedDataWriter extends Node {
         	}
         }
         if(outputFieldNames) {
-        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatterProvider.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader(false, null));
         }
         writer.setDictionary(graph.getDictionary());
         
