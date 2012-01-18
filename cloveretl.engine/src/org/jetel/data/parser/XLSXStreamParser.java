@@ -402,6 +402,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		@Override
 		public void startRow(int rowNum) {
 			currentParseRow = rowNum;
+			if (currentParseRow > recordEndRow) {
+				recordFinished = true;
+			}
 		}
 
 		@Override
