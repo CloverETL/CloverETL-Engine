@@ -101,7 +101,7 @@ public class DB2Specific extends AbstractJdbcSpecific {
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 		case Types.SMALLINT:
-			return DataFieldMetadata.BOOLEAN_FIELD;
+			return DataFieldMetadata.INTEGER_FIELD;
 		default:
 			return super.sqlType2jetel(sqlType);
 		}
