@@ -28,7 +28,13 @@ package org.jetel.metadata;
  */
 public enum DataFieldCardinalityType {
 
-	SINGLE, LIST, MAP;
+	SINGLE("single"), LIST("list"), MAP("map");
+	
+	private final String displayName;
+	
+	private DataFieldCardinalityType(String displayName) {
+		this.displayName = displayName;
+	}
 	
 	public static DataFieldCardinalityType fromString(String strType) {
 		for (DataFieldCardinalityType type : values()) {
@@ -38,6 +44,27 @@ public enum DataFieldCardinalityType {
 		}
 		
 		throw new IllegalArgumentException("Uknown type of data field cardinality '" + strType + "'.");
+	}
+
+	/**
+	 * @return the display name of the type
+	 */
+	public String getDisplayName() {
+		return displayName;
+	}
+	
+	/**
+	 * Returns an array containing all display names.
+	 * 
+	 * @return
+	 */
+	public static String[] getDisplayNames() {
+		DataFieldCardinalityType[] values = values();
+		String[] result = new String[values.length];
+		for (int i = 0; i < values.length; i++) {
+			result[i] = values[i].displayName;
+		}
+		return result;
 	}
 	
 }
