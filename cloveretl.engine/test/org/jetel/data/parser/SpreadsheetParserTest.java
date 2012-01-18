@@ -48,6 +48,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private static final String XLSX_FILE = "data/xls/Szinkron Comedy 2011 03v2.xlsx";
 	
 	private DataRecordMetadata stringMetadata;
+	private DataRecordMetadata metadata2;
 	
 	private String mapping1; 
 	private String mapping2;
@@ -55,6 +56,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping4;
 	private String mapping5;
 	private String mapping6;
+	private String mapping7;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -70,6 +72,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping4 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping4_Customers_03.xml", "UTF-8");
 		mapping5 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping5_Customers_03_Horizontal.xml", "UTF-8");
 		mapping6 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping6_excel-types-nocurrency.xml", "UTF-8");
+		mapping7 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping7_empty.xml", "UTF-8");
 	}
 	
 	@Override
@@ -85,6 +88,10 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		for (int i = 0; i < cloverFieldNames.length; i++) {
 			stringMetadata.addField(new DataFieldMetadata(cloverFieldNames[i], DataFieldMetadata.STRING_FIELD, ";"));
 		}
+		
+		metadata2 = new DataRecordMetadata("m", DataRecordMetadata.DELIMITED_RECORD);
+		metadata2.addField(new DataFieldMetadata("_1", DataFieldMetadata.INTEGER_FIELD, ";"));
+		metadata2.addField(new DataFieldMetadata("_2", DataFieldMetadata.INTEGER_FIELD, ";"));
 	}
 
 	@Override
@@ -379,11 +386,11 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		throw new IllegalArgumentException("parserIndex");
 	}
 	
-	private static void assertRecordContent(DataRecord record, String... fields) {
+	private static void assertRecordContent(DataRecord record, Object... fields) {
 		for (int i = 0; i < fields.length; i++) {
 			DataField field = record.getField(i);
 			if (!field.isNull()) {
-				assertEquals("Unexpected value in field \"" + field.getMetadata().getName() + "\":", fields[i], field.toString());
+				assertEquals("Unexpected value in field \"" + field.getMetadata().getName() + "\":", fields[i], field.getValue());
 			} else {
 				assertNull("Field \""+ field.getMetadata().getName() + "\" is null, expected value: " + fields[i], fields[i]);
 			}
@@ -398,7 +405,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
 				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping6, stringMetadata));
 	
-				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
 				
 				parser.setSheet("0");
 				parser.init();
@@ -432,6 +439,43 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				for (int i = 3; i < 10; i++) {
 					assertNotNull(parser.parseNext(record));
 				}
+				assertNull(parser.parseNext(record));
+				
+				parser.close();
+			}
+		}
+	}
+	
+	public void testSheetWithEmptyRows() throws Exception {
+		AbstractSpreadsheetParser parser;
+		String xlsFile = "data/xls/empty.xls";
+		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, metadata2, XLSMapping.parse(mapping7, metadata2));
+		
+				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				DataRecord record = new DataRecord(metadata2);
+				record.init();
+				
+				parser.parseNext(record);
+				//System.out.println(record);
+				assertRecordContent(record, null, 2);
+
+				parser.parseNext(record);
+				assertRecordContent(record, null, null);
+
+				parser.parseNext(record);
+				assertRecordContent(record, null, null);
+				
+				parser.parseNext(record);
+				assertRecordContent(record, 1, 2);
+				
 				assertNull(parser.parseNext(record));
 				
 				parser.close();
