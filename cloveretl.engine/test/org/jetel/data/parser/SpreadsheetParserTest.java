@@ -389,8 +389,10 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private static void assertRecordContent(DataRecord record, Object... fields) {
 		for (int i = 0; i < fields.length; i++) {
 			DataField field = record.getField(i);
+			DataField expectedField = field.duplicate();
+			expectedField.setValue(fields[i]);
 			if (!field.isNull()) {
-				assertEquals("Unexpected value in field \"" + field.getMetadata().getName() + "\":", fields[i], field.getValue());
+				assertEquals("Unexpected value in field \"" + field.getMetadata().getName() + "\":", expectedField, field);
 			} else {
 				assertNull("Field \""+ field.getMetadata().getName() + "\" is null, expected value: " + fields[i], fields[i]);
 			}
