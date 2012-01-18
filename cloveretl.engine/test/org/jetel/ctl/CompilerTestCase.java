@@ -51,10 +51,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected static final String INPUT_1 = "firstInput";
 	protected static final String INPUT_2 = "secondInput";
 	protected static final String INPUT_3 = "thirdInput";
+	protected static final String INPUT_4 = "multivalueInput";
 	protected static final String OUTPUT_1 = "firstOutput";
 	protected static final String OUTPUT_2 = "secondOutput";
 	protected static final String OUTPUT_3 = "thirdOutput";
 	protected static final String OUTPUT_4 = "fourthOutput";
+	protected static final String OUTPUT_5 = "multivalueOutput";
 	protected static final String LOOKUP = "lookupMetadata";
 
 	protected static final String NAME_VALUE = "  HELLO  ";
@@ -162,10 +164,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		metadataMap.put(INPUT_1, createDefaultMetadata(INPUT_1));
 		metadataMap.put(INPUT_2, createDefaultMetadata(INPUT_2));
 		metadataMap.put(INPUT_3, createDefaultMetadata(INPUT_3));
+		metadataMap.put(INPUT_4, createDefaultMultivalueMetadata(INPUT_4));
 		metadataMap.put(OUTPUT_1, createDefaultMetadata(OUTPUT_1));
 		metadataMap.put(OUTPUT_2, createDefaultMetadata(OUTPUT_2));
 		metadataMap.put(OUTPUT_3, createDefaultMetadata(OUTPUT_3));
 		metadataMap.put(OUTPUT_4, createDefault1Metadata(OUTPUT_4));
+		metadataMap.put(OUTPUT_5, createDefaultMultivalueMetadata(OUTPUT_5));
 		metadataMap.put(LOOKUP, createDefaultMetadata(LOOKUP));
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
@@ -306,7 +310,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		decimalField.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_PRECISION));
 		decimalField.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_SCALE));
 		ret.addField(decimalField);
-
+		
 		return ret;
 	}
 
@@ -325,6 +329,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		return ret;
 	}
+	
+	/**
+	 * Creates records with default structure
+	 * containing multivalue fields.
+	 * 
+	 * @param name
+	 *            name for the record to use
+	 * @return metadata with default structure
+	 */
+	protected DataRecordMetadata createDefaultMultivalueMetadata(String name) {
+		DataRecordMetadata ret = new DataRecordMetadata(name);
+
+		DataFieldMetadata stringListField = new DataFieldMetadata("stringListField", DataFieldMetadata.STRING_FIELD, "|");
+//		stringListField.setList(true);
+		ret.addField(stringListField);
+
+		return ret;
+	}
+
+
 
 	/**
 	 * Creates new record with specified metadata and sets its field to default values. The record structure will be
@@ -371,8 +395,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void doCompile(String expStr, String testIdentifier) {
 		graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3), graph.getDataRecordMetadata(INPUT_4) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4), graph.getDataRecordMetadata(OUTPUT_5) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -1018,9 +1042,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stringList", Arrays.asList(
 				"first", "replaced", "third", "fourth",
 				"fifth", "sixth", "seventh", "extra"));
+		check("stringListCopy", Arrays.asList(
+				"first", "replaced", "third", "fourth",
+				"fifth", "sixth", "seventh", "extra"));
+		assertTrue(getVariable("stringList") == getVariable("stringListCopy"));
 		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
 	}
 	
+	public void test_type_list_field() {
+		doCompile("test_type_list_field");
+		check("intList", Arrays.asList(1, 2, 3, 4, 5, 6));
+		check("intList2", Arrays.asList(1, 2, 3));
+		check("stringList", Arrays.asList(
+				"first", "replaced", "third", "fourth",
+				"fifth", "sixth", "seventh", "extra"));
+		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
+	}
+
 	@SuppressWarnings("unchecked")
 	public void test_type_map() {
 		doCompile("test_type_map");
