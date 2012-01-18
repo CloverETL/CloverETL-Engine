@@ -371,7 +371,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public void finishRecord() {
 			for (int i = currentParseRow; i <= recordEndRow; i++) {
 				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
-				handleMissingCells(i - recordStartRow, lastColumn, parent.formatMapping[0].length);
 			}
 		}
 

@@ -388,7 +388,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			recordStartRow = startRow;
 			recordEndRow = startRow + parent.mapping.length - 1;
 			recordStarted = false;
-			recordFinished = false;
+			recordFinished = recordEndRow < currentParseRow;
 		}
 
 		public boolean isRecordFinished() {
@@ -495,7 +495,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			this.date1904 = date1904;
 		}
 
-		public void finishRecord() {			
+		public void finishRecord() {
 			for (int i = currentParseRow + 1; i <= recordEndRow; i++) {
 				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
 			}
