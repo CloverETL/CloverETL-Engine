@@ -1006,6 +1006,7 @@ public class DataFieldMetadata implements Serializable {
 
 				return (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH);
 			}
+			break;
 		case LONG:
 			switch (anotherField.getDataType()) {
 			case DECIMAL:
@@ -1014,6 +1015,7 @@ public class DataFieldMetadata implements Serializable {
 
 				return (anotherFieldLength - anotherFieldScale >= LONG_LENGTH);
 			}
+			break;
 		case NUMBER:
 			switch (anotherField.getDataType()) {
 			case DECIMAL:
@@ -1022,6 +1024,7 @@ public class DataFieldMetadata implements Serializable {
 
 				return (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE);
 			}
+			break;
 		case DECIMAL:
 			switch (anotherField.getDataType()) {
 			case DECIMAL:
@@ -1036,6 +1039,7 @@ public class DataFieldMetadata implements Serializable {
 			case LONG:
 				return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= LONG_LENGTH);
 			}
+			break;
 		}
 		return type.isSubtype(anotherField.getDataType());
 	}
