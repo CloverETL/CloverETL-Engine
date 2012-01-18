@@ -795,6 +795,10 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
+			if (currentParseSheet < sheetIndex) {
+				return;
+			}
+			
 			if (record instanceof EndOfRowRecord) {
 				currentParseRow++;
 				if (currentParseRow >= lastRow) {
@@ -808,7 +812,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
-			if ((currentParseRow < firstRow) || currentParseSheet < sheetIndex) {
+			if (currentParseRow < firstRow) {
 				return;
 			}
 
