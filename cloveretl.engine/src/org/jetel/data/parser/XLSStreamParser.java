@@ -375,21 +375,18 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		}
 
 		public int getNumberOfSkippedRecords() {
-			int result = currentParseRow - skipStartRow + parent.mappingInfo.getStep();
-			if (result > 0) {
-				return result / parent.mappingInfo.getStep();
-			}
-			return 0;
+			int result = currentParseRow - skipStartRow;
+			return result > 0 ? result / parent.mappingInfo.getStep() : 0;
 		}
 
 		public void setSkipRecords(int nRec) {
-			skipStartRow = recordStartRow;
-			recordToFill = null;
-			
-			int numberOfRows = nRec * parent.mappingInfo.getStep();
-			setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
-			
-			if (nRec != 1 || skipStartRow != currentParseRow) {
+			if (nRec > 0) {
+				skipStartRow = recordStartRow;
+				recordToFill = null;
+				
+				int numberOfRows = nRec * parent.mappingInfo.getStep();
+				setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
+				
 				skipRecords = true;
 			}
 		}
@@ -424,7 +421,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (((BOFRecord) record).getType() == BOFRecord.TYPE_WORKSHEET) {
 					currentSheetIndex++;
 
-					// Do not skip any more records!
+					// Do not skip any more records! MultiFileReader will continue skipping if too few records were skipped.
 					if (skipRecords) {
 						skipRecords = false;
 					}
@@ -440,7 +437,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (!skipRecords && currentParseRow >= recordStartRow) {
 					handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length);
 				}
-				if (skipRecords && currentParseRow >= recordStartRow - parent.mappingInfo.getStep()) {
+				if (skipRecords && currentParseRow >= recordStartRow - 1) {
 					// record skipping is stopped when last row of last record to be skipped is read
 					skipRecords = false;
 				}
