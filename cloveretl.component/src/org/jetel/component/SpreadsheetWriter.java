@@ -293,14 +293,6 @@ public class SpreadsheetWriter extends Node {
 			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 		
-		Map<String, DataFieldFormatType> fieldsWithUnsupportedFormats = checkInputDataFieldsFormats(getInputPort(0).getMetadata());
-		if (!fieldsWithUnsupportedFormats.isEmpty()) {
-			StringBuilder errorMessage = new StringBuilder("Input port metadata contain the following fields with unsupported formatting strings (try to prepend \"" + DataFieldFormatType.EXCEL.getFormatPrefixWithDelimiter() + "\" to threir formatting strings):");
-			for (String fieldName : fieldsWithUnsupportedFormats.keySet()) {
-				errorMessage.append("\n" + fieldName + " - " + fieldsWithUnsupportedFormats.get(fieldName).getLongName());
-			}
-			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-		}
 
 		try {
 			FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDirs);
@@ -347,21 +339,6 @@ public class SpreadsheetWriter extends Node {
 			fieldType = field.getType();
 			if (!supportedTypes.contains(fieldType)) {
 				result.put(field.getName(), fieldType);
-			}
-		}
-		
-		return result;
-	}
-
-	private Map<String, DataFieldFormatType> checkInputDataFieldsFormats(DataRecordMetadata metadata) {
-		HashMap<String, DataFieldFormatType> result = new HashMap<String, DataFieldFormatType>();
-		for (DataFieldMetadata field : metadata.getFields()) {
-			if (field.hasFormat()) {
-				DataFieldFormatType formatType = field.getFormatType();
-				if (formatType!=DataFieldFormatType.EXCEL) {
-					//unsupported data field format type
-					result.put(field.getName(), formatType);
-				}
 			}
 		}
 		
