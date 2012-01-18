@@ -66,34 +66,6 @@ public class PropertiesUtils {
 	}
 
 	/**
-	 * Loads properties from stream in UTF-8 if 'FFFE' sequence detected, uses default encoding otherwise.
-	 * 
-	 * @param props
-	 *            Properties instance to store loaded properties in
-	 * @param in
-	 *            source for the properties. This method does NOT close the stream.
-	 * @throws IOException
-	 */
-	public static void loadPropertiesWithUTF8Detection(Properties props, InputStream in) throws IOException {
-		if (in.read() == 0xFF && in.read() == 0xFE) {
-			in.reset();
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"));
-			final char[] charBuf = new char[256];
-			final StringBuilder sb = new StringBuilder();
-
-			int readNum;
-			while ((readNum = reader.read(charBuf, 0, charBuf.length)) != -1) {
-				sb.append(charBuf, 0, readNum);
-			}
-			final String unescaped = StringUtils.specCharToString(sb.toString());
-			props.load(new StringReader(unescaped));
-		} else {
-			in.reset();
-			props.load(in);
-		}
-	}
-
-	/**
 	 * Stores the given properties ignoring those with an empty string as a value.
 	 * 
 	 * @param properties

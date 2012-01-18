@@ -383,7 +383,8 @@ public class StringDataField extends DataField implements CharSequence{
 	    CharSequence strObj;
 	    
 		if (isNull) return -1;
-
+		if (obj == null) return 1;
+		
         if (obj instanceof StringDataField) {
             if (((StringDataField) obj).isNull())
                 return 1;
@@ -414,7 +415,8 @@ public class StringDataField extends DataField implements CharSequence{
         CharSequence strObj;
         
         if (isNull) return -1;
-
+        if (obj == null) return 1;
+        
         if (obj instanceof StringDataField) {
             if (((StringDataField) obj).isNull())
                 return 1;

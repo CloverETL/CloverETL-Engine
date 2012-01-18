@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -128,7 +129,7 @@ public class SpreadsheetReader extends Node {
             	spreadsheetReader.setSkipRecords(xattribs.getInteger(XML_SKIP_RECORDS_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+				spreadsheetReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE)){
 				spreadsheetReader.setSkipSourceRecords(xattribs.getInteger(XML_SKIP_SOURCE_RECORDS_ATTRIBUTE));
@@ -453,13 +454,20 @@ public class SpreadsheetReader extends Node {
 		DataRecordMetadata recordMetadata = outPort.getMetadata();
 		DataRecord record = new DataRecord(recordMetadata);
 		record.init();
+		int recordMetadataFields = record.getNumFields();
 
 		DataRecord errorRecord = null;
 		DataRecordMetadata errorMetadata = null;
 		int errorMetadataFields = 0;
+		int first = -1;
+		int last = -1;
 		if (logging) {
 			errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 			errorMetadataFields = errorMetadata.getNumFields();
+			if (errorMetadataFields > 5) {
+				first = 1;
+				last = errorMetadataFields - 4;
+			}
 			errorRecord = new DataRecord(errorMetadata);
 			errorRecord.init();
 		}
@@ -482,7 +490,19 @@ public class SpreadsheetReader extends Node {
 						}
 						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
 							lastException = bdfe;
-							errorRecord.copyFieldsByName(record);
+//							errorRecord.copyFieldsByName(record);
+							DataField recordField;
+							DataField errorField;
+							for (int i = 0; i < recordMetadataFields; i++) {
+								recordField = record.getField(i);
+								for (int j = first; j < last; j++) {
+									errorField = errorRecord.getField(j);
+									if (errorField.getType() == recordField.getType() && 
+											errorField.getMetadata().getName().equals(recordField.getMetadata().getName())) {
+										errorField.setValue(recordField);
+									}
+								}
+							}
 							((IntegerDataField) errorRecord.getField(0)).setValue(bdfe.getRecordNumber());
 							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(errorMetadataFields - 4));
 							setCharSequenceToField(bdfe.getOffendingValue(), errorRecord.getField(errorMetadataFields - 3));

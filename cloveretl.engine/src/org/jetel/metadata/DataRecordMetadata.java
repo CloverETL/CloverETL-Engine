@@ -38,6 +38,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -1166,7 +1167,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return header with field names ended by field delimiters; used by flat file writers for file header describing data
 	 */
-	public String getFieldNamesHeader(String... excludedFieldNames) {
+	public String getFieldNamesHeader(String[] excludedFieldNames, boolean quotedString, Character quoteChar) {
 		StringBuilder ret = new StringBuilder();
 		DataFieldMetadata dataFieldMetadata;
 		short fieldSize;
@@ -1182,6 +1183,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			label = dataFieldMetadata.getLabelOrName();
 			if (dataFieldMetadata.isDelimited()) {
 				// delim: add field name and delimiter
+				if (quotedString) {
+					QuotingDecoder decoder = new QuotingDecoder();
+					decoder.setQuoteChar(quoteChar);
+					label = decoder.encode(label).toString();
+				}
 				ret.append(label);
 
 				if (i == lastIncludedFieldIndex) {
@@ -1221,8 +1227,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return header with field names ended by field delimiters; used by flat file writers for file header describing data
 	 */
-	public String getFieldNamesHeader() {
-		return getFieldNamesHeader((String[]) null);
+	public String getFieldNamesHeader(boolean quotedString, Character quoteChar) {
+		return getFieldNamesHeader(null, quotedString, quoteChar);
 	}
 
 	/**
@@ -1433,6 +1439,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 				field.setLabel(equal ? null : fieldNames[i]);
 			}
 		}
+		metadata.structureChanged();
 	}
 
 	/**

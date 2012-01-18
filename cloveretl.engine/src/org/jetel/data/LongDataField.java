@@ -592,7 +592,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	public int compareTo(Numeric value) {
 	    if (isNull) {
 	        return -1;
-	    }else if (value.isNull()) {
+	    }else if (value == null || value.isNull()) {
 	        return 1;
 	    }else {
 	        return compareTo(value.getLong());

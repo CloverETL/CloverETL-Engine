@@ -278,6 +278,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	@Override
 	public int compareTo(Object obj) {
 		if (isNull) return -1;
+	    if (obj == null) return 1;
 	    
 		if (obj instanceof Boolean){
 			Boolean v = Boolean.valueOf(value);

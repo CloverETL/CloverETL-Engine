@@ -137,6 +137,7 @@ public class DataWriter extends Node {
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
+	private boolean quotedStringsHasDefaultValue = true;
 
     private String excludeFields;
 
@@ -208,11 +209,12 @@ public class DataWriter extends Node {
 
 		//prepare formatter provider
 		formatterProvider = new DataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		if (getInMetadata().get(0).isQuotedStrings()) {
-			formatterProvider.setQuotedStrings(true);
+		if (quotedStringsHasDefaultValue) {
+			//quoted strings has default value -> set the quoted string field from metadata
+			formatterProvider.setQuotedStrings(getInMetadata().get(0).isQuotedStrings());
 			formatterProvider.setQuoteChar(getInMetadata().get(0).getQuoteChar());
-		}
-		else {
+		} else {
+			//quoted string is set by the user
 			formatterProvider.setQuotedStrings(quotedStrings);
 			formatterProvider.setQuoteChar(quoteChar);
 		}
@@ -258,9 +260,8 @@ public class DataWriter extends Node {
         }
 
         DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
-
         if(outputFieldNames) {
-        	formatterProvider.setHeader(metadata.getFieldNamesHeader(excludedFieldNames));
+        	formatterProvider.setHeader(metadata.getFieldNamesHeader(excludedFieldNames, formatterProvider.getQuotedStrings(), formatterProvider.getQuoteChar()));
         }
 
         writer.setDictionary(graph.getDictionary());
@@ -420,6 +421,7 @@ public class DataWriter extends Node {
             }
             if(xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)) {
                 aDataWriter.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+                aDataWriter.quotedStringsHasDefaultValue = false;
             }
             if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
             	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));

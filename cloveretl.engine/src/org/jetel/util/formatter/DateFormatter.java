@@ -19,6 +19,7 @@
 package org.jetel.util.formatter;
 
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Unified interface of internally used date formatters.
@@ -69,6 +70,11 @@ public interface DateFormatter {
 	 */
 	public String getPattern();
 	
+	/**
+	 * Returns the local used for creating this formatter.
+	 * @return locale definition
+	 */
+	public Locale getLocale();
 	
 	/**
 	 * Try to parse input value to Date
