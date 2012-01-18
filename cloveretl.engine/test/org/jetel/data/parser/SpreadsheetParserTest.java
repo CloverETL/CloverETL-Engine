@@ -342,7 +342,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 						continue;
 					}
 		
-//					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+					//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
 					
 					parser.setSheet("0");
 					parser.init();
@@ -466,7 +466,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				record.init();
 				
 				parser.parseNext(record);
-				//System.out.println(record);
 				assertRecordContent(record, null, 2);
 
 				parser.parseNext(record);
@@ -478,6 +477,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.parseNext(record);
 				assertRecordContent(record, 1, 2);
 				
+				parser.parseNext(record);
+				assertRecordContent(record, 1, null);
+
 				assertNull(parser.parseNext(record));
 				
 				parser.close();
