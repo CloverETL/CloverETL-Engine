@@ -11,4 +11,5 @@ function integer transform() {
 	copyByValueTest1 = input[2]; // must equal '2'
 	copyByValueTest2 = $out.4.stringListField[2]; // must equal 'test'
 	
+	return 0;
 }

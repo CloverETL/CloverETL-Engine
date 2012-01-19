@@ -34,7 +34,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.MiscUtils;
@@ -341,9 +343,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected DataRecordMetadata createDefaultMultivalueMetadata(String name) {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
 
-		DataFieldMetadata stringListField = new DataFieldMetadata("stringListField", DataFieldMetadata.STRING_FIELD, "|");
-//		stringListField.setList(true);
+		DataFieldMetadata stringListField = new DataFieldMetadata("stringListField", DataFieldType.STRING, "|");
+		stringListField.setCardinalityType(DataFieldCardinalityType.LIST);
 		ret.addField(stringListField);
+		
+		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
+		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(integerMapField);
 
 		return ret;
 	}
@@ -1056,7 +1062,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stringList", Arrays.asList(
 				"first", "replaced", "third", "fourth",
 				"fifth", "sixth", "seventh", "extra"));
-		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
+		assertEquals(getVariable("stringList"), getVariable("stringListCopy"));
+	}
+
+	public void test_type_map_field() {
+		doCompile("test_type_map_field");
 	}
 
 	@SuppressWarnings("unchecked")

@@ -21,8 +21,8 @@ public class InterpreterTest extends CompilerTestCase {
 	@Override
 	public void executeCode(ITLCompiler compiler) {
 		TransformationGraph graph = createDefaultGraph();
-		inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)) };
-		outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)) };
+		inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)) };
 	
 		executor = (TransformLangExecutor)compiler.getCompiledCode();
 		
