@@ -128,17 +128,17 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         }
         
         if(fieldNumber > -1) {
-            ret.append(" in field # ");
+            ret.append(" in field #");
             ret.append(fieldNumber + 1);
         }
         
         if(recordNumber > -1) {
-            ret.append(" of record # ");
+            ret.append(" of record #");
             ret.append(recordNumber);
         }
         
         if (recordName != null) {
-        	ret.append(" of type ");
+        	ret.append(" of metadata ");
         	ret.append(recordName);
         }
         
