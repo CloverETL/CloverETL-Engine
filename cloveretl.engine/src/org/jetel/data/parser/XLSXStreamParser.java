@@ -591,8 +591,11 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
+						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+								". Occurred in "), record, cloverFieldIndex, null, null);
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
+						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() + 
+								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 					}
 				}
 			}
@@ -616,7 +619,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					if (cellType == Cell.CELL_TYPE_NUMERIC) {
 						field.setValue(DateUtil.getJavaDate(Double.parseDouble(value), date1904));
 					} else {
-						throw new IllegalStateException("Cannot get Date value from type " + cellTypeToString(cellType) + " cell");
+						throw new IllegalStateException("Cannot get Date value from cell of type " + cellTypeToString(cellType));
 					}
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
@@ -633,7 +636,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					if (cellType == Cell.CELL_TYPE_BOOLEAN) {
 						field.setValue(XSSFSheetXMLHandler.CELL_VALUE_TRUE.equals(value));
 					} else {
-						throw new IllegalStateException("Cannot get Boolean value from type " + cellTypeToString(cellType) + " cell");
+						throw new IllegalStateException("Cannot get Boolean value from cell of type " + cellTypeToString(cellType));
 					}
 					break;
 				}
@@ -653,13 +656,13 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		private String cellTypeToString(int cellType) {
 			switch (cellType) {
 			case Cell.CELL_TYPE_BOOLEAN:
-				return "BOOLEAN";
+				return "Boolean";
 			case Cell.CELL_TYPE_STRING:
-				return "STRING";
+				return "String";
 			case Cell.CELL_TYPE_NUMERIC:
-				return "NUMERIC";
+				return "Numeric";
 			default:
-				return "UNKNOWN";
+				return "Unknown";
 			}
 		}
 		

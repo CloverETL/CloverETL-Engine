@@ -183,7 +183,8 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.setToNull();
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-			if (nextRecordStartRow > lastLine - mapping.length + 1) {
+//			if (nextRecordStartRow > lastLine - mapping.length + 1) {
+			if (nextRecordStartRow > lastLine) {
 				return null;
 			}
 			return parse(record, nextRecordStartRow, mappingMinColumn);
@@ -202,8 +203,8 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			Row row = sheet.getRow(recordStartRow + mappingRowIndex);
 			
 			if (row == null) {
-				processNullRow(record, recordRow);
-				processNullRow(record, formatRecordRow);
+				processNullRow(record, recordRow, recordStartRow + mappingRowIndex);
+				processNullRow(record, formatRecordRow, recordStartRow + mappingRowIndex);
 				continue;
 			}
 			
@@ -224,16 +225,22 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		return record;
 	}
 
-	private void processNullRow(DataRecord record, int[] recordRow) {
+	private void processNullRow(DataRecord record, int[] recordRow, int currentParseRow) {
 		if (recordRow != null) {
 			for (int column = 0; column < recordRow.length; column++) {
 				int cloverFieldIndex;
 				if ((cloverFieldIndex = recordRow[column]) != XLSMapping.UNDEFINED) {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
+						if (currentParseRow > lastLine) {
+							handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+									". Occurred"), record, cloverFieldIndex, null, null);
+						}
 					} catch (BadDataFormatException e) {
-						handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
+						handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
 					}
+					
 				}
 			}
 		}
@@ -291,7 +298,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 					record.getField(cloverFieldIndex).setNull(true);
 				} else {
 //					throw e;
-					String errorMessage = "Cannot get " + expectedType + " value from type " + cellTypeToString(cell.getCellType()) + " cell";
+					String errorMessage = "Cannot get " + expectedType + " value from cell of type " + cellTypeToString(cell.getCellType());
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
 					} catch (Exception ex) {
@@ -314,13 +321,13 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private String cellTypeToString(int cellType) {
 		switch (cellType) {
 		case Cell.CELL_TYPE_BOOLEAN:
-			return "BOOLEAN";
+			return "Boolean";
 		case Cell.CELL_TYPE_STRING:
-			return "STRING";
+			return "String";
 		case Cell.CELL_TYPE_NUMERIC:
-			return "NUMERIC";
+			return "Numeric";
 		default:
-			return "UNKNOWN";
+			return "Unknown";
 		}
 	}
 
