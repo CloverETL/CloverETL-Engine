@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -406,6 +405,7 @@ public class SpreadsheetReader extends Node {
         	parser.setSheet(DEFAULT_SHEET_VALUE);
         }
         parser.setExceptionHandler(new SpreadsheetParserExceptionHandler(policyType));
+        parser.useIncrementalReading(incrementalFile != null && incrementalKey != null);
     }
 	
 	private void prepareReader() {
@@ -544,4 +544,25 @@ public class SpreadsheetReader extends Node {
 		super.postExecute();
 		parser.postExecute();
 	}
+
+    @Override
+	public void commit() {
+		super.commit();
+		storeValues();
+	}
+    
+	/**
+     * Stores all values as incremental reading.
+     */
+    private void storeValues() {
+		try {
+			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
+			if (dictValue != null && dictValue == Boolean.FALSE) {
+				return;
+			}
+			reader.storeIncrementalReading();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+    }
 }

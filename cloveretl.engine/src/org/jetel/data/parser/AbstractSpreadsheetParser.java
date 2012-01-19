@@ -570,6 +570,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		return null;
 	}
 
+	public void useIncrementalReading(boolean useIncrementalReading) {
+		this.useIncrementalReading = useIncrementalReading;
+	}
+
 	@Override
 	public Object getPosition() {
 		return ((incremental != null) ? incremental.getPosition() : null);
