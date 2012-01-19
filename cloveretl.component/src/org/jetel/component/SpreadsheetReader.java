@@ -333,10 +333,10 @@ public class SpreadsheetReader extends Node {
         int errorNumFields = errorMetadata.getNumFields();
         boolean ret = errorNumFields > 4
         		&& errorMetadata.getFieldType(0) == DataFieldMetadata.INTEGER_FIELD
-        		&& errorMetadata.getFieldType(errorNumFields - 4) == DataFieldMetadata.STRING_FIELD
-				&& errorMetadata.getFieldType(errorNumFields - 3) == DataFieldMetadata.STRING_FIELD
-				&& errorMetadata.getFieldType(errorNumFields - 4) == DataFieldMetadata.STRING_FIELD        		
-        		&& errorMetadata.getFieldType(errorNumFields - 1) == DataFieldMetadata.STRING_FIELD;
+        		&& errorMetadata.getFieldType(1) == DataFieldMetadata.STRING_FIELD
+				&& errorMetadata.getFieldType(2) == DataFieldMetadata.STRING_FIELD
+				&& errorMetadata.getFieldType(3) == DataFieldMetadata.STRING_FIELD        		
+        		&& errorMetadata.getFieldType(4) == DataFieldMetadata.STRING_FIELD;
         
         if(!ret) {
             LOGGER.warn("Error port metadata have invalid format (expected data fields - integer (record number), integer (field number), string (cell coordinates), string (offending value), string (error message)");
@@ -465,8 +465,8 @@ public class SpreadsheetReader extends Node {
 			errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 			errorMetadataFields = errorMetadata.getNumFields();
 			if (errorMetadataFields > 5) {
-				first = 1;
-				last = errorMetadataFields - 4;
+				first = 5;
+				last = errorMetadataFields;
 			}
 			errorRecord = new DataRecord(errorMetadata);
 			errorRecord.init();
@@ -483,14 +483,20 @@ public class SpreadsheetReader extends Node {
 					}
 					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
-					BadDataFormatException lastException = null;
-					if (logging) {
+					BadDataFormatException lastException = bdfe;
+					if (policyType == PolicyType.STRICT) {
+						LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
+						throw bdfe;
+					} else if (policyType == PolicyType.LENIENT) {
+						while (bdfe != null) {
+							LOGGER.error("Error: " + bdfe.getMessage());
+							bdfe = bdfe.next();
+						}
+					} else if (logging) {
 						if (exceptionHandler == null) {
 							exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
 						}
-						while (bdfe != null && (errorCount++ < maxErrorCount || policyType == PolicyType.LENIENT)) {
-							lastException = bdfe;
-//							errorRecord.copyFieldsByName(record);
+						while (bdfe != null && errorCount++ < maxErrorCount) {
 							DataField recordField;
 							DataField errorField;
 							for (int i = 0; i < recordMetadataFields; i++) {
@@ -504,26 +510,21 @@ public class SpreadsheetReader extends Node {
 								}
 							}
 							((IntegerDataField) errorRecord.getField(0)).setValue(bdfe.getRecordNumber());
-							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(errorMetadataFields - 4));
-							setCharSequenceToField(bdfe.getOffendingValue(), errorRecord.getField(errorMetadataFields - 3));
-							setCharSequenceToField(recordMetadata.getField(bdfe.getFieldNumber()).getName(), errorRecord.getField(errorMetadataFields - 2));
-							setCharSequenceToField(bdfe.getMessage(), errorRecord.getField(errorMetadataFields - 1));
+							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(1));
+							setCharSequenceToField(bdfe.getOffendingValue(), errorRecord.getField(2));
+							setCharSequenceToField(recordMetadata.getField(bdfe.getFieldNumber()).getName(), errorRecord.getField(3));
+							setCharSequenceToField(bdfe.getMessage(), errorRecord.getField(4));
 							writeRecord(ERROR_PORT, errorRecord);
 							bdfe = bdfe.next();
-						}
-					} else  {
-						if (policyType == PolicyType.STRICT) {
-							LOGGER.error("Error: " + bdfe);
-							throw bdfe;
-						} else {
 							lastException = bdfe;
-							errorCount++;
 						}
+					} else {
+						lastException = bdfe;
+						errorCount++;
 					}
-					if ((policyType == PolicyType.STRICT && errorCount == maxErrorCount) ||
-						(policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount)) {
+					if (policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount) {
 							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							LOGGER.error("Error: " + lastException);
+							LOGGER.error("Error: " + lastException.getMessage());
 							return Result.ERROR;
 					}
 				}
