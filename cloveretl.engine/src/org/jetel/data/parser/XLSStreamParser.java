@@ -35,6 +35,7 @@ import org.apache.poi.hssf.record.BoolErrRecord;
 import org.apache.poi.hssf.record.BoundSheetRecord;
 import org.apache.poi.hssf.record.CellRecord;
 import org.apache.poi.hssf.record.CellValueRecordInterface;
+import org.apache.poi.hssf.record.EOFRecord;
 import org.apache.poi.hssf.record.ExtendedFormatRecord;
 import org.apache.poi.hssf.record.FormatRecord;
 import org.apache.poi.hssf.record.FormulaRecord;
@@ -99,6 +100,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	private int currentSheetIndex = -1;
 
 	private int nextRecordStartRow;
+	
+	private boolean sheetEof;
+	private boolean rootEof;
 	
 	public XLSStreamParser(SpreadsheetStreamParser parent, String password) {
 		this.parent = parent;
@@ -222,6 +226,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			prepareRecordFactory();
 		}
 		recordFillingListener.setRequestedSheetIndex(sheetNumber);
+		sheetEof = false;
+		rootEof = false;
 
 		if (processParsing(sheetSetter)) {
 			this.nextRecordStartRow = parent.startLine;
@@ -352,8 +358,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						recordToFill.getField(cloverFieldIndex).setNull(true);
+						if (sheetEof) {
+							parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + 
+									recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred"), recordToFill, cloverFieldIndex, null, null);
+						}
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
+						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + 
+								recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Moreover, cannot set default value or null", e),
 								recordToFill, cloverFieldIndex, null, null);
 					}
 				}
@@ -658,11 +669,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			String actualValue;
 			switch(sid) {
 			case NumberRecord.sid:
-				cellType = "NUMERIC";
+				cellType = "Numeric";
 				actualValue = formatter.formatNumberDateCell((NumberRecord) record);
 				break;
 			case FormulaRecord.sid:
-				cellType = "FORMULA";
+				cellType = "Formula";
 				FormulaRecord frec = (FormulaRecord) record;
 				int fresultType = frec.getCachedResultType();
 				// We don't check for STRING formulas here as these are always "translated" to StringRecord instead
@@ -682,15 +693,15 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				}
 				break;
 			case LabelSSTRecord.sid:
-				cellType = "STRING";
+				cellType = "String";
 				actualValue = sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
 				break;
 			case StringRecord.sid:
-				cellType = "STRING";
+				cellType = "String";
 				actualValue = ((StringRecord) record).getString();
 				break;
 			case BoolErrRecord.sid:
-				cellType = "BOOLEAN";
+				cellType = "Boolean";
 				BoolErrRecord boolErrRecord = (BoolErrRecord) record;
 				if (boolErrRecord.isBoolean()) {
 					actualValue = String.valueOf(boolErrRecord.getBooleanValue());
@@ -699,13 +710,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				}
 				break;
 			default:
-				cellType = "UNKNOWN";
+				cellType = "Unknown";
 				actualValue = null;
 				break;
 			}
-			CellRecord cellRecord = "UNKNOWN".equals(cellType) ? null : (CellRecord) record;
-			String cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
-			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from type " + cellType + " cell"), 
+			CellRecord cellRecord = "Unknown".equals(cellType) ? null : (CellRecord) record;
+			String cellCoordinates = record == null ? "Unknown" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
+			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " + cellType), 
 					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
 		}
 
@@ -792,10 +803,6 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
-			if (currentParseSheet < sheetIndex) {
-				return;
-			}
-			
 			if (record instanceof EndOfRowRecord) {
 				currentParseRow++;
 				if (currentParseRow >= lastRow) {
@@ -809,7 +816,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
-			if (currentParseRow < firstRow) {
+			if ((currentParseRow < firstRow) || currentParseSheet < sheetIndex) {
 				return;
 			}
 
@@ -918,6 +925,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 			if (ACCEPTED_RECORDS.contains(recordToProcess.getSid())) {
 				formatter.processRecord(recordToProcess);
+			} else if (recordToProcess.getSid() == EOFRecord.sid) {
+				if (!rootEof) {
+					rootEof = true;
+				} else {
+					sheetEof = true;
+					return false;
+				}
 			}
 		}
 
