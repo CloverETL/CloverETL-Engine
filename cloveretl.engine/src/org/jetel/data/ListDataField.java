@@ -57,6 +57,9 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	
 	private ListDataFieldView listView;
 	
+	// metadata used when creating inner DataFields
+	private DataFieldMetadata singleValueMetadata;
+	
 	public ListDataField(DataFieldMetadata fieldMetadata) {
 		this(fieldMetadata, false);
 	}
@@ -66,6 +69,8 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		if (fieldMetadata.getCardinalityType() != DataFieldCardinalityType.LIST) {
 			throw new IllegalStateException("Unexpected operation, ListDataField can be created only for list fields.");
 		}
+		this.singleValueMetadata = fieldMetadata.duplicate();
+		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
 		
 		fields = new ArrayList<DataField>();
 		size = 0;
@@ -171,7 +176,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 	
 	private DataField createDataField() {
-		return DataFieldFactory.createDataField(metadata, plain);
+		return DataFieldFactory.createDataField(singleValueMetadata, plain);
 	}
 	
 	public DataField getField(int index) {
