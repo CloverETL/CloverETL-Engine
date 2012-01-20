@@ -326,7 +326,7 @@ public class ASTBuilder extends NavigatingVisitor {
 
 		if (node.isWildcard()) {
 			// this is not a record reference - but access all record fields
-			node.setType(TLType.forRecord(node.getMetadata(),false));
+			node.setType(TLType.forRecord(node.getMetadata()));
 			return node; // this node access record -> we do not want resolve field access
 		}
 
@@ -901,8 +901,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				warn(typeNode, "Reference to '" + VOID_METADATA.getName() + "' is ambiguous",
 						"Rename metadata '" + VOID_METADATA.getName() + "'");
 			}
-			// variables of record type hold REFERENCE
-			return TLType.forRecord(meta,true);
+			return TLType.forRecord(meta);
 		case TransformLangParserConstants.MAP_VAR:
 			return TLType.createMap((TLTypePrimitive) createType((CLVFType) typeNode.jjtGetChild(0)),
 					createType((CLVFType) typeNode.jjtGetChild(1)));

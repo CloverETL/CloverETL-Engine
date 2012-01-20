@@ -38,7 +38,7 @@ public abstract class TLType {
 	public static final TLTypeNull NULL = new TLTypeNull();
 	public static final TLTypeError ERROR = new TLTypeError();
 	public static final TLTypeByteArray BYTEARRAY = new TLTypeByteArray();
-	public static final TLTypeRecord RECORD = new TLTypeRecord(null,true);
+	public static final TLTypeRecord RECORD = new TLTypeRecord(null);
 	
 	
 	// special type that can hold any value-type, used only for CTL internal functions and lookup params
@@ -247,25 +247,19 @@ public abstract class TLType {
 	
 	public static final class TLTypeRecord extends TLType {
 		private final DataRecordMetadata metadata;
-		private final boolean isReference;
 		
-		private TLTypeRecord(DataRecordMetadata metadata, boolean isReference) {
+		private TLTypeRecord(DataRecordMetadata metadata) {
 			this.metadata = metadata;
-			this.isReference = isReference;
 		}
 		
 		@Override
 		public String name() {
-			String ret = isReference ? "reference" : "record";
+			String ret = "record";
 			return metadata != null ?  ret + "(" + metadata.getName() + ")" : ret;  
 		}
 		
 		public DataRecordMetadata getMetadata() {
 			return metadata;
-		}
-		
-		public boolean isReference() {
-			return isReference;
 		}
 		
 		@Override
@@ -282,7 +276,6 @@ public abstract class TLType {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + (isReference ? 1231 : 1237);
 			result = prime * result + ((metadata == null) ? 0 : metadata.hashCode());
 			return result;
 		}
@@ -302,9 +295,6 @@ public abstract class TLType {
 			}
 			
 			final TLTypeRecord other = (TLTypeRecord) obj;
-			if (isReference != other.isReference) {
-				return false;
-			}
 			
 			if (metadata == null) {
 				if (other.metadata != null) {
@@ -407,20 +397,8 @@ public abstract class TLType {
 		return new TLTypeMap(key,value);
 	}
 	
-	/**
-	 * Allocates TLTypeRecord that DOES represent a record-reference
-	 * Behaves as if calling {@link #forRecord(DataRecordMetadata,boolean)}
-	 * with <code>isReference=true</code>
-	 * 
-	 * @param meta
-	 * @return
-	 */
 	public static final TLTypeRecord forRecord(DataRecordMetadata meta) {
-		return forRecord(meta,true);
-	}
-	
-	public static final TLTypeRecord forRecord(DataRecordMetadata meta, boolean isReference) {
-		return new TLTypeRecord(meta,isReference);
+		return new TLTypeRecord(meta);
 	}
 	
 	
