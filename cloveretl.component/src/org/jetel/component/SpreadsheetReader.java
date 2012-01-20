@@ -38,6 +38,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
@@ -473,7 +474,7 @@ public class SpreadsheetReader extends Node {
 		}
 
 		int errorCount = 0;
-		SpreadsheetParserExceptionHandler exceptionHandler = null;
+		SpreadsheetParserExceptionHandler exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
 
 		try {
 			while (runIt) {
@@ -482,7 +483,17 @@ public class SpreadsheetReader extends Node {
 						break;
 					}
 					outPort.writeRecord(record);
-				} catch (BadDataFormatException bdfe) {
+				} catch (JetelException e) {
+					// This may be general exception -> rethrow
+					// or it is BadDataFormatException wrapped by AbstractSpreadsheetParser.getNext(record) which we want to handle.
+					// Reason for wrapper exception: MultiFileReader increases record counters only on JetelExcepiton.
+					
+					if (e.getCause() == null || !(e.getCause() instanceof BadDataFormatException)) {
+						throw e;
+					}
+					
+					BadDataFormatException bdfe = (BadDataFormatException) e.getCause();
+					
 					BadDataFormatException lastException = bdfe;
 					if (policyType == PolicyType.STRICT) {
 						LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
@@ -493,9 +504,6 @@ public class SpreadsheetReader extends Node {
 							bdfe = bdfe.next();
 						}
 					} else if (logging) {
-						if (exceptionHandler == null) {
-							exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
-						}
 						while (bdfe != null && errorCount++ < maxErrorCount) {
 							DataField recordField;
 							DataField errorField;
