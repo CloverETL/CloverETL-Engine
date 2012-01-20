@@ -85,8 +85,8 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 
 	private static Log LOGGER = LogFactory.getLog(SpreadsheetWriter.class);
-	private static final int READ_FROM_PORT = 0;
-	private static final int OUTPUT_PORT = 0;
+	public static final int INPUT_PORT_NBR = 0;
+	public static final int OUTPUT_PORT_NBR = 0;
 	
 	private static final HashSet<Character> supportedTypes;
 	
@@ -385,7 +385,7 @@ public class SpreadsheetWriter extends Node {
 	}
 
 	private XLSMapping prepareMapping() throws ComponentNotReadyException {
-		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+		DataRecordMetadata metadata = getInputPort(INPUT_PORT_NBR).getMetadata();
 
 		XLSMapping parsedMapping = null;
 		if (mappingURL != null) {
@@ -413,7 +413,7 @@ public class SpreadsheetWriter extends Node {
 		}
 		writer.setLogger(LOGGER);
 		writer.setDictionary(getGraph().getDictionary());
-		writer.setOutputPort(getOutputPort(OUTPUT_PORT));
+		writer.setOutputPort(getOutputPort(OUTPUT_PORT_NBR));
 		writer.setMkDir(mkDirs);
 		writer.setAppendData(true);//in order to allow input stream opening
 		writer.setUseChannel(false);
@@ -447,7 +447,7 @@ public class SpreadsheetWriter extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		if (firstRun()) { // a phase-dependent part of initialization
-			writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+			writer.init(getInputPort(INPUT_PORT_NBR).getMetadata());
 		} else {
 			writer.reset();
 		}
@@ -455,7 +455,7 @@ public class SpreadsheetWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
+		InputPort inPort = getInputPort(INPUT_PORT_NBR);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 

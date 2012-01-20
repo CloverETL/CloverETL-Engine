@@ -42,6 +42,7 @@ import org.jetel.data.formatter.spreadsheet.CellOperations;
 import org.jetel.data.formatter.spreadsheet.CellPosition;
 import org.jetel.data.formatter.spreadsheet.CellStyleLibrary;
 import org.jetel.data.formatter.spreadsheet.CoordsTransformations;
+import org.jetel.data.formatter.spreadsheet.FieldNamesForSheetPartitioningParser;
 import org.jetel.data.formatter.spreadsheet.SheetData;
 import org.jetel.data.formatter.spreadsheet.SheetDataLibrary;
 import org.jetel.data.formatter.spreadsheet.XLSMappingStats;
@@ -74,8 +75,6 @@ public class SpreadsheetFormatter implements Formatter {
 
 	/** A value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
-	/** A prefix of a sheet name specifying that a reference to the column should be used */  
-	private static final String CLOVER_FIELD_PREFIX = "$";
 	/** Default number of rows of an in-memory window, while streaming writign is used */ 
 	private static final int DEFAULT_STREAM_WINDOW_SIZE = 10;
 
@@ -294,19 +293,12 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		cellStyleLibrary.init(workbook);
 		
-		//
-		// set up the formatter for writing multiple sheets
-		//
-		if (!StringUtils.isEmpty(sheet) && sheet.startsWith(CLOVER_FIELD_PREFIX)) {
-        	String[] fields = sheet.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-
-			for (int i = 0; i < fields.length; i++) {
-				fields[i] = fields[i].substring(1);
-			}
-
+		String [] fields = FieldNamesForSheetPartitioningParser.parseFieldNames(sheet);
+		if (fields!=null) {
 			setKeyFields(fields);
-			sheetDataLibrary.clear();
-        }
+		}
+		
+		sheetDataLibrary.clear();
 
 		//prepare the default sheet and initialize mapping statistic data
 		if (sheetNameKeyRecord==null) {
