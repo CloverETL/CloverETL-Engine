@@ -53,11 +53,12 @@ public class SandboxConnection extends URLConnection {
 	public InputStream getInputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(graph);
 		if (graph != null) {
 			long runId = graph.getRuntimeContext().getRunId();
-			return graph.getAuthorityProxy().getSandboxResourceInput(runId, storageCode, path);
+			return authorityProxy.getSandboxResourceInput(runId, storageCode, path);
 		} else {
-			return IAuthorityProxy.getDefaultProxy().getSandboxResourceInput(0, storageCode, path);
+			return authorityProxy.getSandboxResourceInput(0, storageCode, path);
 		}
 	}
 
