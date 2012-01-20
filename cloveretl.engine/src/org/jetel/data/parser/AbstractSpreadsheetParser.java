@@ -175,7 +175,12 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 		if (exceptionHandler != null) {
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.handleException();
+				try {
+					exceptionHandler.handleException();
+				} catch (BadDataFormatException e) {
+					// If we want MultiFileReader to increase record counters, we have to throw JetelExcepiton, sheesh...
+					throw new JetelException("Internal wrapper exception", e);
+				}
 				record = parseNext(record);
 			}
 		}
