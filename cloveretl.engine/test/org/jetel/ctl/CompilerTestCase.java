@@ -9,6 +9,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
@@ -295,20 +297,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecordMetadata createDefaultMetadata(String name) {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
-		ret.addField(new DataFieldMetadata("Name", DataFieldMetadata.STRING_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Age", DataFieldMetadata.NUMERIC_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("City", DataFieldMetadata.STRING_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("Name", DataFieldType.STRING, "|"));
+		ret.addField(new DataFieldMetadata("Age", DataFieldType.NUMBER, "|"));
+		ret.addField(new DataFieldMetadata("City", DataFieldType.STRING, "|"));
 
-		DataFieldMetadata dateField = new DataFieldMetadata("Born", DataFieldMetadata.DATE_FIELD, "|");
+		DataFieldMetadata dateField = new DataFieldMetadata("Born", DataFieldType.DATE, "|");
 		dateField.setFormatStr("yyyy-MM-dd HH:mm:ss");
 		ret.addField(dateField);
 
-		ret.addField(new DataFieldMetadata("BornMillisec", DataFieldMetadata.LONG_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Value", DataFieldMetadata.INTEGER_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Flag", DataFieldMetadata.BOOLEAN_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("ByteArray", DataFieldMetadata.BYTE_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("BornMillisec", DataFieldType.LONG, "|"));
+		ret.addField(new DataFieldMetadata("Value", DataFieldType.INTEGER, "|"));
+		ret.addField(new DataFieldMetadata("Flag", DataFieldType.BOOLEAN, "|"));
+		ret.addField(new DataFieldMetadata("ByteArray", DataFieldType.BYTE, "|"));
 
-		DataFieldMetadata decimalField = new DataFieldMetadata("Currency", DataFieldMetadata.DECIMAL_FIELD, "\n");
+		DataFieldMetadata decimalField = new DataFieldMetadata("Currency", DataFieldType.DECIMAL, "\n");
 		decimalField.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_PRECISION));
 		decimalField.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_SCALE));
 		ret.addField(decimalField);
@@ -325,9 +327,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecordMetadata createDefault1Metadata(String name) {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
-		ret.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Age", DataFieldMetadata.NUMERIC_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("City", DataFieldMetadata.STRING_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("Field1", DataFieldType.STRING, "|"));
+		ret.addField(new DataFieldMetadata("Age", DataFieldType.NUMBER, "|"));
+		ret.addField(new DataFieldMetadata("City", DataFieldType.STRING, "|"));
 
 		return ret;
 	}
@@ -347,13 +349,63 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		stringListField.setCardinalityType(DataFieldCardinalityType.LIST);
 		ret.addField(stringListField);
 		
-		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
-		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
-		ret.addField(integerMapField);
+//		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
+//		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+//		ret.addField(integerMapField);
 
 		return ret;
 	}
 
+	/**
+	 * Creates new record with specified metadata and sets its field to default values. The record structure will be
+	 * created by {@link #createDefaultMetadata(String)}
+	 * 
+	 * @param dataRecordMetadata
+	 *            metadata to use
+	 * @return record initialized to default values
+	 */
+	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
+		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		ret.init();
+
+		for (int i = 0; i < ret.getNumFields(); i++) {
+			DataField field = ret.getField(i);
+			DataFieldMetadata fieldMetadata = field.getMetadata();
+			
+			switch (fieldMetadata.getCardinalityType()) {
+			case SINGLE:
+				switch (fieldMetadata.getDataType()) {
+				case STRING:
+					field.setValue("John");
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented.");
+				}
+				break;
+			case LIST:
+				List<Object> value = new ArrayList<Object>();
+				switch (fieldMetadata.getDataType()) {
+				case STRING:
+					value.addAll(Arrays.asList("John", "Doe", "Jersey"));
+					field.setValue(value);
+					break;
+				case INTEGER:
+					value.addAll(Arrays.asList(123, 456, 789));
+					field.setValue(value);
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented.");
+				}
+				break;
+			case MAP:
+				break;
+			default:
+				throw new IllegalArgumentException(fieldMetadata.getCardinalityType().toString());
+			}
+		}
+
+		return ret;
+	}
 
 
 	/**
@@ -1040,33 +1092,52 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Operator '<=' is not defined for types 'boolean' and 'boolean'"));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void test_type_list() {
 		doCompile("test_type_list");
 		check("intList", Arrays.asList(1, 2, 3, 4, 5, 6));
 		check("intList2", Arrays.asList(1, 2, 3));
 		check("stringList", Arrays.asList(
 				"first", "replaced", "third", "fourth",
-				"fifth", "sixth", "seventh", "extra"));
+				"fifth", "sixth", "extra"));
 		check("stringListCopy", Arrays.asList(
+				"first", "second", "third", "fourth",
+				"fifth", "seventh"));
+		check("stringListCopy2", Arrays.asList(
 				"first", "replaced", "third", "fourth",
-				"fifth", "sixth", "seventh", "extra"));
-		assertTrue(getVariable("stringList") == getVariable("stringListCopy"));
-		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
+				"fifth", "sixth", "extra"));
+		assertTrue(getVariable("stringList") != getVariable("stringListCopy"));
+		assertEquals(getVariable("stringList"), getVariable("stringListCopy2"));
 	}
 	
 	public void test_type_list_field() {
 		doCompile("test_type_list_field");
-		check("intList", Arrays.asList(1, 2, 3, 4, 5, 6));
-		check("intList2", Arrays.asList(1, 2, 3));
-		check("stringList", Arrays.asList(
-				"first", "replaced", "third", "fourth",
-				"fifth", "sixth", "seventh", "extra"));
-		assertEquals(getVariable("stringList"), getVariable("stringListCopy"));
+//		check("stringList", Arrays.asList(
+//				"first", "replaced", "third", "fourth",
+//				"fifth", "sixth", "seventh", "extra"));
+//		assertEquals(getVariable("stringList"), getVariable("stringListCopy"));
+		check("copyByValueTest1", "2");
+		check("copyByValueTest2", "test");
 	}
 
 	public void test_type_map_field() {
 		doCompile("test_type_map_field");
+		
+		Map<String, Integer> copyByValueTest1 = (Map<String, Integer>) getVariable("copyByValueTest1");
+		assertEquals(new Integer(2), copyByValueTest1.get("2"));
+		
+		Map<String, Integer> copyByValueTest2 = (Map<String, Integer>) getVariable("copyByValueTest2");
+		assertEquals(new Integer(100), copyByValueTest2.get("2"));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void test_assignment_deepcopy() {
+		doCompile("test_assignment_deepcopy");
+		
+		List<DataRecord> secondRecordList = (List<DataRecord>) getVariable("secondRecordList"); 
+		assertEquals("before", secondRecordList.get(0).getField("Name").getValue().toString());
+
+		List<DataRecord> firstRecordList = (List<DataRecord>) getVariable("firstRecordList");
+		assertEquals("after", firstRecordList.get(0).getField("Name").getValue().toString());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1158,11 +1229,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.getField("Name").setValue("not empty");
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("modified2")));
 		
-		// modified by reference
-		expected.getField("Value").setValue(654321);
+		// no modification by reference is possible
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("modified3")));
+		expected.getField("Value").setValue(654321);
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("reference")));
-		assertTrue(getVariable("modified3") == getVariable("reference"));
+		assertTrue(getVariable("modified3") != getVariable("reference"));
 		
 		// output record
 		assertTrue(recordEquals(expected, outputRecords[1]));

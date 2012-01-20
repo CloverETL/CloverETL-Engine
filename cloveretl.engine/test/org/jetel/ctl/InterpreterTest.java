@@ -21,7 +21,7 @@ public class InterpreterTest extends CompilerTestCase {
 	@Override
 	public void executeCode(ITLCompiler compiler) {
 		TransformationGraph graph = createDefaultGraph();
-		inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		inputRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		outputRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)) };
 	
 		executor = (TransformLangExecutor)compiler.getCompiledCode();
@@ -44,7 +44,11 @@ public class InterpreterTest extends CompilerTestCase {
 	
 	@Override
 	protected Object getVariable(String varName) {
-		return executor.getVariableValue(varName);
+		Object result = executor.getVariableValue(varName);
+		if (result instanceof CharSequence) {
+			return result.toString();
+		}
+		return result;
 	}
 	
 	// This method tests fix of issue 4140. Copying failed in case the input data records were swapped.

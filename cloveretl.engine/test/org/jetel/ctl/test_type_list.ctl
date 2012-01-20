@@ -2,6 +2,7 @@ integer[] intList;
 integer[] intList2;
 string[] stringList = ['first', 'second', 'third'];
 string[] stringListCopy;
+string[] stringListCopy2;
 
 function void changeList(string[] lst) {
 	lst.push( "extra" );	
@@ -32,6 +33,8 @@ function integer transform() {
 	stringListCopy.push('seventh');
 	
 	changeList(stringList);
+	
+	stringListCopy2 = stringList;
 	printErr(stringList);
 	printErr(stringListCopy);
 	return 0;
