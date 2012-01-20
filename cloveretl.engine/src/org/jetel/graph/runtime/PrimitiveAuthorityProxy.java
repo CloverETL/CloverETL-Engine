@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -226,6 +227,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public void makeDirectories(long runId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox directory may be created only in CloverETL Server environment!");
+	}
+
+	@Override
+	public Collection<String> resolveAllFiles(String sandboxCode, String wildcardedPath) {
+		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
 	/*

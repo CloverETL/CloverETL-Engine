@@ -22,11 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Collection;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.graph.Result;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
+import org.jetel.util.file.WcardPattern;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -49,7 +52,17 @@ public abstract class IAuthorityProxy {
 	public static void setDefaultProxy(IAuthorityProxy defaultProxy) {
 		IAuthorityProxy.defaultProxy = defaultProxy;
 	}
-
+	
+	/**
+	 * Returns authority proxy for given graph. If Graph is <code>null</code>, returns default proxy.
+	 * 
+	 * @param etlGraph
+	 * @return authority proxy for given graph. If Graph is <code>null</code>, returns default proxy
+	 */
+	public static IAuthorityProxy getAuthorityProxy(TransformationGraph graph) {
+		return (graph != null) ? graph.getAuthorityProxy() : getDefaultProxy();
+	}
+		
 	public static class RunResult {
 		public Result result;
 		public String description;
@@ -82,6 +95,18 @@ public abstract class IAuthorityProxy {
 	 * @param path
 	 */
 	public abstract void makeDirectories(long runId, String storageCode, String path) throws IOException;
+
+	/**
+	 * Resolves all file names matching the given path eventually containing wildcards.
+	 * 
+	 * @param sandboxCode
+	 *            code of the sandbox
+	 * @param wildcardedUrl
+	 *            path in sandbox that eventually contains wildcards
+	 * @return collection of paths (sandbox-code/path-in-sandbox) to found files
+	 * @see WcardPattern
+	 */
+	public abstract Collection<String> resolveAllFiles(String sandboxCode, String wildcardedPath);
 
 	/**
 	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.
