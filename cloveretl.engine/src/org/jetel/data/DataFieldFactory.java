@@ -19,6 +19,7 @@
 package org.jetel.data;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 /**
  *  Factory Pattern which creates different types of DataField objects (subclasses) 
@@ -30,6 +31,18 @@ import org.jetel.metadata.DataFieldMetadata;
 public class DataFieldFactory {
 
 	/**
+	 * @param fieldType
+	 * @param fieldMetadata
+	 * @param plain
+	 * @return
+	 * @deprecated use {@link #createDataField(DataFieldType, DataFieldMetadata, boolean)} instead
+	 */
+	@Deprecated
+	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
+		return createDataField(DataFieldType.fromChar(fieldType), fieldMetadata, plain);
+	}
+
+	/**
 	 *  Factory which creates data field based on specified field type and metadata.
 	 * You should use this method whenever you want to create a data field.
 	 *
@@ -38,28 +51,28 @@ public class DataFieldFactory {
 	 * @return                new data field object
 	 * @since                 May 2, 2002
 	 */
-	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
+	public final static DataField createDataField(DataFieldType fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
 		try {
 			switch (fieldType) {
-				case DataFieldMetadata.STRING_FIELD:
+				case STRING:
 					return new StringDataField(fieldMetadata,plain);
-				case DataFieldMetadata.DATE_FIELD:
+				case DATE:
 					return new DateDataField(fieldMetadata,plain);
-				case DataFieldMetadata.NUMERIC_FIELD:
+				case NUMBER:
 					return new NumericDataField(fieldMetadata,plain);
-				case DataFieldMetadata.DECIMAL_FIELD:
+				case DECIMAL:
 	                return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
-				case DataFieldMetadata.INTEGER_FIELD:
+				case INTEGER:
 					return new IntegerDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BYTE_FIELD:
+				case BYTE:
 					return new ByteDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+				case CBYTE:
 					return new CompressedByteDataField(fieldMetadata,plain);
-				case DataFieldMetadata.LONG_FIELD:
+				case LONG:
 					return new LongDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BOOLEAN_FIELD:
+				case BOOLEAN:
 					return new BooleanDataField(fieldMetadata);
-				case DataFieldMetadata.NULL_FIELD:
+				case NULL:
 					return NullField.NULL_FIELD;
 				default:
 					throw new RuntimeException("Unsupported data type: " + fieldType);
@@ -68,7 +81,6 @@ public class DataFieldFactory {
 			throw new JetelRuntimeException(String.format("Data field '%s' cannot be created.", fieldMetadata.getName()), e);
 		}
 	}
-
 	
 	/**
 	 * Simplified version of previous. Gets field type from metadata.
@@ -77,21 +89,8 @@ public class DataFieldFactory {
 	 * @return
 	 */
 	public final static DataField createDataField(DataFieldMetadata fieldMetadata,boolean plain){
-		return createDataField(fieldMetadata.getType(),fieldMetadata,plain);
+		return createDataField(fieldMetadata.getDataType(),fieldMetadata,plain);
 	}
 	
-	
-	/**
-	 * @param c
-	 * @param fieldMetadata
-	 * @param object
-	 * @param sequencedDependencies
-	 * @return
-	 */
-	public static DataField createDataField(char c, DataFieldMetadata fieldMetadata, String methodName, int[][] sequencedDependencies) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
 
