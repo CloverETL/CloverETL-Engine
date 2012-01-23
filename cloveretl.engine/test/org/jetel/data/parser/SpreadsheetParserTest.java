@@ -31,6 +31,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -109,12 +111,14 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		xlsxParser.init();
 		xlsxParser.preExecute();
 		xlsxParser.setDataSource(new FileInputStream(XLSX_FILE));
-		
+//		xlsxParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
+
 		XLSParser xlsParser = new JExcelXLSDataParser(stringMetadata);
 		xlsParser.setSheetNumber(sheetName);
 		xlsParser.init();
 		xlsParser.preExecute();
 		xlsParser.setDataSource(new FileInputStream(XLS_FILE));
+		//xlsParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		/* New ones */
 		AbstractSpreadsheetParser xlsxStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
@@ -122,24 +126,28 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		xlsxStreamParser.init();
 		xlsxStreamParser.preExecute();
 		xlsxStreamParser.setDataSource(new FileInputStream(XLSX_FILE));
+		xlsxStreamParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		AbstractSpreadsheetParser xlsStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
 		xlsStreamParser.setSheet(sheetName);
 		xlsStreamParser.init();
 		xlsStreamParser.preExecute();
 		xlsStreamParser.setDataSource(new FileInputStream(XLS_FILE));
+		xlsStreamParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		AbstractSpreadsheetParser inMemoryParser1 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser1.setSheet(sheetName);
 		inMemoryParser1.init();
 		inMemoryParser1.preExecute();
 		inMemoryParser1.setDataSource(new FileInputStream(XLSX_FILE));
+		inMemoryParser1.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 	
 		AbstractSpreadsheetParser inMemoryParser2 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser2.setSheet(sheetName);
 		inMemoryParser2.init();
 		inMemoryParser2.preExecute();
 		inMemoryParser2.setDataSource(new FileInputStream(XLS_FILE));
+		inMemoryParser2.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		assertEqualOutput(stringMetadata, xlsParser, xlsxParser, xlsxStreamParser, xlsStreamParser, inMemoryParser1, inMemoryParser2);
 	}
@@ -159,7 +167,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		int recNum = 0;
 		while (run) {
 			for (int i = 0; i < parsers.length; i++) {
-				if (parsers[i].getNext(records[i]) == null) {
+				DataRecord returnedRecord = parsers[i].getNext(records[i]);
+				//System.out.println(returnedRecord);
+				if (returnedRecord == null) {
 					records[i] = null;
 					run = false;
 				}
@@ -265,6 +275,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.preExecute();
 			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx")); // resolves name mapping
 			
+			SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
+			
 			DataRecord record = new DataRecord(stringMetadata);
 			record.init();
 			
@@ -275,6 +288,10 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 			parser.parseNext(record);
 			assertRecordContent(record, null, "B8Value", "C9Value");
+
+			parser.parseNext(record);
+			assertRecordContent(record);
+			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -283,12 +300,19 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.setSheet("0");
 			parser.init();
 			parser.preExecute();
-			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx"));	
+			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx"));
+			
+			exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
 	
 			parser.parseNext(record);
 			assertRecordContent(record, "A5Value", "B5Value", "C7Value");
 			parser.parseNext(record);
 			assertRecordContent(record, "A7Value", "B7Value", "C9Value");
+
+			parser.parseNext(record);
+			assertRecordContent(record);
+			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -307,6 +331,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.preExecute();
 			parser.setDataSource(new FileInputStream("data/xls/Customers_02.xls"));
 			
+			SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
+			
 			DataRecord record = new DataRecord(stringMetadata);
 			record.init();
 			
@@ -318,6 +345,12 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertRecordContent(record, "123", "Princeton", "Dirac Street");
 			parser.parseNext(record);
 			assertRecordContent(record, "1234", "Washington", "Constitution Ave");
+			
+			parser.parseNext(record);
+			assertRecordContent(record);
+			parser.parseNext(record);
+			assertRecordContent(record);
+			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -348,6 +381,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 					parser.init();
 					parser.preExecute();
 					parser.setDataSource(new FileInputStream(file));
+					
+					SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+					parser.setExceptionHandler(exceptionHandler);
 					
 					DataRecord record = new DataRecord(stringMetadata);
 					record.init();
@@ -414,6 +450,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.preExecute();
 				parser.setDataSource(new FileInputStream(file));
 				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
 				DataRecord record = new DataRecord(stringMetadata);
 				record.init();
 				
@@ -441,6 +480,12 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				for (int i = 3; i < 10; i++) {
 					assertNotNull(parser.parseNext(record));
 				}
+				// 2 empty records until record-mapping-mask moves completely beyond end of sheet
+				parser.parseNext(record);
+				assertRecordContent(record);
+				parser.parseNext(record);
+				assertRecordContent(record);
+				
 				assertNull(parser.parseNext(record));
 				
 				parser.close();
@@ -462,6 +507,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.preExecute();
 				parser.setDataSource(new FileInputStream(file));
 				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
 				DataRecord record = new DataRecord(metadata2);
 				record.init();
 				
@@ -477,8 +525,13 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.parseNext(record);
 				assertRecordContent(record, 1, 2);
 				
+				assertFalse(exceptionHandler.isExceptionThrowed());
+				
 				parser.parseNext(record);
 				assertRecordContent(record, 1, null);
+				
+				// last record is half beyond the end of sheet
+				assertTrue(exceptionHandler.isExceptionThrowed());
 
 				assertNull(parser.parseNext(record));
 				
