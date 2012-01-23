@@ -217,7 +217,7 @@ final class NullField extends DataField{
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equalsValue(Object obj) {
 		return this == obj;
 	}
 

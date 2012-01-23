@@ -319,6 +319,11 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 		}
     }
 
+    @Override
+    public boolean equals(Object obj) {
+    	throw new UnsupportedOperationException("muhehehe");
+    }
+    
 	/**
 	 *  Test two DataRecords for equality. Records must have the same metadata (be
 	 * created using the same metadata object) and their field values must be equal.
@@ -327,9 +332,8 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 * @return      True if they equals, false otherwise
 	 * @since       April 23, 2002
 	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this==obj) return true;
+	public boolean equalsValue(Object obj) {
+		if (this == obj) return true;
 	    
 	    /*
          * first test that both records have the same structure i.e. point to
@@ -341,12 +345,12 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
             }
             // check field by field that they are the same
             for (int i = 0; i < fields.length; i++) {
-                if (!fields[i].equals(((DataRecord) obj).getField(i))) {
+                if (!fields[i].equalsValue(((DataRecord) obj).getField(i))) {
                     return false;
                 }
             }
             return true;
-        }else{
+        } else {
             return false;
         }
     }

@@ -537,7 +537,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equalsValue(Object obj) {
 	    if (isNull || obj==null) return false;
 	    if (obj instanceof LongDataField){
 	        return value==((LongDataField)obj).value;
@@ -609,11 +609,6 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	@Override
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
-	}
-
-	@Override
-	public int hashCode(){
-		return (int)(value^value>>32);
 	}
 
 	@Override

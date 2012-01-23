@@ -419,7 +419,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equalsValue(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
 		if (obj instanceof ByteDataField){
@@ -474,11 +474,6 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		}
 	}
 
-	@Override
-	public int hashCode(){
-		 return Arrays.hashCode(this.value);
-	}
-	
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer

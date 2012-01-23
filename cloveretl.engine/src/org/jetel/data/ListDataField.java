@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -71,11 +70,15 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 		this.singleValueMetadata = fieldMetadata.duplicate();
 		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
-		
+
 		fields = new ArrayList<DataField>();
 		size = 0;
 		this.plain = plain;
 		listView = new ListDataFieldView(this);
+		
+		//just for sure - this is not common to reset the field in other types of fields
+		//but for the list field it seems to be better to reset it already here explicitly
+		reset();
 	}
 	
 	public int getSize() {
@@ -107,8 +110,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			} else if (metadata.isNullable()) {
 				setNull(true);
 			} else {
-				throw new NullDataFormatException(metadata.getName() + 
-						" has not dafault value defined and is not nullable!");
+				setNull(false);
 			}
 		} catch (Exception ex) {
 			// here, the only reason to fail is bad DefaultValue
@@ -123,9 +125,9 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		if (size == fields.size()) {
 			fields.add(createDataField());
 		}
-		size++;
-		DataField result = fields.get(size - 1);
+		DataField result = fields.get(size);
 		result.reset();
+		size++;
 		return result;
 	}
 	
@@ -148,6 +150,12 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		return newField;
 	}
 	
+	/**
+	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
+	 * operation.
+	 * @param field
+	 * @return
+	 */
 	public boolean removeField(DataField field) {
 		if (field == null || isNull) {
 			return false;
@@ -164,6 +172,12 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 	}
 	
+	/**
+	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
+	 * operation.
+	 * @param index
+	 * @return
+	 */
 	public DataField removeField(int index) {
 		if (index < 0 || index >= size) {
 		    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
@@ -247,7 +261,13 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	
 	@Override
 	public void reset() {
-		clear();
+		if (metadata.isNullable()) {
+			setNull(true);
+		} else if (metadata.isDefaultValueSet()) {
+			setToDefaultValue();
+		} else {
+			clear();
+		}
 	}
 
 	@Override
@@ -267,7 +287,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		
 		List<Object> result = new ArrayList<Object>();
 		for (DataField field : this) {
-			result.add(field.getValue());
+			result.add(field.getValueDuplicate());
 		}
 		return result;
 	}
@@ -278,6 +298,10 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		return DataFieldType.LIST.getObsoleteIdentifier();
 	}
 
+	public boolean isPlain() {
+		return plain;
+	}
+	
 	@Override
 	public String toString() {
 		if (isNull) {
@@ -357,7 +381,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
-	public boolean equals(Object otherField) {
+	public boolean equalsValue(Object otherField) {
 		if (this == otherField) return true;
 	    
         if (otherField instanceof ListDataField) {
@@ -480,7 +504,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 *
 	 * @created 19 Jan 2012
 	 */
-	private static class ListDataFieldView extends AbstractList<Object> implements List<Object> {
+	private static class ListDataFieldView extends AbstractList<Object> {
 
 		private ListDataField backedListDataField;
 		
@@ -625,104 +649,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			}
 			return c.size() != 0;
 		}
-		
-//		@Override
-//		public int size() {
-//			return backedListDataField.size;
-//		}
-//
-//		@Override
-//		public boolean contains(Object o) {
-//			if (o == null) {
-//				for (DataField field : backedListDataField) {
-//					if (field.isNull()) {
-//						return true;
-//					}
-//				}
-//				return false;
-//			} else {
-//				for (DataField field : backedListDataField) {
-//					if (field.getValue().equals(o)) {
-//						return true;
-//					}
-//				}
-//				return false;
-//			}
-//		}
-//
-//		@Override
-//		public Iterator<Object> iterator() {
-//			final Iterator<DataField> fieldIterator = backedListDataField.iterator();
-//			return new Iterator<Object>() {
-//
-//				@Override
-//				public boolean hasNext() {
-//					return fieldIterator.hasNext();
-//				}
-//
-//				@Override
-//				public Object next() {
-//					return fieldIterator.next().getValue();
-//				}
-//
-//				@Override
-//				public void remove() {
-//					throw new UnsupportedOperationException();
-//				}
-//			};
-//		}
-//
-//		@Override
-//		public Object[] toArray() {
-//			Object[] result = new Object[backedListDataField.size];
-//			for (int i = 0; i < backedListDataField.size; i++) {
-//				result[i] = backedListDataField.fields.get(i).getValue();
-//			}
-//			return result;
-//		}
-//
-//		@SuppressWarnings("unchecked")
-//		@Override
-//		public <T> T[] toArray(T[] a) {
-//			if (a.length < backedListDataField.size) {
-//				// Make a new array of a's runtime type, but my contents:
-//				return (T[]) Arrays.copyOf(toArray(), backedListDataField.size, a.getClass());
-//			}
-//			System.arraycopy(toArray(), 0, a, 0, backedListDataField.size);
-//			if (a.length > backedListDataField.size) {
-//				a[backedListDataField.size] = null;
-//			}
-//			return a;
-//		}
-//
-//		@Override
-//		public boolean add(Object e) {
-//			backedListDataField.addField().setValue(e);
-//			return true;
-//		}
-//
-//		@Override
-//		public boolean remove(Object o) {
-//			if (o == null) {
-//				for (int i = 0; i < backedListDataField.size; i++) {
-//					DataField field = backedListDataField.fields.get(i);
-//					if (field.isNull()) {
-//						backedListDataField.removeField(field);
-//						return true;
-//					}
-//				}
-//				return false;
-//			} else {
-//				for (int i = 0; i < backedListDataField.size; i++) {
-//					DataField field = backedListDataField.fields.get(i);
-//					if (o.equals(field.getValue())) {
-//						backedListDataField.removeField(field);
-//						return true;
-//					}
-//				}
-//				return false;
-//			}
-//		}
 
 	}
 }

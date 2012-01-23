@@ -223,7 +223,7 @@ public class CompressedByteDataField extends ByteDataField {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equalsValue(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
 		if (obj instanceof CompressedByteDataField){

@@ -367,7 +367,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @since       April 23, 2002
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equalsValue(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
 	    if (obj instanceof DateDataField){
@@ -407,13 +407,6 @@ public class DateDataField extends DataField implements Comparable<Object> {
 		}else throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
 	}
 
-	
-	@Override
-	public int hashCode(){
-		if (isNull) return 0;
-		return value.hashCode();
-	}
-	
 	/**
 	 *  Gets the size attribute of the IntegerDataField object
 	 *
