@@ -173,6 +173,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public int skip(int nRec) throws JetelException {
+		if (nRec <= 0) {
+			return 0;
+		}
 		recordFillingListener.setSkipRecords(nRec);
 		processParsing(recordSkipper);
 
