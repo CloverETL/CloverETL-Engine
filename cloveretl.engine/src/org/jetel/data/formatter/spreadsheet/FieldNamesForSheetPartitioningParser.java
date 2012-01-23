@@ -48,6 +48,20 @@ public class FieldNamesForSheetPartitioningParser {
 		return false;
 	}
 	
+	public static String createSheetNameString(String [] fieldNames) {
+		StringBuilder sheetNameStringBuilder = new StringBuilder();
+
+		for (int i=0; i<fieldNames.length; ++i) {
+			sheetNameStringBuilder.append(CLOVER_FIELD_PREFIX);
+			sheetNameStringBuilder.append(fieldNames[i]);
+			if (i+1<fieldNames.length) {
+				sheetNameStringBuilder.append(Defaults.Component.KEY_FIELDS_DELIMITER);
+			}
+		}
+		
+		return sheetNameStringBuilder.toString();
+	}
+	
 	public static String [] parseFieldNames(String sheetNameString) {
 		if (!StringUtils.isEmpty(sheetNameString) && sheetNameString.startsWith(CLOVER_FIELD_PREFIX)) {
         	String[] sheetReferences = sheetNameString.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
