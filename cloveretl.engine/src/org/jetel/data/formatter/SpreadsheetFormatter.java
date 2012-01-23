@@ -413,6 +413,9 @@ public class SpreadsheetFormatter implements Formatter {
 			removeAllRowsAndMergedRegions(currentSheetData);
 		}
 		
+		if (mappingStats.isMappingEmpty()) {
+			return;
+		}
 		
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
@@ -601,6 +604,11 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 		
 		takeSheetOrPrepareSheet(record);
+		
+		if (mappingStats.isMappingEmpty()) {
+			//no write actions for empty mapping
+			return 0;
+		}
 		
 		CellPosition recordOffset = createNextRecordRegion();
 		

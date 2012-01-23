@@ -20,9 +20,7 @@ package org.jetel.data.formatter.spreadsheet;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,6 +49,7 @@ public class XLSMappingStats {
 	private String templateSheetName;
 	private int initialInsertionY;
 	private int initialTemplateCopiedRegionY2;
+	private boolean mappingEmpty;
 	
 	public XLSMappingStats() {
 	}
@@ -367,6 +366,7 @@ public class XLSMappingStats {
 
 		
 		this.setTemplateSheetName(sheetData.getSheetName());
+		this.setMappingEmpty(cloverFieldMapping.isEmpty());
 	}
 
 	/**
@@ -521,6 +521,20 @@ public class XLSMappingStats {
 
 	public void setInitialTemplateCopiedRegionY2(int initialTemplateCopiedRegionY2) {
 		this.initialTemplateCopiedRegionY2 = initialTemplateCopiedRegionY2;
+	}
+
+	/**
+	 * @return the mappingEmpty
+	 */
+	public boolean isMappingEmpty() {
+		return mappingEmpty;
+	}
+
+	/**
+	 * @param mappingEmpty the mappingEmpty to set
+	 */
+	public void setMappingEmpty(boolean mappingEmpty) {
+		this.mappingEmpty = mappingEmpty;
 	}
 	
 	
