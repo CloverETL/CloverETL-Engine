@@ -128,6 +128,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public int skip(int nRec) throws JetelException {
+		if (nRec <= 0) {
+			return 0;
+		}
 		sheetContentHandler.skipRecords(nRec);
 
 		try {
@@ -514,21 +517,18 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		}
 
 		public int getNumberOfSkippedRecords() {
-			int result = currentParseRow - skipStartRow + parent.mappingInfo.getStep();
-			if (result > 0) {
-				return result / parent.mappingInfo.getStep();
-			}
-			return 0;
+			int result = currentParseRow - skipStartRow;
+			return result > 0 ? result / parent.mappingInfo.getStep() : 0;
 		}
-
+		
 		public void skipRecords(int nRec) {
-			skipStartRow = recordStartRow;
-			record = null;
-
-			int numberOfRows = nRec * parent.mappingInfo.getStep();
-			setRecordStartRow(recordStartRow + numberOfRows);
-			
-			if (nRec != 1 || skipStartRow != currentParseRow) {
+			if (nRec > 0) {
+				skipStartRow = recordStartRow;
+				record = null;
+	
+				int numberOfRows = nRec * parent.mappingInfo.getStep();
+				setRecordStartRow(recordStartRow + numberOfRows);
+				
 				skipRecords = true;
 			}
 		}
@@ -569,7 +569,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		@Override
 		public void startRow(int rowNum) {
 			super.startRow(rowNum);
-			if (currentParseRow >= recordStartRow - parent.mappingInfo.getStep()) {
+			if (currentParseRow >= recordStartRow) {
 				skipRecords = false;
 			}
 		}
