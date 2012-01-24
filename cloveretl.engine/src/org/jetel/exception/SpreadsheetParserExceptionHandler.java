@@ -65,7 +65,7 @@ public class SpreadsheetParserExceptionHandler extends AbstractParserExceptionHa
 
 	@Override
 	protected void handle() {
-		if (exception != null) {
+		if (policyType != PolicyType.LENIENT && exception != null) {
 			BadDataFormatException ex = exception;
 			exception = null;
 			ex.setRawRecord(getRawRecord());
