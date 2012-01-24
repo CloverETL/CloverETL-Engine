@@ -212,6 +212,9 @@ public class DataReader extends Node {
 		if (getOutPorts().size() == 2) {
 			if (checkLogPortMetadata()) {
 				logging = true;
+			} else {
+				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": The log port metadata has invalid format " + 
+						"(expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
 			}
 		}
 		
@@ -350,9 +353,9 @@ public class DataReader extends Node {
             && isStringOrByte(logMetadata.getField(2))
             && isStringOrByte(logMetadata.getField(3));
         
-        if(!ret) {
-            logger.warn("The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
-        }
+//        if(!ret) {
+//            logger.warn(this.getId() + ": The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
+//        }
         
         return ret;
     }
