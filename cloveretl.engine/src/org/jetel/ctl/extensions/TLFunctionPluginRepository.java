@@ -83,18 +83,22 @@ public class TLFunctionPluginRepository {
      */
 	public static Map<String,List<TLFunctionDescriptor>> getAllFunctions() {
 		if (consolidatedFunctions == null) {
-			consolidatedFunctions = new TreeMap<String, List<TLFunctionDescriptor>>();
-
-			for(TLFunctionLibraryDescription libraryDescription : functionLibraries) {
-				Map<String, List<TLFunctionDescriptor>> contents = libraryDescription.getAllFunctions();
-				for (String name : contents.keySet()) {
-					// we want to have own lists because we will merge functions from all libraries
-					List<TLFunctionDescriptor> value = consolidatedFunctions.get(name);
-					if (value == null) {
-						value = new LinkedList<TLFunctionDescriptor>();
-						consolidatedFunctions.put(name,value);
+			synchronized (consolidatedFunctions) {
+				if (consolidatedFunctions == null) {
+					consolidatedFunctions = new TreeMap<String, List<TLFunctionDescriptor>>();
+		
+					for(TLFunctionLibraryDescription libraryDescription : functionLibraries) {
+						Map<String, List<TLFunctionDescriptor>> contents = libraryDescription.getAllFunctions();
+						for (String name : contents.keySet()) {
+							// we want to have own lists because we will merge functions from all libraries
+							List<TLFunctionDescriptor> value = consolidatedFunctions.get(name);
+							if (value == null) {
+								value = new LinkedList<TLFunctionDescriptor>();
+								consolidatedFunctions.put(name,value);
+							}
+							value.addAll(contents.get(name));
+						}
 					}
-					value.addAll(contents.get(name));
 				}
 			}
 		}
