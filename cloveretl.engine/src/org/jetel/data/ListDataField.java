@@ -215,6 +215,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	    for (DataField field : this) {
 	    	newListDataField.fields.add(field.duplicate());
 	    }
+	    newListDataField.size = size;
 	    return newListDataField;
 	}
 
@@ -246,16 +247,17 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	public void setValue(DataField fromField) {
 		if (fromField == null || fromField.isNull()) {
 			setNull(true);
-		}
-		
-		if (fromField instanceof ListDataField) {
-			ListDataField fromListDataField = (ListDataField) fromField;
-			for (DataField field : fromListDataField) {
-				addField().setValue(field.getValue());
-			}
 		} else {
-			//lets try this way - last chance - maybe the field's value is a list
-            setValue(fromField.getValue());   
+			setNull(false);
+			clear();
+			if (fromField instanceof ListDataField) {
+				ListDataField fromListDataField = (ListDataField) fromField;
+				for (DataField field : fromListDataField) {
+					addField().setValue(field.getValue());
+				}
+			} else {
+	            super.setValue(fromField);   
+			}
 		}
 	}
 	
