@@ -381,7 +381,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
-	public boolean equalsValue(Object otherField) {
+	public boolean equals(Object otherField) {
 		if (this == otherField) return true;
 	    
         if (otherField instanceof ListDataField) {

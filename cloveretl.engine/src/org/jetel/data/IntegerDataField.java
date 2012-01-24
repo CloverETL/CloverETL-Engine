@@ -533,7 +533,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	 * @since       April 23, 2002
 	 */
 	@Override
-	public boolean equalsValue(Object obj) {
+	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
 	    if (obj instanceof IntegerDataField){
@@ -607,6 +607,11 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	@Override
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
+	}
+
+	@Override
+	public int hashCode(){
+		return value;
 	}
 
 	@Override

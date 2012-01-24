@@ -564,7 +564,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 *@since       April 23, 2002
 	 */
 	@Override
-	public boolean equalsValue(Object obj) {
+	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
 	    if (obj instanceof NumericDataField){
@@ -621,6 +621,12 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	    }
 	}
 	
+	@Override
+	public int hashCode(){
+		long v=Double.doubleToLongBits(value);
+		return (int)(v^(v>>32));
+	}
+
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer

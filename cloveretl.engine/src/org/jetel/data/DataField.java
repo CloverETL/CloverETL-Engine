@@ -329,28 +329,20 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 */
 	public abstract void deserialize(CloverBuffer buffer);
 
-	@Override
-	public boolean equals(Object obj) {
-    	throw new UnsupportedOperationException("muhehehe equals()");
-	}
-	
-	@Override
-	public int hashCode() {
-    	throw new UnsupportedOperationException("muhehehe hashCode()");
-	}
-	
+
 	/**
-	 *  Checks whether two DataFields represents equals objects. Both
-	 * fields should be of the same type. If they are not, ClassCastException
+	 *  Checks whether two DataField objects are equal. Both
+	 * fiels should be of the same type. If they are not, ClassCastException
 	 * is thrown.<br> 
-	 * Two DataFields where each is flagged as to be NULL (isNull() returns true) are
+	 * Two datafields where each is flagged as to be NULL (isNull() returns true) are
 	 * deemed <b>NOT equal</b>.
 	 *
 	 * @param  obj  Description of Parameter
 	 * @return      Description of the Returned Value
 	 * @since       September 16, 2002
 	 */
-	public abstract boolean equalsValue(Object obj);
+	@Override
+	public abstract boolean equals(Object obj);
 
 
 	/**

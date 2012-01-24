@@ -347,7 +347,7 @@ public class StringDataField extends DataField implements CharSequence{
 	}
 
 	@Override
-	public boolean equalsValue(Object obj) {
+	public boolean equals(Object obj) {
 	    if (isNull || obj==null ) return false;
 	    if (this==obj) return true;
 		CharSequence data;
@@ -431,6 +431,16 @@ public class StringDataField extends DataField implements CharSequence{
         return Compare.compare(value, strObj, collator);
     }
 
+    
+	@Override
+	public int hashCode(){
+		int hash=5381;
+		for (int i=0;i<value.length();i++){
+			hash = ((hash << 5) + hash) + value.charAt(i); 
+		}
+		return (hash & 0x7FFFFFFF);
+	}
+	
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer

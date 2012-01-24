@@ -252,7 +252,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	}
 
 	@Override
-	public boolean equalsValue(Object obj) {
+	public boolean equals(Object obj) {
 	    if (obj==null) return false;
 	    
 	    if (obj instanceof BooleanDataField){
@@ -293,6 +293,13 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 		}else throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
 	}
 
+	@Override
+	public int hashCode(){
+		if (isNull) return 123;
+		Boolean v = Boolean.valueOf(value);
+		return v.hashCode();
+	}
+	
 	/**
 	 *  Gets the size attribute of the IntegerDataField object
 	 *

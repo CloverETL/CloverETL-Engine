@@ -343,7 +343,7 @@ public class RecordKey {
 			for (int i = 0; i < keyFields.length; i++) {
 				DataField field1 = record1.getField(keyFields[i]);
 		    	DataField field2 = record2.getField(record2KeyFields[i]);
-				if (!field1.equalsValue(field2)) {
+				if (!field1.equals(field2)) {
 					if (!(field1.isNull() && field2.isNull())) {
 						return false;
 					}
@@ -353,7 +353,7 @@ public class RecordKey {
 			for (int i = 0; i < keyFields.length; i++) {
 				DataField field1 = record1.getField(keyFields[i]);
 		    	DataField field2 = record2.getField(record2KeyFields[i]);
-				if (!field1.equalsValue(field2)) {
+				if (!field1.equals(field2)) {
 					return false;
 				}
 			}

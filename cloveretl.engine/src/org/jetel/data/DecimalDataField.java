@@ -565,7 +565,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@since       April 23, 2002
 	 */
 	@Override
-	public boolean equalsValue(Object obj) {
+	public boolean equals(Object obj) {
 	    if (isNull || obj == null) return false;
 	    
 	    if (obj instanceof DecimalDataField){
@@ -601,6 +601,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	    } else {
 	        return value.compareTo(_value);
 	    }
+	}
+
+	@Override
+	public int hashCode(){
+        return value.hashCode();
 	}
 
 	/**
