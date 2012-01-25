@@ -70,8 +70,12 @@ public class SpreadsheetFormatter implements Formatter {
 
     /** A pattern matching XLSX file extension */
 	public static final String XLSX_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss][Xx]$";
+    /** A pattern matching XLS file extension */
+	public static final String XLS_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss]$";
 	/** A pattern matching XLTX file extension */
     public static final String XLTX_FILE_PATTERN = "^.*\\.[Xx][Ll][Tt][Xx]$";
+	/** A pattern matching XLT file extension */
+    public static final String XLT_FILE_PATTERN = "^.*\\.[Xx][Ll][Tt]$";
 
 	/** A value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";

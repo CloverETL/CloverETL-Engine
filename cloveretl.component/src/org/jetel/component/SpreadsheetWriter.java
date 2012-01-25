@@ -322,8 +322,17 @@ public class SpreadsheetWriter extends Node {
 			}
 		}
 		
-		if (templateFileURL!=null && fileURL!=null) {
-			if (resolveFormat(formatterType, fileURL)!=resolveTemplateFormat(formatterType, templateFileURL)) {
+		SpreadsheetFormat fileFormat = resolveFormat(formatterType, fileURL);
+		SpreadsheetFormat templateFormat = resolveTemplateFormat(formatterType, templateFileURL);
+		
+		if (fileURL!=null && fileFormat==null) {
+			status.add(new ConfigurationProblem("Unsupported format of ouput file!",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		} else if (templateFileURL!=null && templateFormat==null) {
+			status.add(new ConfigurationProblem("Unsupported format of template file!",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		} else if (templateFileURL!=null && fileURL!=null) {
+			if (fileFormat!=templateFormat) {
 				status.add(new ConfigurationProblem("Formats of template and an output file must match!",
 						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
@@ -368,19 +377,64 @@ public class SpreadsheetWriter extends Node {
 		prepareWriter();
 	}
 
-	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
-		if ((format == SpreadsheetFormat.AUTO && fileURL.matches(SpreadsheetFormatter.XLSX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
-			return SpreadsheetFormat.XLSX;
+	private static String fileFormatToPattern(SpreadsheetFormat spreadsheetFormat) {
+		if (spreadsheetFormat == SpreadsheetFormat.XLS) {
+			return SpreadsheetFormatter.XLS_FILE_PATTERN;
+		} else if (spreadsheetFormat == SpreadsheetFormat.XLSX) {
+			return SpreadsheetFormatter.XLSX_FILE_PATTERN;
 		} else {
+			return null;
+		}
+	}
+	
+	private static String fileTemplateFormatToPattern(SpreadsheetFormat spreadsheetFormat) {
+		if (spreadsheetFormat == SpreadsheetFormat.XLS) {
+			return SpreadsheetFormatter.XLT_FILE_PATTERN;
+		} else if (spreadsheetFormat == SpreadsheetFormat.XLSX) {
+			return SpreadsheetFormatter.XLTX_FILE_PATTERN;
+		} else {
+			return null;
+		}
+	}
+	
+	private static boolean excelFileFormatMatches(SpreadsheetFormat format, String fileURL, SpreadsheetFormat expectedFormat) {
+		String spreadsheetFormatPattern = fileFormatToPattern(expectedFormat);
+		if (spreadsheetFormatPattern==null) {
+			return false;
+		}
+		return ((format == SpreadsheetFormat.AUTO && fileURL!=null && fileURL.matches(spreadsheetFormatPattern)) || format == expectedFormat);
+	}
+	
+	private static boolean excelTemplateFileFormatMatches(SpreadsheetFormat format, String fileURL, SpreadsheetFormat expectedFormat) {
+		String spreadsheetFormatPattern = fileTemplateFormatToPattern(expectedFormat);
+		if (spreadsheetFormatPattern==null) {
+			return false;
+		}
+		return ((format == SpreadsheetFormat.AUTO && fileURL!=null && fileURL.matches(spreadsheetFormatPattern)) || format == expectedFormat);
+	}
+	
+	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
+		if (excelFileFormatMatches(format, fileURL, SpreadsheetFormat.XLSX)) {
+			return SpreadsheetFormat.XLSX;
+		} else if (excelFileFormatMatches(format, fileURL, SpreadsheetFormat.XLS)) {
 			return SpreadsheetFormat.XLS;
+		} else {
+			return null;
 		}
 	}
 	
 	public static SpreadsheetFormat resolveTemplateFormat(SpreadsheetFormat format, String templateFileURL) {
-		if ((format == SpreadsheetFormat.AUTO && templateFileURL.matches(SpreadsheetFormatter.XLTX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
+		if (excelTemplateFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLSX)) {
 			return SpreadsheetFormat.XLSX;
-		} else {
+		} else if (excelTemplateFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLS)) {
 			return SpreadsheetFormat.XLS;
+		//we also allow files which are not real template spreadsheets, but only ordinary XLS(X) files
+		} else if (excelFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLSX)) {
+			return SpreadsheetFormat.XLSX;
+		} else if (excelFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLS)) {
+			return SpreadsheetFormat.XLS;
+		} else {
+			return null;
 		}
 	}
 
