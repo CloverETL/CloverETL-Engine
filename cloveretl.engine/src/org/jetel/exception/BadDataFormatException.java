@@ -44,6 +44,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     
     private int fieldNumber=-1;
     
+    private String fieldName = null;
+    
     private String additionalMessage;
     
     private BadDataFormatException next = null;
@@ -127,23 +129,33 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         	ret.append(additionalMessage);
         }
         
-        if(fieldNumber > -1) {
-            ret.append(" in field #");
-            ret.append(fieldNumber + 1);
-        }
-        
         if(recordNumber > -1) {
-            ret.append(" of record #");
+            ret.append(" in record ");
             ret.append(recordNumber);
         }
         
+        if(fieldNumber > -1) {
+            ret.append(", field ");
+            ret.append(fieldNumber + 1);
+        }
+        
+        if (fieldName != null) {
+        	ret.append(":");
+            ret.append(fieldName);
+        }
+        
+//        if(recordNumber > -1) {
+//            ret.append(" of record #");
+//            ret.append(recordNumber);
+//        }
+        
         if (recordName != null) {
-        	ret.append(" of metadata ");
+        	ret.append(", metadata:");
         	ret.append(recordName);
         }
         
         if(offendingValue != null) {
-            ret.append(", value: '");
+            ret.append("; value: '");
             ret.append(offendingValue);
             ret.append("'");
         }
@@ -165,6 +177,14 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 
     public void setRecordNumber(int recordNumber) {
         this.recordNumber = recordNumber;
+    }
+    
+    public String getFieldName() {
+    	return fieldName;
+    }
+    
+    public void setFieldName(String fieldName) {
+    	this.fieldName = fieldName;
     }
 
     public void setAdditionalMessage(String additionalMessage) {

@@ -64,6 +64,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         exception.setRecordNumber(recordNumber);
         if (record != null) {
         	exception.setRecordName(record.getMetadata().getName());
+        	exception.setFieldName(record.getField(fieldNumber).getMetadata().getName());
         }
         if (this.exception == null) {
         	this.exception = exception;
