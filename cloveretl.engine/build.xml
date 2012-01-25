@@ -1001,6 +1001,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="etlenvironment" value="engine"/>
 		</ant>
 	</target>
 	
@@ -1015,6 +1016,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="etlenvironment" value="engine"/>
 		</ant>
 	</target>
 
@@ -1029,6 +1031,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="etlenvironment" value="engine"/>
 		</ant>
 	</target>
 	
