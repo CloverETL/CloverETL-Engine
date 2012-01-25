@@ -50,7 +50,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 5 May 2010
  */
-public class ByteBufferParser implements Parser {
+public class ByteBufferParser extends AbstractParser {
 
 	ReadableByteChannel reader;
 	/*

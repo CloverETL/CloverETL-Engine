@@ -57,7 +57,7 @@ import org.jetel.util.string.StringUtils;
  *@see 	      org.jetel.data.Defaults
  * @revision    $Revision$
  */
-public class DelimitedDataParser implements Parser {
+public class DelimitedDataParser extends AbstractParser {
 
 	static Log logger = LogFactory.getLog(DelimitedDataParser.class);
 	

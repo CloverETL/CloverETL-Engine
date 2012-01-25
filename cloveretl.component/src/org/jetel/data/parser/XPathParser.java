@@ -73,7 +73,7 @@ import org.xml.sax.XMLReader;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @created 20.5.2007
  */
-public class XPathParser implements Parser {
+public class XPathParser extends AbstractParser {
 
 	//                                                        str1 =     "|'   str2    "|'
 	private final static Pattern NAMESPACE = Pattern.compile("(.+)[=]([\"]|['])(.+)([\"]|['])$");

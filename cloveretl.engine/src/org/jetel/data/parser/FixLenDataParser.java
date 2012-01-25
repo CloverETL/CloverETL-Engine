@@ -42,7 +42,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/05/06  
  */
-public abstract class FixLenDataParser implements TextParser {
+public abstract class FixLenDataParser extends AbstractParser implements TextParser {
 
 	protected IParserExceptionHandler exceptionHandler = null;
 

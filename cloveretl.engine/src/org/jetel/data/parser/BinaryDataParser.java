@@ -46,7 +46,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @author pnajvar
  * 
  */
-public class BinaryDataParser implements Parser {
+public class BinaryDataParser extends AbstractParser {
 
 	ReadableByteChannel reader;
 	/*

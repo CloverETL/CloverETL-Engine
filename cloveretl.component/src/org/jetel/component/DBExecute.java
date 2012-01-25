@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -623,7 +622,7 @@ public class DBExecute extends Node {
 		try {
     		if (channelIterator != null) {
     			DataRecord statementRecord;
-    			ReadableByteChannel tmp;//TODO remove it !!!!!!
+    			Object tmp;//TODO remove it !!!!!!
     			while (channelIterator.hasNext()) {
     				tmp = channelIterator.next();
     				if (tmp == null) break;

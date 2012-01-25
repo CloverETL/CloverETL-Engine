@@ -63,7 +63,7 @@ import org.jetel.util.string.StringUtils;
  * 
  * @created 11 Aug 2011
  */
-public abstract class AbstractSpreadsheetParser implements Parser {
+public abstract class AbstractSpreadsheetParser extends AbstractParser {
 	final static Log LOGGER = LogFactory.getLog(AbstractSpreadsheetParser.class);
 
 	protected static final String DEFAULT_SHEET_NUMBER = "0";
