@@ -83,7 +83,7 @@ public class TLFunctionPluginRepository {
      */
 	public static Map<String,List<TLFunctionDescriptor>> getAllFunctions() {
 		if (consolidatedFunctions == null) {
-			synchronized (consolidatedFunctions) {
+			synchronized (TLFunctionPluginRepository.class) {
 				if (consolidatedFunctions == null) {
 					consolidatedFunctions = new TreeMap<String, List<TLFunctionDescriptor>>();
 		
