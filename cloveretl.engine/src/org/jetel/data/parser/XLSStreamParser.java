@@ -719,7 +719,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			}
 			CellRecord cellRecord = "Unknown".equals(cellType) ? null : (CellRecord) record;
 			String cellCoordinates = record == null ? "Unknown" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
-			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " + cellType), 
+			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " + cellType + " in " + cellCoordinates), 
 					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
 		}
 
