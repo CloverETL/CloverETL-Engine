@@ -47,6 +47,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SpreadsheetIndexIterator;
@@ -333,8 +334,17 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
 			if (group.getCloverField() != XLSMapping.UNDEFINED || group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
-				processFieldMapping(group.getCloverField(), mapping, group);
-				processFieldMapping(group.getFormatField(), formatMapping, group);
+				DataFieldMetadata field = metadata.getField(group.getCloverField());
+				if (field!=null) {
+					if (!field.isAutoFilled()) {
+						processFieldMapping(group.getCloverField(), mapping, group);
+						processFieldMapping(group.getFormatField(), formatMapping, group);
+					} else {
+						LOGGER.warn("Mapping on field \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
+					}
+				} else {
+					LOGGER.warn("There is no field with number " + group.getCloverField() + " in output metadata");
+				}
 			}
 		}
 	}
@@ -421,6 +431,16 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 						if (cloverIndex == null) {
 							cloverIndex = labelsMap.get(header);
 						}
+						if (cloverIndex!=null) {
+							DataFieldMetadata field = metadata.getField(cloverIndex);
+							if (field!=null) {
+								if (field.isAutoFilled()) {
+									LOGGER.warn("Mapping on field with name or label \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
+									continue;
+								}
+							}
+						}
+						
 						if (cloverIndex == null) {
 							if (normalizedHeader.equals(header)) {
 								LOGGER.warn("There is no field with name or label \"" + header + "\" in output metadata");
@@ -473,15 +493,37 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			Collections.sort(mappedCells, HORIZONTAL_CELL_ORDER_COMPARATOR);
 		}
 		
-		int nextUnusedField = unusedFields.nextSetBit(0);
+		int nextUnusedField = getNextUnusedFieldWithoutAutofilling(0);
+
 		for (CellMappedByOrder cell : mappedCells) {
 			if (nextUnusedField < 0) {
 				throw new ComponentNotReadyException("Invalid cells mapping by order! There are more cells mapped by order then unused metadata fields.");
 			}
 			processFieldMapping(nextUnusedField, mapping, cell.row, cell.column, cell.group);
 			processFieldMapping(cell.group.getFormatField(), formatMapping, cell.row, cell.column, cell.group);
-			nextUnusedField = unusedFields.nextSetBit(nextUnusedField);
+			nextUnusedField = getNextUnusedFieldWithoutAutofilling(nextUnusedField);
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	private int getNextUnusedFieldWithoutAutofilling(int lastUsedFieldIndex) {
+		int nextUnusedField = unusedFields.nextSetBit(lastUsedFieldIndex);
+		DataFieldMetadata field = metadata.getField(nextUnusedField);
+		while (nextUnusedField>=0 && !fieldNotAutoFilled(field)) {
+			nextUnusedField = unusedFields.nextSetBit(nextUnusedField+1);
+			field = metadata.getField(nextUnusedField);
+		}
+		return nextUnusedField;
+	}
+
+	/**
+	 * @param field
+	 * @return
+	 */
+	private boolean fieldNotAutoFilled(DataFieldMetadata field) {
+		return field!=null && !field.isAutoFilled();
 	}
 
 	/**
