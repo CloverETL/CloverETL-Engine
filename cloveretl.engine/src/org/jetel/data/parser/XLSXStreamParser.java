@@ -503,7 +503,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 		public void finishRecord() {
 			for (int i = currentParseRow + 1; i <= recordEndRow; i++) {
-				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
+				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length, true);
 			}
 		}
 
@@ -548,7 +548,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			int shiftedColumnIndex = columnIndex - parent.mappingMinColumn;
 			int mappingRow = currentParseRow - recordStartRow;
 
-			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex);
+			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex, false);
 			lastColumn = shiftedColumnIndex;
 			
 			CellValue cellValue = new CellValue(-1, value, cellType, formulaType, styleIndex);
@@ -578,12 +578,12 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		public void endRow() {
 			super.endRow();
 			if (!skipRecords && currentParseRow >= recordStartRow) {
-				handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length);
+				handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length, false);
 			}
 			lastColumn = -1;
 		}
 
-		private void handleMissingCells(int mappingRow, int firstColumn, int lastColumn) {
+		private void handleMissingCells(int mappingRow, int firstColumn, int lastColumn, boolean recordOverflow) {
 			int[] mappingPart = parent.mapping[mappingRow];
 			int cloverFieldIndex;
 			for (int i = firstColumn + 1; i < lastColumn; i++) {
@@ -591,8 +591,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
-						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
-								". Occurred in "), record, cloverFieldIndex, null, null);
+						if (recordOverflow) {
+							parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+									". Occurred in "), record, cloverFieldIndex, null, null);
+						}
 					} catch (BadDataFormatException e) {
 						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() + 
 								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
@@ -649,7 +651,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				String cellCoordinates = SpreadsheetUtils.getColumnReference(lastColumn + parent.mappingMinColumn) + String.valueOf(currentParseRow);
 //				parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n"),
 //						record, cloverFieldIndex, cellCoordinates, value);
-				parent.handleException(new BadDataFormatException(ex1.getMessage()), record, cloverFieldIndex, cellCoordinates, value);
+				parent.handleException(new BadDataFormatException(ex1.getMessage() + " in " + cellCoordinates), record, cloverFieldIndex, cellCoordinates, value);
 			}
 		}
 

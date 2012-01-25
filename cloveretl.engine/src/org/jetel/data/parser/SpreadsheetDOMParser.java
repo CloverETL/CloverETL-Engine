@@ -298,13 +298,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 					record.getField(cloverFieldIndex).setNull(true);
 				} else {
 //					throw e;
-					String errorMessage = "Cannot get " + expectedType + " value from cell of type " + cellTypeToString(cell.getCellType());
+//					String errorMessage = "Cannot get " + expectedType + " value from cell of type " + cellTypeToString(cell.getCellType());
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
 					} catch (Exception ex) {
 					}
 					String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
-					handleException(new BadDataFormatException(errorMessage), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
+					handleException(new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " + 
+							cellTypeToString(cell.getCellType()) + " in " + cellCoordinates), record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell));
 				}
 			}
 //		} catch (RuntimeException exception) { // exception when trying get date or number from a different cell type
