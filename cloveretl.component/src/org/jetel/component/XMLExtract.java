@@ -29,8 +29,6 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,8 +37,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -77,7 +75,6 @@ import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
-import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -1900,7 +1897,7 @@ public class XMLExtract extends Node {
 		while (readableChannelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
-			stream = readableChannelIterator.next();
+			stream = readableChannelIterator.nextChannel();
 			if (stream == null) continue; // if record no record found
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			File tmpFile = new File(autoFilling.getFilename());

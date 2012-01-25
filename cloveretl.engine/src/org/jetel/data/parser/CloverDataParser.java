@@ -62,7 +62,7 @@ import org.jetel.util.primitive.BitArray;
  * @since Oct 13, 2006
  *
  */
-public class CloverDataParser implements Parser {
+public class CloverDataParser extends AbstractParser {
 
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 

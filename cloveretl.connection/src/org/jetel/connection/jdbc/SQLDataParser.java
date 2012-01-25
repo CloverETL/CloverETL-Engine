@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -63,7 +63,7 @@ import org.jetel.util.string.StringUtils;
  *
  * @since Jul 21, 2008
  */
-public class SQLDataParser implements Parser {
+public class SQLDataParser extends AbstractParser {
 	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;

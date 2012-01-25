@@ -21,7 +21,6 @@ package org.jetel.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -263,21 +262,21 @@ public class MultiFileReader {
 		
 		skippedInSource = 0;
 		// next source
-		ReadableByteChannel stream = null;
+		Object source = null;
 		//TODO close channel
 		while (channelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
 			try {
-				stream = channelIterator.next();
-				if (stream == null) continue; // if record no record found
+				source = channelIterator.next();
+				if (source == null) continue; // if record no record found
 				autoFilling.setFilename(channelIterator.getCurrentFileName());
 				File tmpFile = new File(autoFilling.getFilename());
 				long timestamp = tmpFile.lastModified();
 				autoFilling.setFileSize(tmpFile.length());
 				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
 				iSource++;
-				parser.setDataSource(stream);
+				parser.setDataSource(source);
 				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				Object sourcePosition;
 				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {

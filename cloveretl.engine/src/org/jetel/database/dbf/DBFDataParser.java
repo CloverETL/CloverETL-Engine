@@ -29,7 +29,7 @@ import java.nio.charset.CharsetDecoder;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -47,7 +47,7 @@ import org.jetel.util.string.StringUtils;
  * Preferences - Java - Code Generation - Code and Comments
  */
 
-public class DBFDataParser implements Parser {
+public class DBFDataParser extends AbstractParser {
 
     private static final String METADATA_PROPERTY_CHARSET="charset";
     

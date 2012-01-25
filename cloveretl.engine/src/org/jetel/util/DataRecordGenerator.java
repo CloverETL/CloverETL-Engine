@@ -29,6 +29,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
@@ -56,7 +57,7 @@ import org.jetel.util.string.StringUtils;
  * @author Martin Varecha <martin.varecha@javlinconsulting.cz> (c) JavlinConsulting s.r.o. www.javlinconsulting.cz
  * @created Nov 9, 2007
  */
-public class DataRecordGenerator implements Parser {
+public class DataRecordGenerator extends AbstractParser {
 
 	static Log logger = LogFactory.getLog(DataRecordGenerator.class);
 
