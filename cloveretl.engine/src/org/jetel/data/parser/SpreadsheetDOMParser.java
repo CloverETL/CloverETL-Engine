@@ -187,16 +187,17 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			if (nextRecordStartRow > lastLine) {
 				return null;
 			}
-			return parse(record, nextRecordStartRow, mappingMinColumn);
+			return parse(record, nextRecordStartRow, mappingMinColumn, false);
 		} else {
-			if (nextRecordStartRow > lastLine - mapping[0].length + 1) {
+//			if (nextRecordStartRow > lastLine - mapping[0].length + 1) {
+			if (nextRecordStartRow > lastLine) {
 				return null;
 			}
-			return parse(record, mappingMinRow, nextRecordStartRow);
+			return parse(record, mappingMinRow, nextRecordStartRow, true);
 		}
 	}
 
-	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn) {
+	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn, boolean horizontal) {
 		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];
 			int[] formatRecordRow = formatMapping != null ? formatMapping[mappingRowIndex] : null;
@@ -211,11 +212,11 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			int cloverFieldIndex;
 			for (int column = startColumn; column < recordRow.length + startColumn; column++) {
 				if ((cloverFieldIndex = recordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
-					fillCloverField(row.getCell(column), record, cloverFieldIndex);					
+					fillCloverField(row.getCell(column), record, cloverFieldIndex, column, horizontal);					
 				}
 				if (formatRecordRow != null) {
 					if ((cloverFieldIndex = formatRecordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
-						fillFormatField(row.getCell(column), record, cloverFieldIndex);					
+						fillFormatField(row.getCell(column), record, cloverFieldIndex, column, horizontal);					
 					}
 				}
 			}
@@ -246,10 +247,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		}
 	}
 
-	private void fillCloverField(Cell cell, DataRecord record, int cloverFieldIndex) {
+	private void fillCloverField(Cell cell, DataRecord record, int cloverFieldIndex, int currentParseRow, boolean horizontal) {
 		if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
 			try {
 				record.getField(cloverFieldIndex).setNull(true);
+				if (currentParseRow > lastLine && horizontal) {
+					handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+							". Occurred"), record, cloverFieldIndex, null, null);
+				}
 				return;
 			} catch (BadDataFormatException e) {
 				handleException(new BadDataFormatException("There is no data cell for field. Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
@@ -332,11 +337,15 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		}
 	}
 
-	private void fillFormatField(Cell cell, DataRecord record, int cloverFieldIndex) {
+	private void fillFormatField(Cell cell, DataRecord record, int cloverFieldIndex, int currentParseRow, boolean horizontal) {
 		String formatString = cell != null ? cell.getCellStyle().getDataFormatString() : null;
 		try {
 			// formatString may be null, or namely "GENERAL"
 			record.getField(cloverFieldIndex).setValue(formatString);
+			if (currentParseRow > lastLine && horizontal) {
+				handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+						". Occurred"), record, cloverFieldIndex, null, null);
+			}
 		} catch (RuntimeException exception) {
 			String errorMessage = "Failed to set cell format to field; cause: " + exception;
 			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
