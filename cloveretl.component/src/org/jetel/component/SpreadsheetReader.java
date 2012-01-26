@@ -318,7 +318,7 @@ public class SpreadsheetReader extends Node {
 				logging = true;
 			} else {
 				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": Error port metadata have invalid format " +
-            			"(expected data fields - integer (record number), integer (field number), string (cell coordinates), string (offending value), string (error message)");
+            			"(expected data fields - integer (record number), string (cell coordinates), string (offending value), string (field name), string (error message)");
 			}
 		}
 		
