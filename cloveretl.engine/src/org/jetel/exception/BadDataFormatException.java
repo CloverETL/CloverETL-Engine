@@ -140,8 +140,9 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         }
         
         if (fieldName != null) {
-        	ret.append(":");
+        	ret.append(" (\"");
             ret.append(fieldName);
+            ret.append("\")");
         }
         
 //        if(recordNumber > -1) {
@@ -150,8 +151,9 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 //        }
         
         if (recordName != null) {
-        	ret.append(", metadata:");
+        	ret.append(", metadata (\"");
         	ret.append(recordName);
+        	ret.append("\")");
         }
         
         if(offendingValue != null) {
