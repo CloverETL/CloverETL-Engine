@@ -148,6 +148,7 @@ public class MultiFileReader {
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(dictionary);
     	channelIterator.setPropertyRefResolver(propertyRefResolve);
+		channelIterator.setFileSourcePreferred(parser.isFileSourcePreferred());
     }
     
     /**
