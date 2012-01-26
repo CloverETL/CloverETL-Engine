@@ -63,6 +63,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private int nextRecordStartRow;
 	/** last row or last column in sheet (depends on orientation) */
 	private int lastLine;
+	private int mappingModulo;
 	
 	private String password;
 
@@ -130,10 +131,11 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		} else {
 			for (Row row : sheet) {
 				if (row.getLastCellNum() - 1 > lastLine) { //
-					lastLine = row.getLastCellNum() - 1;
+					lastLine = row.getLastCellNum() - 1; 
 				}
 			}
 		}
+		mappingModulo = lastLine % mapping.length;
 		nextRecordStartRow = startLine;
 		return true;
 	}
@@ -183,22 +185,27 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.setToNull();
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-//			if (nextRecordStartRow > lastLine - mapping.length + 1) {
-			if (nextRecordStartRow > lastLine) {
+			if (nextRecordStartRow > lastLine - mapping.length + 1) {
+				if (mappingModulo > 0) {
+					return parse(record, nextRecordStartRow, mappingMinColumn, mappingModulo, false);
+				}
 				return null;
 			}
-			return parse(record, nextRecordStartRow, mappingMinColumn, false);
+			return parse(record, nextRecordStartRow, mappingMinColumn, 0, false);
 		} else {
-//			if (nextRecordStartRow > lastLine - mapping[0].length + 1) {
-			if (nextRecordStartRow > lastLine) {
+			if (nextRecordStartRow > lastLine - mapping[0].length + 1) {
+				if (mappingModulo > 0) {
+					return parse(record, mappingMinRow, nextRecordStartRow, mappingModulo, true);
+				}
 				return null;
 			}
-			return parse(record, mappingMinRow, nextRecordStartRow, true);
+			return parse(record, mappingMinRow, nextRecordStartRow, 0, true);
 		}
 	}
 
-	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn, boolean horizontal) {
-		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
+	private DataRecord parse(DataRecord record, int recordStartRow, int startColumn, int mappingRowStart, boolean horizontal) {
+//		for (int mappingRowIndex = 0; mappingRowIndex < mapping.length; mappingRowIndex++) {
+		for (int mappingRowIndex = mappingRowStart; mappingRowIndex < mapping.length; mappingRowIndex++) {
 			int[] recordRow = mapping[mappingRowIndex];
 			int[] formatRecordRow = formatMapping != null ? formatMapping[mappingRowIndex] : null;
 			Row row = sheet.getRow(recordStartRow + mappingRowIndex);
