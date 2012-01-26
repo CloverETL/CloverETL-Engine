@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Automatically generated from database jdbc:mysql://koule:3306/test -->
+<Record name="customer" type="delimited">
+	<Field name="User" type="string" nullable="yes" delimiter="," />
+	<Field name="UserID" type="integer" nullable="yes" delimiter="," />
+	<Field name="Name" type="string" nullable="yes" delimiter="," />
+	<Field name="Surname" type="string" nullable="yes" delimiter="," />
+	<Field name="Address" type="string" nullable="yes" delimiter="\n" />
+</Record>
