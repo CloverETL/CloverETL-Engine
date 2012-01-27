@@ -553,7 +553,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void createHeaderRegion() {
 		XYRange headerXYRange = mappingStats.getHeaderXYRange();
 		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
-		int headerY2PlusSkip = transformations.maximum(headerXYRange.y2, firstRecordXYRange.y2 - mappingInfo.getStep());
+		int headerY2PlusSkip = firstRecordXYRange.y2 - mappingInfo.getStep();
 		int rows = transformations.translateXYtoRowNumber(headerXYRange.x2, headerY2PlusSkip);
 		int columns = transformations.translateXYtoColumnNumber(headerXYRange.x2, headerY2PlusSkip);
 		createRegion(0, 0, rows, columns);
