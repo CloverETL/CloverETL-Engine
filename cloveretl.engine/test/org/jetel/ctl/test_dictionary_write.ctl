@@ -1,7 +1,8 @@
+string assignmentReturnValue;
 
 function integer transform() {
 
-	dictionary.s = "Guil";
+	assignmentReturnValue = (dictionary.s = "Guil");
 	dictionary.i = 831 + 1;
 	dictionary.l = dshift( 54 ); 
 	dictionary.d = dictionary.d621;
