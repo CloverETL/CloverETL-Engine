@@ -18,12 +18,12 @@
  */
 package org.jetel.ctl;
 
+import java.util.AbstractList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.RandomAccess;
 
-import org.jetel.util.string.CloverString;
+import org.jetel.data.ListDataField;
 
 /**
  * The wrapper converts CharSequences into Strings.
@@ -31,14 +31,19 @@ import org.jetel.util.string.CloverString;
  * It is used to enable passing lists in input/output records
  * by reference.
  * 
- * FIXME removing elements by value will not work as expected.
+ * It should hide any differences between
+ * {@link ListDataField}'s ListDataFieldView
+ * and a standard implementation of a List interface.
+ * 
+ * Note that this could mean different handling of equals()
+ * on DataFields.
  * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 23.1.2012
  */
-public class ListFieldWrapper<T> implements List<T> {
+public class ListFieldWrapper<T> extends AbstractList<T> implements RandomAccess {
 	
 	private List<T> parent;
 	
@@ -46,7 +51,7 @@ public class ListFieldWrapper<T> implements List<T> {
 	 * @param parent
 	 */
 	@SuppressWarnings("unchecked")
-	public ListFieldWrapper(List<Object> parent) {
+	public ListFieldWrapper(Object parent) {
 		if (parent == null) {
 			throw new NullPointerException("parent");
 		}
@@ -57,14 +62,6 @@ public class ListFieldWrapper<T> implements List<T> {
 	private static <T> T toCTL(T o) {
 		if (o instanceof CharSequence) {
 			return (T) o.toString(); // convert CharSequences to Strings
-		}
-		return o;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> T fromCTL(T o) {
-		if (o instanceof String) {
-			return (T) new CloverString((String) o); // convert CharSequences to Strings
 		}
 		return o;
 	}
@@ -96,58 +93,28 @@ public class ListFieldWrapper<T> implements List<T> {
 	}
 
 	@Override
-	public boolean contains(Object o) {
-		return parent.contains(fromCTL(o));
-	}
-
-	@Override
-	public Iterator<T> iterator() {
-		return listIterator();
-	}
-
-	@Override
-	public Object[] toArray() {
-		return parent.toArray();
-	}
-
-	@Override
-	public <S> S[] toArray(S[] a) {
-		return parent.toArray(a);
-	}
-
-	@Override
 	public boolean add(T e) {
 		return parent.add(e); // no need to convert
 	}
 
 	@Override
 	public boolean remove(Object o) {
-		return parent.remove(fromCTL(o));
-	}
-
-	@Override
-	public boolean containsAll(Collection<?> c) {
-		return parent.containsAll(c); // FIXME convert from CTL
+		int index = indexOf(o);
+		if (index >= 0 && index < size()) {
+			parent.remove(index);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public boolean addAll(Collection<? extends T> c) {
-		return parent.addAll(c); // FIXME convert from CTL
+		return parent.addAll(c); // no need to convert
 	}
 
 	@Override
 	public boolean addAll(int index, Collection<? extends T> c) {
-		return parent.addAll(index, c); // FIXME convert from CTL
-	}
-
-	@Override
-	public boolean removeAll(Collection<?> c) {
-		return parent.removeAll(c); // FIXME convert from CTL
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> c) {
-		return parent.retainAll(c); // FIXME convert from CTL
+		return parent.addAll(index, c); // no need to convert
 	}
 
 	@Override
@@ -160,85 +127,4 @@ public class ListFieldWrapper<T> implements List<T> {
 		return toCTL(parent.remove(index));
 	}
 
-	@Override
-	public int indexOf(Object o) {
-		return parent.indexOf(fromCTL(o));
-	}
-
-	@Override
-	public int lastIndexOf(Object o) {
-		return parent.lastIndexOf(fromCTL(o));
-	}
-
-	@Override
-	public ListIterator<T> listIterator() {
-		return new WrapperIterator<T>(parent.listIterator());
-	}
-
-	@Override
-	public ListIterator<T> listIterator(int index) {
-		return new WrapperIterator<T>(parent.listIterator(index));
-	}
-
-	@Override
-	public List<T> subList(int fromIndex, int toIndex) {
-		return parent.subList(fromIndex, toIndex);
-	}
-
-
-	private class WrapperIterator<S> implements ListIterator<S> {
-		
-		private ListIterator<S> parentIterator;
-		
-		private WrapperIterator(ListIterator<S> parentIterator) {
-			this.parentIterator = parentIterator;
-		}
-		
-		@Override
-		public boolean hasNext() {
-			return parentIterator.hasNext();
-		}
-		
-		@Override
-		public S next() {
-			return toCTL(parentIterator.next());
-		}
-		
-		@Override
-		public boolean hasPrevious() {
-			return parentIterator.hasPrevious();
-		}
-		
-		@Override
-		public S previous() {
-			return toCTL(parentIterator.previous());
-		}
-		
-		@Override
-		public int nextIndex() {
-			return parentIterator.nextIndex();
-		}
-		
-		@Override
-		public int previousIndex() {
-			return parentIterator.previousIndex();
-		}
-		
-		@Override
-		public void remove() {
-			parentIterator.remove();
-		}
-		
-		@Override
-		public void set(S e) {
-			parentIterator.set(e); // no need to convert
-		}
-		
-		@Override
-		public void add(S e) {
-			parentIterator.add(e); // no need to convert
-		}
-		
-	}
-	
 }

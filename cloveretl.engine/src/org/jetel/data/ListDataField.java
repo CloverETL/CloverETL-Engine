@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldCardinalityType;
@@ -506,7 +507,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 *
 	 * @created 19 Jan 2012
 	 */
-	private static class ListDataFieldView extends AbstractList<Object> {
+	private static class ListDataFieldView extends AbstractList<Object> implements RandomAccess {
 
 		private ListDataField backedListDataField;
 		
