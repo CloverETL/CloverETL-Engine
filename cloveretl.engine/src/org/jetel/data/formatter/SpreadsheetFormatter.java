@@ -875,7 +875,7 @@ public class SpreadsheetFormatter implements Formatter {
 				if (inputStream==null) {
 					int windowSize;
 					if (mappingInfo!=null) {
-						windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+						windowSize = Math.max(DEFAULT_STREAM_WINDOW_SIZE, mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1);
 					} else {
 						windowSize = DEFAULT_STREAM_WINDOW_SIZE;
 					}
