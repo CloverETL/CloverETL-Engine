@@ -399,12 +399,19 @@ public class CellStyleLibrary {
 				}
 			}
 
-			String formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
+			String formatStr;
 			if (formatStringFromRecord!=null && !"".equals(formatStringFromRecord)) {
 				formatStr = formatStringFromRecord;
 			} else if (fieldMetadata.hasFormat()) {
 				formatStr = fieldMetadata.getFormat(DataFieldFormatType.EXCEL);
+			} else if (fieldMetadata.getType()==DataFieldMetadata.DATE_FIELD) {
+				formatStr = "YYYY-MM-DD";
+			} else if (fieldMetadata.getType()==DataFieldMetadata.DATETIME_FIELD) {
+				formatStr = "YYYY-MM-DD HH:MM";
+			} else {
+				formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
 			}
+
 			
 			short modifiedDataFormat = dataFormat.getFormat(formatStr);
 
