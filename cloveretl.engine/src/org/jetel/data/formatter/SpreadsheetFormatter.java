@@ -541,7 +541,9 @@ public class SpreadsheetFormatter implements Formatter {
 						boldStyle = cellStyleLibrary.findOrCreateBoldStyle(workbook, currentSheetData, range.getRowStart(), range.getColumnStart());
 						boldStyleFound = true;
 					}
-					CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
+					if (headerGroup.getSkip()!=0) {
+						CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
+					}
 				}
 			}
 		}
