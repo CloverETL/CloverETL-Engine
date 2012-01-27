@@ -128,6 +128,9 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			lastLine = sheet.getLastRowNum();
+			if (lastLine == 0 && sheet.getPhysicalNumberOfRows() == 0) {
+				lastLine = -1;
+			}
 		} else {
 			for (Row row : sheet) {
 				if (row.getLastCellNum() - 1 > lastLine) { //
