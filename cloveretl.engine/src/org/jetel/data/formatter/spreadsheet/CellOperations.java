@@ -199,6 +199,9 @@ public class CellOperations {
 	
 	public static void setStringToCellGivenByRowAndColumn(SheetData sheetData, int rowIndex, int columnIndex, String stringValue) {
 		Cell cell = sheetData.getCellByRowAndColumn(rowIndex, columnIndex);
+		if (cell==null) {//this may happen if a record is curved and so it is not desired to create all rows of header before a first record is written 
+			cell = sheetData.createCellAndRefreshLastColumnNumber(rowIndex, columnIndex);
+		}
 		cell.setCellValue(stringValue);
 	}
 

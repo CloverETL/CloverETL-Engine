@@ -277,6 +277,14 @@ public final class SheetData {
 		this.lastColumnNumber = lastColumnNumber;
 	}
 	
+	public Cell createCellAndRefreshLastColumnNumber(int rowIndex, int cellNumber) {
+		Row row = this.getRow(rowIndex);
+		if (row==null) {
+			row = createRow(rowIndex);
+		}
+		return createCellAndRefreshLastColumnNumber(row, cellNumber);
+	}
+
 	public Cell createCellAndRefreshLastColumnNumber(Row row, int cellNumber) {
 		if (cellNumber > getLastColumnNumber()) {
 			setLastColumnNumber(cellNumber);
