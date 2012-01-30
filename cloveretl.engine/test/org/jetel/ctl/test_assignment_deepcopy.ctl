@@ -44,6 +44,9 @@ firstMultivalueOutput testMemberAccessRecord2;
 firstMultivalueOutput testMemberAccessRecord3;
 firstMultivalueOutput[] testMemberAccessRecordList1;
 map[integer, firstMultivalueOutput] testMemberAccessRecordMap1;
+string[] testMemberAccessStringList1;
+date[] testMemberAccessDateList2;
+byte[] testMemberAccessByteList2;
 
 string[] testReturnValue1;
 string[] testReturnValue2;
@@ -153,6 +156,13 @@ function integer transform() {
 	//---------------- JJTMEMBERACCESSEXPRESSION - dictionary -----------
 	dictionary.a = testMemberAccessDate1;
 	dictionary.y = testMemberAccessByte1;
+	
+	testMemberAccessStringList1 = [null, "xx"]; 
+	dictionary.stringList = testMemberAccessStringList1;
+	testMemberAccessDateList2 = [long2date(98000), null, long2date(76000)]; 
+	dictionary.dateList = testMemberAccessDateList2;
+	testMemberAccessByteList2 = [hex2byte("ABCD"), null, hex2byte("EF")];
+	dictionary.byteList = testMemberAccessByteList2;
 	
 	//---------------- JJTMEMBERACCESSEXPRESSION - array access ---------
 	firstMultivalueOutput tmpMemberAccessRecord1;

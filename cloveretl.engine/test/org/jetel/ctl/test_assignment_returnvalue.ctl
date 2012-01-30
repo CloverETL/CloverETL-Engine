@@ -6,7 +6,8 @@ map[integer, firstMultivalueOutput] testReturnValue5;
 string[] testReturnValue6;
 secondMultivalueOutput testReturnValue7;
 thirdMultivalueOutput testReturnValue8;
-date testReturnValue9;
+date testReturnValueDictionary1;
+string[] testReturnValueDictionary2;
 string[] testReturnValue10;
 firstMultivalueOutput testReturnValue11;
 string[] testReturnValue12;
@@ -60,8 +61,10 @@ function integer transform() {
 	($out.thirdMultivalueOutput.* = testReturnValue8.*).modifyRecord();
 	
 	// member access expression - dictionary
-	testReturnValue9 = long2date(12000);
-	(dictionary.a = testReturnValue9).trunc();
+	testReturnValueDictionary1 = long2date(12000);
+	(dictionary.a = testReturnValueDictionary1).trunc();
+	testReturnValueDictionary2 = ["aa", "bb", "cc"];
+	(dictionary.stringList = testReturnValueDictionary2).clear();
 	
 	// member access expression - record
 	testReturnValue10 = ["aa", "bb", "cc"];

@@ -205,6 +205,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("a1992", "date", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
 			g.getDictionary().setValue("bTrue", "boolean", Boolean.TRUE);
 			g.getDictionary().setValue("yFib", "byte", new byte[]{1,2,3,5,8,13,21,34,55,89} );
+			g.getDictionary().setValue("stringList", "list", Arrays.asList("aa", "bb", null, "cc"));
+			g.getDictionary().setContentType("stringList", "string");
+			g.getDictionary().setValue("dateList", "list", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
+			g.getDictionary().setContentType("dateList", "date");
+			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+			g.getDictionary().setContentType("byteList", "byte");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -1139,6 +1145,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"fifth", "sixth", "extra"));
 		assertTrue(getVariable("stringList") != getVariable("stringListCopy"));
 		assertEquals(getVariable("stringList"), getVariable("stringListCopy2"));
+		
+		assertEquals(Arrays.asList(false, null, true), getVariable("booleanList"));
+		assertDeepEquals(Arrays.asList(new byte[] {(byte) 0xAB}, null), getVariable("byteList"));
+		assertDeepEquals(Arrays.asList(null, new byte[] {(byte) 0xCD}), getVariable("cbyteList"));
+		assertEquals(Arrays.asList(new Date(12000), null, new Date(34000)), getVariable("dateList"));
+		assertEquals(Arrays.asList(null, new BigDecimal(BigInteger.valueOf(1234), 2)), getVariable("decimalList"));
+		assertEquals(Arrays.asList(12, null, 34), getVariable("intList3"));
+		assertEquals(Arrays.asList(12l, null, 98l), getVariable("longList"));
+		assertEquals(Arrays.asList(12.34, null, 56.78), getVariable("numberList"));
+		assertEquals(Arrays.asList("aa", null, "bb"), getVariable("stringList2"));
 	}
 	
 	public void test_type_list_field() {
@@ -1217,14 +1233,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} else if (o1 instanceof List) {
 			List<?> l1 = (List<?>) o1;
 			List<?> l2 = (List<?>) o2;
-			assertTrue(l1.size() == l2.size());
+			assertEquals("size", l1.size(), l2.size());
 			for (int i = 0; i < l1.size(); i++) {
 				assertDeepEquals(l1.get(i), l2.get(i));
 			}
 		} else if (o1 instanceof byte[]) {
 			byte[] b1 = (byte[]) o1;
 			byte[] b2 = (byte[]) o2;
-			assertTrue(Arrays.equals(b1, b2));
+			if (b1 != b2) {
+				if (b1 == null || b2 == null) {
+					assertEquals(b1, b2);
+				}
+				assertEquals("length", b1.length, b2.length);
+				for (int i = 0; i < b1.length; i++) {
+					assertEquals(String.format("[%d]", i), b1[i], b2[i]);
+				}
+			}
 		} else if (o1 instanceof CharSequence) {
 			String s1 = o1 != null ? ((CharSequence) o1).toString() : null;
 			String s2 = o2 != null ? ((CharSequence) o2).toString() : null;
@@ -1361,7 +1385,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 
 		{
-			// member access - dictionary
+			// member access - record
 			Date testMemberAccessDate1 = (Date) getVariable("testMemberAccessDate1");
 			byte[] testMemberAccessByte1 = (byte[]) getVariable("testMemberAccessByte1");
 			List<Date> testMemberAccessDateList1 = (List<Date>) getVariable("testMemberAccessDateList1");
@@ -1389,14 +1413,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// dictionary
 			Date dictionaryDate = (Date) graph.getDictionary().getEntry("a").getValue();
 			byte[] dictionaryByte = (byte[]) graph.getDictionary().getEntry("y").getValue();
+			List<String> testMemberAccessStringList1 = (List<String>) getVariable("testMemberAccessStringList1");
+			List<Date> testMemberAccessDateList2 = (List<Date>) getVariable("testMemberAccessDateList2");
+			List<byte[]> testMemberAccessByteList2 = (List<byte[]>) getVariable("testMemberAccessByteList2");
+			List<String> dictionaryStringList = (List<String>) graph.getDictionary().getValue("stringList");
+			List<Date> dictionaryDateList = (List<Date>) graph.getDictionary().getValue("dateList");
+			List<byte[]> dictionaryByteList = (List<byte[]>) graph.getDictionary().getValue("byteList");
 			
 			assertDeepEquals(dictionaryDate, testMemberAccessDate1);
 			assertDeepEquals(dictionaryByte, testMemberAccessByte1);
+			assertDeepEquals(dictionaryStringList, testMemberAccessStringList1);
+			assertDeepEquals(dictionaryDateList, testMemberAccessDateList2);
+			assertDeepEquals(dictionaryByteList, testMemberAccessByteList2);
 			
 			assertDeepCopy(dictionaryDate, testMemberAccessDate1);
 			assertDeepCopy(dictionaryByte, testMemberAccessByte1);
+			assertDeepCopy(dictionaryStringList, testMemberAccessStringList1);
+			assertDeepCopy(dictionaryDateList, testMemberAccessDateList2);
+			assertDeepCopy(dictionaryByteList, testMemberAccessByteList2);
 			
-			// array access - array of records
+			// member access - array of records
 			List<DataRecord> testMemberAccessRecordList1 = (List<DataRecord>) getVariable("testMemberAccessRecordList1");
 			
 			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecordList1.get(0).getField("dateField").getValue());
@@ -1415,7 +1451,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertDeepCopy(testMemberAccessByteList1, testMemberAccessRecordList1.get(1).getField("byteListField").getValue());
 			assertDeepCopy(testMemberAccessRecordList1.get(1), testMemberAccessRecordList1.get(2));
 
-			// array access - map of records
+			// member access - map of records
 			Map<Integer, DataRecord> testMemberAccessRecordMap1 = (Map<Integer, DataRecord>) getVariable("testMemberAccessRecordMap1");
 			
 			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecordMap1.get(0).getField("dateField").getValue());
@@ -1492,9 +1528,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			DataRecord firstMultivalueOutput = outputRecords[4];
 			DataRecord secondMultivalueOutput = outputRecords[5];
 			DataRecord thirdMultivalueOutput = outputRecords[6];
-			Date testReturnValue9 = (Date) getVariable("testReturnValue9");
+			Date testReturnValueDictionary1 = (Date) getVariable("testReturnValueDictionary1");
 			Date dictionaryDate = (Date) graph.getDictionary().getValue("a");
 			Date zeroDate = new Date(0);
+			List<String> testReturnValueDictionary2 = (List<String>) getVariable("testReturnValueDictionary2");
+			List<String> dictionaryStringList = (List<String>) graph.getDictionary().getValue("stringList");
 			List<String> testReturnValue10 = (List<String>) getVariable("testReturnValue10");
 			DataRecord testReturnValue11 = (DataRecord) getVariable("testReturnValue11");
 			List<String> testReturnValue12 = (List<String>) getVariable("testReturnValue12");
@@ -1524,7 +1562,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// member access expression - dictionary
 			// There is no function that could modify a date
 //			assertEquals(zeroDate, dictionaryDate);  
-//			assertFalse(zeroDate.equals(testReturnValue9));
+//			assertFalse(zeroDate.equals(testReturnValueDictionary1));
+			assertFalse(testReturnValueDictionary2.isEmpty());  
+			assertTrue(dictionaryStringList.isEmpty());
 			
 			// member access expression - record
 			assertFalse(testReturnValue10.isEmpty());
@@ -3412,6 +3452,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("aNull", null);
 		check("bNull", null);
 		check("yNull", null);
+		
+		check("stringList", Arrays.asList("aa", "bb", null, "cc"));
+		check("dateList", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
+		@SuppressWarnings("unchecked")
+		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
+		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 	}
 
 	public void test_dictionary_write() {
@@ -3427,6 +3473,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(2, y.length);
 		assertEquals(18, y[0]);
 		assertEquals(-94, y[1]);
+		
+		assertEquals(Arrays.asList("xx", null), graph.getDictionary().getValue("stringList"));
+		assertEquals(Arrays.asList(new Date(98000), null, new Date(76000)), graph.getDictionary().getValue("dateList"));
+		@SuppressWarnings("unchecked")
+		List<byte[]> byteList = (List<byte[]>) graph.getDictionary().getValue("byteList"); 
+		assertDeepEquals(byteList, Arrays.asList(null, new byte[] {(byte) 0xAB, (byte) 0xCD}, new byte[] {(byte) 0xEF}));
+
 		check("assignmentReturnValue", "Guil");
 		
 	}
