@@ -469,18 +469,21 @@ public final class SheetData {
 	
 	public void swapCells(Row row, int sourceCellIndex, int targetCellIndex) {
 		Cell sourceCell = row.getCell(sourceCellIndex);
-//		if (sourceCell==null) {
-//			sourceCell = createCellAndRefreshLastColumnNumber(row, sourceCellIndex);
-//		}
 		Cell targetCell = row.getCell(targetCellIndex);
-//		if (targetCell == null) {
-//			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
-//		}
 		
 		if (sourceCell==null) {
-			copyCell(row, targetCellIndex, sourceCellIndex);
+			if (targetCell!=null) {
+				copyCell(row, targetCellIndex, sourceCellIndex);
+				row.removeCell(targetCell);
+			}
+		} else if (targetCell==null) {
+			if (sourceCell!=null) {
+				copyCell(row, sourceCellIndex, targetCellIndex);
+				row.removeCell(sourceCell);
+			}
+		} else {
+			CellOperations.swapCells(sourceCell, targetCell);
 		}
-		CellOperations.swapCells(sourceCell, targetCell);
 	}
 
 	public void copyCell(Row row, int sourceCellIndex, int targetCellIndex) {
