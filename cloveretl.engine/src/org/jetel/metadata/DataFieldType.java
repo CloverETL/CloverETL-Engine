@@ -18,7 +18,19 @@
  */
 package org.jetel.metadata;
 
+import java.util.Date;
+
+import org.jetel.data.DataField;
+import org.jetel.data.StringDataField;
+import org.jetel.data.primitive.Decimal;
+import org.jetel.util.string.CloverString;
+
+import com.sun.xml.bind.v2.schemagen.xmlschema.List;
+
 /**
+ * Enumeration of all build-in clover data types.
+ * STRING, DATE, NUMBER, INTEGER, LONG, DECIMAL, BYTE, CBYTE, BOOLEAN, LIST and MAP
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -26,9 +38,9 @@ package org.jetel.metadata;
  */
 public enum DataFieldType {
 
-	LIST("list", false, false, 'L'),
+	LIST("list", List.class, false, false, 'L'),
 	
-	STRING("string", false, false, 'S') {
+	STRING("string", CloverString.class, false, false, 'S') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -42,7 +54,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DATE("date", false, true, 'D') {
+	DATE("date", Date.class, false, true, 'D') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -58,7 +70,7 @@ public enum DataFieldType {
 		}
 	},
 
-	NUMBER("number", true, true,'N') {
+	NUMBER("number", Double.class, true, true,'N') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -74,7 +86,7 @@ public enum DataFieldType {
 		}
 	},
 
-	INTEGER("integer", true, true, 'i') {
+	INTEGER("integer", Integer.class, true, true, 'i') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -90,10 +102,9 @@ public enum DataFieldType {
 				return false;
 			}
 		}
-		
 	},
 
-	LONG("long", true, true, 'l') {
+	LONG("long", Long.class, true, true, 'l') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -110,7 +121,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DECIMAL("decimal", true, true, 'd') {
+	DECIMAL("decimal", Decimal.class, true, true, 'd') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -128,7 +139,7 @@ public enum DataFieldType {
 		}
 	},
 
-	BYTE("byte", false, false, 'B') {
+	BYTE("byte", byte[].class, false, false, 'B') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -141,7 +152,7 @@ public enum DataFieldType {
 		}
 	},
 
-	CBYTE("cbyte", false, false, 'Z') {
+	CBYTE("cbyte", byte[].class, false, false, 'Z') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -154,7 +165,7 @@ public enum DataFieldType {
 		}
 	},
 	
-	BOOLEAN("boolean", false, true, 'b') {
+	BOOLEAN("boolean", Boolean.class, false, true, 'b') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -167,18 +178,18 @@ public enum DataFieldType {
 		}
 	},
 
-	NULL("null", false, false, 'n'),
+	NULL("null", Void.class, false, false, 'n'),
 
-	UNKNOWN("unknown", false, false, ' '),
+	UNKNOWN("unknown", Void.class, false, false, ' '),
 
 	@Deprecated
-	SEQUENCE("sequence", false, false, 'q'),
+	SEQUENCE("sequence", Void.class, false, false, 'q'),
 
 	/**
 	 * @deprecated use {@link #DATE} instead
 	 */
 	@Deprecated
-	DATETIME("datetime", false, true, 'T') {
+	DATETIME("datetime", Date.class, false, true, 'T') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -193,42 +204,85 @@ public enum DataFieldType {
 		}
 	};
 
+	//name of type
 	private String name;
+	
+	//internal value class type
+	//StringDataField vs. CloverString
+	//IntegerDataField vs. Integer, ... 
+	private Class<?> clazz;
+	
+	//does the type represent a numeric type?
 	private boolean isNumeric;
-	//type should trimmed by default
+	//should be trimmed by default
 	private boolean isTrimType;
+	//old fashion character identification of a type
 	private char obsoleteIdentifier;
 	
-	/**
-	 * 
-	 */
-	private DataFieldType(String name, boolean isNumeric, boolean isTrimType, char obsoleteIdentifier) {
+	private DataFieldType(String name, Class<?> clazz, boolean isNumeric, boolean isTrimType, char obsoleteIdentifier) {
 		this.name = name;
+		this.clazz = clazz;
 		this.isNumeric = isNumeric;
 		this.isTrimType = isTrimType;
 		this.obsoleteIdentifier = obsoleteIdentifier;
 	}
 
+	/**
+	 * @return name of type
+	 */
 	public String getName() {
 		return name;
 	}
 	
+	/**
+	 * This class is type of internal representation of respective data field.
+	 * For example type {@link #STRING} corresponds with {@link StringDataField}
+	 * and its value is natively managed in a variable typed {@link CloverString}.
+	 * This method returns just the class of the internal value representation of respective {@link DataField}.
+	 * Moreover method {@link DataField#getValue()} returns an instance of this class. 
+	 * @return class of internal value representation of this type (CloverString.class for STRING, Integer.class for INTEGER, ...)
+	 */
+	public Class<?> getInternalValueClass() {
+		return clazz;
+	}
+	
+	/**
+	 * @return true if type is based on numbers
+	 */
 	public boolean isNumeric() {
 		return isNumeric;
 	}
 	
+	/**
+	 * @return true if the type should be trimmed
+	 */
 	public boolean isTrimType() {
 		return isTrimType;
 	}
 	
+	/**
+	 * @param otherType
+	 * @return true if the given type is convertible to this type
+	 */
 	public boolean isSubtype(DataFieldType otherType) {
 		return false;
 	}
 	
+	/**
+	 * @return obsolete characted identification
+	 * @deprecated
+	 */
+	@Deprecated
 	public char getObsoleteIdentifier() {
 		return obsoleteIdentifier;
 	}
 
+	/**
+	 * @param charIdentifier
+	 * @return type based on obsolete character identification
+	 * @deprecated
+	 */
+	@Deprecated
 	public static DataFieldType fromChar(char charIdentifier) {
 		for (DataFieldType dataType : values()) {
 			if (dataType.getObsoleteIdentifier() == charIdentifier) {
@@ -239,6 +293,10 @@ public enum DataFieldType {
 		throw new IllegalArgumentException("Unknown data type '" + charIdentifier + "'.");
 	}
 	
+	/**
+	 * @param name
+	 * @return type based on name
+	 */
 	@SuppressWarnings("deprecation")
 	public static DataFieldType fromName(String name) {
 		//for backward compatibility

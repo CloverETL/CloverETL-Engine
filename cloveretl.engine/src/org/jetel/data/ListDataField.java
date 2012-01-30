@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
+import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -39,7 +40,14 @@ import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
+import sun.awt.util.IdentityArrayList;
+
 /**
+ * This data field implementation represents a list of fields, which are uniformly typed by a simple type
+ * (string, integer, decimal, ...). Lists of lists are not supported. Metadata for this data container
+ * are same as for other data fields, only {@link DataFieldMetadata#getCardinalityType()} method returns
+ * {@link DataFieldCardinalityType#LIST}.
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -49,13 +57,21 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	private static final long serialVersionUID = -3584218178444143371L;
 
+	//representation of nested fields
 	private List<DataField> fields;
 	
+	//size of internal representation of nested fields is managed manually,
+	//since the tail of the list is used also for cached data fields (which are placed in the end)
+	//for example if a field is removed, the field is actually only moved
+	//to the end of the list and size is decremented
 	private int size;
 	
+	//this common attribute of all datafield is actually ingored by list data field
+	//and transparently delegated to the nested fields
 	private boolean plain;
 	
-	private ListDataFieldView listView;
+	//this cached list is returned by #getValue() method
+	private ListDataFieldView<?> listView;
 	
 	// metadata used when creating inner DataFields
 	private DataFieldMetadata singleValueMetadata;
@@ -72,16 +88,19 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		this.singleValueMetadata = fieldMetadata.duplicate();
 		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
 
-		fields = new ArrayList<DataField>();
+		fields = new IdentityArrayList<DataField>();
 		size = 0;
 		this.plain = plain;
-		listView = new ListDataFieldView(this);
+		listView = new ListDataFieldView<Object>(this);
 		
 		//just for sure - this is not common to reset the field in other types of fields
 		//but for the list field it seems to be better to reset it already here explicitly
 		reset();
 	}
 	
+	/**
+	 * @return number of nested fields, 0 for null list
+	 */
 	public int getSize() {
 		return size;
 	}
@@ -119,6 +138,9 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 	}
 	
+	/**
+	 * @return add a reseted/empty field to the end of the list
+	 */
 	public DataField addField() {
 		if (isNull) {
 			setNull(false);
@@ -132,6 +154,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		return result;
 	}
 	
+	/**
+	 * Insert new field to list to the given index.
+	 * @param index index of added field
+	 * @return new inserted field
+	 */
 	public DataField addField(int index) {
 		if (index < 0 || index > size) {
 		    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
@@ -152,10 +179,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 	
 	/**
+	 * Remove the given field from the list.
 	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
 	 * operation.
-	 * @param field
-	 * @return
+	 * @param field the field which is requested be deleted
+	 * @return true if field was removed, false otherwise
 	 */
 	public boolean removeField(DataField field) {
 		if (field == null || isNull) {
@@ -174,10 +202,12 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 	
 	/**
+	 * Remove a field on the given index.
 	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
 	 * operation.
-	 * @param index
-	 * @return
+	 * @param index index of a field, which is requested to be removed 
+	 * @return removed field
+	 * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
 	 */
 	public DataField removeField(int index) {
 		if (index < 0 || index >= size) {
@@ -194,6 +224,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		return DataFieldFactory.createDataField(singleValueMetadata, plain);
 	}
 	
+	/**
+	 * @param index index of requested field
+	 * @return the requested field with the given index
+	 * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
+	 */
 	public DataField getField(int index) {
 		if (index < 0 || index >= size) {
 			if (isNull) {
@@ -205,12 +240,15 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		return fields.get(index);
 	}
 	
+	/**
+	 * Truncate the list to zero size.
+	 */
 	public void clear() {
 		size = 0;
 	}
 	
 	@Override
-	public DataField duplicate() {
+	public ListDataField duplicate() {
 	    ListDataField newListDataField = new ListDataField(metadata, plain);
 	    newListDataField.setNull(isNull);
 	    for (DataField field : this) {
@@ -231,16 +269,20 @@ public class ListDataField extends DataField implements Iterable<DataField> {
         }
 	}
 
+	/**
+	 * Sets the give values to the list. All current values are removed.
+	 * @param values list of values
+	 */
 	public void setValue(List<?> values) {
 		if (values == null) {
 			setNull(true);
 		} else {
 			clear();
+			setNull(false);
 		
 			for (Object value : values) {
 				addField().setValue(value);
 			}
-			setNull(false);
 		}
 	}
 
@@ -273,17 +315,41 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 	}
 
+	/**
+	 * This method returns list of values represented by the list of fields.
+	 * The resulted list is a thin view to the real underlying values.
+	 * All operations above the returned list are transparently applied 
+	 * to this ListDataField.
+	 * For example if a {@link List#add(Object)} is invoked, new data field
+	 * is created and the given value is passed to the new data field.
+	 * Be careful, actually shallow copy of data is returned and all changes
+	 * on the returned list are applied to this {@link ListDataField}.
+	 * @see #getValueDuplicate()
+	 */
 	@Override
-	public List<Object> getValue() {
+	public List<?> getValue() {
 		if (isNull) {
 			return null;
 		} else {
 			return listView;
 		}
 	}
+	
+	/**
+	 * This method is alternative for untyped method {@link #getValue()}
+	 * @param clazz
+	 * @return 
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getValue(Class<T> clazz) {
+		if (metadata.getDataType().getClass() == clazz) {
+			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
+		}
+		return (List<T>) getValue();
+	}
 
 	@Override
-	public Object getValueDuplicate() {
+	public List<?> getValueDuplicate() {
 		if (isNull) {
 			return null;
 		}
@@ -293,6 +359,19 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			result.add(field.getValueDuplicate());
 		}
 		return result;
+	}
+
+	/**
+	 * This method is alternative for untyped method {@link #getValueDuplicate()}
+	 * @param clazz
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getValueDuplicate(Class<T> clazz) {
+		if (metadata.getDataType().getClass() == clazz) {
+			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
+		}
+		return (List<T>) getValueDuplicate();
 	}
 
 	@Override
@@ -373,10 +452,10 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		// clear the list
 		reset();
 
-		if (length == 0) {
+		if (length == -1) {
 			setNull(true);
 		} else {
-			for (int i = 0; i < length - 1; i++) {
+			for (int i = 0; i < length; i++) {
 				addField().deserialize(buffer);
 			}
 			setNull(false);
@@ -385,17 +464,17 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	@Override
 	public boolean equals(Object otherField) {
+	    if (isNull || otherField == null) return false;
 		if (this == otherField) return true;
 	    
         if (otherField instanceof ListDataField) {
-        	ListDataField otherListDataField = (ListDataField) otherField; 
-            if (metadata != otherListDataField.getMetadata()) {
+        	ListDataField otherListDataField = (ListDataField) otherField;
+        	if (otherListDataField.isNull()) {
+        		return false;
+        	}
+            if (!TLUtils.equals(metadata, otherListDataField.getMetadata())) {
                 return false;
             }
-            if (isNull || otherListDataField.isNull()) {
-            	return isNull == otherListDataField.isNull();
-            }
-            
             //size of both lists has to be same
             if (size != otherListDataField.getSize()) {
             	return false;
@@ -416,18 +495,17 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	@Override
 	public int compareTo(Object otherField) {
+		if (isNull) return -1;
+		if (otherField == null) return 1;
 	    if (this == otherField) return 0;
 	    
 	    if (otherField instanceof ListDataField) {
         	ListDataField otherListDataField = (ListDataField) otherField; 
 	    	
-            if (metadata != otherListDataField.getMetadata()) {
+            if (!TLUtils.equals(metadata, otherListDataField.getMetadata())) {
                 throw new RuntimeException("Can't compare - data field lists have different metadata objects assigned!");
             }
             
-            if (isNull) {
-            	return otherListDataField.isNull() ? 0 : -1;
-            }
             if (otherListDataField.isNull()) {
             	return 1;
             }
@@ -507,7 +585,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 *
 	 * @created 19 Jan 2012
 	 */
-	private static class ListDataFieldView extends AbstractList<Object> implements RandomAccess {
+	private static class ListDataFieldView<T> extends AbstractList<T> implements RandomAccess {
 
 		private ListDataField backedListDataField;
 		
@@ -518,13 +596,14 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			this.backedListDataField = backedListDataField;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Object get(int index) {
+		public T get(int index) {
 			if (index < 0 || index >= backedListDataField.size) {
 			    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + backedListDataField.size);
 			}
 			
-			return backedListDataField.getField(index).getValue();
+			return (T) backedListDataField.getField(index).getValue();
 		}
 
 		@Override
@@ -578,34 +657,36 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			return -1;
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
-		public Object set(int index, Object element) {
+		public T set(int index, T element) {
 			if (index < 0 || index >= backedListDataField.size) {
 			    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + backedListDataField.size);
 			}
 
 			DataField field = backedListDataField.fields.get(index);
-			Object oldValue = field.getValue();
+			T oldValue = (T) field.getValueDuplicate();
 			field.setValue(element);
 			return oldValue;
 		}
 		
 		@Override
-		public boolean add(Object e) {
+		public boolean add(T e) {
 			backedListDataField.addField().setValue(e);
 			return true;
 		}
 		
 		@Override
-		public void add(int index, Object element) {
+		public void add(int index, T element) {
 			DataField newField = backedListDataField.addField(index);
 			newField.setValue(element);
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
-		public Object remove(int index) {
+		public T remove(int index) {
 			DataField removedField = backedListDataField.removeField(index);
-			return removedField.getValue();
+			return (T) removedField.getValueDuplicate();
 		}
 
 		@Override
@@ -632,8 +713,8 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 		
 		@Override
-		public boolean addAll(Collection<? extends Object> c) {
-			Iterator<? extends Object> it = c.iterator();
+		public boolean addAll(Collection<? extends T> c) {
+			Iterator<? extends T> it = c.iterator();
 			while (it.hasNext()) {
 				backedListDataField.addField().setValue(it.next());
 			}
@@ -641,12 +722,12 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		}
 
 		@Override
-		public boolean addAll(int index, Collection<? extends Object> c) {
+		public boolean addAll(int index, Collection<? extends T> c) {
 			if (index > backedListDataField.size || index < 0)
 			    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + backedListDataField.size);
 
 			//it is not optimal implementation - but I don't want to extend ListDataField interface more than necessary
-			Iterator<? extends Object> it = c.iterator();
+			Iterator<? extends T> it = c.iterator();
 			while (it.hasNext()) {
 				backedListDataField.addField(index++).setValue(it.next());
 			}

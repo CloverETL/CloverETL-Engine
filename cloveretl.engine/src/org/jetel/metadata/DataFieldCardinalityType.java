@@ -19,7 +19,7 @@
 package org.jetel.metadata;
 
 /**
- * Cardinality type of data field.
+ * Cardinality type of data field - SINGLE, LIST and MAP.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -36,6 +36,10 @@ public enum DataFieldCardinalityType {
 		this.displayName = displayName;
 	}
 	
+	/**
+	 * @param strType
+	 * @return cardinality type based on string without case sensitivity
+	 */
 	public static DataFieldCardinalityType fromString(String strType) {
 		for (DataFieldCardinalityType type : values()) {
 			if (type.name().equalsIgnoreCase(strType)) {
@@ -47,7 +51,7 @@ public enum DataFieldCardinalityType {
 	}
 
 	/**
-	 * @return the display name of the type
+	 * @return the display name of the cardinality type
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -55,7 +59,6 @@ public enum DataFieldCardinalityType {
 	
 	/**
 	 * Returns an array containing all display names.
-	 * 
 	 * @return
 	 */
 	public static String[] getDisplayNames() {

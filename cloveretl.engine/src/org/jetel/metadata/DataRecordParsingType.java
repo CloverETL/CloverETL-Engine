@@ -20,6 +20,9 @@ package org.jetel.metadata;
 
 
 /**
+ * Enumeration of types of flat file parsing.
+ * DELIMITED, FIXEDLEN, MIXED
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -27,12 +30,21 @@ package org.jetel.metadata;
  */
 public enum DataRecordParsingType {
 
+	/**
+	 * Data fields are delimited.
+	 */
 	@SuppressWarnings("deprecation")
 	DELIMITED(DataRecordMetadata.DELIMITED_RECORD),
 	
+	/**
+	 * Data fields are fixed length.
+	 */
 	@SuppressWarnings("deprecation")
 	FIXEDLEN(DataRecordMetadata.FIXEDLEN_RECORD),
 	
+	/**
+	 * Data fields are either delimited or fixed length.
+	 */
 	@SuppressWarnings("deprecation")
 	MIXED(DataRecordMetadata.MIXED_RECORD);
 
@@ -42,14 +54,21 @@ public enum DataRecordParsingType {
 		this.obsoleteIdentifier = obsoleteIdentifier;
 	}
 	
+	/**
+	 * @return obsolete characted identification
+	 * @deprecated
+	 */
+	@Deprecated
 	public char getObsoleteIdnetifier() {
 		return obsoleteIdentifier;
 	}
 	
 	/**
 	 * @param recType
-	 * @return
+	 * @return parsing type based on obsolete character identification
+	 * @deprecated
 	 */
+	@Deprecated
 	public static DataRecordParsingType fromChar(char charIdentifier) {
 		for (DataRecordParsingType flatDataType : values()) {
 			if (flatDataType.obsoleteIdentifier == charIdentifier) {
