@@ -287,7 +287,7 @@ public class SpreadsheetFormatter implements Formatter {
 			throw new IllegalArgumentException(outputDataTarget.getClass() + " not supported as a data target");
 		}
 
-		if (removeSheets) { // remove all sheets in a workbook
+		if (removeSheets && templateWorkbook==null) { // remove all sheets in a workbook
 			// they must be removed from the last sheet to the first sheet, because Workbook
 			// re-indexes sheets with a higher number than the removed one
 			for (int i = workbook.getNumberOfSheets() - 1; i >= 0; --i) {
@@ -789,26 +789,43 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void createWorkbook(URL contextURL, String file) {
 		try {
-			if (templateWorkbook!=null) {
-				createSpreadsheetFileFromTemplate();
-			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 //			if (workbookInputStream.available() > 0) { //did not work reliably for ZIP files => workaround below
 			int firstByte = workbookInputStream.read();
 			workbookInputStream.close();
-			workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
-			if (firstByte>=0) {
+			workbookInputStream=null;
+			boolean fileExistingAndReadable = firstByte>=0;
+			
+			if (fileExistingAndReadable) {
 				if (!createFile) {
-					workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+					if (templateWorkbook!=null && removeSheets) {
+						createNewEmptyWorkbook(contextURL, file);
+					} else {
+						workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
+						workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+					}
 				} else {//ignore an existing file, rewrite it while flushing
-					workbook = newWorkbook(null, formatterType, attitude, mappingInfo); 
+					createNewEmptyWorkbook(contextURL, file); 
 				}
 			} else {
-				workbook = newWorkbook(null, formatterType, attitude, mappingInfo);
+				createNewEmptyWorkbook(contextURL, file);
 			}
 			configureWorkbook();
 		} catch (IOException ioex) {
 			throw new JetelRuntimeException("Problem while reading Excel file " + file);
+		}
+	}
+
+	/**
+	 * @throws IOException
+	 */
+	private void createNewEmptyWorkbook(URL contextURL, String file) throws IOException {
+		if (templateWorkbook!=null) {
+			createSpreadsheetFileFromTemplate();
+			workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
+			workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+		} else {
+			workbook = newWorkbook(null, formatterType, attitude, mappingInfo);
 		}
 	}
 
@@ -828,7 +845,7 @@ public class SpreadsheetFormatter implements Formatter {
 			workbookOutputStream.close();
 		} else if (outputDataTarget instanceof WritableByteChannel) {
 			OutputStream workbookOutputStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
-			workbook.write(workbookOutputStream);
+			templateWorkbook.write(workbookOutputStream);
 			workbookOutputStream.close();
 		}
 	}
