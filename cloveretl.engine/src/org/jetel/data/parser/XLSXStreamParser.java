@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -100,8 +101,12 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	public void init() throws ComponentNotReadyException {
 		xmlInputFactory = XMLInputFactory.newInstance();
 		cellBuffers = parent.new CellBuffers<CellValue>();
+		extraRows = (parent.mapping.length - 1) / parent.mappingInfo.getStep();
 	}
 
+	private int extraRows;
+	private boolean endOfSheet;
+	
 	@Override
 	public DataRecord parseNext(DataRecord record) throws JetelException {
 		sheetContentHandler.setRecordStartRow(nextRecordStartRow);
@@ -112,6 +117,17 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			}
 			if (!staxParser.hasNext() && !sheetContentHandler.isRecordFinished()) {
 				if (!sheetContentHandler.isRecordStarted()) {
+					endOfSheet = true;
+					if (extraRows > 0) {
+						while (!sheetContentHandler.isRecordFinished()) {
+							int row = sheetContentHandler.currentParseRow + 1;
+							sheetContentHandler.startRow(row);
+							sheetContentHandler.endRow();
+							extraRows--;
+						}
+						nextRecordStartRow += parent.mappingInfo.getStep();
+						return record;
+					}
 					return null;
 				}
 				sheetContentHandler.finishRecord();
@@ -231,9 +247,14 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	}
 
 	@Override
-	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
+	public void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
 		try {
-			opcPackage = OPCPackage.open(inputStream);
+			if (inputSource instanceof InputStream) {
+				opcPackage = OPCPackage.open((InputStream) inputSource);
+			} else {
+				File inputFile = (File) inputSource;
+				opcPackage = OPCPackage.open(inputFile.getAbsolutePath());
+			}
 			reader = new XSSFReader(opcPackage);
 			stylesTable = reader.getStylesTable();
 			sharedStringsTable = new ReadOnlySharedStringsTable(opcPackage);
@@ -591,7 +612,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
-						if (recordOverflow) {
+						if (endOfSheet) {
 							parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
 									". Occurred in "), record, cloverFieldIndex, null, null);
 						}

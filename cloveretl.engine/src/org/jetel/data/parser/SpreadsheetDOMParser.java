@@ -18,6 +18,8 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -27,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -34,6 +39,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.exception.BadDataFormatException;
@@ -85,15 +91,22 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	}
 
 	@Override
-	protected void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
+	protected void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
 		try {
+			InputStream inputStream;
+			if (inputSource instanceof InputStream) {
+				inputStream = (InputStream) inputSource;
+			} else {
+				inputStream = new FileInputStream((File) inputSource);
+			}
+			
 			if (!inputStream.markSupported()) {
 				inputStream = new PushbackInputStream(inputStream, 8);
 			}
 			
 			InputStream bufferedStream = null;
 			ExcelType documentType = ExcelUtils.getStreamType(inputStream);
-			if (ExcelUtils.getStreamType(inputStream) == ExcelType.XLS) {
+			if (documentType == ExcelType.XLS) {
 				bufferedStream = ExcelUtils.getBufferedStream(inputStream);
 				inputStream = ExcelUtils.getDecryptedXLSXStream(bufferedStream, password);
 				if (inputStream == null) {
@@ -105,7 +118,17 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				throw new ComponentNotReadyException("Your InputStream was neither an OLE2 stream, nor an OOXML stream");
 			}
 			
-			workbook = WorkbookFactory.create(inputStream);
+			if (inputSource instanceof InputStream) {
+				workbook = WorkbookFactory.create(inputStream);
+			} else {
+				inputStream.close();
+				File inputFile = (File) inputSource;
+				if (documentType == ExcelType.XLS) {
+					workbook = new HSSFWorkbook(new NPOIFSFileSystem(inputFile).getRoot(), true);
+				} else {
+					workbook = new XSSFWorkbook(OPCPackage.open(inputFile.getAbsolutePath()));
+				}
+			}
 		} catch (Exception exception) {
 			throw new ComponentNotReadyException("Error opening the XLS(X) workbook!", exception);
 		}

@@ -19,7 +19,6 @@
 package org.jetel.data.parser;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
@@ -44,7 +43,7 @@ interface SpreadsheetStreamHandler {
 	
 	public String[][] getHeader(int startRow, int startColumn, int endRow, int endColumn) throws ComponentNotReadyException;
 
-	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException;
+	public void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException;
 
 	public boolean setCurrentSheet(int sheetNumber);
 

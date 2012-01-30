@@ -18,6 +18,8 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -80,8 +82,15 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	}
 
 	@Override
-	protected void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
+	protected void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
 		SpreadsheetFormat format;
+		
+		InputStream inputStream;
+		if (inputSource instanceof File) {
+			inputStream = new FileInputStream((File)inputSource);
+		} else {
+			inputStream = (InputStream) inputSource;
+		}
 		
 		if (!inputStream.markSupported()) {
 			inputStream = new PushbackInputStream(inputStream, 8);
@@ -123,7 +132,13 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			}
 		}
 		currentFormat = format;
-		currentHandler.prepareInput(inputStream);
+		
+		if (inputSource instanceof File) {
+			inputStream.close();
+			currentHandler.prepareInput((File) inputSource);
+		} else {
+			currentHandler.prepareInput(inputStream);
+		}
 	}
 
 	@Override

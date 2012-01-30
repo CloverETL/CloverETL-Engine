@@ -367,48 +367,52 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	private void testParsersWithMoreComplexMapping(String xlsFile, String mapping, boolean excludeStreamParser) throws Exception {
 		AbstractSpreadsheetParser parser;
-		for (int skip = 0; skip < 3; skip++) {
-			for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
-				for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-					parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping, stringMetadata));
-					if (parser instanceof SpreadsheetStreamParser && excludeStreamParser) {
-						continue;
-					}
-		
-					//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
-					
-					parser.setSheet("0");
-					parser.init();
-					parser.preExecute();
-					parser.setDataSource(new FileInputStream(file));
-					
-					SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
-					parser.setExceptionHandler(exceptionHandler);
-					
-					DataRecord record = new DataRecord(stringMetadata);
-					record.init();
-					
-					parser.skip(skip);
-					
-					if (skip <= 0) {
+		for (int inputSourceType = 0; inputSourceType < 2; inputSourceType++) {
+			for (int skip = 0; skip < 3; skip++) {
+				for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+					for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+						parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping, stringMetadata));
+						if (parser instanceof SpreadsheetStreamParser && excludeStreamParser) {
+							continue;
+						}
+			
+						//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+						
+						parser.setSheet("0");
+						parser.init();
+						parser.preExecute();
+						parser.setDataSource(inputSourceType == 0 ? new FileInputStream(file) : new File(file));
+						
+						SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+						parser.setExceptionHandler(exceptionHandler);
+						
+						DataRecord record = new DataRecord(stringMetadata);
+						record.init();
+						
+						parser.skip(skip);
+						
+						if (skip <= 0) {
+							parser.parseNext(record);
+							assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
+						}
+						if (skip <= 1) {
+							parser.parseNext(record);
+							assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+						}
+						if (skip <= 2) {
+							parser.parseNext(record);
+							assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
+						}
 						parser.parseNext(record);
-						assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
-					}
-					if (skip <= 1) {
+						assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
 						parser.parseNext(record);
-						assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+						assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
+						assertNull(parser.parseNext(record));
+						
+						parser.close();
+						
+						// !!! TODO !!! input file closed test
 					}
-					if (skip <= 2) {
-						parser.parseNext(record);
-						assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
-					}
-					parser.parseNext(record);
-					assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
-					parser.parseNext(record);
-					assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
-					assertNull(parser.parseNext(record));
-					
-					parser.close();
 				}
 			}
 		}
