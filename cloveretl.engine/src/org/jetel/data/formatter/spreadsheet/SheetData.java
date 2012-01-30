@@ -286,15 +286,19 @@ public final class SheetData {
 	}
 
 	public Cell createCellAndRefreshLastColumnNumber(Row row, int cellNumber) {
+		refreshLastColumnNumber(row, cellNumber);
+		Cell newCell = row.createCell(cellNumber);
+		newCell.setCellType(Cell.CELL_TYPE_BLANK);
+		return newCell;
+	}
+
+	private void refreshLastColumnNumber(Row row, int cellNumber) {
 		if (cellNumber > getLastColumnNumber()) {
 			setLastColumnNumber(cellNumber);
 		}
 		if (getLastCellNumber(row) < cellNumber) {
 			setLastCellNumber(row, cellNumber);
 		}
-		Cell newCell = row.createCell(cellNumber);
-		newCell.setCellType(Cell.CELL_TYPE_BLANK);
-		return newCell;
 	}
 	
 	public void appendEmptyLines(int lineCount) {
@@ -311,20 +315,20 @@ public final class SheetData {
 	}
 	
 	public void insertEmptyOrPreserveRows(int index, int rowCount) {
-		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
-		int columnsToCreate = transformations.translateXYtoColumnNumber(firstRecordXYRange.x2, firstRecordXYRange.y2);
+//		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
+//		int columnsToCreate = transformations.translateXYtoColumnNumber(firstRecordXYRange.x2, firstRecordXYRange.y2);
 		for (int i = 0; i < rowCount; ++i) {
 			int rowIndex = index + i;
 			Row row = getRow(rowIndex);
 			if (row == null) {
 				row = createRow(rowIndex);
 			}
-			for (int j=0; j<columnsToCreate; ++j) {
-				Cell cell = row.getCell(j);
-				if (cell == null) {
-					createCellAndRefreshLastColumnNumber(row, j);
-				}
-			}
+//			for (int j=0; j<columnsToCreate; ++j) {
+//				Cell cell = row.getCell(j);
+//				if (cell == null) {
+//					createCellAndRefreshLastColumnNumber(row, j);
+//				}
+//			}
 		}
 	}
 	
@@ -334,12 +338,14 @@ public final class SheetData {
 			if (row == null) {
 				row = createRow(i);
 			}
-			for (int j=0; j<columnCount; ++j) {
-				Cell cell = row.getCell(index+j);
-				if (cell == null) {
-					createCellAndRefreshLastColumnNumber(row, index+j);
-				}
-			}
+			refreshLastColumnNumber(row, index + columnCount - 1);
+//			for (int j=0; j<columnCount; ++j) {
+//				Cell cell = row.getCell(index+j);
+//				if (cell == null) {
+//					createCellAndRefreshLastColumnNumber(row, index+j);
+//				}
+//			}
+		
 		}
 	}
 	
@@ -463,12 +469,16 @@ public final class SheetData {
 	
 	public void swapCells(Row row, int sourceCellIndex, int targetCellIndex) {
 		Cell sourceCell = row.getCell(sourceCellIndex);
-		if (sourceCell==null) {
-			sourceCell = createCellAndRefreshLastColumnNumber(row, sourceCellIndex);
-		}
+//		if (sourceCell==null) {
+//			sourceCell = createCellAndRefreshLastColumnNumber(row, sourceCellIndex);
+//		}
 		Cell targetCell = row.getCell(targetCellIndex);
-		if (targetCell == null) {
-			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
+//		if (targetCell == null) {
+//			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
+//		}
+		
+		if (sourceCell==null) {
+			copyCell(row, targetCellIndex, sourceCellIndex);
 		}
 		CellOperations.swapCells(sourceCell, targetCell);
 	}
@@ -476,12 +486,14 @@ public final class SheetData {
 	public void copyCell(Row row, int sourceCellIndex, int targetCellIndex) {
 		Cell sourceCell = row.getCell(sourceCellIndex);
 		Cell targetCell = row.getCell(targetCellIndex);
-		if (targetCell == null) {
-			targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
-		}
-		if (sourceCell == null) {
-			targetCell.setCellValue("");
+		if (sourceCell==null) {
+			if (targetCell!=null) {
+				row.removeCell(targetCell);
+			}
 		} else {
+			if (targetCell == null) {
+				targetCell = createCellAndRefreshLastColumnNumber(row, targetCellIndex);
+			}
 			CellOperations.copyCell(sourceCell, targetCell);
 		}
 	}
