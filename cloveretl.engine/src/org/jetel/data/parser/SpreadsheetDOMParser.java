@@ -72,7 +72,8 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private int lastLine;
 	private int[] columnEnds;
 	private int columnOffset;
-	
+
+	private int[] rowIdxBuffer;
 	private boolean[] overFlow;
 	private boolean overLastLine;
 	private boolean stopParsing;
@@ -156,8 +157,13 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			mappingMax = mappingInfo.getStats().getMappingMaxRow();
 			mappingMin = mappingInfo.getStats().getMappingMinRow();
 		} else {
-			mappingMax = mappingInfo.getStats().getMappingMaxColumn();
-			mappingMin = mappingInfo.getStats().getMappingMinColumn();
+			if (mappingInfo.getHeaderGroups().isEmpty()) {
+				mappingMax = mapping[0].length - 1;
+				mappingMin = 0;
+			} else {
+				mappingMax = mappingInfo.getStats().getMappingMaxColumn();
+				mappingMin = mappingInfo.getStats().getMappingMinColumn();
+			}
 		}
 		
 		columnEnds = new int[mappingMax - mappingMin + 1];
@@ -165,18 +171,17 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			columnEnds[i] = -1;
 		}
 		
-		int cloverFields = 0;
+		overFlow = new boolean[metadata.getNumFields()];
+		for (int i = 0; i < overFlow.length; i++) {
+			overFlow[i] = true;
+		}
+		
 		for (int i = 0; i < mapping.length; i++) {
 			for (int j = 0; j < mapping[0].length; j++) {
 				if (mapping[i][j] > -1) {
-					cloverFields++;
+					overFlow[mapping[i][j]] = false;
 				}
 			}
-		}
-		
-		overFlow = new boolean[cloverFields];
-		for (int i = 0; i < overFlow.length; i++) {
-			overFlow[i] = false;
 		}
 		
 		if (horizontal) {
