@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ import org.apache.poi.hssf.record.SharedFormulaRecord;
 import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.poifs.filesystem.DirectoryNode;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
@@ -72,7 +75,8 @@ import org.jetel.util.SpreadsheetUtils;
 public class XLSStreamParser implements SpreadsheetStreamHandler {
 	
 	private SpreadsheetStreamParser parent;
-	private POIFSFileSystem fs;
+	//private POIFSFileSystem fs;
+	private DirectoryNode workbookDirNode;
 
 	private final static Set<Short> ACCEPTED_RECORDS = new HashSet<Short>();
 	static {
@@ -186,8 +190,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	}
 
 	@Override
-	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
-		fs = new POIFSFileSystem(inputStream);
+	public void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
+		if (inputSource instanceof InputStream) {
+			workbookDirNode = new POIFSFileSystem((InputStream) inputSource).getRoot();
+		} else {
+			//fs = new NPOIFSFileSystem((File) inputSource);
+			workbookDirNode = new NPOIFSFileSystem((File) inputSource, true).getRoot();
+		}
 		prepareRecordFactory();
 		currentSheetIndex = -1;
 	}
@@ -199,7 +208,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	private void prepareRecordFactory() {
 		try {
-			RecordFactoryInputStream rfis = new RecordFactoryInputStream(fs.getRoot().createDocumentInputStream("Workbook"), false);
+			RecordFactoryInputStream rfis = new RecordFactoryInputStream(workbookDirNode.createDocumentInputStream("Workbook"), false);
 			recordFactory = new MissingRecordAwareFactoryInputStream(rfis);
 		} catch (IOException e) {
 			throw new JetelRuntimeException("Failed to open input stream from workbook", e);
@@ -213,7 +222,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		SheetNamesHSSFListener listener = new SheetNamesHSSFListener();
 		request.addListener(listener, BoundSheetRecord.sid);
-		factory.processWorkbookEvents(request, fs);
+		//factory.processWorkbookEvents(request, fs);
+		factory.processWorkbookEvents(request, workbookDirNode);
 
 		return listener.getSheetNames();
 	}
@@ -244,7 +254,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	public String[][] getHeader(int startRow, int startColumn, int endRow, int endColumn) throws ComponentNotReadyException {
 		RecordFactoryInputStream rfis;
 		try {
-			rfis = new RecordFactoryInputStream(fs.getRoot().createDocumentInputStream("Workbook"), false);
+			rfis = new RecordFactoryInputStream(workbookDirNode.createDocumentInputStream("Workbook"), false);
 			MissingRecordAwareFactoryInputStream recordFactory = new MissingRecordAwareFactoryInputStream(rfis);
 			HeaderHSSFListener headerListener = new HeaderHSSFListener(currentSheetIndex, startRow, startColumn, endRow, endColumn);
 			FormatTrackingHSSFListener formatter = new FormatTrackingHSSFListener(headerListener);

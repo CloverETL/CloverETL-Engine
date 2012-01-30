@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
@@ -124,26 +125,30 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 	}
 
 	@Override
+	public boolean isFileSourcePreferred() {
+		return true;
+	}
+	
+	@Override
 	public void setDataSource(Object dataSource) throws IOException, ComponentNotReadyException {
 		if (dataSource == null) {
 			throw new NullPointerException("dataSource");
 		}
 
-		InputStream dataInputStream = null;
-		if (dataSource instanceof InputStream) {
-			dataInputStream = (InputStream) dataSource;
-		} else if (dataSource instanceof ReadableByteChannel) {
-			dataInputStream = Channels.newInputStream((ReadableByteChannel) dataSource);
-		} else {
+		if (dataSource instanceof ReadableByteChannel) {
+			dataSource = Channels.newInputStream((ReadableByteChannel) dataSource);
+		} else if (!(dataSource instanceof InputStream || dataSource instanceof File)) {
 			throw new IllegalArgumentException(dataSource.getClass() + " not supported as a data source");
 		}
 
 		try {
-			prepareInput(dataInputStream);
+			prepareInput(dataSource);
 		} finally {
 			if (releaseInputSource) {
 				try {
-					dataInputStream.close();
+					if (dataSource instanceof InputStream) {
+						((InputStream)dataSource).close();
+					}
 				} catch (IOException exception) {
 					throw new ComponentNotReadyException("Error releasing the data source!", exception);
 				}
@@ -217,11 +222,11 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 	/**
 	 * Prepares input file to be read
 	 * 
-	 * @param inputStream
+	 * @param inputSource
 	 * @throws IOException
 	 * @throws ComponentNotReadyException
 	 */
-	protected abstract void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException;
+	protected abstract void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException;
 
 	/**
 	 * Produces next record from input source or returns null if there are no more data.
