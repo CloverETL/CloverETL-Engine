@@ -38,9 +38,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.primitive.IdentityArrayList;
 import org.jetel.util.string.StringUtils;
-
-import sun.awt.util.IdentityArrayList;
 
 /**
  * This data field implementation represents a list of fields, which are uniformly typed by a simple type
