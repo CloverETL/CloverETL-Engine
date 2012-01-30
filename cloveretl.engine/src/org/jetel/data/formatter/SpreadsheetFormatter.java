@@ -91,6 +91,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private SheetDataLibrary sheetDataLibrary = new SheetDataLibrary();
 	/** A workbook containing template file to be used as a template for writing records */
 	private Workbook templateWorkbook;
+	/** Determines is the target file has been created as a brand new file from a template and so the template of a record must be removed in the end */
+	private boolean removeTemplateLine = false;
 	/** A sheet name set in a SpreadsheetWriter component */
 	private String sheet;
 	/** A key for sheet partitioning */
@@ -742,7 +744,7 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @param sheetData
 	 */
 	private void removeTemplateLinesIfNeeded(SheetData sheetData) {
-		if (insert & templateWorkbook!=null) {
+		if (insert & removeTemplateLine) {
 			sheetData.removeTemplateLines();
 		}
 	}
@@ -795,6 +797,7 @@ public class SpreadsheetFormatter implements Formatter {
 			workbookInputStream.close();
 			workbookInputStream=null;
 			boolean fileExistingAndReadable = firstByte>=0;
+			removeTemplateLine = false;
 			
 			if (fileExistingAndReadable) {
 				if (!createFile) {
@@ -835,6 +838,7 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @throws IOException
 	 */
 	private void createSpreadsheetFileFromTemplate() throws IOException {
+		removeTemplateLine = true;
 		if (outputDataTarget instanceof Object[]) {
 			Object [] outputDataTargetArray = (Object[]) outputDataTarget;
 			URL url = (URL) outputDataTargetArray[0];
