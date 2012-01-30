@@ -60,6 +60,10 @@ public abstract class TLTypePrimitive extends TLType {
 				return otherType;
 			}
 			
+			if (otherType.isNull()) {
+				return this;
+			}
+			
 			return TLType.ERROR;
 
 		}
@@ -87,6 +91,10 @@ public abstract class TLTypePrimitive extends TLType {
 			}
 			
 			if (otherType.isString()) {
+				return this;
+			}
+			
+			if (otherType.isNull()) {
 				return this;
 			}
 			

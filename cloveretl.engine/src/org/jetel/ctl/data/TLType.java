@@ -423,6 +423,10 @@ public abstract class TLType {
 				return this;
 			}
 			
+			if (otherType.isNull()) {
+				return this;
+			}
+			
 			return TLType.ERROR;
 		}
 	}
