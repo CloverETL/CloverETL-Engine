@@ -299,6 +299,10 @@ public enum DataFieldType {
 	 */
 	@SuppressWarnings("deprecation")
 	public static DataFieldType fromName(String name) {
+		if (name == null) {
+			throw new IllegalArgumentException("type name is null");
+		}
+		
 		//for backward compatibility
 		if (name.equals(DataFieldMetadata.NUMERIC_TYPE_DEPRECATED)) {
 			return NUMBER;
