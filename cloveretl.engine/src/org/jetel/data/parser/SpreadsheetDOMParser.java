@@ -271,14 +271,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.setToNull();
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-			if (stopParsing || nextRecordStartRow > lastLine) {
-				return null;
-			}
+//			if (stopParsing || nextRecordStartRow > lastLine) {
+//				return null;
+//			}
 			return parse(record, nextRecordStartRow, mappingMinColumn, false);
 		} else {
-			if (stopParsing || nextRecordStartRow > lastLine) {
-				return null;
-			}
+//			if (stopParsing || nextRecordStartRow > lastLine) {
+//				return null;
+//			}
 			return parse(record, mappingMinRow, nextRecordStartRow, true);
 		}
 	}
@@ -316,7 +316,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			exceptionBuffer.fireExceptions();
 		}
 		nextRecordStartRow += mappingInfo.getStep();
-		return record;
+		return stopParsing ? null : record;
 	}
 
 	private void processNullRow(DataRecord record, int[] recordRow, int recordStartRow, int mappingRowIndex) {

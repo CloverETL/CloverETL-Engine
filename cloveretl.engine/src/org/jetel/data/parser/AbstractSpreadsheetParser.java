@@ -47,6 +47,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -241,7 +242,7 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 	protected abstract int getRecordStartRow();
 
 	protected void handleException(BadDataFormatException bdfe, DataRecord record, int cloverFieldIndex, String cellCoordinates, String cellValue) {
-		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep(); //TODO: check record numbering
+		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep() + 1; //TODO: check record numbering
 		bdfe.setRecordNumber(recordNumber);
 		bdfe.setFieldNumber(cloverFieldIndex);
 
@@ -254,6 +255,24 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 		} else {
 //			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordNumber, cloverFieldIndex));
 			throw new RuntimeException(bdfe.getMessage());
+		}
+	}
+	
+	protected void handleException(SpreadsheetException se, DataRecord record, int cloverFieldIndex, String fileName, String sheetName, 
+			String cellCoordinates, String cellValue, String cellType, String cellFormat) {
+		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep();
+		se.setRecordNumber(recordNumber);
+		se.setFieldNumber(cloverFieldIndex);
+		se.setFileName(fileName);
+		se.setSheetName(sheetName);
+		se.setCellCoordinates(cellCoordinates);
+		se.setCellType(cellType);
+		se.setCellFormat(cellFormat);
+		
+		if (exceptionHandler != null) {
+			exceptionHandler.populateHandler(se.getMessage(), record, recordNumber, cloverFieldIndex, cellValue, se);
+		} else {
+			throw new RuntimeException(se.getMessage());
 		}
 	}
 	
