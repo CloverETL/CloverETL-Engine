@@ -64,6 +64,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Implementation of semantic checking for CTL compiler.
@@ -553,6 +554,28 @@ public class ASTBuilder extends NavigatingVisitor {
 		
 	}
 
+	private static final TLType[] CONTAINER_ELEMENT_TYPES = {
+		TLTypePrimitive.INTEGER,
+		TLTypePrimitive.LONG,
+		TLTypePrimitive.STRING,
+		TLTypePrimitive.BOOLEAN,
+		TLTypePrimitive.DATETIME,
+		TLTypePrimitive.DOUBLE,
+		TLTypePrimitive.DECIMAL,
+		TLTypePrimitive.BYTEARRAY,
+	};
+	
+	private static TLType getTypeByContentType(String contentType) {
+		if (StringUtils.isEmpty(contentType)) {
+			return null;
+		}
+		for (TLType t: CONTAINER_ELEMENT_TYPES) {
+			if (t.name().equals(contentType)) {
+				return t;
+			}
+		}
+		return null;
+	}
 	
 	@Override
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
@@ -576,13 +599,25 @@ public class ASTBuilder extends NavigatingVisitor {
 				return data;
 			}
 			
-			final TLType tlType = dictType.getTLType();
+			TLType tlType = dictType.getTLType();
 			if( tlType == null){
 				error(node, "Dictionary entry '" + node.getName() + " has type "+dictType.getTypeId()+" which is not supported in CTL");
 				node.setType(TLType.ERROR);
 				return node;
+			} else if (tlType.isList()) {
+				final String contentType = dictionary.getContentType(node.getName());
+				if (!StringUtils.isEmpty(contentType)) {
+					TLType elementType = getTypeByContentType(contentType);
+					tlType = TLType.createList(elementType);
+				}
+			} else if (tlType.isMap()) {
+				final String contentType = dictionary.getContentType(node.getName());
+				if (!StringUtils.isEmpty(contentType)) {
+					TLType elementType = getTypeByContentType(contentType);
+					tlType = TLType.createMap(TLTypePrimitive.STRING, elementType);
+				}
 			}
-			node.setType(dictType.getTLType());
+			node.setType(tlType);
 		}
 		
 		return data;
