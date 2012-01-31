@@ -237,7 +237,25 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 				}
 			}
 		}
-		
+
+		/**
+		 * @return number of buffers with at least one non-null cell.
+		 * Last buffer is ignored! (It is assumed that caller already has that buffer
+		 * content because of previous call to fillRecordFromBuffer(record) method.)
+		 */
+		public int getNotEmptyBuffersCount() {
+			int count = 0;
+			for (int offset = 0; offset < getCount() - 1; offset++) {
+				CellBuffer<?>[] buffer = getBuffer(offset);
+				for (int i = 0; i < buffer.length; i++) {
+					if (buffer[i] != null) {
+						count++;
+						break;
+					}
+				}
+			}
+			return count;
+		}
 	}
 
 	private static class CellBuffer<T> {
