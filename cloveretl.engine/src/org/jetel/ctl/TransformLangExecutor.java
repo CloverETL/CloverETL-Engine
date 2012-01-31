@@ -2170,15 +2170,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param value
 	 * @return
 	 */
-	@java.lang.SuppressWarnings("unchecked")
-	private static <T> List<T> wrapListField(Object value, Class<T> c) {
+	private static <T> Object wrapMultivalueField(Object value, Class<T> c) {
 		if (value == null) {
 			return null;
 		}
 		if (value instanceof List<?>) {
-			return new ListFieldWrapper<T>((List<Object>) value);
+			return new ListFieldWrapper<T>(value);
+		} else if (value instanceof Map<?, ?>) {
+			return new MapFieldWrapper<T>(value);
 		}
-		throw new ClassCastException("Expected a list value, but got a " + value.getClass().getCanonicalName());
+		throw new ClassCastException("Expected a list or a map, but got " + value.getClass().getCanonicalName());
 	}
 	
 	public static Class<?> getClass(DataFieldType type) {
@@ -2213,10 +2214,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		DataFieldMetadata metadata = field.getMetadata();
 		
-		// the list cannot be copied, it must be wrapped to enable passing by reference
-		if (metadata.getCardinalityType() == DataFieldCardinalityType.LIST) {
+		// a list or map cannot be copied, it must be wrapped to enable passing by reference
+		if ((metadata.getCardinalityType() == DataFieldCardinalityType.LIST)
+				|| (metadata.getCardinalityType() == DataFieldCardinalityType.MAP)) {
 			Object fieldValue = field.getValue();
-			return wrapListField(fieldValue, getClass(metadata.getDataType()));
+			return wrapMultivalueField(fieldValue, getClass(metadata.getDataType()));
 		}
 		
 		// we must convert from the field's mutable type to our static types used
