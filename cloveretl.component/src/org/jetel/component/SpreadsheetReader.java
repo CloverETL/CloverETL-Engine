@@ -162,7 +162,7 @@ public class SpreadsheetReader extends Node {
 	private String fileURL;
 	private String charset;
 	
-	private SpreadsheetAttitude parserAttitude = SpreadsheetAttitude.IN_MEMORY;
+	private SpreadsheetAttitude parserAttitude = SpreadsheetAttitude.STREAM;
 	private AbstractSpreadsheetParser parser;
     private MultiFileReader reader;
 	private PolicyType policyType = PolicyType.STRICT;
