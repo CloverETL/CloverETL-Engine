@@ -289,9 +289,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.parseNext(record);
 			assertRecordContent(record, null, "B8Value", "C9Value");
 
-			parser.parseNext(record);
-			assertRecordContent(record);
-			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -310,9 +307,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.parseNext(record);
 			assertRecordContent(record, "A7Value", "B7Value", "C9Value");
 
-			parser.parseNext(record);
-			assertRecordContent(record);
-			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -345,11 +339,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertRecordContent(record, "123", "Princeton", "Dirac Street");
 			parser.parseNext(record);
 			assertRecordContent(record, "1234", "Washington", "Constitution Ave");
-			
-			parser.parseNext(record);
-			assertRecordContent(record);
-			parser.parseNext(record);
-			assertRecordContent(record);
 			
 			assertNull(parser.parseNext(record));
 			
@@ -484,11 +473,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				for (int i = 3; i < 10; i++) {
 					assertNotNull(parser.parseNext(record));
 				}
-				// 2 empty records until record-mapping-mask moves completely beyond end of sheet
-				parser.parseNext(record);
-				assertRecordContent(record);
-				parser.parseNext(record);
-				assertRecordContent(record);
 				
 				assertNull(parser.parseNext(record));
 				
