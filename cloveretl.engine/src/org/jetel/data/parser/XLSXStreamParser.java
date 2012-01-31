@@ -93,6 +93,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	/** the data formatter used to format cell values as strings */
 	private final DataFormatter dataFormatter = new DataFormatter();
 
+	private boolean endOfSheet;
+	private int remainingRecordsCount = -1;
+	 
 	public XLSXStreamParser(SpreadsheetStreamParser parent) {
 		this.parent = parent;
 	}
@@ -101,11 +104,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	public void init() throws ComponentNotReadyException {
 		xmlInputFactory = XMLInputFactory.newInstance();
 		cellBuffers = parent.new CellBuffers<CellValue>();
-		extraRows = (parent.mapping.length - 1) / parent.mappingInfo.getStep();
 	}
-
-	private int extraRows;
-	private boolean endOfSheet;
 	
 	@Override
 	public DataRecord parseNext(DataRecord record) throws JetelException {
@@ -115,23 +114,33 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			while (staxParser.hasNext() && !sheetContentHandler.isRecordFinished()) {
 				processParserEvent(staxParser, xssfContentHandler);
 			}
-			if (!staxParser.hasNext() && !sheetContentHandler.isRecordFinished()) {
-				if (!sheetContentHandler.isRecordStarted()) {
-					endOfSheet = true;
-					if (extraRows > 0) {
-						while (!sheetContentHandler.isRecordFinished()) {
-							int row = sheetContentHandler.currentParseRow + 1;
-							sheetContentHandler.startRow(row);
-							sheetContentHandler.endRow();
-							extraRows--;
-						}
-						nextRecordStartRow += parent.mappingInfo.getStep();
-						return record;
+
+			if (!staxParser.hasNext()) {
+				endOfSheet = true;
+				
+				if (sheetContentHandler.isRecordStarted()) {
+					if (!sheetContentHandler.isRecordFinished()) {
+						// generates exception for record cells beyond end of sheet
+						sheetContentHandler.finishRecord();
 					}
-					return null;
+				} else {
+					
+					if (remainingRecordsCount < 0) {
+						// initialize how many not empty records partially beyond end of sheet are to be returned
+						remainingRecordsCount = cellBuffers.getNotEmptyBuffersCount();
+						if (remainingRecordsCount != 0 || !record.isNull()) {
+							remainingRecordsCount++;
+						}
+					}
+					
+					if (remainingRecordsCount == 0) {
+						return null;
+					}
+					
+					sheetContentHandler.finishRecord();
 				}
-				sheetContentHandler.finishRecord();
-			}			
+			}
+
 		} catch (XMLStreamException e) {
 			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
 		} catch (SAXException e) {
