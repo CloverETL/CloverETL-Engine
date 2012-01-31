@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <defaultSkip>1</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="1">
+            <cloverField>S</cloverField>
+            <headerRanges>
+                <headerRange begin="J1"/>
+            </headerRanges>
+            <formatField>T</formatField>
+        </headerGroup>
+        <headerGroup skip="3">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="F1"/>
+            </headerRanges>
+            <formatField>L</formatField>
+        </headerGroup>
+        <headerGroup skip="2">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="C1"/>
+            </headerRanges>
+            <formatField>F</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>C</cloverField>
+            <headerRanges>
+                <headerRange begin="B1"/>
+            </headerRanges>
+            <formatField>D</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="D1"/>
+            </headerRanges>
+            <formatField>H</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>M</cloverField>
+            <headerRanges>
+                <headerRange begin="G1"/>
+            </headerRanges>
+            <formatField>N</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>O</cloverField>
+            <headerRanges>
+                <headerRange begin="H1"/>
+            </headerRanges>
+            <formatField>P</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>A</cloverField>
+            <headerRanges>
+                <headerRange begin="A1"/>
+            </headerRanges>
+            <formatField>B</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>Q</cloverField>
+            <headerRanges>
+                <headerRange begin="I2"/>
+            </headerRanges>
+            <formatField>R</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="E1"/>
+            </headerRanges>
+            <formatField>J</formatField>
+        </headerGroup>
+    </headerGroups>
+</mapping>
