@@ -269,12 +269,25 @@ public class RunGraph extends Node{
 	public Result execute() throws Exception {
 		DataRecord outRec = initOutRecord();
 		if (pipelineMode) {
-			if (runSingleGraph(graphName, outRec, cloverCmdLineArgs)) {
+			Result result = runSingleGraph(graphName, outRec, cloverCmdLineArgs);
+			if (result.code() == Result.FINISHED_OK.code()) {
 				writeOutRecord(outRec);
 			} else {								
 				writeErrRecord(outRec);
 			}
 			broadcastEOF();
+			boolean success = true;
+			if (result.code() == Result.ERROR.code()) {
+				logger.warn("Graph " + graphName +" finished with error.");
+				success = false;
+			} else if (result.code() == Result.ABORTED.code()) {
+				logger.warn("Run of graph " + graphName + " was aborted.");
+				success = false;
+			}
+			if (!success && !ignoreGraphFail) {
+				// if some graph failed and ignoreGraphFail parameter is false, throw an exception to fail whole graph
+				throw new JetelException("Graph '" + graphName + "' failed!");
+			}
 			return Result.FINISHED_OK;
 		}			
 
@@ -299,7 +312,12 @@ public class RunGraph extends Node{
 			}
 
 			try {
-				success &= runSingleGraph(graphNameFromPort, outRec, cloverCommandLineArgs);
+				Result result = runSingleGraph(graphNameFromPort, outRec, cloverCommandLineArgs);
+				if (result.code() == Result.ERROR.code() || result.code() == Result.ABORTED.code()) {
+					success = false;
+				} else {
+					success = true;
+				}
 			} catch (IOException e) {					
 				success = false;
 				logger.error("Exception while processing " + graphNameFromPort + ": "+ e.getMessage());
@@ -402,7 +420,7 @@ public class RunGraph extends Node{
 		return val.toString().trim();
 	}
 	
-	private boolean runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException {
+	private Result runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException {
 		OutputRecordData outputRecordData = new OutputRecordData(output, graphName);
 		if (sameInstance) {			
 			logger.info("Running graph " + graphName + " in the same instance.");
@@ -413,7 +431,7 @@ public class RunGraph extends Node{
 		}
 	}
 	
-	private boolean runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
+	private Result runGraphSeparateInstance(String graphName, OutputRecordData outputRecordData, String cloverCommandLineArgs) throws IOException {
 		List<String> commandList = new ArrayList<String>();
 
 		for (String javaCommand : StringUtils.split(javaCmdLine, " ")) {
@@ -471,13 +489,13 @@ public class RunGraph extends Node{
 		} catch (InterruptedException ex) {
 			logger.error("InterruptedException in " + this.getId(), ex);
 			process.destroy();
-			return false;					
+			return Result.ABORTED;					
 		}	
 			
 		if (!runIt) {			
 			outputRecordData.setResult("Aborted");
 			outputRecordData.setDescription("\nSTOPPED");
-			return false;
+			return Result.ABORTED;
 		}
 		if (exitValue != 0) {			
 			String resultMsg = "Process exit value = " + exitValue;
@@ -485,12 +503,12 @@ public class RunGraph extends Node{
 			outputRecordData.setDescription(resultMsg);
 						
 			logger.info(graphName + ": Processing with an ERROR: " + "\n: " + resultMsg);
-			return false;
+			return Result.ERROR;
 		}				
 		
 		logger.info(graphName + ": Processing finished successfully");
 		outputRecordData.setResult("Finished successfully");			
-		return true;
+		return Result.FINISHED_OK;
 	}
 	
 	/**
@@ -501,7 +519,7 @@ public class RunGraph extends Node{
 	 * @param outputRecordData
 	 * @return
 	 */
-	private boolean runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
+	private Result runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
 		long runId = this.getGraph().getRuntimeContext().getRunId();
 
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
@@ -527,7 +545,7 @@ public class RunGraph extends Node{
         	outputRecordData.setDescription("Execution of graph failed! " + rr.description);
             System.err.println(graphFileName + ": " + "Execution of graph failed! " + rr.description);
 		}
-		return Result.FINISHED_OK == rr.result;
+		return rr.result;
 	}
 
 		
