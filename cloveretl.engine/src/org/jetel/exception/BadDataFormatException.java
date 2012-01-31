@@ -120,10 +120,7 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     public String getMessage() {
         StringBuffer ret = new StringBuffer();
         ret.append(super.getMessage());
-//        if(offendingValue != null && offendingValue.length() > 0) {
-//            ret.append(" : ");
-//            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
-//        }
+        
         if (additionalMessage != null) {
         	ret.append(" ");
         	ret.append(additionalMessage);
@@ -144,12 +141,7 @@ public class BadDataFormatException extends RuntimeException implements Iterable
             ret.append(fieldName);
             ret.append("\")");
         }
-        
-//        if(recordNumber > -1) {
-//            ret.append(" of record #");
-//            ret.append(recordNumber);
-//        }
-        
+                
         if (recordName != null) {
         	ret.append(", metadata (\"");
         	ret.append(recordName);

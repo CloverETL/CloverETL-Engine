@@ -54,6 +54,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.SpreadsheetUtils;
 import org.xml.sax.SAXException;
@@ -69,6 +70,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private final static Log LOGGER = LogFactory.getLog(XLSXStreamParser.class);
 
 	private SpreadsheetStreamParser parent;
+	
+	private String fileName;
+	private String sheetName;
 
 	private OPCPackage opcPackage;
 	private XSSFReader reader;
@@ -220,6 +224,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 			this.nextRecordStartRow = parent.startLine;
 			cellBuffers.clear();
+			sheetName = getSheetNames().get(sheetNumber);
 			return true;
 		}
 
@@ -262,6 +267,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				opcPackage = OPCPackage.open((InputStream) inputSource);
 			} else {
 				File inputFile = (File) inputSource;
+				fileName = inputFile.getAbsolutePath();
 				opcPackage = OPCPackage.open(inputFile.getAbsolutePath());
 			}
 			reader = new XSSFReader(opcPackage);
@@ -622,12 +628,12 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
 						if (endOfSheet) {
-							parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
-									". Occurred in "), record, cloverFieldIndex, null, null);
+							parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+									". Occurred in "), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 						}
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() + 
-								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, null, null);
+						parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() + 
+								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 					}
 				}
 			}
@@ -644,6 +650,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			}
 			
 			DataField field = record.getField(cloverFieldIndex);
+			String cellFormat = null;
 			try {
 				switch (field.getType()) {
 				case DataFieldMetadata.DATE_FIELD:
@@ -681,7 +688,8 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				String cellCoordinates = SpreadsheetUtils.getColumnReference(lastColumn + parent.mappingMinColumn) + String.valueOf(currentParseRow);
 //				parent.handleException(new BadDataFormatException("All attempts to set value \""+ value +"\" into field \"" + field.getMetadata().getName() + "\" (" + field.getMetadata().getTypeAsString() + ") failed:\n1st try error: " + ex1 + "\n"),
 //						record, cloverFieldIndex, cellCoordinates, value);
-				parent.handleException(new BadDataFormatException(ex1.getMessage() + " in " + cellCoordinates), record, cloverFieldIndex, cellCoordinates, value);
+				parent.handleException(new SpreadsheetException(ex1.getMessage() + " in " + cellCoordinates), record, cloverFieldIndex, 
+						fileName, sheetName, cellCoordinates, value, cellTypeToString(cellType), cellFormat);
 			}
 		}
 
