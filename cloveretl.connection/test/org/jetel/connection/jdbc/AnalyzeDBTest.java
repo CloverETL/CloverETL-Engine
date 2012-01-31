@@ -48,7 +48,8 @@ public class AnalyzeDBTest extends CloverTestCase {
 				AnalyzeDBTest.class.getResourceAsStream("analyzeDb.output.fmt"),
 				"UTF-8", true);
 		
-		assertEquals(expected, result);
+		//end of lines can differ - so lets unify them 
+		assertEquals(expected.replace("\r\n", "\n"), result.replace("\r\n", "\n"));
 		
 		//remove the temporary file
 		File outputFile = new File("analyzeDb.output.fmt");
