@@ -386,20 +386,20 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	@Override
 	public String toString() {
 		if (isNull) {
-			return "ListDataField is null";
+			return metadata.getNullValue();
 		}
 
-		int i = 1;
 		StringBuilder sb = new StringBuilder();
-		sb.append("ListDataField size=" + size);
+		sb.append("[");
+		boolean first = true;
 		for (DataField field : this) {
+			if (!first) {
+				sb.append(", ");
+			}
 			sb.append(field.toString());
-			sb.append('#');
-			sb.append(i++);
-			sb.append('=');
-			sb.append(field.toString());
-			sb.append('\n');
+			first = false;
 		}
+		sb.append("]");
 		return sb.toString();
 	}
 
