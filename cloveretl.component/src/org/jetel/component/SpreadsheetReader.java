@@ -40,6 +40,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -184,6 +185,11 @@ public class SpreadsheetReader extends Node {
     private String incrementalKey;
     
     private boolean logging = false;
+    
+    private int firstOptional = -1;
+    private int lastOptional = -1;
+    private OutputPort errorPort;
+    
 
 	public SpreadsheetReader(String id) {
 		super(id);
@@ -317,8 +323,16 @@ public class SpreadsheetReader extends Node {
 			if (checkErrorPortMetadata()) {
 				logging = true;
 			} else {
-				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": Error port metadata have invalid format " +
-            			"(expected data fields - integer (record number), string (cell coordinates), string (offending value), string (field name), string (error message)");
+				StringBuilder sb = new StringBuilder();
+				sb.append(this.getName())
+				  .append("|")
+				  .append(this.getId())
+				  .append(": Error port metadata have invalid format (expected data fields - integer (record number), string (file name)")
+				  .append(", string (sheet name), integer (field number), string (field name), string (cell coordinates), string (cell value)")
+				  .append(", string (cell type), string (cell format), string (error message)");
+//				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": Error port metadata have invalid format " +
+//            			"(expected data fields - integer (record number), string (cell coordinates), string (offending value), string (field name), string (error message)");
+				throw new ComponentNotReadyException(sb.toString());
 			}
 		}
 		
@@ -334,23 +348,18 @@ public class SpreadsheetReader extends Node {
         DataRecordMetadata errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 
         int errorNumFields = errorMetadata.getNumFields();
-        boolean ret = errorNumFields > 4
-        		&& errorMetadata.getFieldType(0) == DataFieldMetadata.INTEGER_FIELD
-//        		&& errorMetadata.getFieldType(1) == DataFieldMetadata.STRING_FIELD
-//				&& errorMetadata.getFieldType(2) == DataFieldMetadata.STRING_FIELD
-//				&& errorMetadata.getFieldType(3) == DataFieldMetadata.STRING_FIELD        		
-//        		&& errorMetadata.getFieldType(4) == DataFieldMetadata.STRING_FIELD;
-        		&& isStringOrByte(errorMetadata.getField(1))
-        		&& isStringOrByte(errorMetadata.getField(2))
-        		&& isStringOrByte(errorMetadata.getField(3))
-        		&& isStringOrByte(errorMetadata.getField(4));
-        		
-        
-//        if(!ret) {
-//            LOGGER.warn(this.getId() + ": Error port metadata have invalid format " +
-//            			"(expected data fields - integer (record number), integer (field number), string (cell coordinates), string (offending value), string (error message)");
-//        }
-        
+        boolean ret = errorNumFields > 10
+        		&& errorMetadata.getFieldType(0) == DataFieldMetadata.INTEGER_FIELD		// record number
+        		&& isStringOrByte(errorMetadata.getField(1))							// file name
+        		&& isStringOrByte(errorMetadata.getField(2))							// sheet name
+        		&& errorMetadata.getFieldType(3) == DataFieldMetadata.INTEGER_FIELD		// field number
+        		&& isStringOrByte(errorMetadata.getField(4))							// field name
+        		&& isStringOrByte(errorMetadata.getField(5))							// cell coordinates
+        		&& isStringOrByte(errorMetadata.getField(6))							// cell value
+        		&& isStringOrByte(errorMetadata.getField(7))							// cell type
+        		&& isStringOrByte(errorMetadata.getField(8))							// cell format (Excel)
+        		&& isStringOrByte(errorMetadata.getField(9));							// error message
+                
         return ret;
     }
 	
@@ -460,6 +469,37 @@ public class SpreadsheetReader extends Node {
     	}
     	reader.preExecute();
 	}
+	
+	private SpreadsheetException writeErrorRecord(SpreadsheetException se, int recordMetadataFields, DataRecord record, DataRecord errorRecord) throws IOException, InterruptedException {
+		// set mandatory fields
+		((IntegerDataField) errorRecord.getField(0)).setValue(se.getRecordNumber() + 1);
+		setCharSequenceToField(se.getFileName(), errorRecord.getField(1));
+		setCharSequenceToField(se.getSheetName(), errorRecord.getField(2));
+		((IntegerDataField) errorRecord.getField(3)).setValue(se.getFieldNumber() + 1);
+		setCharSequenceToField(se.getFieldName(), errorRecord.getField(4));
+		setCharSequenceToField(se.getCellCoordinates(), errorRecord.getField(5));
+		setCharSequenceToField(se.getOffendingValue(), errorRecord.getField(6));
+		setCharSequenceToField(se.getCellType(), errorRecord.getField(7));
+		setCharSequenceToField(se.getCellFormat(), errorRecord.getField(8));
+		setCharSequenceToField(se.getMessage(), errorRecord.getField(9));
+		
+		// fill the optional fields with data from output record
+		DataField recordField;
+		DataField errorField;
+		for (int i = 0; i < recordMetadataFields; i++) {
+			recordField = record.getField(i);
+			for (int j = firstOptional; j < lastOptional; j++) {
+				errorField = errorRecord.getField(j);
+				if (errorField.getType() == recordField.getType() && 
+						errorField.getMetadata().getName().equals(recordField.getMetadata().getName())) {
+					errorField.setValue(recordField);
+				}
+			}
+		}
+		
+		errorPort.writeRecord(errorRecord);
+		return (SpreadsheetException) se.next();
+	}
 
 	@Override
 	public Result execute() throws Exception {
@@ -470,26 +510,22 @@ public class SpreadsheetReader extends Node {
 		record.init();
 		int recordMetadataFields = record.getNumFields();
 
-		OutputPort errorPort = getOutputPort(ERROR_PORT);
+		errorPort = getOutputPort(ERROR_PORT);
 		DataRecord errorRecord = null;
 		DataRecordMetadata errorMetadata = null;
 		int errorMetadataFields = 0;
-		int first = -1;
-		int last = -1;
 		if (logging) {
-//			errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 			errorMetadata = errorPort.getMetadata();
 			errorMetadataFields = errorMetadata.getNumFields();
-			if (errorMetadataFields > 5) {
-				first = 5;
-				last = errorMetadataFields;
+			if (errorMetadataFields > 10) {
+				firstOptional = 10;
+				lastOptional = errorMetadataFields;
 			}
 			errorRecord = new DataRecord(errorMetadata);
 			errorRecord.init();
 		}
 
 		int errorCount = 0;
-		SpreadsheetParserExceptionHandler exceptionHandler = (SpreadsheetParserExceptionHandler) parser.getExceptionHandler();
 
 		try {
 			while (runIt) {
@@ -503,45 +539,27 @@ public class SpreadsheetReader extends Node {
 					// or it is BadDataFormatException wrapped by AbstractSpreadsheetParser.getNext(record) which we want to handle.
 					// Reason for wrapper exception: MultiFileReader increases record counters only on JetelExcepiton.
 					
-					if (e.getCause() == null || !(e.getCause() instanceof BadDataFormatException)) {
+					if (e.getCause() == null || !(e.getCause() instanceof SpreadsheetException)) {
 						throw e;
 					}
 					
-					BadDataFormatException bdfe = (BadDataFormatException) e.getCause();
+					SpreadsheetException se = (SpreadsheetException) e.getCause();
 					
 					if (policyType == PolicyType.STRICT) {
-						throw bdfe;
+						throw se;
 					} else if (logging) {
-						while (bdfe != null && errorCount++ < maxErrorCount) {
-							DataField recordField;
-							DataField errorField;
-							for (int i = 0; i < recordMetadataFields; i++) {
-								recordField = record.getField(i);
-								for (int j = first; j < last; j++) {
-									errorField = errorRecord.getField(j);
-									if (errorField.getType() == recordField.getType() && 
-											errorField.getMetadata().getName().equals(recordField.getMetadata().getName())) {
-										errorField.setValue(recordField);
-									}
-								}
-							}
-							((IntegerDataField) errorRecord.getField(0)).setValue(bdfe.getRecordNumber());
-							setCharSequenceToField(exceptionHandler.getNextCoordinates(), errorRecord.getField(1));
-							setCharSequenceToField(bdfe.getOffendingValue(), errorRecord.getField(2));
-							setCharSequenceToField(recordMetadata.getField(bdfe.getFieldNumber()).getName(), errorRecord.getField(3));
-							setCharSequenceToField(bdfe.getMessage(), errorRecord.getField(4));
-							errorPort.writeRecord(errorRecord);
-							bdfe = bdfe.next();
+						while (se != null && errorCount++ < maxErrorCount) {
+							se = writeErrorRecord(se, recordMetadataFields, record, errorRecord);
 						}
 					} else {
-						while (bdfe != null && errorCount++ < maxErrorCount) {
-							LOGGER.warn(bdfe.getMessage());
-							bdfe = bdfe.next();
+						while (se != null && errorCount++ < maxErrorCount) {
+							LOGGER.warn(se.getMessage());
+							se = (SpreadsheetException) se.next();
 						}
 					}
 					if (policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount) {
 							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							LOGGER.error("ERROR: " + bdfe.getMessage());
+							LOGGER.error("ERROR: " + se.getMessage());
 							return Result.ERROR;
 					}
 				}

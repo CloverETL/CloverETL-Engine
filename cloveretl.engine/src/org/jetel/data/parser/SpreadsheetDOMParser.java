@@ -45,6 +45,7 @@ import org.jetel.data.parser.XLSMapping.SpreadsheetOrientation;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExcelUtils;
@@ -66,6 +67,9 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private Workbook workbook;
 	/** currently parsed sheet */
 	private Sheet sheet;
+	
+	private String fileName;
+	private String sheetName;
 	
 	private int nextRecordStartRow;
 	/** last row or last column in sheet (depends on orientation) */
@@ -125,6 +129,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			} else {
 				inputStream.close();
 				File inputFile = (File) inputSource;
+				fileName = inputFile.getAbsolutePath();
 				if (documentType == ExcelType.XLS) {
 					workbook = new HSSFWorkbook(new NPOIFSFileSystem(inputFile).getRoot(), true);
 				} else {
@@ -213,6 +218,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	public boolean setCurrentSheet(int sheetNumber) {
 		try {
 			sheet = workbook.getSheetAt(sheetNumber);
+			sheetName = sheet.getSheetName();
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
@@ -323,15 +329,15 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			for (int i = 0; i < overFlow.length; i++) {
 				stopParsing &= overFlow[i];
 			}
-			exceptionBuffer.fireExceptions();
 		}
+		exceptionBuffer.fireExceptions();
 		nextRecordStartRow += mappingInfo.getStep();
 		return stopParsing ? null : record;
 	}
 
 	private void processNullRow(DataRecord record, int[] recordRow, int recordStartRow, int startColumn, int mappingRowIndex) {
 		int currentParseRow = recordStartRow + mappingRowIndex;
-		BadDataFormatException bdfe;		
+		SpreadsheetException se;		
 		if (recordRow != null) {
 			for (int column = 0; column < recordRow.length; column++) {
 				int cloverFieldIndex;
@@ -343,14 +349,16 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 						}
 						if (currentParseRow > lastLine) {
 							overLastLine = true;
-							bdfe = new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + 
+							se = new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + 
 									record.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred");
-							exceptionBuffer.addExceptionInfo(new ExceptionInfo(bdfe, record, cloverFieldIndex, null, null));
+							exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName,
+									null, null, null, null));
 						}
 					} catch (BadDataFormatException e) {
-						bdfe = new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
+						se = new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
 								". Moreover, cannot set default value or null", e);
-						exceptionBuffer.addExceptionInfo(new ExceptionInfo(bdfe, record, cloverFieldIndex, null, null));
+						exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, 
+								null, null, null, null));
 					}
 					
 				}
@@ -359,7 +367,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	}
 
 	private void fillCloverField(Cell cell, int cellColumn, int startRow, int offset, DataRecord record, int cloverFieldIndex, boolean horizontal) {
-		BadDataFormatException bdfe;
+		SpreadsheetException se;
 		int currentParseRow = startRow + offset;
 		if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
 			try {
@@ -368,17 +376,17 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 					overFlow[cloverFieldIndex] = cellColumn > columnEnds[offset];
 					if (cellColumn > lastLine) {
 						overLastLine = true;
-						bdfe = new BadDataFormatException("Unexpected end of sheet - expected another data row for field " +
+						se = new SpreadsheetException("Unexpected end of sheet - expected another data row for field " +
 								record.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred");
-						exceptionBuffer.addExceptionInfo(new ExceptionInfo(bdfe, record, cloverFieldIndex, null, null));
+						exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, null, null, null, null));
 					}
 				} else {
 					overFlow[cloverFieldIndex] = currentParseRow > columnEnds[cellColumn + columnOffset];
 				}
 				return;
 			} catch (BadDataFormatException e) {
-				bdfe = new BadDataFormatException("There is no data cell for field. Moreover, cannot set default value or null", e);
-				exceptionBuffer.addExceptionInfo(new ExceptionInfo(bdfe, record, cloverFieldIndex, null, null));
+				se = new SpreadsheetException("There is no data cell for field. Moreover, cannot set default value or null", e);
+				exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, null, null, null, null));
 				return;
 			}
 		}
@@ -386,6 +394,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		char type = metadata.getField(cloverFieldIndex).getType();
 
 		String expectedType = null;
+		String cellFormat = null;
 		try {
 			
 			switch (type) {
@@ -427,9 +436,10 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				} catch (Exception ex) {
 				}
 				String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
-				bdfe = new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " +
+				se = new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " +
 						cellTypeToString(cell.getCellType()) + " in " + cellCoordinates);
-				exceptionBuffer.addExceptionInfo(new ExceptionInfo(bdfe, record, cloverFieldIndex, cellCoordinates, dataFormatter.formatCellValue(cell)));
+				exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, 
+						cellCoordinates, dataFormatter.formatCellValue(cell), cellTypeToString(cell.getCellType()), cellFormat));
 			}
 		}
 	}
@@ -534,22 +544,31 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	
 	private class ExceptionInfo {
 		
-		private BadDataFormatException bdfe;
+		private SpreadsheetException se;
 		private DataRecord record;
 		private int fieldIndex;
+		private String fileName;
+		private String sheetName;		
 		private String cellCoordinates;
 		private String cellValue;
+		private String cellType;
+		private String cellFormat;
 		
-		public ExceptionInfo(BadDataFormatException bdfe, DataRecord record, int fieldIndex, String cellCoordinates, String cellValue) {
-			this.bdfe = bdfe;
+		public ExceptionInfo(SpreadsheetException se, DataRecord record, int fieldIndex, String fileName, String sheetName,
+				String cellCoordinates, String cellValue, String cellType, String cellFormat) {
+			this.se = se;
 			this.record = record;
 			this.fieldIndex = fieldIndex;
+			this.fileName = fileName;
+			this.sheetName = sheetName;
 			this.cellCoordinates = cellCoordinates;
 			this.cellValue = cellValue;
+			this.cellType = cellType;
+			this.cellFormat = cellFormat;
 		}
 		
-		public BadDataFormatException getException() {
-			return bdfe;
+		public SpreadsheetException getException() {
+			return se;
 		}
 		
 		public DataRecord getRecord() {
@@ -560,12 +579,28 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			return fieldIndex;
 		}
 		
+		public String getFileName() {
+			return fileName;
+		}
+		
+		public String getSheetName() {
+			return sheetName;
+		}
+		
 		public String getCellCoordinates() {
 			return cellCoordinates;
 		}
 		
 		public String getCellValue() {
 			return cellValue;
+		}
+		
+		public String getCellType() {
+			return cellType;
+		}
+		
+		public String getCellFormat() {
+			return cellFormat;
 		}
 	}
 	
@@ -582,7 +617,8 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			if (!stopParsing) {
 				while (!infoQueue.isEmpty()) {
 					ex = infoQueue.remove();
-					handleException(ex.getException(), ex.getRecord(), ex.getFieldIndex(), ex.getCellCoordinates(), ex.getCellValue());
+					handleException(ex.getException(), ex.getRecord(), ex.getFieldIndex(), ex.getFileName(), ex.getSheetName(), 
+							ex.getCellCoordinates(), ex.getCellValue(), ex.getCellType(), ex.getCellFormat());
 				}
 			}
 		}

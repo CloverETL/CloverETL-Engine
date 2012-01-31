@@ -64,6 +64,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.SpreadsheetUtils;
 
@@ -77,6 +78,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	private SpreadsheetStreamParser parent;
 	//private POIFSFileSystem fs;
 	private DirectoryNode workbookDirNode;
+	
+	private String fileName;
+	private String sheetName;
 
 	private final static Set<Short> ACCEPTED_RECORDS = new HashSet<Short>();
 	static {
@@ -196,6 +200,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		} else {
 			//fs = new NPOIFSFileSystem((File) inputSource);
 			workbookDirNode = new NPOIFSFileSystem((File) inputSource, true).getRoot();
+			fileName = ((File) inputSource).getAbsolutePath();
 		}
 		prepareRecordFactory();
 		currentSheetIndex = -1;
@@ -239,6 +244,11 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			prepareRecordFactory();
 		}
 		recordFillingListener.setRequestedSheetIndex(sheetNumber);
+		try {
+			sheetName = getSheetNames().get(sheetNumber);
+		} catch (IOException e) {
+			// do nothing
+		}
 		sheetEof = false;
 		rootEof = false;
 
@@ -372,13 +382,14 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 					try {
 						recordToFill.getField(cloverFieldIndex).setNull(true);
 						if (sheetEof) {
-							parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + 
-									recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred"), recordToFill, cloverFieldIndex, null, null);
+							parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + 
+									recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred"), recordToFill, cloverFieldIndex, 
+									fileName, sheetName, null, null, null, null);
 						}
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("Unexpected end of sheet - expected another data row for field " + 
+						parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + 
 								recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Moreover, cannot set default value or null", e),
-								recordToFill, cloverFieldIndex, null, null);
+								recordToFill, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 					}
 				}
 			}
@@ -680,10 +691,12 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			int sid = record.getSid();
 			String cellType;
 			String actualValue;
+			String cellFormat = null;
 			switch(sid) {
 			case NumberRecord.sid:
 				cellType = "Numeric";
 				actualValue = formatter.formatNumberDateCell((NumberRecord) record);
+				cellFormat = formatter.getFormatString((NumberRecord) record);
 				break;
 			case FormulaRecord.sid:
 				cellType = "Formula";
@@ -693,6 +706,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				switch (fresultType) {
 				case HSSFCell.CELL_TYPE_NUMERIC:
 					actualValue = formatter.formatNumberDateCell(frec);
+					cellFormat = formatter.getFormatString((NumberRecord) record);
 					break;
 				case HSSFCell.CELL_TYPE_BOOLEAN:
 					actualValue = String.valueOf(frec.getCachedBooleanValue());
@@ -729,8 +743,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			}
 			CellRecord cellRecord = "Unknown".equals(cellType) ? null : (CellRecord) record;
 			String cellCoordinates = record == null ? "Unknown" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
-			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from cell of type " + cellType + " in " + cellCoordinates), 
-					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
+			parent.handleException(new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " + cellType + " in " + cellCoordinates), 
+					recordToFill, cloverFieldIndex, fileName, sheetName, cellCoordinates, actualValue, cellType, cellFormat);
 		}
 
 		
