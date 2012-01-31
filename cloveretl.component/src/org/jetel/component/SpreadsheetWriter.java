@@ -324,6 +324,11 @@ public class SpreadsheetWriter extends Node {
 		SpreadsheetFormat fileFormat = resolveFormat(formatterType, fileURL);
 		SpreadsheetFormat templateFormat = resolveFormat(formatterType, templateFileURL);
 		
+		if (templateFileURL!=null && existingSheetsActions.equals(SpreadsheetExistingSheetsActions.CLEAR_SHEETS)) {
+			status.add(new ConfigurationProblem("Clearing of target sheets is not allowed when writing to template.",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		
 		if (fileURL!=null && fileFormat==null) {
 			status.add(new ConfigurationProblem("Unsupported format of ouput file!",
 					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
