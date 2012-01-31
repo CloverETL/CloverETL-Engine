@@ -483,10 +483,8 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				//assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5. "+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00" /* this is like in GUI? */, fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "* 56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1 ?/2", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 
-				parser.parseNext(record);
 				assertNotNull(parser.parseNext(record));
 				
-				parser.parseNext(record);
 				assertNotNull(parser.parseNext(record));
 				
 				for (int i = 3; i < 10; i++) {
