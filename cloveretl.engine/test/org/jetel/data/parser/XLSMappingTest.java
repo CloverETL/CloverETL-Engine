@@ -67,7 +67,7 @@ public class XLSMappingTest extends CloverTestCase {
 				+ "</mapping>";
 
 		try {
-			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata);
+			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata, true, "XLSTest");
 
 			assertEquals(SpreadsheetOrientation.VERTICAL, mapping.getOrientation());
 			assertEquals(1, mapping.getStep());
@@ -136,7 +136,7 @@ public class XLSMappingTest extends CloverTestCase {
 				+ "</mapping>";
 
 		try {
-			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata);
+			XLSMapping mapping = XLSMapping.parse(textMapping, stringMetadata, true, "XLSTest");
 			assertEquals(SpreadsheetOrientation.VERTICAL, mapping.getOrientation());
 			assertEquals(17, mapping.getStep());
 			assertEquals(false, mapping.isWriteHeader());

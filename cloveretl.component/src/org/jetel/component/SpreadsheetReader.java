@@ -402,13 +402,13 @@ public class SpreadsheetReader extends Node {
 			TransformationGraph graph = getGraph();
 			try {
 				InputStream stream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
-				parsedMapping = XLSMapping.parse(stream, metadata);
+				parsedMapping = XLSMapping.parse(stream, metadata, true, getId());
 			} catch (IOException e) {
 				LOGGER.error("cannot instantiate node from XML", e);
 				throw new ComponentNotReadyException(e.getMessage(), e);
 			}
 		} else if (mapping != null) {
-			parsedMapping = XLSMapping.parse(mapping, metadata);
+			parsedMapping = XLSMapping.parse(mapping, metadata, true, getId());
 		}
 		
 		return parsedMapping;

@@ -41,7 +41,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
@@ -459,13 +458,13 @@ public class SpreadsheetWriter extends Node {
 			TransformationGraph graph = getGraph();
 			try {
 				InputStream stream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
-				parsedMapping = XLSMapping.parse(stream, metadata);
+				parsedMapping = XLSMapping.parse(stream, metadata, false, getId());
 			} catch (IOException e) {
 				LOGGER.error("cannot instantiate node from XML", e);
 				throw new ComponentNotReadyException(e.getMessage(), e);
 			}
 		} else if (mapping != null) {
-			parsedMapping = XLSMapping.parse(mapping, metadata);
+			parsedMapping = XLSMapping.parse(mapping, metadata, false, getId());
 		}
 
 		return parsedMapping;
