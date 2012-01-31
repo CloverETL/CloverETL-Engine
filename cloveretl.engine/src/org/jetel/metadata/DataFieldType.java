@@ -19,13 +19,12 @@
 package org.jetel.metadata;
 
 import java.util.Date;
+import java.util.List;
 
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.util.string.CloverString;
-
-import com.sun.xml.bind.v2.schemagen.xmlschema.List;
 
 /**
  * Enumeration of all build-in clover data types.
