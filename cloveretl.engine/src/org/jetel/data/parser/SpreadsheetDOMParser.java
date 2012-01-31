@@ -73,11 +73,12 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	private int[] columnEnds;
 	private int columnOffset;
 
-	private int[] rowIdxBuffer;
 	private boolean[] overFlow;
 	private boolean overLastLine;
 	private boolean stopParsing;
 	private ExceptionBuffer exceptionBuffer;
+	
+	boolean horizontal;
 	
 	private String password;
 
@@ -186,7 +187,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		
 		if (horizontal) {
 			for (int i = mappingMin; i < mappingMax + 1; i++) {
-				columnEnds[i - mappingMin] = sheet.getRow(i).getLastCellNum();
+				Row row = sheet.getRow(i);
+				for (int j=row.getLastCellNum(); j>=0; j--) {
+					Cell cell = row.getCell(j);
+					if (cell!=null) {						
+						break;
+					}
+				}
+//				columnEnds[i - mappingMin] = sheet.getRow(i).getLastCellNum();
 			}
 		} else {
 			for (Row row : sheet) {
@@ -214,14 +222,12 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			if (lastLine == 0 && sheet.getPhysicalNumberOfRows() == 0) {
 				lastLine = -1;
 			}
-			calculateColEnds(false);
 		} else {
 			for (Row row : sheet) {
-				if (row.getLastCellNum() - 1 > lastLine) { //
+				if (row.getLastCellNum() - 1 > lastLine) {
 					lastLine = row.getLastCellNum() - 1; 
 				}
 			}
-			calculateColEnds(true);
 		}
 		
 		overLastLine = false;
@@ -275,16 +281,15 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.setToNull();
-		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
-//			if (stopParsing || nextRecordStartRow > lastLine) {
-//				return null;
-//			}
-			return parse(record, nextRecordStartRow, mappingMinColumn, false);
-		} else {
-//			if (stopParsing || nextRecordStartRow > lastLine) {
-//				return null;
-//			}
+		horizontal = mappingInfo.getOrientation() == SpreadsheetOrientation.HORIZONTAL;
+		if (overFlow == null) {
+			calculateColEnds(horizontal);
+		}
+		if (horizontal) {
 			return parse(record, mappingMinRow, nextRecordStartRow, true);
+			
+		} else {
+			return parse(record, nextRecordStartRow, mappingMinColumn, false);
 		}
 	}
 
@@ -295,15 +300,15 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 			Row row = sheet.getRow(recordStartRow + mappingRowIndex);
 			
 			if (row == null) {
-				processNullRow(record, recordRow, recordStartRow, mappingRowIndex);
-				processNullRow(record, formatRecordRow, recordStartRow, mappingRowIndex);
+				processNullRow(record, recordRow, recordStartRow, startColumn, mappingRowIndex);
+				processNullRow(record, formatRecordRow, recordStartRow, startColumn, mappingRowIndex);
 				continue;
 			}
 			
 			int cloverFieldIndex;
 			for (int column = startColumn; column < recordRow.length + startColumn; column++) {
 				if ((cloverFieldIndex = recordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
-					fillCloverField(row.getCell(column), column, recordStartRow + mappingRowIndex, record, cloverFieldIndex, horizontal);					
+					fillCloverField(row.getCell(column), column, recordStartRow, mappingRowIndex, record, cloverFieldIndex, horizontal);					
 				}
 				if (formatRecordRow != null) {
 					if ((cloverFieldIndex = formatRecordRow[column - startColumn]) != XLSMapping.UNDEFINED) {
@@ -324,7 +329,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		return stopParsing ? null : record;
 	}
 
-	private void processNullRow(DataRecord record, int[] recordRow, int recordStartRow, int mappingRowIndex) {
+	private void processNullRow(DataRecord record, int[] recordRow, int recordStartRow, int startColumn, int mappingRowIndex) {
 		int currentParseRow = recordStartRow + mappingRowIndex;
 		BadDataFormatException bdfe;		
 		if (recordRow != null) {
@@ -353,13 +358,14 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		}
 	}
 
-	private void fillCloverField(Cell cell, int cellColumn, int currentParseRow, DataRecord record, int cloverFieldIndex, boolean horizontal) {
+	private void fillCloverField(Cell cell, int cellColumn, int startRow, int offset, DataRecord record, int cloverFieldIndex, boolean horizontal) {
 		BadDataFormatException bdfe;
+		int currentParseRow = startRow + offset;
 		if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
 			try {
 				record.getField(cloverFieldIndex).setNull(true);
 				if (horizontal) {
-					overFlow[cloverFieldIndex] = cellColumn > columnEnds[currentParseRow];
+					overFlow[cloverFieldIndex] = cellColumn > columnEnds[offset];
 					if (cellColumn > lastLine) {
 						overLastLine = true;
 						bdfe = new BadDataFormatException("Unexpected end of sheet - expected another data row for field " +
