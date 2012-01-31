@@ -357,18 +357,9 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			if (group.getCloverField() != XLSMapping.UNDEFINED || group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
-				DataFieldMetadata field = metadata.getField(group.getCloverField());
-				if (field!=null) {
-					if (!field.isAutoFilled()) {
-						processFieldMapping(group.getCloverField(), mapping, group);
-						processFieldMapping(group.getFormatField(), formatMapping, group);
-					} else {
-						LOGGER.warn("Mapping on field \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
-					}
-				} else {
-					LOGGER.warn("There is no field with number " + group.getCloverField() + " in output metadata");
-				}
+			if (group.getCloverField() != XLSMapping.UNDEFINED) {
+				processFieldMapping(group.getCloverField(), mapping, group);
+				processFieldMapping(group.getFormatField(), formatMapping, group);
 			}
 		}
 	}

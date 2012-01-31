@@ -36,6 +36,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
@@ -58,7 +60,9 @@ import org.xml.sax.SAXException;
  */
 public class XLSMapping {
 	
-	public static final String DEFAULT_VERSION = "1.0";
+    protected static Log LOGGER = LogFactory.getLog(XLSMapping.class);
+
+    public static final String DEFAULT_VERSION = "1.0";
 	public static final String DEFAULT_ENCODING = "UTF-8";
 	
 	public static final int DEFAULT_SKIP = 0;
@@ -149,11 +153,11 @@ public class XLSMapping {
 		return status;
 	}
 	
-	public static XLSMapping parse(String inputString, DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public static XLSMapping parse(String inputString, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) throws ComponentNotReadyException {
 		InputSource is = new InputSource(new StringReader(inputString));
 		
 		try {
-			return parse(getBuilder().parse(is), metadata);
+			return parse(getBuilder().parse(is), metadata, autofillingFieldsForbidden, componentID);
 		} catch (SAXException e) {
 			 throw new ComponentNotReadyException(e);
 		} catch (IOException e) {
@@ -161,10 +165,10 @@ public class XLSMapping {
 		}
 	}
 	
-	public static XLSMapping parse(InputStream inputStream, DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public static XLSMapping parse(InputStream inputStream, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) throws ComponentNotReadyException {
 		
 		try {
-			return parse(getBuilder().parse(inputStream), metadata);
+			return parse(getBuilder().parse(inputStream), metadata, autofillingFieldsForbidden, componentID);
 		} catch (SAXException e) {
 			 throw new ComponentNotReadyException(e);
 		} catch (IOException e) {
@@ -184,7 +188,7 @@ public class XLSMapping {
 		}
 	}
 	
-	private static XLSMapping parse(Document document, DataRecordMetadata metadata) {
+	private static XLSMapping parse(Document document, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) {
 		try {
 			XPathFactory xpathFactory = XPathFactory.newInstance();
 			XPath xpath = xpathFactory.newXPath();
@@ -194,13 +198,13 @@ public class XLSMapping {
 			Boolean writeHeaderResult = (Boolean) xpath.evaluate(XPATH_WRITE_HEADER_ATTRIBUTE, document, XPathConstants.BOOLEAN);
 
 			return new XLSMapping(intResult.intValue(), SpreadsheetOrientation.valueOfIgnoreCase(orientationResult),
-					writeHeaderResult, parseHeaderGroups(document.getElementsByTagName(XML_HEADER_GROUP), metadata));
+					writeHeaderResult, parseHeaderGroups(document.getElementsByTagName(XML_HEADER_GROUP), metadata, autofillingFieldsForbidden, componentID));
 		} catch (XPathExpressionException e) {
 			throw new JetelRuntimeException(e);
 		}
 	}
 	
-	private static List<HeaderGroup> parseHeaderGroups(NodeList headerGroups, DataRecordMetadata metadata) {
+	private static List<HeaderGroup> parseHeaderGroups(NodeList headerGroups, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) {
 		List<HeaderGroup> headerGroupList = new ArrayList<HeaderGroup>(headerGroups.getLength());
 		
 		Map<String, Integer> fieldMap = metadata.getFieldNamesMap();
@@ -231,12 +235,12 @@ public class XLSMapping {
 					// let's have Explicit mode even if cloverField tag is empty
 					mappingMode = SpreadsheetMappingMode.EXPLICIT;
 					if (property.getFirstChild() != null) {
-						cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
+						cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID);
 					}
 				} else if (XML_HEADER_GROUP_AUTO_MAPPING_TYPE.equals(propertyName) && property.getFirstChild() != null) {
 					mappingMode = SpreadsheetMappingMode.valueOfIgnoreCase(property.getFirstChild().getNodeValue());
 				} else if (XML_HEADER_GROUP_FORMAT_FIELD.equals(propertyName) && property.getFirstChild() != null) {
-					formatFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue());
+					formatFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID);
 				}
 			}
 			
@@ -246,13 +250,34 @@ public class XLSMapping {
 		return headerGroupList;
 	}
 
-	private static int getCloverFieldIndex(Map<String, Integer> fieldMap, String field) {
+	private static int getCloverFieldIndex(Map<String, Integer> fieldMap, String field, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) {
 		int isInteger = StringUtils.isInteger(field); 
 		if (isInteger == 0 || isInteger == 1) {
-			return Integer.parseInt(field);
+			int fieldNum = Integer.parseInt(field);
+			if (fieldNum < 0 || fieldNum >= metadata.getNumFields()) {
+				LOGGER.warn(componentID + ": Field with index " + field + " does not exist in metadata \"" + metadata.getName() + "\"");
+				return UNDEFINED;
+			}
+			if (autofillingFieldsForbidden && metadata.getField(fieldNum).isAutoFilled()) {
+				String fieldName = metadata.getField(fieldNum).getName();
+				LOGGER.warn(componentID + ": Mapping on field index " + field + " (field name: " + fieldName + ") is not allowed, because this field is auto-filled.");
+				return UNDEFINED;
+			}
+			return fieldNum;
+		} else if (isInteger > 1) {
+			LOGGER.warn(componentID + ": Field index " + field + " is too large number");
+			return UNDEFINED;
 		} else {
 			Integer index = fieldMap.get(field);
-			return index != null ? index : UNDEFINED; //TODO: fail instead?
+			if (index == null) {
+				LOGGER.warn(componentID + ": Field with name \"" + field + "\" does not exist in metadata \"" + metadata.getName() + "\"");
+				return UNDEFINED;
+			}
+			if (autofillingFieldsForbidden && metadata.getField(index).isAutoFilled()) {
+				LOGGER.warn(componentID + ": Mapping on field \"" + field + "\" is not allowed, because this field is auto-filled.");
+				return UNDEFINED;
+			}
+			return index;
 		}
 	}
 	
