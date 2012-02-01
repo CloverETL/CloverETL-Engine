@@ -169,7 +169,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		recordFillingListener.setRecordRange(nextRecordStartRow, parent.mappingInfo.getStep());
 		recordFillingListener.setRecord(record);
 		if (!processParsing(recordReader)) {
-			if (!recordFillingListener.isRecordStarted() && recordFillingListener.cellBuffers.getNotEmptyBuffersCount() == 0) {
+			if (!recordFillingListener.isRecordStarted() && recordFillingListener.cellBuffers.isEmpty()) {
 				return null;
 			}
 			recordFillingListener.finishRecord();

@@ -122,29 +122,14 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			if (!staxParser.hasNext()) {
 				endOfSheet = true;
 				
-				if (sheetContentHandler.isRecordStarted() && remainingRecordsCount < 0) {
-					if (!sheetContentHandler.isRecordFinished()) {
-						// generates exception for record cells beyond end of sheet
-						sheetContentHandler.finishRecord();
-					}
-				} else {
-					
-					if (remainingRecordsCount < 0) {
-						// initialize how many not empty records partially beyond end of sheet are to be returned
-						remainingRecordsCount = cellBuffers.getNotEmptyBuffersCount();
-						if (remainingRecordsCount != 0 || !record.isNull()) {
-							remainingRecordsCount++;
-						}
-					}
-					
-					if (remainingRecordsCount-- <= 0) {
+				if (!sheetContentHandler.isRecordFinished()) {
+					if (!sheetContentHandler.isRecordStarted() && cellBuffers.isEmpty()) {
 						return null;
 					}
-					
 					sheetContentHandler.finishRecord();
 				}
 			}
-
+			
 		} catch (XMLStreamException e) {
 			throw new JetelException("Error occurred while reading XML of sheet " + currentSheetIndex, e);
 		} catch (SAXException e) {
