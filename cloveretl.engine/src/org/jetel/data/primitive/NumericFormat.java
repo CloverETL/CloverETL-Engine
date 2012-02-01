@@ -98,7 +98,8 @@ public class NumericFormat extends NumberFormat {
 					result[counter++]='.';
 					dSeparator = true;
 				}else{//second decimal separator found
-					throw new NumberFormatException("For input string: \"" + source + "\"");
+					throw new NumberFormatException("Cannot interpret \"" + source +"\" as a number. " +
+							"Two decimal separators found.");
 				}
 			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
 				continue;
@@ -107,7 +108,7 @@ public class NumericFormat extends NumberFormat {
 				exponentPart = getExponentPart(chars,counter+1);
 				break;
 			}else{//unknown char or grouping separator is after decimal separator 
-				throw new NumberFormatException("For input string: \"" + source + "\"");
+				throw new NumberFormatException("Cannot interpret \"" + source +"\" as a number.");
 			}
 		}
 		try {
@@ -170,7 +171,8 @@ public class NumericFormat extends NumberFormat {
 					result[counter++]='.';
 					dSeparator = true;
 				}else{//second decimal separator found
-					throw new NumberFormatException("For input string: \"" + source + "\"");
+					throw new NumberFormatException("Cannot interpret \"" + source +"\" as a number. " +
+							"Two decimal separators found.");
 				}
 			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
 				continue;
@@ -179,7 +181,7 @@ public class NumericFormat extends NumberFormat {
 				exponentPart = getExponentPart(chars,counter+1);
 				break;
 			}else{//unknown char or grouping separator is after decimal separator
-				throw new NumberFormatException("For input string: \"" + source + "\"");
+				throw new NumberFormatException("Cannot interpret \"" + source +"\" as a number.");
 			}
 		}
 		BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
