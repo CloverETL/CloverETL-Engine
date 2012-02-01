@@ -122,7 +122,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			if (!staxParser.hasNext()) {
 				endOfSheet = true;
 				
-				if (sheetContentHandler.isRecordStarted()) {
+				if (sheetContentHandler.isRecordStarted() && remainingRecordsCount < 0) {
 					if (!sheetContentHandler.isRecordFinished()) {
 						// generates exception for record cells beyond end of sheet
 						sheetContentHandler.finishRecord();
@@ -137,7 +137,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 						}
 					}
 					
-					if (remainingRecordsCount == 0) {
+					if (--remainingRecordsCount <= 0) {
 						return null;
 					}
 					
