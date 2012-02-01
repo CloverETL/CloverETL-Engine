@@ -481,7 +481,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				String june = dateSymbols.getMonths()[5];
 				
 				parser.parseNext(record);
-				System.out.println(record);
+				//System.out.println(record);
 				//assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5. "+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00" /* this is like in GUI? */, fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "* 56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1 ?/2", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 
@@ -598,11 +598,11 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	public void testRecordsPartiallyBeyondEndOfSheet() throws Exception {
 		AbstractSpreadsheetParser parser;
 		String xlsFile = "data/xls/excel-types-nocurrency.xls";
-		for (String file : Arrays.asList(xlsFile+"x")) {
+		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
 			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
 				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping9, stringMetadata, true, getParserType(parserIndex)));
 	
-				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
 				
 				parser.setSheet("0");
 				parser.init();
