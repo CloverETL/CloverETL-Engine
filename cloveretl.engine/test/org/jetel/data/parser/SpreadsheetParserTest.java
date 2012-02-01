@@ -568,21 +568,21 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				DataRecord record = new DataRecord(metadata2);
 				record.init();
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, 2);
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, null);
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, null);
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, 1, 2);
 				
 				assertFalse(exceptionHandler.isExceptionThrowed());
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, 1, null);
 				
 				// last record is half beyond the end of sheet
@@ -615,34 +615,29 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				DataRecord record = new DataRecord(stringMetadata);
 				record.init();
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				//System.out.println(record);
 				assertRecordContent(record, "něco", "2.00%");
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, "další", "1.00%");
 				assertFalse(exceptionHandler.isExceptionThrowed());
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertTrue(record.isNull());
 				assertTrue(exceptionHandler.isExceptionThrowed());
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, "bž", null);
 				
 				for (int i = 0; i < 5; i++) {
 					assertNotNull(parser.parseNext(record));
 				}
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, "ireu tiorewitopoehj goifdsgoeůhg eiognboienhgoienpo", null);
 				
 				assertNull(parser.parseNext(record));
-//				System.out.println(parser.parseNext(record));
-//				System.out.println(parser.parseNext(record));
-//				System.out.println(parser.parseNext(record));
-//				System.out.println(parser.parseNext(record));
-//				System.out.println(parser.parseNext(record));
 				
 				parser.close();
 			}
