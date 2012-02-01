@@ -62,6 +62,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping6;
 	private String mapping7;
 	private String mapping8;
+	private String mapping9;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -79,6 +80,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping6 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping6_excel-types-nocurrency.xml", "UTF-8");
 		mapping7 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping7_empty.xml", "UTF-8");
 		mapping8 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping8_excel-types-nocurrency.xml", "UTF-8");
+		mapping9 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping9_excel-types-nocurrency.xml", "UTF-8");
 	}
 	
 	@Override
@@ -479,7 +481,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				String june = dateSymbols.getMonths()[5];
 				
 				parser.parseNext(record);
-				//System.out.println(record);
+				System.out.println(record);
 				//assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5. "+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00" /* this is like in GUI? */, fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "* 56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1 ?/2", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 
@@ -592,4 +594,59 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 		}
 	}
+	
+	public void testRecordsPartiallyBeyondEndOfSheet() throws Exception {
+		AbstractSpreadsheetParser parser;
+		String xlsFile = "data/xls/excel-types-nocurrency.xls";
+		for (String file : Arrays.asList(xlsFile+"x")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping9, stringMetadata, true, getParserType(parserIndex)));
+	
+				System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
+				DataRecord record = new DataRecord(stringMetadata);
+				record.init();
+				
+				parser.parseNext(record);
+				//System.out.println(record);
+				assertRecordContent(record, "něco", "2.00%");
+
+				parser.parseNext(record);
+				assertRecordContent(record, "další", "1.00%");
+				assertFalse(exceptionHandler.isExceptionThrowed());
+				
+				parser.parseNext(record);
+				assertTrue(record.isNull());
+				assertTrue(exceptionHandler.isExceptionThrowed());
+
+				parser.parseNext(record);
+				assertRecordContent(record, "bž", null);
+				
+				for (int i = 0; i < 5; i++) {
+					assertNotNull(parser.parseNext(record));
+				}
+				
+				parser.parseNext(record);
+				assertRecordContent(record, "ireu tiorewitopoehj goifdsgoeůhg eiognboienhgoienpo", null);
+				
+				assertNull(parser.parseNext(record));
+//				System.out.println(parser.parseNext(record));
+//				System.out.println(parser.parseNext(record));
+//				System.out.println(parser.parseNext(record));
+//				System.out.println(parser.parseNext(record));
+//				System.out.println(parser.parseNext(record));
+				
+				parser.close();
+			}
+		}
+	}
+	
 }
