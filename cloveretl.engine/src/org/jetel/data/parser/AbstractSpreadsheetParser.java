@@ -81,7 +81,7 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 	private String sheet;
 	private SpreadsheetIndexIterator sheetIndexIterator;
-	private List<String> sheetNames;
+	protected List<String> sheetNames;
 
 	private BitSet unusedFields;
 	
