@@ -616,7 +616,6 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				record.init();
 				
 				assertNotNull(parser.parseNext(record));
-				//System.out.println(record);
 				assertRecordContent(record, "něco", "2.00%");
 
 				assertNotNull(parser.parseNext(record));

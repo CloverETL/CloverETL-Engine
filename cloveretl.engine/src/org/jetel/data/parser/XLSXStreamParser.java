@@ -137,7 +137,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 						}
 					}
 					
-					if (--remainingRecordsCount <= 0) {
+					if (remainingRecordsCount-- <= 0) {
 						return null;
 					}
 					
