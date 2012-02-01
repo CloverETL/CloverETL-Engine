@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
@@ -167,6 +168,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	class CellBuffers<T> {
 
 		private CellBuffer<T>[][] cellBuffers;
+		private BitSet emptyBuffers;
 		private int nextPartial;
 		private RecordFieldValueSetter<T> fieldValueSetter;
 		private RecordFieldValueSetter<T> fieldValueAsFormatSetter;
@@ -177,6 +179,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			this.fieldValueAsFormatSetter = fieldValueAsFormatSetter;
 			int numberOfBuffers = (mapping.length / mappingInfo.getStep()) - (mapping.length % mappingInfo.getStep() == 0 ? 1 : 0);
 			cellBuffers = new CellBuffer[numberOfBuffers][metadata.getNumFields()];
+			emptyBuffers = new BitSet(numberOfBuffers);
 		}
 		
 		public int getCount() {
@@ -196,7 +199,9 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		}
 
 		private void moveToNextCellBuffer() {
-			Arrays.fill(cellBuffers[getCellBufferIndex(0)], null);
+			int bufferIndex = getCellBufferIndex(0);
+			Arrays.fill(cellBuffers[bufferIndex], null);
+			emptyBuffers.clear(bufferIndex);
 			nextPartial = ((nextPartial + 1) % cellBuffers.length);
 		}
 
@@ -204,6 +209,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			for (int i = 0; i < cellBuffers.length; i++) {
 				Arrays.fill(cellBuffers[i], null);
 			}
+			emptyBuffers.clear();
 		}
 		
 		public void fillRecordFromBuffer(DataRecord record) {
@@ -232,6 +238,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 					}
 					
 					if (valueField != XLSMapping.UNDEFINED || formatField != XLSMapping.UNDEFINED) {
+						emptyBuffers.set(getCellBufferIndex(i));
 						break;
 					}
 				}
@@ -239,22 +246,10 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		}
 
 		/**
-		 * @return number of buffers with at least one non-null cell.
-		 * Last buffer is ignored! (It is assumed that caller already has that buffer
-		 * content because of previous call to fillRecordFromBuffer(record) method.)
+		 * @return true iff all buffers have all cells set to null.
 		 */
-		public int getNotEmptyBuffersCount() {
-			int count = 0;
-			for (int offset = 0; offset < getCount() - 1; offset++) {
-				CellBuffer<?>[] buffer = getBuffer(offset);
-				for (int i = 0; i < buffer.length; i++) {
-					if (buffer[i] != null) {
-						count++;
-						break;
-					}
-				}
-			}
-			return count;
+		public boolean isEmpty() {
+			return emptyBuffers.isEmpty();
 		}
 	}
 
