@@ -956,8 +956,10 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (!rootEof) {
 					rootEof = true;
 				} else {
-					sheetEof = true;
-					return false;
+					if (recordFillingListener.isRequestedSheetSet()) {
+						sheetEof = true;
+						return false;
+					}
 				}
 			}
 		}
