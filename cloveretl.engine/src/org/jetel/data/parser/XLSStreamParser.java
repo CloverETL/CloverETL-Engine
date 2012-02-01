@@ -240,15 +240,15 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public boolean setCurrentSheet(int sheetNumber) {
+		if (sheetNumber >= parent.sheetNames.size()) {
+			return false;
+		}
 		if (currentSheetIndex > sheetNumber) {
 			prepareRecordFactory();
 		}
 		recordFillingListener.setRequestedSheetIndex(sheetNumber);
-		try {
-			sheetName = getSheetNames().get(sheetNumber);
-		} catch (IOException e) {
-			// do nothing
-		}
+		sheetName = parent.sheetNames.get(sheetNumber);
+		
 		sheetEof = false;
 		rootEof = false;
 
