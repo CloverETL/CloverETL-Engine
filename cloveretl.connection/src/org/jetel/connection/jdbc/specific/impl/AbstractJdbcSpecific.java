@@ -591,7 +591,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
 		int jetelTypeToSql = jetelType2sql(field);
-		if (jetelTypeToSql == Types.VARCHAR && sqlType == Types.CHAR) {
+		if (jetelTypeToSql == Types.VARCHAR && (sqlType == Types.CHAR || sqlType == Types.CLOB)) {
 			return true;
 		}
 		return sqlType == jetelTypeToSql;
