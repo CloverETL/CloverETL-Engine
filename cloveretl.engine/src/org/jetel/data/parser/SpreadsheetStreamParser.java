@@ -102,11 +102,13 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		if (documentType == ExcelType.XLS) {
 			bufferedStream = ExcelUtils.getBufferedStream(inputStream);
 			inputStream = ExcelUtils.getDecryptedXLSXStream(bufferedStream, password);
-			format = SpreadsheetFormat.XLSX;
 			if (inputStream == null) {
 				bufferedStream.reset();
 				inputStream = bufferedStream;
 				format = SpreadsheetFormat.XLS;
+			} else {
+				format = SpreadsheetFormat.XLSX;
+				inputSource = inputStream;
 			}
 		} else if (documentType == ExcelType.XLSX) {
 			format = SpreadsheetFormat.XLSX;
