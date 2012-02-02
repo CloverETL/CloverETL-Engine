@@ -590,7 +590,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
-		return sqlType == jetelType2sql(field);
+		int jetelTypeToSql = jetelType2sql(field);
+		if (jetelTypeToSql == Types.VARCHAR && sqlType == Types.CHAR) {
+			return true;
+		}
+		return sqlType == jetelTypeToSql;
 	}
 
 	@Override
@@ -613,6 +617,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public List<Integer> getFieldTypes(ResultSetMetaData resultSetMetadata, DataRecordMetadata cloverMetadata) throws SQLException {
 		return SQLUtil.getFieldTypes(resultSetMetadata);
+	}
+	
+	@Override
+	public int getSqlTypeByTypeName(String sqlTypeName) {
+		return Types.CLOB;
 	}
 
 	@Override

@@ -168,6 +168,13 @@ public interface JdbcSpecific {
 	public Pattern getCommentsPattern();
 
 	/**
+	 * Determines sql type by the type name. Intended to be used when the driver recognize the type as Types.CLOB (2005)
+	 * @param sqlTypeName
+	 * @return
+	 */
+	public int getSqlTypeByTypeName(String sqlTypeName);
+	
+	/**
 	 * This can be used to convert java sql types into real names of a data type instide the database
 	 * @return Name of database specific data type corresponding to java.sql.Types type
 	 */
