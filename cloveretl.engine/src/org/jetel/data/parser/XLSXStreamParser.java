@@ -38,7 +38,6 @@ import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -47,6 +46,7 @@ import org.apache.poi.xssf.model.StylesTable;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.AbstractSpreadsheetParser.CellValueFormatter;
 import org.jetel.data.parser.SpreadsheetStreamParser.CellBuffers;
 import org.jetel.data.parser.SpreadsheetStreamParser.RecordFieldValueSetter;
 import org.jetel.data.parser.XSSFSheetXMLHandler.SheetContentsHandler;
@@ -95,10 +95,9 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private int nextRecordStartRow;
 
 	/** the data formatter used to format cell values as strings */
-	private final DataFormatter dataFormatter = new DataFormatter();
+	private final CellValueFormatter dataFormatter = new CellValueFormatter();
 
 	private boolean endOfSheet;
-	private int remainingRecordsCount = -1;
 	 
 	public XLSXStreamParser(SpreadsheetStreamParser parent) {
 		this.parent = parent;
@@ -258,7 +257,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			reader = new XSSFReader(opcPackage);
 			stylesTable = reader.getStylesTable();
 			sharedStringsTable = new ReadOnlySharedStringsTable(opcPackage);
-			sheetContentHandler = new RecordFillingContentHandler(stylesTable, dataFormatter, AbstractSpreadsheetParser.USE_DATE1904);
+			sheetContentHandler = new RecordFillingContentHandler(stylesTable, dataFormatter);
 			cellBuffers.init(CellValue.class, sheetContentHandler, sheetContentHandler.getFieldValueToFormatSetter());
 		} catch (InvalidFormatException e) {
 			throw new ComponentNotReadyException("Error opening the XLSX workbook!", e);
@@ -394,10 +393,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		protected boolean recordStarted;
 		protected boolean recordFinished;
 
-		protected DataFormatter formatter;
+		protected CellValueFormatter formatter;
 		protected StylesTable stylesTable;
 
-		public SheetRowContentHandler(StylesTable stylesTable, DataFormatter formatter) {
+		public SheetRowContentHandler(StylesTable stylesTable, CellValueFormatter formatter) {
 			this.stylesTable = stylesTable;
 			this.formatter = formatter;
 		}
@@ -452,10 +451,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			return formatString;
 		}
 		
-		protected String formatNumericToString(String value, int styleIndex) {
+		protected String formatNumericToString(String value, int styleIndex, String locale) {
 			XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
 			String formatString = getFormatString(styleIndex);
-			return formatter.formatRawCellContents(Double.parseDouble(value), style.getDataFormat(), formatString);
+			return formatter.formatRawCellContents(Double.parseDouble(value), style.getDataFormat(), formatString, null);
 		}
 
 	}
@@ -466,7 +465,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		private final int firstColumn;
 		private final int lastColumn;
 
-		public RawRowContentHandler(StylesTable stylesTable, DataFormatter formatter, int firstColumn, int lastColumn) {
+		public RawRowContentHandler(StylesTable stylesTable, CellValueFormatter formatter, int firstColumn, int lastColumn) {
 			super(stylesTable, formatter);
 			this.firstColumn = firstColumn;
 			this.lastColumn = lastColumn;
@@ -495,7 +494,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 				String formattedValue = value;
 				if (cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)) {
-					formattedValue = formatNumericToString(value, styleIndex);
+					formattedValue = formatNumericToString(value, styleIndex, null);
 				}
 				if (cellType != Cell.CELL_TYPE_BLANK) {
 					cellValues.add(new CellValue(columnIndex, formattedValue, cellType, formulaType, styleIndex));
@@ -507,7 +506,6 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	private class RecordFillingContentHandler extends SheetRowContentHandler implements RecordFieldValueSetter<CellValue> {
 
 		private DataRecord record;
-		private final boolean date1904;
 
 		private int lastColumn = -1;
 
@@ -517,9 +515,8 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		private final RecordFieldValueSetter<CellValue> fieldValueToFormatSetter = new FieldValueToFormatSetter();
 		
 		
-		public RecordFillingContentHandler(StylesTable stylesTable, DataFormatter formatter, boolean date1904) {
+		public RecordFillingContentHandler(StylesTable stylesTable, CellValueFormatter formatter) {
 			super(stylesTable, formatter);
-			this.date1904 = date1904;
 		}
 
 		public void finishRecord() {
@@ -641,14 +638,18 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
 					if (cellType == Cell.CELL_TYPE_NUMERIC) {
-						field.setValue(DateUtil.getJavaDate(Double.parseDouble(value), date1904));
+						field.setValue(DateUtil.getJavaDate(Double.parseDouble(value), AbstractSpreadsheetParser.USE_DATE1904));
 					} else {
 						throw new IllegalStateException("Cannot get Date value from cell of type " + cellTypeToString(cellType));
 					}
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					field.fromString(cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)? formatNumericToString(value, styleIndex) : value);
+					if (cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)) {
+						field.fromString(formatNumericToString(value, styleIndex, field.getMetadata().getLocaleStr()));
+					} else {
+						field.fromString(value);
+					}
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:

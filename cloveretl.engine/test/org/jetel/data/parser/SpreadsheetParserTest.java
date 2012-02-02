@@ -479,13 +479,14 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				char ds = decimalSymbols.getDecimalSeparator();
 				DateFormatSymbols dateSymbols = new DateFormatSymbols();
 				String june = dateSymbols.getMonths()[5];
+				String january = dateSymbols.getMonths()[0];
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				//System.out.println(record);
-				//assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5. "+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00" /* this is like in GUI? */, fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
-				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "* 56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1 ?/2", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
+				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
 
 				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "další", general, "1"+ds+"20", number, "-852"+ds+"00 Kč", currency, "1\". \""+january+" 1970", date, "11:12:00 PM", time, "5"+ds+"80%", percent, "1"+ds+"50", fraction, "1"+ds+"00E+01", math, "neoc", text, "sgwrert", special);
 				
 				assertNotNull(parser.parseNext(record));
 				

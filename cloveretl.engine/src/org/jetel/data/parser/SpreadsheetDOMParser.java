@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -86,13 +84,12 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 	
 	private String password;
 
-	private final DataFormatter dataFormatter = new DataFormatter();
+	private final CellValueFormatter dataFormatter = new CellValueFormatter();
 	private final static FormulaEval FORMULA_EVAL = new FormulaEval();
 	
 	public SpreadsheetDOMParser(DataRecordMetadata metadata, XLSMapping mappingInfo, String password) {
 		super(metadata, mappingInfo);
 		this.password = password;
-		dataFormatter.addFormat("General", new DecimalFormat("#.############"));
 		exceptionBuffer = new ExceptionBuffer();
 	}
 
@@ -269,7 +266,7 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 						for (int k = lastColumn + 1; k < j; k++) {
 							rowResult.add(null);
 						}
-						rowResult.add(dataFormatter.formatCellValue(cell, FORMULA_EVAL));
+						rowResult.add(dataFormatter.formatCellValue(cell, FORMULA_EVAL, null));
 						lastColumn = j;
 					}
 				}
@@ -407,7 +404,8 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				expectedType = "byte";
 			case DataFieldMetadata.STRING_FIELD:
 				expectedType = "string";
-				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL));
+				String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
+				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale));
 				break;
 			case DataFieldMetadata.DECIMAL_FIELD:
 				expectedType = "decimal";
@@ -438,8 +436,9 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 				String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
 				se = new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " +
 						cellTypeToString(cell.getCellType()) + " in " + cellCoordinates);
+				String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
 				exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, 
-						cellCoordinates, dataFormatter.formatCellValue(cell), cellTypeToString(cell.getCellType()), cellFormat));
+						cellCoordinates, dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale), cellTypeToString(cell.getCellType()), cellFormat));
 			}
 		}
 	}
