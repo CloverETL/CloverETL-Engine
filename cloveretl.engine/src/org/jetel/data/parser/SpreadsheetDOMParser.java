@@ -393,53 +393,62 @@ public class SpreadsheetDOMParser extends AbstractSpreadsheetParser {
 		String expectedType = null;
 		String cellFormat = null;
 		try {
+			try {
 			
-			switch (type) {
-			case DataFieldMetadata.DATE_FIELD:
-			case DataFieldMetadata.DATETIME_FIELD:
-				expectedType = "date";
-				record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
-				break;
-			case DataFieldMetadata.BYTE_FIELD:
-				expectedType = "byte";
-			case DataFieldMetadata.STRING_FIELD:
-				expectedType = "string";
-				String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
-				record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale));
-				break;
-			case DataFieldMetadata.DECIMAL_FIELD:
-				expectedType = "decimal";
-			case DataFieldMetadata.INTEGER_FIELD:
-				expectedType = "integer";
-			case DataFieldMetadata.LONG_FIELD:
-				expectedType = "long";
-			case DataFieldMetadata.NUMERIC_FIELD:
-				expectedType = "number";
-				record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
-				break;
-			case DataFieldMetadata.BOOLEAN_FIELD:
-				expectedType = "boolean";
-				record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
-				break;
-			}
-			
-		} catch (IllegalStateException e) {
-			// Thrown by cell.get*CellValue if cell value type expected here in code is different than the actual cell value.
-			// If the actual cell value is empty string (after trimming), interpret it as null, otherwise rethrow the exception.
-			if (cell.getCellType() == Cell.CELL_TYPE_STRING && "".equals(cell.getStringCellValue().trim())) {
-				record.getField(cloverFieldIndex).setNull(true);
-			} else {
-				try {
-					record.getField(cloverFieldIndex).setNull(true);
-				} catch (Exception ex) {
+				switch (type) {
+				case DataFieldMetadata.DATE_FIELD:
+				case DataFieldMetadata.DATETIME_FIELD:
+					expectedType = "date";
+					record.getField(cloverFieldIndex).setValue(cell.getDateCellValue());
+					break;
+				case DataFieldMetadata.BYTE_FIELD:
+					expectedType = "byte";
+				case DataFieldMetadata.STRING_FIELD:
+					expectedType = "string";
+					String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
+					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale));
+					break;
+				case DataFieldMetadata.DECIMAL_FIELD:
+					expectedType = "decimal";
+				case DataFieldMetadata.INTEGER_FIELD:
+					expectedType = "integer";
+				case DataFieldMetadata.LONG_FIELD:
+					expectedType = "long";
+				case DataFieldMetadata.NUMERIC_FIELD:
+					expectedType = "number";
+					record.getField(cloverFieldIndex).setValue(cell.getNumericCellValue());
+					break;
+				case DataFieldMetadata.BOOLEAN_FIELD:
+					expectedType = "boolean";
+					record.getField(cloverFieldIndex).setValue(cell.getBooleanCellValue());
+					break;
 				}
-				String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
-				se = new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " +
-						cellTypeToString(cell.getCellType()) + " in " + cellCoordinates);
-				String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
-				exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, 
-						cellCoordinates, dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale), cellTypeToString(cell.getCellType()), cellFormat));
+				
+			} catch (IllegalStateException e) {
+				// Thrown by cell.get*CellValue if cell value type expected here in code is different than the actual cell value.
+				if (cell.getCellType() == Cell.CELL_TYPE_STRING || (cell.getCellType() == Cell.CELL_TYPE_FORMULA && cell.getCachedFormulaResultType() == Cell.CELL_TYPE_STRING)) {
+					String cellStringValue = cell.getStringCellValue().trim();
+					// If the actual cell value is empty string (after trimming), interpret it as null, otherwise try to set the string value to the field.
+					if ("".equals(cellStringValue)) {
+						record.getField(cloverFieldIndex).setNull(true);
+					} else {
+						record.getField(cloverFieldIndex).fromString(cellStringValue);
+					}
+				} else {
+					throw e;
+				}
 			}
+		} catch (RuntimeException e) {
+			try {
+				record.getField(cloverFieldIndex).setNull(true);
+			} catch (Exception ex) {
+			}
+			String cellCoordinates = SpreadsheetUtils.getColumnReference(cell.getColumnIndex()) + String.valueOf(cell.getRowIndex());
+			se = new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " +
+					cellTypeToString(cell.getCellType()) + " in " + cellCoordinates);
+			String fieldLocale = metadata.getField(cloverFieldIndex).getLocaleStr();
+			exceptionBuffer.addExceptionInfo(new ExceptionInfo(se, record, cloverFieldIndex, fileName, sheetName, 
+					cellCoordinates, dataFormatter.formatCellValue(cell, FORMULA_EVAL, fieldLocale), cellTypeToString(cell.getCellType()), cellFormat));
 		}
 	}
 	
