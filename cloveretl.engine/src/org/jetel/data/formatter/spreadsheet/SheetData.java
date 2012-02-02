@@ -20,9 +20,11 @@ package org.jetel.data.formatter.spreadsheet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -63,14 +65,7 @@ public final class SheetData {
 	
 	public void removeTemplateLines() {
 		if (mappingInfo.getOrientation()==XLSMapping.HEADER_ON_TOP) {
-			int lastRowIndex = getLastRowNumber();
 			shiftRows(getTemplateCopiedRegionY2()+1, -mappingInfo.getStep());
-			for (int rowToDeleteIndex = lastRowIndex; rowToDeleteIndex > lastRowIndex-mappingInfo.getStep(); --rowToDeleteIndex) {
-				Row row = getRow(rowToDeleteIndex);
-				if (row!=null) {
-					removeRow(row);
-				}
-			}
 		} else {
 			shiftColumns(getTemplateCopiedRegionY2()+1, -mappingInfo.getStep());
 		}
@@ -110,7 +105,7 @@ public final class SheetData {
 		return sheet.getNumMergedRegions();
 	}
 	
-	public void shiftRows(int indexFirst, int indexLast, int shiftSize) {
+	public void shiftFlatRows(int indexFirst, int indexLast, int shiftSize) {
 		sheet.shiftRows(indexFirst, indexLast, shiftSize);
 	}
 	
@@ -153,9 +148,11 @@ public final class SheetData {
 		}
 		
 		//find new last cell in a row
-		int lastCellNumber;
-		for (lastCellNumber=colNumber-1; lastCellNumber>=0 && row.getCell(lastCellNumber)==null; --lastCellNumber);
-		setLastCellNumber(row, lastCellNumber);			
+		if (row!=null) {
+			int lastCellNumber;
+			for (lastCellNumber=colNumber-1; lastCellNumber>=0 && row.getCell(lastCellNumber)==null; --lastCellNumber);
+			setLastCellNumber(row, lastCellNumber);			
+		}
 	}
 	
 	private Cell createCell(int rowNumber, int colNumber) {
@@ -373,33 +370,73 @@ public final class SheetData {
 	 */
 	public void shiftRows(int index, int lineCount) {
 		int lastLineNum = getLastLineNumber(mappingInfo.getOrientation());
+		int previousRecordBottom = index + mappingInfo.getStep() - 1;
 		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
-		if (index <= lastLineNum) {
-			shiftRows(index, lastLineNum, lineCount);
-			setTemplateCopiedRegionY2(getTemplateCopiedRegionY2() + lineCount);
-		}
-		for (int i = 0; i < lineCount; ++i) {
-			int newRowIndex = index + i;
-			Row row = getRow(newRowIndex);
-			if (row == null) {
-				row = createRow(newRowIndex);
+		if (lineCount>=0) {
+			if (index <= lastLineNum) {
+				shiftFlatRows(index, lastLineNum, lineCount);
+				setTemplateCopiedRegionY2(getTemplateCopiedRegionY2() + lineCount);
 			}
-			for (int j = 0; j <=firstRecordXYRange.x2; ++j) {
-				createCellAndRefreshLastColumnNumber(row, j);
-			}
-		}
-		if (mappingStats.getMinRecordFieldYOffset()<0) {
-			//when a record is not a straight line, newly created empty cells must be moved to positions defined by mapping
-			int previousRecordBottom = index + mappingInfo.getStep() - 1;
-			for (Entry<Integer, Interval> entry : mappingStats.getXOffsetToMinimalYIntervalMap().entrySet()) {
-				int x = firstRecordXYRange.x1 + entry.getKey();
-				int firstCellYToMove = index - 1;
-				int lastCellYToMove = previousRecordBottom + entry.getValue().min;
-				for (int y = firstCellYToMove; y >= lastCellYToMove; --y) {
-					int emptyCellY = y + lineCount;;
-					int previousRecordCellY = y;
-					swapCells(x, emptyCellY, x, previousRecordCellY);
+			for (int i = 0; i < lineCount; ++i) {
+				int newRowIndex = index + i;
+				Row row = getRow(newRowIndex);
+				if (row == null) {
+					row = createRow(newRowIndex);
 				}
+				for (int j = 0; j <=firstRecordXYRange.x2; ++j) {
+					createCellAndRefreshLastColumnNumber(row, j);
+				}
+			}
+			if (mappingStats.getMinRecordFieldYOffset()<0) {
+				//when a record is not a straight line, newly created empty cells must be moved to positions defined by mapping
+				for (Entry<Integer, Interval> entry : mappingStats.getXOffsetToMinimalYIntervalMap().entrySet()) {
+					int x = firstRecordXYRange.x1 + entry.getKey();
+					int firstCellYToMove = index - 1;
+					int lastCellYToMove = previousRecordBottom + entry.getValue().min;
+					for (int y = firstCellYToMove; y >= lastCellYToMove; --y) {
+						int emptyCellY = y + lineCount;;
+						int previousRecordCellY = y;
+						swapCells(x, emptyCellY, x, previousRecordCellY);
+					}
+				}
+			}
+		} else {
+			Set<Row> rowsToRemove = new HashSet<Row>();
+			for (int x=0; x<=getLastColumnNumber(); ++x) {
+				Integer minimalYOffset = null;
+				Interval yInterval = mappingStats.getMinimalYIntervalForXOffset(x - mappingStats.getFirstRecordXYRange().x1);
+				if (yInterval != null) {
+					minimalYOffset = yInterval.min;
+				}
+				if (minimalYOffset == null) {
+					minimalYOffset = 0;
+				}
+				int cellY = transformations.maximum(0, previousRecordBottom + minimalYOffset);
+				for (int movementIndex = cellY; movementIndex <= lastLineNum; ++movementIndex) {
+					Cell sourceCell = getCellByXY(x, movementIndex);
+					Cell targetCell = getCellByXY(x, movementIndex + lineCount);
+					if (sourceCell==null) {
+						if (targetCell!=null) {
+							removeCell(x, movementIndex + lineCount);
+						} //else keep both cells null
+					} else {
+						if (targetCell==null) {
+							targetCell = createCellAndRefreshLastColumnNumber(movementIndex + lineCount, x);
+						}
+						CellOperations.copyCell(sourceCell, targetCell);
+					}
+				}
+				for (int deletionIndex = lastLineNum + lineCount + 1; deletionIndex <= lastLineNum; ++deletionIndex) {
+					removeCell(deletionIndex, x);
+					Row row = getRow(deletionIndex);
+					if (row!=null && getLastCellNumber(row)==-1) {
+						rowsToRemove.add(row);
+					}
+				}
+			}
+			shiftMergedRegionsWhileShifting(index, lineCount);
+			for (Row row : rowsToRemove) {
+				removeRow(row);
 			}
 		}
 	}
@@ -443,19 +480,27 @@ public final class SheetData {
 				}
 			}
 		}
-		shiftMergedRegionsWhileShiftingColumns(index, movementSize);
+		shiftMergedRegionsWhileShifting(index, movementSize);
 		setTemplateCopiedRegionY2(getTemplateCopiedRegionY2() + movementSize);
 	}
 
-	private void shiftMergedRegionsWhileShiftingColumns(int index, int movementSize) {
+	private void shiftMergedRegionsWhileShifting(int index, int movementSize) {
 		List<Integer> regionsToRemove = new ArrayList<Integer>();
 		List<CellRangeAddress> regionsToAdd = new ArrayList<CellRangeAddress>(); 
 		for (int i=0; i<getMergedRegionsCount(); ++i) {
 			CellRangeAddress regionRangeAddress = getMergedRegion(i);
-			if (regionRangeAddress.getLastColumn() >= index) {
-				regionsToRemove.add(i);
-				CellRangeAddress cellRangeAddress = new CellRangeAddress(regionRangeAddress.getFirstRow(), regionRangeAddress.getLastRow(), regionRangeAddress.getFirstColumn()+movementSize, regionRangeAddress.getLastColumn()+movementSize);
-				regionsToAdd.add(cellRangeAddress);
+			if (mappingInfo.getOrientation() == XLSMapping.HEADER_ON_TOP) {
+				if (regionRangeAddress.getLastRow() >= index) {
+					regionsToRemove.add(i);
+					CellRangeAddress cellRangeAddress = new CellRangeAddress(regionRangeAddress.getFirstRow()+movementSize, regionRangeAddress.getLastRow()+movementSize, regionRangeAddress.getFirstColumn(), regionRangeAddress.getLastColumn());
+					regionsToAdd.add(cellRangeAddress);
+				}
+			} else {
+				if (regionRangeAddress.getLastColumn() >= index) {
+					regionsToRemove.add(i);
+					CellRangeAddress cellRangeAddress = new CellRangeAddress(regionRangeAddress.getFirstRow(), regionRangeAddress.getLastRow(), regionRangeAddress.getFirstColumn()+movementSize, regionRangeAddress.getLastColumn()+movementSize);
+					regionsToAdd.add(cellRangeAddress);
+				}
 			}
 		}
 		for (Integer regionToRemove : regionsToRemove) {
