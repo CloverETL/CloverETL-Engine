@@ -1509,6 +1509,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
+	
+	private DataRecord createNewRecord(TLTypeRecord type) {
+		final DataRecordMetadata metaData = type.getMetadata();
+		final DataRecord record = new DataRecord(metaData);
+		record.init();
+		record.reset();
+		return record;
+	}
 
 	/*
 	 * Variable declarations
@@ -1552,11 +1560,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}  else if (varType.isMap()) {
 			setVariable(node,new HashMap<Object,Object>());
 		}  else if (varType.isRecord()) {
-			final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-			final DataRecord record = new DataRecord(metaData);
-			record.init();
-			record.reset();
-			setVariable(node, record);
+			setVariable(node, createNewRecord((TLTypeRecord) varType));
 		} 
 		
 		return data;
@@ -1673,12 +1677,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						final TLType varType = ((TLTypeList)arrNode.getType()).getElementType();
 						
 						while (list.size() <= index) { // if we are trying to write past the of the array
-							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-							final DataRecord blankRecord = new DataRecord(metaData);
-							blankRecord.init();
-							blankRecord.reset();
-
-							list.add(blankRecord);
+							list.add(createNewRecord((TLTypeRecord) varType));
 						}
 						
 						DataRecord varRecord = (DataRecord) list.get(index);
@@ -1695,10 +1694,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						final TLType varType = ((TLTypeMap)arrNode.getType()).getValueType();
 
 						if (varRecord == null) {
-							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-							varRecord = new DataRecord(metaData);
-							varRecord.init();
-							varRecord.reset();
+							varRecord = createNewRecord((TLTypeRecord) varType);
 							map.put(index, varRecord);
 						}
 						
@@ -2244,7 +2240,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return field.getValueDuplicate(); // FIXME maybe not necessary
 
 		default:
-			throw new IllegalArgumentException("Unknown field type: '" + field.getType() + "'" );	
+			throw new IllegalArgumentException("Unknown field type: '" + metadata.getDataType() + "'" );	
 		}
 		
 	}
