@@ -125,5 +125,15 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 			tablePrefix = schema+"."+notNullOwner;
 		}
 		return tablePrefix;
-	}	
+	}
+	
+	@Override
+	public int getSqlTypeByTypeName(String sqlTypeName) {
+		//text and ntext types are deprecated
+		if (sqlTypeName.equals("text") || sqlTypeName.equals("ntext")) {
+			//jtds returns Types.CLOB but we want to map them on Types.VARCHAR
+			return Types.VARCHAR;
+		}
+		return Types.CLOB;
+	}
 }
