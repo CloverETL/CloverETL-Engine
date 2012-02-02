@@ -91,6 +91,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		ACCEPTED_RECORDS.add(FormulaRecord.sid);
 		ACCEPTED_RECORDS.add(StringRecord.sid);
 		ACCEPTED_RECORDS.add(FormulaRecord.sid);
+		ACCEPTED_RECORDS.add(BoolErrRecord.sid);
 		ACCEPTED_RECORDS.add(EndOfRowRecord.SID);
 
 		ACCEPTED_RECORDS.add(FormatRecord.sid);
