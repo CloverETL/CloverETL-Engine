@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -30,11 +31,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
@@ -799,4 +807,98 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 			this.group = group;
 		}
 	}
+	
+	public static class CellValueFormatter {
+		
+		private Map<String, DataFormatter> formatters = new HashMap<String, DataFormatter>();
+		
+		public CellValueFormatter() {
+			DataFormatter defaultLocaleFormatter = new OurDataFormatter();
+			defaultLocaleFormatter.addFormat("General", new DecimalFormat("#.############")); // take 2 more decimal places than there are in default
+			formatters.put(null, defaultLocaleFormatter);
+		}
+		
+		public String formatRawCellContents(double cellValue, int formatIndex, String formatString, String localeString) {
+			DataFormatter formatter = getLocalizedDataFormater(localeString);
+			return formatter.formatRawCellContents(cellValue, formatIndex, formatString);
+		}
+	
+		private DataFormatter getLocalizedDataFormater(String localeString) {
+			DataFormatter formatter = formatters.get(localeString);
+			if (formatter == null) {
+				String[] localParts = localeString.split("\\.");
+				Locale locale;
+				if (localParts.length > 1) {
+					locale = new Locale(localParts[0], localParts[1]);
+				} else {
+					locale = new Locale(localParts[0]);
+				}
+				formatter = new OurDataFormatter(locale);
+				formatters.put(localeString, formatter);
+			}
+			return formatter;
+		}
+		
+		public String formatCellValue(Cell cell, FormulaEvaluator formulaEvaluator, String locale) {
+			DataFormatter formatter = getLocalizedDataFormater(locale);
+			return formatter.formatCellValue(cell, formulaEvaluator);
+		}
+	}
+	
+	public static class OurDataFormatter extends DataFormatter {
+	
+	    private static final Pattern FRAC_PATTERN = Pattern.compile("\\?+/[\\d+|\\?+]");
+	    
+	    public OurDataFormatter() {
+	    	super();
+	    }
+	    
+		public OurDataFormatter(Locale locale) {
+			super(locale);
+		}
+	    
+		@Override
+		public String formatRawCellContents(double value, int formatIndex, String formatString) {  // TODO boolean use1904Windowing
+			Matcher fracMatcher = FRAC_PATTERN.matcher(formatString);
+			if (fracMatcher.find()) {
+				// convert fractions to standard double
+				formatString = "0.00";
+			}
+			return super.formatRawCellContents(value, formatIndex, formatString, USE_DATE1904).replaceFirst("\\* ", "");
+		}
+
+		@Override
+	    public String formatCellValue(Cell cell, FormulaEvaluator evaluator) {
+
+	        if (cell == null) {
+	            return "";
+	        }
+
+	        int cellType = cell.getCellType();
+	        if (cellType == Cell.CELL_TYPE_FORMULA) {
+	            if (evaluator == null) {
+	                return cell.getCellFormula();
+	            }
+	            cellType = evaluator.evaluateFormulaCell(cell);
+	        }
+	        switch (cellType) {
+	            case Cell.CELL_TYPE_NUMERIC :
+	                return getFormattedNumberString(cell);
+	            case Cell.CELL_TYPE_STRING :
+	                return cell.getRichStringCellValue().getString();
+	            case Cell.CELL_TYPE_BOOLEAN :
+	                return String.valueOf(cell.getBooleanCellValue());
+	            case Cell.CELL_TYPE_BLANK :
+	                return "";
+	        }
+	        throw new RuntimeException("Unexpected celltype (" + cellType + ")");
+	    }
+		
+	    private String getFormattedNumberString(Cell cell) {
+	    	CellStyle cellStyle = cell.getCellStyle();
+	    	return formatRawCellContents(cell.getNumericCellValue(), cellStyle.getDataFormat(), cellStyle.getDataFormatString());
+	    }
+	    
+	}
+	
 }

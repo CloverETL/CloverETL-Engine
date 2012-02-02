@@ -58,6 +58,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.AbstractSpreadsheetParser.CellValueFormatter;
 import org.jetel.data.parser.SpreadsheetStreamParser.CellBuffers;
 import org.jetel.data.parser.SpreadsheetStreamParser.RecordFieldValueSetter;
 import org.jetel.exception.BadDataFormatException;
@@ -104,7 +105,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	private MissingRecordAwareFactoryInputStream recordFactory;
 	private final RecordFillingHSSFListener recordFillingListener;
-	private final FormatTrackingHSSFListener formatter;
+	private final FormatTrackingHSSFListenerWithCustomFormatter formatter;
 	
 	private int currentSheetIndex = -1;
 
@@ -116,7 +117,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	public XLSStreamParser(SpreadsheetStreamParser parent, String password) {
 		this.parent = parent;
 		recordFillingListener = new RecordFillingHSSFListener(AbstractSpreadsheetParser.USE_DATE1904);
-		formatter = new FormatTrackingHSSFListener(recordFillingListener);
+		formatter = new FormatTrackingHSSFListenerWithCustomFormatter(recordFillingListener);
 		Biff8EncryptionKey.setCurrentUserPassword(password);
 	}
 
@@ -596,13 +597,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				String value;
 				switch (sid) {
 				case NumberRecord.sid:
-					value = formatter.formatNumberDateCell((NumberRecord) cellRecord);
+					value = formatter.formatNumberDateCell((NumberRecord) cellRecord, field.getMetadata().getLocaleStr());
 					break;
 				case FormulaRecord.sid:
 					FormulaRecord frec = (FormulaRecord) cellRecord;
 					switch (frec.getCachedResultType()) {
 					case HSSFCell.CELL_TYPE_NUMERIC:
-						value = formatter.formatNumberDateCell((frec));
+						value = formatter.formatNumberDateCell(frec, field.getMetadata().getLocaleStr());
 						break;
 					case HSSFCell.CELL_TYPE_BOOLEAN:
 						value = String.valueOf(frec.getCachedBooleanValue());
@@ -696,7 +697,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			switch(sid) {
 			case NumberRecord.sid:
 				cellType = "Numeric";
-				actualValue = formatter.formatNumberDateCell((NumberRecord) record);
+				actualValue = formatter.formatNumberDateCell((NumberRecord) record, field.getMetadata().getLocaleStr());
 				cellFormat = formatter.getFormatString((NumberRecord) record);
 				break;
 			case FormulaRecord.sid:
@@ -706,7 +707,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				// We don't check for STRING formulas here as these are always "translated" to StringRecord instead
 				switch (fresultType) {
 				case HSSFCell.CELL_TYPE_NUMERIC:
-					actualValue = formatter.formatNumberDateCell(frec);
+					actualValue = formatter.formatNumberDateCell(frec, field.getMetadata().getLocaleStr());
 					cellFormat = formatter.getFormatString((NumberRecord) record);
 					break;
 				case HSSFCell.CELL_TYPE_BOOLEAN:
@@ -1136,5 +1137,45 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public final int getRecordSize() {
 			throw new RecordFormatException("Cannot serialize a dummy record");
 		}
-	}	
+	}
+	
+	
+	public static class FormatTrackingHSSFListenerWithCustomFormatter extends FormatTrackingHSSFListener {
+		
+		private CellValueFormatter formatter = new CellValueFormatter();
+		
+		public FormatTrackingHSSFListenerWithCustomFormatter(HSSFListener childListener) {
+			super(childListener);
+		}
+	
+		/**
+		 * Formats the given numeric of date Cell's contents as a String, in as
+		 * close as we can to the way that Excel would do so. Uses the various
+		 * format records to manage this.
+		 *
+		 * Copy of superclass formatNumberDateCell(CellValueRecordInterface) method and adjusted to use custom CellValueFormater.
+		 */
+		public String formatNumberDateCell(CellValueRecordInterface cell, String locale) {
+			double value;
+			if (cell instanceof NumberRecord) {
+				value = ((NumberRecord) cell).getValue();
+			} else if (cell instanceof FormulaRecord) {
+				value = ((FormulaRecord) cell).getValue();
+			} else {
+				throw new IllegalArgumentException("Unsupported CellValue Record passed in " + cell);
+			}
+
+			// Get the built in format, if there is one
+			int formatIndex = getFormatIndex(cell);
+			String formatString = getFormatString(cell);
+
+//			if (formatString == null) {
+//				return _defaultFormat.format(value);
+//			}
+
+			return formatter.formatRawCellContents(value, formatIndex, formatString, locale);
+		}
+		
+	}
+	
 }
