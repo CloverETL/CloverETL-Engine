@@ -521,7 +521,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 		public void finishRecord() {
 			for (int i = currentParseRow + 1; i <= recordEndRow; i++) {
-				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length, true);
+				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
 			}
 		}
 
@@ -566,7 +566,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 			int shiftedColumnIndex = columnIndex - parent.mappingMinColumn;
 			int mappingRow = currentParseRow - recordStartRow;
 
-			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex, false);
+			handleMissingCells(mappingRow, lastColumn, shiftedColumnIndex);
 			lastColumn = shiftedColumnIndex;
 			
 			CellValue cellValue = new CellValue(-1, value, cellType, formulaType, styleIndex);
@@ -596,16 +596,21 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		public void endRow() {
 			super.endRow();
 			if (!skipRecords && currentParseRow >= recordStartRow) {
-				handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length, false);
+				handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length);
 			}
 			lastColumn = -1;
 		}
 
-		private void handleMissingCells(int mappingRow, int firstColumn, int lastColumn, boolean recordOverflow) {
-			int[] mappingPart = parent.mapping[mappingRow];
-			int cloverFieldIndex;
+		private void handleMissingCells(int mappingRow, int firstColumn, int lastColumn) {
+			handleMissingCells(parent.mapping[mappingRow], mappingRow, firstColumn, lastColumn);
+			if (parent.formatMapping != null) {
+				handleMissingCells(parent.formatMapping[mappingRow], mappingRow, firstColumn, lastColumn);
+			}
+		}
+
+		private void handleMissingCells(int[] mappingPart, int mappingRow, int firstColumn, int lastColumn) {
 			for (int i = firstColumn + 1; i < lastColumn; i++) {
-				cloverFieldIndex = mappingPart[i];
+				int cloverFieldIndex = mappingPart[i];
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						record.getField(cloverFieldIndex).setNull(true);
@@ -614,13 +619,12 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 									". Occurred in "), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 						}
 					} catch (BadDataFormatException e) {
-						parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() + 
-								". Moreover, cannot set default value or null", e), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
+						parent.handleException(new SpreadsheetException("Cell is empty, but cannot set default value or null into field " + record.getField(cloverFieldIndex).getMetadata().getName(), e), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 					}
 				}
 			}
 		}
-
+		
 		@Override
 		public void setFieldValue(int fieldIndex, CellValue cell) {
 			setFieldValue(fieldIndex, cell.type, cell.formulaType, cell.value, cell.styleIndex);
