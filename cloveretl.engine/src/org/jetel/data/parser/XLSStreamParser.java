@@ -217,6 +217,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		try {
 			RecordFactoryInputStream rfis = new RecordFactoryInputStream(workbookDirNode.createDocumentInputStream("Workbook"), false);
 			recordFactory = new MissingRecordAwareFactoryInputStream(rfis);
+			currentSheetIndex = -1;
 		} catch (IOException e) {
 			throw new JetelRuntimeException("Failed to open input stream from workbook", e);
 		}
