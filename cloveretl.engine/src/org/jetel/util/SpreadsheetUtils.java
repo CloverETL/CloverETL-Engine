@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.awt.Point;
 
 import org.apache.poi.ss.util.CellReference;
+import org.jetel.data.parser.XLSMapping;
 
 
 
@@ -82,6 +83,32 @@ public class SpreadsheetUtils {
 	public static String getColumnReference(int columnIndex) {
 		return CellReference.convertNumToColString(columnIndex);
 	}
+	
+	public static String quoteSheetNameIfNeeded(String sheetName) {
+		if (sheetName.matches("[0-9][0-9]*")) {
+			return quoteSheetName(sheetName);
+		} else {
+			return sheetName;
+		}
+	}
+
+	public static String quoteSheetNameIfNotQuoted(String sheetName) {
+		if (sheetName.startsWith(""+XLSMapping.ESCAPE_START) && sheetName.endsWith(""+XLSMapping.ESCAPE_END)) {
+			return sheetName;
+		} else {
+			return quoteSheetName(sheetName);
+		}
+	}
+
+
+	private static String quoteSheetName(String sheetName) {
+		StringBuilder quotedSheetNameBuilder = new StringBuilder();
+		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_START);
+		quotedSheetNameBuilder.append(sheetName);
+		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_END);
+		return quotedSheetNameBuilder.toString();
+	}
+
 	
 	public static enum SpreadsheetAttitude {
 
