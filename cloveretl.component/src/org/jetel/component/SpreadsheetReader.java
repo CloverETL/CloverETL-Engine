@@ -472,7 +472,7 @@ public class SpreadsheetReader extends Node {
 	
 	private SpreadsheetException writeErrorRecord(SpreadsheetException se, int recordMetadataFields, DataRecord record, DataRecord errorRecord) throws IOException, InterruptedException {
 		// set mandatory fields
-		((IntegerDataField) errorRecord.getField(0)).setValue(se.getRecordNumber() + 1);
+		((IntegerDataField) errorRecord.getField(0)).setValue(se.getRecordNumber());
 		setCharSequenceToField(se.getFileName(), errorRecord.getField(1));
 		setCharSequenceToField(se.getSheetName(), errorRecord.getField(2));
 		((IntegerDataField) errorRecord.getField(3)).setValue(se.getFieldNumber() + 1);
