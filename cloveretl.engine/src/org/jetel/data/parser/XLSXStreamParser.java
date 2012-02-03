@@ -187,6 +187,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public boolean setCurrentSheet(int sheetNumber) {
+		endOfSheet = false;
 		if (currentSheetIndex >= sheetNumber) {
 			closeCurrentInputStream();
 			initializeSheetIterator();
