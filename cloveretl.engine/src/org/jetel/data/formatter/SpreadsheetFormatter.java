@@ -615,7 +615,7 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		if (mappingStats.isMappingEmpty()) {
 			//no write actions for empty mapping
-			return 0;
+			throw new JetelRuntimeException("No data fields have been mapped to spreadsheet cells.");
 		}
 		
 		CellPosition recordOffset = createNextRecordRegion();
