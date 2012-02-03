@@ -284,16 +284,6 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 		}
 	}
 	
-	private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
-		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record starting at row ");
-		message.append(getRecordStartRow());
-		message.append(" field '");
-		message.append(metadata.getField(fieldNo).getName() + '\'');
-		return message.toString();
-	}
-
 	private void setAutofillingSheetName(DataRecord record) {
 		if (record == null || autofillingFieldPositions == null) {
 			return;
@@ -347,6 +337,7 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 			if (!stats.useAutoNameMapping() && !stats.useNameMapping()) {
 				resolveDirectMapping();
 				resolveOrderMapping();
+				checkMappingNonEmpty();
 			}
 		}
 	}
@@ -706,7 +697,7 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 		int nextSheet = sheetIndexIterator.next();
 
 		if (setCurrentSheet(nextSheet)) {
-			LOGGER.debug("Reading sheet " + nextSheet);
+			LOGGER.debug("Reading sheet " + nextSheet + " \"" + sheetNames.get(nextSheet) + "\"");
 			
 			currentSheetIndex = nextSheet;
 			Stats stats = mappingInfo.getStats();
@@ -717,6 +708,7 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 					resolveDirectMapping();
 					resolveNameMapping();
 					resolveOrderMapping();
+					checkMappingNonEmpty();
 				} catch (ComponentNotReadyException e) {
 					throw new JetelRuntimeException(e.getMessage(), e);
 				}
@@ -727,6 +719,33 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 		return false;
 	}	
+	
+	private void checkMappingNonEmpty() throws ComponentNotReadyException {
+		List<int[][]> mappings = new ArrayList<int[][]>(2);
+
+		mappings.add(mapping);
+		
+		if (formatMapping != null) {
+			mappings.add(formatMapping);
+		}
+		
+		for (int[][] mapping : mappings) {
+			for (int y = 0; y < mapping.length; y++) {
+				for (int x = 0; x < mapping[y].length; x++) {
+					if (mapping[y][x] != XLSMapping.UNDEFINED) {
+						return;
+					}
+				}
+			}
+		}
+		String message;
+		if (currentSheetIndex >= 0) {
+			message = "No data fields mapped to table cells after switching to sheet " + currentSheetIndex + " \"" + sheetNames.get(currentSheetIndex) + "\"";
+		} else {
+			message = "No data fields have been mapped to table cells.";
+		}
+		throw new ComponentNotReadyException(message);
+	}
 
 	/**
 	 * For incremental reading.
