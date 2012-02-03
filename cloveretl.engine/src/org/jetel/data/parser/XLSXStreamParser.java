@@ -617,7 +617,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 						record.getField(cloverFieldIndex).setNull(true);
 						if (endOfSheet) {
 							parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected one more data row for field " + record.getField(cloverFieldIndex).getMetadata().getName() +
-									". Occurred in "), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
+									". Occurred"), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 						}
 					} catch (BadDataFormatException e) {
 						parent.handleException(new SpreadsheetException("Cell is empty, but cannot set default value or null into field " + record.getField(cloverFieldIndex).getMetadata().getName(), e), record, cloverFieldIndex, fileName, sheetName, null, null, null, null);
