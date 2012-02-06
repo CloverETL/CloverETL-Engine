@@ -38,11 +38,8 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 
 	private static String UNLIMITED = "*";
 
-	private static final String INVALID_SHEET_CHARACTERS = ":\\\\/\\[\\]";
-	private static final String ESCAPED_SHEET = "\\" + XLSMapping.ESCAPE_START + "[^" + INVALID_SHEET_CHARACTERS + "]{1,31}\\" + XLSMapping.ESCAPE_END;
-
-	private static final String INVALID_UNESCAPED_CHARACTERS = INVALID_SHEET_CHARACTERS + "\\,\\-";
-	private static final String UNESCAPED_SHEET = "[^" + INVALID_UNESCAPED_CHARACTERS + "]{1,31}";
+	private static final String ESCAPED_SHEET = "\\" + XLSMapping.ESCAPE_START + "[^" + SpreadsheetUtils.INVALID_SHEET_CHARACTERS + "]{1,31}\\" + XLSMapping.ESCAPE_END;
+	private static final String UNESCAPED_SHEET = "[^" + SpreadsheetUtils.INVALID_UNESCAPED_CHARACTERS + "]{1,31}";
 	private static final Pattern SHEET = Pattern.compile(ESCAPED_SHEET + "|" + UNESCAPED_SHEET + "|\\*|[\\d]+");
 
 	private final List<String> sheetNames;
