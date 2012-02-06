@@ -77,8 +77,9 @@ import org.jetel.util.SpreadsheetUtils;
 public class XLSStreamParser implements SpreadsheetStreamHandler {
 	
 	private SpreadsheetStreamParser parent;
-	//private POIFSFileSystem fs;
+
 	private DirectoryNode workbookDirNode;
+	private NPOIFSFileSystem poiFS;
 	
 	private String fileName;
 	private String sheetName;
@@ -200,8 +201,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		if (inputSource instanceof InputStream) {
 			workbookDirNode = new POIFSFileSystem((InputStream) inputSource).getRoot();
 		} else {
-			//fs = new NPOIFSFileSystem((File) inputSource);
-			workbookDirNode = new NPOIFSFileSystem((File) inputSource, true).getRoot();
+			poiFS = new NPOIFSFileSystem((File) inputSource);
+			workbookDirNode = poiFS.getRoot();
 			fileName = ((File) inputSource).getAbsolutePath();
 		}
 		prepareRecordFactory();
@@ -211,6 +212,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	@Override
 	public void close() throws IOException {
 		Biff8EncryptionKey.setCurrentUserPassword(null);
+		if (poiFS != null) {
+			poiFS.close();
+		}
 	}
 
 	private void prepareRecordFactory() {
@@ -833,6 +837,10 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
+			if (currentParseSheet < sheetIndex) {
+				return;
+			}
+			
 			if (record instanceof EndOfRowRecord) {
 				currentParseRow++;
 				if (currentParseRow >= lastRow) {
@@ -846,7 +854,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
-			if ((currentParseRow < firstRow) || currentParseSheet < sheetIndex) {
+			if (currentParseRow < firstRow) {
 				return;
 			}
 
