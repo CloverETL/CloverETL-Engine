@@ -23,8 +23,6 @@ import java.nio.BufferOverflowException;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 
-import sun.misc.FloatingDecimal;
-
 /**
  * This class was derived from {@link StringBuilder}. We need direct access to underlying char array
  * for better cooperation with {@link CharBuffer} class.
@@ -617,8 +615,9 @@ public class CloverString implements Appendable, CharSequence, Serializable {
 	 * @return a reference to this object.
 	 */
 	public CloverString append(float f) {
-		new FloatingDecimal(f).appendTo(this);
-		return this;
+		//this code would be faster, but we have to avoid import of sun.misc.FloatingDecimal
+		//new FloatingDecimal(f).appendTo(this);
+		return append(String.valueOf(f));
 	}
 
 	/**
@@ -632,8 +631,9 @@ public class CloverString implements Appendable, CharSequence, Serializable {
 	 * @return a reference to this object.
 	 */
 	public CloverString append(double d) {
-		new FloatingDecimal(d).appendTo(this);
-		return this;
+		//this code would be faster, but we have to avoid import of sun.misc.FloatingDecimal
+		//new FloatingDecimal(d).appendTo(this);
+		return append(String.valueOf(d));
 	}
 
 	/**
