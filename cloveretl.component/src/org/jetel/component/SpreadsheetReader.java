@@ -348,7 +348,7 @@ public class SpreadsheetReader extends Node {
         DataRecordMetadata errorMetadata = getOutputPort(ERROR_PORT).getMetadata();
 
         int errorNumFields = errorMetadata.getNumFields();
-        boolean ret = errorNumFields > 10
+        boolean ret = errorNumFields >= 10
         		&& errorMetadata.getFieldType(0) == DataFieldMetadata.INTEGER_FIELD		// record number
         		&& isStringOrByte(errorMetadata.getField(1))							// file name
         		&& isStringOrByte(errorMetadata.getField(2))							// sheet name
