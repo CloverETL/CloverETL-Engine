@@ -39,6 +39,10 @@ public class SpreadsheetUtils {
 	private SpreadsheetUtils() {
 	}
 
+	static final String INVALID_SHEET_CHARACTERS = ":\\\\/\\[\\]";
+	static final String INVALID_UNESCAPED_CHARACTERS = INVALID_SHEET_CHARACTERS + "\\,\\-";
+	private static final String INVALID_UNESCAPED_SHEET_NAME = ".*[" + INVALID_UNESCAPED_CHARACTERS + "].*|[0-9]+";
+	
 	private static final char A = 'A';
 	private static final char Z = 'Z';
 	private static final int CHAR_COUNT = Z - A + 1;
@@ -85,7 +89,7 @@ public class SpreadsheetUtils {
 	}
 	
 	public static String quoteSheetNameIfNeeded(String sheetName) {
-		if (sheetName.matches("[0-9][0-9]*")) {
+		if (sheetName.matches(INVALID_UNESCAPED_SHEET_NAME)) {
 			return quoteSheetName(sheetName);
 		} else {
 			return sheetName;
