@@ -660,7 +660,11 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					field.setValue(Double.parseDouble(value));
+					if (cellType == Cell.CELL_TYPE_NUMERIC || cellType == Cell.CELL_TYPE_FORMULA) {
+						field.setValue(Double.parseDouble(value));
+					} else {
+						throw new IllegalStateException("Cannot get Numeric value from cell of type " + cellTypeToString(cellType));
+					}
 					break;
 				case DataFieldMetadata.BOOLEAN_FIELD:
 					if (cellType == Cell.CELL_TYPE_BOOLEAN) {
@@ -692,6 +696,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				return "String";
 			case Cell.CELL_TYPE_NUMERIC:
 				return "Numeric";
+			case Cell.CELL_TYPE_FORMULA:
+				return "Formula";
+			case Cell.CELL_TYPE_BLANK:
+				return "Blank";
 			default:
 				return "Unknown";
 			}
