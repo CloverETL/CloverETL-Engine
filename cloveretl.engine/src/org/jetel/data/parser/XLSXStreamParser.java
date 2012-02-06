@@ -660,7 +660,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					if (cellType == Cell.CELL_TYPE_NUMERIC || cellType == Cell.CELL_TYPE_FORMULA) {
+					if (cellType == Cell.CELL_TYPE_NUMERIC || (cellType == Cell.CELL_TYPE_FORMULA && formulaType == Cell.CELL_TYPE_NUMERIC)) {
 						field.setValue(Double.parseDouble(value));
 					} else {
 						throw new IllegalStateException("Cannot get Numeric value from cell of type " + cellTypeToString(cellType));
