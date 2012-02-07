@@ -43,6 +43,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -909,6 +910,19 @@ public class AproxMergeJoin extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+	}
+	
+	@Override
+	public synchronized void free() {
+		super.free();
+		
+		if (recordBuffer != null) {
+			try {
+				recordBuffer.close();
+			} catch (IOException e) {
+				throw new JetelRuntimeException("AproxMerge join cannot close temp file.", e);
+			}
+		}
 	}
 	
 	/**
