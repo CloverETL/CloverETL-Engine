@@ -918,13 +918,13 @@ defined.version.suffix=release
 					haltonerror="false" 
 					haltonfailure="false" 
 					printsummary="true"
-					fork="false"
+					fork="true"
 					forkmode="once" 
 					>
 			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
 			<sysproperty key="file.encoding" value="UTF-8" />
 			<jvmarg value="-Xmx2048m"/>
-			<jvmarg value="-XX:MaxPermSize=256m"/>
+			<jvmarg value="-XX:MaxPermSize=512m"/>
 			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath>
