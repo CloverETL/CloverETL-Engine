@@ -49,6 +49,7 @@ public class S3OutputStream extends OutputStream {
 	public S3OutputStream(URL url) throws FileNotFoundException, IOException {
 		this.uploaded = false;
 		this.tempFile = File.createTempFile("cloveretl-amazons3-buffer", null);
+		tempFile.deleteOnExit();
 		this.os = new FileOutputStream(tempFile);
 		this.url = url;
 	}
@@ -98,6 +99,8 @@ public class S3OutputStream extends OutputStream {
 		} catch (S3ServiceException e) {
 			throw new IOException(e);
 		}
+		
+		tempFile.delete();
 	}
 	
 	@Override
