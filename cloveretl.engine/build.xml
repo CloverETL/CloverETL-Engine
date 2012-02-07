@@ -918,7 +918,7 @@ defined.version.suffix=release
 					haltonerror="false" 
 					haltonfailure="false" 
 					printsummary="true"
-					fork="true"
+					fork="false"
 					forkmode="once" 
 					>
 			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
