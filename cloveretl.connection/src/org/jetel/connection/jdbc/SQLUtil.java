@@ -192,16 +192,6 @@ public class SQLUtil {
 				cloverType = DataFieldMetadata.NUMERIC_FIELD;
 			}
 			
-		} else {
-			// Set size attribute to column size if possible. Serves as default size in case user decides to switch field to fixed size (see issue #3938)
-			try {
-				int size = dbMetadata.getPrecision(sqlIndex);
-				if (size > 0) {
-					fieldMetadata.setProperty(DataFieldMetadata.SIZE_ATTR, Integer.toString(size));
-				}
-			} catch (SQLException e) {
-				// well, never mind...
-			}
 		}
 		
 		fieldMetadata.setType(cloverType);
@@ -225,6 +215,44 @@ public class SQLUtil {
 		return fieldMetadata;
 	}
 	
+	public static void setSizeAttributeToColumnSizeIfPossible(DataRecordMetadata recordMetadata,
+			ResultSetMetaData rsMetaData, JdbcSpecific jdbcSpecific, DatabaseMetaData dbMetaData) {
+
+		ResultSet rsColumns;
+		try {
+			rsColumns = dbMetaData.getColumns(rsMetaData.getCatalogName(1), null, rsMetaData.getTableName(1), null);
+		} catch (SQLException e1) {
+			return;
+		}
+
+		for (int i = 0; i < recordMetadata.getFields().length; i++) {
+			boolean limitedField = true;
+			int precision = 0;
+			char cloverType = 0;
+			try {
+				limitedField = true;
+				int type = rsMetaData.getColumnType(i + 1);
+				precision = rsMetaData.getPrecision(i + 1);
+				try {
+					cloverType = jdbcSpecific.sqlType2jetel(type, precision);
+				} catch (IllegalArgumentException e) {
+					cloverType = DataFieldMetadata.UNKNOWN_FIELD;
+				}
+				rsColumns.next();
+				if (isUnlimitedType(rsColumns.getString("TYPE_NAME"))) {
+					limitedField = false;
+				}
+			} catch (Exception e) {
+			} finally {
+				if (limitedField && cloverType != DataFieldMetadata.DECIMAL_FIELD) {
+					// Serves as default size in case user decides to switch field to fixed size (see issue #3938)
+					if (precision > 0) {
+						recordMetadata.getFields()[i].setProperty(DataFieldMetadata.SIZE_ATTR, Integer.toString(precision));
+					}
+				}
+			}
+		}
+	}
 	
 	/**
 	 * Same as dbMetadata2jetel(dbMetadata, jdbcSpecific, true)
@@ -662,6 +690,16 @@ public class SQLUtil {
 				logger.error(ex);
 			}
 		}
+	}
+	
+	private static boolean isUnlimitedType(String typeName) {
+		if (typeName != null) {
+			typeName = typeName.toLowerCase();
+			if (typeName.indexOf("text") >= 0 || typeName.equals("clob") || typeName.equals("blob")) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
