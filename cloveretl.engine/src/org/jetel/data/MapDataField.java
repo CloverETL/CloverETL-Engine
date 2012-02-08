@@ -169,10 +169,8 @@ public class MapDataField extends DataField {
 	 * Truncate the list to zero size.
 	 */
 	public void clear() {
-		if (!isNull) {
-			fieldsCache.addAll(fields.values());
-			fields.clear();
-		}
+		fieldsCache.addAll(fields.values());
+		fields.clear();
 	}
 	
 	@Override
@@ -185,10 +183,11 @@ public class MapDataField extends DataField {
 	    return newMapDataField;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setValue(Object value) {
         if (value == null || value instanceof Map<?, ?>) {
-            setValue((Map<?, ?>) value);
+            setValue((Map<String, ?>) value);
         } else {
         	BadDataFormatException ex = new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + value.toString(), value.toString());
         	ex.setFieldNumber(getMetadata().getNumber());
@@ -200,14 +199,14 @@ public class MapDataField extends DataField {
 	 * Sets the give values to the list. All current values are removed.
 	 * @param values list of values
 	 */
-	public void setValue(Map<String, Object> values) {
+	public void setValue(Map<String, ?> values) {
 		if (values == null) {
 			setNull(true);
 		} else {
 			clear();
 			setNull(false);
 			
-			for (Entry<String, Object> entry : values.entrySet()) {
+			for (Entry<String, ?> entry : values.entrySet()) {
 				putField(entry.getKey()).setValue(entry.getValue());
 			}
 		}
