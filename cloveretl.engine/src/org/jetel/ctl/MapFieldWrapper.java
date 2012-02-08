@@ -25,6 +25,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetel.data.MapDataField;
+import org.jetel.util.MiscUtils;
+
 /**
  * The wrapper converts CharSequences into Strings.
  * 
@@ -125,18 +128,6 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 		return toCTL(parentMap.remove(key));
 	}
 	
-	/**
-	 * Utility method. Compares two objects for equality,
-	 * handles <code>null</code> values.
-	 * 
-	 * @param o1
-	 * @param o2
-	 * @return <code>true</code> iff <code>o1</code> and <code>o2</code> are equal.
-	 */
-    private static boolean eq(Object o1, Object o2) {
-        return o1 == null ? o2 == null : o1.equals(o2);
-    }
-
     /**
      * Converts the return values from CloverStrings to Strings.
      * 
@@ -196,7 +187,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 		    Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
 			String key = getKey();
 			V value = getValue();
-		    return eq(key, e.getKey()) && eq(value, e.getValue());
+		    return MiscUtils.equals(key, e.getKey()) && MiscUtils.equals(value, e.getValue());
 		}
 
 		@Override
@@ -303,7 +294,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
             }
             
             V value = MapFieldWrapper.this.get(key);
-            return eq(entry.getValue(), value);
+            return MiscUtils.equals(entry.getValue(), value);
 		}
 
 		/**

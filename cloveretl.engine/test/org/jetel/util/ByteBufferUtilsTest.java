@@ -131,4 +131,48 @@ public class ByteBufferUtilsTest extends CloverTestCase {
 		check_encodeValue(2, ByteOrder.LITTLE_ENDIAN, bytes6);
     }
 
+    public void testEncodeString() {
+    	CloverBuffer buffer = CloverBuffer.allocate(100);
+    	
+    	buffer.clear();
+    	ByteBufferUtils.encodeString(buffer, null);
+    	buffer.flip();
+    	assertEquals(0, buffer.get());
+
+    	buffer.clear();
+    	ByteBufferUtils.encodeString(buffer, "");
+    	buffer.flip();
+    	assertEquals(1, buffer.get());
+
+    	buffer.clear();
+    	ByteBufferUtils.encodeString(buffer, "abc");
+    	buffer.flip();
+    	assertEquals(4, buffer.get());
+    	assertEquals('a', buffer.getChar());
+    	assertEquals('b', buffer.getChar());
+    	assertEquals('c', buffer.getChar());
+    }
+
+    public void testDecodeString() {
+    	CloverBuffer buffer = CloverBuffer.allocate(100);
+    	
+    	buffer.clear();
+    	buffer.put((byte) 0);
+    	buffer.flip();
+    	assertNull(ByteBufferUtils.decodeString(buffer));
+
+    	buffer.clear();
+    	buffer.put((byte) 1);
+    	buffer.flip();
+    	assertEquals("", ByteBufferUtils.decodeString(buffer));
+
+    	buffer.clear();
+    	buffer.put((byte) 4);
+    	buffer.putChar('a');
+    	buffer.putChar('b');
+    	buffer.putChar('c');
+    	buffer.flip();
+    	assertEquals("abc", ByteBufferUtils.decodeString(buffer));
+    }
+
 }

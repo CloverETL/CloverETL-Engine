@@ -19,6 +19,7 @@
 package org.jetel.data;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldType;
@@ -43,6 +44,7 @@ public class DataFieldTypeTest extends CloverTestCase {
 	
 	public void testGetName() {
 		assertEquals("list", DataFieldType.LIST.getName());
+		assertEquals("map", DataFieldType.MAP.getName());
 		assertEquals("string", DataFieldType.STRING.getName());
 		assertEquals("date", DataFieldType.DATE.getName());
 		assertEquals("number", DataFieldType.NUMBER.getName());
@@ -56,6 +58,7 @@ public class DataFieldTypeTest extends CloverTestCase {
 
 	public void testGetInternalValueClass() {
 		assertEquals(List.class, DataFieldType.LIST.getInternalValueClass());
+		assertEquals(Map.class, DataFieldType.MAP.getInternalValueClass());
 		assertEquals(CloverString.class, DataFieldType.STRING.getInternalValueClass());
 		assertEquals(Date.class, DataFieldType.DATE.getInternalValueClass());
 		assertEquals(Double.class, DataFieldType.NUMBER.getInternalValueClass());
@@ -69,6 +72,7 @@ public class DataFieldTypeTest extends CloverTestCase {
 
 	public void testIsNumeric() {
 		assertEquals(false, DataFieldType.LIST.isNumeric());
+		assertEquals(false, DataFieldType.MAP.isNumeric());
 		assertEquals(false, DataFieldType.STRING.isNumeric());
 		assertEquals(false, DataFieldType.DATE.isNumeric());
 		assertEquals(true, DataFieldType.NUMBER.isNumeric());
@@ -82,6 +86,7 @@ public class DataFieldTypeTest extends CloverTestCase {
 
 	public void testIsTrimType() {
 		assertEquals(false, DataFieldType.LIST.isTrimType());
+		assertEquals(false, DataFieldType.MAP.isTrimType());
 		assertEquals(false, DataFieldType.STRING.isTrimType());
 		assertEquals(true, DataFieldType.DATE.isTrimType());
 		assertEquals(true, DataFieldType.NUMBER.isTrimType());
@@ -95,6 +100,7 @@ public class DataFieldTypeTest extends CloverTestCase {
 
 	public void testFromName() {
 		assertEquals(DataFieldType.LIST, DataFieldType.fromName("list"));
+		assertEquals(DataFieldType.MAP, DataFieldType.fromName("map"));
 		assertEquals(DataFieldType.STRING, DataFieldType.fromName("string"));
 		assertEquals(DataFieldType.DATE, DataFieldType.fromName("date"));
 		assertEquals(DataFieldType.NUMBER, DataFieldType.fromName("number"));

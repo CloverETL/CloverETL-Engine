@@ -20,6 +20,7 @@ package org.jetel.metadata;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
@@ -38,6 +39,8 @@ import org.jetel.util.string.CloverString;
 public enum DataFieldType {
 
 	LIST("list", List.class, false, false, 'L'),
+	
+	MAP("map", Map.class, false, false, 'M'),
 	
 	STRING("string", CloverString.class, false, false, 'S') {
 		@Override

@@ -166,6 +166,43 @@ public final class ByteBufferUtils {
     }
 
     /**
+     * Encode the given string to the buffer. This method is symmetric with {@link #decodeString(CloverBuffer)}.
+     * @param buffer
+     * @param str
+     */
+    public static final void encodeString(CloverBuffer buffer, String str) {
+		// encode nulls as zero, increment length of non-null values by one
+    	if (str == null) {
+    		ByteBufferUtils.encodeLength(buffer, 0);
+    	} else {
+    		final int length = str.length();
+			ByteBufferUtils.encodeLength(buffer, length + 1);
+	
+			for (int counter = 0; counter < length; counter++) {
+				buffer.putChar(str.charAt(counter));
+			}
+    	}
+    }
+
+    /**
+     * Decode a string from the buffer. This method is symmetric with {@link #encodeString(CloverBuffer)}.
+     * @param buffer
+     * @return
+     */
+    public static final String decodeString(CloverBuffer buffer) {
+		int length = ByteBufferUtils.decodeLength(buffer);
+		if (length == 0) {
+			return null;
+		} else {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < length - 1; i++) {
+				sb.append(buffer.getChar());
+			}
+			return sb.toString();
+		}
+    }
+    
+    /**
      * Decode previously encoded length (int value)
      * 
      * @param buffer    ByteBuffer from which decode values

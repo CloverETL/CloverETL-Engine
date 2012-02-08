@@ -86,7 +86,8 @@ public class DataFieldFactory {
 			}
 		case LIST:
 			return new ListDataField(fieldMetadata, plain);
-		case MAP: // FIXME when MapDataField implementation is added
+		case MAP:
+			return new MapDataField(fieldMetadata, plain);
 		default:
 			throw new RuntimeException("Unsupported field cardinality: " + cardinality);
 		}

@@ -39,7 +39,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.IdentityArrayList;
-import org.jetel.util.string.StringUtils;
 
 /**
  * This data field implementation represents a list of fields, which are uniformly typed by a simple type
@@ -115,26 +114,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	@Override
 	public void setToDefaultValue() {
 		clear();
-		
-		try {
-            Object val;
-            if ((val = metadata.getDefaultValue()) != null) {
-                addField().setValue(val);
-            } else 	if (metadata.getDefaultValueStr() != null) {
-				DataField defaultField = addField();
-				//do we really need to convert the string form of default value to 'SpecChar'?
-				//this conversion was already done in DataRecordMetadataXMLReaderWriter.parseRecordMetadata()
-				defaultField.fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
-				metadata.setDefaultValue(defaultField.getValueDuplicate());
-			} else if (metadata.isNullable()) {
-				setNull(true);
-			} else {
-				setNull(false);
-			}
-		} catch (Exception ex) {
-			// here, the only reason to fail is bad DefaultValue
-			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
-		}
+		setNull(metadata.isNullable());
 	}
 	
 	/**
@@ -144,10 +124,13 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		if (isNull) {
 			setNull(false);
 		}
+		DataField result;
 		if (size == fields.size()) {
-			fields.add(createDataField());
+			result = createDataField();
+			fields.add(result);
+		} else {
+			result = fields.get(size);
 		}
-		DataField result = fields.get(size);
 		result.reset();
 		size++;
 		return result;
@@ -180,7 +163,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	/**
 	 * Remove the given field from the list.
 	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
-	 * operation.
+	 * operation, so the return value is still under control of this list.
 	 * @param field the field which is requested be deleted
 	 * @return true if field was removed, false otherwise
 	 */
@@ -203,7 +186,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	/**
 	 * Remove a field on the given index.
 	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
-	 * operation.
+	 * operation, so the return value is still under control of this list.
 	 * @param index index of a field, which is requested to be removed 
 	 * @return removed field
 	 * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
@@ -290,9 +273,10 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		if (fromField == null || fromField.isNull()) {
 			setNull(true);
 		} else {
-			setNull(false);
-			clear();
 			if (fromField instanceof ListDataField) {
+				setNull(false);
+				clear();
+				
 				ListDataField fromListDataField = (ListDataField) fromField;
 				for (DataField field : fromListDataField) {
 					addField().setValue(field.getValue());
@@ -307,10 +291,8 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	public void reset() {
 		if (metadata.isNullable()) {
 			setNull(true);
-		} else if (metadata.isDefaultValueSet()) {
-			setToDefaultValue();
 		} else {
-			clear();
+			setToDefaultValue();
 		}
 	}
 
@@ -389,18 +371,20 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			return metadata.getNullValue();
 		}
 
+		Iterator<DataField> i = iterator();
+		if (!i.hasNext())
+			return "[]";
+
 		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		boolean first = true;
-		for (DataField field : this) {
-			if (!first) {
-				sb.append(", ");
+		sb.append('[');
+		for (;;) {
+			DataField e = i.next();
+			sb.append(e.getValue());
+			if (!i.hasNext()) {
+				return sb.append(']').toString();
 			}
-			sb.append(field.toString());
-			first = false;
+			sb.append(", ");
 		}
-		sb.append("]");
-		return sb.toString();
 	}
 
 	@Override
@@ -434,7 +418,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			// encode null as zero, increment size of non-null values by one
 			ByteBufferUtils.encodeLength(buffer, isNull ? 0 : size + 1);
 
-			//is bulk operation worth enough?
 			for (DataField field : this) {
 				field.serialize(buffer);
 			}
@@ -449,7 +432,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
 
 		// clear the list
-		reset();
+		clear();
 
 		if (length == -1) {
 			setNull(true);
@@ -459,6 +442,21 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			}
 			setNull(false);
 		}
+	}
+
+	@Override
+	public int getSizeSerialized() {
+		if (isNull) {
+			return 1;
+		}
+	    
+		int length = ByteBufferUtils.lengthEncoded(size + 1);
+	    
+	    for (DataField field : this) {
+	    	length += field.getSizeSerialized();
+	    }
+	    
+		return length;
 	}
 
 	@Override
@@ -533,21 +531,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
-	public int getSizeSerialized() {
-		if (isNull) {
-			return 1;
-		}
-	    
-		int length = ByteBufferUtils.lengthEncoded(size + 1);
-	    
-	    for (DataField field : this) {
-	    	length += field.getSizeSerialized();
-	    }
-	    
-		return length;
-	}
-
-	@Override
 	public Iterator<DataField> iterator() {
 		return new Itr();
 	}
@@ -588,9 +571,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 		private ListDataField backedListDataField;
 		
-		/**
-		 * 
-		 */
 		public ListDataFieldView(ListDataField backedListDataField) {
 			this.backedListDataField = backedListDataField;
 		}
@@ -732,6 +712,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			}
 			return c.size() != 0;
 		}
-
 	}
+	
 }

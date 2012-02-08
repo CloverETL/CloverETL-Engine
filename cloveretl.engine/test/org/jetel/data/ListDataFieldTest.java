@@ -107,14 +107,13 @@ public class ListDataFieldTest extends CloverTestCase {
 	public void testSetNull2() {
 		DataFieldMetadata fieldMetadata = createListMetadata();
 		fieldMetadata.setNullable(false);
-		fieldMetadata.setDefaultValueStr("default value");
+		fieldMetadata.setDefaultValueStr("default value"); //default value is not used
 		ListDataField listDataField = new ListDataField(fieldMetadata);
 		
 		listDataField.addField();
 		listDataField.setNull(true);
 		assertFalse(listDataField.isNull());
-		assertEquals(1, listDataField.getSize());
-		assertEquals("default value", listDataField.getField(0).getValue().toString());
+		assertEquals(0, listDataField.getSize());
 	}
 
 	public void testSetNull3() {
@@ -148,25 +147,23 @@ public class ListDataFieldTest extends CloverTestCase {
 	public void testSetToDefaultValue2() {
 		DataFieldMetadata fieldMetadata = createListMetadata();
 		fieldMetadata.setNullable(false);
-		fieldMetadata.setDefaultValueStr("default value");
+		fieldMetadata.setDefaultValueStr("default value"); //default value is ignored
 		ListDataField listDataField = new ListDataField(fieldMetadata);
 
 		listDataField.setToDefaultValue();
 		assertFalse(listDataField.isNull());
-		assertTrue(listDataField.getSize() == 1);
-		assertEquals("default value", listDataField.getField(0).getValue().toString());
+		assertEquals(0, listDataField.getSize());
 	}
 
 	public void testSetToDefaultValue3() {
 		DataFieldMetadata fieldMetadata = createListMetadata();
 		fieldMetadata.setNullable(true);
-		fieldMetadata.setDefaultValueStr("default value");
+		fieldMetadata.setDefaultValueStr("default value"); //default value is ignored
 		ListDataField listDataField = new ListDataField(fieldMetadata);
 
 		listDataField.setToDefaultValue();
-		assertFalse(listDataField.isNull());
-		assertTrue(listDataField.getSize() == 1);
-		assertEquals("default value", listDataField.getField(0).getValue().toString());
+		assertTrue(listDataField.isNull());
+		assertEquals(0, listDataField.getSize());
 	}
 
 	public void testAddField() {
@@ -347,6 +344,14 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField.clear();
 		assertEquals(0, listDataField.getSize());
 		assertFalse(listDataField.isNull());
+
+		listDataField.addField();
+		listDataField.setNull(true);
+		assertEquals(0, listDataField.getSize());
+		assertTrue(listDataField.isNull());
+		listDataField.clear();
+		assertEquals(0, listDataField.getSize());
+		assertTrue(listDataField.isNull());
 
 		listDataField.addField();
 		listDataField.addField();
