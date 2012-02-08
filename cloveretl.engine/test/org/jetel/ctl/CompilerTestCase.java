@@ -376,9 +376,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataFieldMetadata stringField = new DataFieldMetadata("stringField", DataFieldType.STRING, "|");
 		ret.addField(stringField);
 
-		//		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
-//		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
-//		ret.addField(integerMapField);
+		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
+		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(integerMapField);
 
 		return ret;
 	}
@@ -416,26 +416,54 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				}
 				break;
 			case LIST:
-				List<Object> value = new ArrayList<Object>();
-				switch (fieldMetadata.getDataType()) {
-				case STRING:
-					value.addAll(Arrays.asList("John", "Doe", "Jersey"));
-					break;
-				case INTEGER:
-					value.addAll(Arrays.asList(123, 456, 789));
-					break;
-				case DATE:
-					value.addAll(Arrays.asList(new Date (12000), new Date(34000)));
-					break;
-				case BYTE:
-					value.addAll(Arrays.asList(new byte[] {0x12, 0x34}, new byte[] {0x56, 0x78}));
-					break;
-				default:
-					throw new UnsupportedOperationException("Not implemented.");
+				{
+					List<Object> value = new ArrayList<Object>();
+					switch (fieldMetadata.getDataType()) {
+					case STRING:
+						value.addAll(Arrays.asList("John", "Doe", "Jersey"));
+						break;
+					case INTEGER:
+						value.addAll(Arrays.asList(123, 456, 789));
+						break;
+					case DATE:
+						value.addAll(Arrays.asList(new Date (12000), new Date(34000)));
+						break;
+					case BYTE:
+						value.addAll(Arrays.asList(new byte[] {0x12, 0x34}, new byte[] {0x56, 0x78}));
+						break;
+					default:
+						throw new UnsupportedOperationException("Not implemented.");
+					}
+					field.setValue(value);
 				}
-				field.setValue(value);
 				break;
 			case MAP:
+				{
+					Map<String, Object> value = new HashMap<String, Object>();
+					switch (fieldMetadata.getDataType()) {
+					case STRING:
+						value.put("firstName", "John");
+						value.put("lastName", "Doe");
+						value.put("address", "Jersey");
+						break;
+					case INTEGER:
+						value.put("count", 123);
+						value.put("max", 456);
+						value.put("sum", 789);
+						break;
+					case DATE:
+						value.put("before", new Date (12000));
+						value.put("after", new Date(34000));
+						break;
+					case BYTE:
+						value.put("hash", new byte[] {0x12, 0x34});
+						value.put("checksum", new byte[] {0x56, 0x78});
+						break;
+					default:
+						throw new UnsupportedOperationException("Not implemented.");
+					}
+					field.setValue(value);
+				}
 				break;
 			default:
 				throw new IllegalArgumentException(fieldMetadata.getCardinalityType().toString());
@@ -1163,15 +1191,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("copyByValueTest2", "test");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void test_type_map_field() {
 		doCompile("test_type_map_field");
 		
-		Map<String, Integer> copyByValueTest1 = (Map<String, Integer>) getVariable("copyByValueTest1");
-		assertEquals(new Integer(2), copyByValueTest1.get("2"));
+		Integer copyByValueTest1 = (Integer) getVariable("copyByValueTest1");
+		assertEquals(new Integer(2), copyByValueTest1);
 		
-		Map<String, Integer> copyByValueTest2 = (Map<String, Integer>) getVariable("copyByValueTest2");
-		assertEquals(new Integer(100), copyByValueTest2.get("2"));
+		Integer copyByValueTest2 = (Integer) getVariable("copyByValueTest2");
+		assertEquals(new Integer(100), copyByValueTest2);
 	}
 	
 	/**
