@@ -149,9 +149,9 @@ public class MapFieldWrapperTest extends CloverTestCase {
 	 * Test method for {@link org.jetel.ctl.MapFieldWrapper#get(java.lang.Object)}.
 	 */
 	public void testGetObject() {
-		assertEquals("bca", map.get("abc"));
-		assertEquals(null, map.get("def"));
-		assertEquals("", map.get("ghi"));
+		assertEquals(INITIAL_VALUE.get("abc"), map.get("abc"));
+		assertEquals(INITIAL_VALUE.get("def"), map.get("def"));
+		assertEquals(INITIAL_VALUE.get("ghi"), map.get("ghi"));
 		map.remove("abc");
 		assertEquals(null, map.get("abc"));
 	}
@@ -162,13 +162,16 @@ public class MapFieldWrapperTest extends CloverTestCase {
 	public void testKeySet() {
 		Set<String> expected = new HashSet<String>(Arrays.asList("abc", null, "def", "ghi", "jkl", "pqr", "mno"));
 		assertEquals(expected, map.keySet());
+		assertEquals(INITIAL_VALUE.size(), map.size());
 		Set<String> keySet = map.keySet();
 		keySet.remove("abc");
+		assertEquals(INITIAL_VALUE.size() - 1, map.size());
 		assertFalse(keySet.contains("abc"));
 		assertFalse(map.containsKey("abc"));
 		assertTrue(keySet.contains(null));
 		assertFalse(keySet.contains("kkk"));
 		keySet.removeAll(Arrays.asList(null, "ghi"));
+		assertEquals(INITIAL_VALUE.size() - 3, map.size());
 		assertFalse(map.containsKey("ghi"));
 		assertFalse(map.containsKey(null));
 		assertFalse(map.isEmpty());
@@ -177,12 +180,12 @@ public class MapFieldWrapperTest extends CloverTestCase {
 		assertTrue(map.containsKey("mno"));
 		assertFalse(map.containsKey("xyz"));
 		
-		assertEquals(3, map.size());
+		assertEquals(2, map.size());
 		Iterator<String> it = keySet.iterator();
 		assertTrue(it.hasNext());
 		it.next();
 		it.remove();
-		assertEquals(2, map.size());
+		assertEquals(1, map.size());
 		
 		keySet.clear();
 		assertTrue(map.isEmpty());
@@ -257,8 +260,8 @@ public class MapFieldWrapperTest extends CloverTestCase {
 		assertTrue(map.containsValue("cba"));
 		assertTrue(map.containsValue("zzz"));
 		assertFalse(map.containsValue("dcba"));
-		map.put("abc", "aaa");
-		assertFalse(map.containsValue("cba"));
+		map.put("jkl", "aaa");
+		assertFalse(map.containsValue(INITIAL_VALUE.get("jkl")));
 		assertTrue(map.containsValue("aaa"));
 	}
 
@@ -270,6 +273,7 @@ public class MapFieldWrapperTest extends CloverTestCase {
 		putValues.put("abc", "modified");
 		putValues.put(null, "nullValue");
 		putValues.put("xxx", "xxx");
+		map.putAll(putValues);
 		Map<String, String> expected = new HashMap<String, String>(INITIAL_VALUE);
 		expected.putAll(putValues);
 		assertEquals(expected, map);
