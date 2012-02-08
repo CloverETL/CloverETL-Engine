@@ -25,6 +25,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -79,6 +80,7 @@ public class MapDataField extends DataField {
 		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
 
 		fields = new HashMap<String, DataField>();
+		fieldsCache = new ArrayList<DataField>();
 		this.plain = plain;
 		mapView = new MapDataFieldView<Object>();
 		
