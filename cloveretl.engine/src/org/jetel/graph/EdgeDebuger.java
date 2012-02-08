@@ -221,28 +221,41 @@ public class EdgeDebuger {
     }
 
     /**
-     * Reads previously stored debug record into the given record reference.
-     *
-     * @param record the record that will be filled with data
-     *
-     * @return the (1-based) ordinal of the data record, or -1 if there are no more records
-     *
-     * @throws IOException if any I/O error occurs
-     * @throws InterruptedException
-     */
+	 * Reads previously stored debug record into the given record reference.
+	 * 
+	 * @param record
+	 *            the record that will be filled with data
+	 * 
+	 * @return the (1-based) ordinal of the data record<br/>
+	 *         <code>-1</code> if there are currently no more records<br/>
+	 *         <code>-2</code> if there are no more records and will not be (writing EdgeDebuger closed)
+	 * 
+	 * @throws IOException
+	 *             if any I/O error occurs
+	 * @throws InterruptedException
+	 */
     public int readRecord(DataRecord record) throws IOException, InterruptedException {
 		if (!readMode) {
 			return -1;
 		}
 
-		if (dataTape.get(recordOrdinal) && dataTape.get(record)) {
-			return (Integer) recordOrdinal.getField(0).getValue();
+		if (dataTape.get(recordOrdinal)) {
+			if (recordOrdinal.getField(0).getValue().equals(-1)) {
+				return -2;
+			}
+			if (dataTape.get(record)) {
+				return (Integer) recordOrdinal.getField(0).getValue();
+			}
 		}
-
 		return -1;
 	}
 
-    public void close() {
+	/**
+	 * Closes the EdgeDebuger (if buffer used, it writes it to the tape). In writing mode it also writes end flag (
+	 * <code>-1</code>) to the tape to indicate that all data has been written (equivalent of EOF). View Data
+	 * "Load more" functionality relies on this.
+	 */
+	public void close() {
 		try {
 			if (recordBuffer != null) {
 				DataRecord dataRecord = new DataRecord(metadata);
@@ -255,6 +268,9 @@ public class EdgeDebuger {
 			}
 
 			if (!readMode) {
+		        recordOrdinal.getField(0).setValue(-1);
+				dataTape.put(recordOrdinal);
+
 				dataTape.flush(true);
 			}
 
