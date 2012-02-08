@@ -1,17 +1,18 @@
-string[] testReturnValue1;
-string[] testReturnValue2;
-string[] testReturnValue3;
-firstMultivalueOutput[] testReturnValue4;
-map[integer, firstMultivalueOutput] testReturnValue5;
-string[] testReturnValue6;
-secondMultivalueOutput testReturnValue7;
-thirdMultivalueOutput testReturnValue8;
-date testReturnValueDictionary1;
+string[] stringList1;
+string[] stringList2;
+string[] stringList3;
+firstMultivalueOutput[] recordList1;
+map[integer, firstMultivalueOutput] recordMap1;
+string[] stringList4;
+secondMultivalueOutput record1;
+thirdMultivalueOutput record2;
+date dictionaryDate1;
 string[] testReturnValueDictionary2;
 string[] testReturnValue10;
 firstMultivalueOutput testReturnValue11;
 string[] testReturnValue12;
 string[] testReturnValue13;
+map[string, integer] integerMap1;
 
 
 // stupid implementation - poor performance
@@ -38,31 +39,35 @@ function integer transform() {
 	firstMultivalueOutput tmpReturnValueRecord1;
 	
 	// identifier
-	testReturnValue1 = ["aa", "bb", "cc"];
-	(testReturnValue2 = testReturnValue1).clear();
-	(testReturnValue3 = ["a"] + ["b"]).clear();
+	stringList1 = ["aa", "bb", "cc"];
+	(stringList2 = stringList1).clear();
+	(stringList3 = ["a"] + ["b"]).clear();
 
 	// array access expression - list
-	testReturnValue4[0] = tmpReturnValueRecord1;
-	testReturnValue4[0].stringField = "unmodified";
-	(testReturnValue4[1] = testReturnValue4[0]).modifyRecord(); 
+	recordList1[0] = tmpReturnValueRecord1;
+	recordList1[0].stringField = "unmodified";
+	(recordList1[1] = recordList1[0]).modifyRecord(); 
 	
 	// array access expression - map
-	testReturnValue5[0] = tmpReturnValueRecord1;
-	testReturnValue5[0].stringField = "unmodified";
-	(testReturnValue5[1] = testReturnValue5[0]).modifyRecord(); 
+	recordMap1[0] = tmpReturnValueRecord1;
+	recordMap1[0].stringField = "unmodified";
+	(recordMap1[1] = recordMap1[0]).modifyRecord(); 
 	
 	// field access expression
-	testReturnValue6 = ["aa", "bb", "cc"];
-	($out.firstMultivalueOutput.stringListField = testReturnValue6).clear(); 
-	testReturnValue7.stringField = "unmodified";
-	($out.secondMultivalueOutput = testReturnValue7).modifyRecord();
-	testReturnValue8.stringField = "unmodified";
-	($out.thirdMultivalueOutput.* = testReturnValue8.*).modifyRecord();
+	stringList4 = ["aa", "bb", "cc"];
+	integerMap1["first"] = 1;
+	integerMap1["second"] = 2;
+	integerMap1["third"] = 3;
+	($out.firstMultivalueOutput.stringListField = stringList4).clear();
+	($out.firstMultivalueOutput.integerMapField = integerMap1).clear(); 
+	record1.stringField = "unmodified";
+	($out.secondMultivalueOutput = record1).modifyRecord();
+	record2.stringField = "unmodified";
+	($out.thirdMultivalueOutput.* = record2.*).modifyRecord();
 	
 	// member access expression - dictionary
-	testReturnValueDictionary1 = long2date(12000);
-	(dictionary.a = testReturnValueDictionary1).trunc();
+	dictionaryDate1 = long2date(12000);
+	(dictionary.a = dictionaryDate1).trunc();
 	testReturnValueDictionary2 = ["aa", "bb", "cc"];
 	(dictionary.stringList = testReturnValueDictionary2).clear();
 	
@@ -72,13 +77,13 @@ function integer transform() {
 	
 	// member access expression - list of records
 	testReturnValue12 = ["aa", "bb", "cc"];
-	testReturnValue4[2] = tmpReturnValueRecord1;
-	(testReturnValue4[2].stringListField = testReturnValue12).clear();
+	recordList1[2] = tmpReturnValueRecord1;
+	(recordList1[2].stringListField = testReturnValue12).clear();
 	
 	// member access expression - map of records
 	testReturnValue13 = ["aa", "bb", "cc"];
-	testReturnValue5[2] = tmpReturnValueRecord1;
-	(testReturnValue5[2].stringListField = testReturnValue13).clear();
+	recordMap1[2] = tmpReturnValueRecord1;
+	(recordMap1[2].stringListField = testReturnValue13).clear();
 	
 	
 	return 0;

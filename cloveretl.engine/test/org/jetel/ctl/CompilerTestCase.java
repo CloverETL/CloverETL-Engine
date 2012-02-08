@@ -380,6 +380,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
 		ret.addField(integerMapField);
 
+		DataFieldMetadata stringMapField = new DataFieldMetadata("stringMapField", DataFieldType.STRING, "|");
+		stringMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(stringMapField);
+
+		DataFieldMetadata dateMapField = new DataFieldMetadata("dateMapField", DataFieldType.DATE, "|");
+		dateMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(dateMapField);
+
+		DataFieldMetadata byteMapField = new DataFieldMetadata("byteMapField", DataFieldType.BYTE, "|");
+		byteMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(byteMapField);
+
 		return ret;
 	}
 
@@ -1365,6 +1377,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String testFieldAccessString1 = (String) getVariable("testFieldAccessString1");
 		List<Date> testFieldAccessDateList1 = (List<Date>) getVariable("testFieldAccessDateList1");
 		List<String> testFieldAccessStringList1 = (List<String>) getVariable("testFieldAccessStringList1");
+		Map<String, Date> testFieldAccessDateMap1 = (Map<String, Date>) getVariable("testFieldAccessDateMap1");
+		Map<String, String> testFieldAccessStringMap1 = (Map<String, String>) getVariable("testFieldAccessStringMap1");
 		DataRecord testFieldAccessRecord1 = (DataRecord) getVariable("testFieldAccessRecord1");
 		DataRecord firstMultivalueOutput = outputRecords[4];
 		DataRecord secondMultivalueOutput = outputRecords[5];
@@ -1373,15 +1387,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertDeepEquals(testFieldAccessDate1, firstMultivalueOutput.getField("dateField").getValue());
 		assertDeepEquals(testFieldAccessDate1, ((List<?>) firstMultivalueOutput.getField("dateListField").getValue()).get(0));
 		assertDeepEquals(testFieldAccessString1, ((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).get(0));
+		assertDeepEquals(testFieldAccessDate1, ((Map<?, ?>) firstMultivalueOutput.getField("dateMapField").getValue()).get("first"));
+		assertDeepEquals(testFieldAccessString1, ((Map<?, ?>) firstMultivalueOutput.getField("stringMapField").getValue()).get("first"));
+		
 		assertDeepEquals(testFieldAccessDateList1, secondMultivalueOutput.getField("dateListField").getValue());
 		assertDeepEquals(testFieldAccessStringList1, secondMultivalueOutput.getField("stringListField").getValue());
+		assertDeepEquals(testFieldAccessDateMap1, secondMultivalueOutput.getField("dateMapField").getValue());
+		assertDeepEquals(testFieldAccessStringMap1, secondMultivalueOutput.getField("stringMapField").getValue());
 		assertDeepEquals(testFieldAccessRecord1, thirdMultivalueOutput);
 		
 		assertDeepCopy(testFieldAccessDate1, firstMultivalueOutput.getField("dateField").getValue());
 		assertDeepCopy(testFieldAccessDate1, ((List<?>) firstMultivalueOutput.getField("dateListField").getValue()).get(0));
 		assertDeepCopy(testFieldAccessString1, ((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).get(0));
+		assertDeepCopy(testFieldAccessDate1, ((Map<?, ?>) firstMultivalueOutput.getField("dateMapField").getValue()).get("first"));
+		assertDeepCopy(testFieldAccessString1, ((Map<?, ?>) firstMultivalueOutput.getField("stringMapField").getValue()).get("first"));
 		assertDeepCopy(testFieldAccessDateList1, secondMultivalueOutput.getField("dateListField").getValue());
 		assertDeepCopy(testFieldAccessStringList1, secondMultivalueOutput.getField("stringListField").getValue());
+		assertDeepCopy(testFieldAccessDateMap1, secondMultivalueOutput.getField("dateMapField").getValue());
+		assertDeepCopy(testFieldAccessStringMap1, secondMultivalueOutput.getField("stringMapField").getValue());
 		assertDeepCopy(testFieldAccessRecord1, thirdMultivalueOutput);
 	}
 	
@@ -1544,18 +1567,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_assignment_returnvalue");
 		
 		{
-			List<String> testReturnValue1 = (List<String>) getVariable("testReturnValue1");
-			List<String> testReturnValue2 = (List<String>) getVariable("testReturnValue2");
-			List<String> testReturnValue3 = (List<String>) getVariable("testReturnValue3");
-			List<DataRecord> testReturnValue4 = (List<DataRecord>) getVariable("testReturnValue4");
-			Map<Integer, DataRecord> testReturnValue5 = (Map<Integer, DataRecord>) getVariable("testReturnValue5");
-			List<String> testReturnValue6 = (List<String>) getVariable("testReturnValue6");
-			DataRecord testReturnValue7 = (DataRecord) getVariable("testReturnValue7");
-			DataRecord testReturnValue8 = (DataRecord) getVariable("testReturnValue8");
+			List<String> stringList1 = (List<String>) getVariable("stringList1");
+			List<String> stringList2 = (List<String>) getVariable("stringList2");
+			List<String> stringList3 = (List<String>) getVariable("stringList3");
+			List<DataRecord> recordList1 = (List<DataRecord>) getVariable("recordList1");
+			Map<Integer, DataRecord> recordMap1 = (Map<Integer, DataRecord>) getVariable("recordMap1");
+			List<String> stringList4 = (List<String>) getVariable("stringList4");
+			Map<String, Integer> integerMap1 = (Map<String, Integer>) getVariable("integerMap1");
+			DataRecord record1 = (DataRecord) getVariable("record1");
+			DataRecord record2 = (DataRecord) getVariable("record2");
 			DataRecord firstMultivalueOutput = outputRecords[4];
 			DataRecord secondMultivalueOutput = outputRecords[5];
 			DataRecord thirdMultivalueOutput = outputRecords[6];
-			Date testReturnValueDictionary1 = (Date) getVariable("testReturnValueDictionary1");
+			Date dictionaryDate1 = (Date) getVariable("dictionaryDate1");
 			Date dictionaryDate = (Date) graph.getDictionary().getValue("a");
 			Date zeroDate = new Date(0);
 			List<String> testReturnValueDictionary2 = (List<String>) getVariable("testReturnValueDictionary2");
@@ -1566,24 +1590,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			List<String> testReturnValue13 = (List<String>) getVariable("testReturnValue13");
 			
 			// identifier
-			assertFalse(testReturnValue1.isEmpty());
-			assertTrue(testReturnValue2.isEmpty());
-			assertTrue(testReturnValue3.isEmpty());
+			assertFalse(stringList1.isEmpty());
+			assertTrue(stringList2.isEmpty());
+			assertTrue(stringList3.isEmpty());
 			
 			// array access expression - list
-			assertDeepEquals("unmodified", testReturnValue4.get(0).getField("stringField").getValue());
-			assertDeepEquals("modified", testReturnValue4.get(1).getField("stringField").getValue());
+			assertDeepEquals("unmodified", recordList1.get(0).getField("stringField").getValue());
+			assertDeepEquals("modified", recordList1.get(1).getField("stringField").getValue());
 
 			// array access expression - map
-			assertDeepEquals("unmodified", testReturnValue5.get(0).getField("stringField").getValue());
-			assertDeepEquals("modified", testReturnValue5.get(1).getField("stringField").getValue());
+			assertDeepEquals("unmodified", recordMap1.get(0).getField("stringField").getValue());
+			assertDeepEquals("modified", recordMap1.get(1).getField("stringField").getValue());
 
 			// field access expression
-			assertFalse(testReturnValue6.isEmpty());
+			assertFalse(stringList4.isEmpty());
 			assertTrue(((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).isEmpty());
-			assertDeepEquals("unmodified", testReturnValue7.getField("stringField"));
+			assertFalse(integerMap1.isEmpty());
+			assertTrue(((Map<?, ?>) firstMultivalueOutput.getField("integerMapField").getValue()).isEmpty());
+			assertDeepEquals("unmodified", record1.getField("stringField"));
 			assertDeepEquals("modified", secondMultivalueOutput.getField("stringField").getValue());
-			assertDeepEquals("unmodified", testReturnValue8.getField("stringField"));
+			assertDeepEquals("unmodified", record2.getField("stringField"));
 			assertDeepEquals("modified", thirdMultivalueOutput.getField("stringField").getValue());
 			
 			// member access expression - dictionary
@@ -1599,11 +1625,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			
 			// member access expression - list of records
 			assertFalse(testReturnValue12.isEmpty());
-			assertTrue(((List<?>) testReturnValue4.get(2).getField("stringListField").getValue()).isEmpty());
+			assertTrue(((List<?>) recordList1.get(2).getField("stringListField").getValue()).isEmpty());
 
 			// member access expression - map of records
 			assertFalse(testReturnValue13.isEmpty());
-			assertTrue(((List<?>) testReturnValue5.get(2).getField("stringListField").getValue()).isEmpty());
+			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
 			
 			
 		}

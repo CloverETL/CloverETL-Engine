@@ -33,6 +33,8 @@ date testFieldAccessDate1;
 string testFieldAccessString1;
 date[] testFieldAccessDateList1;
 string[] testFieldAccessStringList1;
+map[string, date] testFieldAccessDateMap1;
+map[string, string] testFieldAccessStringMap1;
 thirdMultivalueOutput testFieldAccessRecord1;
 
 date testMemberAccessDate1;
@@ -124,14 +126,25 @@ function integer transform() {
 	testFieldAccessString1 = "a";
 	testFieldAccessDateList1 = [testFieldAccessDate1, testFieldAccessDate1];
 	testFieldAccessStringList1 = ["aa", "bb", "cc"];
+	testFieldAccessDateMap1["first"] = testFieldAccessDate1;
+	testFieldAccessDateMap1["second"] = long2date(34000);
+	testFieldAccessStringMap1["first"] = "aa";
+	testFieldAccessStringMap1["second"] = "bb";
+	testFieldAccessStringMap1["third"] = "cc";
 	testFieldAccessRecord1.dateListField = testFieldAccessDateList1;
 	testFieldAccessRecord1.stringListField = testFieldAccessStringList1;
+	testFieldAccessRecord1.dateMapField = testFieldAccessDateMap1;
+	testFieldAccessRecord1.stringMapField = testFieldAccessStringMap1;
 	
 	$out.firstMultivalueOutput.dateField = testFieldAccessDate1;
 	$out.firstMultivalueOutput.dateListField[0] = testFieldAccessDate1;
 	$out.firstMultivalueOutput.stringListField[0] = testFieldAccessString1;
+	$out.firstMultivalueOutput.dateMapField["first"] = testFieldAccessDate1;
+	$out.firstMultivalueOutput.stringMapField["first"] = testFieldAccessString1;
 	$out.secondMultivalueOutput.dateListField = testFieldAccessDateList1;
 	$out.secondMultivalueOutput.stringListField = testFieldAccessStringList1;
+	$out.secondMultivalueOutput.dateMapField = testFieldAccessDateMap1;
+	$out.secondMultivalueOutput.stringMapField = testFieldAccessStringMap1;
 	$out.thirdMultivalueOutput = testFieldAccessRecord1;
 
 	//---------------- JJTMEMBERACCESSEXPRESSION - record ---------------
