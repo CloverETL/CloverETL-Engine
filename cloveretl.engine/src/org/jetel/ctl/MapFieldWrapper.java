@@ -52,7 +52,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	
 	private Map<String, V> parentMap;
 	
-	private Set<Map.Entry<String, V>> entrySet = null;
+	private transient volatile Set<Map.Entry<String, V>> entrySet = null;
 	
 	/**
 	 * @param parent
