@@ -29,6 +29,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,8 +39,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -74,7 +76,6 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -399,22 +400,12 @@ public class XMLExtract extends Node {
             m_characters.setLength(0);
             m_hasCharacters = false;
             
-            final String universalName = augmentURI(namespaceURI) + localName;
+            final String universalName = augmentURI(namespaceURI) + localName; 
             Mapping mapping = null;
             if (m_activeMapping == null) {
                 mapping = (Mapping) m_elementPortMap.get(universalName);
-                
-                // CL-2053 - backward compatibility (part 1/2)
-                if (mapping == null) {
-                	mapping = (Mapping) m_elementPortMap.get("{}" + localName);
-                }
             } else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
                 mapping = (Mapping) m_activeMapping.getChildMapping(universalName);
-                
-                // CL-2053 - backward compatibility (part 2/2)
-                if (mapping == null) {
-                	mapping = (Mapping) m_activeMapping.getChildMapping("{}" + localName);
-                }
             }
             if (mapping != null) {
                 // We have a match, start converting all child nodes into
@@ -738,8 +729,8 @@ public class XMLExtract extends Node {
 			                            + m_characters
 			                            .substring(m_characters
 			                            .lastIndexOf(":") + 1);
-			                    DateFormatter formatter = field.getMetadata().createDateFormatter();
-			                    field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
+			                    DateFormat format = new SimpleDateFormat(field.getMetadata().getFormatStr());
+			                    field.setValue(format.parse(trim ? dateTime.trim() : dateTime));
 			                } catch (Exception ex2) {
 			                    // Oh well we tried, throw the originating
 			                    // exception
