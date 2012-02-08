@@ -37,7 +37,6 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataFieldType;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -304,7 +303,7 @@ public class MapDataField extends DataField {
 	@Override
 	@Deprecated
 	public char getType() {
-		return DataFieldType.MAP.getObsoleteIdentifier();
+		return metadata.getType();
 	}
 
 	public boolean isPlain() {

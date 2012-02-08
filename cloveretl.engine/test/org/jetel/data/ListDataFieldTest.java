@@ -961,7 +961,7 @@ public class ListDataFieldTest extends CloverTestCase {
 	@SuppressWarnings("deprecation")
 	public void testGetType() {
 		ListDataField listDataField = new ListDataField(createListMetadata());
-		assertEquals(listDataField.getType(), DataFieldType.LIST.getObsoleteIdentifier());
+		assertEquals(listDataField.getType(), DataFieldType.STRING.getObsoleteIdentifier());
 	}
 	
 	public void testFromString() {
