@@ -179,16 +179,18 @@ public class Aggregate extends Node {
 				if (!firstLoop) {
 					if (currentRecord == null || 
 							((currentSortDirection = recordKey.compare(currentRecord, previousRecord)) != 0
-								&& /* fix of CL-1753 */ !recordKey.isComparedNulls())) { 
+									&& /* fix of CL-1753 */ (!recordKey.isEqualNULLs() || !recordKey.isComparedNulls()))) { 
 						// next group founded
 						
-						// check sort direction whether it is still the same
-						if (sortDirection == UNDETECTED_DIRECTION) {
-							sortDirection = currentSortDirection;
-						} else if (currentRecord != null && sortDirection != currentSortDirection) {
-							throw new JetelException("Input record #" 
-									+ recordCount 
-									+ " out of order!");
+						if (!recordKey.isComparedNulls()) {
+							// check sort direction whether it is still the same
+							if (sortDirection == UNDETECTED_DIRECTION) {
+								sortDirection = currentSortDirection;
+							} else if (currentRecord != null && sortDirection != currentSortDirection) {
+								throw new JetelException("Input record #" 
+										+ recordCount 
+										+ " out of order!");
+							}
 						}
 						
 						processor.getCurrentSortedAggregationOutput(outRecord);
