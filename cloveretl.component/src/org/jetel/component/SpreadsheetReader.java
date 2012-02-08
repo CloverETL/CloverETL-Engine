@@ -336,9 +336,9 @@ public class SpreadsheetReader extends Node {
 			}
 		}
 		
-		if (policyType == PolicyType.STRICT) {
-			maxErrorCount = 1;
-		}
+//		if (policyType == PolicyType.STRICT) {
+//			maxErrorCount = 1;
+//		}
 		
 		prepareParser(prepareMapping());
 		prepareReader();
@@ -547,20 +547,23 @@ public class SpreadsheetReader extends Node {
 					
 					if (policyType == PolicyType.STRICT) {
 						throw se;
-					} else if (logging) {
-						while (se != null && errorCount++ < maxErrorCount) {
-							se = writeErrorRecord(se, recordMetadataFields, record, errorRecord);
+					} else { 
+						if (logging) {
+							while (se != null && (maxErrorCount == -1 || errorCount++ < maxErrorCount)) {
+								se = writeErrorRecord(se, recordMetadataFields, record, errorRecord);
+							}
+						} else {
+							while (se != null && (maxErrorCount == -1 || errorCount++ < maxErrorCount)) {
+								LOGGER.warn(se.getMessage());
+								se = (SpreadsheetException) se.next();
+							}
 						}
-					} else {
-						while (se != null && errorCount++ < maxErrorCount) {
-							LOGGER.warn(se.getMessage());
-							se = (SpreadsheetException) se.next();
+//						if (policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount) {
+						if (maxErrorCount != -1 && errorCount > maxErrorCount) {
+								LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
+								LOGGER.error("ERROR: " + se.getMessage());
+								return Result.ERROR;
 						}
-					}
-					if (policyType == PolicyType.CONTROLLED && errorCount > maxErrorCount) {
-							LOGGER.error("DataParser (" + getName() + "): Max error count exceeded.");
-							LOGGER.error("ERROR: " + se.getMessage());
-							return Result.ERROR;
 					}
 				}
 				
