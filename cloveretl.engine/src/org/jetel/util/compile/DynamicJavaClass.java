@@ -49,7 +49,7 @@ public final class DynamicJavaClass {
 	 *
 	 * @param sourceCode the Java source code with a class to be instantiated
 	 * @param classLoader the class loader to be used, may be <code>null</code>
-	 * @param classPathUrls the array of additional class path URLs, may be <code>null</code>
+	 * @param compileClassPath the array of additional class path URLs, may be <code>null</code>
 	 *
 	 * @return instance of the class present within the source code
 	 *

@@ -38,7 +38,6 @@ import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
-import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
@@ -54,6 +53,7 @@ import org.jetel.util.CodeParser;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
+import org.jetel.util.compile.scala.DynamicScalaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -66,8 +66,10 @@ public class RecordTransformFactory {
     public static final int TRANSFORM_CLOVER_TL=2;
     public static final int TRANSFORM_JAVA_PREPROCESS=3;
     public static final int TRANSFORM_CTL = 4;
+    public static final int TRANSFORM_SCALA_SOURCE = 5;
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
+    public static final Pattern PATTERN_SCALA = Pattern.compile("override\\s+def"); 
     public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+((transform)|(generate))");
     public static final Pattern PATTERN_CTL_CODE = Pattern.compile("function\\s+[a-z]*\\s+((transform)|(generate))");
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
@@ -213,9 +215,12 @@ public class RecordTransformFactory {
             case TRANSFORM_JAVA_SOURCE:
                 // try compile transform parameter as java code
 				// try preprocessing if applicable
-                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
+                transformation = RecordTransformFactory.loadClassDynamic(
                         logger, null, transform, inMetadata, outMetadata, classLoader, classPath, false);
                 break;
+            case TRANSFORM_SCALA_SOURCE:
+                transformation = RecordTransformFactory.loadScalaClassDynamic(transform, classLoader, classPath);
+            	break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
                 break;
@@ -327,7 +332,24 @@ public class RecordTransformFactory {
 
         throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
     }
-    
+
+    /**
+     * @param logger
+     * @param dynamicTransformCode
+     * @return
+     * @throws ComponentNotReadyException
+     */
+    public static RecordTransform loadScalaClassDynamic(String sourceCode, ClassLoader classLoader, CloverClassPath classPath)
+            throws ComponentNotReadyException {
+        Object transObject = DynamicScalaClass.instantiate(sourceCode, classLoader, classPath.getCompileClassPath());
+
+        if (transObject instanceof RecordTransform) {
+			return (RecordTransform) transObject;
+        }
+
+        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+    }
+
     private static Pattern getPattern(String hashBang) {
     	return Pattern.compile("^\\s*" + hashBang);
     }
@@ -367,7 +389,10 @@ public class RecordTransformFactory {
             return TRANSFORM_CLOVER_TL;
         }
         
-        if (PATTERN_CLASS.matcher(commentsStripped).find()){
+        if (PATTERN_CLASS.matcher(commentsStripped).find()) {
+        	if (PATTERN_SCALA.matcher(commentsStripped).find()) {
+        		return TRANSFORM_SCALA_SOURCE;
+        	}
             // full java source code
             return TRANSFORM_JAVA_SOURCE;
         }
