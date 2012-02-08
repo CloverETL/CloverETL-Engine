@@ -216,11 +216,11 @@ public class SQLUtil {
 	}
 	
 	public static void setSizeAttributeToColumnSizeIfPossible(DataRecordMetadata recordMetadata,
-			ResultSetMetaData rsMetaData, JdbcSpecific jdbcSpecific, DatabaseMetaData dbMetaData) {
+			ResultSetMetaData rsMetaData, JdbcSpecific jdbcSpecific, DatabaseMetaData dbMetaData, String tableName) {
 
 		ResultSet rsColumns;
 		try {
-			rsColumns = dbMetaData.getColumns(rsMetaData.getCatalogName(1), null, rsMetaData.getTableName(1), null);
+			rsColumns = dbMetaData.getColumns(null, null, tableName, null);
 		} catch (SQLException e1) {
 			return;
 		}
