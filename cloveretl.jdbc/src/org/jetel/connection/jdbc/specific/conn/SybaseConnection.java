@@ -68,41 +68,26 @@ public class SybaseConnection extends DefaultConnection {
 	}
 	
 	@Override
-	protected void optimizeConnection(OperationType operationType) {
+	protected void optimizeConnection(OperationType operationType) throws Exception {
 		switch (operationType) {
 		case READ:
-			try {
-				connection.setAutoCommit(false);
-				connection.setReadOnly(true);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			} 
+			connection.setAutoCommit(false);
+			connection.setReadOnly(true);
+			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			break;
 		case WRITE:
 		case CALL:
-			try {
-				connection.setAutoCommit(false);
-				connection.setReadOnly(false);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			}
+			connection.setAutoCommit(false);
+			connection.setReadOnly(false);
+			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			break;
 		case TRANSACTION:
-			try {
-				connection.setAutoCommit(true);
-				connection.setReadOnly(false);
-				connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			}
+			connection.setAutoCommit(true);
+			connection.setReadOnly(false);
+			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			break;
 		}
 	}
