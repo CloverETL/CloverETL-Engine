@@ -455,7 +455,7 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 		protected String formatNumericToString(String value, int styleIndex, String locale) {
 			XSSFCellStyle style = stylesTable.getStyleAt(styleIndex);
 			String formatString = getFormatString(styleIndex);
-			return formatter.formatRawCellContents(Double.parseDouble(value), style.getDataFormat(), formatString, null);
+			return formatter.formatRawCellContents(Double.parseDouble(value), style.getDataFormat(), formatString, locale);
 		}
 
 	}
