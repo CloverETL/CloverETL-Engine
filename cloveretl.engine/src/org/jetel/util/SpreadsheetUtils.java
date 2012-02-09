@@ -84,6 +84,16 @@ public class SpreadsheetUtils {
 		return new Point(columnIndex - 1, row);
 	}
 	
+	/**
+	 * Converts 0-based cell coordinates into Excel style cell reference (e.g. B2).
+	 * @param column 0-based column index
+	 * @param row 0-based row number
+	 * @return cell reference (e.g. "C5" for coordinates (3,4))
+	 */
+	public static String getCellReference(int column, int row) {
+		return getColumnReference(column) + (row + 1);
+	}
+	
 	public static String getColumnReference(int columnIndex) {
 		return CellReference.convertNumToColString(columnIndex);
 	}
