@@ -61,6 +61,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SpreadsheetIndexIterator;
+import org.jetel.util.SpreadsheetUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -372,50 +373,6 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 		setMappingFieldIndex(row, column, group, field, mappingArray);
 	}
 	
-	/*
-	 * @Override protected void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException { if
-	 * (fieldNames == null) { throw new NullPointerException("fieldNames"); }
-	 * 
-	 * List<CellValue> cellValues = readRow(metadataRow); if (cellValues == null) { throw new
-	 * ComponentNotReadyException("Metedata row set to " + metadataRow + ", but sheet " + currentSheetNum +
-	 * " has less rows"); }
-	 * 
-	 * int numberOfFoundFields = 0;
-	 * 
-	 * for (CellValue cellValue : cellValues) { if (fieldNames.containsKey(cellValue.value)) {// corresponding field in
-	 * metadata found fieldNumber[numberOfFoundFields][XLS_NUMBER] = cellValue.columnIndex;
-	 * fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cellValue.value); numberOfFoundFields++;
-	 * 
-	 * fieldNames.remove(cellValue); } else { logger.warn("There is no field \"" + cellValue + "\" in output metadata");
-	 * } }
-	 * 
-	 * if (numberOfFoundFields < metadata.getNumFields()) { logger.warn("Not all fields found:");
-	 * 
-	 * for (String fieldName : fieldNames.keySet()) { logger.warn(fieldName); } } }
-
-	/*
-	 * @Override protected void cloverfieldsAndXlsNames(Map<String, Integer> fieldNames) throws
-	 * ComponentNotReadyException { if (fieldNames == null) { throw new NullPointerException("fieldNames"); }
-	 * 
-	 * if (cloverFields.length != xlsFields.length) { throw new
-	 * ComponentNotReadyException("Number of clover fields and XLSX fields must be the same"); }
-	 * 
-	 * List<CellValue> cellValues = readRow(metadataRow); if (cellValues == null) { throw new
-	 * ComponentNotReadyException("Metedata row set to " + metadataRow + ", but sheet " + currentSheetNum +
-	 * " has less rows"); } int numberOfFoundFields = 0;
-	 * 
-	 * for (CellValue cellValue : cellValues) { int xlsNumber = StringUtils.findString(cellValue.value, xlsFields);
-	 * 
-	 * if (xlsNumber > -1) {// string from cell found in xlsFields attribute
-	 * fieldNumber[numberOfFoundFields][XLS_NUMBER] = cellValue.columnIndex; try {
-	 * fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cloverFields[xlsNumber]); }catch
-	 * (NullPointerException ex) { throw new ComponentNotReadyException("Clover field \"" + cloverFields[xlsNumber] +
-	 * "\" not found"); } numberOfFoundFields++; } else { logger.warn("There is no field corresponding to \"" +
-	 * cellValue.value + "\" in output metadata"); } }
-	 * 
-	 * if (numberOfFoundFields < cloverFields.length) { logger.warn("Not all fields found"); } }
-	 */// TODO: double check if behaviour is the same!
-
 	protected void resolveNameMapping() throws ComponentNotReadyException {
 		Map<String, Integer> nameMap = metadata.getFieldNamesMap();
 		Map<String, Integer> labelsMap = metadata.getFieldLabelsMap();
@@ -447,19 +404,17 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 						}
 						if (cloverIndex!=null) {
 							DataFieldMetadata field = metadata.getField(cloverIndex);
-							if (field!=null) {
-								if (field.isAutoFilled()) {
-									LOGGER.warn("Mapping on field with name or label \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
-									continue;
-								}
+							if (field.isAutoFilled()) {
+								LOGGER.warn(getByNameLogMessagePrefix(column, row) + ": Mapping on field with name \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
+								continue;
 							}
 						}
-						
+
 						if (cloverIndex == null) {
 							if (normalizedHeader.equals(header)) {
-								LOGGER.warn("There is no field with name or label \"" + header + "\" in output metadata");
+								LOGGER.warn(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name or label \"" + header + "\" in output metadata");
 							} else {
-								LOGGER.warn("There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
+								LOGGER.warn(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
 							}
 							continue;
 						}
@@ -470,6 +425,10 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 				}
 			}
 		}
+	}
+	
+	private String getByNameLogMessagePrefix(int column, int row) {
+		return "Mapping \"by name\" of cell " + SpreadsheetUtils.getCellReference(column, row);
 	}
 	
 	protected void resolveOrderMapping() throws ComponentNotReadyException {
