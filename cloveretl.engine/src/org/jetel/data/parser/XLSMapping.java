@@ -235,12 +235,12 @@ public class XLSMapping {
 					// let's have Explicit mode even if cloverField tag is empty
 					mappingMode = SpreadsheetMappingMode.EXPLICIT;
 					if (property.getFirstChild() != null) {
-						cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID);
+						cloverFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID, "field");
 					}
 				} else if (XML_HEADER_GROUP_AUTO_MAPPING_TYPE.equals(propertyName) && property.getFirstChild() != null) {
 					mappingMode = SpreadsheetMappingMode.valueOfIgnoreCase(property.getFirstChild().getNodeValue());
 				} else if (XML_HEADER_GROUP_FORMAT_FIELD.equals(propertyName) && property.getFirstChild() != null) {
-					formatFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID);
+					formatFieldIndex = getCloverFieldIndex(fieldMap, property.getFirstChild().getNodeValue(), metadata, autofillingFieldsForbidden, componentID, "format field");
 				}
 			}
 			
@@ -250,35 +250,39 @@ public class XLSMapping {
 		return headerGroupList;
 	}
 
-	private static int getCloverFieldIndex(Map<String, Integer> fieldMap, String field, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID) {
+	private static int getCloverFieldIndex(Map<String, Integer> fieldMap, String field, DataRecordMetadata metadata, boolean autofillingFieldsForbidden, String componentID, String fieldSpec) {
 		int isInteger = StringUtils.isInteger(field); 
 		if (isInteger == 0 || isInteger == 1) {
 			int fieldNum = Integer.parseInt(field);
 			if (fieldNum < 0 || fieldNum >= metadata.getNumFields()) {
-				LOGGER.warn(componentID + ": Field with index " + field + " does not exist in metadata \"" + metadata.getName() + "\"");
+				LOGGER.info(componentID + ": " + firstCharToUpperCase(fieldSpec) + " with index " + field + " does not exist in metadata \"" + metadata.getName() + "\"");
 				return UNDEFINED;
 			}
 			if (autofillingFieldsForbidden && metadata.getField(fieldNum).isAutoFilled()) {
 				String fieldName = metadata.getField(fieldNum).getName();
-				LOGGER.warn(componentID + ": Mapping on field index " + field + " (field name: " + fieldName + ") is not allowed, because this field is auto-filled.");
+				LOGGER.warn(componentID + ": Mapping on " + fieldSpec + " index " + field + " (field name: " + fieldName + ") is not allowed, because this field is auto-filled.");
 				return UNDEFINED;
 			}
 			return fieldNum;
 		} else if (isInteger > 1) {
-			LOGGER.warn(componentID + ": Field index " + field + " is too large number");
+			LOGGER.warn(componentID + ": " + firstCharToUpperCase(fieldSpec) + " index " + field + " is too large number");
 			return UNDEFINED;
 		} else {
 			Integer index = fieldMap.get(field);
 			if (index == null) {
-				LOGGER.warn(componentID + ": Field with name \"" + field + "\" does not exist in metadata \"" + metadata.getName() + "\"");
+				LOGGER.info(componentID + ": " + firstCharToUpperCase(fieldSpec) + " with name \"" + field + "\" does not exist in metadata \"" + metadata.getName() + "\"");
 				return UNDEFINED;
 			}
 			if (autofillingFieldsForbidden && metadata.getField(index).isAutoFilled()) {
-				LOGGER.warn(componentID + ": Mapping on field \"" + field + "\" is not allowed, because this field is auto-filled.");
+				LOGGER.warn(componentID + ": Mapping on " + fieldSpec + " \"" + field + "\" is not allowed, because this field is auto-filled.");
 				return UNDEFINED;
 			}
 			return index;
 		}
+	}
+	
+	private static String firstCharToUpperCase(String str) {
+		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
 	}
 	
 	private static List<HeaderRange> parseHeaderRanges(NodeList headerRanges) {

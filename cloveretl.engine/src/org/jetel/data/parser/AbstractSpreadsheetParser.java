@@ -357,9 +357,15 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			if (group.getCloverField() != XLSMapping.UNDEFINED) {
-				processFieldMapping(group.getCloverField(), mapping, group);
-				processFieldMapping(group.getFormatField(), formatMapping, group);
+			if (group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
+				if (group.getCloverField() != XLSMapping.UNDEFINED) {
+					processFieldMapping(group.getCloverField(), mapping, group);
+					processFieldMapping(group.getFormatField(), formatMapping, group);
+				} else {
+					HeaderRange range = group.getRanges().get(0);
+					String cellRef = SpreadsheetUtils.getCellReference(range.getColumnStart(), range.getRowStart());
+					LOGGER.info("Mapping \"explicit\" of cell " + cellRef + " unresolved: Invalid field name or index specified");
+				}
 			}
 		}
 	}
@@ -412,9 +418,9 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 						if (cloverIndex == null) {
 							if (normalizedHeader.equals(header)) {
-								LOGGER.warn(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name or label \"" + header + "\" in output metadata");
+								LOGGER.info(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name or label \"" + header + "\" in output metadata");
 							} else {
-								LOGGER.warn(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
+								LOGGER.info(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
 							}
 							continue;
 						}
