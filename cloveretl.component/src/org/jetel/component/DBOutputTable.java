@@ -44,6 +44,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -437,9 +439,10 @@ public class DBOutputTable extends Node {
 			
 			// TODO Labels replace:
 			if (dbFields != null) {
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields, dbConnection.getJdbcSpecific());
 			} else {
-				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
+				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(
+						inPort.getMetadata(), dbTableName, dbConnection.getJdbcSpecific());
 			}
 			// TODO Labels replace end
 
@@ -1284,15 +1287,16 @@ public class DBOutputTable extends Node {
 			}
 
 			inPort = getInputPort(READ_FROM_PORT);
+			connection.getJdbcSpecific().checkMetadata(status, getInMetadata(), this);
 			if (sqlQuery == null) {
 				sqlQuery = new String[1];
 				// TODO Labels replace:
 				if (dbFields != null) {
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(
-							dbTableName, dbFields);
+							dbTableName, dbFields, dbConnection.getJdbcSpecific());
 				} else {
 					sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort
-							.getMetadata(), dbTableName);
+							.getMetadata(), dbTableName, dbConnection.getJdbcSpecific());
 				}
 				// TODO Labels replace end
 				
@@ -1404,7 +1408,14 @@ public class DBOutputTable extends Node {
 				}
 			}
 
-		} catch (ComponentAlmostNotReadyException e1) {
+		}  catch (UnsupportedOperationException uoe) {
+    		//it isn't possible to perform check config (for example some method of db driver throws the exception)
+    		//this means we don't know whether the configuration is valid or not
+    		ConfigurationProblem problem = new ConfigurationProblem("Cannot check the configuration of component. " +
+    				"Used driver does not implement some required methods.", Severity.WARNING, this, Priority.NORMAL);
+    		problem.setCauseException(uoe);
+    		status.add(problem);
+    	} catch (ComponentAlmostNotReadyException e1) {
 			ConfigurationProblem problem = new ConfigurationProblem(e1
 					.getMessage(), ConfigurationStatus.Severity.WARNING, this,
 					ConfigurationStatus.Priority.NORMAL);

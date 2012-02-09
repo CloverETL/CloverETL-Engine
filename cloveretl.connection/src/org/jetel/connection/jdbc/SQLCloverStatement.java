@@ -109,9 +109,6 @@ public class SQLCloverStatement {
 	
 	private boolean isInitialized = false;
 	
-	private final static Pattern TABLE_NAME_PATTERN = Pattern.compile(
-			"(?:from|into|update)\\s+" + SQLUtil.DB_FIELD_PATTERN, Pattern.CASE_INSENSITIVE);
-	
 	private static final String INVALID_QUERY_MESSAGE = "Query string is invalid. It has to start with keyword Select or Update or Insert or Delete";
 	
 	public enum QueryType {
@@ -467,7 +464,8 @@ public class SQLCloverStatement {
 			for (int i = 0; i < transMap.length; i++) {
 				transMap[i].jetel2sql((PreparedStatement) statement);
 			}
-			return ((PreparedStatement)statement).executeQuery();
+			ResultSet resultSet = ((PreparedStatement)statement).executeQuery();
+			return connection.getDbConnection().getJdbcSpecific().wrapResultSet(resultSet);
 		}
 		return statement.executeQuery(getQuery());
 	}
@@ -723,7 +721,7 @@ public class SQLCloverStatement {
 		if (tableName != null) {
 			return tableName;
 		}else{
-			Matcher matcher = TABLE_NAME_PATTERN.matcher(query);
+			Matcher matcher = getTableNamePattern().matcher(query);
 			if (matcher.find()) {
 				tableName = matcher.group(1);
 			}
@@ -774,6 +772,11 @@ public class SQLCloverStatement {
 
 	public void setIncremental(SQLIncremental incremental) {
 		this.incremental = incremental;
+	}
+	
+	private Pattern getTableNamePattern() {
+		return Pattern.compile("(?:from|into|update)\\s+" + 
+				connection.getDbConnection().getJdbcSpecific().getDbFieldPattern(), Pattern.CASE_INSENSITIVE);
 	}
 }
 

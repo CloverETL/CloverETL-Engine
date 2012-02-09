@@ -457,7 +457,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         key.init();
 
         try {
-            lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), key, keyRecord);
+            lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
+            		key, keyRecord, connection.getJdbcSpecific());
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);
         }
@@ -534,12 +535,14 @@ class DBLookup implements Lookup{
 	private SQLCloverStatement statement;
 	private ResultSet resultSet;
 	private CopySQLData[] transMap;
+	private JdbcSpecific jdbcSpecific;
 	
-	DBLookup(SQLCloverStatement statement, RecordKey key, DataRecord record) throws ComponentNotReadyException, SQLException {
+	DBLookup(SQLCloverStatement statement, RecordKey key, DataRecord record, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException, SQLException {
 		this.recordKey = key;
 		this.inRecord = record;
 		this.key = new HashKey(recordKey, inRecord);
 		this.statement = statement;
+		this.jdbcSpecific = jdbcSpecific;
 		statement.init();
 	}
 	
@@ -601,13 +604,9 @@ class DBLookup implements Lookup{
 	}
 
 	private void seekInDB() throws SQLException {
-		//execute query
-		if (resultSet != null) {
-			// close the previous result set before creating new one
-			resultSet.close();
-			// note: according to documentation, resultSet that is already closed is a no-op, please test
-		}
-	   resultSet = statement.executeQuery();
+		// execute query
+		jdbcSpecific.closeResultSetBeforeCreatingNewOne(resultSet);
+		resultSet = statement.executeQuery();
 	   
 	   if (dbMetadata == null) {
 		   if (statement.getCloverOutputFields() == null) {

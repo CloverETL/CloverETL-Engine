@@ -530,7 +530,7 @@ public class DBInputTable extends Node {
 				try {
 					parser.setIncrementalFile(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile));
 					parser.setIncrementalKey(incrementalKeyDef);
-					parser.checkIncremental();
+					parser.checkIncremental(connection.getJdbcSpecific());
 				} catch (MalformedURLException e1) {
 					// -pnajvar
 					// Throwing and exception halts the entire graph which might not be correct as inc file

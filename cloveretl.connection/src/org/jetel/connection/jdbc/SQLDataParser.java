@@ -32,6 +32,7 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
+import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.AbstractParser;
@@ -286,7 +287,8 @@ public class SQLDataParser extends AbstractParser {
         try {
 			if (incrementalKey != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 				if (incremental == null) {
-					incremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
+					incremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile, 
+							dbConnection.getJdbcSpecific());
 				}
 				sqlCloverStatement.setIncremental(incremental);
 			}
@@ -319,10 +321,11 @@ public class SQLDataParser extends AbstractParser {
 		this.recordCounter = 1;
 	}
 	
-	public boolean checkIncremental() throws ComponentNotReadyException{
+	public boolean checkIncremental(JdbcSpecific jdbcSpecific) throws ComponentNotReadyException{
     	if (incrementalKey != null && sqlQuery != null && sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
 			try {
-				SQLIncremental sqlIncremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile);
+				SQLIncremental sqlIncremental = new SQLIncremental(incrementalKey, sqlQuery, incrementalFile, 
+						jdbcSpecific);
 				sqlIncremental.checkConfig();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
