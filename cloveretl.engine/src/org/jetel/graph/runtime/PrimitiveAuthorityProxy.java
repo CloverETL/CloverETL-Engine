@@ -148,6 +148,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
             	rr.result = Result.ERROR;
             	return rr;
     		}
+    		rr.description = graph.getWatchDog().getErrorMessage();
         } finally {
     		if (graph != null)
     			graph.free();
