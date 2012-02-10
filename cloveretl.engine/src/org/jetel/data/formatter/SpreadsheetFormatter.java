@@ -712,7 +712,10 @@ public class SpreadsheetFormatter implements Formatter {
 
 	@Override
 	public void flush() throws IOException {
-		//flush performs writing into a stream. Before that _no_data_ have been written yet. They are all written at once 
+		//flush performs writing into a stream. Before that _no_data_ have been written yet. They are all written at once
+		if (workbookInputStream!=null) {
+			workbookInputStream.close();
+		}
 		if (outputDataTarget!=null && workbook!=null) {
 			if (outputDataTarget instanceof Object[]) {
 				if (workbookNotFlushed) {
@@ -791,6 +794,9 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void createWorkbook(URL contextURL, String file) {
 		try {
+			if (workbookInputStream!=null) {
+				workbookInputStream.close();
+			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 //			if (workbookInputStream.available() > 0) { //did not work reliably for ZIP files => workaround below
 			int firstByte = workbookInputStream.read();
