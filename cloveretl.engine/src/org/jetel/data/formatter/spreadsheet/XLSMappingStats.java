@@ -27,16 +27,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.jetel.data.parser.AbstractSpreadsheetParser;
 import org.jetel.data.parser.XLSMapping;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
 import org.jetel.data.parser.XLSMapping.Stats;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.SpreadsheetUtils;
+import org.jetel.util.string.StringUtils;
 
 public class XLSMappingStats {
+	final static Log LOGGER = LogFactory.getLog(XLSMappingStats.class);
+
 	private Map<CellPosition, Integer> headerRangePositionToCloverFieldMapping = new HashMap<CellPosition, Integer>();
 	private Set<RelativeCellPosition> templateCellsToCopy = new LinkedHashSet<RelativeCellPosition>();
 	private Map<Integer, Interval> xOffsetToMinimalYInterval = new HashMap<Integer,Interval>();
@@ -85,6 +92,9 @@ public class XLSMappingStats {
 			String cellContent = getCellStringValueByRowAndColumn(sheetData, cellPosition.x, cellPosition.y);
 			if (cellContent!=null) {
 				DataFieldMetadata dataFieldMetaData = cloverFields.remove(cellContent);
+				if (dataFieldMetaData==null) {//trying normalized form
+					dataFieldMetaData = cloverFields.remove(StringUtils.normalizeName(cellContent));
+				}
 				if (dataFieldMetaData==null) {
 					String possibleFieldName = labelsToNames.get(cellContent);
 					dataFieldMetaData = cloverFields.remove(possibleFieldName);
@@ -258,6 +268,9 @@ public class XLSMappingStats {
 				if (cloverField != XLSMapping.UNDEFINED) {
 					cloverFieldMapping.put(cloverField, new CellPositionAndHeaderGroupInfo(new CellPosition(transformations.getX1fromRange(range), transformations.getY1fromRange(range)), group.getSkip(), group.getFormatField()));
 					updateFormatFieldStatsIfDefined(cloverField, group.getFormatField());
+				} else {
+					String cellRef = SpreadsheetUtils.getCellReference(range.getColumnStart(), range.getRowStart());
+					LOGGER.info("Mapping \"explicit\" of cell " + cellRef + " unresolved: Invalid field name or index specified");
 				}
 			}
 		}
@@ -274,6 +287,9 @@ public class XLSMappingStats {
 			if (cloverField != XLSMapping.UNDEFINED) {
 				cloverFieldMapping.put(cloverField, cellPositionAndHeaderGroupInfo);
 				updateFormatFieldStatsIfDefined(cloverField, cellPositionAndHeaderGroupInfo.formatField);
+			} else {
+				String cellContent = getCellStringValueByRowAndColumn(sheetData, cellPositionAndHeaderGroupInfo.cellPosition.x, cellPositionAndHeaderGroupInfo.cellPosition.y);
+				LOGGER.info("Mapping \"by name\" of cell " + SpreadsheetUtils.getCellReference(cellPositionAndHeaderGroupInfo.cellPosition.x, cellPositionAndHeaderGroupInfo.cellPosition.y) + " unresolved: There is no field with name or label \"" + cellContent + "\" in output metadata");
 			}
 		}
 		
@@ -291,6 +307,9 @@ public class XLSMappingStats {
 			if (cloverField != XLSMapping.UNDEFINED) {
 				cloverFieldMapping.put(cloverField, cellPositionAndHeaderGroupInfo);
 				updateFormatFieldStatsIfDefined(cloverField, cellPositionAndHeaderGroupInfo.formatField);
+			} else {
+				LOGGER.info("Mapping \"by order\" of cell " + SpreadsheetUtils.getCellReference(cellPositionAndHeaderGroupInfo.cellPosition.x, cellPositionAndHeaderGroupInfo.cellPosition.y) 
+						+ " unresolved: No more unused metadata fields. Ignoring all subsequent cells mapped \"by order\".");
 			}
 			
 		}
