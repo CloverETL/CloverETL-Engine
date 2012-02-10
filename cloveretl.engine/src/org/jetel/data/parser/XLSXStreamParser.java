@@ -275,10 +275,10 @@ public class XLSXStreamParser implements SpreadsheetStreamHandler {
 	public void close() throws IOException {
 		try {
 			staxParser.close();
-			opcPackage.revert();
 		} catch (XMLStreamException e) {
 			LOGGER.warn("Closing parser threw exception", e);
 		}
+		opcPackage.revert();
 		closeCurrentInputStream();
 	}
 
