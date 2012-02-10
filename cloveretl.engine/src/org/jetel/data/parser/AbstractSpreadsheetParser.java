@@ -460,12 +460,6 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 			}
 		}
 
-		if (mappedCells.size() > unusedFields.cardinality()) {
-			// TODO: check in checkConfig. (Note: this check is not sufficient since there can still be unresolved "format" fields) 
-			throw new ComponentNotReadyException("Invalid cells mapping by order! There are " + mappedCells.size() +
-					" cells mapped by order, but only " + unusedFields.cardinality() + " available metadata fields left.");
-		}
-		
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			Collections.sort(mappedCells, VERTICAL_CELL_ORDER_COMPARATOR);
 		} else {
@@ -476,7 +470,9 @@ public abstract class AbstractSpreadsheetParser extends AbstractParser {
 
 		for (CellMappedByOrder cell : mappedCells) {
 			if (nextUnusedField < 0) {
-				throw new ComponentNotReadyException("Invalid cells mapping by order! There are more cells mapped by order then unused metadata fields.");
+				LOGGER.info("Mapping \"by order\" of cell " + SpreadsheetUtils.getCellReference(cell.column, cell.row) 
+						+ " unresolved: No more unused metadata fields. Ignoring all subsequent cells mapped \"by order\".");
+				break;
 			}
 			processFieldMapping(nextUnusedField, mapping, cell.row, cell.column, cell.group);
 			processFieldMapping(cell.group.getFormatField(), formatMapping, cell.row, cell.column, cell.group);
