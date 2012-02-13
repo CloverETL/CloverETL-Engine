@@ -28,6 +28,7 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,7 +79,7 @@ public class MapDataField extends DataField {
 		this.singleValueMetadata = fieldMetadata.duplicate();
 		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
 
-		fields = new HashMap<String, DataField>();
+		fields = new LinkedHashMap<String, DataField>();
 		fieldsCache = new ArrayList<DataField>();
 		this.plain = plain;
 		mapView = new MapDataFieldView<Object>();
@@ -105,8 +106,8 @@ public class MapDataField extends DataField {
 	
 	@Override
 	public void setToDefaultValue() {
-		setNull(false);
 		clear();
+		setNull(metadata.isNullable());
 	}
 	
 	public boolean containsField(String fieldKey) {
@@ -267,7 +268,7 @@ public class MapDataField extends DataField {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Map<String, T> getValue(Class<T> clazz) {
-		if (metadata.getDataType().getClass() == clazz) {
+		if (metadata.getDataType().getInternalValueClass() != clazz) {
 			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
 		}
 		return (Map<String, T>) getValue();
@@ -293,7 +294,7 @@ public class MapDataField extends DataField {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> Map<String, T> getValueDuplicate(Class<T> clazz) {
-		if (metadata.getDataType().getClass() == clazz) {
+		if (metadata.getDataType().getInternalValueClass() != clazz) {
 			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
 		}
 		return (Map<String, T>) getValueDuplicate();
@@ -401,8 +402,8 @@ public class MapDataField extends DataField {
 	    
 		int length = ByteBufferUtils.lengthEncoded(fields.size() + 1);
 	    
-	    for (DataField field : fields.values()) {
-	    	length += field.getSizeSerialized();
+	    for (Entry<String, DataField> entry : fields.entrySet()) {
+	    	length += ByteBufferUtils.lengthEncoded(entry.getKey()) + entry.getValue().getSizeSerialized();
 	    }
 	    
 		return length;
@@ -679,28 +680,5 @@ public class MapDataField extends DataField {
 			}
 	    }
 	}
-    
 
-//TODO is the handler necessary?
-//	private static class DataFieldHandler {
-//		
-//		public DataField field;
-//		
-//		public static DataFieldHandler wrap(DataField field) {
-//			if (field == null) {
-//				throw new IllegalStateException("null field cannot be wrapped");
-//			}
-//			DataFieldHandler result = new DataFieldHandler();
-//			result.field = field;
-//			return result;
-//		}
-//		
-//		@Override
-//		public boolean equals(Object obj) {
-//			if (obj == this) return true;
-//			if (!(obj instanceof DataFieldHandler)) return false;
-//			return field == ((DataFieldHandler) obj).field;
-//		}
-//	}
-	
 }

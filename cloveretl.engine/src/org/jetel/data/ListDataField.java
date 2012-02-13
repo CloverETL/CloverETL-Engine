@@ -322,7 +322,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getValue(Class<T> clazz) {
-		if (metadata.getDataType().getClass() == clazz) {
+		if (metadata.getDataType().getInternalValueClass() != clazz) {
 			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
 		}
 		return (List<T>) getValue();
@@ -348,7 +348,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getValueDuplicate(Class<T> clazz) {
-		if (metadata.getDataType().getClass() == clazz) {
+		if (metadata.getDataType().getInternalValueClass() != clazz) {
 			throw new ClassCastException("Class " + metadata.getDataType().getClass().getName() + " cannot be cast to " + clazz.getName());
 		}
 		return (List<T>) getValueDuplicate();

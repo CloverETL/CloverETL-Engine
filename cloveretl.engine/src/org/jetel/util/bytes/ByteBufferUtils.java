@@ -203,6 +203,19 @@ public final class ByteBufferUtils {
     }
     
     /**
+     * Returns how many bytes are needed to encode a string using algorithm 
+     * in {@link #encodeString(CloverBuffer, String)} method.
+     */
+    public static final int lengthEncoded(String str) {
+    	if (str == null) {
+    		return 1;
+    	} else {
+    		final int length = str.length();
+			return ByteBufferUtils.lengthEncoded(length + 1) + (2 * length);
+    	}
+    }
+    
+    /**
      * Decode previously encoded length (int value)
      * 
      * @param buffer    ByteBuffer from which decode values

@@ -175,4 +175,11 @@ public class ByteBufferUtilsTest extends CloverTestCase {
     	assertEquals("abc", ByteBufferUtils.decodeString(buffer));
     }
 
+    public void testEncodeLengthStr() {
+    	assertEquals(1, ByteBufferUtils.lengthEncoded(null));
+    	assertEquals(1, ByteBufferUtils.lengthEncoded(""));
+    	assertEquals(7, ByteBufferUtils.lengthEncoded("abc"));
+    	assertEquals(71, ByteBufferUtils.lengthEncoded("abcd abcd abcd abcd abcd abcd abcd "));
+    }
+    
 }

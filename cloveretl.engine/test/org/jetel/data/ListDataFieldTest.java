@@ -495,44 +495,53 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField = new ListDataField(createListMetadata(DataFieldType.BOOLEAN));
 		listDataField.setNull(false);
 		List<Boolean> listView2 = listDataField.getValue(Boolean.class);
+		try { listDataField.getValue(byte[].class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView2.add(Boolean.TRUE);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.BYTE));
+		try { listDataField.getValue(Date.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<byte[]> listView3 = listDataField.getValue(byte[].class);
 		listView3.add(new byte[] {0});
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.CBYTE));
+		try { listDataField.getValue(Decimal.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<byte[]> listView4 = listDataField.getValue(byte[].class);
 		listView4.add(new byte[] {0});
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.DATE));
+		try { listDataField.getValue(Decimal.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<Date> listView5 = listDataField.getValue(Date.class);
 		listView5.add(new Date());
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.DECIMAL));
+		try { listDataField.getValue(Integer.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<Decimal> listView6 = listDataField.getValue(Decimal.class);
 		listView6.add(new IntegerDecimal(10, 5));
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.INTEGER));
+		try { listDataField.getValue(Long.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<Integer> listView7 = listDataField.getValue(Integer.class);
 		listView7.add(1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.LONG));
+		try { listDataField.getValue(Double.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<Long> listView8 = listDataField.getValue(Long.class);
 		listView8.add((long) 1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.NUMBER));
+		try { listDataField.getValue(String.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<Double> listView9 = listDataField.getValue(Double.class);
 		listView9.add((double) 1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.STRING));
+		try { listDataField.getValue(Boolean.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listDataField.setNull(false);
 		List<CloverString> listView1 = listDataField.getValue(CloverString.class);
 		listView1.add(new CloverString());
@@ -914,53 +923,85 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField = new ListDataField(createListMetadata(DataFieldType.BOOLEAN));
 		listDataField.setNull(false);
 		List<Boolean> listView2 = listDataField.getValueDuplicate(Boolean.class);
+		try { listDataField.getValue(byte[].class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView2.add(Boolean.TRUE);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.BYTE));
 		listDataField.setNull(false);
 		List<byte[]> listView3 = listDataField.getValueDuplicate(byte[].class);
+		try { listDataField.getValue(String.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView3.add(new byte[] {0});
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.CBYTE));
 		listDataField.setNull(false);
 		List<byte[]> listView4 = listDataField.getValueDuplicate(byte[].class);
+		try { listDataField.getValue(Date.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView4.add(new byte[] {0});
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.DATE));
 		listDataField.setNull(false);
 		List<Date> listView5 = listDataField.getValueDuplicate(Date.class);
+		try { listDataField.getValue(Decimal.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView5.add(new Date());
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.DECIMAL));
 		listDataField.setNull(false);
 		List<Decimal> listView6 = listDataField.getValueDuplicate(Decimal.class);
+		try { listDataField.getValue(Integer.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView6.add(new IntegerDecimal(10, 5));
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.INTEGER));
 		listDataField.setNull(false);
 		List<Integer> listView7 = listDataField.getValueDuplicate(Integer.class);
+		try { listDataField.getValue(Long.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView7.add(1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.LONG));
 		listDataField.setNull(false);
 		List<Long> listView8 = listDataField.getValueDuplicate(Long.class);
+		try { listDataField.getValue(Double.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView8.add((long) 1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.NUMBER));
 		listDataField.setNull(false);
 		List<Double> listView9 = listDataField.getValueDuplicate(Double.class);
+		try { listDataField.getValue(CloverString.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView9.add((double) 1);
 
 		listDataField = new ListDataField(createListMetadata(DataFieldType.STRING));
 		listDataField.setNull(false);
 		List<CloverString> listView1 = listDataField.getValueDuplicate(CloverString.class);
+		try { listDataField.getValue(Boolean.class); assertTrue(false); } catch (ClassCastException e) { /*OK*/ }
 		listView1.add(new CloverString());
 	}
 
 	
 	@SuppressWarnings("deprecation")
 	public void testGetType() {
-		ListDataField listDataField = new ListDataField(createListMetadata());
+		ListDataField listDataField;
+		
+		listDataField = new ListDataField(createListMetadata(DataFieldType.BOOLEAN));
+		assertEquals(listDataField.getType(), DataFieldType.BOOLEAN.getObsoleteIdentifier());
+		
+		listDataField = new ListDataField(createListMetadata(DataFieldType.BYTE));
+		assertEquals(listDataField.getType(), DataFieldType.BYTE.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.CBYTE));
+		assertEquals(listDataField.getType(), DataFieldType.CBYTE.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.DATE));
+		assertEquals(listDataField.getType(), DataFieldType.DATE.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.DECIMAL));
+		assertEquals(listDataField.getType(), DataFieldType.DECIMAL.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.INTEGER));
+		assertEquals(listDataField.getType(), DataFieldType.INTEGER.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.LONG));
+		assertEquals(listDataField.getType(), DataFieldType.LONG.getObsoleteIdentifier());
+
+		listDataField = new ListDataField(createListMetadata(DataFieldType.STRING));
 		assertEquals(listDataField.getType(), DataFieldType.STRING.getObsoleteIdentifier());
 	}
 	
