@@ -38,12 +38,24 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="GENERICODBC"/>
+		<parameter id="name" value="Generic ODBC"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.GenericODBCSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="INFORMIX"/>
 		<parameter id="name" value="Informix"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.InformixSpecific"/>
 	</extension>
-
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MSACCESS"/>
+		<parameter id="name" value="Microsoft Access"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSAccessSpecific"/>
+	</extension>
+	
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="MS SQL Server 2008"/>
@@ -133,6 +145,24 @@
 		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="GENERICODBC"/>
+		<parameter id="name" value="Generic ODBC"/>
+		<parameter id="dbDriver" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="driverLibrary" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="urlHint" value="jdbc:odbc:dsn_source;"/>
+		<parameter id="jdbcSpecific" value="GENERICODBC"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="MSACCESS"/>
+		<parameter id="name" value="Microsoft Access"/>
+		<parameter id="dbDriver" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="driverLibrary" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="urlHint" value="jdbc:odbc:driver={Microsoft Access Driver (*.mdb)};DBQ=database"/>
+		<parameter id="jdbcSpecific" value="MSACCESS"/>
 	</extension>
 
 	<extension point-id="jdbcDriver">
