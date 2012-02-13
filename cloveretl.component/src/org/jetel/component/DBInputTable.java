@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -33,7 +32,6 @@ import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
@@ -285,9 +283,9 @@ public class DBInputTable extends Node {
 				// process queries from file or input port
 				PropertyRefResolver propertyResolver = new PropertyRefResolver(getGraph().getGraphProperties());
 				while (channelIterator.hasNext()) {
-					ReadableByteChannel channel = channelIterator.next();
-					if (channel == null) break; // no more data in input port
-					inputParser.setDataSource(channel);
+					Object source = channelIterator.next();
+					if (source == null) break; // no more data in input port
+					inputParser.setDataSource(source);
 					DataRecord statementRecord = new DataRecord(statementMetadata);
 					statementRecord.init();
     				//read statements from byte channel
@@ -532,7 +530,7 @@ public class DBInputTable extends Node {
 				try {
 					parser.setIncrementalFile(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile));
 					parser.setIncrementalKey(incrementalKeyDef);
-					parser.checkIncremental();
+					parser.checkIncremental(connection.getJdbcSpecific());
 				} catch (MalformedURLException e1) {
 					// -pnajvar
 					// Throwing and exception halts the entire graph which might not be correct as inc file

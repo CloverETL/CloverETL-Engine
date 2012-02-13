@@ -42,6 +42,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Adler32;
@@ -1049,7 +1050,13 @@ public class FileUtils {
             // if the url is a path, make a fake file
             String sUrl = url.getPath();
             boolean isFile = !sUrl.endsWith("/") && !sUrl.endsWith("\\");
-            if (!isFile) sUrl =  sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
+            if (!isFile) {
+            	if (fileURL.indexOf("#") < 0) {
+					sUrl = sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
+				} else {
+					sUrl = sUrl + "tmpfile" + UUID.randomUUID();
+				}
+            }
 			file = new File(sUrl);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e + ": " + fileURL);

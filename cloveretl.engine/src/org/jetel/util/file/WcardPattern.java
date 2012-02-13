@@ -37,6 +37,8 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
@@ -151,7 +153,7 @@ public class WcardPattern {
 	 * @param filePat Filename pattern. 
 	 * @return false for pattern without wildcards, true otherwise. 
 	 */
-	private void splitFilePattern(String pat, StringBuffer dir, StringBuffer filePat) {
+	public static void splitFilePattern(String pat, StringBuffer dir, StringBuffer filePat) {
 		dir.setLength(0);
 		filePat.setLength(0);
 
@@ -395,6 +397,16 @@ public class WcardPattern {
 				is));
     }
     
+	private List<String> getSanboxNames(URL url) {
+		List<String> fileStreamNames = new ArrayList<String>();
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		String storageCode = url.getHost();
+		String queryPart = url.getQuery() != null ? "?" + url.getQuery() : "";
+		for (String fileName : authorityProxy.resolveAllFiles(storageCode, url.getPath() + queryPart)) {
+			fileStreamNames.add(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + fileName);
+		}
+		return fileStreamNames;
+	}
     
     /**
      * Gets list of file names or an original name from file system. 
@@ -430,7 +442,11 @@ public class WcardPattern {
 		}
 		
 		else if (resolveAllNames && (
-			url.getProtocol().equals(HTTP) || url.getProtocol().equals(HTTPS))) {
+				url.getProtocol().equals(SandboxUrlUtils.SANDBOX_PROTOCOL))) {
+			return getSanboxNames(url);
+		}
+		else if (resolveAllNames && (
+				url.getProtocol().equals(HTTP) || url.getProtocol().equals(HTTPS))) {
 			return getHttpNames(url);
 		}
 

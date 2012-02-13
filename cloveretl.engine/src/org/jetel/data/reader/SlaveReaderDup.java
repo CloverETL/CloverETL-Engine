@@ -25,6 +25,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -74,6 +75,13 @@ public class SlaveReaderDup implements InputReader {
 	@Override
 	public void free() {
 		inPort = null;
+		try {
+			if (recBuf != null) {
+				recBuf.close();
+			}
+		} catch (IOException e) {
+			throw new JetelRuntimeException("SlaveReaderDup cannot close temp file.", e);
+		}
 	}
 	
 	private void swap() {

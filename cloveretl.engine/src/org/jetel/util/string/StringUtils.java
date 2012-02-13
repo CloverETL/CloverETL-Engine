@@ -957,6 +957,7 @@ public class StringUtils {
 		return id;
 	}
 
+
 	/**
 	 * Returns an array containing strings from originalNames
 	 * with numbers appended if necessary.
@@ -1961,6 +1962,37 @@ public class StringUtils {
 			result++;
 		}
 		return result;
+	}
+	
+	/**
+	 * Parses a memory string in following formats and returns size in bytes Examples: "32m", "32mb", "2 g", "2gb",
+	 * "128k", "128kb" "8192"
+	 * 
+	 * @param s
+	 * @return value in bytes
+	 */
+	public static long parseMemory(String s) {
+		if (s == null) {
+			return -1;
+		}
+		s = s.trim().toUpperCase();
+		try {
+			if (s.endsWith("K")) {
+				return Long.valueOf(s.substring(0, s.length() - 1).trim()).longValue() * 1024;
+			} else if (s.endsWith("KB")) {
+				return Long.valueOf(s.substring(0, s.length() - 2).trim()).longValue() * 1024;
+			} else if (s.endsWith("M")) {
+				return Long.valueOf(s.substring(0, s.length() - 1).trim()).longValue() * 1024 * 1024;
+			} else if (s.endsWith("MB")) {
+				return Long.valueOf(s.substring(0, s.length() - 2).trim()).longValue() * 1024 * 1024;
+			} else if (s.endsWith("G")) {
+				return Long.valueOf(s.substring(0, s.length() - 1).trim()).longValue() * 1024 * 1024 * 1024;
+			} else if (s.endsWith("GB")) {
+				return Long.valueOf(s.substring(0, s.length() - 2).trim()).longValue() * 1024 * 1024 * 1024;
+			}
+		} catch (NumberFormatException e) {
+		}
+		return -1;
 	}
 
 	/**

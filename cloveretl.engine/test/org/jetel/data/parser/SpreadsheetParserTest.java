@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormatSymbols;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +33,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetParserExceptionHandler;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -57,6 +61,8 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	private String mapping5;
 	private String mapping6;
 	private String mapping7;
+	private String mapping8;
+	private String mapping9;
 	private boolean mappingsInitialized;
 	
 	private void initMappings() throws IOException {
@@ -73,6 +79,8 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		mapping5 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping5_Customers_03_Horizontal.xml", "UTF-8");
 		mapping6 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping6_excel-types-nocurrency.xml", "UTF-8");
 		mapping7 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping7_empty.xml", "UTF-8");
+		mapping8 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping8_excel-types-nocurrency.xml", "UTF-8");
+		mapping9 = FileUtils.getStringFromURL(currentDir, "data/xls/mapping9_excel-types-nocurrency.xml", "UTF-8");
 	}
 	
 	@Override
@@ -82,7 +90,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 
 		initMappings();
 		
-		String[] cloverFieldNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"};
+		String[] cloverFieldNames = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"};
 		
 		stringMetadata = new DataRecordMetadata("md", DataRecordMetadata.DELIMITED_RECORD);
 		for (int i = 0; i < cloverFieldNames.length; i++) {
@@ -109,12 +117,14 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		xlsxParser.init();
 		xlsxParser.preExecute();
 		xlsxParser.setDataSource(new FileInputStream(XLSX_FILE));
-		
+//		xlsxParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
+
 		XLSParser xlsParser = new JExcelXLSDataParser(stringMetadata);
 		xlsParser.setSheetNumber(sheetName);
 		xlsParser.init();
 		xlsParser.preExecute();
 		xlsParser.setDataSource(new FileInputStream(XLS_FILE));
+		//xlsParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		/* New ones */
 		AbstractSpreadsheetParser xlsxStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
@@ -122,24 +132,28 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		xlsxStreamParser.init();
 		xlsxStreamParser.preExecute();
 		xlsxStreamParser.setDataSource(new FileInputStream(XLSX_FILE));
+		xlsxStreamParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		AbstractSpreadsheetParser xlsStreamParser = new SpreadsheetStreamParser(stringMetadata, null, null);
 		xlsStreamParser.setSheet(sheetName);
 		xlsStreamParser.init();
 		xlsStreamParser.preExecute();
 		xlsStreamParser.setDataSource(new FileInputStream(XLS_FILE));
+		xlsStreamParser.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		AbstractSpreadsheetParser inMemoryParser1 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser1.setSheet(sheetName);
 		inMemoryParser1.init();
 		inMemoryParser1.preExecute();
 		inMemoryParser1.setDataSource(new FileInputStream(XLSX_FILE));
+		inMemoryParser1.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 	
 		AbstractSpreadsheetParser inMemoryParser2 = new SpreadsheetDOMParser(stringMetadata, null, null);
 		inMemoryParser2.setSheet(sheetName);
 		inMemoryParser2.init();
 		inMemoryParser2.preExecute();
 		inMemoryParser2.setDataSource(new FileInputStream(XLS_FILE));
+		inMemoryParser2.setExceptionHandler(new SpreadsheetParserExceptionHandler(PolicyType.LENIENT));
 		
 		assertEqualOutput(stringMetadata, xlsParser, xlsxParser, xlsxStreamParser, xlsStreamParser, inMemoryParser1, inMemoryParser2);
 	}
@@ -159,7 +173,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		int recNum = 0;
 		while (run) {
 			for (int i = 0; i < parsers.length; i++) {
-				if (parsers[i].getNext(records[i]) == null) {
+				DataRecord returnedRecord = parsers[i].getNext(records[i]);
+				//System.out.println(returnedRecord);
+				if (returnedRecord == null) {
 					records[i] = null;
 					run = false;
 				}
@@ -259,11 +275,14 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
 //			System.out.println("Parser index: " + parserIndex);
 
-			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping1, stringMetadata));
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping1, stringMetadata, true, getParserType(parserIndex)));
 			parser.setSheet("0");
 			parser.init();
 			parser.preExecute();
 			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx")); // resolves name mapping
+			
+			SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
 			
 			DataRecord record = new DataRecord(stringMetadata);
 			record.init();
@@ -275,20 +294,25 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 			parser.parseNext(record);
 			assertRecordContent(record, null, "B8Value", "C9Value");
+
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
 
-			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping2, stringMetadata));
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping2, stringMetadata, true, getParserType(parserIndex)));
 			parser.setSheet("0");
 			parser.init();
 			parser.preExecute();
-			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx"));	
+			parser.setDataSource(new FileInputStream("data/xls/multirow.xlsx"));
+			
+			exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
 	
 			parser.parseNext(record);
 			assertRecordContent(record, "A5Value", "B5Value", "C7Value");
 			parser.parseNext(record);
 			assertRecordContent(record, "A7Value", "B7Value", "C9Value");
+
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -298,7 +322,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	public void testXlsParsersWithMapping() throws Exception {
 		AbstractSpreadsheetParser parser;
 		for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping3, stringMetadata));
+			parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping3, stringMetadata, true, getParserType(parserIndex)));
 
 //			System.out.println("Parser index: " + parserIndex + ", type: " + parser.getClass().getSimpleName());
 			
@@ -306,6 +330,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			parser.init();
 			parser.preExecute();
 			parser.setDataSource(new FileInputStream("data/xls/Customers_02.xls"));
+			
+			SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+			parser.setExceptionHandler(exceptionHandler);
 			
 			DataRecord record = new DataRecord(stringMetadata);
 			record.init();
@@ -318,6 +345,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			assertRecordContent(record, "123", "Princeton", "Dirac Street");
 			parser.parseNext(record);
 			assertRecordContent(record, "1234", "Washington", "Constitution Ave");
+			
 			assertNull(parser.parseNext(record));
 			
 			parser.close();
@@ -334,45 +362,52 @@ public class SpreadsheetParserTest extends CloverTestCase {
 	
 	private void testParsersWithMoreComplexMapping(String xlsFile, String mapping, boolean excludeStreamParser) throws Exception {
 		AbstractSpreadsheetParser parser;
-		for (int skip = 0; skip < 3; skip++) {
-			for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
-				for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-					parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping, stringMetadata));
-					if (parser instanceof SpreadsheetStreamParser && excludeStreamParser) {
-						continue;
-					}
-		
-//					System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
-					
-					parser.setSheet("0");
-					parser.init();
-					parser.preExecute();
-					parser.setDataSource(new FileInputStream(file));
-					
-					DataRecord record = new DataRecord(stringMetadata);
-					record.init();
-					
-					parser.skip(skip);
-					
-					if (skip <= 0) {
+		for (int inputSourceType = 0; inputSourceType < 2; inputSourceType++) {
+			for (int skip = 0; skip < 3; skip++) {
+				for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+					for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+						parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping, stringMetadata, true, getParserType(parserIndex)));
+						if (parser instanceof SpreadsheetStreamParser && excludeStreamParser) {
+							continue;
+						}
+			
+						//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName() + ", Skip: " + skip);
+						
+						parser.setSheet("0");
+						parser.init();
+						parser.preExecute();
+						parser.setDataSource(inputSourceType == 0 ? new FileInputStream(file) : new File(file));
+						
+						SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+						parser.setExceptionHandler(exceptionHandler);
+						
+						DataRecord record = new DataRecord(stringMetadata);
+						record.init();
+						
+						parser.skip(skip);
+						
+						if (skip <= 0) {
+							parser.parseNext(record);
+							assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
+						}
+						if (skip <= 1) {
+							parser.parseNext(record);
+							assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+						}
+						if (skip <= 2) {
+							parser.parseNext(record);
+							assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
+						}
 						parser.parseNext(record);
-						assertRecordContent(record, "12", "New York", "NY, US", "6th Avenue", "Spam");
-					}
-					if (skip <= 1) {
+						assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
 						parser.parseNext(record);
-						assertRecordContent(record, "23", "London", "UK", "Baker Street", "Ham");
+						assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
+						assertNull(parser.parseNext(record));
+						
+						parser.close();
+						
+						// !!! TODO !!! input file closed test
 					}
-					if (skip <= 2) {
-						parser.parseNext(record);
-						assertRecordContent(record, "123", "Princeton", "NJ, US", "Dirac Street", "Eggs");
-					}
-					parser.parseNext(record);
-					assertRecordContent(record, "1234", "Washington", "US", "Constitution Ave", "More spam");
-					parser.parseNext(record);
-					assertRecordContent(record, "12345", "Boston", "MA, US", "Cambridge St", "Spam & eggs");
-					assertNull(parser.parseNext(record));
-					
-					parser.close();
 				}
 			}
 		}
@@ -384,6 +419,14 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			case 1: return new SpreadsheetDOMParser(metadata, mappingInfo, null);
 		}
 		throw new IllegalArgumentException("parserIndex");
+	}
+	
+	public String getParserType(int parserIndex) {
+		switch (parserIndex) {
+		case 0: return "Stream parser:";
+		case 1: return "In-mem parser:";
+		}
+		return null;
 	}
 	
 	private static void assertRecordContent(DataRecord record, Object... fields) {
@@ -405,7 +448,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		String xlsFile = "data/xls/excel-types-nocurrency.xls";
 		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
 			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping6, stringMetadata));
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping8, stringMetadata, true, getParserType(parserIndex)));
 	
 				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
 				
@@ -413,6 +456,9 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.init();
 				parser.preExecute();
 				parser.setDataSource(new FileInputStream(file));
+				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
 				
 				DataRecord record = new DataRecord(stringMetadata);
 				record.init();
@@ -428,19 +474,74 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				String text = "@";
 				String special = "[<=9999999]###\\ ##\\ ##;##\\ ##\\ ##\\ ##";
 				
-				parser.parseNext(record);
-				//System.out.println(record);
-				assertRecordContent(record, "něco", general, number, currency, date, time, percent, fraction, math, "text", text, special);
-
-				parser.parseNext(record);
-				assertRecordContent(record, "další", general, number, currency, date, time, percent, fraction, math, "neoc", text, special);
+				DecimalFormatSymbols decimalSymbols = new DecimalFormatSymbols();
+				char gs = decimalSymbols.getGroupingSeparator();
+				char ds = decimalSymbols.getDecimalSeparator();
+				DateFormatSymbols dateSymbols = new DateFormatSymbols();
+				String june = dateSymbols.getMonths()[5];
+				String january = dateSymbols.getMonths()[0];
 				
-				parser.parseNext(record);
-				assertRecordContent(record, null, null, number, currency, date, time, percent, fraction, math, "dále", text, special);
+				assertNotNull(parser.parseNext(record));
+				//System.out.println(record);
+				assertRecordContent(record, "něco", general, "56"+gs+"895"+ds+"00", number, "56"+ds+"00 Kč", currency, "5\". \""+june+" 2005", date, "5:30:00 AM", time, "10"+ds+"00%", percent, "1"+ds+"00", fraction, "5"+ds+"00E+00", math, "text", text, "sd", special);
+
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "další", general, "1"+ds+"20", number, "-852"+ds+"00 Kč", currency, "1\". \""+january+" 1970", date, "11:12:00 PM", time, "5"+ds+"80%", percent, "1"+ds+"50", fraction, "1"+ds+"00E+01", math, "neoc", text, "sgwrert", special);
+				
+				assertNotNull(parser.parseNext(record));
 				
 				for (int i = 3; i < 10; i++) {
 					assertNotNull(parser.parseNext(record));
 				}
+				
+				assertNull(parser.parseNext(record));
+				
+				parser.close();
+			}
+		}
+	}
+	
+	public void testCellFormatReadingWithStrangeMapping() throws Exception {
+		AbstractSpreadsheetParser parser;
+		String xlsFile = "data/xls/excel-types-nocurrency.xls";
+		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping6, stringMetadata, true, getParserType(parserIndex)));
+	
+				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
+				DataRecord record = new DataRecord(stringMetadata);
+				record.init();
+				
+				String general = "GENERAL";
+				String text = "@";
+				
+				parser.parseNext(record);
+				//System.out.println(record);
+				assertRecordContent(record, "něco", general, null, null, null, null, null, null, null, "text", text, null);
+
+				parser.parseNext(record);
+				assertRecordContent(record, "další", general, null, null, null, null, null, null, null, "neoc", text, null);
+				
+				parser.parseNext(record);
+				assertRecordContent(record, null, null, null, null, null, null, null, null, null, "dále", text, null);
+				
+				for (int i = 3; i < 10; i++) {
+					assertNotNull(parser.parseNext(record));
+				}
+				
+				// Oh yeah! Correct empty record, because none of its cell is beyond end of sheet.
+				parser.parseNext(record);
+				assertTrue(record.isNull());
+				
 				assertNull(parser.parseNext(record));
 				
 				parser.close();
@@ -453,7 +554,7 @@ public class SpreadsheetParserTest extends CloverTestCase {
 		String xlsFile = "data/xls/empty.xls";
 		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
 			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
-				parser = getParser(parserIndex, metadata2, XLSMapping.parse(mapping7, metadata2));
+				parser = getParser(parserIndex, metadata2, XLSMapping.parse(mapping7, metadata2, true, getParserType(parserIndex)));
 		
 				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
 				
@@ -462,21 +563,79 @@ public class SpreadsheetParserTest extends CloverTestCase {
 				parser.preExecute();
 				parser.setDataSource(new FileInputStream(file));
 				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
 				DataRecord record = new DataRecord(metadata2);
 				record.init();
 				
-				parser.parseNext(record);
-				//System.out.println(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, 2);
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, null);
 
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, null, null);
 				
-				parser.parseNext(record);
+				assertNotNull(parser.parseNext(record));
 				assertRecordContent(record, 1, 2);
+				
+				assertFalse(exceptionHandler.isExceptionThrowed());
+				
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, 1, null);
+				
+				// last record is half beyond the end of sheet
+				assertTrue(exceptionHandler.isExceptionThrowed());
+
+				assertNull(parser.parseNext(record));
+				
+				parser.close();
+			}
+		}
+	}
+	
+	public void testRecordsPartiallyBeyondEndOfSheet() throws Exception {
+		AbstractSpreadsheetParser parser;
+		String xlsFile = "data/xls/excel-types-nocurrency.xls";
+		for (String file : Arrays.asList(xlsFile, xlsFile+"x")) {
+			for (int parserIndex = 0; parserIndex < 2; parserIndex++) {
+				parser = getParser(parserIndex, stringMetadata, XLSMapping.parse(mapping9, stringMetadata, true, getParserType(parserIndex)));
+	
+				//System.out.println("File: " + file + ", Parser type: " + parser.getClass().getSimpleName());
+				
+				parser.setSheet("0");
+				parser.init();
+				parser.preExecute();
+				parser.setDataSource(new FileInputStream(file));
+				
+				SpreadsheetParserExceptionHandler exceptionHandler = new SpreadsheetParserExceptionHandler(PolicyType.LENIENT);
+				parser.setExceptionHandler(exceptionHandler);
+				
+				DataRecord record = new DataRecord(stringMetadata);
+				record.init();
+				
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "něco", "2.00%");
+
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "další", "1.00%");
+				assertFalse(exceptionHandler.isExceptionThrowed());
+				
+				assertNotNull(parser.parseNext(record));
+				assertTrue(record.isNull());
+				assertTrue(exceptionHandler.isExceptionThrowed());
+
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "bž", null);
+				
+				for (int i = 0; i < 5; i++) {
+					assertNotNull(parser.parseNext(record));
+				}
+				
+				assertNotNull(parser.parseNext(record));
+				assertRecordContent(record, "ireu tiorewitopoehj goifdsgoeůhg eiognboienhgoienpo", null);
 				
 				assertNull(parser.parseNext(record));
 				
@@ -484,4 +643,5 @@ public class SpreadsheetParserTest extends CloverTestCase {
 			}
 		}
 	}
+	
 }

@@ -456,7 +456,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		    throw new IllegalArgumentException("Can't compare ByteDataField and "+obj.getClass().getName());
 		}
 		 
-		int compLength = value.length >= byteObj.length ? value.length : byteObj.length;
+		int compLength = value.length <= byteObj.length ? value.length : byteObj.length;
 		for (int i = 0; i < compLength; i++) {
 			if (value[i] > byteObj[i]) {
 				return 1;

@@ -924,7 +924,7 @@ defined.version.suffix=release
 			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
 			<sysproperty key="file.encoding" value="UTF-8" />
 			<jvmarg value="-Xmx2048m"/>
-			<jvmarg value="-XX:MaxPermSize=256m"/>
+			<jvmarg value="-XX:MaxPermSize=512m"/>
 			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath>
@@ -1001,6 +1001,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
 	</target>
 	
@@ -1015,6 +1016,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
 	</target>
 
@@ -1029,6 +1031,7 @@ defined.version.suffix=release
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
+			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
 	</target>
 	

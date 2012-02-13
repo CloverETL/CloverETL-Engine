@@ -42,6 +42,8 @@ import org.jetel.util.property.PropertyRefResolver;
 /***
  * Supports a field/dictionary reading and reading from urls.
  * 
+ * FYI alternative implementation of the same algorithm is in {@link SourceIterator}
+ * 
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
@@ -84,6 +86,9 @@ public class ReadableChannelIterator {
 
 	// true if fileURL contains port protocol 
 	private boolean bInputPort;
+
+	// true if java.io.File is preferred as a source provided by this iterator
+	private boolean isFileSourcePreferred = false;
 
 	// others
 	private int firstPortProtocolPosition;
@@ -203,7 +208,7 @@ public class ReadableChannelIterator {
 	 * @throws JetelException 
 	 * @see java.util.Iterator
 	 */
-	public ReadableByteChannel next() throws JetelException {
+	public Object next() throws JetelException {
 		// read next value from dictionary array or list
 		if (dictionaryReadingIterator.hasNext()) {
 			return dictionaryReadingIterator.next();
@@ -235,11 +240,33 @@ public class ReadableChannelIterator {
 				return next();
 			}
 			currentFileName = unificateFileName(currentFileName);
+
+			//sometimes source in form of 'java.io.File' is preferred instead of providing an anonymous channel
+			if (isFileSourcePreferred) {
+				try {
+					return FileUtils.getJavaFile(contextURL, currentFileName);
+				} catch (Exception e) {
+					//DO NOTHING - just try to open a stream based on the currentFileName in the next step
+				}
+			}
+			
 			return createReadableByteChannel(currentFileName);
 		}
 		return null;
 	}
 
+	/**
+	 * @return first ReadableByteChannel in the queue of sources (the other types are skipped)
+	 * @throws JetelException
+	 */
+	public ReadableByteChannel nextChannel() throws JetelException {
+		Object source = next();
+		while (source != null && !(source instanceof ReadableByteChannel)) {
+			source = next();
+		}
+		return (ReadableByteChannel) source;
+	}
+	
 	private String unificateFileName(String fileName) {
 		try {
 			// standard console -> do nothing
@@ -371,4 +398,18 @@ public class ReadableChannelIterator {
 		this.propertyRefResolve = propertyRefResolve;
 	}
 	
+	/**
+	 * @return true if {@link File} is preferred as a source provided by this iterator.
+	 */
+	public boolean isFileSourcePreferred() {
+		return isFileSourcePreferred;
+	}
+
+	/**
+	 * Set true if {@link File} is preferred as a source provided by this iterator.
+	 */
+	public void setFileSourcePreferred(boolean isFileSourcePreferred) {
+		this.isFileSourcePreferred = isFileSourcePreferred;
+	}
+
 }

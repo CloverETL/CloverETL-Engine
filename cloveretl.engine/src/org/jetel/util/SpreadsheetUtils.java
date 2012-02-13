@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.awt.Point;
 
 import org.apache.poi.ss.util.CellReference;
+import org.jetel.data.parser.XLSMapping;
 
 
 
@@ -38,6 +39,10 @@ public class SpreadsheetUtils {
 	private SpreadsheetUtils() {
 	}
 
+	static final String INVALID_SHEET_CHARACTERS = ":\\\\/\\[\\]";
+	static final String INVALID_UNESCAPED_CHARACTERS = INVALID_SHEET_CHARACTERS + "\\,\\-";
+	private static final String INVALID_UNESCAPED_SHEET_NAME = ".*[" + INVALID_UNESCAPED_CHARACTERS + "].*|[0-9]+";
+	
 	private static final char A = 'A';
 	private static final char Z = 'Z';
 	private static final int CHAR_COUNT = Z - A + 1;
@@ -79,9 +84,45 @@ public class SpreadsheetUtils {
 		return new Point(columnIndex - 1, row);
 	}
 	
+	/**
+	 * Converts 0-based cell coordinates into Excel style cell reference (e.g. B2).
+	 * @param column 0-based column index
+	 * @param row 0-based row number
+	 * @return cell reference (e.g. "C5" for coordinates (3,4))
+	 */
+	public static String getCellReference(int column, int row) {
+		return getColumnReference(column) + (row + 1);
+	}
+	
 	public static String getColumnReference(int columnIndex) {
 		return CellReference.convertNumToColString(columnIndex);
 	}
+	
+	public static String quoteSheetNameIfNeeded(String sheetName) {
+		if (sheetName.matches(INVALID_UNESCAPED_SHEET_NAME)) {
+			return quoteSheetName(sheetName);
+		} else {
+			return sheetName;
+		}
+	}
+
+	public static String quoteSheetNameIfNotQuoted(String sheetName) {
+		if (sheetName.startsWith(""+XLSMapping.ESCAPE_START) && sheetName.endsWith(""+XLSMapping.ESCAPE_END)) {
+			return sheetName;
+		} else {
+			return quoteSheetName(sheetName);
+		}
+	}
+
+
+	private static String quoteSheetName(String sheetName) {
+		StringBuilder quotedSheetNameBuilder = new StringBuilder();
+		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_START);
+		quotedSheetNameBuilder.append(sheetName);
+		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_END);
+		return quotedSheetNameBuilder.toString();
+	}
+
 	
 	public static enum SpreadsheetAttitude {
 

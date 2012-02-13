@@ -42,6 +42,7 @@ import org.jetel.data.formatter.spreadsheet.CellOperations;
 import org.jetel.data.formatter.spreadsheet.CellPosition;
 import org.jetel.data.formatter.spreadsheet.CellStyleLibrary;
 import org.jetel.data.formatter.spreadsheet.CoordsTransformations;
+import org.jetel.data.formatter.spreadsheet.FieldNamesForSheetPartitioningParser;
 import org.jetel.data.formatter.spreadsheet.SheetData;
 import org.jetel.data.formatter.spreadsheet.SheetDataLibrary;
 import org.jetel.data.formatter.spreadsheet.XLSMappingStats;
@@ -69,13 +70,15 @@ public class SpreadsheetFormatter implements Formatter {
 
     /** A pattern matching XLSX file extension */
 	public static final String XLSX_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss][Xx]$";
+    /** A pattern matching XLS file extension */
+	public static final String XLS_FILE_PATTERN = "^.*\\.[Xx][Ll][Ss]$";
 	/** A pattern matching XLTX file extension */
     public static final String XLTX_FILE_PATTERN = "^.*\\.[Xx][Ll][Tt][Xx]$";
+	/** A pattern matching XLT file extension */
+    public static final String XLT_FILE_PATTERN = "^.*\\.[Xx][Ll][Tt]$";
 
 	/** A value specifying that no data format is used/set */
 	public static final String GENERAL_FORMAT_STRING = "General";
-	/** A prefix of a sheet name specifying that a reference to the column should be used */  
-	private static final String CLOVER_FIELD_PREFIX = "$";
 	/** Default number of rows of an in-memory window, while streaming writign is used */ 
 	private static final int DEFAULT_STREAM_WINDOW_SIZE = 10;
 
@@ -88,6 +91,8 @@ public class SpreadsheetFormatter implements Formatter {
 	private SheetDataLibrary sheetDataLibrary = new SheetDataLibrary();
 	/** A workbook containing template file to be used as a template for writing records */
 	private Workbook templateWorkbook;
+	/** Determines is the target file has been created as a brand new file from a template and so the template of a record must be removed in the end */
+	private boolean removeTemplateLine = false;
 	/** A sheet name set in a SpreadsheetWriter component */
 	private String sheet;
 	/** A key for sheet partitioning */
@@ -284,7 +289,7 @@ public class SpreadsheetFormatter implements Formatter {
 			throw new IllegalArgumentException(outputDataTarget.getClass() + " not supported as a data target");
 		}
 
-		if (removeSheets) { // remove all sheets in a workbook
+		if (removeSheets && templateWorkbook==null) { // remove all sheets in a workbook
 			// they must be removed from the last sheet to the first sheet, because Workbook
 			// re-indexes sheets with a higher number than the removed one
 			for (int i = workbook.getNumberOfSheets() - 1; i >= 0; --i) {
@@ -294,19 +299,12 @@ public class SpreadsheetFormatter implements Formatter {
 		
 		cellStyleLibrary.init(workbook);
 		
-		//
-		// set up the formatter for writing multiple sheets
-		//
-		if (!StringUtils.isEmpty(sheet) && sheet.startsWith(CLOVER_FIELD_PREFIX)) {
-        	String[] fields = sheet.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-
-			for (int i = 0; i < fields.length; i++) {
-				fields[i] = fields[i].substring(1);
-			}
-
+		String [] fields = FieldNamesForSheetPartitioningParser.parseFieldNames(sheet);
+		if (fields!=null) {
 			setKeyFields(fields);
-			sheetDataLibrary.clear();
-        }
+		}
+		
+		sheetDataLibrary.clear();
 
 		//prepare the default sheet and initialize mapping statistic data
 		if (sheetNameKeyRecord==null) {
@@ -421,6 +419,9 @@ public class SpreadsheetFormatter implements Formatter {
 			removeAllRowsAndMergedRegions(currentSheetData);
 		}
 		
+		if (mappingStats.isMappingEmpty()) {
+			return;
+		}
 		
 		if (!append && !insert) {
 			if (mappingInfo.isWriteHeader()) {
@@ -542,7 +543,9 @@ public class SpreadsheetFormatter implements Formatter {
 						boldStyle = cellStyleLibrary.findOrCreateBoldStyle(workbook, currentSheetData, range.getRowStart(), range.getColumnStart());
 						boldStyleFound = true;
 					}
-					CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
+					if (headerGroup.getSkip()!=0) {
+						CellOperations.setStyleToCellGivenByRowAndColumn(currentSheetData, range.getRowStart(), range.getColumnStart(), workbook.getCellStyleAt(boldStyle));
+					}
 				}
 			}
 		}
@@ -554,7 +557,7 @@ public class SpreadsheetFormatter implements Formatter {
 	private void createHeaderRegion() {
 		XYRange headerXYRange = mappingStats.getHeaderXYRange();
 		XYRange firstRecordXYRange = mappingStats.getFirstRecordXYRange();
-		int headerY2PlusSkip = transformations.maximum(headerXYRange.y2, firstRecordXYRange.y2 - mappingInfo.getStep());
+		int headerY2PlusSkip = firstRecordXYRange.y2 - mappingInfo.getStep();
 		int rows = transformations.translateXYtoRowNumber(headerXYRange.x2, headerY2PlusSkip);
 		int columns = transformations.translateXYtoColumnNumber(headerXYRange.x2, headerY2PlusSkip);
 		createRegion(0, 0, rows, columns);
@@ -609,6 +612,11 @@ public class SpreadsheetFormatter implements Formatter {
 		}
 		
 		takeSheetOrPrepareSheet(record);
+		
+		if (mappingStats.isMappingEmpty()) {
+			//no write actions for empty mapping
+			throw new JetelRuntimeException("No data fields have been mapped to spreadsheet cells.");
+		}
 		
 		CellPosition recordOffset = createNextRecordRegion();
 		
@@ -704,7 +712,10 @@ public class SpreadsheetFormatter implements Formatter {
 
 	@Override
 	public void flush() throws IOException {
-		//flush performs writing into a stream. Before that _no_data_ have been written yet. They are all written at once 
+		//flush performs writing into a stream. Before that _no_data_ have been written yet. They are all written at once
+		if (workbookInputStream!=null) {
+			workbookInputStream.close();
+		}
 		if (outputDataTarget!=null && workbook!=null) {
 			if (outputDataTarget instanceof Object[]) {
 				if (workbookNotFlushed) {
@@ -736,7 +747,7 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @param sheetData
 	 */
 	private void removeTemplateLinesIfNeeded(SheetData sheetData) {
-		if (insert & templateWorkbook!=null) {
+		if (insert & removeTemplateLine) {
 			sheetData.removeTemplateLines();
 		}
 	}
@@ -783,26 +794,47 @@ public class SpreadsheetFormatter implements Formatter {
 	 */
 	private void createWorkbook(URL contextURL, String file) {
 		try {
-			if (templateWorkbook!=null) {
-				createSpreadsheetFileFromTemplate();
+			if (workbookInputStream!=null) {
+				workbookInputStream.close();
 			}
 			workbookInputStream = FileUtils.getInputStream(contextURL, file);
 //			if (workbookInputStream.available() > 0) { //did not work reliably for ZIP files => workaround below
 			int firstByte = workbookInputStream.read();
 			workbookInputStream.close();
-			workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
-			if (firstByte>=0) {
+			workbookInputStream=null;
+			boolean fileExistingAndReadable = firstByte>=0;
+			removeTemplateLine = false;
+			
+			if (fileExistingAndReadable) {
 				if (!createFile) {
-					workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+					if (templateWorkbook!=null && removeSheets) {
+						createNewEmptyWorkbook(contextURL, file);
+					} else {
+						workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
+						workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+					}
 				} else {//ignore an existing file, rewrite it while flushing
-					workbook = newWorkbook(null, formatterType, attitude, mappingInfo); 
+					createNewEmptyWorkbook(contextURL, file); 
 				}
 			} else {
-				workbook = newWorkbook(null, formatterType, attitude, mappingInfo);
+				createNewEmptyWorkbook(contextURL, file);
 			}
 			configureWorkbook();
 		} catch (IOException ioex) {
 			throw new JetelRuntimeException("Problem while reading Excel file " + file);
+		}
+	}
+
+	/**
+	 * @throws IOException
+	 */
+	private void createNewEmptyWorkbook(URL contextURL, String file) throws IOException {
+		if (templateWorkbook!=null) {
+			createSpreadsheetFileFromTemplate();
+			workbookInputStream = FileUtils.getInputStream(contextURL, file); //re-open stream in order to return to the beginning
+			workbook = newWorkbook(workbookInputStream, formatterType, attitude, mappingInfo);
+		} else {
+			workbook = newWorkbook(null, formatterType, attitude, mappingInfo);
 		}
 	}
 
@@ -812,6 +844,7 @@ public class SpreadsheetFormatter implements Formatter {
 	 * @throws IOException
 	 */
 	private void createSpreadsheetFileFromTemplate() throws IOException {
+		removeTemplateLine = true;
 		if (outputDataTarget instanceof Object[]) {
 			Object [] outputDataTargetArray = (Object[]) outputDataTarget;
 			URL url = (URL) outputDataTargetArray[0];
@@ -822,7 +855,7 @@ public class SpreadsheetFormatter implements Formatter {
 			workbookOutputStream.close();
 		} else if (outputDataTarget instanceof WritableByteChannel) {
 			OutputStream workbookOutputStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
-			workbook.write(workbookOutputStream);
+			templateWorkbook.write(workbookOutputStream);
 			workbookOutputStream.close();
 		}
 	}
@@ -869,7 +902,7 @@ public class SpreadsheetFormatter implements Formatter {
 				if (inputStream==null) {
 					int windowSize;
 					if (mappingInfo!=null) {
-						windowSize = mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1;
+						windowSize = Math.max(DEFAULT_STREAM_WINDOW_SIZE, mappingInfo.getStep() + mappingInfo.getStats().getRowCount() + 1);
 					} else {
 						windowSize = DEFAULT_STREAM_WINDOW_SIZE;
 					}

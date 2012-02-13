@@ -56,10 +56,6 @@ public class SQLIncremental {
 	
 	public final static String INCREMENTAL_KEY_INDICATOR = "#";
 	
-    private final static Pattern KEY_FIELD_PATTERN = Pattern.compile(
-    		"(" + IncrementalKeyType.getKeyTypePattern() + ")" + "\\((" + SQLUtil.DB_FIELD_PATTERN + ")\\)" + "(\\!.+)?", 
-    			Pattern.CASE_INSENSITIVE);//eg. max(dbField)!0
-
     private final static Pattern KEY_VALUE_PATTERN = Pattern.compile(INCREMENTAL_KEY_INDICATOR + "\\w+");
 
     
@@ -71,7 +67,8 @@ public class SQLIncremental {
 	private DataRecord keyRecord;
 	private CopySQLData[] transMap;
 	private boolean[] firstUpdate;
-	
+	private JdbcSpecific jdbcSpecific;
+
 	final static int NAME = 0;
 	final static int DB_NAME = 1;
 	final static int TYPE = 2;
@@ -82,11 +79,13 @@ public class SQLIncremental {
 	 * @param key key definition, eg. key1=max(dbField)
 	 * @param query sql query in "incremental" form eg., <i>select $f1:=db1, $f2:=db2, ... from myTable where dbX > #myKey1 and dbY <=#myKey2</i>
 	 * @param incrementalFile file url with incremental key values
+	 * @param jdbcSpecific
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public SQLIncremental(Properties key, String query, String incrementalFile) throws FileNotFoundException, IOException, ComponentNotReadyException {
+	public SQLIncremental(Properties key, String query, String incrementalFile, JdbcSpecific jdbcSpecific) throws FileNotFoundException, IOException, ComponentNotReadyException {
 		this.keyDefinition = key;
+		this.jdbcSpecific = jdbcSpecific;
 		for (Object keyName : keyDefinition.keySet()) {
 			if (!StringUtils.isValidObjectName((String)keyName)) {
 				throw new ComponentNotReadyException("Invalid key name " + StringUtils.quote((String)keyName) + 
@@ -141,7 +140,7 @@ public class SQLIncremental {
 			if (value.startsWith("\"") && value.endsWith("\"")) {
 				value = value.substring(1, value.length()-1);
 			}
-			Matcher keyDefMatcher = KEY_FIELD_PATTERN.matcher(value);
+			Matcher keyDefMatcher = getKeyFieldPattern().matcher(value);
 			keyDefMatcher.find();
 			String sInitialValue;
 			Object oKey = prop.get(e.getKey());
@@ -212,7 +211,7 @@ public class SQLIncremental {
     	int index = 0;
 		for (Iterator iterator = keyDefinition.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, String> key = (Entry<String, String>) iterator.next();
-			keyDefMatcher = KEY_FIELD_PATTERN.matcher(key.getValue());
+			keyDefMatcher = getKeyFieldPattern().matcher(key.getValue());
 			keyDefMatcher.find();
 			type = IncrementalKeyType.valueOf(keyDefMatcher.group(1).toUpperCase());
 			dbField = keyDefMatcher.group(2);
@@ -283,6 +282,7 @@ public class SQLIncremental {
 	 * @throws SQLException
 	 */
 	public void updatePosition(ResultSet result, int keyNumber) throws SQLException{
+		
 		switch ((IncrementalKeyType)keyDef[keyNumber][TYPE]) {
 		case FIRST:
 			if (firstUpdate[keyNumber]) {
@@ -422,5 +422,10 @@ public class SQLIncremental {
 			position.setProperty(posKeyRecord.getField(i).getMetadata().getName(), posKeyRecord.getField(i).toString());
 		}
 		
+	}
+	
+	private Pattern getKeyFieldPattern() {
+		return Pattern.compile("(" + IncrementalKeyType.getKeyTypePattern() + ")" + "\\((" + 
+				 jdbcSpecific.getDbFieldPattern() + ")\\)" + "(\\!.+)?", Pattern.CASE_INSENSITIVE);//eg. max(dbField)!0
 	}
 }

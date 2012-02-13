@@ -27,6 +27,10 @@ package org.jetel.data.tree.parser;
  */
 public interface TreeStreamParser {
 	
-	public void parse(Object input, ITreeContentHandler contentHandler);
+	void parse(Object input);
+	
+	TreeContentHandler getContentHandler();
+	
+	void setTreeContentHandler(TreeContentHandler contentHandler);
 
 }

@@ -1342,25 +1342,21 @@ public class TypeChecker extends NavigatingVisitor {
 		SimpleNode operand = (SimpleNode) node.jjtGetChild(0);
 		/*
 		 * Postfix (as well as prefix) operator cannot be applied onto 
-		 * field-access expression as we are not able to determine if it
-		 * is an input or output field. Writing (increment) to input field
-		 * would be prohibited, while reading (original value) from output
-		 * field would be prohibited as well.
+		 * old syntax field-access expressions as we are not able to determine 
+		 * if it is an input or output field.
+		 * 
+		 * Writing (increment or decrement) is only allowed for output fields
+		 * using the new $out.N.fieldName syntax.
 		 */
 		if (operand.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
-			try {
-				CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
-				if (fa.getDiscriminator() == null) {
-					error(node, "Illegal argument to ++/-- operator");
-					node.setType(TLType.ERROR);
-					return data;
-				} else if (!fa.getDiscriminator().equals("out")) {
-					error(node, "Input record cannot be assigned to");
-					node.setType(TLType.ERROR);
-					return data;
-				}
-			} catch(ClassCastException cce) {
+			CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
+			if (fa.getDiscriminator() == null) {
 				error(node, "Illegal argument to ++/-- operator");
+				node.setType(TLType.ERROR);
+				return data;
+			} else if (!fa.getDiscriminator().equals("out")) {
+				// postfix operators can only be used with output records
+				error(node, "Input record cannot be assigned to");
 				node.setType(TLType.ERROR);
 				return data;
 			}
@@ -1685,25 +1681,20 @@ public class TypeChecker extends NavigatingVisitor {
 		case TransformLangParserConstants.DECR:
 			/*
 			 * Postfix (as well as prefix) operator cannot be applied onto 
-			 * field-access expression as we are not able to determine if it
-			 * is an input or output field. Writing (increment) to input field
-			 * would be prohibited, while reading (original value) from output
-			 * field would be prohibited as well.
+			 * old syntax field-access expressions as we are not able to determine 
+			 * if it is an input or output field.
+			 * 
+			 * Writing (increment or decrement) is only allowed for output fields
+			 * using the new $out.N.fieldName syntax.
 			 */
 			if (operand.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
-				try {
-					CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
-					if (fa.getDiscriminator() == null) {
-						error(node, "Illegal argument to ++/-- operator");
-						node.setType(TLType.ERROR);
-						return data;
-					} else if (!fa.getDiscriminator().equals("out")) {
-						error(node, "Input record cannot be assigned to");
-						node.setType(TLType.ERROR);
-						return data;
-					}
-				} catch(ClassCastException cce) {
+				CLVFFieldAccessExpression fa = (CLVFFieldAccessExpression) operand;
+				if (fa.getDiscriminator() == null) {
 					error(node, "Illegal argument to ++/-- operator");
+					node.setType(TLType.ERROR);
+					return data;
+				} else if (!fa.getDiscriminator().equals("out")) {
+					error(node, "Input record cannot be assigned to");
 					node.setType(TLType.ERROR);
 					return data;
 				}

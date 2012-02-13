@@ -42,6 +42,8 @@ import org.jetel.util.property.PropertyRefResolver;
 
 //TODO: this is work in progress!
 /**
+ * FYI this class is based on {@link ReadableChannelIterator} and can be full featured substitution in the future 
+ * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
  * @created 19.10.2011

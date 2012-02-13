@@ -26,6 +26,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Color;
 import org.jetel.data.formatter.SpreadsheetFormatter;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -52,7 +53,9 @@ public class CellStyleLibrary {
 			private short topBorderColor;
 			private short dataFormat;
 			private short fillBackgroundColor;
+			private Color fillBackgroundColorColor;
 			private short fillForegroundColor;
+			private Color fillForegroundColorColor;
 			private short fillPattern;
 			private short fontIndex;
 			private boolean hidden;
@@ -74,7 +77,9 @@ public class CellStyleLibrary {
 				setTopBorderColor(cellStyle.getRightBorderColor());
 				setDataFormat(cellStyle.getDataFormat());
 				setFillBackgroundColor(cellStyle.getFillBackgroundColor());
+				setFillBackgroundColorColor(cellStyle.getFillBackgroundColorColor());
 				setFillForegroundColor(cellStyle.getFillForegroundColor());
+				setFillForegroundColorColor(cellStyle.getFillForegroundColorColor());
 				setFillPattern(cellStyle.getFillPattern());
 				setFontIndex(cellStyle.getFontIndex());
 				setHidden(cellStyle.getHidden());
@@ -82,6 +87,10 @@ public class CellStyleLibrary {
 				setLocked(cellStyle.getLocked());
 				setRotation(cellStyle.getRotation());
 				setWrapText(cellStyle.getWrapText());
+			}
+			
+			private boolean colorMatch(Color color1, Color color2) {
+				return ((color1==null && color2==null) || (color1!=null && color1.equals(color2)));
 			}
 
 			boolean matches(CellStyle cellStyle) {
@@ -98,7 +107,9 @@ public class CellStyleLibrary {
 				getTopBorderColor() == cellStyle.getRightBorderColor() &&
 				getDataFormat() == cellStyle.getDataFormat() &&
 				getFillBackgroundColor() == cellStyle.getFillBackgroundColor() &&
+				colorMatch(getFillBackgroundColorColor(),cellStyle.getFillBackgroundColorColor()) &&
 				getFillForegroundColor() == cellStyle.getFillForegroundColor() &&
+				colorMatch(getFillForegroundColorColor(),cellStyle.getFillForegroundColorColor()) &&
 				getFillPattern() == cellStyle.getFillPattern() &&
 				getFontIndex() == cellStyle.getFontIndex() &&
 				getHidden() == cellStyle.getHidden() &&
@@ -202,6 +213,34 @@ public class CellStyleLibrary {
 
 			public void setFillBackgroundColor(short fillBackgroundColor) {
 				this.fillBackgroundColor = fillBackgroundColor;
+			}
+
+			/**
+			 * @return the fillBackgroundColorColor
+			 */
+			public Color getFillBackgroundColorColor() {
+				return fillBackgroundColorColor;
+			}
+
+			/**
+			 * @param fillBackgroundColorColor the fillBackgroundColorColor to set
+			 */
+			public void setFillBackgroundColorColor(Color fillBackgroundColorColor) {
+				this.fillBackgroundColorColor = fillBackgroundColorColor;
+			}
+
+			/**
+			 * @return the fillForegroundColorColor
+			 */
+			public Color getFillForegroundColorColor() {
+				return fillForegroundColorColor;
+			}
+
+			/**
+			 * @param fillForegroundColorColor the fillForegroundColorColor to set
+			 */
+			public void setFillForegroundColorColor(Color fillForegroundColorColor) {
+				this.fillForegroundColorColor = fillForegroundColorColor;
 			}
 
 			public short getFillPattern() {
@@ -360,17 +399,19 @@ public class CellStyleLibrary {
 				}
 			}
 
-			String formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
+			String formatStr;
 			if (formatStringFromRecord!=null && !"".equals(formatStringFromRecord)) {
 				formatStr = formatStringFromRecord;
 			} else if (fieldMetadata.hasFormat()) {
 				formatStr = fieldMetadata.getFormat(DataFieldFormatType.EXCEL);
-				if (formatStr.isEmpty()) {
-					//if no compatible format is found, try to use a field format as is (for users who forget writing an Excel format prefix)
-					//TODO what about to try convert java format to excel format?
-					formatStr = fieldMetadata.getFormatStr(); 
-				}
+			} else if (fieldMetadata.getType()==DataFieldMetadata.DATE_FIELD) {
+				formatStr = "YYYY-MM-DD";
+			} else if (fieldMetadata.getType()==DataFieldMetadata.DATETIME_FIELD) {
+				formatStr = "YYYY-MM-DD HH:MM";
+			} else {
+				formatStr = SpreadsheetFormatter.GENERAL_FORMAT_STRING;
 			}
+
 			
 			short modifiedDataFormat = dataFormat.getFormat(formatStr);
 
