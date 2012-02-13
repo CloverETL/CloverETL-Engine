@@ -302,8 +302,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	 * to this ListDataField.
 	 * For example if a {@link List#add(Object)} is invoked, new data field
 	 * is created and the given value is passed to the new data field.
-	 * Be careful, actually shallow copy of data is returned and all changes
-	 * on the returned list are applied to this {@link ListDataField}.
 	 * @see #getValueDuplicate()
 	 */
 	@Override
@@ -581,7 +579,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			    throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + backedListDataField.size);
 			}
 			
-			return (T) backedListDataField.getField(index).getValue();
+			return (T) backedListDataField.getField(index).getValueDuplicate();
 		}
 
 		@Override
