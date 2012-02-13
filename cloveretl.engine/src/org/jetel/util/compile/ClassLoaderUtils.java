@@ -21,13 +21,22 @@ package org.jetel.util.compile;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -143,5 +152,44 @@ public class ClassLoaderUtils {
 	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)	throws ComponentNotReadyException {
 		return new GreedyURLClassLoader(libraryPaths, parentCl);
 	}
+	
+	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {
+		ClassLoader classLoader;
+		if (StringUtils.isEmpty(classpath)) {
+			classLoader = Thread.currentThread().getContextClassLoader();
+		} else{
+			try {
+				final URL urls[] = getClassloaderUrls(contextUrl, classpath);
+				classLoader = AccessController.doPrivileged(new PrivilegedExceptionAction<ClassLoader>() {
 
+					@Override
+					public ClassLoader run() {
+						return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
+					}
+				});
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException(e);
+			} catch (URISyntaxException e) {
+				throw new ComponentNotReadyException(e);
+			} catch (PrivilegedActionException e) {
+				throw new ComponentNotReadyException(e);
+			}
+		}
+		
+		return classLoader;
+	}
+	
+	/**
+	 * Ensures that directory paths contains '/' at the end so that URLClassLoader will treat is as directory.
+	 */
+	private static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException, URISyntaxException {
+		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
+		for (int i = 0; i < urls.length; ++i) {
+			if (new File(urls[i].toURI()).isDirectory()) {
+				urls[i] = new URL(urls[i].toString() + "/");
+			}
+		}
+		return urls;
+	}
 }
