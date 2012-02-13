@@ -59,6 +59,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -405,7 +406,7 @@ public class TransformationGraphXMLReaderWriter {
 			
 			// process metadata from file
 			if (attributes.exists("fileURL")){
-				fileURL = attributes.getString("fileURL");
+				fileURL = attributes.getStringEx("fileURL", RefResFlag.SPEC_CHARACTERS_OFF);
 				try{
 				    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
                 }catch(IOException ex){
