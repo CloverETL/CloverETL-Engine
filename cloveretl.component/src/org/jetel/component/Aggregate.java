@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 import org.jetel.component.aggregate.AggregateProcessor;
 import org.jetel.component.aggregate.AggregationException;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -187,9 +188,19 @@ public class Aggregate extends Node {
 							if (sortDirection == UNDETECTED_DIRECTION) {
 								sortDirection = currentSortDirection;
 							} else if (currentRecord != null && sortDirection != currentSortDirection) {
-								throw new JetelException("Input record #" 
-										+ recordCount 
-										+ " out of order!");
+								StringBuilder sb = new StringBuilder();
+								DataField field = recordKey.getFieldViolatingEquals(currentRecord, previousRecord);
+								sb.append("Data on input port #");
+								sb.append(READ_FROM_PORT);
+								sb.append(" is not sorted by aggregation key; error cause by field #");
+								sb.append(recordCount);
+								sb.append(" \"");
+								sb.append(field.getMetadata().getName());
+								sb.append("\", value \"");
+								sb.append(field.getValue());
+								sb.append("\" being out of order. Hints for fix: sort input; configure aggregation " +
+										"to expect not sorted input or review aggregation key.");
+								throw new JetelException(sb.toString());
 							}
 						}
 						
