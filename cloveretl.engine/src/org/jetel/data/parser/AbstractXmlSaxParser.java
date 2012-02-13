@@ -1149,7 +1149,8 @@ public abstract class AbstractXmlSaxParser {
         /**
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
-        public void characters(char[] data, int offset, int length) throws SAXException {
+        @Override
+		public void characters(char[] data, int offset, int length) throws SAXException {
             // Save the characters into the buffer, endElement will store it into the field
             if (m_activeMapping != null && m_grabCharacters) {
                 m_characters.append(data, offset, length);
@@ -1375,6 +1376,7 @@ public abstract class AbstractXmlSaxParser {
 		private Set<String> attributeNames = new HashSet<String>();
 		private Set<String> cloverAttributes = new HashSet<String>();
 		
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
 			int length = atts.getLength(); 
 			for (int i=0; i<length; i++) {

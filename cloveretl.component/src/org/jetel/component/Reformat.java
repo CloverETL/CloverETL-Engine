@@ -163,12 +163,12 @@ import org.w3c.dom.Element;
  */
 public class Reformat extends Node {
 
-	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
-	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
-	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
-    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
+	public static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
+	public static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	public static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	public static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
+	public static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";

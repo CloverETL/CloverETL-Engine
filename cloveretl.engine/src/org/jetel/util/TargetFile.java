@@ -100,10 +100,14 @@ public class TargetFile {
 	private ProcessingType dictProcesstingType;
 	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
+	private ArrayList<Object> dictObjectArray;
 	private boolean fieldOrDictOutput;
 	private ByteArrayOutputStream bbOutputStream;
 
 	private int compressLevel = -1;
+
+	private boolean storeRawData = true;
+	private boolean objectDictionaryInitialized = false;
 
     /**
      * Constructors.
@@ -233,34 +237,48 @@ public class TargetFile {
 	private void initDictTarget() throws ComponentNotReadyException {
 		// parse target url
 		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
-		if (dictionary == null) throw new RuntimeException("The component doesn't support dictionary writing.");
+		if (dictionary == null) {
+			throw new RuntimeException("The component doesn't support dictionary writing.");
+		}
+		
 		Object dictValue = dictionary.getValue(aDict[0]);
 		IDictionaryType dictType = dictionary.getType(aDict[0]);
-		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, ProcessingType.STREAM);
+		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, null);
+		
+		if (dictProcesstingType == null) {
+			if (dictValue != null) {
+				dictProcesstingType = ProcessingType.STREAM;
+			} else {
+				dictProcesstingType = ProcessingType.DISCRETE;
+			}
+		}
 		
 		// create target
-		switch(dictProcesstingType){
-			case STREAM:
-				if( dictValue == null){
-					// predpoklada se, ze pred spustenim grafu je do dictionary dan OutputStream, kam se vystup nasype
-					// zatim neni moznost spustit graf a az pote se zajimat o vystup, aby to bylo mozne, je potreba upravit
-					// interface dictionary a pridat tam moznost ziskani dat
-					throw new IllegalStateException("Dictionary doesn't contain value for the key '" + aDict[0] + "'.");
-				}
-				if( !(dictType instanceof WritableChannelDictionaryType)){
-					throw new IllegalStateException("Dictionary contains invalid type '"+dictType+"' for the key '" + aDict[0] + "'."); 
-				}
-				if (dictValue instanceof WritableByteChannel) {
-					WritableByteChannel channel = (WritableByteChannel) dictValue;
-					dictOutChannel = channel;
-				}
-				break;
-			case DISCRETE:
+		switch (dictProcesstingType) {
+		case STREAM:
+			if (dictValue == null) {
+				// predpoklada se, ze pred spustenim grafu je do dictionary dan OutputStream, kam se vystup nasype
+				throw new IllegalStateException("Dictionary doesn't contain value for the key '" + aDict[0] + "'.");
+			}
+			if (!(dictType instanceof WritableChannelDictionaryType)) {
+				throw new IllegalStateException("Dictionary contains invalid type '" + dictType + "' for the key '" + aDict[0] + "'.");
+			}
+			if (dictValue instanceof WritableByteChannel) {
+				WritableByteChannel channel = (WritableByteChannel) dictValue;
+				dictOutChannel = channel;
+			}
+			break;
+		case DISCRETE:
+			if (storeRawData) {
 				dictOutArray = new ArrayList<byte[]>();
 				dictionary.setValue(aDict[0], dictOutArray);
-				break;
-			default:
-				throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
+			} else {
+				dictObjectArray = new ArrayList<Object>();
+				dictionary.setValue(aDict[0], dictObjectArray);
+			}
+			break;
+		default:
+			throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
 		}
 	}
     
@@ -296,7 +314,7 @@ public class TargetFile {
     	}
     	
         //write footer to the previous destination if it is not first call of this method
-        if(byteChannel != null || bbOutputStream != null) {
+        if(byteChannel != null || bbOutputStream != null || objectDictionaryInitialized) {
 //        	formatter.writeFooter();	// issue 1503
         	formatter.finish();
         }
@@ -507,6 +525,17 @@ public class TargetFile {
                        	bbOutputStream = new RestrictedByteArrayOutputStream();
                        	if (field != null) 
                        		((RestrictedByteArrayOutputStream)bbOutputStream).setMaxArrayLength(Defaults.Record.FIELD_LIMIT_SIZE);
+            			if (storeRawData) {
+							RestrictedByteArrayOutputStream outStream = new RestrictedByteArrayOutputStream();
+							if (field != null) {
+								outStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+							}
+							bbOutputStream = outStream;
+						} else {
+							setDataTarget(dictObjectArray);
+							objectDictionaryInitialized = true;
+							return;
+						}
             		}
             	}
         		setDataTarget(Channels.newChannel(bbOutputStream));
@@ -608,6 +637,10 @@ public class TargetFile {
 
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
+	}
+
+	public void setStoreRawData(boolean storeRawData) {
+		this.storeRawData  = storeRawData;
 	}
 
 }

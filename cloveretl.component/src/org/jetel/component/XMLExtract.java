@@ -36,8 +36,6 @@ import java.util.Set;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.AbstractXmlSaxParser;
 import org.jetel.data.parser.AbstractXmlSaxParser.MyHandler;
@@ -234,12 +232,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLExtract extends Node {
 
-    // logger
-    private static final Log logger = LogFactory.getLog(XMLExtract.class);
-
     // xml attributes
     public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
-    private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
+    public static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
 

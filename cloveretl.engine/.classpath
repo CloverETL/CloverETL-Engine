@@ -18,7 +18,7 @@
 			<attribute name="javadoc_location" value="jar:platform:/resource/cloveretl.engine/lib.doc/commons-cli-1.1.zip!/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-normalizer_transliterator-4.8.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/commons-net-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/ftp4j-1.4.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.3.jar" sourcepath="lib.src/XmlSchema-1.4.3-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-6.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/sardine.jar"/>
@@ -44,5 +44,13 @@
 	<classpathentry kind="lib" path="lib/poi-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.8.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-bean-collections-1.8.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-core-1.8.3.jar"/>
+	<classpathentry kind="lib" path="lib/easymock-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/objenesis-tck-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/cglib-nodep-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jdbm-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

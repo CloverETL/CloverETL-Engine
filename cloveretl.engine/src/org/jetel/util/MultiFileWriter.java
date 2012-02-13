@@ -106,6 +106,8 @@ public class MultiFileWriter {
 	private boolean outputClosed;
 	
 	private boolean reset;
+
+	private boolean storeRawData = true;
 	
     /**
      * Constructor.
@@ -216,6 +218,7 @@ public class MultiFileWriter {
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
 		targetFile.setCharset(charset);
+		targetFile.setStoreRawData(storeRawData);
 		return targetFile;
     }
     
@@ -234,6 +237,7 @@ public class MultiFileWriter {
 		targetFile.setAppendData(appendData);
 		targetFile.setUseChannel(useChannel);
 		targetFile.setCharset(charset);
+		targetFile.setStoreRawData(storeRawData);
 		targetFile.setCompressLevel(compressLevel);
 		return targetFile;
     }
@@ -656,6 +660,10 @@ public class MultiFileWriter {
 
 	public void setMkDir(boolean mkDir) {
 		this.mkDir = mkDir;
+	}
+
+	public void setStoreRawData(boolean storeRawData) {
+		this.storeRawData = storeRawData; 
 	}
 	
 }
