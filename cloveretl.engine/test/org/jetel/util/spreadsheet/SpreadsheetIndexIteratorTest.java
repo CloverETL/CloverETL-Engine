@@ -16,14 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.data.parser;
+package org.jetel.util.spreadsheet;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.SpreadsheetIndexIterator;
+import org.jetel.util.spreadsheet.SpreadsheetIndexIterator;
 
 /**
  * @author lkrejci (info@cloveretl.com)

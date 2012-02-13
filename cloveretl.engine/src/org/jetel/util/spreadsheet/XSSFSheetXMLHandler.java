@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.data.parser;
+package org.jetel.util.spreadsheet;
 
 /* ====================================================================
 Licensed to the Apache Software Foundation (ASF) under one or more
@@ -75,7 +75,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	// Set when V start element is seen
 	private boolean vIsOpen;
 	// Set when F start element is seen
-	private boolean fIsOpen;
+	//private boolean fIsOpen;
 	// Set when an Inline String "is" is seen
 	private boolean isIsOpen;
 	// Set when a header/footer element is seen
@@ -96,8 +96,6 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	private StringBuffer headerFooter = new StringBuffer();
 	
 	private int formulaType; // Cell.CELL_TYPE* of cashed formula value
-	
-	private int lastRow = -1;
 	
 //	private int numberOfMissingRows;
 //	private boolean missingRowStart = true;
@@ -173,12 +171,12 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	          if(type != null && type.equals("shared")) {
 	             // Is it the one that defines the shared, or uses it?
 	             String ref = attributes.getValue("ref");
-	             String si = attributes.getValue("si");
+	             //String si = attributes.getValue("si");
 	             
 	             if(ref != null) {
 	                // This one defines it
 	                // TODO Save it somewhere
-	                fIsOpen = true;
+	                //fIsOpen = true;
 	             } else {
 	                // This one uses a shared formula
 	                // TODO Retrieve the shared formula and tweak it to 
@@ -191,7 +189,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	                }
 	             }
 	          } else {
-	             fIsOpen = true;
+	             //fIsOpen = true;
 	          }
 	    } else if ("oddHeader".equals(name) || "evenHeader".equals(name) || "firstHeader".equals(name) || "firstFooter".equals(name) || "oddFooter".equals(name) || "evenFooter".equals(name)) {
 			hfIsOpen = true;

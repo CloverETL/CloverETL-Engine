@@ -16,40 +16,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.data.formatter.spreadsheet;
+package org.jetel.util.spreadsheet;
 
-public class RelativeCellPosition {
-	final int relativeX;
-	final int relativeY;
+import org.jetel.test.CloverTestCase;
+import org.jetel.util.spreadsheet.SpreadsheetUtils;
 
-	public RelativeCellPosition(int relativeX, int relativeY) {
-		this.relativeX = relativeX;
-		this.relativeY = relativeY;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + relativeX;
-		result = prime * result + relativeY;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RelativeCellPosition other = (RelativeCellPosition) obj;
-		if (relativeX != other.relativeX)
-			return false;
-		if (relativeY != other.relativeY)
-			return false;
-		return true;
-	}
+/**
+ * @author lkrejci (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 30 Aug 2011
+ */
+public class SpreadsheetUtilTest extends CloverTestCase {
 	
+	public void testGetColumnIndex() {
+		assertEquals(0, SpreadsheetUtils.getColumnIndex("A"));
+		assertEquals(0, SpreadsheetUtils.getColumnIndex("Aasd54"));
+		assertEquals(-1, SpreadsheetUtils.getColumnIndex("?_7A"));
+		assertEquals(-1, SpreadsheetUtils.getColumnIndex(""));
+		assertEquals(25, SpreadsheetUtils.getColumnIndex("Z"));
+		assertEquals(26, SpreadsheetUtils.getColumnIndex("AA"));
+		assertEquals(2730, SpreadsheetUtils.getColumnIndex("DAA"));
+	}
+
 }

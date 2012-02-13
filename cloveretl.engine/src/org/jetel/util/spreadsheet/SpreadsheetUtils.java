@@ -16,14 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.util;
+package org.jetel.util.spreadsheet;
 
 import java.awt.Point;
 
 import org.apache.poi.ss.util.CellReference;
-import org.jetel.data.parser.XLSMapping;
-
-
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -39,6 +36,15 @@ public class SpreadsheetUtils {
 	private SpreadsheetUtils() {
 	}
 
+	public static final char SHEET_NAME_ESCAPE_START = '[';
+	public static final char SHEET_NAME_ESCAPE_END = ']';
+	
+	/** Value of Excel cell format string specifying that no data format is used/set */
+	public static final String GENERAL_FORMAT_STRING = "General";
+	
+	/** "Sheet" attribute of Spreadsheet Reader/Writer components */
+	public static final String XML_SHEET_ATTRIBUTE = "sheet"; // referenced from commercial.components and non-commercial gui, that's why it's defined here
+	
 	static final String INVALID_SHEET_CHARACTERS = ":\\\\/\\[\\]";
 	static final String INVALID_UNESCAPED_CHARACTERS = INVALID_SHEET_CHARACTERS + "\\,\\-";
 	private static final String INVALID_UNESCAPED_SHEET_NAME = ".*[" + INVALID_UNESCAPED_CHARACTERS + "].*|[0-9]+";
@@ -107,7 +113,7 @@ public class SpreadsheetUtils {
 	}
 
 	public static String quoteSheetNameIfNotQuoted(String sheetName) {
-		if (sheetName.startsWith(""+XLSMapping.ESCAPE_START) && sheetName.endsWith(""+XLSMapping.ESCAPE_END)) {
+		if (sheetName.startsWith(""+SHEET_NAME_ESCAPE_START) && sheetName.endsWith(""+SHEET_NAME_ESCAPE_END)) {
 			return sheetName;
 		} else {
 			return quoteSheetName(sheetName);
@@ -117,9 +123,9 @@ public class SpreadsheetUtils {
 
 	private static String quoteSheetName(String sheetName) {
 		StringBuilder quotedSheetNameBuilder = new StringBuilder();
-		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_START);
+		quotedSheetNameBuilder.append(SHEET_NAME_ESCAPE_START);
 		quotedSheetNameBuilder.append(sheetName);
-		quotedSheetNameBuilder.append(XLSMapping.ESCAPE_END);
+		quotedSheetNameBuilder.append(SHEET_NAME_ESCAPE_END);
 		return quotedSheetNameBuilder.toString();
 	}
 
