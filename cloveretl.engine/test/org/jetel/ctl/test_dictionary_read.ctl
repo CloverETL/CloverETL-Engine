@@ -16,6 +16,10 @@ date aNull;
 boolean bNull;
 byte yNull;
 
+string[] stringList;
+date[] dateList;
+byte[] byteList;
+
 function integer transform() {
 
 	s = dictionary.sVerdon;
@@ -35,6 +39,10 @@ function integer transform() {
 	aNull = dictionary.a;
 	bNull = dictionary.b;
 	yNull = dictionary.y;
+	
+	stringList = dictionary.stringList;
+	dateList = dictionary.dateList;
+	byteList = dictionary.byteList;
 
 	return 0;
 }

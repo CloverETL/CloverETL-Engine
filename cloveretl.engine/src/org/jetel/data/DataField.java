@@ -214,7 +214,9 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 *
 	 * @return    The Type value
 	 * @since
+	 * @deprecated use {@link #getMetadata()} and {@link DataFieldMetadata#getDataType()} instead
 	 */
+    @Deprecated
 	public abstract char getType();
 
 

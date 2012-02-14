@@ -19,6 +19,7 @@
 package org.jetel.ctl.data;
 
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 public abstract class TLTypePrimitive extends TLType {
 
@@ -59,6 +60,10 @@ public abstract class TLTypePrimitive extends TLType {
 				return otherType;
 			}
 			
+			if (otherType.isNull()) {
+				return this;
+			}
+			
 			return TLType.ERROR;
 
 		}
@@ -86,6 +91,10 @@ public abstract class TLTypePrimitive extends TLType {
 			}
 			
 			if (otherType.isString()) {
+				return this;
+			}
+			
+			if (otherType.isNull()) {
 				return this;
 			}
 			
@@ -270,44 +279,92 @@ public abstract class TLTypePrimitive extends TLType {
 	
 	
 	public static TLType fromCloverType(DataFieldMetadata field) throws UnknownTypeException {
-		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
-			return INTEGER;
-		case DataFieldMetadata.LONG_FIELD:
-			return LONG;
-		case DataFieldMetadata.NUMERIC_FIELD:
-			return DOUBLE;
-		case DataFieldMetadata.DECIMAL_FIELD:
-			return DECIMAL;
-		case DataFieldMetadata.DATE_FIELD:
-			return DATETIME;
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			return TLType.BYTEARRAY;
-		case DataFieldMetadata.STRING_FIELD:
-			return STRING;
-		case DataFieldMetadata.BOOLEAN_FIELD:
-			return BOOLEAN;
-		default:
-			throw new UnknownTypeException(field.getTypeAsString());
+		switch (field.getCardinalityType()) {
+			case SINGLE:
+				switch (field.getDataType()) {
+				case INTEGER:
+					return INTEGER;
+				case LONG:
+					return LONG;
+				case NUMBER:
+					return DOUBLE;
+				case DECIMAL:
+					return DECIMAL;
+				case DATE:
+					return DATETIME;
+				case BYTE:
+				case CBYTE:
+					return BYTEARRAY;
+				case STRING:
+					return STRING;
+				case BOOLEAN:
+					return BOOLEAN;
+				default:
+					throw new UnknownTypeException(field.getDataType().toString());
+				}
+			case LIST:
+				switch (field.getDataType()) {
+				case INTEGER:
+					return TLType.createList(INTEGER);
+				case LONG:
+					return TLType.createList(LONG);
+				case NUMBER:
+					return TLType.createList(DOUBLE);
+				case DECIMAL:
+					return TLType.createList(DECIMAL);
+				case DATE:
+					return TLType.createList(DATETIME);
+				case BYTE:
+				case CBYTE:
+					return TLType.createList(BYTEARRAY);
+				case STRING:
+					return TLType.createList(STRING);
+				case BOOLEAN:
+					return TLType.createList(BOOLEAN);
+				default:
+					throw new UnknownTypeException(field.getDataType().toString());
+				}
+			case MAP:
+				switch (field.getDataType()) {
+				case INTEGER:
+					return TLType.createMap(STRING, INTEGER);
+				case LONG:
+					return TLType.createMap(STRING, LONG);
+				case NUMBER:
+					return TLType.createMap(STRING, DOUBLE);
+				case DECIMAL:
+					return TLType.createMap(STRING, DECIMAL);
+				case DATE:
+					return TLType.createMap(STRING, DATETIME);
+				case BYTE:
+				case CBYTE:
+					return TLType.createMap(STRING, BYTEARRAY);
+				case STRING:
+					return TLType.createMap(STRING, STRING);
+				case BOOLEAN:
+					return TLType.createMap(STRING, BOOLEAN);
+				default:
+					throw new UnknownTypeException(field.getDataType().toString());
+				}
+			default: throw new UnknownTypeException(field.getCardinalityType().toString());
 		}
 	}
 	
-	public static char toCloverType(TLType type) {
+	public static DataFieldType toCloverType(TLType type) {
 		if (type.isInteger()) {
-			return DataFieldMetadata.INTEGER_FIELD;
+			return DataFieldType.INTEGER;
 		} else if (type.isLong()) {
-			return DataFieldMetadata.LONG_FIELD;
+			return DataFieldType.LONG;
 		} else if (type.isDouble()) {
-			return DataFieldMetadata.NUMERIC_FIELD;
+			return DataFieldType.NUMBER;
 		} else if (type.isDecimal()) {
-			return DataFieldMetadata.DECIMAL_FIELD;
+			return DataFieldType.DECIMAL;
 		} else if (type.isDate()) {
-			return DataFieldMetadata.DATE_FIELD;
+			return DataFieldType.DATE;
 		} else if (type.isString()) {
-			return DataFieldMetadata.STRING_FIELD;
+			return DataFieldType.STRING;
 		} else if (type.isBoolean()) {
-			return DataFieldMetadata.BOOLEAN_FIELD;
+			return DataFieldType.BOOLEAN;
 		}
 		
 		throw new UnknownTypeException(type.name());

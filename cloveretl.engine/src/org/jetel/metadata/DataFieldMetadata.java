@@ -58,46 +58,6 @@ public class DataFieldMetadata implements Serializable {
 
 	private static final long serialVersionUID = -880873886732472663L;
 
-	public static final char STRING_FIELD = 'S';
-	public static final String STRING_TYPE = "string";
-
-	public static final char DATE_FIELD = 'D';
-	public static final String DATE_TYPE = "date";
-
-	public static final char DATETIME_FIELD = 'T';
-	public static final String DATETIME_TYPE = "datetime";
-
-	public static final char NUMERIC_FIELD = 'N';
-	public static final String NUMERIC_TYPE = "number";
-	public static final String NUMERIC_TYPE_DEPRECATED = "numeric";
-
-	public static final char INTEGER_FIELD = 'i';
-	public static final String INTEGER_TYPE = "integer";
-
-	public static final char LONG_FIELD = 'l';
-	public static final String LONG_TYPE = "long";
-
-	public static final char DECIMAL_FIELD = 'd';
-	public static final String DECIMAL_TYPE = "decimal";
-
-	public static final char BYTE_FIELD = 'B';
-	public static final String BYTE_TYPE = "byte";
-
-	public static final char BOOLEAN_FIELD = 'b';
-	public static final String BOOLEAN_TYPE = "boolean";
-
-	public static final char BYTE_FIELD_COMPRESSED = 'Z';
-	public static final String BYTE_COMPRESSED_TYPE = "cbyte";
-
-	public static final char SEQUENCE_FIELD = 'q';
-	public static final String SEQUENCE_TYPE = "sequence";
-
-	public static final char NULL_FIELD = 'n';
-	public static final String NULL_TYPE = "null";
-
-	public static final char UNKNOWN_FIELD = ' ';
-	public static final String UNKNOWN_TYPE = "unknown";
-
 	public static final int INTEGER_LENGTH = 9;
 	public static final int LONG_LENGTH = 18;
 	public static final int DOUBLE_SCALE = 323;
@@ -117,82 +77,6 @@ public class DataFieldMetadata implements Serializable {
 	
 	public static final String EMPTY_NAME = "_";
 	
-	/**
-	 * Converts a type of a data field into its full string form.
-	 *
-	 * @param type the type of a data field
-	 *
-	 * @return the type of the data field as a string
-	 */
-	public static String type2Str(char type) {
-		switch (type) {
-			case DataFieldMetadata.NUMERIC_FIELD:
-				return NUMERIC_TYPE;
-			case DataFieldMetadata.INTEGER_FIELD:
-				return INTEGER_TYPE;
-			case DataFieldMetadata.STRING_FIELD:
-				return STRING_TYPE;
-			case DataFieldMetadata.DATE_FIELD:
-				return DATE_TYPE;
-			case DataFieldMetadata.LONG_FIELD:
-				return LONG_TYPE;
-			case DataFieldMetadata.DECIMAL_FIELD:
-				return DECIMAL_TYPE;
-			case DataFieldMetadata.BOOLEAN_FIELD:
-				return BOOLEAN_TYPE;
-			case DataFieldMetadata.BYTE_FIELD:
-				return BYTE_TYPE;
-			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-				return BYTE_COMPRESSED_TYPE;
-			case DataFieldMetadata.DATETIME_FIELD:
-				return DATETIME_TYPE;
-			case DataFieldMetadata.SEQUENCE_FIELD:
-				return SEQUENCE_TYPE;
-			case DataFieldMetadata.NULL_FIELD:
-				return NULL_TYPE;
-
-			default:
-				return UNKNOWN_TYPE;
-		}
-	}
-
-	/**
-	 * Converts a type of a data field in a full string form into its character form.
-	 *
-	 * @param type the type of the data field as a string
-	 *
-	 * @return the type of a data field
-	 */
-	public static char str2Type(String fieldType) {
-		if (fieldType.equalsIgnoreCase(NUMERIC_TYPE) || fieldType.equalsIgnoreCase(NUMERIC_TYPE_DEPRECATED)) {
-			return DataFieldMetadata.NUMERIC_FIELD;
-		} else if (fieldType.equalsIgnoreCase(INTEGER_TYPE)) {
-			return DataFieldMetadata.INTEGER_FIELD;
-		} else if (fieldType.equalsIgnoreCase(STRING_TYPE)) {
-			return DataFieldMetadata.STRING_FIELD;
-		} else if (fieldType.equalsIgnoreCase(DATE_TYPE)) {
-			return DataFieldMetadata.DATE_FIELD;
-		} else if (fieldType.equalsIgnoreCase(LONG_TYPE)) {
-			return DataFieldMetadata.LONG_FIELD;
-		} else if (fieldType.equalsIgnoreCase(DECIMAL_TYPE)) {
-			return DataFieldMetadata.DECIMAL_FIELD;
-		} else if (fieldType.equalsIgnoreCase(BOOLEAN_TYPE)) {
-			return DataFieldMetadata.BOOLEAN_FIELD;
-		} else if (fieldType.equalsIgnoreCase(BYTE_TYPE)) {
-			return DataFieldMetadata.BYTE_FIELD;
-		} else if (fieldType.equalsIgnoreCase(BYTE_COMPRESSED_TYPE)) {
-			return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
-		} else if (fieldType.equalsIgnoreCase(DATETIME_TYPE)) {
-			return DataFieldMetadata.DATETIME_FIELD;
-		} else if (fieldType.equalsIgnoreCase(SEQUENCE_TYPE)) {
-			return DataFieldMetadata.SEQUENCE_FIELD;
-		} else if (fieldType.equalsIgnoreCase(NULL_TYPE)) {
-			return DataFieldMetadata.NULL_FIELD;
-		}
-
-		return DataFieldMetadata.UNKNOWN_FIELD;
-	}
-
 	/** Parent data record metadata. */
 	private DataRecordMetadata dataRecordMetadata;
 
@@ -206,7 +90,7 @@ public class DataFieldMetadata implements Serializable {
 	private String label;
 
 	/** The type of the field. */
-	private char type = UNKNOWN_FIELD;
+	private DataFieldType type = DataFieldType.UNKNOWN;
 
 	/** Delimiter of the field (could be empty if field belongs to fixLength record). */
 	private String delimiter = null;
@@ -257,13 +141,30 @@ public class DataFieldMetadata implements Serializable {
 	private String collatorSensitivity = null;
 
 	/**
+	 * Cardinality type of data field - SINGLE, LIST, MAP.
+	 */
+	private DataFieldCardinalityType cardinalityType = DataFieldCardinalityType.SINGLE;
+	
+	/**
 	 * Constructor for a delimited type of field.
 	 * 
 	 * @param name the name of the field
 	 * @param fieldType the type of this field
 	 * @param delimiter a string to be used as a delimiter for this field
+	 * @deprecated use {@link DataFieldMetadata#DataFieldMetadata(String, DataFieldType, String)} instead
 	 */
+	@Deprecated
 	public DataFieldMetadata(String name, char fieldType, String delimiter) {
+		this(name, DataFieldType.fromChar(fieldType), delimiter);
+	}
+
+	/**
+	 * Constructor for a delimited type of field.
+	 * @param name
+	 * @param fieldType
+	 * @param delimiter
+	 */
+	public DataFieldMetadata(String name, DataFieldType fieldType, String delimiter) {
 		setName(name);
 
 		this.type = fieldType;
@@ -283,7 +184,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param delimiter a string to be used as a delimiter for this field
 	 */
 	public DataFieldMetadata(String name, String delimiter) {
-		this(name, STRING_FIELD, delimiter);
+		this(name, DataFieldType.STRING, delimiter);
 	}
 
 	/**
@@ -292,8 +193,20 @@ public class DataFieldMetadata implements Serializable {
 	 * @param name the name of the field
 	 * @param fieldType the type of this field
 	 * @param size the size of the field (in bytes)
+	 * @deprecated use {@link DataFieldMetadata#DataFieldMetadata(String, DataFieldType, short)} instead
 	 */
+	@Deprecated
 	public DataFieldMetadata(String name, char fieldType, short size) {
+		this(name, DataFieldType.fromChar(fieldType), size);
+	}
+
+	/**
+	 * Constructor for a fixed-length type of field.
+	 * @param name
+	 * @param fieldType
+	 * @param size
+	 */
+	public DataFieldMetadata(String name, DataFieldType fieldType, short size) {
 		setName(name);
 
 		this.type = fieldType;
@@ -313,7 +226,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param size the size of the field (in bytes)
 	 */
 	public DataFieldMetadata(String name, short size) {
-		this(name, STRING_FIELD, size);
+		this(name, DataFieldType.STRING, size);
 	}
 
 	/**
@@ -427,45 +340,92 @@ public class DataFieldMetadata implements Serializable {
 	 * @param type the new type of the data field
 	 *
 	 * @since 30th October 2002
+	 * @deprecated use {@link #setDataType(DataFieldType)} instead
 	 */
+	@Deprecated
 	public void setType(char type) {
-		this.type = type;
+		setDataType(DataFieldType.fromChar(type));
 	}
 
+	/**
+	 * Sets the type of the data field.
+	 * @param type
+	 */
+	public void setDataType(DataFieldType type) {
+		this.type = type;
+	}
+	
 	/**
 	 * @return the type of the data field
 	 *
 	 * @since 30th October 2002
+	 * @deprecated use {@link #getDataType()} instead
 	 */
+	@Deprecated
 	public char getType() {
-		return type;
+		return getDataType().getObsoleteIdentifier();
 	}
 
+	/**
+	 * @return the type of the data field
+	 */
+	public DataFieldType getDataType() {
+		return type;
+	}
+	
 	/**
 	 * Sets the type of the data field using the full string form.
 	 * 
 	 * @param type the new type of the data field as a string
+	 * @deprecated use {@link #setDataType(DataFieldType) in combination with {@link DataFieldType#fromName(String)} instead
 	 */
+	@Deprecated
 	public void setTypeAsString(String type) {
-		this.type = str2Type(type);
+		setDataType(DataFieldType.fromName(type));
 	}
 
 	/**
 	 * @return the type of the data field as a string
+	 * @deprecated use {@link #getDataType()} and {@link DataFieldType#getName()} instead
 	 */
+	@Deprecated
 	public String getTypeAsString() {
-		return type2Str(type);
+		return getDataType().getName();
 	}
 
 	/**
-	 * @return <code>true</code> if this data field is numeric, <code>false</code> otherwise
+	 * @return cardinality type of this field - SINGLE, LIST, MAP
 	 */
+	public DataFieldCardinalityType getCardinalityType() {
+		return cardinalityType;
+	}
+	
+	/**
+	 * Sets cardinality type of this field - SINGLE, LIST, MAP.
+	 * @param cardinalityType
+	 */
+	public void setCardinalityType(DataFieldCardinalityType cardinalityType) {
+		if (cardinalityType == null) {
+			throw new NullPointerException("Data field cardinality cannot be null.");
+		}
+		this.cardinalityType = cardinalityType;
+	}
+	
+	/**
+	 * @return <code>true</code> if this data field is numeric, <code>false</code> otherwise
+	 * @deprecated use {@link #getDataType()} and {@link DataFieldType#isNumeric()} instead
+	 */
+	@Deprecated
 	public boolean isNumeric() {
-		return (type == NUMERIC_FIELD || type == INTEGER_FIELD || type == LONG_FIELD || type == DECIMAL_FIELD);
+		return getDataType().isNumeric();
 	}
 
+	/**
+	 * @deprecated use {@link #getDataType()} and {@link DataFieldType#isTrimType()} instead
+	 */
+	@Deprecated
 	private boolean isTrimType() {
-		return isNumeric() || type == DATE_FIELD || type == DATETIME_FIELD || type == BOOLEAN_FIELD;
+		return getDataType().isTrimType();
 	}
 	
 	/**
@@ -578,17 +538,18 @@ public class DataFieldMetadata implements Serializable {
 	 * @return the format pattern which will be used when outputting field's value as a string, or <code>null</code> if
 	 * no format pattern is set for this field
 	 */
+	@SuppressWarnings("deprecation")
 	public String getFormatStr() {
 		if (formatStr != null) {
 			return formatStr;
 		}
 
 		if (dataRecordMetadata != null) {
-			if (isNumeric()) {
+			if (getDataType().isNumeric()) {
 				return dataRecordMetadata.getNumberFormatStr();
 			}
 
-			if (type == DATE_FIELD || type == DATETIME_FIELD) {
+			if (type == DataFieldType.DATE || type == DataFieldType.DATETIME) {
 				return dataRecordMetadata.getDateFormatStr();
 			}
 		}
@@ -604,8 +565,9 @@ public class DataFieldMetadata implements Serializable {
 	 * @since 24th August 2007
 	 * @see org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
 	 */
+	@SuppressWarnings("deprecation")
 	private boolean isDateOrTimeFieldWithFormatStr() {
-		if (type != DATE_FIELD && type != DATETIME_FIELD) {
+		if (type != DataFieldType.DATE && type != DataFieldType.DATETIME) {
 			return false;
 		}
 
@@ -687,7 +649,7 @@ public class DataFieldMetadata implements Serializable {
 		if(BinaryFormat.isBinaryFormat(formatStr)) {
 			return true; 
 		}
-		return (type == BYTE_FIELD || type == BYTE_FIELD_COMPRESSED);
+		return (type == DataFieldType.BYTE || type == DataFieldType.CBYTE);
 	}
 	
 	/**
@@ -749,7 +711,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @return DateFormatter instance for this date field metadata
 	 */
 	public DateFormatter createDateFormatter() {
-		if (getType() != DATE_FIELD) {
+		if (type != DataFieldType.DATE) {
 			throw new UnsupportedOperationException("DateFormatter is available only for date field metadata.");
 		}
 		return DateFormatterFactory.getFormatter(getFormatStr(), getLocaleStr());
@@ -930,7 +892,7 @@ public class DataFieldMetadata implements Serializable {
 	public void setFieldProperties(Properties properties) {
 		fieldProperties = new TypedProperties(properties);
 
-		if (type == DECIMAL_FIELD) {
+		if (type == DataFieldType.DECIMAL) {
 			if (fieldProperties.getProperty(LENGTH_ATTR) == null) {
 				fieldProperties.setProperty(LENGTH_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_LENGTH));
 			}
@@ -1036,128 +998,50 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	public boolean isSubtype(DataFieldMetadata anotherField) {
 		switch (type) {
-			case BOOLEAN_FIELD:
-				switch (anotherField.getType()) {
-					case STRING_FIELD:
-					case BOOLEAN_FIELD:
-						return true;
-					default:
-						return false;
-				}
-			case BYTE_FIELD:
-			case BYTE_FIELD_COMPRESSED:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-						return true;
-					default:
-						return false;
-				}
-			case STRING_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-						return true;
-					default:
-						return false;
-				}
-			case DATE_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-					case DATE_FIELD:
-					case DATETIME_FIELD:
-						return true;
-					default:
-						return false;
-				}
-			case DATETIME_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-					case DATETIME_FIELD:
-						return true;
-					default:
-						return false;
-				}
-			case INTEGER_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-					case INTEGER_FIELD:
-					case LONG_FIELD:
-					case NUMERIC_FIELD:
-						return true;
-					case DECIMAL_FIELD:
-						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+		case INTEGER:
+			switch (anotherField.getDataType()) {
+			case DECIMAL:
+				int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
 
-						return (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH);
-					default:
-						return false;
-				}
-			case LONG_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-					case LONG_FIELD:
-					case NUMERIC_FIELD:
-						return true;
-					case DECIMAL_FIELD:
-						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-	
-						return (anotherFieldLength - anotherFieldScale >= LONG_LENGTH);
-					default:
-						return false;
-				}
-			case NUMERIC_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-					case NUMERIC_FIELD:
-						return true;
-					case DECIMAL_FIELD:
-						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-	
-						return (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE);
-					default:
-						return false;
-				}
-			case DECIMAL_FIELD:
-				switch (anotherField.getType()) {
-					case BYTE_FIELD:
-					case BYTE_FIELD_COMPRESSED:
-					case STRING_FIELD:
-						return true;
-					case DECIMAL_FIELD:
-						int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
-						int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
-	
-						return (anotherFieldLength >= Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
-								&& anotherFieldScale >= Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)));
-					case NUMERIC_FIELD:
-						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) <= DOUBLE_LENGTH
-								&& Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= DOUBLE_SCALE);
-					case INTEGER_FIELD:
-						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
-								- Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= INTEGER_LENGTH);
-					case LONG_FIELD:
-						return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR))
-								- Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= LONG_LENGTH);
-					default:
-						return false;
-				}
+				return (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH);
+			}
+			break;
+		case LONG:
+			switch (anotherField.getDataType()) {
+			case DECIMAL:
+				int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+
+				return (anotherFieldLength - anotherFieldScale >= LONG_LENGTH);
+			}
+			break;
+		case NUMBER:
+			switch (anotherField.getDataType()) {
+			case DECIMAL:
+				int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+
+				return (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE);
+			}
+			break;
+		case DECIMAL:
+			switch (anotherField.getDataType()) {
+			case DECIMAL:
+				int anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				int anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+
+				return (anotherFieldLength >= Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) && anotherFieldScale >= Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)));
+			case NUMBER:
+				return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) <= DOUBLE_LENGTH && Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= DOUBLE_SCALE);
+			case INTEGER:
+				return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= INTEGER_LENGTH);
+			case LONG:
+				return (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= LONG_LENGTH);
+			}
+			break;
 		}
-
-		return false;
+		return type.isSubtype(anotherField.getDataType());
 	}
 
 	/**
@@ -1172,7 +1056,8 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setName(name);
 		dataFieldMetadata.setLabel(label);
 		dataFieldMetadata.setDescription(description);
-		dataFieldMetadata.setType(type);
+		dataFieldMetadata.setDataType(type);
+		dataFieldMetadata.setCardinalityType(cardinalityType);
 		dataFieldMetadata.setDelimiter(delimiter);
 		dataFieldMetadata.setEofAsDelimiter(eofAsDelimiter);
 		dataFieldMetadata.setFormatStr(formatStr);
@@ -1205,13 +1090,13 @@ public class DataFieldMetadata implements Serializable {
 
 		DataFieldMetadata dataFieldMetadata = (DataFieldMetadata) object;
 
-		if (this.type == dataFieldMetadata.getType()) {
+		if (this.type == dataFieldMetadata.getDataType()) {
 			if (isFixed() && dataFieldMetadata.isFixed()) {
 				// both fixed
 				return (getSize() == dataFieldMetadata.getSize());
 			} else if (!isFixed() && !dataFieldMetadata.isFixed()) {
 				// both delimited
-				if (this.type == DECIMAL_FIELD) {
+				if (this.type == DataFieldType.DECIMAL) {
 					return (getProperty(LENGTH_ATTR).equals(dataFieldMetadata.getProperty(LENGTH_ATTR))
 							&& getProperty(SCALE_ATTR).equals(dataFieldMetadata.getProperty(SCALE_ATTR)));
 				} else {
@@ -1229,7 +1114,8 @@ public class DataFieldMetadata implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return this.type;
+		//FIXME this is not correct implementation, at least decimal type with different scale and length can be considered as different
+		return this.type.hashCode(); 
 	}
 
 	/**
@@ -1239,6 +1125,11 @@ public class DataFieldMetadata implements Serializable {
 	 * @return
 	 */
 	public void checkConfig(ConfigurationStatus status) {
+		//check data type
+		if (type == null) {
+			status.add(new ConfigurationProblem("Data type is not specified.", Severity.ERROR, null, Priority.NORMAL));
+		}
+		
 		// verify default value - approved by kokon
 		if (defaultValue != null || defaultValueStr != null) {
 			DataField dataField = DataFieldFactory.createDataField(this, true);
@@ -1250,7 +1141,7 @@ public class DataFieldMetadata implements Serializable {
 			}
 		}
 		
-		if (BOOLEAN_FIELD == type && !StringUtils.isEmpty(formatStr)) {
+		if (DataFieldType.BOOLEAN == type && !StringUtils.isEmpty(formatStr)) {
 			final BooleanFormatter bf = BooleanFormatterFactory.createFormatter(formatStr);
 
 			final String trueO = bf.formatBoolean(true);
@@ -1281,4 +1172,187 @@ public class DataFieldMetadata implements Serializable {
 	public String toString(){
 		return "Field["+this.type+"|"+this.number+"|"+this.name+"]";
 	}
+	
+	/**
+	 * @deprecated use {@link DataFieldType#STRING} instead
+	 */
+	@Deprecated
+	public static final char STRING_FIELD = 'S';
+	/**
+	 * @deprecated use {@link DataFieldType#STRING} instead
+	 */
+	@Deprecated
+	public static final String STRING_TYPE = "string";
+
+	/**
+	 * @deprecated use {@link DataFieldType#DATE} instead
+	 */
+	@Deprecated
+	public static final char DATE_FIELD = 'D';
+	/**
+	 * @deprecated use {@link DataFieldType#DATE} instead
+	 */
+	@Deprecated
+	public static final String DATE_TYPE = "date";
+
+	/**
+	 * @deprecated use {@link DataFieldType#DATE} instead
+	 */
+	@Deprecated
+	public static final char DATETIME_FIELD = 'T';
+	/**
+	 * @deprecated use {@link DataFieldType#DATE} instead
+	 */
+	@Deprecated
+	public static final String DATETIME_TYPE = "datetime";
+
+	/**
+	 * @deprecated use {@link DataFieldType#NUMBER} instead
+	 */
+	@Deprecated
+	public static final char NUMERIC_FIELD = 'N';
+	/**
+	 * @deprecated use {@link DataFieldType#NUMBER} instead
+	 */
+	@Deprecated
+	public static final String NUMERIC_TYPE = "number";
+	/**
+	 * @deprecated use {@link DataFieldType#NUMBER} instead
+	 */
+	@Deprecated
+	public static final String NUMERIC_TYPE_DEPRECATED = "numeric";
+
+	/**
+	 * @deprecated use {@link DataFieldType#INTEGER} instead
+	 */
+	@Deprecated
+	public static final char INTEGER_FIELD = 'i';
+	/**
+	 * @deprecated use {@link DataFieldType#INTEGER} instead
+	 */
+	@Deprecated
+	public static final String INTEGER_TYPE = "integer";
+
+	/**
+	 * @deprecated use {@link DataFieldType#LONG} instead
+	 */
+	@Deprecated
+	public static final char LONG_FIELD = 'l';
+	/**
+	 * @deprecated use {@link DataFieldType#LONG} instead
+	 */
+	@Deprecated
+	public static final String LONG_TYPE = "long";
+
+	/**
+	 * @deprecated use {@link DataFieldType#DECIMAL} instead
+	 */
+	@Deprecated
+	public static final char DECIMAL_FIELD = 'd';
+	/**
+	 * @deprecated use {@link DataFieldType#DECIMAL} instead
+	 */
+	@Deprecated
+	public static final String DECIMAL_TYPE = "decimal";
+
+	/**
+	 * @deprecated use {@link DataFieldType#BYTE} instead
+	 */
+	@Deprecated
+	public static final char BYTE_FIELD = 'B';
+	/**
+	 * @deprecated use {@link DataFieldType#BYTE} instead
+	 */
+	@Deprecated
+	public static final String BYTE_TYPE = "byte";
+
+	/**
+	 * @deprecated use {@link DataFieldType#BOOLEAN} instead
+	 */
+	@Deprecated
+	public static final char BOOLEAN_FIELD = 'b';
+	/**
+	 * @deprecated use {@link DataFieldType#BOOLEAN} instead
+	 */
+	@Deprecated
+	public static final String BOOLEAN_TYPE = "boolean";
+
+	/**
+	 * @deprecated use {@link DataFieldType#CBYTE} instead
+	 */
+	@Deprecated
+	public static final char BYTE_FIELD_COMPRESSED = 'Z';
+	/**
+	 * @deprecated use {@link DataFieldType#CBYTE} instead
+	 */
+	@Deprecated
+	public static final String BYTE_COMPRESSED_TYPE = "cbyte";
+
+	/**
+	 * @deprecated should not be used at all
+	 */
+	@Deprecated
+	public static final char SEQUENCE_FIELD = 'q';
+	/**
+	 * @deprecated should not be used at all
+	 */
+	@Deprecated
+	public static final String SEQUENCE_TYPE = "sequence";
+
+	/**
+	 * @deprecated use {@link DataFieldType#NULL} instead
+	 */
+	@Deprecated
+	public static final char NULL_FIELD = 'n';
+	/**
+	 * @deprecated use {@link DataFieldType#NULL} instead
+	 */
+	@Deprecated
+	public static final String NULL_TYPE = "null";
+
+	/**
+	 * @deprecated use {@link DataFieldType#UNKNOWN} instead
+	 */
+	@Deprecated
+	public static final char UNKNOWN_FIELD = ' ';
+	/**
+	 * @deprecated use {@link DataFieldType#UNKNOWN} instead
+	 */
+	@Deprecated
+	public static final String UNKNOWN_TYPE = "unknown";
+
+	/**
+	 * Converts a type of a data field into its full string form.
+	 *
+	 * @param type the type of a data field
+	 *
+	 * @return the type of the data field as a string
+	 * @deprecated use {@link DataFieldType#getName()} instead
+	 */
+	@Deprecated
+	public static String type2Str(char type) {
+		try {
+			return DataFieldType.fromChar(type).getName();
+		} catch (IllegalArgumentException e) {
+			return DataFieldType.UNKNOWN.getName();
+		}
+	}
+
+	/**
+	 * Converts a type of a data field in a full string form into its character form.
+	 *
+	 * @param type the type of the data field as a string
+	 *
+	 * @return the type of a data field
+	 * @deprecated use {@link DataFieldType#fromName(String)} instead
+	 */
+	@Deprecated
+	public static char str2Type(String dataTypeName) {
+		try {
+			return DataFieldType.fromName(dataTypeName).getObsoleteIdentifier();
+		} catch (IllegalArgumentException e) {
+			return DataFieldType.UNKNOWN.getObsoleteIdentifier();
+		}
+	}
+
 }

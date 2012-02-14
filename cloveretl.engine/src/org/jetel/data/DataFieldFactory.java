@@ -18,7 +18,9 @@
  */
 package org.jetel.data;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 /**
  *  Factory Pattern which creates different types of DataField objects (subclasses) 
@@ -30,6 +32,18 @@ import org.jetel.metadata.DataFieldMetadata;
 public class DataFieldFactory {
 
 	/**
+	 * @param fieldType
+	 * @param fieldMetadata
+	 * @param plain
+	 * @return
+	 * @deprecated use {@link #createDataField(DataFieldType, DataFieldMetadata, boolean)} instead
+	 */
+	@Deprecated
+	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
+		return createDataField(DataFieldType.fromChar(fieldType), fieldMetadata, plain);
+	}
+
+	/**
 	 *  Factory which creates data field based on specified field type and metadata.
 	 * You should use this method whenever you want to create a data field.
 	 *
@@ -38,37 +52,46 @@ public class DataFieldFactory {
 	 * @return                new data field object
 	 * @since                 May 2, 2002
 	 */
-	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
-		try {
-			switch (fieldType) {
-				case DataFieldMetadata.STRING_FIELD:
-					return new StringDataField(fieldMetadata,plain);
-				case DataFieldMetadata.DATE_FIELD:
-					return new DateDataField(fieldMetadata,plain);
-				case DataFieldMetadata.NUMERIC_FIELD:
-					return new NumericDataField(fieldMetadata,plain);
-				case DataFieldMetadata.DECIMAL_FIELD:
-	                return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
-				case DataFieldMetadata.INTEGER_FIELD:
-					return new IntegerDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BYTE_FIELD:
-					return new ByteDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-					return new CompressedByteDataField(fieldMetadata,plain);
-				case DataFieldMetadata.LONG_FIELD:
-					return new LongDataField(fieldMetadata,plain);
-				case DataFieldMetadata.BOOLEAN_FIELD:
-					return new BooleanDataField(fieldMetadata);
-				case DataFieldMetadata.NULL_FIELD:
-					return NullField.NULL_FIELD;
-				default:
-					throw new RuntimeException("Unsupported data type: " + fieldType);
+	public final static DataField createDataField(DataFieldType fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
+		DataFieldCardinalityType cardinality = fieldMetadata.getCardinalityType();
+		switch (cardinality) {
+		case SINGLE: 
+			try {
+				switch (fieldType) {
+					case STRING:
+						return new StringDataField(fieldMetadata,plain);
+					case DATE:
+						return new DateDataField(fieldMetadata,plain);
+					case NUMBER:
+						return new NumericDataField(fieldMetadata,plain);
+					case DECIMAL:
+		                return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
+					case INTEGER:
+						return new IntegerDataField(fieldMetadata,plain);
+					case BYTE:
+						return new ByteDataField(fieldMetadata,plain);
+					case CBYTE:
+						return new CompressedByteDataField(fieldMetadata,plain);
+					case LONG:
+						return new LongDataField(fieldMetadata,plain);
+					case BOOLEAN:
+						return new BooleanDataField(fieldMetadata);
+					case NULL:
+						return NullField.NULL_FIELD;
+					default:
+						throw new RuntimeException("Unsupported data type: " + fieldType);
+				}
+			} catch (Exception e) {
+				throw new JetelRuntimeException(String.format("Data field '%s' cannot be created.", fieldMetadata.getName()), e);
 			}
-		} catch (Exception e) {
-			throw new JetelRuntimeException(String.format("Data field '%s' cannot be created.", fieldMetadata.getName()), e);
+		case LIST:
+			return new ListDataField(fieldMetadata, plain);
+		case MAP:
+			return new MapDataField(fieldMetadata, plain);
+		default:
+			throw new RuntimeException("Unsupported field cardinality: " + cardinality);
 		}
 	}
-
 	
 	/**
 	 * Simplified version of previous. Gets field type from metadata.
@@ -77,21 +100,8 @@ public class DataFieldFactory {
 	 * @return
 	 */
 	public final static DataField createDataField(DataFieldMetadata fieldMetadata,boolean plain){
-		return createDataField(fieldMetadata.getType(),fieldMetadata,plain);
+		return createDataField(fieldMetadata.getDataType(),fieldMetadata,plain);
 	}
 	
-	
-	/**
-	 * @param c
-	 * @param fieldMetadata
-	 * @param object
-	 * @param sequencedDependencies
-	 * @return
-	 */
-	public static DataField createDataField(char c, DataFieldMetadata fieldMetadata, String methodName, int[][] sequencedDependencies) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
 

@@ -476,7 +476,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 				fieldMetadata = metadata.getField(i);
 				fields[i] =
 						DataFieldFactory.createDataField(
-						fieldMetadata.getType(),
+						fieldMetadata.getDataType(),
 						fieldMetadata,plain);
 			}
 		} catch (Exception e) {
