@@ -136,17 +136,15 @@ public class RecordComparator implements Comparator {
         if (useCollator) {
             for (int i = 0; i < keyFields.length; i++) {
                 final DataField field1 = record1.getField(keyFields[i]);
+                final DataField field2 = record2.getField(keyFields[i]);
                 if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
-                    compResult = ((StringDataField) field1).compareTo(
-                            record2.getField(keyFields[i]), collators[i]);
+                    compResult = ((StringDataField) field1).compareTo(field2, collators[i]);
                 } else {
-                    compResult = field1.compareTo(record2
-                            .getField(keyFields[i]));
+                    compResult = field1.compareTo(field2);
                 }
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(keyFields[i]).isNull)) {
+                        if (!(field1.isNull && field2.isNull)) {
                             return orderCorrection(i, compResult);
                         }
                         continue;

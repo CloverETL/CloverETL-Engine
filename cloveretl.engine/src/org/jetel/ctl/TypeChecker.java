@@ -277,8 +277,7 @@ public class TypeChecker extends NavigatingVisitor {
 		if (lhs.canAssign(rhs)) {
 			castIfNeeded(node, 1, lhs);
 			node.setType(lhs);
-		} else if ((lhs.isRecord() && !((TLTypeRecord) lhs).isReference() 
-					&& rhs.isRecord() && !((TLTypeRecord) rhs).isReference())) {
+		} else if (lhs.isRecord() && rhs.isRecord()) {
 			//this branch is intended only for 'record1.* = record2.*' assignment expression type
 			//with different metadata - then the records are copied based on field names
 			//integral function copyByName is used for this copying 
@@ -1141,9 +1140,8 @@ public class TypeChecker extends NavigatingVisitor {
 		if (compositeType.isRecord()) {
 			if (node.isWildcard()) {
 				// wildcard access allows manipulation with complete record
-				// and changes type semantics from reference to value
 				final DataRecordMetadata metadata = ((TLTypeRecord)compositeType).getMetadata();
-				node.setType(TLType.forRecord(metadata,false));
+				node.setType(TLType.forRecord(metadata));
 			} else {
 				DataRecordMetadata metadata = ((TLTypeRecord)compositeType).getMetadata();
 				DataFieldMetadata field = metadata.getField(node.getName());

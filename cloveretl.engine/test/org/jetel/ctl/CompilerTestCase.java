@@ -9,6 +9,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import junit.framework.AssertionFailedError;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
@@ -34,7 +36,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.MiscUtils;
@@ -51,10 +55,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected static final String INPUT_1 = "firstInput";
 	protected static final String INPUT_2 = "secondInput";
 	protected static final String INPUT_3 = "thirdInput";
+	protected static final String INPUT_4 = "multivalueInput";
 	protected static final String OUTPUT_1 = "firstOutput";
 	protected static final String OUTPUT_2 = "secondOutput";
 	protected static final String OUTPUT_3 = "thirdOutput";
 	protected static final String OUTPUT_4 = "fourthOutput";
+	protected static final String OUTPUT_5 = "firstMultivalueOutput";
+	protected static final String OUTPUT_6 = "secondMultivalueOutput";
+	protected static final String OUTPUT_7 = "thirdMultivalueOutput";
 	protected static final String LOOKUP = "lookupMetadata";
 
 	protected static final String NAME_VALUE = "  HELLO  ";
@@ -162,10 +170,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		metadataMap.put(INPUT_1, createDefaultMetadata(INPUT_1));
 		metadataMap.put(INPUT_2, createDefaultMetadata(INPUT_2));
 		metadataMap.put(INPUT_3, createDefaultMetadata(INPUT_3));
+		metadataMap.put(INPUT_4, createDefaultMultivalueMetadata(INPUT_4));
 		metadataMap.put(OUTPUT_1, createDefaultMetadata(OUTPUT_1));
 		metadataMap.put(OUTPUT_2, createDefaultMetadata(OUTPUT_2));
 		metadataMap.put(OUTPUT_3, createDefaultMetadata(OUTPUT_3));
 		metadataMap.put(OUTPUT_4, createDefault1Metadata(OUTPUT_4));
+		metadataMap.put(OUTPUT_5, createDefaultMultivalueMetadata(OUTPUT_5));
+		metadataMap.put(OUTPUT_6, createDefaultMultivalueMetadata(OUTPUT_6));
+		metadataMap.put(OUTPUT_7, createDefaultMultivalueMetadata(OUTPUT_7));
 		metadataMap.put(LOOKUP, createDefaultMetadata(LOOKUP));
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
@@ -193,6 +205,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("a1992", "date", new GregorianCalendar(1992, GregorianCalendar.AUGUST, 1).getTime());
 			g.getDictionary().setValue("bTrue", "boolean", Boolean.TRUE);
 			g.getDictionary().setValue("yFib", "byte", new byte[]{1,2,3,5,8,13,21,34,55,89} );
+			g.getDictionary().setValue("stringList", "list", Arrays.asList("aa", "bb", null, "cc"));
+			g.getDictionary().setContentType("stringList", "string");
+			g.getDictionary().setValue("dateList", "list", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
+			g.getDictionary().setContentType("dateList", "date");
+			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+			g.getDictionary().setContentType("byteList", "byte");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -289,24 +307,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecordMetadata createDefaultMetadata(String name) {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
-		ret.addField(new DataFieldMetadata("Name", DataFieldMetadata.STRING_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Age", DataFieldMetadata.NUMERIC_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("City", DataFieldMetadata.STRING_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("Name", DataFieldType.STRING, "|"));
+		ret.addField(new DataFieldMetadata("Age", DataFieldType.NUMBER, "|"));
+		ret.addField(new DataFieldMetadata("City", DataFieldType.STRING, "|"));
 
-		DataFieldMetadata dateField = new DataFieldMetadata("Born", DataFieldMetadata.DATE_FIELD, "|");
+		DataFieldMetadata dateField = new DataFieldMetadata("Born", DataFieldType.DATE, "|");
 		dateField.setFormatStr("yyyy-MM-dd HH:mm:ss");
 		ret.addField(dateField);
 
-		ret.addField(new DataFieldMetadata("BornMillisec", DataFieldMetadata.LONG_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Value", DataFieldMetadata.INTEGER_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Flag", DataFieldMetadata.BOOLEAN_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("ByteArray", DataFieldMetadata.BYTE_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("BornMillisec", DataFieldType.LONG, "|"));
+		ret.addField(new DataFieldMetadata("Value", DataFieldType.INTEGER, "|"));
+		ret.addField(new DataFieldMetadata("Flag", DataFieldType.BOOLEAN, "|"));
+		ret.addField(new DataFieldMetadata("ByteArray", DataFieldType.BYTE, "|"));
 
-		DataFieldMetadata decimalField = new DataFieldMetadata("Currency", DataFieldMetadata.DECIMAL_FIELD, "\n");
+		DataFieldMetadata decimalField = new DataFieldMetadata("Currency", DataFieldType.DECIMAL, "\n");
 		decimalField.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_PRECISION));
 		decimalField.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_SCALE));
 		ret.addField(decimalField);
-
+		
 		return ret;
 	}
 
@@ -319,12 +337,154 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecordMetadata createDefault1Metadata(String name) {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
-		ret.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("Age", DataFieldMetadata.NUMERIC_FIELD, "|"));
-		ret.addField(new DataFieldMetadata("City", DataFieldMetadata.STRING_FIELD, "|"));
+		ret.addField(new DataFieldMetadata("Field1", DataFieldType.STRING, "|"));
+		ret.addField(new DataFieldMetadata("Age", DataFieldType.NUMBER, "|"));
+		ret.addField(new DataFieldMetadata("City", DataFieldType.STRING, "|"));
 
 		return ret;
 	}
+	
+	/**
+	 * Creates records with default structure
+	 * containing multivalue fields.
+	 * 
+	 * @param name
+	 *            name for the record to use
+	 * @return metadata with default structure
+	 */
+	protected DataRecordMetadata createDefaultMultivalueMetadata(String name) {
+		DataRecordMetadata ret = new DataRecordMetadata(name);
+
+		DataFieldMetadata stringListField = new DataFieldMetadata("stringListField", DataFieldType.STRING, "|");
+		stringListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		ret.addField(stringListField);
+		
+		DataFieldMetadata dateField = new DataFieldMetadata("dateField", DataFieldType.DATE, "|");
+		ret.addField(dateField);
+
+		DataFieldMetadata byteField = new DataFieldMetadata("byteField", DataFieldType.BYTE, "|");
+		ret.addField(byteField);
+
+		DataFieldMetadata dateListField = new DataFieldMetadata("dateListField", DataFieldType.DATE, "|");
+		dateListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		ret.addField(dateListField);
+
+		DataFieldMetadata byteListField = new DataFieldMetadata("byteListField", DataFieldType.BYTE, "|");
+		byteListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		ret.addField(byteListField);
+		
+		DataFieldMetadata stringField = new DataFieldMetadata("stringField", DataFieldType.STRING, "|");
+		ret.addField(stringField);
+
+		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
+		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(integerMapField);
+
+		DataFieldMetadata stringMapField = new DataFieldMetadata("stringMapField", DataFieldType.STRING, "|");
+		stringMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(stringMapField);
+
+		DataFieldMetadata dateMapField = new DataFieldMetadata("dateMapField", DataFieldType.DATE, "|");
+		dateMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(dateMapField);
+
+		DataFieldMetadata byteMapField = new DataFieldMetadata("byteMapField", DataFieldType.BYTE, "|");
+		byteMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(byteMapField);
+
+		return ret;
+	}
+
+	/**
+	 * Creates new record with specified metadata and sets its field to default values. The record structure will be
+	 * created by {@link #createDefaultMetadata(String)}
+	 * 
+	 * @param dataRecordMetadata
+	 *            metadata to use
+	 * @return record initialized to default values
+	 */
+	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
+		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		ret.init();
+
+		for (int i = 0; i < ret.getNumFields(); i++) {
+			DataField field = ret.getField(i);
+			DataFieldMetadata fieldMetadata = field.getMetadata();
+			
+			switch (fieldMetadata.getCardinalityType()) {
+			case SINGLE:
+				switch (fieldMetadata.getDataType()) {
+				case STRING:
+					field.setValue("John");
+					break;
+				case DATE:
+					field.setValue(new Date(10000));
+					break;
+				case BYTE:
+					field.setValue(new byte[] { 0x12, 0x34, 0x56, 0x78 } );
+					break;
+				default:
+					throw new UnsupportedOperationException("Not implemented.");
+				}
+				break;
+			case LIST:
+				{
+					List<Object> value = new ArrayList<Object>();
+					switch (fieldMetadata.getDataType()) {
+					case STRING:
+						value.addAll(Arrays.asList("John", "Doe", "Jersey"));
+						break;
+					case INTEGER:
+						value.addAll(Arrays.asList(123, 456, 789));
+						break;
+					case DATE:
+						value.addAll(Arrays.asList(new Date (12000), new Date(34000)));
+						break;
+					case BYTE:
+						value.addAll(Arrays.asList(new byte[] {0x12, 0x34}, new byte[] {0x56, 0x78}));
+						break;
+					default:
+						throw new UnsupportedOperationException("Not implemented.");
+					}
+					field.setValue(value);
+				}
+				break;
+			case MAP:
+				{
+					Map<String, Object> value = new HashMap<String, Object>();
+					switch (fieldMetadata.getDataType()) {
+					case STRING:
+						value.put("firstName", "John");
+						value.put("lastName", "Doe");
+						value.put("address", "Jersey");
+						break;
+					case INTEGER:
+						value.put("count", 123);
+						value.put("max", 456);
+						value.put("sum", 789);
+						break;
+					case DATE:
+						value.put("before", new Date (12000));
+						value.put("after", new Date(34000));
+						break;
+					case BYTE:
+						value.put("hash", new byte[] {0x12, 0x34});
+						value.put("checksum", new byte[] {0x56, 0x78});
+						break;
+					default:
+						throw new UnsupportedOperationException("Not implemented.");
+					}
+					field.setValue(value);
+				}
+				break;
+			default:
+				throw new IllegalArgumentException(fieldMetadata.getCardinalityType().toString());
+			}
+		}
+
+		return ret;
+	}
+
 
 	/**
 	 * Creates new record with specified metadata and sets its field to default values. The record structure will be
@@ -371,8 +531,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void doCompile(String expStr, String testIdentifier) {
 		graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3), graph.getDataRecordMetadata(INPUT_4) };
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4), graph.getDataRecordMetadata(OUTPUT_5), graph.getDataRecordMetadata(OUTPUT_6), graph.getDataRecordMetadata(OUTPUT_7) };
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -1010,17 +1170,471 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Operator '<=' is not defined for types 'boolean' and 'boolean'"));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void test_type_list() {
 		doCompile("test_type_list");
 		check("intList", Arrays.asList(1, 2, 3, 4, 5, 6));
 		check("intList2", Arrays.asList(1, 2, 3));
 		check("stringList", Arrays.asList(
 				"first", "replaced", "third", "fourth",
-				"fifth", "sixth", "seventh", "extra"));
-		assertEquals((List<String>) getVariable("stringList"), (List<String>) getVariable("stringListCopy"));
+				"fifth", "sixth", "extra"));
+		check("stringListCopy", Arrays.asList(
+				"first", "second", "third", "fourth",
+				"fifth", "seventh"));
+		check("stringListCopy2", Arrays.asList(
+				"first", "replaced", "third", "fourth",
+				"fifth", "sixth", "extra"));
+		assertTrue(getVariable("stringList") != getVariable("stringListCopy"));
+		assertEquals(getVariable("stringList"), getVariable("stringListCopy2"));
+		
+		assertEquals(Arrays.asList(false, null, true), getVariable("booleanList"));
+		assertDeepEquals(Arrays.asList(new byte[] {(byte) 0xAB}, null), getVariable("byteList"));
+		assertDeepEquals(Arrays.asList(null, new byte[] {(byte) 0xCD}), getVariable("cbyteList"));
+		assertEquals(Arrays.asList(new Date(12000), null, new Date(34000)), getVariable("dateList"));
+		assertEquals(Arrays.asList(null, new BigDecimal(BigInteger.valueOf(1234), 2)), getVariable("decimalList"));
+		assertEquals(Arrays.asList(12, null, 34), getVariable("intList3"));
+		assertEquals(Arrays.asList(12l, null, 98l), getVariable("longList"));
+		assertEquals(Arrays.asList(12.34, null, 56.78), getVariable("numberList"));
+		assertEquals(Arrays.asList("aa", null, "bb"), getVariable("stringList2"));
 	}
 	
+	public void test_type_list_field() {
+		doCompile("test_type_list_field");
+		check("copyByValueTest1", "2");
+		check("copyByValueTest2", "test");
+	}
+
+	public void test_type_map_field() {
+		doCompile("test_type_map_field");
+		
+		Integer copyByValueTest1 = (Integer) getVariable("copyByValueTest1");
+		assertEquals(new Integer(2), copyByValueTest1);
+		
+		Integer copyByValueTest2 = (Integer) getVariable("copyByValueTest2");
+		assertEquals(new Integer(100), copyByValueTest2);
+	}
+	
+	/**
+	 * The structure of the objects must be exactly the same!
+	 * 
+	 * @param o1
+	 * @param o2
+	 */
+	private static void assertDeepCopy(Object o1, Object o2) {
+		if (o1 instanceof DataRecord) {
+			assertFalse(o1 == o2);
+			DataRecord r1 = (DataRecord) o1;
+			DataRecord r2 = (DataRecord) o2;
+			for (int i = 0; i < r1.getNumFields(); i++) {
+				assertDeepCopy(r1.getField(i).getValue(), r2.getField(i).getValue());
+			}
+		} else if (o1 instanceof Map) {
+			assertFalse(o1 == o2);
+			Map<?, ?> m1 = (Map<?, ?>) o1;
+			Map<?, ?> m2 = (Map<?, ?>) o2;
+			for (Object key: m1.keySet()) {
+				assertDeepCopy(m1.get(key), m2.get(key));
+			}
+		} else if (o1 instanceof List) {
+			assertFalse(o1 == o2);
+			List<?> l1 = (List<?>) o1;
+			List<?> l2 = (List<?>) o2;
+			for (int i = 0; i < l1.size(); i++) {
+				assertDeepCopy(l1.get(i), l2.get(i));
+			}
+		} else if (o1 instanceof Date) {
+			assertFalse(o1 == o2);
+		} else if (o1 instanceof byte[]) {
+			assertFalse(o1 == o2);
+		}
+	}
+	
+	/**
+	 * The structure of the objects must be exactly the same!
+	 * 
+	 * @param o1
+	 * @param o2
+	 */
+	private static void assertDeepEquals(Object o1, Object o2) {
+		if (o1 instanceof DataRecord) {
+			DataRecord r1 = (DataRecord) o1;
+			DataRecord r2 = (DataRecord) o2;
+			assertEquals(r1.getNumFields(), r2.getNumFields());
+			for (int i = 0; i < r1.getNumFields(); i++) {
+				assertDeepEquals(r1.getField(i).getValue(), r2.getField(i).getValue());
+			}
+		} else if (o1 instanceof Map) {
+			Map<?, ?> m1 = (Map<?, ?>) o1;
+			Map<?, ?> m2 = (Map<?, ?>) o2;
+			assertTrue(m1.keySet().equals(m2.keySet()));
+			for (Object key: m1.keySet()) {
+				assertDeepEquals(m1.get(key), m2.get(key));
+			}
+		} else if (o1 instanceof List) {
+			List<?> l1 = (List<?>) o1;
+			List<?> l2 = (List<?>) o2;
+			assertEquals("size", l1.size(), l2.size());
+			for (int i = 0; i < l1.size(); i++) {
+				assertDeepEquals(l1.get(i), l2.get(i));
+			}
+		} else if (o1 instanceof byte[]) {
+			byte[] b1 = (byte[]) o1;
+			byte[] b2 = (byte[]) o2;
+			if (b1 != b2) {
+				if (b1 == null || b2 == null) {
+					assertEquals(b1, b2);
+				}
+				assertEquals("length", b1.length, b2.length);
+				for (int i = 0; i < b1.length; i++) {
+					assertEquals(String.format("[%d]", i), b1[i], b2[i]);
+				}
+			}
+		} else if (o1 instanceof CharSequence) {
+			String s1 = o1 != null ? ((CharSequence) o1).toString() : null;
+			String s2 = o2 != null ? ((CharSequence) o2).toString() : null;
+			assertEquals(s1, s2);
+		} else {
+			assertEquals(o1, o2);
+		}
+	}
+	
+	private void check_assignment_deepcopy_variable_declaration() {
+		Date testVariableDeclarationDate1 = (Date) getVariable("testVariableDeclarationDate1");
+		Date testVariableDeclarationDate2 = (Date) getVariable("testVariableDeclarationDate2");
+		byte[] testVariableDeclarationByte1 = (byte[]) getVariable("testVariableDeclarationByte1");
+		byte[] testVariableDeclarationByte2 = (byte[]) getVariable("testVariableDeclarationByte2");
+		
+		assertDeepEquals(testVariableDeclarationDate1, testVariableDeclarationDate2);
+		assertDeepEquals(testVariableDeclarationByte1, testVariableDeclarationByte2);
+		
+		assertDeepCopy(testVariableDeclarationDate1, testVariableDeclarationDate2);
+		assertDeepCopy(testVariableDeclarationByte1, testVariableDeclarationByte2);
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private void check_assignment_deepcopy_array_access_expression() {
+		{
+			// JJTARRAYACCESSEXPRESSION - List
+			List<String> stringListField1 = (List<String>) getVariable("stringListField1");
+			DataRecord recordInList1 = (DataRecord) getVariable("recordInList1");
+			List<DataRecord> recordList1 = (List<DataRecord>) getVariable("recordList1");
+			List<DataRecord> recordList2 = (List<DataRecord>) getVariable("recordList2");
+			
+			assertDeepEquals(stringListField1, recordInList1.getField("stringListField").getValue());
+			assertDeepEquals(recordInList1, recordList1.get(0));
+			assertDeepEquals(recordList1, recordList2);
+			
+			assertDeepCopy(stringListField1, recordInList1.getField("stringListField").getValue());
+			assertDeepCopy(recordInList1, recordList1.get(0));
+			assertDeepCopy(recordList1, recordList2);
+		}
+
+		{
+			// map of records
+			Date testDate1 = (Date) getVariable("testDate1");
+			Map<Integer, DataRecord> recordMap1 = (Map<Integer, DataRecord>) getVariable("recordMap1");
+			DataRecord recordInMap1 = (DataRecord) getVariable("recordInMap1");
+			DataRecord recordInMap2 = (DataRecord) getVariable("recordInMap2");
+			Map<Integer, DataRecord> recordMap2 = (Map<Integer, DataRecord>) getVariable("recordMap2");
+
+			assertDeepEquals(testDate1, recordInMap1.getField("dateField").getValue());
+			assertDeepEquals(recordInMap1, recordMap1.get(0));
+			assertDeepEquals(recordInMap2, recordMap1.get(0));
+			assertDeepEquals(recordMap1, recordMap2);
+			
+			assertDeepCopy(testDate1, recordInMap1.getField("dateField").getValue());
+			assertDeepCopy(recordInMap1, recordMap1.get(0));
+			assertDeepCopy(recordInMap2, recordMap1.get(0));
+			assertDeepCopy(recordMap1, recordMap2);
+		}
+
+		{
+			// map of dates
+			Map<Integer, Date> dateMap1 = (Map<Integer, Date>) getVariable("dateMap1");
+			Date date1 = (Date) getVariable("date1");
+			Date date2 = (Date) getVariable("date2");
+
+			assertDeepCopy(date1, dateMap1.get(0));
+			assertDeepCopy(date2, dateMap1.get(1));
+		}
+		
+		{
+			// map of byte arrays
+			Map<Integer, byte[]> byteMap1 = (Map<Integer, byte[]>) getVariable("byteMap1");
+			byte[] byte1 = (byte[]) getVariable("byte1");
+			byte[] byte2 = (byte[]) getVariable("byte2");
+			
+			assertDeepCopy(byte1, byteMap1.get(0));
+			assertDeepCopy(byte2, byteMap1.get(1));
+		}
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void check_assignment_deepcopy_field_access_expression() {
+		// field access
+		Date testFieldAccessDate1 = (Date) getVariable("testFieldAccessDate1");
+		String testFieldAccessString1 = (String) getVariable("testFieldAccessString1");
+		List<Date> testFieldAccessDateList1 = (List<Date>) getVariable("testFieldAccessDateList1");
+		List<String> testFieldAccessStringList1 = (List<String>) getVariable("testFieldAccessStringList1");
+		Map<String, Date> testFieldAccessDateMap1 = (Map<String, Date>) getVariable("testFieldAccessDateMap1");
+		Map<String, String> testFieldAccessStringMap1 = (Map<String, String>) getVariable("testFieldAccessStringMap1");
+		DataRecord testFieldAccessRecord1 = (DataRecord) getVariable("testFieldAccessRecord1");
+		DataRecord firstMultivalueOutput = outputRecords[4];
+		DataRecord secondMultivalueOutput = outputRecords[5];
+		DataRecord thirdMultivalueOutput = outputRecords[6];
+		
+		assertDeepEquals(testFieldAccessDate1, firstMultivalueOutput.getField("dateField").getValue());
+		assertDeepEquals(testFieldAccessDate1, ((List<?>) firstMultivalueOutput.getField("dateListField").getValue()).get(0));
+		assertDeepEquals(testFieldAccessString1, ((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).get(0));
+		assertDeepEquals(testFieldAccessDate1, ((Map<?, ?>) firstMultivalueOutput.getField("dateMapField").getValue()).get("first"));
+		assertDeepEquals(testFieldAccessString1, ((Map<?, ?>) firstMultivalueOutput.getField("stringMapField").getValue()).get("first"));
+		
+		assertDeepEquals(testFieldAccessDateList1, secondMultivalueOutput.getField("dateListField").getValue());
+		assertDeepEquals(testFieldAccessStringList1, secondMultivalueOutput.getField("stringListField").getValue());
+		assertDeepEquals(testFieldAccessDateMap1, secondMultivalueOutput.getField("dateMapField").getValue());
+		assertDeepEquals(testFieldAccessStringMap1, secondMultivalueOutput.getField("stringMapField").getValue());
+		assertDeepEquals(testFieldAccessRecord1, thirdMultivalueOutput);
+		
+		assertDeepCopy(testFieldAccessDate1, firstMultivalueOutput.getField("dateField").getValue());
+		assertDeepCopy(testFieldAccessDate1, ((List<?>) firstMultivalueOutput.getField("dateListField").getValue()).get(0));
+		assertDeepCopy(testFieldAccessString1, ((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).get(0));
+		assertDeepCopy(testFieldAccessDate1, ((Map<?, ?>) firstMultivalueOutput.getField("dateMapField").getValue()).get("first"));
+		assertDeepCopy(testFieldAccessString1, ((Map<?, ?>) firstMultivalueOutput.getField("stringMapField").getValue()).get("first"));
+		assertDeepCopy(testFieldAccessDateList1, secondMultivalueOutput.getField("dateListField").getValue());
+		assertDeepCopy(testFieldAccessStringList1, secondMultivalueOutput.getField("stringListField").getValue());
+		assertDeepCopy(testFieldAccessDateMap1, secondMultivalueOutput.getField("dateMapField").getValue());
+		assertDeepCopy(testFieldAccessStringMap1, secondMultivalueOutput.getField("stringMapField").getValue());
+		assertDeepCopy(testFieldAccessRecord1, thirdMultivalueOutput);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void check_assignment_deepcopy_member_access_expression() {
+		{
+			// member access - record
+			Date testMemberAccessDate1 = (Date) getVariable("testMemberAccessDate1");
+			byte[] testMemberAccessByte1 = (byte[]) getVariable("testMemberAccessByte1");
+			List<Date> testMemberAccessDateList1 = (List<Date>) getVariable("testMemberAccessDateList1");
+			List<byte[]> testMemberAccessByteList1 = (List<byte[]>) getVariable("testMemberAccessByteList1");
+			DataRecord testMemberAccessRecord1 = (DataRecord) getVariable("testMemberAccessRecord1");
+			DataRecord testMemberAccessRecord2 = (DataRecord) getVariable("testMemberAccessRecord2");
+			
+			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecord1.getField("dateField").getValue());
+			assertDeepEquals(testMemberAccessByte1, testMemberAccessRecord1.getField("byteField").getValue());
+			assertDeepEquals(testMemberAccessDate1, ((List<?>) testMemberAccessRecord1.getField("dateListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessByte1, ((List<?>) testMemberAccessRecord1.getField("byteListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessDateList1, testMemberAccessRecord2.getField("dateListField").getValue());
+			assertDeepEquals(testMemberAccessByteList1, testMemberAccessRecord2.getField("byteListField").getValue());
+			
+			assertDeepCopy(testMemberAccessDate1, testMemberAccessRecord1.getField("dateField").getValue());
+			assertDeepCopy(testMemberAccessByte1, testMemberAccessRecord1.getField("byteField").getValue());
+			assertDeepCopy(testMemberAccessDate1, ((List<?>) testMemberAccessRecord1.getField("dateListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessByte1, ((List<?>) testMemberAccessRecord1.getField("byteListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessDateList1, testMemberAccessRecord2.getField("dateListField").getValue());
+			assertDeepCopy(testMemberAccessByteList1, testMemberAccessRecord2.getField("byteListField").getValue());
+		}
+
+		{
+			// member access - record
+			Date testMemberAccessDate1 = (Date) getVariable("testMemberAccessDate1");
+			byte[] testMemberAccessByte1 = (byte[]) getVariable("testMemberAccessByte1");
+			List<Date> testMemberAccessDateList1 = (List<Date>) getVariable("testMemberAccessDateList1");
+			List<byte[]> testMemberAccessByteList1 = (List<byte[]>) getVariable("testMemberAccessByteList1");
+			DataRecord testMemberAccessRecord1 = (DataRecord) getVariable("testMemberAccessRecord1");
+			DataRecord testMemberAccessRecord2 = (DataRecord) getVariable("testMemberAccessRecord2");
+			DataRecord testMemberAccessRecord3 = (DataRecord) getVariable("testMemberAccessRecord3");
+			
+			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecord1.getField("dateField").getValue());
+			assertDeepEquals(testMemberAccessByte1, testMemberAccessRecord1.getField("byteField").getValue());
+			assertDeepEquals(testMemberAccessDate1, ((List<?>) testMemberAccessRecord1.getField("dateListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessByte1, ((List<?>) testMemberAccessRecord1.getField("byteListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessDateList1, testMemberAccessRecord2.getField("dateListField").getValue());
+			assertDeepEquals(testMemberAccessByteList1, testMemberAccessRecord2.getField("byteListField").getValue());
+			assertDeepEquals(testMemberAccessRecord3, testMemberAccessRecord2);
+			
+			assertDeepCopy(testMemberAccessDate1, testMemberAccessRecord1.getField("dateField").getValue());
+			assertDeepCopy(testMemberAccessByte1, testMemberAccessRecord1.getField("byteField").getValue());
+			assertDeepCopy(testMemberAccessDate1, ((List<?>) testMemberAccessRecord1.getField("dateListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessByte1, ((List<?>) testMemberAccessRecord1.getField("byteListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessDateList1, testMemberAccessRecord2.getField("dateListField").getValue());
+			assertDeepCopy(testMemberAccessByteList1, testMemberAccessRecord2.getField("byteListField").getValue());
+			assertDeepCopy(testMemberAccessRecord3, testMemberAccessRecord2);
+
+			// dictionary
+			Date dictionaryDate = (Date) graph.getDictionary().getEntry("a").getValue();
+			byte[] dictionaryByte = (byte[]) graph.getDictionary().getEntry("y").getValue();
+			List<String> testMemberAccessStringList1 = (List<String>) getVariable("testMemberAccessStringList1");
+			List<Date> testMemberAccessDateList2 = (List<Date>) getVariable("testMemberAccessDateList2");
+			List<byte[]> testMemberAccessByteList2 = (List<byte[]>) getVariable("testMemberAccessByteList2");
+			List<String> dictionaryStringList = (List<String>) graph.getDictionary().getValue("stringList");
+			List<Date> dictionaryDateList = (List<Date>) graph.getDictionary().getValue("dateList");
+			List<byte[]> dictionaryByteList = (List<byte[]>) graph.getDictionary().getValue("byteList");
+			
+			assertDeepEquals(dictionaryDate, testMemberAccessDate1);
+			assertDeepEquals(dictionaryByte, testMemberAccessByte1);
+			assertDeepEquals(dictionaryStringList, testMemberAccessStringList1);
+			assertDeepEquals(dictionaryDateList, testMemberAccessDateList2);
+			assertDeepEquals(dictionaryByteList, testMemberAccessByteList2);
+			
+			assertDeepCopy(dictionaryDate, testMemberAccessDate1);
+			assertDeepCopy(dictionaryByte, testMemberAccessByte1);
+			assertDeepCopy(dictionaryStringList, testMemberAccessStringList1);
+			assertDeepCopy(dictionaryDateList, testMemberAccessDateList2);
+			assertDeepCopy(dictionaryByteList, testMemberAccessByteList2);
+			
+			// member access - array of records
+			List<DataRecord> testMemberAccessRecordList1 = (List<DataRecord>) getVariable("testMemberAccessRecordList1");
+			
+			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecordList1.get(0).getField("dateField").getValue());
+			assertDeepEquals(testMemberAccessByte1, testMemberAccessRecordList1.get(0).getField("byteField").getValue());
+			assertDeepEquals(testMemberAccessDate1, ((List<Date>) testMemberAccessRecordList1.get(0).getField("dateListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessByte1, ((List<byte[]>) testMemberAccessRecordList1.get(0).getField("byteListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessDateList1, testMemberAccessRecordList1.get(1).getField("dateListField").getValue());
+			assertDeepEquals(testMemberAccessByteList1, testMemberAccessRecordList1.get(1).getField("byteListField").getValue());
+			assertDeepEquals(testMemberAccessRecordList1.get(1), testMemberAccessRecordList1.get(2));
+
+			assertDeepCopy(testMemberAccessDate1, testMemberAccessRecordList1.get(0).getField("dateField").getValue());
+			assertDeepCopy(testMemberAccessByte1, testMemberAccessRecordList1.get(0).getField("byteField").getValue());
+			assertDeepCopy(testMemberAccessDate1, ((List<Date>) testMemberAccessRecordList1.get(0).getField("dateListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessByte1, ((List<byte[]>) testMemberAccessRecordList1.get(0).getField("byteListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessDateList1, testMemberAccessRecordList1.get(1).getField("dateListField").getValue());
+			assertDeepCopy(testMemberAccessByteList1, testMemberAccessRecordList1.get(1).getField("byteListField").getValue());
+			assertDeepCopy(testMemberAccessRecordList1.get(1), testMemberAccessRecordList1.get(2));
+
+			// member access - map of records
+			Map<Integer, DataRecord> testMemberAccessRecordMap1 = (Map<Integer, DataRecord>) getVariable("testMemberAccessRecordMap1");
+			
+			assertDeepEquals(testMemberAccessDate1, testMemberAccessRecordMap1.get(0).getField("dateField").getValue());
+			assertDeepEquals(testMemberAccessByte1, testMemberAccessRecordMap1.get(0).getField("byteField").getValue());
+			assertDeepEquals(testMemberAccessDate1, ((List<Date>) testMemberAccessRecordMap1.get(0).getField("dateListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessByte1, ((List<byte[]>) testMemberAccessRecordMap1.get(0).getField("byteListField").getValue()).get(0));
+			assertDeepEquals(testMemberAccessDateList1, testMemberAccessRecordMap1.get(1).getField("dateListField").getValue());
+			assertDeepEquals(testMemberAccessByteList1, testMemberAccessRecordMap1.get(1).getField("byteListField").getValue());
+			assertDeepEquals(testMemberAccessRecordMap1.get(1), testMemberAccessRecordMap1.get(2));
+			
+			assertDeepCopy(testMemberAccessDate1, testMemberAccessRecordMap1.get(0).getField("dateField").getValue());
+			assertDeepCopy(testMemberAccessByte1, testMemberAccessRecordMap1.get(0).getField("byteField").getValue());
+			assertDeepCopy(testMemberAccessDate1, ((List<Date>) testMemberAccessRecordMap1.get(0).getField("dateListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessByte1, ((List<byte[]>) testMemberAccessRecordMap1.get(0).getField("byteListField").getValue()).get(0));
+			assertDeepCopy(testMemberAccessDateList1, testMemberAccessRecordMap1.get(1).getField("dateListField").getValue());
+			assertDeepCopy(testMemberAccessByteList1, testMemberAccessRecordMap1.get(1).getField("byteListField").getValue());
+			assertDeepCopy(testMemberAccessRecordMap1.get(1), testMemberAccessRecordMap1.get(2));
+			
+		}
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public void test_assignment_deepcopy() {
+		doCompile("test_assignment_deepcopy");
+		
+		List<DataRecord> secondRecordList = (List<DataRecord>) getVariable("secondRecordList"); 
+		assertEquals("before", secondRecordList.get(0).getField("Name").getValue().toString());
+
+		List<DataRecord> firstRecordList = (List<DataRecord>) getVariable("firstRecordList");
+		assertEquals("after", firstRecordList.get(0).getField("Name").getValue().toString());
+		
+		check_assignment_deepcopy_variable_declaration();
+		
+		check_assignment_deepcopy_array_access_expression();
+		
+		check_assignment_deepcopy_field_access_expression();
+		
+		check_assignment_deepcopy_member_access_expression();
+		
+	}
+	
+	public void test_assignment_deepcopy_field_access_expression() {
+		doCompile("test_assignment_deepcopy_field_access_expression");
+		
+		DataRecord testFieldAccessRecord1 = (DataRecord) getVariable("testFieldAccessRecord1");
+		DataRecord firstMultivalueOutput = outputRecords[4];
+		DataRecord secondMultivalueOutput = outputRecords[5];
+		DataRecord thirdMultivalueOutput = outputRecords[6];
+		DataRecord multivalueInput = inputRecords[3];
+
+		assertDeepEquals(firstMultivalueOutput, testFieldAccessRecord1);
+		assertDeepEquals(secondMultivalueOutput, multivalueInput);
+		assertDeepEquals(thirdMultivalueOutput, secondMultivalueOutput);
+
+		assertDeepCopy(firstMultivalueOutput, testFieldAccessRecord1);
+		assertDeepCopy(secondMultivalueOutput, multivalueInput);
+		assertDeepCopy(thirdMultivalueOutput, secondMultivalueOutput);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void test_assignment_returnvalue() {
+		doCompile("test_assignment_returnvalue");
+		
+		{
+			List<String> stringList1 = (List<String>) getVariable("stringList1");
+			List<String> stringList2 = (List<String>) getVariable("stringList2");
+			List<String> stringList3 = (List<String>) getVariable("stringList3");
+			List<DataRecord> recordList1 = (List<DataRecord>) getVariable("recordList1");
+			Map<Integer, DataRecord> recordMap1 = (Map<Integer, DataRecord>) getVariable("recordMap1");
+			List<String> stringList4 = (List<String>) getVariable("stringList4");
+			Map<String, Integer> integerMap1 = (Map<String, Integer>) getVariable("integerMap1");
+			DataRecord record1 = (DataRecord) getVariable("record1");
+			DataRecord record2 = (DataRecord) getVariable("record2");
+			DataRecord firstMultivalueOutput = outputRecords[4];
+			DataRecord secondMultivalueOutput = outputRecords[5];
+			DataRecord thirdMultivalueOutput = outputRecords[6];
+			Date dictionaryDate1 = (Date) getVariable("dictionaryDate1");
+			Date dictionaryDate = (Date) graph.getDictionary().getValue("a");
+			Date zeroDate = new Date(0);
+			List<String> testReturnValueDictionary2 = (List<String>) getVariable("testReturnValueDictionary2");
+			List<String> dictionaryStringList = (List<String>) graph.getDictionary().getValue("stringList");
+			List<String> testReturnValue10 = (List<String>) getVariable("testReturnValue10");
+			DataRecord testReturnValue11 = (DataRecord) getVariable("testReturnValue11");
+			List<String> testReturnValue12 = (List<String>) getVariable("testReturnValue12");
+			List<String> testReturnValue13 = (List<String>) getVariable("testReturnValue13");
+			
+			// identifier
+			assertFalse(stringList1.isEmpty());
+			assertTrue(stringList2.isEmpty());
+			assertTrue(stringList3.isEmpty());
+			
+			// array access expression - list
+			assertDeepEquals("unmodified", recordList1.get(0).getField("stringField").getValue());
+			assertDeepEquals("modified", recordList1.get(1).getField("stringField").getValue());
+
+			// array access expression - map
+			assertDeepEquals("unmodified", recordMap1.get(0).getField("stringField").getValue());
+			assertDeepEquals("modified", recordMap1.get(1).getField("stringField").getValue());
+
+			// field access expression
+			assertFalse(stringList4.isEmpty());
+			assertTrue(((List<?>) firstMultivalueOutput.getField("stringListField").getValue()).isEmpty());
+			assertFalse(integerMap1.isEmpty());
+			assertTrue(((Map<?, ?>) firstMultivalueOutput.getField("integerMapField").getValue()).isEmpty());
+			assertDeepEquals("unmodified", record1.getField("stringField"));
+			assertDeepEquals("modified", secondMultivalueOutput.getField("stringField").getValue());
+			assertDeepEquals("unmodified", record2.getField("stringField"));
+			assertDeepEquals("modified", thirdMultivalueOutput.getField("stringField").getValue());
+			
+			// member access expression - dictionary
+			// There is no function that could modify a date
+//			assertEquals(zeroDate, dictionaryDate);  
+//			assertFalse(zeroDate.equals(testReturnValueDictionary1));
+			assertFalse(testReturnValueDictionary2.isEmpty());  
+			assertTrue(dictionaryStringList.isEmpty());
+			
+			// member access expression - record
+			assertFalse(testReturnValue10.isEmpty());
+			assertTrue(((List<?>) testReturnValue11.getField("stringListField").getValue()).isEmpty());
+			
+			// member access expression - list of records
+			assertFalse(testReturnValue12.isEmpty());
+			assertTrue(((List<?>) recordList1.get(2).getField("stringListField").getValue()).isEmpty());
+
+			// member access expression - map of records
+			assertFalse(testReturnValue13.isEmpty());
+			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
+			
+			
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public void test_type_map() {
 		doCompile("test_type_map");
@@ -1110,11 +1724,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.getField("Name").setValue("not empty");
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("modified2")));
 		
-		// modified by reference
-		expected.getField("Value").setValue(654321);
+		// no modification by reference is possible
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("modified3")));
+		expected.getField("Value").setValue(654321);
 		assertTrue(recordEquals(expected, (DataRecord)getVariable("reference")));
-		assertTrue(getVariable("modified3") == getVariable("reference"));
+		assertTrue(getVariable("modified3") != getVariable("reference"));
 		
 		// output record
 		assertTrue(recordEquals(expected, outputRecords[1]));
@@ -1830,6 +2444,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		// * mapping
 		assertTrue(recordEquals(inputRecords[1], outputRecords[1]));
+		
+		check("len", 2);
 	}
 
 	public void test_mapping_null_values() {
@@ -2671,9 +3287,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_getFieldType() {
 		doCompile("test_convertlib_getFieldType");
-		check("fieldTypes",Arrays.asList(DataFieldMetadata.STRING_TYPE, DataFieldMetadata.NUMERIC_TYPE, DataFieldMetadata.STRING_TYPE,
-				DataFieldMetadata.DATE_TYPE, DataFieldMetadata.LONG_TYPE, DataFieldMetadata.INTEGER_TYPE, DataFieldMetadata.BOOLEAN_TYPE,
-				DataFieldMetadata.BYTE_TYPE, DataFieldMetadata.DECIMAL_TYPE));
+		check("fieldTypes",Arrays.asList(DataFieldType.STRING.getName(), DataFieldType.NUMBER.getName(), DataFieldType.STRING.getName(),
+				DataFieldType.DATE.getName(), DataFieldType.LONG.getName(), DataFieldType.INTEGER.getName(), DataFieldType.BOOLEAN.getName(),
+				DataFieldType.BYTE.getName(), DataFieldType.DECIMAL.getName()));
 	}
 	
 	public void test_convertlib_hex2byte() {
@@ -2889,6 +3505,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("aNull", null);
 		check("bNull", null);
 		check("yNull", null);
+		
+		check("stringList", Arrays.asList("aa", "bb", null, "cc"));
+		check("dateList", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
+		@SuppressWarnings("unchecked")
+		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
+		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 	}
 
 	public void test_dictionary_write() {
@@ -2904,6 +3526,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(2, y.length);
 		assertEquals(18, y[0]);
 		assertEquals(-94, y[1]);
+		
+		assertEquals(Arrays.asList("xx", null), graph.getDictionary().getValue("stringList"));
+		assertEquals(Arrays.asList(new Date(98000), null, new Date(76000)), graph.getDictionary().getValue("dateList"));
+		@SuppressWarnings("unchecked")
+		List<byte[]> byteList = (List<byte[]>) graph.getDictionary().getValue("byteList"); 
+		assertDeepEquals(byteList, Arrays.asList(null, new byte[] {(byte) 0xAB, (byte) 0xCD}, new byte[] {(byte) 0xEF}));
+
+		check("assignmentReturnValue", "Guil");
 		
 	}
 

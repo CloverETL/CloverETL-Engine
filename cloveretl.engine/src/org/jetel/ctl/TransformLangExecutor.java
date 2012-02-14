@@ -114,7 +114,9 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldCardinalityType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
 
@@ -346,6 +348,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		return this.stack.getGlobalVariables()[vd.getVariableOffset()];
+	}
+	
+	private Object getLocalVariableValue(CLVFIdentifier node) {
+		return stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
 	}
 	
 	public void setParser(TransformLangParser parser) {
@@ -1503,6 +1509,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
+	
+	private DataRecord createNewRecord(TLTypeRecord type) {
+		final DataRecordMetadata metaData = type.getMetadata();
+		final DataRecord record = new DataRecord(metaData);
+		record.init();
+		record.reset();
+		return record;
+	}
 
 	/*
 	 * Variable declarations
@@ -1521,7 +1535,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			}
 			
 			// this will possibly also provide container for lists/maps
-			setVariable(node,value);
+			setVariable(node,getDeepCopy(value));
 			return data;
 		}
 		
@@ -1546,16 +1560,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}  else if (varType.isMap()) {
 			setVariable(node,new HashMap<Object,Object>());
 		}  else if (varType.isRecord()) {
-			final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-			final DataRecord record = new DataRecord(metaData);
-			record.init();
-			record.reset();
-			setVariable(node, record);
+			setVariable(node, createNewRecord((TLTypeRecord) varType));
 		} 
 		
 		return data;
 	}
-
+	
 	@Override
 	public Object visit(CLVFAssignment node, Object data) {
 		
@@ -1564,8 +1574,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		Object value = null;
 		switch (lhs.getId()) {
 		case TransformLangParserTreeConstants.JJTIDENTIFIER:
-			value = evaluateRHS(data, lhs, rhs);
-			setVariable(lhs, value);
+			value = getDeepCopy(evaluateRHS(data, lhs, rhs));
+			setVariable(lhs, value); // make a deep copy
 			break;
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
 			final SimpleNode argNode = (SimpleNode)lhs.jjtGetChild(0);
@@ -1577,14 +1587,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final int index = stack.popInt();
 
-				value = evaluateRHS(data, lhs, rhs);
+				value = getDeepCopy(evaluateRHS(data, lhs, rhs));
 				
 				if (index < list.size()) {
 					list.set(index, value);
 				} else {
 					// this prevents IndexOutOfBoundsException when index > size
 					for (; list.size() <= index; list.add(null));
-					list.set(index,value);
+					list.set(index, value);
 				}
 			} else {
 				// accessing map
@@ -1592,7 +1602,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final Object index = stack.pop();
 				
-				value = evaluateRHS(data, lhs, rhs);
+				value = getDeepCopy(evaluateRHS(data, lhs, rhs));
 				
 				map.put(index,value);
 			}
@@ -1603,24 +1613,29 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			if (accessNode.isWildcard()) {
 				// $record.* allows copying by position for equal metadata
 				rhs.jjtAccept(this, data);
-				value = stack.pop();
-				if (value != null) {
+				Object rhsValue = stack.pop(); 
+				if (rhsValue != null) {
 					// RHS must be a record -> copy fields
 					//this context is prepared only for 'record1.* = record2.*' assignment expression
 					//when the metadata are different - then the records are copied based on field names
 					//integral function copyByName is used for this copying 
 					if (node.getCopyByNameCallContext() == null) {
-						record.copyFieldsByPosition((DataRecord) value);
+						record.copyFieldsByPosition((DataRecord) rhsValue);
 					} else {
-						IntegralLib.copyByName(node.getCopyByNameCallContext(), record, (DataRecord) value);
+						IntegralLib.copyByName(node.getCopyByNameCallContext(), record, (DataRecord) rhsValue);
 					}
 				} else {
 					// value is null -> set all fields to null
 					record.reset();
 				}
+				value = record; // return LHS 
 			} else {
-				value = evaluateRHS(data, lhs, rhs);
-				record.getField(accessNode.getFieldId()).setValue(value);
+				Object rhsValue = evaluateRHS(data, lhs, rhs);
+				// FIXME probably no need to make a deep copy,
+				// as data fields make a copy in setValue()
+				// this should hold even for ListDataField - consists of other data fields
+				record.getField(accessNode.getFieldId()).setValue(rhsValue);
+				value = record.getField(accessNode.getFieldId()).getValue();
 			}
 			break;
 		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
@@ -1634,15 +1649,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					lhs.jjtGetChild(0).jjtAccept(this,data);
 					rhs.jjtAccept(this,data);
 					try {
-						graph.getDictionary().setValue(memberAccNode.getName(), stack.pop() );
+						value = getDeepCopy(stack.pop());
+						graph.getDictionary().setValue(memberAccNode.getName(), value );
 					} catch (ComponentNotReadyException e) {
 						throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
 					}
 					
-					// left hand of assignment is a record	
 				} break;
+			// left hand of assignment is a record	
 			case TransformLangParserTreeConstants.JJTIDENTIFIER:
-				{
+				{ // DataField.setValue() makes a copy
 					lhs.jjtGetChild(0).jjtAccept(this,data);
 					final DataRecord varRecord = stack.popRecord();
 					value = processMemberAccess (varRecord, node, data, lhs, rhs);
@@ -1653,7 +1669,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					arrNode.jjtAccept(this, data);
 					
 					if (arrNode.getType().isList()) {
-						// accessing list
+						// accessing list of records
 						final List<Object> list = (List<Object>)stack.popList();
 						firstChild.jjtGetChild(1).jjtAccept(this, data);
 						final int index = stack.popInt();
@@ -1661,12 +1677,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						final TLType varType = ((TLTypeList)arrNode.getType()).getElementType();
 						
 						while (list.size() <= index) { // if we are trying to write past the of the array
-							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-							final DataRecord blankRecord = new DataRecord(metaData);
-							blankRecord.init();
-							blankRecord.reset();
-
-							list.add(blankRecord);
+							list.add(createNewRecord((TLTypeRecord) varType));
 						}
 						
 						DataRecord varRecord = (DataRecord) list.get(index);
@@ -1674,7 +1685,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						value = processMemberAccess (varRecord, node, data, lhs, rhs);
 						
 					} else {
-						// accessing map
+						// accessing map of records
 						final Map<Object,Object> map = (Map<Object,Object>)stack.popMap();
 						firstChild.jjtGetChild(1).jjtAccept(this, data);
 						final Object index = stack.pop();
@@ -1683,10 +1694,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						final TLType varType = ((TLTypeMap)arrNode.getType()).getValueType();
 
 						if (varRecord == null) {
-							final DataRecordMetadata metaData = ((TLTypeRecord)varType).getMetadata();
-							varRecord = new DataRecord(metaData);
-							varRecord.init();
-							varRecord.reset();
+							varRecord = createNewRecord((TLTypeRecord) varType);
 							map.put(index, varRecord);
 						}
 						
@@ -1718,24 +1726,26 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			// $myVar.* = $other.*   allows copying by position
 			
 			rhs.jjtAccept(this, data);
-			returnValue = stack.pop();
-			if (returnValue != null) {
+			Object rhsValue = stack.pop();
+			if (rhsValue != null) {
 				// RHS must be a record -> copy fields by value
 				//this context is prepared only for 'record1.* = record2.*' assignment expression
 				//when the metadata are different - then the records are copied based on field names
 				//integral function copyByName is used for this copying 
 				if (node.getCopyByNameCallContext() == null) {
-					varRecord.copyFieldsByPosition((DataRecord) returnValue);
+					varRecord.copyFieldsByPosition((DataRecord) rhsValue);
 				} else {
-					IntegralLib.copyByName(node.getCopyByNameCallContext(), varRecord, (DataRecord) returnValue);
+					IntegralLib.copyByName(node.getCopyByNameCallContext(), varRecord, (DataRecord) rhsValue);
 				}
 			} else {
 				// RHS is null -> set all fields to null
 				varRecord.reset();
 			}
+			returnValue = varRecord;
 		} else {
-			returnValue = evaluateRHS(data, lhs, rhs);
-			varRecord.getField(memberAccNode.getFieldId()).setValue(returnValue);
+			Object rhsValue = evaluateRHS(data, lhs, rhs); 
+			varRecord.getField(memberAccNode.getFieldId()).setValue(rhsValue);
+			returnValue = varRecord.getField(memberAccNode.getFieldId()).getValue();
 		}
 		return returnValue;
 	}
@@ -2146,36 +2156,91 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return data;
 	}
 	
+	/**
+	 * This is to make sure that CloverStrings in lists 
+	 * are converted to Strings.
+	 * 
+	 * We cannot simply copy the list, because the list
+	 * should be passed by reference to functions.
+	 *  
+	 * @param value
+	 * @return
+	 */
+	private static <T> Object wrapMultivalueField(Object value, Class<T> c) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof List<?>) {
+			return new ListFieldWrapper<T>(value);
+		} else if (value instanceof Map<?, ?>) {
+			return new MapFieldWrapper<T>(value);
+		}
+		throw new ClassCastException("Expected a list or a map, but got " + value.getClass().getCanonicalName());
+	}
+	
+	public static Class<?> getClass(DataFieldType type) {
+		switch (type) {
+		case STRING:
+			return String.class;
+		case DATE:
+			return Date.class;
+		case NUMBER:
+			return Double.class;
+		case DECIMAL:
+            return BigDecimal.class;
+		case INTEGER:
+			return Integer.class;
+		case BYTE:
+		case CBYTE:
+			return byte[].class;
+		case LONG:
+			return Long.class;
+		case BOOLEAN:
+			return Boolean.class;
+		default:
+			throw new IllegalArgumentException("Not a primitive data type: " + type);
+		}
+	}
+	
 	private Object fieldValue(DataField field) {
 		
 		if (field.isNull()) {
 			return null;
 		}
 		
+		DataFieldMetadata metadata = field.getMetadata();
+		
+		// a list or map cannot be copied, it must be wrapped to enable passing by reference
+		if ((metadata.getCardinalityType() == DataFieldCardinalityType.LIST)
+				|| (metadata.getCardinalityType() == DataFieldCardinalityType.MAP)) {
+			Object fieldValue = field.getValue();
+			return wrapMultivalueField(fieldValue, getClass(metadata.getDataType()));
+		}
+		
 		// we must convert from the field's mutable type to our static types used
-		switch (field.getType()) {
-		case DataFieldMetadata.DECIMAL_FIELD:
+		switch (metadata.getDataType()) {
+		case DECIMAL:
 			// we want the decimal within the field to undergo satisfyPrecision() check 
 			// so that out-of-precision errors are discovered early
 			return ((DecimalDataField)field).getDecimal().getBigDecimalOutput();
-		case DataFieldMetadata.STRING_FIELD:
+		case STRING:
 			// StringBuilder -> String
 			return ((StringDataField)field).getValue().toString();
 
-		case DataFieldMetadata.BOOLEAN_FIELD:
-		case DataFieldMetadata.INTEGER_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.NUMERIC_FIELD:
+		case BOOLEAN:
+		case INTEGER:
+		case LONG:
+		case NUMBER:
 			// relevant numeric object
 			return field.getValue();
 
-		case DataFieldMetadata.DATE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			return field.getValueDuplicate();
+		case DATE:
+		case BYTE:
+		case CBYTE:
+			return field.getValueDuplicate(); // FIXME maybe not necessary
 
 		default:
-			throw new IllegalArgumentException("Unknown field type: '" + field.getType() + "'" );	
+			throw new IllegalArgumentException("Unknown field type: '" + metadata.getDataType() + "'" );	
 		}
 		
 	}
@@ -2221,7 +2286,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			
 			// compute index and push value stored in the list
 			node.jjtGetChild(1).jjtAccept(this, data);
-			stack.push(list.get(stack.popInt()));
+			Integer index = stack.popInt();
+			try {
+				stack.push(list.get(index));
+			} catch (ArrayIndexOutOfBoundsException ex) {
+				String name = null;
+				if (composite.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
+					CLVFIdentifier id = (CLVFIdentifier) composite;
+					name = id.getName();
+				}
+				// TODO extract name from record fields of type list
+				String message = (name != null) 
+								 ? String.format("Attempting to access item %d from list \"%s\" of size %d", index, name, list.size())
+								 : String.format("Attempting to access item %d from list of size %d", index, list.size());
+				throw new ArrayIndexOutOfBoundsException(message);
+			}
 		}
 		
 		return data;
@@ -2239,7 +2318,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFIdentifier node, Object data) {
-		stack.push(stack.getVariable(node.getBlockOffset(), node.getVariableOffset()));
+		stack.push(getLocalVariableValue(node));
 		return data;
 	}
 
@@ -2495,34 +2574,34 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	
-	private void setVariable(SimpleNode node, Object value) {
-		if (node.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
-			final CLVFIdentifier recId = (CLVFIdentifier) node.jjtGetChild(0);
-			final int fieldId = ((CLVFMemberAccessExpression) node).getFieldId();
+	private void setVariable(SimpleNode lhs, Object value) {
+		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
+			final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
+			final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
 
 			DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
 			record.getField(fieldId).setValue(value);
-		} else if(node.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
-			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) node;
+		} else if(lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) lhs;
 			DataRecord record = faNode.isOutput() ? outputRecords[faNode.getRecordId()] : inputRecords[faNode.getRecordId()];
 			record.getField(faNode.getFieldId()).setValue(value);
 		} else {
 			int blockOffset = -1;
 			int varOffset = -1;
 
-			switch (node.getId()) {
+			switch (lhs.getId()) {
 				case TransformLangParserTreeConstants.JJTIDENTIFIER:
-					final CLVFIdentifier id = (CLVFIdentifier) node;
+					final CLVFIdentifier id = (CLVFIdentifier) lhs;
 					blockOffset = id.getBlockOffset(); // jump N blocks back, -1 indicates global scope
 					varOffset = id.getVariableOffset(); // jump to M-th slot within block
 					break;
 				case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
-					final CLVFVariableDeclaration var = (CLVFVariableDeclaration) node;
+					final CLVFVariableDeclaration var = (CLVFVariableDeclaration) lhs;
 					blockOffset = 0; // current block
 					varOffset = var.getVariableOffset(); // jump to M-th slot within block
 					break;
 				default:
-					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + node);
+					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 			}
 
 			stack.setVariable(blockOffset, varOffset, value);
@@ -2659,6 +2738,81 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return true;
 	}
 
+	/**
+	 * A subroutine to make a deep copy of a List.
+	 * 
+	 * @param input a List
+	 * @return deep copy of the input List 
+	 */
+	private static final <T> List<T> copyOf(List<T> input) {
+		List<T> copy = new ArrayList<T>(input.size());
 
+		for (T item: input) {
+			copy.add(getDeepCopy(item));
+		}
+
+		return copy;
+	}
+	
+	/**
+	 * A subroutine to make a deep copy of a Map.
+	 * 
+	 * @param input a Map
+	 * @return deep copy of the input Map
+	 */
+	private static final <K, V> Map<K, V> copyOf(Map<K, V> input) {
+		Map<K, V> copy = new HashMap<K, V>(input.size());
+		
+		for (Map.Entry<K, V> item: input.entrySet()) {
+			K newKey = getDeepCopy(item.getKey()); // maybe not necessary
+			V newValue = getDeepCopy(item.getValue());
+			copy.put(newKey, newValue);
+		}
+
+		return copy;
+	}
+	
+	/**
+	 * Makes a deep copy of all mutable objects passed
+	 * as a parameter.
+	 * 
+	 * Maybe it is not necessary to copy objects of type
+	 * Date and byte[], because there are no CTL2 functions
+	 * that can modify a value of type date, byte or cbyte.
+	 * (ignoring the fact that there was a bug in trunc()).
+	 * 
+	 * Note that the function duplicates records and
+	 * creation of records is costly.
+	 * 
+	 * The function should not be used when copying
+	 * to an output port - copyByName() or copyByPosition()
+	 * for record assignment or setValue() for field assignment
+	 * are used then. The target DataRecord
+	 * is then responsible for making a copy of the data.
+	 * 
+	 * @param value
+	 * @return a deep copy of <code>value</code>
+	 */
+	@java.lang.SuppressWarnings("unchecked")
+	public static final <T> T getDeepCopy(T value) {
+		// it may not be necessary to deeo copy dates and byte arrays
+		// as there are no CTL functions that can modify these values
+		if (value instanceof Date) {// FIXME maybe not necessary
+			return (T) new Date(((Date) value).getTime());
+		} else if (value instanceof List) {
+			return (T) copyOf((List<?>) value); 
+		} else if (value instanceof Map) {
+			return (T) copyOf((Map<?, ?>) value);
+		} else if (value instanceof byte[]) { // FIXME maybe not necessary
+			byte[] array = (byte[]) value;
+			return (T) Arrays.copyOf(array, array.length);
+		} else if (value instanceof DataRecord) {
+			// FIXME performance?
+			return (T) ((DataRecord) value).duplicate();
+		} else {
+			return value; // immutable objects
+		}
+		
+	}
 
 }

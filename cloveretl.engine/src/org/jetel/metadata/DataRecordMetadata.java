@@ -63,11 +63,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
 
 	private static final long serialVersionUID = 7032218607804024730L;
-
-	public static final char DELIMITED_RECORD = 'D';
-	public static final char FIXEDLEN_RECORD = 'F';
-	public static final char MIXED_RECORD = 'M';
-
+	
 	/** The default string value that is considered as null. */
 	public static final String DEFAULT_NULL_VALUE = "";
 	public static final String BYTE_MODE_ATTR = "byteMode";
@@ -81,8 +77,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/** Original name of the data record. */
 	private String label;
 
-	/** The type of the data record. */
-	private char recType;
+	/** The type of the flat file parsing - delimited, fixedlen or mixed */
+	private DataRecordParsingType parsingType;
 
 	private int skipSourceRows = -1;
 	
@@ -125,6 +121,22 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * See Collator.setStregth(String strength).
 	 */
 	private String collatorSensitivity = null;
+	
+	/**
+	 * @deprecated use {@link DataRecordParsingType#DELIMITED} instead
+	 */
+	@Deprecated
+	public static final char DELIMITED_RECORD = 'D';
+	/**
+	 * @deprecated use {@link DataRecordParsingType#FIXEDLEN} instead
+	 */
+	@Deprecated
+	public static final char FIXEDLEN_RECORD = 'F';
+	/**
+	 * @deprecated use {@link DataRecordParsingType#MIXED} instead
+	 */
+	@Deprecated
+	public static final char MIXED_RECORD = 'M';
 
 	/**
 	 * Constructs data record metadata with given name.
@@ -134,7 +146,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @since 2nd May 2002
 	 */
 	public DataRecordMetadata(String name) {
-		setName(name);
+		this(name, null);
 	}
 
 	/**
@@ -144,13 +156,23 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param recType the type of the data record
 	 *
 	 * @since 2nd May 2002
+	 * @deprecated use {@link DataRecordMetadata#DataRecordMetadata(String, DataRecordParsingType)} instead
 	 */
+	@Deprecated
 	public DataRecordMetadata(String name, char recType) {
-		this(name);
-
-		this.recType = recType;
+		this(name, DataRecordParsingType.fromChar(recType));
 	}
 
+	/**
+	 * Constructs data record metadata with given name and type.
+	 * @param name
+	 * @param flatDataType
+	 */
+	public DataRecordMetadata(String name, DataRecordParsingType parsingType) {
+		setName(name);
+		this.parsingType = parsingType;
+	}
+	
 	/**
 	 * Sets the name of the data record.
 	 *
@@ -224,20 +246,39 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param recType the new type of record
 	 *
 	 * @since 3rd May 2002
+	 * @deprecated use {@link #setParsingType(DataRecordParsingType)} instead
 	 */
+	@Deprecated
 	public void setRecType(char recType) {
-		this.recType = recType;
+		setParsingType(DataRecordParsingType.fromChar(recType));
 	}
 
+	/**
+	 * Sets the type of flat parsing (delimited/fixed-length/mixed).
+	 * @param flatDataType
+	 */
+	public void setParsingType(DataRecordParsingType parsingType) {
+		this.parsingType = parsingType;
+	}
+	
 	/**
 	 * @return the type of record (delimited/fixed-length)
 	 *
 	 * @since 3rd May 2002
+	 * @deprecated use {@link #getParsingType()} instead
 	 */
+	@Deprecated
 	public char getRecType() {
-		return recType;
+		return parsingType.getObsoleteIdnetifier();
 	}
 
+	/**
+	 * @return the type of flat parsing (delimited/fixed-length/mixed)
+	 */
+	public DataRecordParsingType getParsingType() {
+		return parsingType;
+	}
+	
 	/**
 	 * Sets the value of the skipSourceRows.
 	 */
@@ -374,7 +415,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the size of the data record
 	 */
 	public int getRecordSize() {
-		if (recType != FIXEDLEN_RECORD) {
+		if (parsingType != DataRecordParsingType.FIXEDLEN) {
 			return -1; // unknown size
 		}
 
@@ -389,7 +430,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the size of the data record with auto-filling stripped off
 	 */
 	public int getRecordSizeStripAutoFilling() {
-		if (recType != FIXEDLEN_RECORD) {
+		if (parsingType != DataRecordParsingType.FIXEDLEN) {
 			return -1; // unknown size
 		}
 
@@ -741,7 +782,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return the offset of the field within the data record or -1 if no such field exists
 	 */
 	public int getFieldOffset(String fieldName) {
-		if (recType != FIXEDLEN_RECORD) {
+		if (parsingType != DataRecordParsingType.FIXEDLEN) {
 			return -1;
 		}
 
@@ -924,12 +965,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @return an exact copy of current data record metadata object
 	 */
 	public DataRecordMetadata duplicate() {
-		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, recType);
+		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, parsingType);
 
 		dataRecordMetadata.setName(name);
 		dataRecordMetadata.setLabel(label);
 		dataRecordMetadata.setDescription(description);
-		dataRecordMetadata.setRecType(recType);
+		dataRecordMetadata.setParsingType(parsingType);
 		dataRecordMetadata.setSkipSourceRows(skipSourceRows);
 		dataRecordMetadata.setRecordDelimiter(recordDelimiter);
 		dataRecordMetadata.setFieldDelimiter(fieldDelimiter);
@@ -961,12 +1002,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 					Severity.ERROR, null, Priority.NORMAL));
 		}
 		
-		// verify recordType
-		if (recType != DELIMITED_RECORD && recType != FIXEDLEN_RECORD && recType != MIXED_RECORD) {
-			status.add(new ConfigurationProblem("Unknown record type '" + recType + "' in the record metadata element '"
-					+ name + "'.", Severity.ERROR, null, Priority.NORMAL));
-		}
-
 		// verify delimiters - field delimiters
 		verifyDelimitersAndSizes(status); // cannot move to field metadata yet because of mixed field metadata
 		
@@ -1005,20 +1040,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param status
 	 */
 	private void verifyDelimitersAndSizes(ConfigurationStatus status) {
-		switch (recType) {
-		case DELIMITED_RECORD:
+		switch (parsingType) {
+		case DELIMITED:
 			for (DataFieldMetadata field: fields) {
 				verifyFieldDelimiter(field, status);
 			}
 			break;
 			
-		case FIXEDLEN_RECORD:
+		case FIXEDLEN:
 			for (DataFieldMetadata field: fields) {
 				verifyFieldSize(field, status);
 			}
 			break;
 
-		case MIXED_RECORD:
+		case MIXED:
 			for (DataFieldMetadata field: fields) {
 				// delimited field
 				if (field.isDelimited()) verifyFieldDelimiter(field, status);
@@ -1286,14 +1321,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		buffer.append(", fieldNamesMap = ").append(getFieldNamesMap());
 		buffer.append(", fieldTypes = ").append(getFieldTypes());
 		buffer.append(", name = ").append(name);
-		buffer.append(", recType = ").append(recType);
+		buffer.append(", recType = ").append(parsingType);
 		buffer.append(", localeStr = ").append(localeStr);
 		buffer.append(", skipSourceRows = ").append(skipSourceRows);
 		buffer.append(", quotedStrings = ").append(quotedStrings);
 		buffer.append(", quoteChar = ").append(quoteChar);
 		buffer.append(", recordProperties = ").append(recordProperties);
-		buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
-		buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
 		buffer.append("]");
 
 		return buffer.toString();
