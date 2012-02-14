@@ -8,7 +8,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((.*)-)?([^-]+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-functional|tests-after-commit|tests-reset)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
