@@ -1018,10 +1018,6 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 			;
 			byteBuffer.position(currentByteMark);
-			
-			endOfInput = false; // reset the flag to allow reading after END_OF_INPUT 
-			decoder.reset(); // reset the decoder
-
 			// discard mark automatically to avoid problems with instance user forgetting to discard it explicitly
 			currentCharMark = currentByteMark = INVALID_MARK;
 		}
