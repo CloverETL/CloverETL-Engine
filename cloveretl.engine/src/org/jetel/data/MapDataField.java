@@ -43,6 +43,11 @@ import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
+ * This data field implementation represents a map of fields, which are uniformly typed by a simple type
+ * (string, integer, decimal, ...). Type of key is {@link String}. Maps of maps (or lists) are not supported. Metadata for this data container
+ * are same as for other data fields, only {@link DataFieldMetadata#getCardinalityType()} method returns
+ * {@link DataFieldCardinalityType#MAP}.
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -55,13 +60,15 @@ public class MapDataField extends DataField {
 	//representation of nested fields
 	private Map<String, DataField> fields;
 	
+	//cache for unused but already allocated data fields
 	private List<DataField> fieldsCache;
 	
-	//this common attribute of all datafield is actually ingored by list data field
+	//this common attribute of all datafield is actually ignored by map data field
 	//and transparently delegated to the nested fields
 	private boolean plain;
 	
-	//this cached list is returned by #getValue() method
+	//this cached map is returned by #getValue() method
+	//it is simple view to underlying data object
 	private MapDataFieldView<?> mapView;
 	
 	// metadata used when creating inner DataFields
@@ -85,12 +92,12 @@ public class MapDataField extends DataField {
 		mapView = new MapDataFieldView<Object>();
 		
 		//just for sure - this is not common to reset the field in other types of fields
-		//but for the list field it seems to be better to reset it already here explicitly
+		//but for the map field it seems to be better to reset it already here explicitly
 		reset();
 	}
 	
 	/**
-	 * @return number of nested fields, 0 for null list
+	 * @return number of map entries, 0 for null map or empty map
 	 */
 	public int getSize() {
 		return fields.size();
@@ -110,12 +117,15 @@ public class MapDataField extends DataField {
 		setNull(metadata.isNullable());
 	}
 	
+	/**
+	 * Checks if the map has a data field associated with the given key.
+	 */
 	public boolean containsField(String fieldKey) {
 		return fields.containsKey(fieldKey);
 	}
 	
 	/**
-	 * @return add a reseted/empty field to the end of the list
+	 * @return add a reseted/empty field to the map associated with the given field
 	 */
 	public DataField putField(String fieldKey) {
 		if (isNull) {
@@ -136,12 +146,11 @@ public class MapDataField extends DataField {
 	}
 	
 	/**
-	 * Remove a field on the given index.
-	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
-	 * operation, so the return value is still under control of this list.
-	 * @param index index of a field, which is requested to be removed 
+	 * Remove a data field associated with the given key.
+	 * Removed field is stored in a cache and can be used later by this {@link MapDataField} for {@link #putField(String)}
+	 * operation, so the return value is still under control of this map.
+	 * @param fieldKey key of removed data field 
 	 * @return removed field
-	 * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
 	 */
 	public DataField removeField(String fieldKey) {
 		DataField removedField = fields.remove(fieldKey);
@@ -158,16 +167,15 @@ public class MapDataField extends DataField {
 	}
 	
 	/**
-	 * @param index index of requested field
-	 * @return the requested field with the given index
-	 * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
+	 * @param fieldKey key of requested data field
+	 * @return the requested field associated with the given key or null if not data field found
 	 */
 	public DataField getField(String fieldKey) {
 		return fields.get(fieldKey);
 	}
 	
 	/**
-	 * Truncate the list to zero size.
+	 * Truncate the map to zero size.
 	 */
 	public void clear() {
 		fieldsCache.addAll(fields.values());
@@ -197,7 +205,7 @@ public class MapDataField extends DataField {
 	}
 
 	/**
-	 * Sets the give values to the list. All current values are removed.
+	 * Sets the give values to this map. All current values are removed.
 	 * @param values list of values
 	 */
 	public void setValue(Map<String, ?> values) {
@@ -242,14 +250,12 @@ public class MapDataField extends DataField {
 	}
 
 	/**
-	 * This method returns list of values represented by the list of fields.
-	 * The resulted list is a thin view to the real underlying values.
-	 * All operations above the returned list are transparently applied 
-	 * to this ListDataField.
-	 * For example if a {@link List#add(Object)} is invoked, new data field
+	 * This method returns map of values represented by the map of fields.
+	 * The resulted map is a thin view to the real underlying values.
+	 * All operations above the returned map are transparently applied 
+	 * to this MapDataField.
+	 * For example if a {@link Map#put(Object)} is invoked, new data field
 	 * is created and the given value is passed to the new data field.
-	 * Be careful, actually shallow copy of data is returned and all changes
-	 * on the returned list are applied to this {@link ListDataField}.
 	 * @see #getValueDuplicate()
 	 */
 	@Override
@@ -338,27 +344,27 @@ public class MapDataField extends DataField {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from string.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from string.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from byte buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from byte buffer.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from clover buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from clover buffer.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to byte buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be serialized to byte buffer.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to clover buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be serialized to clover buffer.");
 	}
 	
 	@Override
@@ -423,7 +429,7 @@ public class MapDataField extends DataField {
                 return false;
             }
             int size = fields.size();
-            //size of both lists has to be same
+            //size of both maps has to be same
             if (size != otherMapDataField.getSize()) {
             	return false;
             }
@@ -432,9 +438,11 @@ public class MapDataField extends DataField {
             	final String subfieldKey = fieldEntry.getKey();
             	final DataField subfield = fieldEntry.getValue();
             	final DataField otherSubfield = otherMapDataField.getField(subfieldKey);
-                if (!subfield.equals(otherSubfield)) {
-                    return false;
-                }
+            	if (!(subfield.isNull() && otherSubfield.isNull())) {
+                    if (!subfield.equals(otherSubfield)) {
+                        return false;
+                    }
+            	}
             }
             return true;
         } else {
@@ -449,7 +457,6 @@ public class MapDataField extends DataField {
 
 	/**
 	 * 
-	 * NOTE: does not count with backedListDataField.isNull == true, in that case empty list is considered
 	 * @author Kokon (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *

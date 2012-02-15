@@ -1147,7 +1147,7 @@ public class ListDataFieldTest extends CloverTestCase {
 		otherListDataField.clear();
 		listDataField.addField();
 		otherListDataField.addField();
-		assertFalse(listDataField.equals(otherListDataField));
+		assertTrue(listDataField.equals(otherListDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1171,7 +1171,7 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField.addField();
 		otherListDataField.addField().setValue("neco");
 		otherListDataField.addField();
-		assertFalse(listDataField.equals(otherListDataField));
+		assertTrue(listDataField.equals(otherListDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1226,8 +1226,8 @@ public class ListDataFieldTest extends CloverTestCase {
 		otherListDataField.clear();
 		listDataField.addField();
 		otherListDataField.addField();
-		assertEquals(-1, listDataField.compareTo(otherListDataField));
-		assertEquals(-1, otherListDataField.compareTo(listDataField));
+		assertEquals(0, listDataField.compareTo(otherListDataField));
+		assertEquals(0, otherListDataField.compareTo(listDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1254,8 +1254,8 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField.addField();
 		otherListDataField.addField().setValue("neco");
 		otherListDataField.addField();
-		assertEquals(-1, listDataField.compareTo(otherListDataField));
-		assertEquals(-1, otherListDataField.compareTo(listDataField));
+		assertEquals(0, listDataField.compareTo(otherListDataField));
+		assertEquals(0, otherListDataField.compareTo(listDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
