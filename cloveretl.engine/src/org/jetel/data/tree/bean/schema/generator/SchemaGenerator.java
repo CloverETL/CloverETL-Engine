@@ -70,13 +70,19 @@ public class SchemaGenerator  {
 	private XmlSchema xmlSchema;
 	private Map<String, XmlSchemaType> schemaTypes = new HashMap<String, XmlSchemaType>();
 	private Stack<XmlSchemaElement> elementStack = new Stack<XmlSchemaElement>();
+	private ClassLoader classLoader;
 	
-	public static XmlSchema generateSchema(SchemaObject schemaObject) {
-		return new SchemaGenerator().generateObjectSchema(schemaObject);
+	public static XmlSchema generateSchema(SchemaObject schemaObject, ClassLoader classLoader) {
+		return new SchemaGenerator().generateObjectSchema(schemaObject, classLoader);
 	}
 	
-	protected XmlSchema generateObjectSchema(SchemaObject object) {
+	public static XmlSchema generateSchema(SchemaObject schemaObject) {
+		return new SchemaGenerator().generateObjectSchema(schemaObject, null);
+	}
+	
+	protected XmlSchema generateObjectSchema(SchemaObject object, ClassLoader classLoader) {
 		
+		this.classLoader = classLoader;
 		xmlSchema = new XmlSchema(NS_URI, new XmlSchemaCollection());
 		xmlSchema.setAttributeFormDefault(new XmlSchemaForm(XmlSchemaForm.QUALIFIED));
 		xmlSchema.setElementFormDefault(new XmlSchemaForm(XmlSchemaForm.QUALIFIED));
@@ -330,7 +336,11 @@ public class SchemaGenerator  {
 	}
 	
 	private boolean isSimpleType(String typeName) {
-		return SimpleTypes.isSimpleType(typeName);
+		try {
+			return SimpleTypes.isSimpleType(getClass(typeName));
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public static SchemaObject findSchemaObject(String path, SchemaObject context) {
@@ -454,5 +464,16 @@ public class SchemaGenerator  {
 		}
 		
 		return toReturn;
+	}
+	
+	private Class<?> getClass(String className) throws ClassNotFoundException {
+		if (classLoader != null) {
+			try {
+				return Class.forName(className, true, classLoader);
+			} catch (ClassNotFoundException e) {
+				// ignore;
+			}
+		}
+		return Class.forName(className);
 	}
 }
