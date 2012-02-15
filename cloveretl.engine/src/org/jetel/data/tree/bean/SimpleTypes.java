@@ -97,11 +97,19 @@ public class SimpleTypes {
 	}
 	
 	public static boolean isSimpleType(Class<?> type) {
-		return SIMPLE_TYPES.contains(type);
+		return type.isEnum() || SIMPLE_TYPES.contains(type);
 	}
 	
 	public static boolean isSimpleType(String typeName) {
-		return SIMPLE_TYPES_NAMES.contains(typeName);
+		if (SIMPLE_TYPES_NAMES.contains(typeName)) {
+			return true;
+		}
+		try {
+			return Class.forName(typeName).isEnum();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	public static Class<?> getPrimitiveClass(String typeName) {

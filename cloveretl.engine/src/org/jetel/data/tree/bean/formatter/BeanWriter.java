@@ -296,6 +296,7 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 		}
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void writeLeaf(Object content) throws JetelException {
 		try {
@@ -307,8 +308,17 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 			} else {
 				throw new IllegalArgumentException("Unknown type of property content");
 			}
-
-			actualContent = ConvertUtils.convert(actualContent, propertyClass);
+			if (propertyClass.isEnum() && actualContent instanceof CharSequence) {
+				Class<Enum> enumType = (Class<Enum>)propertyClass;
+				String enumString = ((CharSequence)actualContent).toString();
+				try {
+					actualContent = Enum.valueOf(enumType, enumString);
+				} catch (Exception e) {
+					throw new JetelException("Unable to fill property " + propertyToFill, e);
+				}
+			} else {
+				actualContent = ConvertUtils.convert(actualContent, propertyClass);
+			}
 			PropertyUtils.setProperty(beanStack.peek(), propertyToFill, actualContent);
 
 		} catch (IllegalAccessException e) {
