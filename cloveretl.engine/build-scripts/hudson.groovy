@@ -4,6 +4,8 @@ def env = System.getenv()
 def ant = new AntBuilder()
 init()
 
+System.getRuntime().exec("export LC_CTYPE=cs_CZ.UTF-8")
+
 def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
