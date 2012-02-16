@@ -5,6 +5,8 @@ def ant = new AntBuilder()
 init()
 
 //System.getRuntime().exec("export LC_CTYPE=cs_CZ.UTF-8")
+ctype = env['LC_CTYPE']
+println "LC_CTYPE ${ctype}"
 
 def jobName = env['JOB_NAME']
 assert jobName
