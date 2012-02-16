@@ -1,12 +1,21 @@
 /*
- * Copyright 2006-2009 Opensys TM by Javlin, a.s. All rights reserved.
- * Opensys TM by Javlin PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * jETeL/CloverETL - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ *  
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * Opensys TM by Javlin a.s.; Kremencova 18; Prague; Czech Republic
- * www.cloveretl.com; info@cloveretl.com
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package org.jetel.data.tree.bean.schema.generator;
 
 import java.math.BigDecimal;
@@ -61,13 +70,19 @@ public class SchemaGenerator  {
 	private XmlSchema xmlSchema;
 	private Map<String, XmlSchemaType> schemaTypes = new HashMap<String, XmlSchemaType>();
 	private Stack<XmlSchemaElement> elementStack = new Stack<XmlSchemaElement>();
+	private ClassLoader classLoader;
 	
-	public static XmlSchema generateSchema(SchemaObject schemaObject) {
-		return new SchemaGenerator().generateObjectSchema(schemaObject);
+	public static XmlSchema generateSchema(SchemaObject schemaObject, ClassLoader classLoader) {
+		return new SchemaGenerator().generateObjectSchema(schemaObject, classLoader);
 	}
 	
-	protected XmlSchema generateObjectSchema(SchemaObject object) {
+	public static XmlSchema generateSchema(SchemaObject schemaObject) {
+		return new SchemaGenerator().generateObjectSchema(schemaObject, null);
+	}
+	
+	protected XmlSchema generateObjectSchema(SchemaObject object, ClassLoader classLoader) {
 		
+		this.classLoader = classLoader;
 		xmlSchema = new XmlSchema(NS_URI, new XmlSchemaCollection());
 		xmlSchema.setAttributeFormDefault(new XmlSchemaForm(XmlSchemaForm.QUALIFIED));
 		xmlSchema.setElementFormDefault(new XmlSchemaForm(XmlSchemaForm.QUALIFIED));
@@ -321,7 +336,11 @@ public class SchemaGenerator  {
 	}
 	
 	private boolean isSimpleType(String typeName) {
-		return SimpleTypes.isSimpleType(typeName);
+		try {
+			return SimpleTypes.isSimpleType(getClass(typeName));
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public static SchemaObject findSchemaObject(String path, SchemaObject context) {
@@ -445,5 +464,16 @@ public class SchemaGenerator  {
 		}
 		
 		return toReturn;
+	}
+	
+	private Class<?> getClass(String className) throws ClassNotFoundException {
+		if (classLoader != null) {
+			try {
+				return Class.forName(className, true, classLoader);
+			} catch (ClassNotFoundException e) {
+				// ignore;
+			}
+		}
+		return Class.forName(className);
 	}
 }
