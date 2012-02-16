@@ -151,6 +151,8 @@ public class XmlSaxParser {
   
 	protected SAXParser parser;
 	protected SAXHandler saxHandler;
+	
+	private NodeList mappingNodes;
 
 	public XmlSaxParser(TransformationGraph graph, Node parentComponent) {
 		this(graph, parentComponent, null);
@@ -168,7 +170,6 @@ public class XmlSaxParser {
 		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 
 		// prepare mapping
-		NodeList mappingNodes = null;
 		if (mappingURL != null) {
 			try {
 				ReadableByteChannel ch = FileUtils.getReadableChannel(projectURL, mappingURL);
@@ -1536,4 +1537,7 @@ public class XmlSaxParser {
 		this.xmlFeatures = xmlFeatures;
 	}
 	
+	public void setMappingNodes(NodeList mappingNodes) {
+		this.mappingNodes = mappingNodes;
+	}
 }
