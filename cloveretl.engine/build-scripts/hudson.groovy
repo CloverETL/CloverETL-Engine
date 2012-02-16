@@ -4,7 +4,6 @@ def env = System.getenv()
 def ant = new AntBuilder()
 init()
 
-"export LC_CTYPE=cs_CZ.UTF-8".execute()
 ctype = env['LC_CTYPE']
 println "LC_CTYPE ${ctype}"
 
