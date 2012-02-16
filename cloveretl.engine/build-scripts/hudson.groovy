@@ -55,7 +55,8 @@ baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
 
-antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
+antCustomEnv = ["LC_CTYPE": "cs_CZ.UTF-8", 
+                "ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
