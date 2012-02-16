@@ -4,8 +4,6 @@ def env = System.getenv()
 def ant = new AntBuilder()
 init()
 
-ctype = env['LC_CTYPE']
-println "LC_CTYPE ${ctype}"
 
 def jobName = env['JOB_NAME']
 assert jobName
