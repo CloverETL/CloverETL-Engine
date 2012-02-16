@@ -18,12 +18,14 @@
  */
 package org.jetel.data.parser;
 
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.nio.channels.Channels;
+import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,11 +33,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,16 +48,19 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.sequence.Sequence;
+import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.XmlUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -72,97 +78,161 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @created Jan 9, 2012
  */
-public abstract class AbstractXmlSaxParser {
+/*
+ * Invariant:
+ *  Mappings are preprocessed so that all element and attribute references stored in internal structures
+ *  use universal names :
+ *  	element="mov:movies" -> element="{http://www.javlin.eu}movies"
+ *  	xmlFields="mov:att1" -> xmlFields="{http://www.javlin.eu}att1"
+ *  
+ *  Default namespace in mapping -> NOT POSSIBLE
+ *  We are not able to implement default namespace functionality.
+ *  Default namespace (declared without prefix e.g. xmlns="http://www.javlin.eu/default-ns") does
+ *  NOT apply to attributes!!! (see www.w3.org/TR/REC-xml-names/#defaulting)
+ *  Since we currently do not know which xmlFields 
+ *  are attributes and which are elements -> so we do not know which should be expanded by default namespace.
+ *  User therefore has to declare explicit namespace prefix in the Mapping, even for
+ *  attributes and elements falling into the default namespace in the processed XML document.
+ *  
+ */
+public class XmlSaxParser {
+	
+	private static final String FEATURES_DELIMETER = ";";
+	private static final String FEATURES_ASSIGN = ":=";
 	
 	private static final String XML_MAPPING = "Mapping";
-    private static final String XML_ELEMENT = "element";
-    private static final String XML_OUTPORT = "outPort";
-    private static final String XML_PARENTKEY = "parentKey";
-    private static final String XML_GENERATEDKEY = "generatedKey";
-    private static final String XML_XMLFIELDS = "xmlFields";
-    private static final String XML_CLOVERFIELDS = "cloverFields";
-    private static final String XML_SEQUENCEFIELD = "sequenceField";
-    private static final String XML_SEQUENCEID = "sequenceId";
+    public static final String XML_ELEMENT = "element";
+    public static final String XML_OUTPORT = "outPort";
+    public static final String XML_PARENTKEY = "parentKey";
+    public static final String XML_GENERATEDKEY = "generatedKey";
+    public static final String XML_XMLFIELDS = "xmlFields";
+    public static final String XML_CLOVERFIELDS = "cloverFields";
+    public static final String XML_SEQUENCEFIELD = "sequenceField";
+    public static final String XML_SEQUENCEID = "sequenceId";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
-    private static final String XML_TEMPLATE_ID = "templateId";
-    private static final String XML_TEMPLATE_REF = "templateRef";
-    private static final String XML_TEMPLATE_DEPTH = "nestedDepth";
+    public static final String XML_TEMPLATE_ID = "templateId";
+    public static final String XML_TEMPLATE_REF = "templateRef";
+    public static final String XML_TEMPLATE_DEPTH = "nestedDepth";
 
 	private static final String PARENT_MAPPING_REFERENCE_PREFIX = "..";
 	private static final String PARENT_MAPPING_REFERENCE_SEPARATOR = "/";
 	private static final String PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR = PARENT_MAPPING_REFERENCE_PREFIX + PARENT_MAPPING_REFERENCE_SEPARATOR;
 	private static final String ELEMENT_VALUE_REFERENCE = "{}.";
 
-	private static final Log logger = LogFactory.getLog(AbstractXmlSaxParser.class);
+	private static final Log logger = LogFactory.getLog(XmlSaxParser.class);
 
     protected TransformationGraph graph;
     protected Node parentComponent;
-	protected String mapping;
+	
+    protected String mapping;
 	protected String mappingURL = null;
     
-	protected OutputPort[] outputPorts;
-	
-    // Map of elementName => output port
-    protected Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
-
-	// can I use nested nodes for mapping processing?
-    private boolean useNestedNodes = true;
-
+	private boolean useNestedNodes = true;
 	private boolean trim = true;
+	private boolean validate;
+	private String xmlFeatures;
+
+	// Map of elementName => output port
+    protected Map<String, Mapping> m_elementPortMap = new HashMap<String, Mapping>();
+    protected TreeMap<String, Mapping> declaredTemplates = new TreeMap<String, Mapping>();
+    /**
+     * Namespace bindings relate namespace prefix used in Mapping specification
+     * and the namespace URI used by the namespace declaration in processed XML document
+     */
+    private HashMap<String,String> namespaceBindings = new HashMap<String,String>();
 
     // global skip and numRecords
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
 
-	protected TreeMap<String, Mapping> declaredTemplates = new TreeMap<String, Mapping>();
-
-	// autofilling support
     private AutoFilling autoFilling = new AutoFilling();
   
-	/**
-	 * Namespace bindings relate namespace prefix used in Mapping specification
-	 * and the namespace URI used by the namespace declaration in processed XML document
-	 */
-	private HashMap<String,String> namespaceBindings = new HashMap<String,String>();
+	protected SAXParser parser;
+	protected SAXHandler saxHandler;
 
-	/**
-	 * @param graph
-	 * @param parentComponent
-	 * @param mapping
-	 */
-	protected AbstractXmlSaxParser(TransformationGraph graph, Node parentComponent, String mapping) {
+	public XmlSaxParser(TransformationGraph graph, Node parentComponent) {
+		this(graph, parentComponent, null);
+	}
+	
+	public XmlSaxParser(TransformationGraph graph, Node parentComponent, String mapping) {
 		this.graph = graph;
 		this.parentComponent = parentComponent;
 		this.mapping = mapping;
 	}
 	
-	public abstract void init() throws ComponentNotReadyException;
-	
-	protected abstract OutputPort getOutputPort(int outPortIndex);
-	
-	protected abstract Sequence createPrimitiveSequence(String id, TransformationGraph graph, String name);
+	public void init() throws ComponentNotReadyException {
+		augmentNamespaceURIs();
 
-	/**
-     * Creates org.w3c.dom.Document object from the given String.
-     * 
-     * @param inString
-     * @return
-     * @throws XMLConfigurationException
-     */
-    public static Document createDocumentFromString(String inString) throws XMLConfigurationException {
-        InputSource is = new InputSource(new StringReader(inString));
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setCoalescing(true);
-        Document doc;
-        try {
-            doc = dbf.newDocumentBuilder().parse(is);
-        } catch (Exception e) {
-            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
-        }
-        return doc;
-    }
+		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+
+		// prepare mapping
+		NodeList mappingNodes = null;
+		if (mappingURL != null) {
+			try {
+				ReadableByteChannel ch = FileUtils.getReadableChannel(projectURL, mappingURL);
+				Document doc = XmlUtils.createDocumentFromChannel(ch);
+				Element rootElement = doc.getDocumentElement();
+				mappingNodes = rootElement.getChildNodes();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e);
+			}
+		} else if (mapping != null) {
+			Document doc;
+			try {
+				doc = XmlUtils.createDocumentFromString(mapping);
+			} catch (JetelException e) {
+				throw new ComponentNotReadyException(e);
+			}
+			Element rootElement = doc.getDocumentElement();
+			mappingNodes = rootElement.getChildNodes();
+		}
+		// iterate over 'Mapping' elements
+		declaredTemplates.clear();
+		String errorPrefix = parentComponent.getId() + ": Mapping error - ";
+		for (int i = 0; i < mappingNodes.getLength(); i++) {
+			org.w3c.dom.Node node = mappingNodes.item(i);
+			List<String> errors = processMappings(graph, null, node);
+			for (String error : errors) {
+				logger.warn(errorPrefix + error);
+			}
+		}
+		
+		if (m_elementPortMap.size() < 1) {
+			throw new ComponentNotReadyException(parentComponent.getId() + ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
+		}
+		
+		
+		// create new sax factory
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);
+		factory.setValidating(validate);
+		initXmlFeatures(factory, xmlFeatures); // TODO:
+		try {
+			parser = factory.newSAXParser();
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(ex);
+		}
+		saxHandler = new SAXHandler(getXMLMappingValues());
+	}
+	
+	public void parse(InputSource inputSource) throws JetelException, SAXException {
+		try {
+			parser.parse(inputSource, saxHandler);
+		} catch (IOException e) {
+			throw new JetelException("Unexpected exception", e);
+		}
+	}
+	
+	protected OutputPort getOutputPort(int outPortIndex) {
+		return parentComponent.getOutputPort(outPortIndex);
+	}
+
+	protected Sequence createPrimitiveSequence(String id, TransformationGraph graph, String name) {
+		// FIXME: PrimitiveSequence is not accessible from engine (PrimitiveSequence.SEQUENCE_TYPE)
+		return SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", new Object[] { id, graph, name}, new Class[] { String.class, TransformationGraph.class, String.class });
+	}
 
     public List<String> processMappings(TransformationGraph graph, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
 		List<String> errors = new LinkedList<String>();
@@ -327,14 +397,6 @@ public abstract class AbstractXmlSaxParser {
         } // Ignore every other xml element (text values, comments...)
 		return errors;
     }
-
-	public OutputPort[] getOutputPorts() {
-		return outputPorts;
-	}
-
-	public void setOutputPorts(OutputPort[] outputPorts) {
-		this.outputPorts = outputPorts;
-	}
 	
 	public void setMapping(String mapping) {
 		this.mapping = mapping;
@@ -1149,7 +1211,8 @@ public abstract class AbstractXmlSaxParser {
         /**
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
          */
-        public void characters(char[] data, int offset, int length) throws SAXException {
+        @Override
+		public void characters(char[] data, int offset, int length) throws SAXException {
             // Save the characters into the buffer, endElement will store it into the field
             if (m_activeMapping != null && m_grabCharacters) {
                 m_characters.append(data, offset, length);
@@ -1375,6 +1438,7 @@ public abstract class AbstractXmlSaxParser {
 		private Set<String> attributeNames = new HashSet<String>();
 		private Set<String> cloverAttributes = new HashSet<String>();
 		
+		@Override
 		public void startElement(String namespaceURI, String localName, String qName, Attributes atts) { 
 			int length = atts.getLength(); 
 			for (int i=0; i<length; i++) {
@@ -1395,25 +1459,6 @@ public abstract class AbstractXmlSaxParser {
 		}
 	}
     
-    /**
-     * Creates org.w3c.dom.Document object from the given ReadableByteChannel.
-     * 
-     * @param readableByteChannel
-     * @return
-     * @throws XMLConfigurationException
-     */
-    public static Document createDocumentFromChannel(ReadableByteChannel readableByteChannel) throws XMLConfigurationException {
-    	DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    	dbf.setCoalescing(true);
-        Document doc;
-        try {
-            doc = dbf.newDocumentBuilder().parse(Channels.newInputStream(readableByteChannel));
-        } catch (Exception e) {
-            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
-        }
-        return doc;
-    }
-
 	/**
 	 * @return the declaredTemplates
 	 */
@@ -1421,8 +1466,49 @@ public abstract class AbstractXmlSaxParser {
 		return declaredTemplates;
 	}
 	
-	public SAXHandler createNewSAXHandler(Set<String> cloverAttributes) {
-		return new SAXHandler(cloverAttributes);
+	/**
+	 * Xml features initialization.
+	 * 
+	 * @throws JetelException
+	 */
+	private void initXmlFeatures(SAXParserFactory factory, String xmlFeatures) throws ComponentNotReadyException {
+		if (xmlFeatures == null) {
+			return;
+		}
+		
+		String[] aXmlFeatures = xmlFeatures.split(FEATURES_DELIMETER);
+		String[] aOneFeature;
+		try {
+			for (String oneFeature : aXmlFeatures) {
+				aOneFeature = oneFeature.split(FEATURES_ASSIGN);
+				if (aOneFeature.length != 2)
+					throw new JetelException("The xml feature '" + oneFeature + "' has wrong format");
+				factory.setFeature(aOneFeature[0], Boolean.parseBoolean(aOneFeature[1]));
+			}
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(e);
+		}
+	}
+	
+	private Set<String> getXMLMappingValues() {
+		try {
+			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			DefaultHandler handler = new MyHandler();
+			InputStream is = null;
+			if (this.mappingURL != null) {
+				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
+				is = new FileInputStream(new File(filePath));
+			} else if (this.mapping != null) {
+				is = new ByteArrayInputStream(mapping.getBytes("UTF-8"));
+			}
+			if (is != null) {
+				saxParser.parse(is, handler);
+				return ((MyHandler) handler).getCloverAttributes();
+			}
+		} catch (Exception e) {
+			return new HashSet<String>();
+		}
+		return new HashSet<String>();
 	}
 	
 	/**
@@ -1433,4 +1519,21 @@ public abstract class AbstractXmlSaxParser {
 	public void setNamespaceBindings(HashMap<String, String> namespaceBindings) {
 		this.namespaceBindings = namespaceBindings;
 	}
+
+	public boolean isValidate() {
+		return validate;
+	}
+
+	public void setValidate(boolean validate) {
+		this.validate = validate;
+	}
+
+	public String getXmlFeatures() {
+		return xmlFeatures;
+	}
+
+	public void setXmlFeatures(String xmlFeatures) {
+		this.xmlFeatures = xmlFeatures;
+	}
+	
 }
