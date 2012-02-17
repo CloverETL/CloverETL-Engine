@@ -476,7 +476,7 @@ public class MapDataField extends DataField {
 		@Override
 		public T get(Object key) {
 	    	DataField field = MapDataField.this.getField((String) key);
-	    	return field != null ? (T) field.getValue() : null;
+	    	return field != null ? (T) field.getValueDuplicate() : null;
 	    }
 
 		@Override
@@ -620,12 +620,12 @@ public class MapDataField extends DataField {
 							@SuppressWarnings("unchecked")
 							@Override
 							public final T getValue() {
-								return (T) next.getValue().getValue();
+								return (T) next.getValue().getValueDuplicate();
 							}
 							@SuppressWarnings("unchecked")
 							@Override
 							public final T setValue(T value) {
-								Object oldValue = next.getValue().getValue();
+								Object oldValue = next.getValue().getValueDuplicate();
 								next.getValue().setValue(value);
 								return (T) oldValue;
 							}
