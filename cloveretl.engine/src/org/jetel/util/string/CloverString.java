@@ -19,6 +19,9 @@
 package org.jetel.util.string;
 
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.nio.BufferOverflowException;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -39,6 +42,11 @@ public class CloverString implements Appendable, CharSequence, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 4793544495376003961L;
+
+	/**
+	 * Used for memory diagnostics when the OutOfMemory is thrown.
+	 */
+	private static MemoryMXBean memMXB = ManagementFactory.getMemoryMXBean();
 
 	/**
 	 * The value is used for character storage.
@@ -147,7 +155,28 @@ public class CloverString implements Appendable, CharSequence, Serializable {
 		} else if (minimumCapacity > newCapacity) {
 			newCapacity = minimumCapacity;
 		}
-		value = Arrays.copyOf(value, newCapacity);
+		try {
+			value = Arrays.copyOf(value, newCapacity);
+		} catch (OutOfMemoryError err) {
+			MemoryUsage mu = memMXB.getHeapMemoryUsage();
+			StringBuilder sb = new StringBuilder(160);
+			sb.append(err.getMessage());
+			sb.append(" Heap: [commited=");
+			sb.append(mu.getCommitted()/1024);
+			sb.append("kB max=");
+			sb.append(mu.getMax()/1024);
+			sb.append("kB used=");
+			sb.append(mu.getUsed()/1024);
+			sb.append("kB ] Non-heap: [commited=");
+			mu = memMXB.getNonHeapMemoryUsage();
+			sb.append(mu.getCommitted()/1024);
+			sb.append("kB max=");
+			sb.append(mu.getMax()/1024);
+			sb.append("kB used=");
+			sb.append(mu.getUsed()/1024);
+			sb.append("kB ]");
+			throw new OutOfMemoryError(sb.toString());
+		}
 	}
 
 	/**
