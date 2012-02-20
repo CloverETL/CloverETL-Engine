@@ -103,7 +103,9 @@ public class EdgeDebuger {
         dataTape.addDataChunk();
 
         if (readMode) {
-        	dataTape.rewind();
+			// rewinding without flush (not needed as in read mode) - flush caused concurrency problems, reading was
+			// possible only after writing end
+			dataTape.rewind(false);
         }
 
         if (debugMaxRecords > 0 && debugLastRecords) {
