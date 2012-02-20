@@ -263,8 +263,8 @@ public class AggregateMappingParser {
 					throw new AggregationException("Invalid mapping format");
 				}
 			} catch (NotAKeyFieldException e) {
-				String messagePart1 = "Filed \"" + e.getInputField() + "\" is not a key field. Aggregation function " + "must be used ";
-				String messagePart2 = "with the key field or the field needs to be added to Aggregation key.";
+				String messagePart1 = "Field \"" + e.getInputField() + "\" is not a key field. Aggregation function " + "must be used ";
+				String messagePart2 = "with the key field or the field needs to be added to Aggregate key.";
 				if (lenient) {
 					errors.add(messagePart1 + "\n" + messagePart2);
 				} else {
