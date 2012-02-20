@@ -492,8 +492,12 @@ public class XPathParser extends AbstractParser {
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	/**
+	 * Sets input data source.
+	 * 
+	 * Processing is done when getNext is called.
+	 * 
+	 * @param inputDataSource accepts java.io.InputStream or java.nio.channels.ReadableByteChannel
 	 */
 	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
@@ -576,6 +580,11 @@ public class XPathParser extends AbstractParser {
 		return ports;
 	}
 	
+	/***
+	 * Returns port id where should be record obtained by getNext() send.
+	 * 
+	 * @return port id
+	 */
 	public int getActualPort() {
 		return xpathContext.getActualPort();
 	}
