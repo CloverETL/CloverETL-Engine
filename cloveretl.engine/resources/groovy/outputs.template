@@ -1,0 +1,14 @@
+//---------------------------------------------------------------------------------------------------------------------
+@Typed
+class OutputPorts {
+	<% metadata.eachWithIndex {md, index -> %>
+	OutputPort${index} port${index} = new OutputPort${index}()
+	<% } %>
+	
+	void setData(DataRecord[] data) {
+	<% metadata.eachWithIndex {md, index -> %>
+		port${index}.data = data[${index}]
+	<% } %>	
+	}
+}
+

@@ -24,6 +24,11 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARAT
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+import java.io.File;
+import java.io.FileReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -67,6 +72,7 @@ public class RecordTransformFactory {
     public static final int TRANSFORM_JAVA_PREPROCESS=3;
     public static final int TRANSFORM_CTL = 4;
     public static final int TRANSFORM_SCALA_SOURCE = 5;
+    public static final int TRANSFORM_GROOVY = 6;
     
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
     public static final Pattern PATTERN_SCALA = Pattern.compile("override\\s+def"); 
@@ -220,6 +226,28 @@ public class RecordTransformFactory {
                 break;
             case TRANSFORM_SCALA_SOURCE:
                 transformation = RecordTransformFactory.loadScalaClassDynamic(transform, classLoader, classPath);
+            	break;
+            case TRANSFORM_GROOVY:
+            	try {
+            		final String generatorFile = RecordTransform.class.getClassLoader().getResource("groovy/generator.groovy").getFile();
+
+            		FileReader reader = new FileReader(generatorFile);
+            		
+            		Binding binding = new Binding();
+                	GroovyShell shell = new GroovyShell(binding);
+                	
+                	shell.setVariable("$inputMetadata", inMetadata);
+                	shell.setVariable("$outputMetadata", outMetadata);
+                	shell.setVariable("$code", transform);
+                	shell.setVariable("$rootPath", new File(generatorFile).getParent());
+                	String generatedCode = (String)shell.evaluate(reader, generatorFile);
+                	
+                	System.out.println(generatedCode);
+       
+                	transformation = (RecordTransform)shell.evaluate(generatedCode);
+            	} catch (Exception e) {
+            		throw new RuntimeException(e);
+            	} 
             	break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
@@ -375,6 +403,11 @@ public class RecordTransformFactory {
         if (getPattern(TransformLangExecutor.CTL_TRANSFORM_CODE_ID).matcher(transform).find()) {
         	// new CTL implementation
         	return TRANSFORM_CTL;
+        }
+        
+        if (getPattern(TransformLangExecutor.GROOVY_TRANSFORM_CODE_ID).matcher(transform).find()) {
+        	// new Groovy implementation
+        	return TRANSFORM_GROOVY;
         }
         
         if (PATTERN_CTL_CODE.matcher(commentsStripped).find() 

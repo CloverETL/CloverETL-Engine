@@ -1,0 +1,17 @@
+//---------------------------------------------------------------------------------------------------------------------
+@Typed
+class InputPort${index} {
+	
+	DataRecord data
+	
+	<% methods.each {method -> %>
+	${method["return_type"]} get${method["name"]}() {
+		<% if (method["return_type"]=="String") { %>
+		return data.getField(${method["index"]}).getValue().toString()
+		<% } else { %>
+		return data.getField(${method["index"]}).getValue()
+		<% } %>
+	}
+	<% } %>
+}
+

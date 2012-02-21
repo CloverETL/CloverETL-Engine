@@ -20,9 +20,9 @@ class DynamicScalaCompiler(parentClassLoader: ClassLoader) {
     println("Compile time of '" + className + "' class");
     
     val settings = new Settings();
-//    settings.usejavacp.value = true;
+    settings.usejavacp.value = true;
     settings.deprecation.value = true;
-    settings.verbose.value = true;
+    //settings.verbose.value = true;
 
     compilerCL.loadClass("org.jetel.component.DataRecordTransform");
     

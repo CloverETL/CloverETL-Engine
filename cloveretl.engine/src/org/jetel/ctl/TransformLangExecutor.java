@@ -134,6 +134,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * Magic header to recognize CTL code
 	 */
 	public static final String CTL_TRANSFORM_CODE_ID = "//#CTL2";
+	public static final String GROOVY_TRANSFORM_CODE_ID = "//#GROOVY";
 	
 	/**
 	 *  Limits the precision of result to #DECIMAL_MAX_PRECISION digits

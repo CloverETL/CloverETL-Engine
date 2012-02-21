@@ -1,0 +1,13 @@
+//---------------------------------------------------------------------------------------------------------------------
+@Typed
+class OutputPort${index} {
+	
+	DataRecord data
+	
+	<% methods.each {method -> %>
+	void set${method["name"]}(${method["return_type"]} value) {
+		return data.getField(${method["index"]}).setValue(value)
+	}
+	<% } %>
+}
+

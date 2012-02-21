@@ -47,5 +47,8 @@
 	<classpathentry kind="lib" path="lib/poi-ooxml-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/scala-compiler.jar" sourcepath="lib.src/scala-compiler-src.jar"/>
+	<classpathentry kind="lib" path="D:/kubosj/workspaces/issue-CLO-115/cloveretl.engine/lib/groovy-all-1.8.2.jar"/>
+	<classpathentry kind="lib" path="D:/kubosj/workspaces/issue-CLO-115/cloveretl.engine/lib/groovypp-all-0.9.0_1.8.2.jar"/>
+	<classpathentry kind="lib" path="resources"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
