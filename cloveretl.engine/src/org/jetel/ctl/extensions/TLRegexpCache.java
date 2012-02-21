@@ -19,6 +19,9 @@
 package org.jetel.ctl.extensions;
 
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.jetel.ctl.TransformLangExecutorRuntimeException;
 
 /**
  * @author jakub (jakub.lehotsky@javlin.eu)
@@ -38,7 +41,13 @@ public class TLRegexpCache extends TLCache {
 	
 	public void createCachedPattern(TLFunctionCallContext context, int position) {
 		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
-			cachedPattern = Pattern.compile((String)context.getParamValue(position));
+			String regexp = (String) context.getParamValue(position);
+			try {
+				cachedPattern = Pattern.compile(regexp);
+			} catch (PatternSyntaxException ex) {
+				String message = String.format("Invalid regular expression: \"%s\" (%s)", regexp, ex.getMessage());
+				throw new TransformLangExecutorRuntimeException(message);
+			}
 		} 
 	}
 
