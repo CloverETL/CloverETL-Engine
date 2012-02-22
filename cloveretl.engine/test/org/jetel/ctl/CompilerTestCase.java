@@ -2459,7 +2459,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_datelib_trunc() {
 		doCompile("test_datelib_trunc");
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
-		check("inputDate", new GregorianCalendar(2004, 00, 02, 17, 13, 20).getTime());
 	}
 	
 	public void test_datelib_truncDate() {
@@ -2473,15 +2472,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.SECOND, portion[2]);
     	cal.set(Calendar.MILLISECOND, portion[3]);
         check("truncBornDate", cal.getTime());
-
-        Calendar truncDate = Calendar.getInstance();
-        truncDate.setTimeInMillis(0);
-        truncDate.set(Calendar.HOUR_OF_DAY, 17);
-        truncDate.set(Calendar.MINUTE, 13);
-        truncDate.set(Calendar.SECOND, 20);
-		check("truncDate", truncDate.getTime());
-		
-		check("inputDate", new GregorianCalendar(2004, 00, 02, 17, 13, 20).getTime());
 	}
 	
 	public void test_datelib_today() {
