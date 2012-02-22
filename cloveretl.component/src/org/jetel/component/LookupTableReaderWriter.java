@@ -224,8 +224,9 @@ public class LookupTableReaderWriter extends Node {
 				List<DataRecordMetadata> inOutMetadata = outPorts.size() > 0 ? getOutMetadata() : getInMetadata();
 				checkMetadata(status, lookupMetadata, inOutMetadata, false);
 			}
-			if (getInMetadata() != null && !lookupTable.isPutSupported()) {
-				status.add(new ConfigurationProblem("Lookup table does not support write operation.", 
+			List<DataRecordMetadata> inMetadata = getInMetadata();
+			if (inMetadata != null && inMetadata.size() > 0 && !lookupTable.isPutSupported()) {
+				status.add(new ConfigurationProblem("DB Lookup table does not support write operation.", 
 						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
 		}
