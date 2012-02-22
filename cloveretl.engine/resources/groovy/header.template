@@ -9,6 +9,7 @@ import org.jetel.graph.Node
 import org.jetel.graph.TransformationGraph
 import org.jetel.metadata.DataRecordMetadata
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.jetel.data.primitive.Decimal
 
 import org.jetel.component.LibraryFunctions
 

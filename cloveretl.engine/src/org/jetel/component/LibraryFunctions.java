@@ -18,6 +18,9 @@
  */
 package org.jetel.component;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.jetel.util.DataGenerator;
 
 /**
@@ -29,9 +32,34 @@ import org.jetel.util.DataGenerator;
 public class LibraryFunctions {
 	
 	private final DataGenerator generator = new DataGenerator();
+	private final Calendar calendar = Calendar.getInstance();
 	
 	public String randomString(int minLength, int maxLength) {
 		return generator.nextString(minLength, maxLength);
 	}
 	
+	public Date dateAdd(Date date, int amount, String unit) {
+		calendar.setTime(date);
+		calendar.add(unitToEnum(unit), amount);
+		
+		return calendar.getTime();
+	}
+	
+	public long dateDiff(Date date1, Date date2, String unit) {
+		if (!unit.equals("second")) {
+			throw new RuntimeException("Unexpected unit "+unit);
+		}
+		
+		return (date1.getTime()-date2.getTime())/1000;
+	}
+	
+	private int unitToEnum(String unit) {
+		if (unit.equals("day")) {
+			return Calendar.DAY_OF_MONTH;
+		} else if (unit.equals("second")) {
+			return Calendar.SECOND;
+		} else {
+			throw new RuntimeException("Unexpected unit "+unit);
+		}
+	}
 }

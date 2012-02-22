@@ -107,6 +107,10 @@ class Generator {
 		case "decimal":
 			"BigDecimal"
 			break;
+			
+		case "date":
+			"Date"
+			break;
 
 		default:
 			throw new RuntimeException("Unknown type!")

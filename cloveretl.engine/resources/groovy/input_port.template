@@ -8,6 +8,9 @@ class InputPort${index} {
 	${method["return_type"]} get${method["name"]}() {
 		<% if (method["return_type"]=="String") { %>
 		return data.getField(${method["index"]}).getValue().toString()
+		<% } else if (method["return_type"]=="BigDecimal") { %>
+		Decimal dec = (Decimal)data.getField(${method["index"]}).getValue();
+		return dec.getBigDecimalOutput()
 		<% } else { %>
 		return data.getField(${method["index"]}).getValue()
 		<% } %>
