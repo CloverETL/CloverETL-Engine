@@ -241,6 +241,10 @@ public class EngineInitializer {
         graph.init();
 	}
 
+	/**
+	 * Initializes location of licenses. If you want to use this method, it has to be called BEFORE initEngine call.
+	 * @param licenses Location(s) where licenses are stored.
+	 */
 	public static void initLicenses(String licenses) {
 		if(isInitialized()) {
 			throw new RuntimeException("Licenses have to be initialized before engine. Call initLicenses before initEngine.");
