@@ -709,7 +709,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			for (int i = 0; i < dataLength; i++) {
 				ibt = inputReader.readByte();
 				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("Insufficient buffer capacity, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("Insufficient buffer capacity, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
 					if (i == 0) {
@@ -779,7 +779,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			for (int i = 0; i < fieldLength; i++) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("End quote not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("End quote not found, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ichr == CharByteInputReader.DECODING_FAILED) {
 					throw new BadDataFormatException("Decoding of input into char data failed");
@@ -879,7 +879,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			while (true) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("End quote not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("End quote not found, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ichr == CharByteInputReader.DECODING_FAILED) {
 					throw new BadDataFormatException("Decoding of input into char data failed");
@@ -891,7 +891,7 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (qDecoder.isEndQuote(chr)) { // first closing quote
 					ichr = inputReader.readChar();
 					if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
-						throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+						throw new BadDataFormatException("Field delimiter not found, try to increase Record.RECORD_LIMIT_SIZE");
 					}
 					if (ichr == CharByteInputReader.DECODING_FAILED) {
 						throw new BadDataFormatException("Decoding of input into char data failed - closing quote not followed by a delimiter");
@@ -992,7 +992,7 @@ public class CharByteDataParser extends AbstractTextParser {
 				delimPatterns.reset();
 				while (true) {
 					if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
-						throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+						throw new BadDataFormatException("Field delimiter not found, try to increase Record.RECORD_LIMIT_SIZE");
 					}
 					if (ichr == CharByteInputReader.DECODING_FAILED) {
 						throw new BadDataFormatException("Decoding of input into char data failed");
@@ -1150,7 +1150,7 @@ public class CharByteDataParser extends AbstractTextParser {
 
 			while (true) {
 				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("Field delimiter not found, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
 					if (acceptEofAsDelim) {
@@ -1254,7 +1254,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			while (true) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("Field delimiter not found, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ichr == CharByteInputReader.DECODING_FAILED) {
 					throw new BadDataFormatException("Decoding of input into char data failed while looking for obligatory delimiter");
@@ -1316,7 +1316,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			while (true) {
 				ibt = inputReader.readByte();
 				if (ibt == CharByteInputReader.BLOCKED_BY_MARK) {
-					throw new BadDataFormatException("Field delimiter not found, try to increase MAX_RECORD_SIZE");
+					throw new BadDataFormatException("Field delimiter not found, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
 					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {

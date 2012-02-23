@@ -33,6 +33,7 @@ import javax.naming.OperationNotSupportedException;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -197,7 +198,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 * @created Dec 7, 2010
 	 */
 	public static class ByteInputReader extends CharByteInputReader {
-		private ByteBuffer byteBuffer;
+		private CloverBuffer byteBuffer;
 		private int currentMark;
 		private boolean endOfInput;
 		private int maxBackMark;
@@ -208,7 +209,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public ByteInputReader(int maxBackMark) {
 			super();
-			byteBuffer = ByteBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+			byteBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
@@ -231,8 +232,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				}
 				numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(markSpan, maxBackMark));
 				if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-											// mark
+					byteBuffer.expand(MIN_BUFFER_OPERATION_SIZE);
+					if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+						return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+												// mark
+					}
 				}
 				// preserve data between mark and current position
 				byteBuffer.position(byteBuffer.position() - numBytesToPreserve);
@@ -240,7 +244,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				currentMark = numBytesToPreserve - markSpan;
 
 				byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve);
-				int bytesConsumed = channel.read(byteBuffer);
+				int bytesConsumed = channel.read(byteBuffer.buf());
 				byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 				switch (bytesConsumed) {
 				case 0:
@@ -306,7 +310,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			int pos = byteBuffer.position();
 			byteBuffer.position(currentMark);
-			CloverBuffer seq = CloverBuffer.wrap(byteBuffer.slice());
+			CloverBuffer seq = byteBuffer.slice();
 			seq.limit(pos + relativeEnd - currentMark); // set the end of the sequence
 			byteBuffer.position(pos); // restore original position
 			currentMark = INVALID_MARK;
@@ -398,8 +402,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			numCharsToPreserve = Math.min(charBuffer.position(), Math.max(markSpan, maxBackMark));
 			if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-										// mark
+				charBuffer = ByteBufferUtils.expandCharBuffer(charBuffer, numCharsToPreserve + MIN_BUFFER_OPERATION_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+				if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+										    // mark
+				}
 			}
 			// preserve data between mark and current position
 			charBuffer.position(charBuffer.position() - numCharsToPreserve);
@@ -595,8 +602,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			numBytesToPreserve = Math.min(charBuffer.position(), Math.max(markSpan, maxBackMark));
 			if (charBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-				// mark
+				charBuffer = ByteBufferUtils.expandCharBuffer(charBuffer, numBytesToPreserve + MIN_BUFFER_OPERATION_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+				if (charBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+											// mark
+				}
 			}
 			// preserve data between mark and current position
 			charBuffer.position(charBuffer.position() - numBytesToPreserve);
@@ -789,7 +799,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 */
 	public static class RobustInputReader extends CharByteInputReader {
 		private Charset charset;
-		private ByteBuffer byteBuffer;
+		private CloverBuffer byteBuffer;
 		private CharBuffer charBuffer;
 		private CharsetDecoder decoder;
 		private int currentByteMark;
@@ -810,7 +820,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
 			int maxBytesPerChar = Math.round(charset.newEncoder().maxBytesPerChar());
-			byteBuffer = ByteBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE));
+			byteBuffer = CloverBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE), maxBytesPerChar * Defaults.Record.RECORD_LIMIT_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			decoder = charset.newDecoder();
 			decoder.onMalformedInput(CodingErrorAction.REPORT);
@@ -842,8 +852,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			numCharsToPreserve = Math.min(charBuffer.position(), Math.max(charMarkSpan, maxBackMark));
 			if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-										// mark
+				charBuffer = ByteBufferUtils.expandCharBuffer(charBuffer, numCharsToPreserve + MIN_BUFFER_OPERATION_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+				if (charBuffer.capacity() - numCharsToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+											// mark
+				}
 			}
 			// preserve data between mark and current position
 			charBuffer.position(charBuffer.position() - numCharsToPreserve);
@@ -854,7 +867,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			do {
 				charBuffer.limit(numCharsToPreserve + 1).position(numCharsToPreserve); // get ready to receive one char
 
-				if (decoder.decode(byteBuffer, charBuffer, false).isError()) {
+				if (decoder.decode(byteBuffer.buf(), charBuffer, false).isError()) {
 					return DECODING_FAILED;
 				}
 				charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
@@ -877,7 +890,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					currentByteMark = numBytesToPreserve - byteMarkSpan;
 
 					byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve); // get ready to receive data
-					int bytesConsumed = channel.read(byteBuffer);
+					int bytesConsumed = channel.read(byteBuffer.buf());
 					byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 					switch (bytesConsumed) {
 					case 0:
@@ -885,7 +898,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					case -1: // end of input
 						// check that the decoder doesn't maintain internal state
 						charBuffer.clear(); // get ready to receive data
-						decoder.decode(byteBuffer, charBuffer, true); // decode any remaining data
+						decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
 						decoder.flush(charBuffer);
 						charBuffer.flip();
 						if (charBuffer.hasRemaining()) {
@@ -928,8 +941,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(byteMarkSpan, maxBackMark));
 			
 			if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-				return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
-										// mark
+				byteBuffer.expand(MIN_BUFFER_OPERATION_SIZE);
+				if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+					return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
+											// mark
+				}
 			}
 			// preserve data between mark and current position
 			byteBuffer.limit(byteBuffer.capacity()).position(numBytesToPreserve);
@@ -937,7 +953,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentByteMark = numBytesToPreserve - byteMarkSpan;
 
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to receive data
-			int bytesConsumed = channel.read(byteBuffer);
+			int bytesConsumed = channel.read(byteBuffer.buf());
 			byteBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 			switch (bytesConsumed) {
 			case 0:
@@ -945,7 +961,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			case -1: // end of input
 				// check that the decoder doesn't maintain internal state
 				charBuffer.clear(); // get ready to receive data
-				decoder.decode(byteBuffer, charBuffer, true); // decode any remaining data
+				decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
 				decoder.flush(charBuffer);
 				charBuffer.flip();
 				if (charBuffer.hasRemaining()) {
@@ -1045,7 +1061,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			int pos = byteBuffer.position();
 			byteBuffer.position(currentByteMark);
-			CloverBuffer seq = CloverBuffer.wrap(byteBuffer.slice());
+			CloverBuffer seq = byteBuffer.slice();
 			seq.limit(pos + relativeEnd - currentByteMark); // set the end of the sequence
 			byteBuffer.position(pos); // restore original position
 			currentByteMark = INVALID_MARK;

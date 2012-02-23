@@ -25,6 +25,7 @@ package org.jetel.util;
 
 import java.math.BigInteger;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 import java.util.Arrays;
 
 import org.jetel.test.CloverTestCase;
@@ -131,4 +132,68 @@ public class ByteBufferUtilsTest extends CloverTestCase {
 		check_encodeValue(2, ByteOrder.LITTLE_ENDIAN, bytes6);
     }
 
+    public void testExpandCharBuffer() {
+    	CharBuffer buffer = CharBuffer.allocate(100);
+    	CharBuffer newBuffer;
+    	
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 10, 1000));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 0, 1000));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 100, 1000));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 10, 10));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 0, 10));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 10, 100));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 0, 100));
+    	assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 100, 100));
+    	try { assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 1000, 100)); assertTrue(false); } catch (IllegalArgumentException e) { /*CORRECT*/ }
+    	try { assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 100, 10)); assertTrue(false); } catch (IllegalArgumentException e) { /*CORRECT*/ }
+    	try { assertEquals(buffer, ByteBufferUtils.expandCharBuffer(buffer, 10, 1)); assertTrue(false); } catch (IllegalArgumentException e) { /*CORRECT*/ }
+    	
+    	newBuffer = ByteBufferUtils.expandCharBuffer(buffer, 200, 1000);
+    	assertEquals(0, newBuffer.position());
+    	assertEquals(100, newBuffer.limit());
+    	assertTrue(newBuffer.capacity() >= 200 && newBuffer.capacity() <= 1000);
+    	
+    	buffer.clear();
+    	for (int i = 0; i < 10; i++) {
+    		buffer.put((char) i);
+    	}
+		buffer.flip();
+    	newBuffer = ByteBufferUtils.expandCharBuffer(buffer, 200, 1000);
+    	assertEquals(0, newBuffer.position());
+    	assertEquals(10, newBuffer.limit());
+    	assertTrue(newBuffer.capacity() >= 200 && newBuffer.capacity() <= 1000);
+    	for (int i = 0; i < 10; i++) {
+    		assertEquals((char) i, newBuffer.get());
+    	}
+
+    	buffer.clear();
+    	for (int i = 0; i < 10; i++) {
+    		buffer.put((char) i);
+    	}
+    	newBuffer = ByteBufferUtils.expandCharBuffer(buffer, 150, 150);
+    	assertEquals(10, newBuffer.position());
+    	assertEquals(100, newBuffer.limit());
+    	assertEquals(150, newBuffer.capacity());
+    	newBuffer.flip();
+    	for (int i = 0; i < 10; i++) {
+    		assertEquals((char) i, newBuffer.get());
+    	}
+
+    	buffer.clear();
+    	for (int i = 0; i < 100; i++) {
+    		buffer.put((char) i);
+    	}
+    	buffer.mark();
+    	buffer.position(5);
+    	buffer.limit(50);
+    	newBuffer = ByteBufferUtils.expandCharBuffer(buffer, 1000, 10000);
+    	assertEquals(5, newBuffer.position());
+    	assertEquals(50, newBuffer.limit());
+    	assertTrue(newBuffer.capacity() >= 1000 && newBuffer.capacity() <= 10000);
+    	newBuffer.clear();
+    	for (int i = 0; i < 100; i++) {
+    		assertEquals((char) i, newBuffer.get());
+    	}
+    }
+    
 }
