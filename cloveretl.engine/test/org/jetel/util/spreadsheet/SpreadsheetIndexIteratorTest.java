@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.spreadsheet.SpreadsheetIndexIterator;
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -45,6 +44,13 @@ public class SpreadsheetIndexIteratorTest extends CloverTestCase {
 				
 			}
 			assertEquals(expected++, iterator.next());
+		}
+	}
+	
+	public void testSingleNumber() {
+		SpreadsheetIndexIterator iterator = new SpreadsheetIndexIterator(null, "0", 0, 0);
+		while (iterator.hasNext()) {
+			assertEquals(Integer.valueOf(0), iterator.next());
 		}
 	}
 	

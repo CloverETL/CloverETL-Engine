@@ -55,11 +55,11 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 	private Integer next = null;
 	private Integer tmp;
 
-	public SpreadsheetIndexIterator(List<String> sheetNames, String pattern, int start, int end) {
+	public SpreadsheetIndexIterator(List<String> sheetNames, String pattern, int first, int last) {
 		this.sheetNames = sheetNames;
 		this.pattern = pattern;
-		this.first = start;
-		this.last = end;
+		this.first = first;
+		this.last = last;
 
 		next = getNext();
 	}
@@ -124,7 +124,7 @@ public class SpreadsheetIndexIterator implements Iterator<Integer> {
 					int isInteger = StringUtils.isInteger(toCompile);
 					if (isInteger == 0 || isInteger == 1) {
 						int toReturn = Integer.parseInt(toCompile);
-						if (toReturn >= first && toReturn < last) {
+						if (toReturn >= first && toReturn <= last) {
 							rangeLast = null;
 							return toReturn;
 						} else {
