@@ -28,11 +28,11 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.jetel.data.DataField;
+import org.jetel.data.ListDataField;
 import org.jetel.data.tree.formatter.CollectionWriter;
 import org.jetel.data.tree.formatter.TreeWriter;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -158,21 +158,23 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 	}
 
 	private void writeObjectInternal(Object content) throws JsonProcessingException, IOException {
-		Object actualContent;
-		if (content instanceof DataField) {
-			actualContent = getDataFieldValue((DataField) content);
+		if (content instanceof ListDataField) {
+			ListDataField list = (ListDataField) content;
+			for (DataField dataField : list) {
+				jsonGenerator.writeObject(getDataFieldValue(dataField));
+			}
+		} else if (content instanceof DataField) {
+			jsonGenerator.writeObject(getDataFieldValue((DataField)content));
 		} else if (content instanceof String) {
-			actualContent = (String) content;
+			jsonGenerator.writeObject((String) content);
 		} else {
 			throw new IllegalArgumentException("Unknown type of property content");
 		}
-
-		jsonGenerator.writeObject(actualContent);
 	}
-
+	
 	private Object getDataFieldValue(DataField field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.STRING_FIELD:
+		switch (field.getMetadata().getDataType()) {
+		case STRING:
 			return field.toString();
 		default:
 			return field.getValue();

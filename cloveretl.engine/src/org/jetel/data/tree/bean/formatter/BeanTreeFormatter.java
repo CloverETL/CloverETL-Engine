@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.jetel.data.tree.bean.schema.model.SchemaObject;
+import org.jetel.data.tree.formatter.CollectionWriter;
 import org.jetel.data.tree.formatter.NamespaceWriter;
 import org.jetel.data.tree.formatter.TreeFormatter;
 import org.jetel.data.tree.formatter.TreeWriter;
@@ -88,6 +89,11 @@ public class BeanTreeFormatter extends TreeFormatter {
 		return writer;
 	}
 
+	@Override
+	public CollectionWriter getCollectionWriter() {
+		return writer;
+	}
+	
 	// current bean mapping validation detail
 	@Override
 	public NamespaceWriter getNamespaceWriter() {

@@ -66,7 +66,7 @@ import org.jetel.util.string.StringUtils;
  */
 public class SchemaGenerator  {
 	
-	private static final String NS_URI = "schema:object.structure.generated";
+	public static final String NS_URI = "schema:object.structure.generated";
 	private XmlSchema xmlSchema;
 	private Map<String, XmlSchemaType> schemaTypes = new HashMap<String, XmlSchemaType>();
 	private Stack<XmlSchemaElement> elementStack = new Stack<XmlSchemaElement>();
@@ -467,6 +467,11 @@ public class SchemaGenerator  {
 	}
 	
 	private Class<?> getClass(String className) throws ClassNotFoundException {
+		
+		Class<?> type = SimpleTypes.getPrimitiveClass(className);
+		if (type != null) {
+			return type;
+		}
 		if (classLoader != null) {
 			try {
 				return Class.forName(className, true, classLoader);

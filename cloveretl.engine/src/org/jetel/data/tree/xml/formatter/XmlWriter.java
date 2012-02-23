@@ -24,8 +24,10 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.ListDataField;
 import org.jetel.data.tree.formatter.AttributeWriter;
 import org.jetel.data.tree.formatter.CommentWriter;
 import org.jetel.data.tree.formatter.NamespaceWriter;
@@ -48,9 +50,6 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	private boolean omitNewLines;
 
-	//private boolean emptyElement = false;
-	private boolean startTagOpened = false;
-	private CharStack elementStack = new CharStack();
 	private XMLStringBuffer buffer = new XMLStringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 
 	private static final char[] OPEN_START_TAG = "<".toCharArray();
@@ -67,6 +66,14 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	private static final char[] NAMESPACE_PREFIX = " xmlns".toCharArray();
 	private static final char[] NAMESPACE_DELIMITER = ":".toCharArray();
 
+	private boolean[] shouldIndentStack = new boolean[11];
+	private boolean[] needsEndTagStack = new boolean[11];
+	private char[][] elementNameStack = new char[11][];
+	private int depth;
+	private int writtenDepth;
+
+	private boolean startTagOpened = false;
+
 	public XmlWriter(OutputStream outStream, String charset, String version, boolean omitNewLines) {
 		this.charset = charset;
 		this.version = version;
@@ -79,22 +86,71 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 		}
 	}
 
-	@Override
-	public void writeStartNode(char[] name) throws JetelException {
-		elementStack.setNeedsEndTag();
-		elementStack.setShouldIndent();
-		if (startTagOpened) {
-			closeStartTag();
-		}
+	public void push(char[] name) {
+		if (depth == needsEndTagStack.length) {
+			int newLength = needsEndTagStack.length * 2 + 1;
 
-		if (!omitNewLines) {
-			indent(elementStack.depth);
+			needsEndTagStack = Arrays.copyOf(needsEndTagStack, newLength);
+			shouldIndentStack = Arrays.copyOf(shouldIndentStack, newLength);
+			elementNameStack = Arrays.copyOf(elementNameStack, newLength);
+		}
+		shouldIndentStack[depth] = true;
+		needsEndTagStack[depth] = true;
+		elementNameStack[depth] = name;
+
+		depth++;
+		shouldIndentStack[depth] = false;
+		needsEndTagStack[depth] = false;
+	}
+
+	public char[] pop() {
+		depth--;
+		if (writtenDepth > depth) {
+			writtenDepth = depth;
 		}
 		
-		elementStack.push();
+		return elementNameStack[depth];
+	}
 
-		openStartTag();
-		write(name);
+	public boolean needsEndTag() {
+		return needsEndTagStack[depth];
+	}
+
+	public void setNeedsEndTag() {
+		needsEndTagStack[depth] = true;
+	}
+
+	public boolean shouldIndent() {
+		return shouldIndentStack[depth];
+	}
+
+	public void setShouldIndent() {
+		shouldIndentStack[depth] = true;
+	}
+
+	public boolean isEmpty() {
+		return depth <= 0;
+	}
+
+	private void performDeferredWrite() throws JetelException {
+		for (int i = writtenDepth; i < depth; i++) {
+			if (startTagOpened) {
+				closeStartTag(needsEndTagStack[i]);
+			}
+
+			if (!omitNewLines) {
+				indent(i);
+			}
+
+			openStartTag();
+			write(elementNameStack[i]);
+		}
+		writtenDepth = depth;
+	}
+
+	@Override
+	public void writeStartNode(char[] name) throws JetelException {
+		push(name);
 	}
 
 	private void openStartTag() throws JetelException {
@@ -102,10 +158,10 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 		write(OPEN_START_TAG);
 	}
 
-	private void closeStartTag() throws JetelException {
+	private void closeStartTag(boolean needsEndTag) throws JetelException {
 		startTagOpened = false;
 
-		if (elementStack.needsEndTag()) {
+		if (needsEndTag) {
 			write(CLOSE_END_TAG);
 		} else {
 			write(CLOSE_EMPTY_ELEMENT);
@@ -114,9 +170,8 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeAttribute(char[] name, Object value) throws JetelException {
-		if (!startTagOpened) {
-			throw new JetelException("Attribute not associated with any element");
-		}
+		performDeferredWrite();
+
 		write(SPACE);
 		write(name);
 		write(ASSIGNMENT);
@@ -126,11 +181,9 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeNamespace(char[] prefix, char[] namespaceURI) throws JetelException {
-		if (!startTagOpened) {
-			throw new IllegalStateException("Invalid state: start tag is not opened at writeNamespace()");
-		}
-		write(NAMESPACE_PREFIX);
+		performDeferredWrite();
 
+		write(NAMESPACE_PREFIX);
 		if (prefix != null && prefix.length > 0) {
 			write(NAMESPACE_DELIMITER);
 			write(prefix);
@@ -143,20 +196,22 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeEndNode(char[] name) throws JetelException {
+		performDeferredWrite();
+
 		if (startTagOpened) {
-			closeStartTag();
+			closeStartTag(needsEndTagStack[depth]);
 		}
 
-		if (elementStack.needsEndTag()) {
-			if (!omitNewLines && elementStack.shouldIndent()) {
-				indent(elementStack.depth - 1);
+		if (needsEndTag()) {
+			if (!omitNewLines && shouldIndent()) {
+				indent(depth - 1);
 			}
 
 			write(OPEN_END_TAG);
 			write(name);
 			write(CLOSE_END_TAG);
 		}
-		elementStack.pop();
+		pop();
 	}
 
 	@Override
@@ -171,22 +226,43 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	@Override
 	public void writeEndTree() throws JetelException {
 		if (startTagOpened) {
-			closeStartTag();
-		}
-		if (!elementStack.isEmpty()) {
-			throw new IllegalStateException("There are some unclosed elements");
+			closeStartTag(needsEndTagStack[depth]);
 		}
 	}
 
 	@Override
 	public void writeLeaf(Object value) throws JetelException {
-		elementStack.setNeedsEndTag();
+		performDeferredWrite();
+
+		if (value instanceof ListDataField) {
+			ListDataField list = (ListDataField) value;
+			char[] elementName = elementNameStack[depth - 1];
+			for (int i = 0; i < list.getSize(); i++) {
+				// for first element startNode is already written for first node
+				if (i > 0) {
+					writeStartNode(elementName);
+				}
+
+				writeLeaf(list.getField(i));
+
+				// for last element endNode will be called right away
+				if (i < list.getSize() - 1) {
+					writeEndNode(elementName);
+				}
+			}
+		} else {
+			writeValue(value);
+		}
+	}
+
+	private void writeValue(Object value) throws JetelException {
+		setNeedsEndTag();
 		if (startTagOpened) {
-			closeStartTag();
+			closeStartTag(needsEndTagStack[depth]);
 		}
 
-		if (!omitNewLines && elementStack.shouldIndent()) {
-			indent(elementStack.depth);
+		if (!omitNewLines && shouldIndent()) {
+			indent(depth);
 		}
 
 		writeContent(value.toString().toCharArray(), true, false);
@@ -194,14 +270,16 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeComment(Object content) throws JetelException {
-		elementStack.setNeedsEndTag();
-		elementStack.setShouldIndent();
+		performDeferredWrite();
+
+		setNeedsEndTag();
+		setShouldIndent();
 		if (startTagOpened) {
-			closeStartTag();
+			closeStartTag(needsEndTagStack[depth]);
 		}
 
 		if (!omitNewLines) {
-			indent(elementStack.depth);
+			indent(depth);
 		}
 
 		write(COMMENT_START_TAG);
@@ -296,7 +374,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 			throw new JetelException(e.getMessage(), e);
 		}
 	}
-	
+
 	public void close() throws IOException {
 		outStreamWriter.close();
 	}
@@ -319,52 +397,6 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 			i += SPACE.length;
 		}
 		write(indent);
-	}
-
-	private static class CharStack {
-		private boolean[] shouldIndent = new boolean[11];
-		private boolean[] needsEndTag = new boolean[11];
-		private int depth;
-
-		public void push() {
-			if (depth == needsEndTag.length) {
-				boolean[] newHasChild = new boolean[needsEndTag.length * 2 + 1];
-				System.arraycopy(needsEndTag, 0, newHasChild, 0, depth);
-				needsEndTag = newHasChild;
-				
-				boolean[] newShouldIndent = new boolean[needsEndTag.length];
-				System.arraycopy(shouldIndent, 0, newShouldIndent, 0, depth);
-				shouldIndent = newShouldIndent;
-				
-			}
-			depth++;
-			shouldIndent[depth] = false;
-			needsEndTag[depth] = false;
-		}
-
-		public void pop() {
-			depth--;
-		}
-
-		public boolean needsEndTag() {
-			return needsEndTag[depth];
-		}
-		
-		public void setNeedsEndTag() {
-			needsEndTag[depth] = true;
-		}
-		
-		public boolean shouldIndent() {
-			return shouldIndent[depth];
-		}
-		
-		public void setShouldIndent() {
-			shouldIndent[depth] = true;
-		}
-
-		public boolean isEmpty() {
-			return depth <= 0;
-		}
 	}
 
 	private static class XMLStringBuffer {

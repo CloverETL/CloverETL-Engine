@@ -39,7 +39,9 @@ import org.jetel.data.tree.bean.schema.model.SchemaObject;
 import org.jetel.data.tree.bean.schema.model.TypedObject;
 import org.jetel.data.tree.bean.schema.model.TypedObjectRef;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -64,17 +66,17 @@ public class BeanWriterTest extends CloverTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		initEngine();
-		metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+		metadata = new DataRecordMetadata("meta", DataRecordParsingType.DELIMITED);
 		metadata.setFieldDelimiter("\n");
 		metadata.setRecordDelimiter("\n");
-		metadata.addField(new DataFieldMetadata(BOOLEAN_FIELD, DataFieldMetadata.BOOLEAN_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(BYTE_FIELD, DataFieldMetadata.BYTE_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(INTEGER_FIELD, DataFieldMetadata.INTEGER_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(LONG_FIELD, DataFieldMetadata.LONG_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(DECIMAL_FIELD, DataFieldMetadata.DECIMAL_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(DATE_FIELD, DataFieldMetadata.DATE_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(NUMERIC_FIELD, DataFieldMetadata.NUMERIC_FIELD, "|"));
-		metadata.addField(new DataFieldMetadata(STRING_FIELD, DataFieldMetadata.STRING_FIELD, "|"));
+		metadata.addField(new DataFieldMetadata(BOOLEAN_FIELD, DataFieldType.BOOLEAN, "|"));
+		metadata.addField(new DataFieldMetadata(BYTE_FIELD, DataFieldType.BYTE, "|"));
+		metadata.addField(new DataFieldMetadata(INTEGER_FIELD, DataFieldType.INTEGER, "|"));
+		metadata.addField(new DataFieldMetadata(LONG_FIELD, DataFieldType.LONG, "|"));
+		metadata.addField(new DataFieldMetadata(DECIMAL_FIELD, DataFieldType.DECIMAL, "|"));
+		metadata.addField(new DataFieldMetadata(DATE_FIELD, DataFieldType.DATE, "|"));
+		metadata.addField(new DataFieldMetadata(NUMERIC_FIELD, DataFieldType.NUMBER, "|"));
+		metadata.addField(new DataFieldMetadata(STRING_FIELD, DataFieldType.STRING, "|"));
 	}
 
 	public void test_simpleStructure() throws Exception {
@@ -205,9 +207,10 @@ public class BeanWriterTest extends CloverTestCase {
 
 		beanWriter.writeStartTree();
 		beanWriter.writeStartNode("object".toCharArray());
+		beanWriter.writeStartCollection("simpleTypedValuesMatrix".toCharArray());
 
 		for (int i = 0; i < 2; i++) {
-			beanWriter.writeStartNode("simpleTypedValuesMatrix".toCharArray());
+			beanWriter.writeStartCollection("item".toCharArray());
 			for (int j = 0; j < 2; j++) {
 				beanWriter.writeStartNode("item".toCharArray());
 
@@ -220,9 +223,10 @@ public class BeanWriterTest extends CloverTestCase {
 
 				beanWriter.writeEndNode("item".toCharArray());
 			}
-			beanWriter.writeEndNode("simpleTypedValuesMatrix".toCharArray());
+			beanWriter.writeEndCollection("item".toCharArray());
 		}
 
+		beanWriter.writeEndCollection("simpleTypedValuesMatrix".toCharArray());
 		beanWriter.writeEndNode("object".toCharArray());
 		beanWriter.writeEndTree();
 
@@ -267,9 +271,10 @@ public class BeanWriterTest extends CloverTestCase {
 
 		beanWriter.writeStartTree();
 		beanWriter.writeStartNode("object".toCharArray());
+		beanWriter.writeStartCollection("mapList".toCharArray());
 
 		for (int i = 0; i < 3; i++) {
-			beanWriter.writeStartNode("mapList".toCharArray());
+			beanWriter.writeStartNode("item".toCharArray());
 			for (int j = 0; j < 2; j++) {
 				int index = (i * 2) + j;
 				beanWriter.writeStartNode("entry".toCharArray());
@@ -288,9 +293,10 @@ public class BeanWriterTest extends CloverTestCase {
 				beanWriter.writeEndNode("value".toCharArray());
 				beanWriter.writeEndNode("entry".toCharArray());
 			}
-			beanWriter.writeEndNode("mapList".toCharArray());
+			beanWriter.writeEndNode("item".toCharArray());
 		}
 
+		beanWriter.writeEndCollection("mapList".toCharArray());
 		beanWriter.writeEndNode("object".toCharArray());
 		beanWriter.writeEndTree();
 
@@ -329,9 +335,10 @@ public class BeanWriterTest extends CloverTestCase {
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
 		beanWriter.writeStartTree();
+		beanWriter.writeStartCollection("list".toCharArray());
 
 		for (int i = 0; i < 2; i++) {
-			beanWriter.writeStartNode("list".toCharArray());
+			beanWriter.writeStartNode("item".toCharArray());
 			for (int j = 0; j < 2; j++) {
 				int index = (i * 2) + j;
 				beanWriter.writeStartNode("entry".toCharArray());
@@ -355,8 +362,9 @@ public class BeanWriterTest extends CloverTestCase {
 				beanWriter.writeEndNode("value".toCharArray());
 				beanWriter.writeEndNode("entry".toCharArray());
 			}
-			beanWriter.writeEndNode("list".toCharArray());
+			beanWriter.writeEndNode("item".toCharArray());
 		}
+		beanWriter.writeEndCollection("list".toCharArray());
 		beanWriter.writeEndTree();
 
 		ListOfMapsOfMaps result = (ListOfMapsOfMaps) beanWriter.flushBean();
@@ -391,14 +399,17 @@ public class BeanWriterTest extends CloverTestCase {
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 		
 		beanWriter.writeStartTree();
+		beanWriter.writeStartCollection("list".toCharArray());
 		
 		for (int i = 0; i < expectedStrings.length; i++) {
-			beanWriter.writeStartNode("list".toCharArray());
+			beanWriter.writeStartNode("item".toCharArray());
 			beanWriter.writeStartNode("stringValue".toCharArray());
 			beanWriter.writeLeaf(expectedStrings[i]);
 			beanWriter.writeEndNode("stringValue".toCharArray());
-			beanWriter.writeEndNode("list".toCharArray());
+			beanWriter.writeEndNode("item".toCharArray());
 		}
+		
+		beanWriter.writeEndCollection("list".toCharArray());
 		beanWriter.writeEndTree();
 		
 		List<SimpleTestType> result = (List<SimpleTestType>) beanWriter.flushBean();
@@ -427,12 +438,15 @@ public class BeanWriterTest extends CloverTestCase {
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
 		beanWriter.writeStartTree();
+		beanWriter.writeStartCollection("list".toCharArray());
 
 		for (int i = 0; i < expectedStrings.length; i++) {
-			beanWriter.writeStartNode("list".toCharArray());
+			beanWriter.writeStartNode("item".toCharArray());
 			beanWriter.writeLeaf(expectedStrings[i]);
-			beanWriter.writeEndNode("list".toCharArray());
+			beanWriter.writeEndNode("item".toCharArray());
 		}
+
+		beanWriter.writeEndCollection("list".toCharArray());
 		beanWriter.writeEndTree();
 
 		List<String> result = (List<String>) beanWriter.flushBean();

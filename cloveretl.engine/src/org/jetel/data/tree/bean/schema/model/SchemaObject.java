@@ -32,6 +32,8 @@ import org.jetel.data.tree.bean.BeanConstants;
  */
 public abstract class SchemaObject implements Cloneable {
 
+	public static final String UNKNOWN_ARGUMENT_TYPE = "?"; 
+	
 	protected SchemaObject parent;
 	private String name;
 	protected String type;
@@ -201,6 +203,8 @@ public abstract class SchemaObject implements Cloneable {
 		}
 		return path;
 	}
+	
+	public abstract String toJavaTypeString();
 	
 	protected String getPathName() {
 		return name != null ? name : getDefaultName();
