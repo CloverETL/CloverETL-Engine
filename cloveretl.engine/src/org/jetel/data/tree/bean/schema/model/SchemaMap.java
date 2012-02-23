@@ -98,4 +98,9 @@ public class SchemaMap extends SchemaObject {
 	public String getDefaultName() {
 		return BeanConstants.MAP_ELEMENT_NAME;
 	}
+
+	@Override
+	public String toJavaTypeString() {
+		return "Map<" + (key != null ? key.toJavaTypeString() : UNKNOWN_ARGUMENT_TYPE) + ", " + (value != null ? value.toJavaTypeString() : UNKNOWN_ARGUMENT_TYPE) + ">";
+	}
 }

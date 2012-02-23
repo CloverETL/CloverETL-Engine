@@ -54,7 +54,7 @@ public class WritableObject extends WritableContainer {
 			for (Writable child : children) {
 				child.write(formatter, availableData);
 			}
-		} else if (!isEmpty(availableData)) {
+		} else if (!isNodeEmpty(availableData)) {
 			MappingWriteState state = formatter.getMapping().getState();
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
 				formatter.getTreeWriter().writeStartNode(name);

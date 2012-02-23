@@ -85,4 +85,9 @@ public class SchemaCollection extends SchemaObject {
 	public String getDefaultName() {
 		return parent != null ? BeanConstants.LIST_ITEM_ELEMENT_NAME : BeanConstants.LIST_ELEMENT_NAME;
 	}
+
+	@Override
+	public String toJavaTypeString() {
+		return "Collection<" + (item != null ? item.toJavaTypeString() : UNKNOWN_ARGUMENT_TYPE) + ">";
+	}
 }

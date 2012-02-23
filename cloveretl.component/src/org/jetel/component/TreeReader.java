@@ -121,10 +121,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			throw new XMLConfigurationException(treeReader.getType() + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 	}
-
+	
+	// DataRecordProvider, DataRecordReceiver, XPathSequenceProvider properties
 	private DataRecord outputRecords[];
 	private OutputPort outputPorts[];
-
 	private int sequenceId;
 	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
 
@@ -137,13 +137,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private String mappingString;
 	private String mappingURL;
 
-	
 	private TreeReaderParserProvider parserProvider;
-	
 	private ProcessingMode processingMode;
-
-	private MappingContext rootContext;
 	private XPathPushParser parser;
+	private MappingContext rootContext;
 	
 	public TreeReader(String id) {
 		super(id);
@@ -188,6 +185,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		case XPATH_CONVERT_STREAM:
 			parser = new XPathPushParser(this, this, new XmlXPathEvaluator(), parserProvider.getValueHandler(), this);
 			break;
+		case XPATH_DIRECT:
+			parser = new XPathPushParser(this, this, parserProvider.getXPathEvaluator(), parserProvider.getValueHandler(), this);
+			break;
 		default:
 			throw new UnsupportedOperationException("Processing mode" + processingMode + "is not supported");
 		}
@@ -208,7 +208,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	}
 
 	private ProcessingMode resolveProcessingMode() {
-		return ProcessingMode.XPATH_CONVERT_STREAM;
+		if (parserProvider.providesXPathEvaluator()) {
+			return ProcessingMode.XPATH_DIRECT; 
+		} else {
+			return ProcessingMode.XPATH_CONVERT_STREAM;
+		}
 	}
 
 	private MappingContext createMapping() throws ComponentNotReadyException {
@@ -259,6 +263,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	@Override
 	public Result execute() throws Exception {
+		// FIXME: introduce some kind of mode processor
 		switch (processingMode) {
 		case XPATH_CONVERT_STREAM:
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -284,12 +289,24 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				inputData = getNextSource();
 			}
 			break;
+		case XPATH_DIRECT:
+			inputData = getNextSource();
+			while (inputData != null) {
+				if (inputData instanceof ReadableByteChannel) {
+					parser.parse(rootContext, new SAXSource(new InputSource(Channels.newInputStream((ReadableByteChannel) inputData))));
+				} else {
+					throw new JetelRuntimeException("Could not read input " + inputData);
+				}
+
+				inputData = getNextSource();
+			}
+			break;
 		default:
 			throw new JetelRuntimeException();
 		}
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-
+	
 	private Object getNextSource() throws JetelException {
 		Object input = null;
 		while (sourceIterator.hasNext()) {

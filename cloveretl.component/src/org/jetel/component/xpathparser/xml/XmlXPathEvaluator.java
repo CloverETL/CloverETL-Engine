@@ -35,6 +35,8 @@ import net.sf.saxon.tinytree.TinyNodeImpl;
 import net.sf.saxon.trans.XPathException;
 
 import org.jetel.component.xpathparser.XPathEvaluator;
+import org.jetel.component.xpathparser.mappping.FieldMapping;
+import org.jetel.component.xpathparser.mappping.MappingContext;
 import org.jetel.component.xpathparser.mappping.MappingElement;
 import org.jetel.exception.JetelRuntimeException;
 
@@ -82,13 +84,20 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 		} catch (XPathException e) {
 			throw new JetelRuntimeException(e);
 		}
-		switch (nodeList.size()) {
-		case 0:
-			return null;
-		case 1:
-			return nodeList.get(0);
-		default:
-			throw new JetelRuntimeException("XPath '" + xpath + "' contains two or more values!");
+		
+		if (element instanceof FieldMapping) {
+			return nodeList;
+		} else if (element instanceof MappingContext) {
+			switch (nodeList.size()) {
+			case 0:
+				return null;
+			case 1:
+				return nodeList.get(0);
+			default:
+				throw new JetelRuntimeException("XPath '" + xpath + "' contains two or more values!");
+			}
+		} else {
+			throw new IllegalArgumentException("Unknown type of mapping element " + element);
 		}
 	}
 

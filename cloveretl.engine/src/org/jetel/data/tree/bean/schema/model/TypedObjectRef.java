@@ -86,4 +86,9 @@ public class TypedObjectRef extends SchemaObject {
 	public String getDefaultName() {
 		return BeanConstants.OBJECT_ELEMENT_NAME;
 	}
+
+	@Override
+	public String toJavaTypeString() {
+		return typedObject != null ? typedObject.toJavaTypeString() : UNKNOWN_ARGUMENT_TYPE;
+	}
 }

@@ -111,4 +111,9 @@ public class TypedObject extends SchemaObject {
 	public String toString() {
 		return getDefaultName() + "#" + type;
 	}
+
+	@Override
+	public String toJavaTypeString() {
+		return type;
+	}
 }

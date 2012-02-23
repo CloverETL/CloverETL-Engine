@@ -16,48 +16,45 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.xpathparser.xml;
+package org.jetel.component.tree;
 
-import net.sf.saxon.om.NodeInfo;
-
-import org.jetel.data.DataField;
+import org.jetel.component.xpathparser.XPathEvaluator;
+import org.jetel.component.xpathparser.xml.XmlValueHandler;
+import org.jetel.component.xpathparser.xml.XmlXPathEvaluator;
+import org.jetel.data.tree.parser.TreeStreamParser;
 import org.jetel.data.tree.parser.ValueHandler;
 
 /**
- * @author lkrejci (info@cloveretl.com)
+ * @author krejcil (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19 Jan 2012
+ * @created 22.2.2012
  */
-public class JsonValueHandler implements ValueHandler {
+public class XmlReaderParserProvider implements TreeReaderParserProvider {
 
 	@Override
-	public Object getCurrentValue() {
-		// TODO Auto-generated method stub
+	public boolean providesTreeStreamParser() {
+		return false;
+	}
+
+	@Override
+	public TreeStreamParser getTreeStreamParser() {
 		return null;
 	}
 
 	@Override
-	public void clearCurrentValue() {
-		// TODO Auto-generated method stub
-
+	public ValueHandler getValueHandler() {
+		return new XmlValueHandler();
 	}
 
 	@Override
-	public void appendValue(Object value) {
-		// TODO Auto-generated method stub
-
+	public boolean providesXPathEvaluator() {
+		return true;
 	}
 
 	@Override
-	public void storeValueToField(Object value, DataField field) {
-		String stringValue;
-		if (value instanceof NodeInfo) {
-			stringValue = ((NodeInfo) value).getStringValue();
-		} else {
-			stringValue = value.toString();
-		}
-		field.fromString(stringValue);
+	public XPathEvaluator getXPathEvaluator() {
+		return new XmlXPathEvaluator();
 	}
 
 }

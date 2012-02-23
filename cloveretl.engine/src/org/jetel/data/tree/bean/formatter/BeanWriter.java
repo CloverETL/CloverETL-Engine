@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -36,6 +37,7 @@ import org.jetel.data.tree.bean.schema.model.SchemaMap;
 import org.jetel.data.tree.bean.schema.model.SchemaObject;
 import org.jetel.data.tree.bean.schema.model.TypedObject;
 import org.jetel.data.tree.bean.schema.model.TypedObjectRef;
+import org.jetel.data.tree.formatter.CollectionWriter;
 import org.jetel.data.tree.formatter.NamespaceWriter;
 import org.jetel.data.tree.formatter.TreeWriter;
 import org.jetel.exception.JetelException;
@@ -45,7 +47,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 4.11.2011
  */
-public class BeanWriter implements TreeWriter, NamespaceWriter {
+public class BeanWriter implements TreeWriter, CollectionWriter, NamespaceWriter {
 
 	private static enum State {
 		TREE, BEAN, PROPERTY, COLLECTION, MAP, MAP_ENTRY
@@ -75,6 +77,11 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 	}
 
 	@Override
+	public void writeStartTree() throws JetelException {
+		stateStack.push(State.TREE);
+	}
+
+	@Override
 	public void writeStartNode(char[] name) throws JetelException {
 		switch (stateStack.peek()) {
 		case TREE:
@@ -84,7 +91,7 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 			handleBeanStart(new String(name));
 			return;
 		case COLLECTION:
-			handleCollectionStart(false);
+			handleCollectionStart();
 			return;
 		case MAP:
 			handleMapStart();
@@ -95,34 +102,35 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 		}
 	}
 
+	@Override
+	public void writeStartCollection(char[] collectionName) throws JetelException {
+		// Collection behaves pretty much the same as node since types are stored structure Object not mapping itself.
+		// however during compilation of mapping children of collection node with binding are wrapped with synthetic
+		// object node
+		// so that start and end of collection item is clearly marked.
+		writeStartNode(collectionName);
+	}
+
 	private void handleTreeStartNode() throws JetelException {
 		pushCurrentStructure(structure);
-		if (result != null) {
-			beanStack.push(result);
+		String beanClass;
+		if (structure instanceof TypedObjectRef) {
+			beanClass = ((TypedObjectRef) structure).getTypedObject().getType();
 		} else {
-			String beanClass;
-			if (structure instanceof TypedObjectRef) {
-				beanClass = ((TypedObjectRef) structure).getTypedObject().getType();
-			} else {
-				beanClass = structure.getType();
-			}
-
-			Class<?> proposedClass = null;
-			if (beanClass != null) {
-				try {
-					proposedClass = classloader.loadClass(beanClass);
-				} catch (ClassNotFoundException e) {
-					throw new JetelException(e.getMessage(), e);
-				}
-			}
-			beanStack.push(createBeanForState(currentStructure, proposedClass));
+			beanClass = structure.getType();
 		}
 
+		Class<?> proposedClass = null;
+		if (beanClass != null) {
+			try {
+				proposedClass = classloader.loadClass(beanClass);
+			} catch (ClassNotFoundException e) {
+				throw new JetelException(e.getMessage(), e);
+			}
+		}
+		beanStack.push(createBeanForState(currentStructure, proposedClass));
 		stateStack.push(createState(currentStructure));
 
-		if (currentStructure instanceof SchemaCollection) {
-			handleCollectionStart(true);
-		}
 		return;
 	}
 
@@ -141,14 +149,14 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 				propertyClass = nestedClass;
 				stateStack.push(State.PROPERTY);
 			} else {
-				initBean(name, nestedClass, false);
+				initBean(name, nestedClass);
 			}
 		} catch (ClassNotFoundException e) {
 			throw new JetelException(e.getMessage(), e);
 		}
 	}
 
-	private void initBean(String name, Class<?> nestedClass, boolean synthetic) throws JetelException {
+	private void initBean(String name, Class<?> nestedClass) throws JetelException {
 		try {
 			Object currentBean = beanStack.peek();
 			Object nestedBean = PropertyUtils.getProperty(currentBean, name);
@@ -156,10 +164,7 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 				nestedBean = createBeanForState(currentStructure, nestedClass);
 			}
 
-			State state = createState(currentStructure);
-			if (stateStack.peek() != State.COLLECTION || state != State.COLLECTION) {
-				stateStack.push(state);
-			}
+			stateStack.push(createState(currentStructure));
 			beanStack.push(nestedBean);
 		} catch (IllegalAccessException e) {
 			throw new JetelException(e.getMessage(), e);
@@ -168,17 +173,10 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 		} catch (NoSuchMethodException e) {
 			throw new JetelException(e.getMessage(), e);
 		}
-
-		if (!synthetic && currentStructure instanceof SchemaCollection) {
-			handleCollectionStart(true);
-		}
 	}
 
-	private void handleCollectionStart(boolean synthetic) throws JetelException {
+	private void handleCollectionStart() throws JetelException {
 		try {
-			if (!synthetic) {
-				stateStack.push(State.COLLECTION);
-			}
 			SchemaCollection collection = (SchemaCollection) currentStructure;
 			pushCurrentStructure(collection.getItem());
 
@@ -192,7 +190,7 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 				propertyClass = nestedClass;
 				stateStack.push(State.PROPERTY);
 			} else {
-				initBean(BeanConstants.LIST_ITEM_ELEMENT_NAME, nestedClass, synthetic);
+				initBean(BeanConstants.LIST_ITEM_ELEMENT_NAME, nestedClass);
 			}
 		} catch (ClassNotFoundException e) {
 			throw new JetelException(e.getMessage(), e);
@@ -223,7 +221,7 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 					propertyToFill = BeanConstants.MAP_VALUE_ELEMENT_NAME;
 				}
 			} else {
-				initBean(name, nestedClass, false);
+				initBean(name, nestedClass);
 			}
 		} catch (ClassNotFoundException e) {
 			throw new JetelException(e.getMessage(), e);
@@ -299,100 +297,89 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void writeLeaf(Object content) throws JetelException {
-		try {
-			Object actualContent;
-			if (content instanceof DataField) {
-				actualContent = ((DataField) content).getValue();
-			} else if (content instanceof String) {
-				actualContent = (String) content;
-			} else {
-				throw new IllegalArgumentException("Unknown type of property content");
-			}
-			if (propertyClass.isEnum() && actualContent instanceof CharSequence) {
-				Class<Enum> enumType = (Class<Enum>)propertyClass;
-				String enumString = ((CharSequence)actualContent).toString();
-				try {
-					actualContent = Enum.valueOf(enumType, enumString);
-				} catch (Exception e) {
-					throw new JetelException("Unable to fill property " + propertyToFill, e);
-				}
-			} else {
-				actualContent = ConvertUtils.convert(actualContent, propertyClass);
-			}
-			PropertyUtils.setProperty(beanStack.peek(), propertyToFill, actualContent);
-
-		} catch (IllegalAccessException e) {
-			throw new JetelException("Unable to fill property " + propertyToFill, e);
-		} catch (InvocationTargetException e) {
-			throw new JetelException("Unable to fill property " + propertyToFill, e);
-		} catch (NoSuchMethodException e) {
-			throw new JetelException("Unable to fill property " + propertyToFill, e);
+		Object actualContent;
+		if (content instanceof DataField) {
+			actualContent = ((DataField) content).getValue();
+		} else if (content instanceof String) {
+			actualContent = (String) content;
+		} else {
+			throw new IllegalArgumentException("Unknown type of property content");
 		}
+
+		if (actualContent instanceof List<?>) {
+			List<?> listContent = (List<?>) actualContent;
+			for (Object object : listContent) { // FIXME: optimize me!
+				pushItemToCollection(object);
+			}
+		} else {
+			try {
+
+				if (propertyClass.isEnum() && actualContent instanceof CharSequence) {
+					Class<Enum> enumType = (Class<Enum>) propertyClass;
+					String enumString = ((CharSequence) actualContent).toString();
+					try {
+						actualContent = Enum.valueOf(enumType, enumString);
+					} catch (Exception e) {
+						throw new JetelException("Unable to fill property " + propertyToFill, e);
+					}
+				} else {
+					actualContent = ConvertUtils.convert(actualContent, propertyClass);
+				}
+				PropertyUtils.setProperty(beanStack.peek(), propertyToFill, actualContent);
+			} catch (IllegalAccessException e) {
+				throw new JetelException("Unable to fill property " + propertyToFill, e);
+			} catch (InvocationTargetException e) {
+				throw new JetelException("Unable to fill property " + propertyToFill, e);
+			} catch (NoSuchMethodException e) {
+				throw new JetelException("Unable to fill property " + propertyToFill, e);
+			}
+		}
+
 	}
 
 	@Override
 	public void writeEndNode(char[] name) throws JetelException {
 		String actualName = new String(name);
 		switch (stateStack.pop()) {
-
-		case COLLECTION:
-			result = beanStack.pop();
-			pushPropertyToBean(result, BeanConstants.LIST_ITEM_ELEMENT_NAME);
-			pushCollectionEntry();
-			popCurrentStructure();
-
-			result = beanStack.pop();
-			pushPropertyToBean(result, actualName);
-			if (stateStack.peek() == State.COLLECTION) {
-				pushCollectionEntry();
-			}
-			popCurrentStructure();
-			break;
-
 		case BEAN:
+		case COLLECTION:
 		case MAP:
-			if (stateStack.peek() == State.COLLECTION) {
-				result = beanStack.pop();
-				pushPropertyToBean(result, BeanConstants.LIST_ITEM_ELEMENT_NAME);
-				pushCollectionEntry();
-				popCurrentStructure();
-
-				stateStack.pop();
-			}
-			if (stateStack.peek() != State.COLLECTION) {
-				result = beanStack.pop();
+			result = beanStack.pop();
+			if (stateStack.peek() != State.TREE) {
 				pushPropertyToBean(result, actualName);
+				pushCollectionEntry();
 				popCurrentStructure();
 			}
 			break;
 
 		case MAP_ENTRY:
-			if (stateStack.peek() == State.COLLECTION) {
-				pushCollectionEntry();
-			}
+			pushCollectionEntry();
 			pushMapEntry();
 			break;
 
 		case PROPERTY:
 			propertyToFill = null;
 			propertyClass = null;
+			pushCollectionEntry();
 			popCurrentStructure();
-
-			if (stateStack.peek() == State.COLLECTION) {
-				pushCollectionEntry();
-				result = beanStack.pop();
-
-				stateStack.pop();
-			}
 			break;
 		}
+	}
+
+	@Override
+	public void writeEndCollection(char[] collectionName) throws JetelException {
+		writeEndNode(collectionName);
 	}
 
 	private void pushPropertyToBean(Object value, String propertyName) throws JetelException {
 		if (beanStack.size() >= 1) {
 			Object bean = beanStack.peek();
 			try {
-				PropertyUtils.setProperty(bean, propertyName, value);
+				if (bean instanceof CollectionEntry) {
+					PropertyUtils.setProperty(bean, BeanConstants.LIST_ITEM_ELEMENT_NAME, value);
+				} else {
+					PropertyUtils.setProperty(bean, propertyName, value);
+				}
 			} catch (IllegalAccessException e) {
 				throw new JetelException("Unable to fill property " + currentStructure.getName(), e);
 			} catch (InvocationTargetException e) {
@@ -410,28 +397,30 @@ public class BeanWriter implements TreeWriter, NamespaceWriter {
 		typedMap.put(mapEntry.getKey(), mapEntry.getValue());
 	}
 
-	@SuppressWarnings("unchecked")
 	private void pushCollectionEntry() throws JetelException {
-		CollectionEntry entry = (CollectionEntry) beanStack.pop();
+		if (stateStack.peek() != State.COLLECTION) {
+			return;
+		}
 
+		CollectionEntry entry = (CollectionEntry) beanStack.pop();
+		pushItemToCollection(entry.getItem());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void pushItemToCollection(Object item) {
 		Object collection = beanStack.peek();
-		if (collection instanceof Object[]) {// TODO: this probably is not absolutely correct, check for primitive types!
+		if (collection.getClass().isArray()) {
 			beanStack.pop(); // remove it from the stack as it is going to be replaced
 
 			int currentLength = Array.getLength(collection);
 			Object newArray = Array.newInstance(collection.getClass().getComponentType(), currentLength + 1);
 			System.arraycopy(collection, 0, newArray, 0, currentLength);
-			Array.set(newArray, currentLength, entry.getItem());
+			Array.set(newArray, currentLength, item);
 			beanStack.push(newArray);
 		} else {
 			Collection<Object> typedCollection = (Collection<Object>) collection;
-			typedCollection.add(entry.getItem());
+			typedCollection.add(item);
 		}
-	}
-
-	@Override
-	public void writeStartTree() throws JetelException {
-		stateStack.push(State.TREE);
 	}
 
 	@Override

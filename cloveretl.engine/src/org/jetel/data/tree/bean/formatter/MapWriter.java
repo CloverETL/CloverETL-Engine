@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.jetel.data.DataField;
+import org.jetel.data.ListDataField;
 import org.jetel.data.tree.formatter.CollectionWriter;
 import org.jetel.data.tree.formatter.TreeWriter;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * @author krejcil (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -139,7 +139,14 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 	}
 
 	private Object getActualValue(Object content) {
-		if (content instanceof DataField) {
+		if (content instanceof ListDataField) {
+			ListDataField list = (ListDataField) content;
+			List<Object> actualValue = new ArrayList<Object>();
+			for (DataField field : list) {
+				actualValue.add(getDataFieldValue(field));
+			}
+			return actualValue;
+		} else if (content instanceof DataField) {
 			return getDataFieldValue((DataField) content);
 		} else if (content instanceof String) {
 			return content;
@@ -149,8 +156,8 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 	}
 
 	private Object getDataFieldValue(DataField field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.STRING_FIELD:
+		switch (field.getMetadata().getDataType()) {
+		case STRING:
 			return field.toString();
 		default:
 			return field.getValue();

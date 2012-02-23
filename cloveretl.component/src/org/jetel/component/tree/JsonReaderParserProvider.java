@@ -19,7 +19,7 @@
 package org.jetel.component.tree;
 
 import org.jetel.component.xpathparser.XPathEvaluator;
-import org.jetel.component.xpathparser.xml.JsonValueHandler;
+import org.jetel.component.xpathparser.xml.XmlValueHandler;
 import org.jetel.data.tree.json.parser.JsonStreamParser;
 import org.jetel.data.tree.parser.TreeStreamParser;
 import org.jetel.data.tree.parser.ValueHandler;
@@ -44,7 +44,7 @@ public class JsonReaderParserProvider implements TreeReaderParserProvider {
 
 	@Override
 	public ValueHandler getValueHandler() {
-		return new JsonValueHandler();
+		return new XmlValueHandler();
 	}
 
 	@Override
