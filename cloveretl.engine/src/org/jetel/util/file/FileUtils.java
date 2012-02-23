@@ -53,14 +53,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.logger.SafeLog;
+import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
@@ -118,7 +118,7 @@ public class FileUtils {
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
-	private static final Log log = LogFactory.getLog(FileUtils.class);
+	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 	
 	/**
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
@@ -410,7 +410,8 @@ public class FileUtils {
         			throw new IOException("Cannot obtain connection input stream for URL '" + url + "'. Make sure the URL is valid.", e);
         		}
         	} catch (IOException e) {
-				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
+				log.debug("IOException occured for URL - host: '" + url.getHost() + "', path: '" + url.getPath() + "' (user info not shown)",
+						  "IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
 				throw e;
         	}
         }
@@ -959,7 +960,8 @@ public class FileUtils {
     			try {
         			os = urlConnection.getOutputStream();
     			} catch (IOException e) {
-    				log.debug("IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
+    				log.debug("IOException occured for URL - host: '" + url.getHost() + "', path: '" + url.getPath() + "' (user info not shown)",
+    						  "IOException occured for URL - host: '" + url.getHost() + "', userinfo: '" + url.getUserInfo() + "', path: '" + url.getPath() + "'");
     				throw e;
     			}
     		} else if (S3InputStream.isS3File(input)) {
