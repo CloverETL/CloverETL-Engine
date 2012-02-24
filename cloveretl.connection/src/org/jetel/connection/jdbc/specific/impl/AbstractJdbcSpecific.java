@@ -433,7 +433,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
     }
 
     @Override
-	public String getValidateQuery(String query, QueryType queryType) throws SQLException {
+	public String getValidateQuery(String query, QueryType queryType, boolean optimizeSelectQuery) throws SQLException {
 		
 		String q = null;
         String where = "WHERE";
@@ -458,8 +458,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		case SELECT:
 			
 			query = SQLUtil.removeUnnamedFields(query, this);
-			q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
-            break;
+			if (optimizeSelectQuery) {
+				q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+			} else {
+				q = query;
+			}
+			break;
 		}
 	
         return q;
