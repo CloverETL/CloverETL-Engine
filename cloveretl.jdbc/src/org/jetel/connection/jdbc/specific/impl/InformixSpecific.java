@@ -79,8 +79,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	 * clause
 	 */
 	@Override
-	public String getValidateQuery(String query, QueryType queryType)
-			throws SQLException {
+	public String getValidateQuery(String query, QueryType queryType, boolean optimizeSelectQuery) throws SQLException {
 
 		if (queryType.equals(QueryType.SELECT)) {
 
@@ -99,9 +98,15 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	        	query = query2.toString();
 			}
 			
-			return "select * from table(multiset(" + query + ")) wrapper_table where 1=0";
+			String q;
+			if (optimizeSelectQuery) {
+				q = "select * from table(multiset(" + query + ")) wrapper_table where 1=0";
+			} else {
+				q = query;
+			}
+			return q;
 		} else {
-			return super.getValidateQuery(query, queryType);
+			return super.getValidateQuery(query, queryType, optimizeSelectQuery);
 		}
 
 	}

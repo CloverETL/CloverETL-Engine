@@ -99,13 +99,18 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
     }
 	
 	@Override
-	public String getValidateQuery(String query, QueryType queryType)
-			throws SQLException {
+	public String getValidateQuery(String query, QueryType queryType, boolean optimizeSelectQuery) throws SQLException {
 		if(queryType==QueryType.SELECT) {
 			query = SQLUtil.removeUnnamedFields(query, this);
-			return "SELECT wrapper_table.* FROM (" + query + ") wrapper_table limit 1";			
+			String q;
+			if (optimizeSelectQuery) {
+				q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table limit 1";
+			} else {
+				q = query;
+			}
+			return q;
 		}
-		return super.getValidateQuery(query, queryType);
+		return super.getValidateQuery(query, queryType, optimizeSelectQuery);
 	}
 	
 	@Override
