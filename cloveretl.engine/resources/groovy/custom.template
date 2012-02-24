@@ -1,5 +1,45 @@
 //---------------------------------------------------------------------------------------------------------------------
 @Typed
+class DecimalWrapper {
+	Decimal wrapped
+	
+	def DecimalWrapper(Decimal wrappedObj) {
+		this.wrapped = wrappedObj
+	}
+	
+	DecimalWrapper plus(DecimalWrapper that) {
+	  Decimal res = wrapped.createCopy()
+	  res.add(that.wrapped)
+	  return new DecimalWrapper(res)
+	}
+	
+	DecimalWrapper minus(DecimalWrapper that) {
+	  Decimal res = wrapped.createCopy()
+	  res.sub(that.wrapped)
+	  return new DecimalWrapper(res)
+	}
+	
+	DecimalWrapper plus(int that) {
+	  DecimalWrapper tmp = new DecimalWrapper(wrapped.createCopy())
+	  tmp.wrapped.setValue(that)
+	  return this+tmp
+	}
+	
+	DecimalWrapper minus(int that) {
+	  DecimalWrapper tmp = new DecimalWrapper(wrapped.createCopy())
+	  tmp.wrapped.setValue(that)
+	  return this-tmp
+	}
+	
+	DecimalWrapper multiply(DecimalWrapper that) {
+	  Decimal res = wrapped.createCopy()
+	  res.mul(that.wrapped)
+	  return new DecimalWrapper(res)
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+@Typed
 class CustomClass {
 
   InputPorts input = new InputPorts()

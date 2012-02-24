@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="kubosj" created="Thu Feb 09 13:31:51 CET 2012" guiVersion="3.2.1" id="1328790789219" licenseCode="CLP1DJAVLI38280880BY" licenseType="CloverETL Designer single license" modified="Tue Feb 21 10:56:19 CET 2012" modifiedBy="kubosj" name="strings_long" revision="1.30" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="a" type="string"/>
+<Field name="b" type="string"/>
+<Field name="c" type="string"/>
+<Field name="d" type="string"/>
+<Field name="e" type="string"/>
+<Field name="f" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="recordName2" recordDelimiter="\r\n" type="delimited">
+<Field name="result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="65" guiName="DataGenerator" guiWidth="128" guiX="28" guiY="256" id="DATA_GENERATOR0" recordsNumber="12000000" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.a = randomString(45,45);
+	$out.0.b = randomString(45,45);
+	$out.0.c = randomString(45,45);
+	$out.0.d = randomString(45,45);
+	$out.0.e = randomString(45,45);
+	$out.0.f = randomString(45,45);
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/a" guiHeight="76" guiName="UniversalDataWriter" guiWidth="146" guiX="996" guiY="107" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/b" guiHeight="76" guiName="UniversalDataWriter" guiWidth="146" guiX="996" guiY="198" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/c" guiHeight="76" guiName="UniversalDataWriter" guiWidth="146" guiX="996" guiY="297" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/d" guiHeight="76" guiName="UniversalDataWriter" guiWidth="146" guiX="996" guiY="385" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node enabled="${CTL}" guiHeight="76" guiName="Reformat" guiWidth="128" guiX="482" guiY="117" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+function integer transform() {
+
+	$out.0.result = $in.0.a+";"+$in.0.b+";"+$in.0.c+";"+$in.0.d+";"+$in.0.e+";"+$in.0.f;
+
+	return OK;
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[CTL]]></attr>
+</Node>
+<Node enabled="${CTLCOMPILED}" guiHeight="76" guiName="Reformat" guiWidth="128" guiX="482" guiY="208" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2:COMPILED
+
+function integer transform() {
+	$out.0.result = $in.0.a+";"+$in.0.b+";"+$in.0.c+";"+$in.0.d+";"+$in.0.e+";"+$in.0.f;
+
+	return OK;
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[CTL COMPILED]]></attr>
+</Node>
+<Node enabled="${GROOVY}" guiHeight="76" guiName="Reformat" guiWidth="128" guiX="482" guiY="297" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#GROOVY
+
+def transform() {
+	output.port0.result = input.port0.a+";"+input.port0.b+";"+input.port0.c+";"+input.port0.d+";"+input.port0.e+";"+input.port0.f;
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[GROOVY]]></attr>
+</Node>
+<Node enabled="${SCALA}" guiHeight="76" guiName="Reformat" guiWidth="128" guiX="482" guiY="385" id="REFORMAT3" type="REFORMAT">
+<attr name="transform"><![CDATA[//#SCALA
+package org.jetel.component.scala;
+
+import org.jetel.component.DataRecordTransform
+import org.jetel.data.DataRecord
+import org.jetel.component.RecordTransform._
+import org.jetel.component.LibraryFunctions
+
+class MyTransformation extends DataRecordTransform {
+
+  var input : Inputs = new Inputs()
+  var output : Outputs = new Outputs()
+  var functions : LibraryFunctions = new LibraryFunctions()
+  
+  def transform() = {
+  	output.port0.result = input.port0.a+";"+input.port0.b+";"+input.port0.c+";"+input.port0.d+";"+input.port0.e+";"+input.port0.f;
+  }
+
+  override def transform(inputRecords: Array[DataRecord], outputRecords: Array[DataRecord]): Int = {
+	
+	input.port0.dataRecord = inputRecords(0)
+	output.port0.dataRecord = outputRecords(0)
+	
+	transform()
+	
+    return 0;
+  }
+  
+}
+
+class MyRecord {
+  
+  var dataRecord : DataRecord = null
+  
+  def a : String = {
+    return String.valueOf(dataRecord.getField("a").getValue());
+  }
+
+  def b : String = {
+    return String.valueOf(dataRecord.getField("b").getValue());
+  }
+  
+  def c : String = {
+    return String.valueOf(dataRecord.getField("c").getValue());
+  }
+  
+  def d : String = {
+    return String.valueOf(dataRecord.getField("d").getValue());
+  }
+  
+  def e : String = {
+    return String.valueOf(dataRecord.getField("e").getValue());
+  }
+  
+  def f : String = {
+    return String.valueOf(dataRecord.getField("f").getValue());
+  }
+}
+
+class MyRecord2 {
+  
+  var dataRecord : DataRecord = null
+  
+  def result : String = {
+    return String.valueOf(dataRecord.getField("result").getValue());
+  }
+  
+  def result_= (value : String) : Unit = {
+    dataRecord.getField("result").setValue(value); 
+  } 
+  
+}
+
+class Inputs {
+  	var port0 : MyRecord = new MyRecord()
+}
+
+class Outputs {
+	var port0 : MyRecord2 = new MyRecord2()
+}
+
+
+
+]]></attr>
+<attr name="guiDescription"><![CDATA[SCALA]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="84" guiName="SimpleCopy" guiWidth="128" guiX="231" guiY="248" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="84" guiName="Trash" guiWidth="128" guiX="811" guiY="237" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH0:1"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 2 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH0:2"/>
+<Edge fromNode="REFORMAT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 3 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH0:3"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="REFORMAT2:0"/>
+<Edge fromNode="SIMPLE_COPY0:3" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 3 (out)" toNode="REFORMAT3:0"/>
+</Phase>
+</Graph>

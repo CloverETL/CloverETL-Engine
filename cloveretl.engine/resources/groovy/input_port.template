@@ -8,9 +8,9 @@ class InputPort${index} {
 	${method["return_type"]} get${method["name"]}() {
 		<% if (method["return_type"]=="String") { %>
 		return data.getField(${method["index"]}).getValue().toString()
-		<% } else if (method["return_type"]=="BigDecimal") { %>
+		<% } else if (method["return_type"]=="DecimalWrapper") { %>
 		Decimal dec = (Decimal)data.getField(${method["index"]}).getValue();
-		return dec.getBigDecimalOutput()
+		return new DecimalWrapper(dec)
 		<% } else { %>
 		return data.getField(${method["index"]}).getValue()
 		<% } %>

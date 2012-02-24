@@ -105,7 +105,7 @@ class Generator {
 			break;
 			
 		case "decimal":
-			"BigDecimal"
+			"DecimalWrapper"
 			break;
 			
 		case "date":
