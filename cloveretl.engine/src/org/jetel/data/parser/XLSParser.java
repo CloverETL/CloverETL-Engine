@@ -58,7 +58,7 @@ import org.jetel.util.NumberIterator;
  * @since Jan 16, 2007
  *
  */
-public abstract class XLSParser implements Parser {
+public abstract class XLSParser extends AbstractParser {
 
 	public final static int NO_METADATA_INFO = 0;
 	public final static int ONLY_CLOVER_FIELDS = 1;

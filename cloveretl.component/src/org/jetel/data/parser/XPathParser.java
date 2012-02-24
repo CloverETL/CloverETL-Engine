@@ -22,13 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +38,7 @@ import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXSource;
 
+import net.sf.saxon.om.NamespaceResolver;
 import net.sf.saxon.sxpath.IndependentContext;
 import net.sf.saxon.sxpath.XPathEvaluator;
 import net.sf.saxon.trans.XPathException;
@@ -73,7 +73,7 @@ import org.xml.sax.XMLReader;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @created 20.5.2007
  */
-public class XPathParser implements Parser {
+public class XPathParser extends AbstractParser {
 
 	//                                                        str1 =     "|'   str2    "|'
 	private final static Pattern NAMESPACE = Pattern.compile("(.+)[=]([\"]|['])(.+)([\"]|['])$");
@@ -115,7 +115,7 @@ public class XPathParser implements Parser {
 	private XMLReader reader;
 	private String xmlFeatures;
 
-	private XPathEvaluator xPathEvaluator = new XPathEvaluator();
+	private List<XPathEvaluator> xPathEvaluators = new ArrayList<XPathEvaluator>();
 
 	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
 	
@@ -157,10 +157,10 @@ public class XPathParser implements Parser {
 	    if (!found) 
 	    	throw new TransformerException("Every xpath must contain just one " + ELEMENT_CONTEXT + " element!");
 	    
-		return parseXpathContext(node, new HashMap<String, String>(), new HashSet<String>());
+		return parseXpathContext(node, new HashMap<String, String>(), null);
 	}
 	
-	private XPathContext parseXpathContext(Node context, Map<String, String> mNamespaces, Set<String> sDefaultNamespaces) throws DOMException, TransformerException, ComponentNotReadyException {
+	private XPathContext parseXpathContext(Node context, Map<String, String> mNamespaces, String sDefaultNamespace) throws DOMException, TransformerException, ComponentNotReadyException {
 	    // create xpathContext class
 	    Node aNodeSet = context.getAttributes().getNamedItem(ATTRIBUTE_XPATH);
 	    Node aOutPort = context.getAttributes().getNamedItem(ATTRIBUTE_OUTPORT);
@@ -171,14 +171,17 @@ public class XPathParser implements Parser {
 	    Node aNamespacePaths = context.getAttributes().getNamedItem(ATTRIBUTE_NAMESPACE_PATHS);
 
 	    mNamespaces.putAll(getNamespaces(aNamespacePaths));
-	    sDefaultNamespaces.addAll(getDefaultNamespaces(aNamespacePaths));
-       	setNamespacesToEvaluator(mNamespaces, sDefaultNamespaces);
+	    String newDefaultNamespace = getDefaultNamespace(aNamespacePaths);
+	    if (newDefaultNamespace != null) {
+	    	sDefaultNamespace = newDefaultNamespace;
+	    }
+	    XPathEvaluator evaluator = getXPathEvaluator(mNamespaces, sDefaultNamespace);
 	    
        	if (aNodeSet == null) throw new ComponentNotReadyException("Attribute '" + ATTRIBUTE_XPATH + "' not found for the context element.");
        	String sXpath = aNodeSet.getNodeValue();
 		if (sXpath == null)	throw new ComponentNotReadyException("The 'xpath' attribute is null.");
 		
-	    XPathContext xpathContext = new XPathContext(xPathEvaluator.createExpression(sXpath), sXpath);
+	    XPathContext xpathContext = new XPathContext(evaluator.createExpression(sXpath), sXpath);
 	    if (aOutPort != null) {
 		    int port = Integer.parseInt(aOutPort.getNodeValue());
 		    ports.add(port);
@@ -245,9 +248,7 @@ public class XPathParser implements Parser {
 	    	if (node.getNodeName().equalsIgnoreCase(ELEMENT_XPATH)) {
 	    		Map<String, String> mNamespacesCopy = new HashMap<String, String>();
 	    		mNamespacesCopy.putAll(mNamespaces);
-	    		Set<String> sDefaultNamespacesCopy = new HashSet<String>();
-	    		sDefaultNamespacesCopy.addAll(sDefaultNamespaces);
-		    	xpathElement = parseXpathElement((Element)node, mNamespacesCopy, sDefaultNamespacesCopy);
+	    		xpathElement = parseXpathElement((Element)node, mNamespacesCopy, sDefaultNamespace);
 		    	if (xpathElement != null) {
 			    	xpathContext.assignXPath(xpathElement);
 		    	}
@@ -256,16 +257,14 @@ public class XPathParser implements Parser {
 	    	if (node.getNodeName().equalsIgnoreCase(ELEMENT_CONTEXT)) {
 	    		Map<String, String> mNamespacesCopy = new HashMap<String, String>();
 	    		mNamespacesCopy.putAll(mNamespaces);
-	    		Set<String> sDefaultNamespacesCopy = new HashSet<String>();
-	    		sDefaultNamespacesCopy.addAll(sDefaultNamespaces);
-	    		xpathContext.assignXPathContext(parseXpathContext(node, mNamespacesCopy, sDefaultNamespacesCopy));
+	    		xpathContext.assignXPathContext(parseXpathContext(node, mNamespacesCopy, sDefaultNamespace));
 	    		continue;
 	    	}
 	    }
 	    return xpathContext;
 	}
 	
-	private XPathElement parseXpathElement(Element element, Map<String, String> mNamespaces, Set<String> sDefaultNamespaces) throws DOMException, TransformerException, ComponentNotReadyException {
+	private XPathElement parseXpathElement(Element element, Map<String, String> mNamespaces, String sDefaultNamespace) throws DOMException, TransformerException, ComponentNotReadyException {
 	    Node xpathAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_XPATH);
 	    Node nodeNameAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_NODE_NAME);
 	    Node cloverFieldAttribute = element.getAttributes().getNamedItem(ATTRIBUTE_CLOVERFIELD);
@@ -282,9 +281,12 @@ public class XPathParser implements Parser {
 	    	throw new TransformerException("Attribute " + ATTRIBUTE_CLOVERFIELD + " not found.");
 
 	    mNamespaces.putAll(getNamespaces(aNamespacePaths));
-	    sDefaultNamespaces.addAll(getDefaultNamespaces(aNamespacePaths));
-       	setNamespacesToEvaluator(mNamespaces, sDefaultNamespaces);
-	    
+	    String newDefaultNamespace = getDefaultNamespace(aNamespacePaths);
+	    if (newDefaultNamespace != null) {
+	    	sDefaultNamespace = newDefaultNamespace;
+	    }
+	    XPathEvaluator evaluator = getXPathEvaluator(mNamespaces, sDefaultNamespace);
+	    	    
 	    XPathElement xpathElement;
 	    if (xpathAttribute == null) {
 	    	switch(dataModel) {
@@ -303,12 +305,12 @@ public class XPathParser implements Parser {
 	    	switch(dataModel) {
     		case W3C_XSD:
     			xpathElement = new XPathElementOfXSDType(
-    		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
+    					evaluator.createExpression(xpathAttribute.getNodeValue()), 
     		    		cloverFieldAttribute.getNodeValue());
     			break;
     		default:
     			xpathElement = new XPathElement(
-    		    		xPathEvaluator.createExpression(xpathAttribute.getNodeValue()), 
+    					evaluator.createExpression(xpathAttribute.getNodeValue()), 
     		    		cloverFieldAttribute.getNodeValue());
     			break;
 	    	}
@@ -320,22 +322,27 @@ public class XPathParser implements Parser {
 	    return xpathElement; 
 	}
 
-	private Set<String> getDefaultNamespaces(Node namespacePaths) throws ComponentNotReadyException {
-		Set<String> defaultNamespaces = new HashSet<String>();
-		if (namespacePaths == null) return defaultNamespaces;
+	private String getDefaultNamespace(Node namespacePaths) throws ComponentNotReadyException {
+		if (namespacePaths == null) {
+			return null;
+		}
+
 		String path;
 		for (String namespacePath: namespacePaths.getNodeValue().split(";")) {
 			Matcher matcherDefault = NAMESPACE_DEFAULT.matcher(namespacePath);
 			Matcher matcher = NAMESPACE.matcher(namespacePath);
 			if (!matcherDefault.find()) {
-				if (!matcher.find()) throw new ComponentNotReadyException("The namespace expression '"+ namespacePath +"' is not valid.");
-				else continue;
+				if (!matcher.find()) {
+					throw new ComponentNotReadyException("The namespace expression '"+ namespacePath +"' is not valid.");
+				} else {
+					continue;
+				}
 			}
 			if ((path = matcherDefault.group(2)) != null) {
-				defaultNamespaces.add(path);
+				return path;
 			} 
 		}
-		return defaultNamespaces;
+		return null;
 	}
 	
 	
@@ -359,25 +366,25 @@ public class XPathParser implements Parser {
 		return namespaces;
 	}
 	
-	private void setNamespacesToEvaluator(Map<String, String> namespacePaths, Set<String> sDefaultNamestaces) {
+	private XPathEvaluator getXPathEvaluator(Map<String, String> namespacePaths, String defaultNamespace) {
+		XPathEvaluator evaluator = new XPathEvaluator();
+		if (defaultNamespace != null) {
+			evaluator.setDefaultElementNamespace(defaultNamespace);
+		}
+		evaluator.setNamespaceResolver(getNamespacesResolver(namespacePaths));
+		xPathEvaluators.add(evaluator);
+		
+		return evaluator;
+	}
+	
+	private NamespaceResolver getNamespacesResolver(Map<String, String> namespacePaths) {
 		IndependentContext context = new IndependentContext();
-		Object ns;
-		Iterator<?> it;
 		if (namespacePaths != null) {
-			it = namespacePaths.keySet().iterator();
-			while (it.hasNext()) {
-				ns = it.next();
-				context.declareNamespace(ns.toString(), namespacePaths.get(ns).toString());
+			for (Entry<String, String> entry : namespacePaths.entrySet()) {
+				context.declareNamespace(entry.getKey(), entry.getValue());
 			}
 		}
-		if (sDefaultNamestaces != null) {
-			it = sDefaultNamestaces.iterator();
-			while (it.hasNext()) {
-				ns = it.next();
-				xPathEvaluator.setDefaultElementNamespace(ns.toString());
-			}
-		}
-		xPathEvaluator.setNamespaceResolver(context.getNamespaceResolver());
+		return context.getNamespaceResolver();
 	}
 	
 	/**
@@ -436,7 +443,7 @@ public class XPathParser implements Parser {
 		    
 		    // error handler
 		    if (exceptionHandler instanceof StrictParserExceptionHandler) {
-				xPathEvaluator.getConfiguration().setErrorListener(new ErrorListener() {
+				ErrorListener errorListener = new ErrorListener() {
 					@Override
 					public void warning(TransformerException exception)
 							throws TransformerException {
@@ -452,7 +459,11 @@ public class XPathParser implements Parser {
 							throws TransformerException {
 						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage(), exception));
 					}
-				});
+				};
+				
+				for (XPathEvaluator xPathEvaluator : xPathEvaluators) {
+					xPathEvaluator.getConfiguration().setErrorListener(errorListener);
+				}
 		    }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
@@ -481,8 +492,12 @@ public class XPathParser implements Parser {
 	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	/**
+	 * Sets input data source.
+	 * 
+	 * Processing is done when getNext is called.
+	 * 
+	 * @param inputDataSource accepts java.io.InputStream or java.nio.channels.ReadableByteChannel
 	 */
 	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
@@ -565,6 +580,11 @@ public class XPathParser implements Parser {
 		return ports;
 	}
 	
+	/***
+	 * Returns port id where should be record obtained by getNext() send.
+	 * 
+	 * @return port id
+	 */
 	public int getActualPort() {
 		return xpathContext.getActualPort();
 	}

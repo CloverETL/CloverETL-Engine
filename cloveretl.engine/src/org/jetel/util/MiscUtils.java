@@ -140,4 +140,16 @@ public final class MiscUtils {
 		return stringWriter.toString();
 	}
 
+	/**
+	 * Utility method. Compares two objects for equality,
+	 * handles <code>null</code> values.
+	 * 
+	 * @param o1
+	 * @param o2
+	 * @return <code>true</code> iff <code>o1</code> and <code>o2</code> are equal.
+	 */
+    public static boolean equals(Object o1, Object o2) {
+        return o1 == null ? o2 == null : o1.equals(o2);
+    }
+
 }

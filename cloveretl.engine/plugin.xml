@@ -58,6 +58,16 @@
 		<parameter id="className" value="org.jetel.graph.dictionary.ByteDictionaryType"/>
 	</extension>
 	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="list"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ListDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="map"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.MapDictionaryType"/>
+	</extension>
+	
 	<extension point-id="tlCompiler">
 		<parameter id="type" value="simple.compiler"/>
 		<parameter id="className" value="org.jetel.ctl.TLCompiler"/>

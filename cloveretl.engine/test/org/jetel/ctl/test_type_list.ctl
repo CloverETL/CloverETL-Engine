@@ -2,6 +2,17 @@ integer[] intList;
 integer[] intList2;
 string[] stringList = ['first', 'second', 'third'];
 string[] stringListCopy;
+string[] stringListCopy2;
+
+boolean[] booleanList = [false, null, true];
+byte[] byteList = [hex2byte("AB"), null];
+cbyte[] cbyteList = [null, hex2byte("CD")];
+date[] dateList = [long2date(12000), null, long2date(34000)];
+decimal[] decimalList = [null, 12.34d];
+integer[] intList3 = [12, null, 34];
+long[] longList = [12l, null, 98l];
+number[] numberList = [12.34, null, 56.78];
+string[] stringList2 = ["aa", null, "bb"];
 
 function void changeList(string[] lst) {
 	lst.push( "extra" );	
@@ -32,6 +43,8 @@ function integer transform() {
 	stringListCopy.push('seventh');
 	
 	changeList(stringList);
+	
+	stringListCopy2 = stringList;
 	printErr(stringList);
 	printErr(stringListCopy);
 	return 0;

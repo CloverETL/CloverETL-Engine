@@ -44,6 +44,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     
     private int fieldNumber=-1;
     
+    private String fieldName = null;
+    
     private String additionalMessage;
     
     private BadDataFormatException next = null;
@@ -118,32 +120,40 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     public String getMessage() {
         StringBuffer ret = new StringBuffer();
         ret.append(super.getMessage());
-//        if(offendingValue != null && offendingValue.length() > 0) {
-//            ret.append(" : ");
-//            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
-//        }
+        
         if (additionalMessage != null) {
         	ret.append(" ");
         	ret.append(additionalMessage);
         }
         
-        if(fieldNumber > -1) {
-            ret.append(" in field # ");
-            ret.append(fieldNumber + 1);
-        }
-        
         if(recordNumber > -1) {
-            ret.append(" of record # ");
+            ret.append(" in record ");
             ret.append(recordNumber);
         }
         
+        if(fieldNumber > -1) {
+        	if (recordNumber == -1) {
+        		ret.append(" in field ");
+        	} else {
+        		ret.append(", field ");
+        	}
+            ret.append(fieldNumber + 1);
+            
+            if (fieldName != null) {
+            	ret.append(" (\"");
+                ret.append(fieldName);
+                ret.append("\")");
+            }
+        }
+                
         if (recordName != null) {
-        	ret.append(" of type ");
+        	ret.append(", metadata \"");
         	ret.append(recordName);
+        	ret.append("\"");
         }
         
         if(offendingValue != null) {
-            ret.append(", value: '");
+            ret.append("; value: '");
             ret.append(offendingValue);
             ret.append("'");
         }
@@ -165,6 +175,14 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 
     public void setRecordNumber(int recordNumber) {
         this.recordNumber = recordNumber;
+    }
+    
+    public String getFieldName() {
+    	return fieldName;
+    }
+    
+    public void setFieldName(String fieldName) {
+    	this.fieldName = fieldName;
     }
 
     public void setAdditionalMessage(String additionalMessage) {

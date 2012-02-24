@@ -179,6 +179,11 @@ public class Trash extends Node {
 		}
 		
 		super.init();
+		
+		if(!org.jetel.component.license.LicenseVerifier.isLicensed("com.cloveretl.gui", 3, 3, "trash")) {
+			throw new ComponentNotReadyException(this, "Unlicensed component");
+		}
+		
 		TransformationGraph graph = getGraph();
 
 		// creates necessary directories

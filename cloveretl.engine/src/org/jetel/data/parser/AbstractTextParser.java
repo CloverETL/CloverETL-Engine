@@ -34,7 +34,7 @@ import org.jetel.exception.PolicyType;
  *
  * @created Dec 10, 2010
  */
-public abstract class AbstractTextParser implements TextParser {
+public abstract class AbstractTextParser extends AbstractParser implements TextParser {
 	
 	@Override
 	public DataRecord getNext() throws JetelException {

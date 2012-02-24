@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jan.michalica" created="Wed Dec 07 10:20:04 ART 2011" guiVersion="0.0.0.devel" id="1323265523606" licenseType="Evaluation Devel" modified="Wed Dec 07 10:59:15 ART 2011" modifiedBy="jan.michalica" name="beanreadertest" revision="1.5" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="customer" recordDelimiter="\r\n" type="delimited">
+<Field name="name" type="string"/>
+<Field name="id" type="string"/>
+<Field name="city" type="string"/>
+<Field name="ordinal" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="|" name="item" recordDelimiter="\r\n" type="delimited">
+<Field name="name" type="string"/>
+<Field name="id" type="string"/>
+<Field name="detail" type="string"/>
+<Field name="order_id" type="string"/>
+<Field name="customer_id" type="string" />
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="order" recordDelimiter="\r\n" type="delimited">
+<Field name="deliveryDate" type="date"/>
+<Field name="id" type="string"/>
+<Field name="customer_id" type="string"/>
+</Record>
+</Metadata>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="80" guiName="Trash" guiWidth="128" guiX="474" guiY="272" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" fileURL="dict:input" guiHeight="89" guiName="XPath Bean Reader" guiWidth="164" guiX="134" guiY="272" id="XPATH_BEAN_READER0" type="XPATH_BEAN_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" ?>
+<Context xpath="." outPort="0"  sequenceField="ordinal">
+    <Mapping xpath="name" cloverField="name"/>
+    <Mapping nodeName="id" cloverField="id" />
+    <Context xpath="address">
+        <Mapping xpath="city" cloverField="city" />
+    </Context>
+    <Context xpath="orders" outPort="1" generatedKey="customer_id" parentKey="id">
+        <Mapping xpath="deliveryDate" cloverField="deliveryDate" />
+        <Mapping xpath="id" cloverField="id" />
+        <Context xpath="items" outPort="2" generatedKey="order_id" parentKey="id">
+            <Mapping nodeName="name" cloverField="name" />
+            <Mapping xpath="details[1]" cloverField="detail" />
+            <Mapping xpath="../../id" cloverField="customer_id" />
+        </Context>
+    </Context>
+</Context>]]></attr>
+</Node>
+<Edge fromNode="XPATH_BEAN_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="XPATH_BEAN_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="TRASH0:1"/>
+<Edge fromNode="XPATH_BEAN_READER0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 2 (out)" toNode="TRASH0:2"/>
+</Phase>
+</Graph>

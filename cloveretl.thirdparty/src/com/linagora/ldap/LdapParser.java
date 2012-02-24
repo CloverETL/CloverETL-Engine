@@ -34,7 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -57,7 +57,7 @@ import com.linagora.ldap.LdapManager.ReferralHandling;
  * @author Francois Armand
  * @since september, 2006
  */
-public class LdapParser implements Parser {
+public class LdapParser extends AbstractParser {
 
 	/** timeout, in mili second. 0 means wait indefinitely */ 
 	public static int TIMEOUT = 0;

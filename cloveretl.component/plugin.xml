@@ -6,15 +6,21 @@
 	<runtime>
 		<library path="bin/"/>
 		<library path="lib/commons-httpclient-3.1.jar"/>
+		<library path="lib/commons-jxpath-1.3.jar" />
 		<library path="lib/saxon8.jar"/>
-		<library path="lib/jdbm-2.2.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 		<import plugin-id="org.jetel.sequence"/>
+		<import plugin-id="org.jetel.license"/>
 	</requires>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.XPathBeanReader"/>
+		<parameter id="type" value="XPATH_BEAN_READER"/>
+	</extension>
 
 	<extension point-id="component">
 		<parameter id="className" value="org.jetel.component.DataReader"/>
@@ -292,6 +298,16 @@
 	</extension>
 	
 	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlReader"/>
+	    <parameter id="type" value="XML_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.JsonReader"/>
+	    <parameter id="type" value="JSON_READER"/>
+	</extension>
+	
+	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
 	    <parameter id="type" value="SPEED_LIMITER"/>
 	</extension>
@@ -300,13 +316,28 @@
 		<parameter id="className" value="org.jetel.component.JavaExecute"/>
 		<parameter id="type" value="JAVA_EXECUTE"/>
 	</extension>
-
+	
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
 	    <parameter id="type" value="XML_WRITER"/>
 	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.JsonWriter"/>
+		<parameter id="type" value="JSON_WRITER"/>
+	</extension>
   
-  <extension point-id="component">
+    <extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.BeanWriter"/>
+	    <parameter id="type" value="BEAN_WRITER"/>
+	</extension>
+
+    <extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MapWriter"/>
+	    <parameter id="type" value="MAP_WRITER"/>
+	</extension>
+  
+    <extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.ExtXmlWriter"/>
 	    <parameter id="type" value="EXT_XML_WRITER"/>
 	</extension>

@@ -41,7 +41,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
@@ -85,8 +84,8 @@ public class SpreadsheetWriter extends Node {
 	public static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 
 	private static Log LOGGER = LogFactory.getLog(SpreadsheetWriter.class);
-	private static final int READ_FROM_PORT = 0;
-	private static final int OUTPUT_PORT = 0;
+	public static final int INPUT_PORT_NBR = 0;
+	public static final int OUTPUT_PORT_NBR = 0;
 	
 	private static final HashSet<Character> supportedTypes;
 	
@@ -293,14 +292,6 @@ public class SpreadsheetWriter extends Node {
 			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 		
-		Map<String, DataFieldFormatType> fieldsWithUnsupportedFormats = checkInputDataFieldsFormats(getInputPort(0).getMetadata());
-		if (!fieldsWithUnsupportedFormats.isEmpty()) {
-			StringBuilder errorMessage = new StringBuilder("Input port metadata contain the following fields with unsupported formatting strings (try to prepend \"" + DataFieldFormatType.EXCEL.getFormatPrefixWithDelimiter() + "\" to threir formatting strings):");
-			for (String fieldName : fieldsWithUnsupportedFormats.keySet()) {
-				errorMessage.append("\n" + fieldName + " - " + fieldsWithUnsupportedFormats.get(fieldName).getLongName());
-			}
-			status.add(new ConfigurationProblem(errorMessage.toString(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-		}
 
 		try {
 			FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDirs);
@@ -330,10 +321,33 @@ public class SpreadsheetWriter extends Node {
 			}
 		}
 		
-		if (templateFileURL!=null && fileURL!=null) {
-			if (resolveFormat(formatterType, fileURL)!=resolveTemplateFormat(formatterType, templateFileURL)) {
+		SpreadsheetFormat fileFormat = resolveFormat(formatterType, fileURL);
+		SpreadsheetFormat templateFormat = resolveFormat(formatterType, templateFileURL);
+		
+		if (templateFileURL!=null && existingSheetsActions.equals(SpreadsheetExistingSheetsActions.CLEAR_SHEETS)) {
+			status.add(new ConfigurationProblem("Clearing of target sheets is not allowed when writing to template.",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+		
+		if (fileURL!=null && fileFormat==null) {
+			status.add(new ConfigurationProblem("Unsupported format of ouput file!",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		} else if (templateFileURL!=null && templateFormat==null) {
+			status.add(new ConfigurationProblem("Unsupported format of template file!",
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		} else if (templateFileURL!=null && fileURL!=null) {
+			if (fileFormat!=templateFormat) {
 				status.add(new ConfigurationProblem("Formats of template and an output file must match!",
 						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			} else {
+				String templateFormatPattern = fileTemplateFormatToPattern(SpreadsheetFormat.XLSX);
+				if (templateFileURL.matches(templateFormatPattern) && !fileURL.matches(templateFormatPattern)) {
+					status.add(new ConfigurationProblem("Setting XLTX template does not allow XLSX output. Please, save XLTX template as a new XLSX file and use the XLSX file as a template",
+							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				} else if (!templateFileURL.matches(templateFormatPattern) && fileURL.matches(templateFormatPattern)) {
+					status.add(new ConfigurationProblem("Setting XLSX template does not allow XLTX output. Please, save XLSX template as a new XLTX file and use the XLTX file as a template",
+							ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				}
 			}
 		}
 		
@@ -347,21 +361,6 @@ public class SpreadsheetWriter extends Node {
 			fieldType = field.getType();
 			if (!supportedTypes.contains(fieldType)) {
 				result.put(field.getName(), fieldType);
-			}
-		}
-		
-		return result;
-	}
-
-	private Map<String, DataFieldFormatType> checkInputDataFieldsFormats(DataRecordMetadata metadata) {
-		HashMap<String, DataFieldFormatType> result = new HashMap<String, DataFieldFormatType>();
-		for (DataFieldMetadata field : metadata.getFields()) {
-			if (field.hasFormat()) {
-				DataFieldFormatType formatType = field.getFormatType();
-				if (formatType!=DataFieldFormatType.EXCEL) {
-					//unsupported data field format type
-					result.put(field.getName(), formatType);
-				}
 			}
 		}
 		
@@ -391,37 +390,86 @@ public class SpreadsheetWriter extends Node {
 		prepareWriter();
 	}
 
-	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
-		if ((format == SpreadsheetFormat.AUTO && fileURL.matches(SpreadsheetFormatter.XLSX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
-			return SpreadsheetFormat.XLSX;
+	private static String fileFormatToPattern(SpreadsheetFormat spreadsheetFormat) {
+		if (spreadsheetFormat == SpreadsheetFormat.XLS) {
+			return SpreadsheetFormatter.XLS_FILE_PATTERN;
+		} else if (spreadsheetFormat == SpreadsheetFormat.XLSX) {
+			return SpreadsheetFormatter.XLSX_FILE_PATTERN;
 		} else {
-			return SpreadsheetFormat.XLS;
+			return null;
 		}
 	}
 	
-	public static SpreadsheetFormat resolveTemplateFormat(SpreadsheetFormat format, String templateFileURL) {
-		if ((format == SpreadsheetFormat.AUTO && templateFileURL.matches(SpreadsheetFormatter.XLTX_FILE_PATTERN)) || format == SpreadsheetFormat.XLSX) {
-			return SpreadsheetFormat.XLSX;
+	private static String fileTemplateFormatToPattern(SpreadsheetFormat spreadsheetFormat) {
+		if (spreadsheetFormat == SpreadsheetFormat.XLS) {
+			return SpreadsheetFormatter.XLT_FILE_PATTERN;
+		} else if (spreadsheetFormat == SpreadsheetFormat.XLSX) {
+			return SpreadsheetFormatter.XLTX_FILE_PATTERN;
 		} else {
+			return null;
+		}
+	}
+	
+	private static boolean excelFileFormatMatches(SpreadsheetFormat format, String fileURL, SpreadsheetFormat expectedFormat) {
+		String spreadsheetFormatPattern = fileFormatToPattern(expectedFormat);
+		if (spreadsheetFormatPattern==null) {
+			return false;
+		}
+		return ((format == SpreadsheetFormat.AUTO && fileURL!=null && fileURL.matches(spreadsheetFormatPattern)) || format == expectedFormat);
+	}
+	
+	private static boolean excelTemplateFileFormatMatches(SpreadsheetFormat format, String fileURL, SpreadsheetFormat expectedFormat) {
+		String spreadsheetFormatPattern = fileTemplateFormatToPattern(expectedFormat);
+		if (spreadsheetFormatPattern==null) {
+			return false;
+		}
+		return ((format == SpreadsheetFormat.AUTO && fileURL!=null && fileURL.matches(spreadsheetFormatPattern)) || format == expectedFormat);
+	}
+	
+	public static SpreadsheetFormat resolveStrictlyOutputFileFormat(SpreadsheetFormat format, String outputFileURL) {
+		if (excelFileFormatMatches(format, outputFileURL, SpreadsheetFormat.XLSX)) {
+			return SpreadsheetFormat.XLSX;
+		} else if (excelFileFormatMatches(format, outputFileURL, SpreadsheetFormat.XLS)) {
 			return SpreadsheetFormat.XLS;
+		} else {
+			return null;
+		}
+	}
+	
+	public static SpreadsheetFormat resolveStrictlyTemplateFormat(SpreadsheetFormat format, String templateFileURL) {
+		if (excelTemplateFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLSX)) {
+			return SpreadsheetFormat.XLSX;
+		} else if (excelTemplateFileFormatMatches(format, templateFileURL, SpreadsheetFormat.XLS)) {
+			return SpreadsheetFormat.XLS;
+		} else {
+			return null;
+		}
+	}
+	
+	public static SpreadsheetFormat resolveFormat(SpreadsheetFormat format, String fileURL) {
+		SpreadsheetFormat result = resolveStrictlyTemplateFormat(format, fileURL);
+		if (result!=null) {
+			return result;
+		} else {
+			return resolveStrictlyOutputFileFormat(format, fileURL);
 		}
 	}
 
 	private XLSMapping prepareMapping() throws ComponentNotReadyException {
-		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+		DataRecordMetadata metadata = getInputPort(INPUT_PORT_NBR).getMetadata();
 
 		XLSMapping parsedMapping = null;
 		if (mappingURL != null) {
 			TransformationGraph graph = getGraph();
 			try {
 				InputStream stream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
-				parsedMapping = XLSMapping.parse(stream, metadata);
+				parsedMapping = XLSMapping.parse(stream, metadata, false, getId());
 			} catch (IOException e) {
 				LOGGER.error("cannot instantiate node from XML", e);
 				throw new ComponentNotReadyException(e.getMessage(), e);
 			}
 		} else if (mapping != null) {
-			parsedMapping = XLSMapping.parse(mapping, metadata);
+			parsedMapping = XLSMapping.parse(mapping, metadata, false, getId());
 		}
 
 		return parsedMapping;
@@ -436,7 +484,7 @@ public class SpreadsheetWriter extends Node {
 		}
 		writer.setLogger(LOGGER);
 		writer.setDictionary(getGraph().getDictionary());
-		writer.setOutputPort(getOutputPort(OUTPUT_PORT));
+		writer.setOutputPort(getOutputPort(OUTPUT_PORT_NBR));
 		writer.setMkDir(mkDirs);
 		writer.setAppendData(true);//in order to allow input stream opening
 		writer.setUseChannel(false);
@@ -470,7 +518,7 @@ public class SpreadsheetWriter extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		if (firstRun()) { // a phase-dependent part of initialization
-			writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+			writer.init(getInputPort(INPUT_PORT_NBR).getMetadata());
 		} else {
 			writer.reset();
 		}
@@ -478,7 +526,7 @@ public class SpreadsheetWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
+		InputPort inPort = getInputPort(INPUT_PORT_NBR);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 

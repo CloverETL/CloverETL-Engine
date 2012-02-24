@@ -94,13 +94,13 @@ public class SlaveReader implements InputReader {
 			needsRewind = false;
 			if (firstRun) {
 				firstRun = false;
-			}
-			//if (key.compare(rec[NEXT], rec[CURRENT]) != 0) {
-			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
-			if (comparison != 0) {
-				inputOrdering = updateOrdering(comparison, inputOrdering);
-				swap();
-				return true;
+			} else {
+				int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+				if (comparison != 0) {
+					inputOrdering = updateOrdering(comparison, inputOrdering);
+					swap();
+					return true;
+				}
 			}
 		}
 		rec[CURRENT] = rec[NEXT] = null;

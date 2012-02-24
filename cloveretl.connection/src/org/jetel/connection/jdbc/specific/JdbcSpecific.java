@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -33,7 +34,9 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -67,7 +70,18 @@ public interface JdbcSpecific {
 		SINGLE,
 		NONE
 	}
+	
+	/**
+	 * Closes given result set if the database requires before new result set is created.
+	 * @param resultSet
+	 */
+	public void closeResultSetBeforeCreatingNewOne(ResultSet resultSet) throws SQLException;
 
+	/**
+	 * @return Pattern of db field.
+	 */
+	public String getDbFieldPattern();
+	
 	/**
 	 * Creates java.sql.Connection, which should follow 
 	 * all specific behaviour with the given operation type.
@@ -77,7 +91,16 @@ public interface JdbcSpecific {
 	 * @throws JetelException
 	 */
 	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException;
-
+	
+	/**
+	 * Performs check of metatadata if there are some special (DB specific) requirements.
+	 * @param status
+	 * @param metadata
+	 * @param node
+	 * @return
+	 */
+	public ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata, Node node);
+	
 	/**
 	 * @return type of supported auto-generated key retrieving
 	 */
@@ -168,6 +191,13 @@ public interface JdbcSpecific {
 	public Pattern getCommentsPattern();
 
 	/**
+	 * Determines sql type by the type name. Intended to be used when the driver recognize the type as Types.CLOB (2005)
+	 * @param sqlTypeName
+	 * @return
+	 */
+	public int getSqlTypeByTypeName(String sqlTypeName);
+	
+	/**
 	 * This can be used to convert java sql types into real names of a data type instide the database
 	 * @return Name of database specific data type corresponding to java.sql.Types type
 	 */
@@ -182,6 +212,15 @@ public interface JdbcSpecific {
 	 */
 	public String quoteIdentifier(String identifier);
 
+	/**
+	 * Quotes (escapes) a given string according to the database specifics.
+	 *
+	 * @param identifier the string to be quoted (identifier, table name etc.)
+	 *
+	 * @return the quoted string
+	 */
+	public String quoteString(String string);
+	
 	/**
 	 * Transforms `query` into another query, which can be used to validate the original `query`
 	 * Typically somehow adds some always failing where clause so that the query is never executed
@@ -307,5 +346,11 @@ public interface JdbcSpecific {
 	 * @param driver the driver to be unloaded
 	 */
 	public void unloadDriver(JdbcDriver driver);
+	
+	/**
+	 * @param resultSet
+	 * @return Implementation of result set which allows to call get methods multiple times.
+	 */
+	public ResultSet wrapResultSet(ResultSet resultSet);
 
 }

@@ -80,39 +80,24 @@ public class MSSQLConnection extends DefaultConnection {
 	 * @see org.jetel.connection.jdbc.specific.conn.DefaultConnection#optimizeConnection(org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
 	 */
 	@Override
-	protected void optimizeConnection(OperationType operationType) {
+	protected void optimizeConnection(OperationType operationType) throws Exception {
 		switch (operationType) {
 		case READ:
-			try {
-				connection.setAutoCommit(false);
-				connection.setReadOnly(true);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			}
+			connection.setAutoCommit(false);
+			connection.setReadOnly(true);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			break;
 		case WRITE:
 		case CALL:
-			try {
-				connection.setAutoCommit(false);
-				connection.setReadOnly(false);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			}
+			connection.setAutoCommit(false);
+			connection.setReadOnly(false);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			break;
 
 		case TRANSACTION:
-			try {
-				connection.setAutoCommit(true);
-				connection.setReadOnly(false);
-				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-			} catch (Exception ex) {
-				logger.warn("Optimizing connection failed: " + ex.getMessage());
-				logger.warn("Try to use another jdbc specific");
-			}
+			connection.setAutoCommit(true);
+			connection.setReadOnly(false);
+			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			break;
 		}
 	}

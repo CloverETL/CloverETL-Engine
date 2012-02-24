@@ -18,10 +18,12 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -29,11 +31,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.XLSMapping.HeaderGroup;
 import org.jetel.data.parser.XLSMapping.HeaderRange;
@@ -46,10 +55,13 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.exception.SpreadsheetParserExceptionHandler;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SpreadsheetIndexIterator;
+import org.jetel.util.SpreadsheetUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -62,7 +74,7 @@ import org.jetel.util.string.StringUtils;
  * 
  * @created 11 Aug 2011
  */
-public abstract class AbstractSpreadsheetParser implements Parser {
+public abstract class AbstractSpreadsheetParser extends AbstractParser {
 	final static Log LOGGER = LogFactory.getLog(AbstractSpreadsheetParser.class);
 
 	protected static final String DEFAULT_SHEET_NUMBER = "0";
@@ -78,7 +90,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	private String sheet;
 	private SpreadsheetIndexIterator sheetIndexIterator;
-	private List<String> sheetNames;
+	protected List<String> sheetNames;
 
 	private BitSet unusedFields;
 	
@@ -123,26 +135,30 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	}
 
 	@Override
+	public boolean isFileSourcePreferred() {
+		return true;
+	}
+	
+	@Override
 	public void setDataSource(Object dataSource) throws IOException, ComponentNotReadyException {
 		if (dataSource == null) {
 			throw new NullPointerException("dataSource");
 		}
 
-		InputStream dataInputStream = null;
-		if (dataSource instanceof InputStream) {
-			dataInputStream = (InputStream) dataSource;
-		} else if (dataSource instanceof ReadableByteChannel) {
-			dataInputStream = Channels.newInputStream((ReadableByteChannel) dataSource);
-		} else {
+		if (dataSource instanceof ReadableByteChannel) {
+			dataSource = Channels.newInputStream((ReadableByteChannel) dataSource);
+		} else if (!(dataSource instanceof InputStream || dataSource instanceof File)) {
 			throw new IllegalArgumentException(dataSource.getClass() + " not supported as a data source");
 		}
 
 		try {
-			prepareInput(dataInputStream);
+			prepareInput(dataSource);
 		} finally {
 			if (releaseInputSource) {
 				try {
-					dataInputStream.close();
+					if (dataSource instanceof InputStream) {
+						((InputStream)dataSource).close();
+					}
 				} catch (IOException exception) {
 					throw new ComponentNotReadyException("Error releasing the data source!", exception);
 				}
@@ -175,7 +191,12 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 		if (exceptionHandler != null) {
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.handleException();
+				try {
+					exceptionHandler.handleException();
+				} catch (BadDataFormatException e) {
+					// If we want MultiFileReader to increase record counters, we have to throw JetelExcepiton, sheesh...
+					throw new JetelException("Wrapped BadDataFormatException exception", e);
+				}
 				record = parseNext(record);
 			}
 		}
@@ -211,11 +232,11 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	/**
 	 * Prepares input file to be read
 	 * 
-	 * @param inputStream
+	 * @param inputSource
 	 * @throws IOException
 	 * @throws ComponentNotReadyException
 	 */
-	protected abstract void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException;
+	protected abstract void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException;
 
 	/**
 	 * Produces next record from input source or returns null if there are no more data.
@@ -230,7 +251,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 	protected abstract int getRecordStartRow();
 
 	protected void handleException(BadDataFormatException bdfe, DataRecord record, int cloverFieldIndex, String cellCoordinates, String cellValue) {
-		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep(); //TODO: check record numbering
+		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep() + 1; //TODO: check record numbering
 		bdfe.setRecordNumber(recordNumber);
 		bdfe.setFieldNumber(cloverFieldIndex);
 
@@ -246,16 +267,24 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		}
 	}
 	
-	private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
-		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record starting at row ");
-		message.append(getRecordStartRow());
-		message.append(" field '");
-		message.append(metadata.getField(fieldNo).getName() + '\'');
-		return message.toString();
+	protected void handleException(SpreadsheetException se, DataRecord record, int cloverFieldIndex, String fileName, String sheetName, 
+			String cellCoordinates, String cellValue, String cellType, String cellFormat) {
+		int recordNumber = (getRecordStartRow() - startLine) / mappingInfo.getStep();
+		se.setRecordNumber(recordNumber);
+		se.setFieldNumber(cloverFieldIndex);
+		se.setFileName(fileName);
+		se.setSheetName(sheetName);
+		se.setCellCoordinates(cellCoordinates);
+		se.setCellType(cellType);
+		se.setCellFormat(cellFormat);
+		
+		if (exceptionHandler != null) {
+			exceptionHandler.populateHandler(se.getMessage(), record, recordNumber, cloverFieldIndex, cellValue, se);
+		} else {
+			throw new RuntimeException(se.getMessage());
+		}
 	}
-
+	
 	private void setAutofillingSheetName(DataRecord record) {
 		if (record == null || autofillingFieldPositions == null) {
 			return;
@@ -309,6 +338,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			if (!stats.useAutoNameMapping() && !stats.useNameMapping()) {
 				resolveDirectMapping();
 				resolveOrderMapping();
+				checkMappingNonEmpty();
 			}
 		}
 	}
@@ -327,9 +357,15 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 	protected void resolveDirectMapping() throws ComponentNotReadyException {
 		for (HeaderGroup group : mappingInfo.getHeaderGroups()) {
-			if (group.getCloverField() != XLSMapping.UNDEFINED || group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
-				processFieldMapping(group.getCloverField(), mapping, group);
-				processFieldMapping(group.getFormatField(), formatMapping, group);
+			if (group.getMappingMode() == SpreadsheetMappingMode.EXPLICIT) {
+				if (group.getCloverField() != XLSMapping.UNDEFINED) {
+					processFieldMapping(group.getCloverField(), mapping, group);
+					processFieldMapping(group.getFormatField(), formatMapping, group);
+				} else {
+					HeaderRange range = group.getRanges().get(0);
+					String cellRef = SpreadsheetUtils.getCellReference(range.getColumnStart(), range.getRowStart());
+					LOGGER.info("Mapping \"explicit\" of cell " + cellRef + " unresolved: Invalid field name or index specified");
+				}
 			}
 		}
 	}
@@ -343,50 +379,6 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		setMappingFieldIndex(row, column, group, field, mappingArray);
 	}
 	
-	/*
-	 * @Override protected void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException { if
-	 * (fieldNames == null) { throw new NullPointerException("fieldNames"); }
-	 * 
-	 * List<CellValue> cellValues = readRow(metadataRow); if (cellValues == null) { throw new
-	 * ComponentNotReadyException("Metedata row set to " + metadataRow + ", but sheet " + currentSheetNum +
-	 * " has less rows"); }
-	 * 
-	 * int numberOfFoundFields = 0;
-	 * 
-	 * for (CellValue cellValue : cellValues) { if (fieldNames.containsKey(cellValue.value)) {// corresponding field in
-	 * metadata found fieldNumber[numberOfFoundFields][XLS_NUMBER] = cellValue.columnIndex;
-	 * fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cellValue.value); numberOfFoundFields++;
-	 * 
-	 * fieldNames.remove(cellValue); } else { logger.warn("There is no field \"" + cellValue + "\" in output metadata");
-	 * } }
-	 * 
-	 * if (numberOfFoundFields < metadata.getNumFields()) { logger.warn("Not all fields found:");
-	 * 
-	 * for (String fieldName : fieldNames.keySet()) { logger.warn(fieldName); } } }
-
-	/*
-	 * @Override protected void cloverfieldsAndXlsNames(Map<String, Integer> fieldNames) throws
-	 * ComponentNotReadyException { if (fieldNames == null) { throw new NullPointerException("fieldNames"); }
-	 * 
-	 * if (cloverFields.length != xlsFields.length) { throw new
-	 * ComponentNotReadyException("Number of clover fields and XLSX fields must be the same"); }
-	 * 
-	 * List<CellValue> cellValues = readRow(metadataRow); if (cellValues == null) { throw new
-	 * ComponentNotReadyException("Metedata row set to " + metadataRow + ", but sheet " + currentSheetNum +
-	 * " has less rows"); } int numberOfFoundFields = 0;
-	 * 
-	 * for (CellValue cellValue : cellValues) { int xlsNumber = StringUtils.findString(cellValue.value, xlsFields);
-	 * 
-	 * if (xlsNumber > -1) {// string from cell found in xlsFields attribute
-	 * fieldNumber[numberOfFoundFields][XLS_NUMBER] = cellValue.columnIndex; try {
-	 * fieldNumber[numberOfFoundFields][CLOVER_NUMBER] = fieldNames.get(cloverFields[xlsNumber]); }catch
-	 * (NullPointerException ex) { throw new ComponentNotReadyException("Clover field \"" + cloverFields[xlsNumber] +
-	 * "\" not found"); } numberOfFoundFields++; } else { logger.warn("There is no field corresponding to \"" +
-	 * cellValue.value + "\" in output metadata"); } }
-	 * 
-	 * if (numberOfFoundFields < cloverFields.length) { logger.warn("Not all fields found"); } }
-	 */// TODO: double check if behaviour is the same!
-
 	protected void resolveNameMapping() throws ComponentNotReadyException {
 		Map<String, Integer> nameMap = metadata.getFieldNamesMap();
 		Map<String, Integer> labelsMap = metadata.getFieldLabelsMap();
@@ -416,11 +408,19 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 						if (cloverIndex == null) {
 							cloverIndex = labelsMap.get(header);
 						}
+						if (cloverIndex!=null) {
+							DataFieldMetadata field = metadata.getField(cloverIndex);
+							if (field.isAutoFilled()) {
+								LOGGER.warn(getByNameLogMessagePrefix(column, row) + ": Mapping on field with name \"" + field.getName() + "\" is not allowed, because this field is auto-filled.");
+								continue;
+							}
+						}
+
 						if (cloverIndex == null) {
 							if (normalizedHeader.equals(header)) {
-								LOGGER.warn("There is no field with name or label \"" + header + "\" in output metadata");
+								LOGGER.info(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name or label \"" + header + "\" in output metadata");
 							} else {
-								LOGGER.warn("There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
+								LOGGER.info(getByNameLogMessagePrefix(column, row) + " unresolved: There is no field with name \"" + normalizedHeader + "\" or label \"" + header + "\" in output metadata");
 							}
 							continue;
 						}
@@ -431,6 +431,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 				}
 			}
 		}
+	}
+	
+	private String getByNameLogMessagePrefix(int column, int row) {
+		return "Mapping \"by name\" of cell " + SpreadsheetUtils.getCellReference(column, row);
 	}
 	
 	protected void resolveOrderMapping() throws ComponentNotReadyException {
@@ -456,27 +460,45 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			}
 		}
 
-		if (mappedCells.size() > unusedFields.cardinality()) {
-			// TODO: check in checkConfig. (Note: this check is not sufficient since there can still be unresolved "format" fields) 
-			throw new ComponentNotReadyException("Invalid cells mapping by order! There are " + mappedCells.size() +
-					" cells mapped by order, but only " + unusedFields.cardinality() + " available metadata fields left.");
-		}
-		
 		if (mappingInfo.getOrientation() == SpreadsheetOrientation.VERTICAL) {
 			Collections.sort(mappedCells, VERTICAL_CELL_ORDER_COMPARATOR);
 		} else {
 			Collections.sort(mappedCells, HORIZONTAL_CELL_ORDER_COMPARATOR);
 		}
 		
-		int nextUnusedField = unusedFields.nextSetBit(0);
+		int nextUnusedField = getNextUnusedFieldWithoutAutofilling(0);
+
 		for (CellMappedByOrder cell : mappedCells) {
 			if (nextUnusedField < 0) {
-				throw new ComponentNotReadyException("Invalid cells mapping by order! There are more cells mapped by order then unused metadata fields.");
+				LOGGER.info("Mapping \"by order\" of cell " + SpreadsheetUtils.getCellReference(cell.column, cell.row) 
+						+ " unresolved: No more unused metadata fields. Ignoring all subsequent cells mapped \"by order\".");
+				break;
 			}
 			processFieldMapping(nextUnusedField, mapping, cell.row, cell.column, cell.group);
 			processFieldMapping(cell.group.getFormatField(), formatMapping, cell.row, cell.column, cell.group);
-			nextUnusedField = unusedFields.nextSetBit(nextUnusedField);
+			nextUnusedField = getNextUnusedFieldWithoutAutofilling(nextUnusedField);
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	private int getNextUnusedFieldWithoutAutofilling(int lastUsedFieldIndex) {
+		int nextUnusedField = unusedFields.nextSetBit(lastUsedFieldIndex);
+		DataFieldMetadata field = metadata.getField(nextUnusedField);
+		while (nextUnusedField>=0 && !fieldNotAutoFilled(field)) {
+			nextUnusedField = unusedFields.nextSetBit(nextUnusedField+1);
+			field = metadata.getField(nextUnusedField);
+		}
+		return nextUnusedField;
+	}
+
+	/**
+	 * @param field
+	 * @return
+	 */
+	private boolean fieldNotAutoFilled(DataFieldMetadata field) {
+		return field!=null && !field.isAutoFilled();
 	}
 
 	/**
@@ -570,6 +592,10 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		return null;
 	}
 
+	public void useIncrementalReading(boolean useIncrementalReading) {
+		this.useIncrementalReading = useIncrementalReading;
+	}
+
 	@Override
 	public Object getPosition() {
 		return ((incremental != null) ? incremental.getPosition() : null);
@@ -632,7 +658,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 		int nextSheet = sheetIndexIterator.next();
 
 		if (setCurrentSheet(nextSheet)) {
-			LOGGER.debug("Reading sheet " + nextSheet);
+			LOGGER.debug("Reading sheet " + nextSheet + " \"" + sheetNames.get(nextSheet) + "\"");
 			
 			currentSheetIndex = nextSheet;
 			Stats stats = mappingInfo.getStats();
@@ -643,6 +669,7 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 					resolveDirectMapping();
 					resolveNameMapping();
 					resolveOrderMapping();
+					checkMappingNonEmpty();
 				} catch (ComponentNotReadyException e) {
 					throw new JetelRuntimeException(e.getMessage(), e);
 				}
@@ -653,6 +680,33 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 
 		return false;
 	}	
+	
+	private void checkMappingNonEmpty() throws ComponentNotReadyException {
+		List<int[][]> mappings = new ArrayList<int[][]>(2);
+
+		mappings.add(mapping);
+		
+		if (formatMapping != null) {
+			mappings.add(formatMapping);
+		}
+		
+		for (int[][] mapping : mappings) {
+			for (int y = 0; y < mapping.length; y++) {
+				for (int x = 0; x < mapping[y].length; x++) {
+					if (mapping[y][x] != XLSMapping.UNDEFINED) {
+						return;
+					}
+				}
+			}
+		}
+		String message;
+		if (currentSheetIndex >= 0) {
+			message = "No data fields mapped to table cells after switching to sheet " + currentSheetIndex + " \"" + sheetNames.get(currentSheetIndex) + "\"";
+		} else {
+			message = "No data fields have been mapped to table cells.";
+		}
+		throw new ComponentNotReadyException(message);
+	}
 
 	/**
 	 * For incremental reading.
@@ -733,4 +787,98 @@ public abstract class AbstractSpreadsheetParser implements Parser {
 			this.group = group;
 		}
 	}
+	
+	public static class CellValueFormatter {
+		
+		private Map<String, DataFormatter> formatters = new HashMap<String, DataFormatter>();
+		
+		public CellValueFormatter() {
+			DataFormatter defaultLocaleFormatter = new OurDataFormatter();
+			defaultLocaleFormatter.addFormat("General", new DecimalFormat("#.############")); // take 2 more decimal places than there are in default
+			formatters.put(null, defaultLocaleFormatter);
+		}
+		
+		public String formatRawCellContents(double cellValue, int formatIndex, String formatString, String localeString) {
+			DataFormatter formatter = getLocalizedDataFormater(localeString);
+			return formatter.formatRawCellContents(cellValue, formatIndex, formatString);
+		}
+	
+		private DataFormatter getLocalizedDataFormater(String localeString) {
+			DataFormatter formatter = formatters.get(localeString);
+			if (formatter == null) {
+				String[] localParts = localeString.split("\\.");
+				Locale locale;
+				if (localParts.length > 1) {
+					locale = new Locale(localParts[0], localParts[1]);
+				} else {
+					locale = new Locale(localParts[0]);
+				}
+				formatter = new OurDataFormatter(locale);
+				formatters.put(localeString, formatter);
+			}
+			return formatter;
+		}
+		
+		public String formatCellValue(Cell cell, FormulaEvaluator formulaEvaluator, String locale) {
+			DataFormatter formatter = getLocalizedDataFormater(locale);
+			return formatter.formatCellValue(cell, formulaEvaluator);
+		}
+	}
+	
+	public static class OurDataFormatter extends DataFormatter {
+	
+	    private static final Pattern FRAC_PATTERN = Pattern.compile("\\?+/[\\d+|\\?+]");
+	    
+	    public OurDataFormatter() {
+	    	super();
+	    }
+	    
+		public OurDataFormatter(Locale locale) {
+			super(locale);
+		}
+	    
+		@Override
+		public String formatRawCellContents(double value, int formatIndex, String formatString) {  // TODO boolean use1904Windowing
+			Matcher fracMatcher = FRAC_PATTERN.matcher(formatString);
+			if (fracMatcher.find()) {
+				// convert fractions to standard double
+				formatString = "0.00";
+			}
+			return super.formatRawCellContents(value, formatIndex, formatString, USE_DATE1904).replaceFirst("\\* ", "");
+		}
+
+		@Override
+	    public String formatCellValue(Cell cell, FormulaEvaluator evaluator) {
+
+	        if (cell == null) {
+	            return "";
+	        }
+
+	        int cellType = cell.getCellType();
+	        if (cellType == Cell.CELL_TYPE_FORMULA) {
+	            if (evaluator == null) {
+	                return cell.getCellFormula();
+	            }
+	            cellType = evaluator.evaluateFormulaCell(cell);
+	        }
+	        switch (cellType) {
+	            case Cell.CELL_TYPE_NUMERIC :
+	                return getFormattedNumberString(cell);
+	            case Cell.CELL_TYPE_STRING :
+	                return cell.getRichStringCellValue().getString();
+	            case Cell.CELL_TYPE_BOOLEAN :
+	                return String.valueOf(cell.getBooleanCellValue());
+	            case Cell.CELL_TYPE_BLANK :
+	                return "";
+	        }
+	        throw new RuntimeException("Unexpected celltype (" + cellType + ")");
+	    }
+		
+	    private String getFormattedNumberString(Cell cell) {
+	    	CellStyle cellStyle = cell.getCellStyle();
+	    	return formatRawCellContents(cell.getNumericCellValue(), cellStyle.getDataFormat(), cellStyle.getDataFormatString());
+	    }
+	    
+	}
+	
 }

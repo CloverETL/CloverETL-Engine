@@ -18,10 +18,13 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
@@ -80,8 +83,15 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	}
 
 	@Override
-	protected void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
+	protected void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
 		SpreadsheetFormat format;
+		
+		InputStream inputStream;
+		if (inputSource instanceof File) {
+			inputStream = new FileInputStream((File)inputSource);
+		} else {
+			inputStream = (InputStream) inputSource;
+		}
 		
 		if (!inputStream.markSupported()) {
 			inputStream = new PushbackInputStream(inputStream, 8);
@@ -92,11 +102,13 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		if (documentType == ExcelType.XLS) {
 			bufferedStream = ExcelUtils.getBufferedStream(inputStream);
 			inputStream = ExcelUtils.getDecryptedXLSXStream(bufferedStream, password);
-			format = SpreadsheetFormat.XLSX;
 			if (inputStream == null) {
 				bufferedStream.reset();
 				inputStream = bufferedStream;
 				format = SpreadsheetFormat.XLS;
+			} else {
+				format = SpreadsheetFormat.XLSX;
+				inputSource = inputStream;
 			}
 		} else if (documentType == ExcelType.XLSX) {
 			format = SpreadsheetFormat.XLSX;
@@ -123,7 +135,13 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			}
 		}
 		currentFormat = format;
-		currentHandler.prepareInput(inputStream);
+		
+		if (inputSource instanceof File) {
+			inputStream.close();
+			currentHandler.prepareInput((File) inputSource);
+		} else {
+			currentHandler.prepareInput(inputStream);
+		}
 	}
 
 	@Override
@@ -152,6 +170,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 	class CellBuffers<T> {
 
 		private CellBuffer<T>[][] cellBuffers;
+		private BitSet emptyBuffers;
 		private int nextPartial;
 		private RecordFieldValueSetter<T> fieldValueSetter;
 		private RecordFieldValueSetter<T> fieldValueAsFormatSetter;
@@ -162,6 +181,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			this.fieldValueAsFormatSetter = fieldValueAsFormatSetter;
 			int numberOfBuffers = (mapping.length / mappingInfo.getStep()) - (mapping.length % mappingInfo.getStep() == 0 ? 1 : 0);
 			cellBuffers = new CellBuffer[numberOfBuffers][metadata.getNumFields()];
+			emptyBuffers = new BitSet(numberOfBuffers);
 		}
 		
 		public int getCount() {
@@ -181,7 +201,9 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 		}
 
 		private void moveToNextCellBuffer() {
-			Arrays.fill(cellBuffers[getCellBufferIndex(0)], null);
+			int bufferIndex = getCellBufferIndex(0);
+			Arrays.fill(cellBuffers[bufferIndex], null);
+			emptyBuffers.clear(bufferIndex);
 			nextPartial = ((nextPartial + 1) % cellBuffers.length);
 		}
 
@@ -189,6 +211,7 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 			for (int i = 0; i < cellBuffers.length; i++) {
 				Arrays.fill(cellBuffers[i], null);
 			}
+			emptyBuffers.clear();
 		}
 		
 		public void fillRecordFromBuffer(DataRecord record) {
@@ -217,12 +240,19 @@ public class SpreadsheetStreamParser extends AbstractSpreadsheetParser {
 					}
 					
 					if (valueField != XLSMapping.UNDEFINED || formatField != XLSMapping.UNDEFINED) {
+						emptyBuffers.set(getCellBufferIndex(i));
 						break;
 					}
 				}
 			}
 		}
-		
+
+		/**
+		 * @return true iff all buffers have all cells set to null.
+		 */
+		public boolean isEmpty() {
+			return emptyBuffers.isEmpty();
+		}
 	}
 
 	private static class CellBuffer<T> {

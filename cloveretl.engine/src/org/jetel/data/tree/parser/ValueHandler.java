@@ -21,18 +21,13 @@ package org.jetel.data.tree.parser;
 import org.jetel.data.DataField;
 
 /**
+ * 
  * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 16.10.2011
  */
 public interface ValueHandler {
-	
-	public Object getCurrentValue();
 
-	public void clearCurrentValue();
-
-	public void appendValue(Object value);
-
-	public void storeValueToField(Object value, DataField field);
+	void storeValueToField(Object value, DataField field);
 }

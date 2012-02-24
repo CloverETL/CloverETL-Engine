@@ -45,7 +45,10 @@ public class ContainerLib extends TLFunctionLibrary {
     		"sort".equals(functionName) ? new SortFunction() : 
     		"reverse".equals(functionName) ? new ReverseFunction() : 
     		"isEmpty".equals(functionName) ? new IsEmptyFunction() : 
-    		"copy".equals(functionName) ? new CopyFunction() : null;
+    		"copy".equals(functionName) ? new CopyFunction() : 
+    		"containsAll".equals(functionName) ? new ContainsAllFunction() :
+    		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
+    		"containsValue".equals(functionName) ? new ContainsValueFunction() : null;
 
     	if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -390,4 +393,64 @@ public class ContainerLib extends TLFunctionLibrary {
 		}
 	}
 
+	@TLFunctionAnnotation("Checks if a list contains all elements from another list.")
+	public static final <E> boolean containsAll(TLFunctionCallContext context, List<E> collection, List<E> subList) {
+		return collection.containsAll(subList);
+	}
+	class ContainsAllFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isList()) {
+				List<Object> subList = stack.popList();
+				List<Object> list = stack.popList();
+				stack.push(containsAll(context, list, subList));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Checks if a map contains a specified key.")
+	public static final <K, V> boolean containsKey(TLFunctionCallContext context, Map<K, V> map, K key) {
+		return map.containsKey(key);
+	}
+	class ContainsKeyFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				Object key = stack.pop();
+				Map<Object, Object> map = stack.popMap();
+				stack.push(containsKey(context, map, key));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Checks if a map contains a specified value.")
+	public static final <K, V> boolean containsValue(TLFunctionCallContext context, Map<K, V> map, V value) {
+		return map.containsValue(value);
+	}
+	class ContainsValueFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				Object value = stack.pop();
+				Map<Object, Object> map = stack.popMap();
+				stack.push(containsValue(context, map, value));
+			}
+		}
+	}
+	
 }

@@ -224,7 +224,7 @@ public class XSLDataTransformer extends Node {
 			WritableByteChannel writableByteChannel;
 			boolean next = false;
 			
-			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.next()) != null) {
+			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.nextChannel()) != null) {
 				if (next) currentTarget.setNextOutput(); else next = true;
 				formatter = (XSLTFormatter)currentTarget.getFormatter();
 				writableByteChannel = formatter.getWritableByteChannel();

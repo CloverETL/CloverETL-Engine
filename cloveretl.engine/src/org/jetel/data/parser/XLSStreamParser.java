@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.apache.poi.hssf.record.BoolErrRecord;
 import org.apache.poi.hssf.record.BoundSheetRecord;
 import org.apache.poi.hssf.record.CellRecord;
 import org.apache.poi.hssf.record.CellValueRecordInterface;
+import org.apache.poi.hssf.record.EOFRecord;
 import org.apache.poi.hssf.record.ExtendedFormatRecord;
 import org.apache.poi.hssf.record.FormatRecord;
 import org.apache.poi.hssf.record.FormulaRecord;
@@ -50,16 +52,20 @@ import org.apache.poi.hssf.record.SharedFormulaRecord;
 import org.apache.poi.hssf.record.StringRecord;
 import org.apache.poi.hssf.record.crypto.Biff8EncryptionKey;
 import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.poifs.filesystem.DirectoryNode;
+import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.AbstractSpreadsheetParser.CellValueFormatter;
 import org.jetel.data.parser.SpreadsheetStreamParser.CellBuffers;
 import org.jetel.data.parser.SpreadsheetStreamParser.RecordFieldValueSetter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.SpreadsheetException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.SpreadsheetUtils;
 
@@ -71,7 +77,12 @@ import org.jetel.util.SpreadsheetUtils;
 public class XLSStreamParser implements SpreadsheetStreamHandler {
 	
 	private SpreadsheetStreamParser parent;
-	private POIFSFileSystem fs;
+
+	private DirectoryNode workbookDirNode;
+	private NPOIFSFileSystem poiFS;
+	
+	private String fileName;
+	private String sheetName;
 
 	private final static Set<Short> ACCEPTED_RECORDS = new HashSet<Short>();
 	static {
@@ -82,6 +93,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		ACCEPTED_RECORDS.add(FormulaRecord.sid);
 		ACCEPTED_RECORDS.add(StringRecord.sid);
 		ACCEPTED_RECORDS.add(FormulaRecord.sid);
+		ACCEPTED_RECORDS.add(BoolErrRecord.sid);
 		ACCEPTED_RECORDS.add(EndOfRowRecord.SID);
 
 		ACCEPTED_RECORDS.add(FormatRecord.sid);
@@ -94,16 +106,19 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	private MissingRecordAwareFactoryInputStream recordFactory;
 	private final RecordFillingHSSFListener recordFillingListener;
-	private final FormatTrackingHSSFListener formatter;
+	private final FormatTrackingHSSFListenerWithCustomFormatter formatter;
 	
 	private int currentSheetIndex = -1;
 
 	private int nextRecordStartRow;
 	
+	private boolean sheetEof;
+	private boolean rootEof;
+	
 	public XLSStreamParser(SpreadsheetStreamParser parent, String password) {
 		this.parent = parent;
 		recordFillingListener = new RecordFillingHSSFListener(AbstractSpreadsheetParser.USE_DATE1904);
-		formatter = new FormatTrackingHSSFListener(recordFillingListener);
+		formatter = new FormatTrackingHSSFListenerWithCustomFormatter(recordFillingListener);
 		Biff8EncryptionKey.setCurrentUserPassword(password);
 	}
 
@@ -157,7 +172,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		recordFillingListener.setRecordRange(nextRecordStartRow, parent.mappingInfo.getStep());
 		recordFillingListener.setRecord(record);
 		if (!processParsing(recordReader)) {
-			if (!recordFillingListener.isRecordStarted()) {
+			if (!recordFillingListener.isRecordStarted() && recordFillingListener.cellBuffers.isEmpty()) {
 				return null;
 			}
 			recordFillingListener.finishRecord();
@@ -169,6 +184,9 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public int skip(int nRec) throws JetelException {
+		if (nRec <= 0) {
+			return 0;
+		}
 		recordFillingListener.setSkipRecords(nRec);
 		processParsing(recordSkipper);
 
@@ -179,8 +197,14 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	}
 
 	@Override
-	public void prepareInput(InputStream inputStream) throws IOException, ComponentNotReadyException {
-		fs = new POIFSFileSystem(inputStream);
+	public void prepareInput(Object inputSource) throws IOException, ComponentNotReadyException {
+		if (inputSource instanceof InputStream) {
+			workbookDirNode = new POIFSFileSystem((InputStream) inputSource).getRoot();
+		} else {
+			poiFS = new NPOIFSFileSystem((File) inputSource);
+			workbookDirNode = poiFS.getRoot();
+			fileName = ((File) inputSource).getAbsolutePath();
+		}
 		prepareRecordFactory();
 		currentSheetIndex = -1;
 	}
@@ -188,12 +212,16 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	@Override
 	public void close() throws IOException {
 		Biff8EncryptionKey.setCurrentUserPassword(null);
+		if (poiFS != null) {
+			poiFS.close();
+		}
 	}
 
 	private void prepareRecordFactory() {
 		try {
-			RecordFactoryInputStream rfis = new RecordFactoryInputStream(fs.getRoot().createDocumentInputStream("Workbook"), false);
+			RecordFactoryInputStream rfis = new RecordFactoryInputStream(workbookDirNode.createDocumentInputStream("Workbook"), false);
 			recordFactory = new MissingRecordAwareFactoryInputStream(rfis);
+			currentSheetIndex = -1;
 		} catch (IOException e) {
 			throw new JetelRuntimeException("Failed to open input stream from workbook", e);
 		}
@@ -206,7 +234,8 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 		SheetNamesHSSFListener listener = new SheetNamesHSSFListener();
 		request.addListener(listener, BoundSheetRecord.sid);
-		factory.processWorkbookEvents(request, fs);
+		//factory.processWorkbookEvents(request, fs);
+		factory.processWorkbookEvents(request, workbookDirNode);
 
 		return listener.getSheetNames();
 	}
@@ -218,10 +247,17 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 	@Override
 	public boolean setCurrentSheet(int sheetNumber) {
+		if (sheetNumber >= parent.sheetNames.size()) {
+			return false;
+		}
 		if (currentSheetIndex > sheetNumber) {
 			prepareRecordFactory();
 		}
 		recordFillingListener.setRequestedSheetIndex(sheetNumber);
+		sheetName = parent.sheetNames.get(sheetNumber);
+		
+		sheetEof = false;
+		rootEof = false;
 
 		if (processParsing(sheetSetter)) {
 			this.nextRecordStartRow = parent.startLine;
@@ -235,7 +271,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 	public String[][] getHeader(int startRow, int startColumn, int endRow, int endColumn) throws ComponentNotReadyException {
 		RecordFactoryInputStream rfis;
 		try {
-			rfis = new RecordFactoryInputStream(fs.getRoot().createDocumentInputStream("Workbook"), false);
+			rfis = new RecordFactoryInputStream(workbookDirNode.createDocumentInputStream("Workbook"), false);
 			MissingRecordAwareFactoryInputStream recordFactory = new MissingRecordAwareFactoryInputStream(rfis);
 			HeaderHSSFListener headerListener = new HeaderHSSFListener(currentSheetIndex, startRow, startColumn, endRow, endColumn);
 			FormatTrackingHSSFListener formatter = new FormatTrackingHSSFListener(headerListener);
@@ -352,9 +388,15 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (cloverFieldIndex != XLSMapping.UNDEFINED) {
 					try {
 						recordToFill.getField(cloverFieldIndex).setNull(true);
+						if (sheetEof) {
+							parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + 
+									recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Occurred"), recordToFill, cloverFieldIndex, 
+									fileName, sheetName, null, null, null, null);
+						}
 					} catch (BadDataFormatException e) {
-						parent.handleException(new BadDataFormatException("There is no data row for field. Moreover, cannot set default value or null", e),
-								recordToFill, cloverFieldIndex, null, null);
+						parent.handleException(new SpreadsheetException("Unexpected end of sheet - expected another data row for field " + 
+								recordToFill.getField(cloverFieldIndex).getMetadata().getName() + ". Moreover, cannot set default value or null", e),
+								recordToFill, cloverFieldIndex, fileName, sheetName, null, null, null, null);
 					}
 				}
 			}
@@ -371,26 +413,22 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public void finishRecord() {
 			for (int i = currentParseRow; i <= recordEndRow; i++) {
 				handleMissingCells(i - recordStartRow, lastColumn, parent.mapping[0].length);
-				handleMissingCells(i - recordStartRow, lastColumn, parent.formatMapping[0].length);
 			}
 		}
 
 		public int getNumberOfSkippedRecords() {
-			int result = currentParseRow - skipStartRow + parent.mappingInfo.getStep();
-			if (result > 0) {
-				return result / parent.mappingInfo.getStep();
-			}
-			return 0;
+			int result = currentParseRow - skipStartRow;
+			return result > 0 ? result / parent.mappingInfo.getStep() : 0;
 		}
 
 		public void setSkipRecords(int nRec) {
-			skipStartRow = recordStartRow;
-			recordToFill = null;
-			
-			int numberOfRows = nRec * parent.mappingInfo.getStep();
-			setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
-			
-			if (nRec != 1 || skipStartRow != currentParseRow) {
+			if (nRec > 0) {
+				skipStartRow = recordStartRow;
+				recordToFill = null;
+				
+				int numberOfRows = nRec * parent.mappingInfo.getStep();
+				setRecordRange(recordStartRow + numberOfRows, parent.mappingInfo.getStep());
+				
 				skipRecords = true;
 			}
 		}
@@ -425,7 +463,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (((BOFRecord) record).getType() == BOFRecord.TYPE_WORKSHEET) {
 					currentSheetIndex++;
 
-					// Do not skip any more records!
+					// Do not skip any more records! MultiFileReader will continue skipping if too few records were skipped.
 					if (skipRecords) {
 						skipRecords = false;
 					}
@@ -441,7 +479,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				if (!skipRecords && currentParseRow >= recordStartRow) {
 					handleMissingCells(currentParseRow - recordStartRow, lastColumn, parent.mapping[0].length);
 				}
-				if (skipRecords && currentParseRow >= recordStartRow - parent.mappingInfo.getStep()) {
+				if (skipRecords && currentParseRow >= recordStartRow - 1) {
 					// record skipping is stopped when last row of last record to be skipped is read
 					skipRecords = false;
 				}
@@ -564,13 +602,13 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				String value;
 				switch (sid) {
 				case NumberRecord.sid:
-					value = formatter.formatNumberDateCell((NumberRecord) cellRecord);
+					value = formatter.formatNumberDateCell((NumberRecord) cellRecord, field.getMetadata().getLocaleStr());
 					break;
 				case FormulaRecord.sid:
 					FormulaRecord frec = (FormulaRecord) cellRecord;
 					switch (frec.getCachedResultType()) {
 					case HSSFCell.CELL_TYPE_NUMERIC:
-						value = formatter.formatNumberDateCell((frec));
+						value = formatter.formatNumberDateCell(frec, field.getMetadata().getLocaleStr());
 						break;
 					case HSSFCell.CELL_TYPE_BOOLEAN:
 						value = String.valueOf(frec.getCachedBooleanValue());
@@ -660,19 +698,22 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 			int sid = record.getSid();
 			String cellType;
 			String actualValue;
+			String cellFormat = null;
 			switch(sid) {
 			case NumberRecord.sid:
-				cellType = "NUMERIC";
-				actualValue = formatter.formatNumberDateCell((NumberRecord) record);
+				cellType = "Numeric";
+				actualValue = formatter.formatNumberDateCell((NumberRecord) record, field.getMetadata().getLocaleStr());
+				cellFormat = formatter.getFormatString((NumberRecord) record);
 				break;
 			case FormulaRecord.sid:
-				cellType = "FORMULA";
+				cellType = "Formula";
 				FormulaRecord frec = (FormulaRecord) record;
 				int fresultType = frec.getCachedResultType();
 				// We don't check for STRING formulas here as these are always "translated" to StringRecord instead
 				switch (fresultType) {
 				case HSSFCell.CELL_TYPE_NUMERIC:
-					actualValue = formatter.formatNumberDateCell(frec);
+					actualValue = formatter.formatNumberDateCell(frec, field.getMetadata().getLocaleStr());
+					cellFormat = formatter.getFormatString((NumberRecord) record);
 					break;
 				case HSSFCell.CELL_TYPE_BOOLEAN:
 					actualValue = String.valueOf(frec.getCachedBooleanValue());
@@ -686,15 +727,15 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				}
 				break;
 			case LabelSSTRecord.sid:
-				cellType = "STRING";
+				cellType = "String";
 				actualValue = sstRecord.getString(((LabelSSTRecord) record).getSSTIndex()).getString();
 				break;
 			case StringRecord.sid:
-				cellType = "STRING";
+				cellType = "String";
 				actualValue = ((StringRecord) record).getString();
 				break;
 			case BoolErrRecord.sid:
-				cellType = "BOOLEAN";
+				cellType = "Boolean";
 				BoolErrRecord boolErrRecord = (BoolErrRecord) record;
 				if (boolErrRecord.isBoolean()) {
 					actualValue = String.valueOf(boolErrRecord.getBooleanValue());
@@ -703,14 +744,14 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				}
 				break;
 			default:
-				cellType = "UNKNOWN";
+				cellType = "Unknown";
 				actualValue = null;
 				break;
 			}
-			CellRecord cellRecord = "UNKNOWN".equals(cellType) ? null : (CellRecord) record;
-			String cellCoordinates = record == null ? "UNKNOWN" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
-			parent.handleException(new BadDataFormatException("Cannot get " + expectedType + " value from type " + cellType + " cell"), 
-					recordToFill, cloverFieldIndex, cellCoordinates, actualValue);
+			CellRecord cellRecord = "Unknown".equals(cellType) ? null : (CellRecord) record;
+			String cellCoordinates = record == null ? "Unknown" : SpreadsheetUtils.getColumnReference(cellRecord.getColumn()) + String.valueOf(cellRecord.getRow());
+			parent.handleException(new SpreadsheetException("Cannot get " + expectedType + " value from cell of type " + cellType + " in " + cellCoordinates), 
+					recordToFill, cloverFieldIndex, fileName, sheetName, cellCoordinates, actualValue, cellType, cellFormat);
 		}
 
 		
@@ -796,6 +837,10 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
+			if (currentParseSheet < sheetIndex) {
+				return;
+			}
+			
 			if (record instanceof EndOfRowRecord) {
 				currentParseRow++;
 				if (currentParseRow >= lastRow) {
@@ -809,7 +854,7 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 				return;
 			}
 
-			if ((currentParseRow < firstRow) || currentParseSheet < sheetIndex) {
+			if (currentParseRow < firstRow) {
 				return;
 			}
 
@@ -918,6 +963,15 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 
 			if (ACCEPTED_RECORDS.contains(recordToProcess.getSid())) {
 				formatter.processRecord(recordToProcess);
+			} else if (recordToProcess.getSid() == EOFRecord.sid) {
+				if (!rootEof) {
+					rootEof = true;
+				} else {
+					if (recordFillingListener.isRequestedSheetSet()) {
+						sheetEof = true;
+						return false;
+					}
+				}
 			}
 		}
 
@@ -1092,5 +1146,45 @@ public class XLSStreamParser implements SpreadsheetStreamHandler {
 		public final int getRecordSize() {
 			throw new RecordFormatException("Cannot serialize a dummy record");
 		}
-	}	
+	}
+	
+	
+	public static class FormatTrackingHSSFListenerWithCustomFormatter extends FormatTrackingHSSFListener {
+		
+		private CellValueFormatter formatter = new CellValueFormatter();
+		
+		public FormatTrackingHSSFListenerWithCustomFormatter(HSSFListener childListener) {
+			super(childListener);
+		}
+	
+		/**
+		 * Formats the given numeric of date Cell's contents as a String, in as
+		 * close as we can to the way that Excel would do so. Uses the various
+		 * format records to manage this.
+		 *
+		 * Copy of superclass formatNumberDateCell(CellValueRecordInterface) method and adjusted to use custom CellValueFormater.
+		 */
+		public String formatNumberDateCell(CellValueRecordInterface cell, String locale) {
+			double value;
+			if (cell instanceof NumberRecord) {
+				value = ((NumberRecord) cell).getValue();
+			} else if (cell instanceof FormulaRecord) {
+				value = ((FormulaRecord) cell).getValue();
+			} else {
+				throw new IllegalArgumentException("Unsupported CellValue Record passed in " + cell);
+			}
+
+			// Get the built in format, if there is one
+			int formatIndex = getFormatIndex(cell);
+			String formatString = getFormatString(cell);
+
+//			if (formatString == null) {
+//				return _defaultFormat.format(value);
+//			}
+
+			return formatter.formatRawCellContents(value, formatIndex, formatString, locale);
+		}
+		
+	}
+	
 }

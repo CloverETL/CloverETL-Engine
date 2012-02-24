@@ -8,7 +8,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((.*)-)?([^-]+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-functional|tests-after-commit|tests-reset)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -51,7 +51,7 @@ baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
 
-antCustomEnv = ["ANT_OPTS":"-Xmx500m"]
+antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
