@@ -192,7 +192,7 @@ public class Aggregate extends Node {
 								DataField field = recordKey.getFieldViolatingEquals(currentRecord, previousRecord);
 								sb.append("Data on input port #");
 								sb.append(READ_FROM_PORT);
-								sb.append(" is not sorted by aggregation key; error cause by field #");
+								sb.append(" is not sorted by aggregation key(s); error caused by field #");
 								sb.append(recordCount);
 								sb.append(" \"");
 								sb.append(field.getMetadata().getName());
