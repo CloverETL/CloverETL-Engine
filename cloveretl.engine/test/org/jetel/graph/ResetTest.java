@@ -110,7 +110,20 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail
 							&& !pathname.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
 							&& !pathname.getName().equals("mountainsInformix.grf") // see issue 2550							
-							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf"); // graph for windows					
+							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf") // graph for windows
+							&& !pathname.getName().equals("XLSEncryptedFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXEncryptedFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSInvalidFile.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSReaderOrderMappingFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXReaderOrderMappingFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardStrict.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardStrict.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardControlled1.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardControlled1.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardControlled7.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
+							&& !pathname.getName().equals("WSC_NamespaceBindingsDefined.grf"); // ok, is to fail
+					
 				}
 			});
 			
