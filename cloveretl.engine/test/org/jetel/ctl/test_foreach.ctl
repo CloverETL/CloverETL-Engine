@@ -10,6 +10,13 @@ string[] stringRes;
 date[] dateRes;
 firstInput tmpVar; 
 
+map[integer, string] integerStringMap;
+map[string, integer] stringIntegerMap;
+map[string, firstInput] stringRecordMap;
+string[] integerStringMapRes;
+integer[] stringIntegerMapRes;
+firstInput[] stringRecordMapRes;
+
 function integer transform() {
 	// iterating over list
 	it = [ 'a', 'b', 'c' ];
@@ -18,6 +25,27 @@ function integer transform() {
 		ret = ret + s;
 	}
 	printErr(ret);
+	
+	// iterating over a map
+	for (integer n = 0; n < 5; n++) {
+		integerStringMap[n] = num2str(n);
+		stringIntegerMap[num2str(n)] = n;
+		firstInput tmpRecord;
+		tmpRecord.Name = "A string";
+		tmpRecord.Value = n;
+		stringRecordMap[num2str(n)] = tmpRecord;
+	} 
+	
+	foreach (string strVal : integerStringMap) {
+		integerStringMapRes[integerStringMapRes.length()] = strVal;
+	}
+	foreach (integer intVal : stringIntegerMap) {
+		stringIntegerMapRes[stringIntegerMapRes.length()] =  intVal;
+	}
+	foreach (firstInput recVal : stringRecordMap) {
+		stringRecordMapRes[stringRecordMapRes.length()] = recVal;
+	}
+	
 	// integer fields
 	printErr('foreach1: integer fields'); 
 	i=0; 
