@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Wed Feb 29 14:58:36 CET 2012" modifiedBy="tkramolis" name="graphXLSRead" revision="1.265" showComponentDetails="true">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Wed Feb 29 16:56:23 CET 2012" modifiedBy="pavel" name="graphXLSRead" revision="1.266" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="_10staxss_Sheet1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -266,29 +266,29 @@ In the mapping dialog we have explicitly defined cells correspoding to fields of
 File partitioning is peformed according to person's surname and first name.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="405" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tax form reading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="732" x="38" y="2672">
-<attr name="text"><![CDATA[Here, tax forms filled in previous phase are read.]]></attr>
+<attr name="text"><![CDATA[In this example we show how data from tax forms can be read back.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="319" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read tax forms" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="332" x="81" y="2733">
 <attr name="text"><![CDATA[
-Reads all files generated in previous phase.
+Reads all files generated in the previous phase.
 
-Uses exactly the same mapping as the Writer in previous phase. Its mapping XML was copied into clipboard and pasted in FORM_MAPPING graph parameter definition.
+Uses exactly the same mapping as the SpreadsheetDataWriter in previous phase.
 
-Notice that "Max number of records per source"is set to 1, causing that only one record is read from each input file.]]></attr>
+Note that "Max number of records per source" is set to 1, causing that only one record is read from each input file.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="246" id="Note22" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Store loaded data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="481" y="2806">
 <attr name="text"><![CDATA[
-Stores loaded tax form data in simple text file.]]></attr>
+Stores loaded tax form data into a simple text file.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/orders.xlsx" guiHeight="93" guiName="XLSX (Orders)" guiWidth="128" guiX="315" guiY="293" id="XLSX_ORDERS" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="93" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="293" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/orders.xlsx" guiHeight="96" guiName="XLSX (Orders)" guiWidth="128" guiX="315" guiY="293" id="XLSX_ORDERS" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="293" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
 <Edge debugMode="true" fromNode="XLS_ORDERS1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLSX_ORDERS:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/other/county_totals_2009.xls" guiHeight="93" guiName="SpreadsheetDataReader" guiWidth="166" guiX="125" guiY="819" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/other/county_totals_2009.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="125" guiY="819" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -319,7 +319,7 @@ Stores loaded tax form data in simple text file.]]></attr>
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/stats/stat_#.xlsx" guiHeight="93" guiName="SpreadsheetDataWriter" guiWidth="163" guiX="629" guiY="819" id="SPREADSHEET_WRITER0" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="STATE_DESCRIPTION" sheet="$ENTERPRISE_EMPLOYMENT_SIZE" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/stats/stat_#.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="629" guiY="819" id="SPREADSHEET_WRITER0" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="STATE_DESCRIPTION" sheet="$ENTERPRISE_EMPLOYMENT_SIZE" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -390,27 +390,27 @@ Stores loaded tax form data in simple text file.]]></attr>
 <Edge debugMode="true" fromNode="SPREADSHEET_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" metadata="Metadata4" outPort="Port 0 (output)" toNode="SPREADSHEET_WRITER0:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" existingSheetsActions="CLEAR_SHEETS" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiHeight="93" guiName="Orders by Country" guiWidth="131" guiX="305" guiY="1068" id="ORDERS_BY_COUNTRY1" sheet="$ShipCountry" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="CLEAR_SHEETS" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiHeight="96" guiName="Orders by Country" guiWidth="150" guiX="305" guiY="1068" id="ORDERS_BY_COUNTRY1" sheet="$ShipCountry" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="93" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="1068" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="1068" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
 <attr name="guiDescription"><![CDATA[All orders in 1 sheet]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="XLS_ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="ORDERS_BY_COUNTRY1:0"/>
 </Phase>
 <Phase number="3">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiHeight="93" guiName="UniversalDataWriter" guiWidth="145" guiX="298" guiY="1240" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiHeight="82" guiName="UniversalDataWriter" guiWidth="162" guiX="298" guiY="1240" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Flat file with all orders]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiHeight="93" guiName="Orders by Country" guiWidth="131" guiX="72" guiY="1240" id="ORDERS_BY_COUNTRY" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiHeight="96" guiName="Orders by Country" guiWidth="150" guiX="72" guiY="1240" id="ORDERS_BY_COUNTRY" sheet="*" type="SPREADSHEET_READER">
 <attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="ORDERS_BY_COUNTRY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="4">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="93" guiName="CloverDataWriter" guiWidth="129" guiX="826" guiY="1614" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
-<Node enabled="enabled" guiHeight="80" guiName="FastSort" guiWidth="128" guiX="601" guiY="1614" id="FAST_SORT0" sortKey="Total_taxes(d)" type="FAST_SORT"/>
-<Node enabled="enabled" guiHeight="67" guiName="Reformat" guiWidth="128" guiX="392" guiY="1616" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="96" guiName="CloverDataWriter" guiWidth="144" guiX="826" guiY="1614" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
+<Node enabled="enabled" guiHeight="82" guiName="FastSort" guiWidth="128" guiX="601" guiY="1614" id="FAST_SORT0" sortKey="Total_taxes(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="68" guiName="Reformat" guiWidth="128" guiX="392" guiY="1616" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -446,7 +446,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/other/10staxss.xls" guiHeight="93" guiName="SpreadsheetDataReader" guiWidth="166" guiX="81" guiY="1618" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
+<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/other/10staxss.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="81" guiY="1618" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -843,8 +843,8 @@ function integer transform() {
 <Edge debugMode="true" fromNode="SPREADSHEET_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
 </Phase>
 <Phase number="5">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="93" guiName="CloverDataReader" guiWidth="132" guiX="115" guiY="2024" id="CLOVER_READER0" type="CLOVER_READER"/>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiHeight="93" guiName="SpreadsheetDataWriter" guiWidth="163" guiX="456" guiY="2024" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/other/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="96" guiName="CloverDataReader" guiWidth="149" guiX="115" guiY="2024" id="CLOVER_READER0" type="CLOVER_READER"/>
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="456" guiY="2024" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/other/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -939,7 +939,7 @@ function integer transform() {
 <Edge debugMode="true" fromNode="CLOVER_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (input)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SPREADSHEET_WRITER1:0"/>
 </Phase>
 <Phase number="6">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/tax_form_data.xlsx" guiHeight="93" guiName="SpreadsheetDataReader" guiWidth="166" guiX="97" guiY="2468" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/tax_form_data.xlsx" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="97" guiY="2468" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -995,7 +995,7 @@ function integer transform() {
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiHeight="93" guiName="SpreadsheetDataWriter" guiWidth="163" guiX="465" guiY="2468" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/other/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="465" guiY="2468" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/other/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -1234,8 +1234,8 @@ function integer transform() {
 <Edge debugMode="true" fromNode="SPREADSHEET_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" metadata="Metadata9" outPort="Port 0 (output)" toNode="SPREADSHEET_WRITER2:0"/>
 </Phase>
 <Phase number="7">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/tax_form_data.txt" guiHeight="93" guiName="UniversalDataWriter" guiWidth="145" guiX="526" guiY="2920" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_*.xlsx" guiHeight="93" guiName="SpreadsheetDataReader" guiWidth="166" guiX="164" guiY="2920" id="SPREADSHEET_READER3" numSourceRecords="1" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/tax_form_data.txt" guiHeight="96" guiName="UniversalDataWriter" guiWidth="162" guiX="526" guiY="2920" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_*.xlsx" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="164" guiY="2920" id="SPREADSHEET_READER3" numSourceRecords="1" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[${FORM_MAPPING}]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="SPREADSHEET_READER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (output)" toNode="DATA_WRITER1:0"/>
