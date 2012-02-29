@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Wed Feb 29 16:56:23 CET 2012" modifiedBy="pavel" name="graphXLSRead" revision="1.266" showComponentDetails="true">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Evaluation Devel" modified="Wed Feb 29 17:16:49 CET 2012" modifiedBy="pavel" name="graphXLSRead" revision="1.267" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="_10staxss_Sheet1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -161,8 +161,7 @@
 <Field label="Affiliation with Foreigners" name="Affiliation_with_Foreigners" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="FORM_MAPPING" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;&#13;&#10;&lt;mapping&gt;&#13;&#10;    &lt;globalAttributes&gt;&#13;&#10;        &lt;orientation&gt;VERTICAL&lt;/orientation&gt;&#13;&#10;        &lt;step&gt;1&lt;/step&gt;&#13;&#10;        &lt;writeHeader&gt;true&lt;/writeHeader&gt;&#13;&#10;    &lt;/globalAttributes&gt;&#13;&#10;    &lt;defaultSkip&gt;0&lt;/defaultSkip&gt;&#13;&#10;    &lt;headerGroups&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Last_day_of_the_year_Building_Zipcode&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;L33&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Last_day_of_the_year_Street&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;G33&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;State&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;K30&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Personal_identification_number&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;A7&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Title&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B27&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_First_Name&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J26&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Building_number_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;L36&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Corrective_TaxReturn&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;C11&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Zipcode_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B37&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Street_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;G36&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;SupplementaryTax_Return&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;E11&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Financial_Statement&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J17&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;To&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;L22&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Surname&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B26&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Tax_Office&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;A3&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Street&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;G29&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;From&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J22&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Municipality_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B36&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Fax_Email&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;H30&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Affiliation_with_Foreigners&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;F41&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Fax_Email_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;I37&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Proper_tax_return&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;A11&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Last_day_of_the_year_Building_Number&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J33&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Submitted_before_time_limit&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J15&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Ne_Nee&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;G26&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Year&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;F22&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Municipality&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B29&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Phone&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;F30&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Phone_Abroad&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;F37&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Country_Code&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;F39&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Tax_identification_number&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;A5&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Nationality&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;G27&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Zipcode&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B30&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Building_number&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;L29&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Taxpayer_Passport_Number&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;J27&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Last_day_of_the_year_Municipality&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;B33&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;        &lt;headerGroup skip=&quot;0&quot;&gt;&#13;&#10;            &lt;cloverField&gt;Total_W_Income&lt;/cloverField&gt;&#13;&#10;            &lt;headerRanges&gt;&#13;&#10;                &lt;headerRange begin=&quot;K39&quot;/&gt;&#13;&#10;            &lt;/headerRanges&gt;&#13;&#10;        &lt;/headerGroup&gt;&#13;&#10;    &lt;/headerGroups&gt;&#13;&#10;&lt;/mapping&gt;&#13;&#10;"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="137" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Spreadsheet Components Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="651" x="47" y="30">
 <attr name="text"><![CDATA[
 In this example graph, the most important features of SpreadsheetDataReader and SpreadsheetDataWriter components are demostrated. 
@@ -178,7 +177,7 @@ SpreadsheetDataReader reads data from all sheets from given Excel file and fills
 </Note>
 <Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" folded="false" height="131" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading multiple files" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="471" x="493" y="1045">
 <attr name="text"><![CDATA[
-SpreadsheetDataReader reads data from all Excel files with names satisfying pattern ${DATAIN_DIR}/other/O*.xls.
+SpreadsheetDataReader reads data from all Excel files with names satisfying pattern ${DATAIN_DIR}/others/O*.xls.
 
 The data is then written into one Excel file, which is partitioned into different sheets depending on the value in field "ShipCountry".]]></attr>
 </Note>
@@ -284,11 +283,11 @@ Stores loaded tax form data into a simple text file.]]></attr>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/orders.xlsx" guiHeight="96" guiName="XLSX (Orders)" guiWidth="128" guiX="315" guiY="293" id="XLSX_ORDERS" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/ORDERS.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="293" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/ORDERS.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="293" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
 <Edge debugMode="true" fromNode="XLS_ORDERS1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLSX_ORDERS:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/other/county_totals_2009.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="125" guiY="819" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/others/county_totals_2009.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="125" guiY="819" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -393,7 +392,7 @@ Stores loaded tax form data into a simple text file.]]></attr>
 <Node enabled="enabled" existingSheetsActions="CLEAR_SHEETS" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiHeight="96" guiName="Orders by Country" guiWidth="150" guiX="305" guiY="1068" id="ORDERS_BY_COUNTRY1" sheet="$ShipCountry" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/O*.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="1068" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/O*.xls" guiHeight="96" guiName="XLS (Orders)" guiWidth="128" guiX="74" guiY="1068" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
 <attr name="guiDescription"><![CDATA[All orders in 1 sheet]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="XLS_ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="ORDERS_BY_COUNTRY1:0"/>
@@ -409,7 +408,7 @@ Stores loaded tax form data into a simple text file.]]></attr>
 </Phase>
 <Phase number="4">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="96" guiName="CloverDataWriter" guiWidth="144" guiX="826" guiY="1614" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
-<Node enabled="enabled" guiHeight="82" guiName="FastSort" guiWidth="128" guiX="601" guiY="1614" id="FAST_SORT0" sortKey="Total_taxes(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="82" guiName="FastSort" guiWidth="128" guiX="601" guiY="1614" id="FAST_SORT0" runSize="100" sortKey="Total_taxes(d)" type="FAST_SORT"/>
 <Node enabled="enabled" guiHeight="68" guiName="Reformat" guiWidth="128" guiX="392" guiY="1616" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -446,7 +445,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/other/10staxss.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="81" guiY="1618" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
+<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/others/10staxss.xls" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="81" guiY="1618" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -844,7 +843,7 @@ function integer transform() {
 </Phase>
 <Phase number="5">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiHeight="96" guiName="CloverDataReader" guiWidth="149" guiX="115" guiY="2024" id="CLOVER_READER0" type="CLOVER_READER"/>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="456" guiY="2024" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/other/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="456" guiY="2024" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/others/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -939,7 +938,7 @@ function integer transform() {
 <Edge debugMode="true" fromNode="CLOVER_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (input)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SPREADSHEET_WRITER1:0"/>
 </Phase>
 <Phase number="6">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/tax_form_data.xlsx" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="97" guiY="2468" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/tax_form_data.xlsx" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="97" guiY="2468" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -995,7 +994,7 @@ function integer transform() {
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="465" guiY="2468" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/other/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiHeight="96" guiName="SpreadsheetDataWriter" guiWidth="186" guiX="465" guiY="2468" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/others/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -1236,7 +1235,239 @@ function integer transform() {
 <Phase number="7">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/tax_form_data.txt" guiHeight="96" guiName="UniversalDataWriter" guiWidth="162" guiX="526" guiY="2920" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_*.xlsx" guiHeight="96" guiName="SpreadsheetDataReader" guiWidth="191" guiX="164" guiY="2920" id="SPREADSHEET_READER3" numSourceRecords="1" type="SPREADSHEET_READER">
-<attr name="mapping"><![CDATA[${FORM_MAPPING}]]></attr>
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <cloverField>Last_day_of_the_year_Building_Zipcode</cloverField>
+            <headerRanges>
+                <headerRange begin="L33"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Last_day_of_the_year_Street</cloverField>
+            <headerRanges>
+                <headerRange begin="G33"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>State</cloverField>
+            <headerRanges>
+                <headerRange begin="K30"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Personal_identification_number</cloverField>
+            <headerRanges>
+                <headerRange begin="A7"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Title</cloverField>
+            <headerRanges>
+                <headerRange begin="B27"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_First_Name</cloverField>
+            <headerRanges>
+                <headerRange begin="J26"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Building_number_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="L36"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Corrective_TaxReturn</cloverField>
+            <headerRanges>
+                <headerRange begin="C11"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Zipcode_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="B37"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Street_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="G36"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>SupplementaryTax_Return</cloverField>
+            <headerRanges>
+                <headerRange begin="E11"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Financial_Statement</cloverField>
+            <headerRanges>
+                <headerRange begin="J17"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>To</cloverField>
+            <headerRanges>
+                <headerRange begin="L22"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Surname</cloverField>
+            <headerRanges>
+                <headerRange begin="B26"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Tax_Office</cloverField>
+            <headerRanges>
+                <headerRange begin="A3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Street</cloverField>
+            <headerRanges>
+                <headerRange begin="G29"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>From</cloverField>
+            <headerRanges>
+                <headerRange begin="J22"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Municipality_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="B36"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Fax_Email</cloverField>
+            <headerRanges>
+                <headerRange begin="H30"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Affiliation_with_Foreigners</cloverField>
+            <headerRanges>
+                <headerRange begin="F41"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Fax_Email_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="I37"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Proper_tax_return</cloverField>
+            <headerRanges>
+                <headerRange begin="A11"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Last_day_of_the_year_Building_Number</cloverField>
+            <headerRanges>
+                <headerRange begin="J33"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Submitted_before_time_limit</cloverField>
+            <headerRanges>
+                <headerRange begin="J15"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Ne_Nee</cloverField>
+            <headerRanges>
+                <headerRange begin="G26"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Year</cloverField>
+            <headerRanges>
+                <headerRange begin="F22"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Municipality</cloverField>
+            <headerRanges>
+                <headerRange begin="B29"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Phone</cloverField>
+            <headerRanges>
+                <headerRange begin="F30"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Phone_Abroad</cloverField>
+            <headerRanges>
+                <headerRange begin="F37"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Country_Code</cloverField>
+            <headerRanges>
+                <headerRange begin="F39"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Tax_identification_number</cloverField>
+            <headerRanges>
+                <headerRange begin="A5"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Nationality</cloverField>
+            <headerRanges>
+                <headerRange begin="G27"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Zipcode</cloverField>
+            <headerRanges>
+                <headerRange begin="B30"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Building_number</cloverField>
+            <headerRanges>
+                <headerRange begin="L29"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Taxpayer_Passport_Number</cloverField>
+            <headerRanges>
+                <headerRange begin="J27"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Last_day_of_the_year_Municipality</cloverField>
+            <headerRanges>
+                <headerRange begin="B33"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>Total_W_Income</cloverField>
+            <headerRanges>
+                <headerRange begin="K39"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="SPREADSHEET_READER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata9" outPort="Port 0 (output)" toNode="DATA_WRITER1:0"/>
 </Phase>
