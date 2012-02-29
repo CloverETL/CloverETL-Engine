@@ -686,11 +686,23 @@ public class DataParser extends AbstractTextParser {
             return false;
         }
 		int character;
+		int currentField = 0;
+		boolean inQuote = false;
 		try {
 			while ((character = readChar()) != -1) {
+				if (currentField < numFields && 
+						((!quotedFields[currentField] || !inQuote)) && 
+						recordDelimiterFound()) {
+					//end of field
+					currentField++;
+					inQuote = false;
+				}
+				if (quotedFields[currentField] && isQuoteChar(character)) {
+					inQuote = !inQuote;
+				}
 				delimiterSearcher.update((char) character);
 				//test record delimiter
-				if (recordDelimiterFound()) {
+				if ((!quotedFields[currentField] || !inQuote) && recordDelimiterFound()) {
 					return true;
 				}
 			}
@@ -699,6 +711,14 @@ public class DataParser extends AbstractTextParser {
 		}
 		//end of file
 		return false;
+	}
+	
+	private boolean isQuoteChar(int charToTest) {
+		if (cfg.getMetadata().getQuoteChar() == null) {
+			return (charToTest == '\'' || charToTest == '\"');
+		} else {
+			return cfg.getMetadata().getQuoteChar() == charToTest;
+		}
 	}
 
 	/**
