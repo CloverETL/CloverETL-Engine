@@ -128,7 +128,9 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("FailingGraph.grf") // ok, is to fail
 							&& !pathname.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
 							&& !pathname.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
-							&& !pathname.getName().equals("DataIntersection_order_check_B.grf"); // ok, is to fail
+							&& !pathname.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
+							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
+							&& !pathname.getName().contains("firebird"); // remove after CL-2170 solved
 				}
 			});
 			
