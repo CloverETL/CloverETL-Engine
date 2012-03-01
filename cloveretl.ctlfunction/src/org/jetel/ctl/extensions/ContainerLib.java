@@ -19,6 +19,7 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +49,8 @@ public class ContainerLib extends TLFunctionLibrary {
     		"copy".equals(functionName) ? new CopyFunction() : 
     		"containsAll".equals(functionName) ? new ContainsAllFunction() :
     		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
-    		"containsValue".equals(functionName) ? new ContainsValueFunction() : null;
+    		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
+    		"getKeys".equals(functionName) ? new GetKeysFunction() : null;
 
     	if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -449,6 +451,25 @@ public class ContainerLib extends TLFunctionLibrary {
 				Object value = stack.pop();
 				Map<Object, Object> map = stack.popMap();
 				stack.push(containsValue(context, map, value));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Returns the keys of the map.")
+	public static final <K, V> List<K> getKeys(TLFunctionCallContext context, Map<K, V> map) {
+		return new ArrayList<K>(map.keySet());
+	}
+	class GetKeysFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				Map<Object, Object> map = stack.popMap();
+				stack.push(getKeys(context, map));
 			}
 		}
 	}

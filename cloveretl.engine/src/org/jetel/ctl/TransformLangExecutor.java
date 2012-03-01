@@ -23,6 +23,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1192,13 +1193,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		SimpleNode composite = (SimpleNode)node.jjtGetChild(1);
 		
 		
-		if (composite.getType().isList()) {
+		if (composite.getType().isList() || composite.getType().isMap()) {
 			// iterable composite is a list - iterate over elements
+			// iterable composite is a map - iterate over values
 			// iterating over record fields
 			node.jjtGetChild(1).jjtAccept(this, data);
-			final List<Object> list = stack.popList();
 			
-			for (Object o : list) {
+			final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
+			
+			for (Object o : iterable) {
 				setVariable(var,o);
 				// block is responsible for cleanup
 				body.jjtAccept(this, data);

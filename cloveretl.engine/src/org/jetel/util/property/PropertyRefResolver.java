@@ -382,7 +382,13 @@ public class PropertyRefResolver {
 				anyReferenceResolved = true;
 			} else {
 				errorMessages.add("Property '" + reference + "' is not defined.");
-				logger.warn("Cannot resolve reference to property: " + reference);
+				//this warn is turned off since this warning can disturb console log even in case everything is correct
+				//see TypedProperties.resolvePropertyReferences() method where a local PropertyRefResolver is used
+				//for initial parameters resolution and after that a global PropertyRefResolver is used for unresolved
+				//parameters, there is expected that the first initial resolution does not handle all parameters
+				//and no warning are desired
+				//for detail error reporting PropertyRefResolver.getErrorMessages() method should be used
+				//logger.warn("Cannot resolve reference to property: " + reference);
 			}
 		}
 

@@ -486,13 +486,15 @@ public class SQLCloverStatement {
 	 * 
 	 * @author pnajvar
 	 * @since Mar 2009
+	 * @param optimizeSelectQuery True to optimize select query by appending WHERE 1=0. False to execute the select 
+	 * query as is.
 	 * @throws SQLException
 	 * @throws ComponentNotReadyException 
 	 */
 	
-	public void executeValidate() throws SQLException, ComponentNotReadyException {
+	public void executeValidate(boolean optimizeSelectQuery) throws SQLException, ComponentNotReadyException {
 
-        String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType());
+        String q = connection.getJdbcSpecific().getValidateQuery(getQuery(), getQueryType(), optimizeSelectQuery);
         if(q == null) {
            throw new SQLException("Inserted query can not be validated.");	
         }

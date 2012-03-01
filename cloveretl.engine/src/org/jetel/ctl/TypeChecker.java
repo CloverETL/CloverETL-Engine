@@ -610,9 +610,16 @@ public class TypeChecker extends NavigatingVisitor {
 		}
 		
 		if (iterable.getType().isList()) {
-			TLType elemType = ((TLTypeList)iterable.getType()).getElementType();
+			TLType elemType = ((TLTypeList) iterable.getType()).getElementType();
 			if (!loopVarType.canAssign(elemType)) {
 				error(iterable,"Cannot convert '" + elemType.name() + "' to '" + loopVarType.name() + "'");
+				node.setType(TLType.ERROR);
+			} 
+			// type-cast will be generated when rewriting to Java code
+		} else if (iterable.getType().isMap()) {
+			TLType valuesType = ((TLTypeMap) iterable.getType()).getValueType();
+			if (!loopVarType.canAssign(valuesType)) {
+				error(iterable,"Cannot convert '" + valuesType.name() + "' (map values) to '" + loopVarType.name() + "'");
 				node.setType(TLType.ERROR);
 			} 
 			// type-cast will be generated when rewriting to Java code

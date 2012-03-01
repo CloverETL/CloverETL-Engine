@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -392,6 +393,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		byteMapField.setCardinalityType(DataFieldCardinalityType.MAP);
 		ret.addField(byteMapField);
 
+		DataFieldMetadata integerListField = new DataFieldMetadata("integerListField", DataFieldType.INTEGER, "|");
+		integerListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		ret.addField(integerListField);
+		
 		return ret;
 	}
 
@@ -2360,6 +2365,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkEquals("counter", "COUNT");
 	}
 
+	@SuppressWarnings("unchecked")
 	public void test_foreach() {
 		doCompile("test_foreach");
 		check("intRes", Arrays.asList(VALUE_VALUE));
@@ -2369,6 +2375,34 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("booleanRes", Arrays.asList(FLAG_VALUE));
 		check("stringRes", Arrays.asList(NAME_VALUE, CITY_VALUE));
 		check("dateRes", Arrays.asList(BORN_VALUE));
+		
+		List<?> integerStringMapResTmp = (List<?>) getVariable("integerStringMapRes");
+		List<String> integerStringMapRes = new ArrayList<String>(integerStringMapResTmp.size());
+		for (Object o: integerStringMapResTmp) {
+			integerStringMapRes.add(String.valueOf(o));
+		}
+		List<Integer> stringIntegerMapRes = (List<Integer>) getVariable("stringIntegerMapRes");
+		List<DataRecord> stringRecordMapRes = (List<DataRecord>) getVariable("stringRecordMapRes");
+		
+		Collections.sort(integerStringMapRes);
+		Collections.sort(stringIntegerMapRes);
+		
+		assertEquals(Arrays.asList("0", "1", "2", "3", "4"), integerStringMapRes);
+		assertEquals(Arrays.asList(0, 1, 2, 3, 4), stringIntegerMapRes);
+		
+		final int N = 5;
+		assertEquals(N, stringRecordMapRes.size());
+		int equalRecords = 0;
+		for (int i = 0; i < N; i++) {
+			for (DataRecord r: stringRecordMapRes) {
+				if (Integer.valueOf(i).equals(r.getField("Value").getValue())
+						&& "A string".equals(String.valueOf(r.getField("Name").getValue()))) {
+					equalRecords++;
+					break;
+				}
+			}
+		}
+		assertEquals(N, equalRecords);
 	}
 	
 	public void test_return(){
@@ -2590,6 +2624,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_containerlib_sort");
 
 		check("sortList", Arrays.asList(1, 1, 2, 3, 5));
+	}
+
+	public void test_containerlib_containsAll() {
+		doCompile("test_containerlib_containsAll");
+
+		check("results", Arrays.asList(true, false, true, false, true, true, true, false, true, true, false));
+	}
+
+	public void test_containerlib_containsKey() {
+		doCompile("test_containerlib_containsKey");
+
+		check("results", Arrays.asList(false, true, false, true, false, true));
+	}
+
+	public void test_containerlib_containsValue() {
+		doCompile("test_containerlib_containsValue");
+
+		check("results", Arrays.asList(true, false, false, true, false, false, true, false));
+	}
+
+	public void test_containerlib_getKeys() {
+		doCompile("test_containerlib_getKeys");
+		Map<?, ?> stringIntegerMap = (Map<?, ?>) inputRecords[3].getField("integerMapField").getValue();
+		Map<?, ?> integerStringMap = (Map<?, ?>) getVariable("integerStringMap");
+		List<?> stringList = (List<?>) getVariable("stringList");
+		List<?> integerList = (List<?>) getVariable("integerList");
+		assertEquals(stringIntegerMap.keySet().size(), stringList.size());
+		assertEquals(integerStringMap.keySet().size(), integerList.size());
+		assertEquals(stringIntegerMap.keySet(), new HashSet<Object>(stringList));
+		assertEquals(integerStringMap.keySet(), new HashSet<Object>(integerList));
 	}
 //---------------------- StringLib Tests ------------------------	
 	
