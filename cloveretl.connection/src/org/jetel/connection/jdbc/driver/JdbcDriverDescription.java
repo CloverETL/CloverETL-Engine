@@ -54,7 +54,7 @@ public class JdbcDriverDescription extends PluginableItemDescription {
 
     private final static String DRIVER_LIBRARY_PARAMETER = "driverLibrary";
 
-    private final static String URL_HINT_PARAMETER = "urlHint";
+    private final static String URL_HINTS_PARAMETER = "urlHint";
 
     private final static String JDBC_SPECIFIC_PARAMETER = "jdbcSpecific";
 
@@ -83,7 +83,7 @@ public class JdbcDriverDescription extends PluginableItemDescription {
     /**
      * Hint for a database URL, mainly used in GUI.
      */
-    private String urlHint;
+    private String[] urlHints;
 
     /**
      * JDBC specific behaviour for this driver.
@@ -125,9 +125,13 @@ public class JdbcDriverDescription extends PluginableItemDescription {
             driverLibrary = extension.getParameter(DRIVER_LIBRARY_PARAMETER).getString();
         }
 
-        //reads 'urlHint' parameter
-        if(extension.hasParameter(URL_HINT_PARAMETER)) {
-            urlHint = extension.getParameter(URL_HINT_PARAMETER).getString();
+        //reads 'urlHints' parameter
+        if(extension.hasParameter(URL_HINTS_PARAMETER)) {
+            List<String> urlHintsValues = extension.getParameter(URL_HINTS_PARAMETER).getValues();
+            urlHints = null;
+            if (urlHintsValues != null) {
+            	urlHints = urlHintsValues.toArray(new String[urlHintsValues.size()]);
+            }
         }
 
         //reads 'jdbcSpecific' parameter
@@ -159,8 +163,8 @@ public class JdbcDriverDescription extends PluginableItemDescription {
         return driverLibrary;
     }
 
-    public String getUrlHint() {
-        return urlHint;
+    public String[] getUrlHints() {
+        return urlHints;
     }
 
     public String getJdbcSpecificStr() {
