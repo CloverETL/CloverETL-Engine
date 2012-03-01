@@ -124,8 +124,11 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
 							&& !pathname.getName().equals("SSWRITER_MultilineInsertIntoTemplate.grf") // uses graph parameter definition from after-commit.ts
 							&& !pathname.getName().equals("SSWRITER_FormatInMetadata.grf") // uses graph parameter definition from after-commit.ts
-							&& !pathname.getName().equals("WSC_NamespaceBindingsDefined.grf"); // ok, is to fail
-					
+							&& !pathname.getName().equals("WSC_NamespaceBindingsDefined.grf") // ok, is to fail
+							&& !pathname.getName().equals("FailingGraph.grf") // ok, is to fail
+							&& !pathname.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
+							&& !pathname.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
+							&& !pathname.getName().equals("DataIntersection_order_check_B.grf"); // ok, is to fail
 				}
 			});
 			
