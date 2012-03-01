@@ -131,7 +131,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
 							&& !pathname.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
-							&& !pathname.getName().contains("firebird"); // remove after CL-2170 solved
+							&& !pathname.getName().contains("firebird") // remove after CL-2170 solved
+							&& !pathname.getName().startsWith("ListOfRecords_Functions_02_"); // remove after CL-2173 solved
 				}
 			});
 			
