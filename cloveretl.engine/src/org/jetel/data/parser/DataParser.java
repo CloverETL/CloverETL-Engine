@@ -399,7 +399,7 @@ public class DataParser extends AbstractTextParser {
 										//and check whether the field delimiter follows
 										tempReadBuffer.append((char) character);
 										if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
-											findFirstRecordDelimiter();
+											findNextRecordDelimiterRecoverFromFailure();
 											return parsingErrorFound("Bad quote format", record, fieldCounter);
 										}
 										break;
@@ -434,7 +434,7 @@ public class DataParser extends AbstractTextParser {
 							}
 							//test default field delimiter 
 							if(defaultFieldDelimiterFound()) {
-								findFirstRecordDelimiter();
+								findNextRecordDelimiterRecoverFromFailure();
 								return parsingErrorFound("Unexpected default field delimiter, probably record has too many fields.", record, fieldCounter);
 							}
 							//test record delimiter
@@ -679,31 +679,38 @@ public class DataParser extends AbstractTextParser {
 	}
 
 	/**
-	 * Find first record delimiter in input channel.
+	 * Searches for next record delimiter from current position at the input channel. It's expected that the position at
+	 * the input channel is start of the record.
+	 * 
+	 * @return True if record skipped, false otherwise.
+	 * @throws JetelException
 	 */
-	private boolean findFirstRecordDelimiter() throws JetelException {
-        if(!cfg.getMetadata().isSpecifiedRecordDelimiter()) {
-            return false;
-        }
-		int character;
-		int currentField = 0;
-		boolean inQuote = false;
+	private boolean findNextRecordDelimiter() throws JetelException {
+
+		int character = -1;
 		try {
-			while ((character = readChar()) != -1) {
-				if (currentField < numFields && 
-						((!quotedFields[currentField] || !inQuote)) && 
-						recordDelimiterFound()) {
-					//end of field
-					currentField++;
-					inQuote = false;
-				}
-				if (quotedFields[currentField] && isQuoteChar(character)) {
-					inQuote = !inQuote;
-				}
-				delimiterSearcher.update((char) character);
-				//test record delimiter
-				if ((!quotedFields[currentField] || !inQuote) && recordDelimiterFound()) {
-					return true;
+			for (int i = 0; i < numFields; i++) {
+				//read all fields of the record
+				if (fieldLengths[i] == 0) {
+					//delimited field is being read
+					boolean inQuote = false;
+					while ((character = readChar()) != -1) {
+						delimiterSearcher.update((char) character);
+						if (quotedFields[i] && isQuoteChar(character)) {
+							inQuote = !inQuote;
+						}
+						if (((!quotedFields[i] || !inQuote)) && delimiterSearcher.isPattern(i)) {
+							// end of field reached
+							inQuote = false;
+							if (i + 1 < numFields) {
+								//end of field followed by another field
+								break;
+							} else {
+								//end of record
+								return recordDelimiterFound();
+							}
+						}
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -719,6 +726,32 @@ public class DataParser extends AbstractTextParser {
 		} else {
 			return cfg.getMetadata().getQuoteChar() == charToTest;
 		}
+	}
+	
+	/**
+	 * Searches for next record delimiter from current position at the input channel to recover from the failure.
+	 * 
+	 * @return True if there is record delimiter at the input channel, false otherwise.
+	 * @throws JetelException
+	 */
+	private boolean findNextRecordDelimiterRecoverFromFailure() throws JetelException {
+		if (!cfg.getMetadata().isSpecifiedRecordDelimiter()) {
+			return false;
+		}
+		int character;
+		try {
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				// test record delimiter
+				if (recordDelimiterFound()) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			throw new JetelException("Can not find a record delimiter.", e);
+		}
+		// end of file
+		return false;
 	}
 
 	/**
@@ -882,7 +915,7 @@ public class DataParser extends AbstractTextParser {
 
         if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			for(skipped = 0; skipped < count; skipped++) {
-				if(!findFirstRecordDelimiter()) {
+				if(!findNextRecordDelimiter()) {
 				    break;
                 }
 				recordBuffer.clear();
