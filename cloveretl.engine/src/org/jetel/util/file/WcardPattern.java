@@ -399,11 +399,15 @@ public class WcardPattern {
     
 	private List<String> getSanboxNames(URL url) {
 		List<String> fileStreamNames = new ArrayList<String>();
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-		String storageCode = url.getHost();
-		String queryPart = url.getQuery() != null ? "?" + url.getQuery() : "";
-		for (String fileName : authorityProxy.resolveAllFiles(storageCode, url.getPath() + queryPart)) {
-			fileStreamNames.add(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + fileName);
+		if (hasWildcard(url)) {
+			IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+			String storageCode = url.getHost();
+			String queryPart = url.getQuery() != null ? "?" + url.getQuery() : "";
+			for (String fileName : authorityProxy.resolveAllFiles(storageCode, url.getPath() + queryPart)) {
+				fileStreamNames.add(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + fileName);
+			}
+		} else {
+			fileStreamNames.add(url.toString());
 		}
 		return fileStreamNames;
 	}
