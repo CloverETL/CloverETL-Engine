@@ -132,7 +132,9 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
 							&& !pathname.getName().contains("firebird") // remove after CL-2170 solved
-							&& !pathname.getName().startsWith("ListOfRecords_Functions_02_"); // remove after CL-2173 solved
+							&& !pathname.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
+							&& !pathname.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
+							&& !pathname.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf"); // remove after CL-2174 solved
 				}
 			});
 			
