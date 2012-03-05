@@ -380,7 +380,11 @@
 			<keep name="com.opensys.cloveretl.data.cobol.CobolData2CloverMetadata"><field access="public"/><method name="*"/></keep>
 			<keep name="com.opensys.cloveretl.data.cobol.CopyBookParser"><method name="*"/></keep>
 			<keep name="com.opensys.cloveretl.data.cobol.StripLineNumbers"><method name="*"/></keep>
-				
+			
+			<keep name="com.opensys.cloveretl.component.SpreadsheetReader"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.SpreadsheetWriter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.spreadsheet.formatter.FieldNamesForSheetPartitioningParser"><field access="public"/><method access="public"/></keep>
+			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->

@@ -33,9 +33,9 @@ import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -125,7 +125,7 @@ import org.w3c.dom.Element;
  */
 public class XLSWriter extends Node {
 
-    public final static String COMPONENT_TYPE = "XLS_WRITER";
+    public final static String COMPONENT_TYPE = AdditionalComponentAttributes.XLS_WRITER.getComponentType();
 
     public static final String XML_FORMATTER_ATTRIBUTE = "formatter";
 	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";

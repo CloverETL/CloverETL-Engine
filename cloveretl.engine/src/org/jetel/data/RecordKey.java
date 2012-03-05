@@ -641,6 +641,53 @@ public class RecordKey {
     	Arrays.fill(collators, collator);
     	useCollator = collators != null;
     }
+	
+	/**
+	 * Utility method for identifying the first different data field.
+	 * @param record1
+	 * @param record2
+	 * @return First data field of <code>record1</code> which causes that <code>compare(record1, record2)</code> 
+	 * does not return 0. Returns null in case that both records are equal or given records have different metadata!
+	 */
+	public DataField getFieldViolatingEquals(DataRecord record1, DataRecord record2) {
+		
+		if (record1 == record2 || !record1.getMetadata().equals(record2.getMetadata())) {
+			return null;
+		}
+		int compResult;
+    	comparedNulls = false;
+		if (equalNULLs){
+		    for (int i = 0; i < keyFields.length; i++) {
+		    	DataField field = record1.getField(keyFields[i]);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+				} else {
+					compResult = field.compareTo(record2.getField(keyFields[i]));
+				}
+		        if (compResult != 0) {
+		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		                return field;
+		            }
+		        }
+		    }
+		} else {
+		    for (int i = 0; i < keyFields.length; i++) {
+		    	DataField field = record1.getField(keyFields[i]);
+				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
+			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+				} else {
+					compResult = field.compareTo(record2.getField(keyFields[i]));
+				}
+		        if (compResult != 0) {
+		            if (record1.getField(keyFields[i]).isNull && record2.getField(keyFields[i]).isNull) {
+		            	comparedNulls = true;
+		            }
+		            return field;
+		        }
+		    }
+		}
+		return null;
+	}
     
     /**
      * Creates sensitivity array for collators.

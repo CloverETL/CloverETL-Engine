@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
+import java.nio.InvalidMarkException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -342,6 +344,58 @@ public final class ByteBufferUtils {
     	}
     	
     	return Math.max(minLength, bytes.length); 
+    }
+    
+    /**
+     * Creates deep copy of the given {@link CharBuffer} with at least requested capacity and at most maximum capacity.
+     * The resulted deep copy has same internal state (position, limit, mark) as the given buffer. 
+     * @param oldBuffer copied buffer
+     * @param requestedCapacity the resulted buffer has at least this capacity
+     * @param maximumCapacity the resulted buffer has at most this capacity
+     * @return the deep copy of the given buffer with expanded capacity
+     */
+    public static CharBuffer expandCharBuffer(CharBuffer oldBuffer, int requestedCapacity, int maximumCapacity) {
+    	if (requestedCapacity > maximumCapacity) {
+    		throw new IllegalArgumentException("requested capacity cannot be bigger than maximum capacity");
+    	}
+        if (oldBuffer.capacity() < requestedCapacity) {
+            // Allocate a new buffer and transfer all settings to it.
+            //// Save the state.
+            int oldPosition = oldBuffer.position();
+            int oldLimit = oldBuffer.limit();
+            int oldMark = -1;
+            try {
+            	oldMark = oldBuffer.reset().position();
+            } catch (InvalidMarkException e) {
+            	//DO NOTHING
+            }
+
+            //// Reallocate.
+            int newCapacity = Math.min(CloverBuffer.normalizeCapacity(requestedCapacity), maximumCapacity);
+            CharBuffer newBuffer = CharBuffer.allocate(newCapacity);
+            oldBuffer.clear();
+            newBuffer.put(oldBuffer);
+            
+            //// Restore the state in old buffer
+            oldBuffer.limit(oldLimit);
+            if (oldMark >= 0) {
+                oldBuffer.position(oldMark);
+                oldBuffer.mark();
+            }
+            oldBuffer.position(oldPosition);
+
+            //// Restore the state in new buffer
+            newBuffer.limit(oldLimit);
+            if (oldMark >= 0) {
+                newBuffer.position(oldMark);
+                newBuffer.mark();
+            }
+            newBuffer.position(oldPosition);
+        	
+            return newBuffer;
+        } else {
+        	return oldBuffer;
+        }
     }
     
 }
