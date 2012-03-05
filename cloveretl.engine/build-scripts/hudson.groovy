@@ -4,6 +4,7 @@ def env = System.getenv()
 def ant = new AntBuilder()
 init()
 
+
 def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']

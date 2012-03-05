@@ -110,7 +110,33 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail
 							&& !pathname.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
 							&& !pathname.getName().equals("mountainsInformix.grf") // see issue 2550							
-							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf"); // graph for windows					
+							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf") // graph for windows
+							&& !pathname.getName().equals("XLSEncryptedFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXEncryptedFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSInvalidFile.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSReaderOrderMappingFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXReaderOrderMappingFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardStrict.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardStrict.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardControlled1.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardControlled1.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSWildcardControlled7.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
+							&& !pathname.getName().equals("SSWRITER_MultilineInsertIntoTemplate.grf") // uses graph parameter definition from after-commit.ts
+							&& !pathname.getName().equals("SSWRITER_FormatInMetadata.grf") // uses graph parameter definition from after-commit.ts
+							&& !pathname.getName().equals("WSC_NamespaceBindingsDefined.grf") // ok, is to fail
+							&& !pathname.getName().equals("FailingGraph.grf") // ok, is to fail
+							&& !pathname.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
+							&& !pathname.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
+							&& !pathname.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
+							&& !pathname.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
+							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
+							&& !pathname.getName().contains("firebird") // remove after CL-2170 solved
+							&& !pathname.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
+							&& !pathname.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
+							&& !pathname.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
+							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
+							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_"); // remove after CL-2176 solved
 				}
 			});
 			

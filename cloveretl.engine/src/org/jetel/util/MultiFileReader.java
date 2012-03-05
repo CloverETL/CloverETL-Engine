@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -423,7 +424,11 @@ public class MultiFileReader {
         if (rec == null) channelIterator.blankRead();
         
         return rec;
-	}		
+	}
+	
+	public String getSourceName() {
+		return channelIterator.getCurrentFileName();
+	}
 
 	/**
 	 * Tries to obtain one record

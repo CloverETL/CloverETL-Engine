@@ -207,16 +207,6 @@
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SpreadsheetReader"/>
-	    <parameter id="type" value="SPREADSHEET_READER"/>
-	</extension>
-	
-	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SpreadsheetWriter"/>
-	    <parameter id="type" value="SPREADSHEET_WRITER"/>
-	</extension>
-
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XLSWriter"/>
 	    <parameter id="type" value="XLS_WRITER"/>
 	</extension>

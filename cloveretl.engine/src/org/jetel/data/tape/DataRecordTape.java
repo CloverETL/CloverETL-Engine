@@ -78,6 +78,7 @@ public class DataRecordTape {
 
 	private DataChunk currentDataChunk;
 	private int currentDataChunkIndex;
+	private boolean updatedAfterFlush;
     
 	// size of BUFFER - used for push & shift operations
 	private final static int DEFAULT_BUFFER_SIZE = Defaults.Record.RECORDS_BUFFER_SIZE; 
@@ -198,26 +199,37 @@ public class DataRecordTape {
 		    if (force){
 		        tmpFileChannel.force(true);
 		    }
+		    updatedAfterFlush = false;
 		} catch (ClosedChannelException e) {
 			throw new InterruptedException();
 		}
 	}
 
 	/**
-	 *  Rewinds the buffer and makes first chunk active. Next get operation returns first record stored in
-	 * first chunk.
-	 * @throws InterruptedException 
-	 * @throws IOException 
-	 *
-	 *@since    September 19, 2002
+	 * <p>Rewinds the buffer and makes first chunk active. Next get operation returns first record stored in
+	 * first chunk. Allows preventing flush (see <code>doFlush</code> param.) that block concurrency in some situations.</p>
+	 * 
+	 * <p>Flush shall be done if there were some data written to the tape.
+	 * 
+	 * @param doFlush <code>true</code> if flush shall be done,<br/><code>false</code> otherwise
+	 * @throws InterruptedException
+	 * @throws IOException
+	 * 
+	 * @since September 19, 2002
 	 */
-	public void rewind() throws InterruptedException, IOException {
+	public void rewind(boolean doFlush) throws InterruptedException, IOException {
+		
+		if (updatedAfterFlush && !doFlush) {
+			throw new IllegalStateException("not doing flush is allowed only if no data were written to tape since last flush");
+		}
 	    if (dataChunks.size()==0){
 	        return;
 	    }
 
 	    try {
-		    flush(true);
+	    	if (doFlush) {
+	    		flush(true);
+	    	}
 	    	tmpFileChannel.position(0);
 	    	
 		    currentDataChunkIndex=0;
@@ -226,6 +238,16 @@ public class DataRecordTape {
 	    } catch (ClosedChannelException e) {
 	    	throw new InterruptedException();
 	    }
+	}
+	
+
+	/**
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 * 
+	 */
+	public void rewind() throws InterruptedException, IOException {
+		rewind(true);
 	}
 
 	/**
@@ -326,6 +348,7 @@ public class DataRecordTape {
 	    if (order<dataChunks.size()){
 	        currentDataChunk = dataChunks.get(order);
 	        currentDataChunkIndex=order;
+			updatedAfterFlush = true;
 	        currentDataChunk.rewind();
 	        
 	        return true;
@@ -391,7 +414,9 @@ public class DataRecordTape {
 	 */
 	public long put(CloverBuffer data) throws IOException, InterruptedException {
 		if (currentDataChunk != null) {
-	        return currentDataChunk.put(data);
+	        long putResult = currentDataChunk.put(data);
+			updatedAfterFlush = true;
+			return putResult;
 		} else {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
@@ -407,6 +432,7 @@ public class DataRecordTape {
 		if (wrappedBuffer.buf() != data) {
 			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
 		}
+		updatedAfterFlush = true;
 		return result;
 	}
 
@@ -420,7 +446,9 @@ public class DataRecordTape {
 	 */
 	public long put(DataRecord data) throws IOException, InterruptedException {
 		if (currentDataChunk != null) {
-	        return currentDataChunk.put(data);
+	        long putResult = currentDataChunk.put(data);
+			updatedAfterFlush = true;
+			return putResult;
 		} else {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
@@ -527,7 +555,7 @@ public class DataRecordTape {
 		CloverBuffer buffer=CloverBuffer.allocateDirect(2048);
 	    logger.info("Testing consistency...");
 
-		rewind();
+		rewind(true);
 		
 	    for(int i=0;i<getNumChunks();i++){
 	        int counter=0;

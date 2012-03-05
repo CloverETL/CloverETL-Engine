@@ -2,6 +2,27 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-3-0-M1
+------------
++ Introducing MS Access and Generic ODBC
+- Improved log messages in readers and Aggregate
+- CTL2: fixed datediff() function to work with milliseconds
+- FastSort: Fixed rare synchronization problem during long runs causing a deadlock
+- UniversalDataReader: fixed buffer size problems when verbose mode is on with big records
+- UniversalDataReader/Writer, ComplexDataReader and ParallelReader: Explicit Quoted string and Quote character have now higher priority than setting these values in metadata (i.e. can now be properly overridden in component setting)
+- Analyzedb.bat: Paths to Clover-bundled JDBC drivers are now properly set
+- UniversalDataWriter and partitioned output – locking of file pattern is now more fine grained so that multiple graphs can run at the same time
+
+
+REL 3-2-1
+---------
+
+REL 3-2-0
+---------
+* Introduction of dynamic edge buffers
++ Field Labels
+
+
 REL 3-1-2
 ---------
 

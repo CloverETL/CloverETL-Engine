@@ -214,7 +214,7 @@ public class DataReader extends Node {
 				logging = true;
 			} else {
 				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": The log port metadata has invalid format " + 
-						"(expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");
+						"(expected data fields - integer (record number), integer (field number), string (raw record), string (error message), string (file name - OPTIONAL");
 			}
 		}
 		
@@ -253,9 +253,11 @@ public class DataReader extends Node {
 		// if we have second output port we can logging - create data record for
 		// log port
 		DataRecord logRecord = null;
+		boolean hasFileNameField = false;
 		if (logging) {
 			logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
 			logRecord.init();
+			hasFileNameField = logRecord.getNumFields() == 5;
 		}
 		int errorCount = 0;
 
@@ -278,6 +280,9 @@ public class DataReader extends Node {
 									.setValue(bdfe.getFieldNumber() + 1);
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
 							setCharSequenceToField(bdfe.getMessage(), logRecord.getField(3));
+							if (hasFileNameField) {
+								setCharSequenceToField(reader.getSourceName(), logRecord.getField(4));
+							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
 							logger.warn(bdfe.getMessage());
@@ -347,11 +352,13 @@ public class DataReader extends Node {
 	private boolean checkLogPortMetadata() {
         DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
 
-        boolean ret = logMetadata.getNumFields() == 4 
+        int numFields = logMetadata.getNumFields();
+        boolean ret = (numFields == 4 || numFields == 5)
         	&& logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
         	&& logMetadata.getField(1).getType() == DataFieldMetadata.INTEGER_FIELD
             && isStringOrByte(logMetadata.getField(2))
-            && isStringOrByte(logMetadata.getField(3));
+            && isStringOrByte(logMetadata.getField(3))
+            && (numFields != 5 || isStringOrByte(logMetadata.getField(4)));
         
 //        if(!ret) {
 //            logger.warn(this.getId() + ": The log port metadata has invalid format (expected data fields - integer (record number), integer (field number), string (raw record), string (error message)");

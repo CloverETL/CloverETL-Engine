@@ -522,6 +522,7 @@ public class XMLExtract extends Node {
 			if (doc != null) {
 				Element rootElement = doc.getDocumentElement();
 				mappingNodes = rootElement.getChildNodes();
+				parser.setMappingNodes(mappingNodes);
 
 				for (int i = 0; i < mappingNodes.getLength(); i++) {
 					org.w3c.dom.Node node = mappingNodes.item(i);
@@ -673,6 +674,7 @@ public class XMLExtract extends Node {
 	@Deprecated
 	private void setNodes(NodeList nodes) {
 		this.mappingNodes = nodes;
+		parser.setMappingNodes(nodes);
 	}
 
 	public void setMappingURL(String mappingURL) {
