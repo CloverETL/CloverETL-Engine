@@ -136,7 +136,12 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
 							&& !pathname.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
 							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
-							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_"); // remove after CL-2176 solved
+							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_") // remove after CL-2176 solved
+							&& !pathname.getName().equals("manyRecords.grf") // remove after CL-1825 implemented
+							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
+							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
+							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
+							&& !pathname.getName().equals("testdata_intersection.grf"); // remove after CL-1792 solved
 				}
 			});
 			
