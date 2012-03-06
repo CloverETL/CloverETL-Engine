@@ -25,6 +25,7 @@ package org.jetel.util;
 
 import java.math.BigInteger;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 import java.util.Arrays;
 
 import org.jetel.test.CloverTestCase;
