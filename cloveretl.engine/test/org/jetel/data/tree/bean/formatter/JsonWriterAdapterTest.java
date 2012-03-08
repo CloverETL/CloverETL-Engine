@@ -109,7 +109,7 @@ public class JsonWriterAdapterTest extends SampleTreeWriter {
 		
 		sb.append("]}");
 
-		test_array(jsonWriter, this);
+		writeArray(jsonWriter, this);
 
 		cleanupAndResultCheck(sb.toString());
 	}
@@ -140,7 +140,7 @@ public class JsonWriterAdapterTest extends SampleTreeWriter {
 		sb.setLength(sb.length() - 1);
 		sb.append("]");
 
-		test_list(jsonWriter, this);
+		writeList(jsonWriter, this);
 		
 		cleanupAndResultCheck(sb.toString());
 	}
@@ -155,7 +155,7 @@ public class JsonWriterAdapterTest extends SampleTreeWriter {
 		sb.setLength(sb.length() - 1);
 		sb.append("]");
 
-		test_list_of_beans(jsonWriter, this);
+		writeListOfBeans(jsonWriter, this);
 		
 		cleanupAndResultCheck(sb.toString());
 	}
@@ -172,7 +172,7 @@ public class JsonWriterAdapterTest extends SampleTreeWriter {
 		sb.setLength(sb.length() - 1);
 		sb.append("]");
 
-		test_list_of_properties(jsonWriter, this);
+		writeListOfProperties(jsonWriter, this);
 		
 		cleanupAndResultCheck(sb.toString());
 	}

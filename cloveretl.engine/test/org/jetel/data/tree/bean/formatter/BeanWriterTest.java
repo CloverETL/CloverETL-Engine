@@ -99,7 +99,7 @@ public class BeanWriterTest extends SampleTreeWriter {
 		SchemaObject structure = BeanParser.parse(ComplexTestTypeWithArray.class);
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		test_array(beanWriter, this);
+		writeArray(beanWriter, this);
 		
 		ComplexTestTypeWithArray result = (ComplexTestTypeWithArray) beanWriter.flushBean();
 		assertEquals(expected, result);
@@ -125,7 +125,7 @@ public class BeanWriterTest extends SampleTreeWriter {
 		SchemaObject structure = BeanParser.parse(ComplexTestTypeWithCollection.class);
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		test_collectionInBean(beanWriter, this);
+		writeCollectionInBean(beanWriter, this);
 		
 		ComplexTestTypeWithCollection result = (ComplexTestTypeWithCollection) beanWriter.flushBean();
 		assertEquals(expected, result);
@@ -149,7 +149,7 @@ public class BeanWriterTest extends SampleTreeWriter {
 		SchemaObject structure = BeanParser.parse(ListOfMapsOfMaps.class);
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		test_list(beanWriter, this);
+		writeList(beanWriter, this);
 
 		ListOfMapsOfMaps result = (ListOfMapsOfMaps) beanWriter.flushBean();
 		assertEquals(expected, result);
@@ -171,7 +171,7 @@ public class BeanWriterTest extends SampleTreeWriter {
 		
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		test_list_of_beans(beanWriter, this);
+		writeListOfBeans(beanWriter, this);
 		
 		List<SimpleTestType> result = (List<SimpleTestType>) beanWriter.flushBean();
 		assertEquals(expected, result);
@@ -187,7 +187,7 @@ public class BeanWriterTest extends SampleTreeWriter {
 		
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		test_list_of_properties(beanWriter, this);
+		writeListOfProperties(beanWriter, this);
 
 		List<String> result = (List<String>) beanWriter.flushBean();
 		assertEquals(expected, result);
