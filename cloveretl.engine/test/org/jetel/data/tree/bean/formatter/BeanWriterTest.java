@@ -42,9 +42,8 @@ import org.jetel.data.tree.bean.schema.model.TypedObjectRef;
  * 
  * @created 7.11.2011
  */
-public class BeanWriterTest extends TreeWriterTest {
+public class BeanWriterTest extends SampleTreeWriter {
 
-	@Override
 	public void test_simpleStructure() throws Exception {
 		SimpleTestType expected = new SimpleTestType();
 		expected.setIntValue(SIMPLE_STRUCTURE_EXPECTED_INT);
@@ -53,16 +52,13 @@ public class BeanWriterTest extends TreeWriterTest {
 		SchemaObject structure = BeanParser.parse(SimpleTestType.class);
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		setTreeWriter(beanWriter);
-		
-		super.test_simpleStructure();
+		writeSimpleStructure(beanWriter, this);
 		
 		SimpleTestType result = (SimpleTestType) beanWriter.flushBean();
 		assertEquals(expected, result);
 	}
 
 
-	@Override
 	public void test_simpleMap() throws Exception {
 		Map<String, SimpleTestType> mapStringToSimple = new LinkedHashMap<String, SimpleTestType>();
 
@@ -79,9 +75,7 @@ public class BeanWriterTest extends TreeWriterTest {
 		SchemaObject structure = BeanParser.parse(ComplexTestType.class);
 		BeanWriter beanWriter = new BeanWriter(structure, Thread.currentThread().getContextClassLoader());
 
-		setTreeWriter(beanWriter);
-		
-		super.test_simpleMap();
+		writeSimpleMap(beanWriter, this);
 		
 		ComplexTestType result = (ComplexTestType) beanWriter.flushBean();
 		assertEquals(expected, result);

@@ -31,39 +31,32 @@ import org.jetel.data.tree.formatter.TreeWriter;
  *
  * @created 6 Mar 2012
  */
-public abstract class TreeWriterTest extends TreeWriterTestBase {
-
-	protected TreeWriter treeWriter;
-	
-	
-	public void setTreeWriter(TreeWriter treeWriter) {
-		this.treeWriter = treeWriter;
-	}
+public abstract class SampleTreeWriter extends TreeWriterTestBase {
 
 	
 	protected static final String SIMPLE_STRUCTURE_EXPECTED_STRING = "Shoe Gazing";
 	protected static final int SIMPLE_STRUCTURE_EXPECTED_INT = 10;
 	
 	
-	public void test_simpleStructure() throws Exception {
-		DataRecord record = new DataRecord(metadata);
+	public static <T extends TreeWriter> void writeSimpleStructure(T writer, TreeWriterTestBase test) throws Exception {
+		DataRecord record = new DataRecord(test.metadata);
 		record.init();
 		record.getField(STRING_FIELD).setValue(SIMPLE_STRUCTURE_EXPECTED_STRING);
 		record.getField(INTEGER_FIELD).setValue(SIMPLE_STRUCTURE_EXPECTED_INT);
 
-		treeWriter.writeStartTree();
-		treeWriter.writeStartNode("object".toCharArray());
+		writer.writeStartTree();
+		writer.writeStartNode("object".toCharArray());
 
-		treeWriter.writeStartNode("intValue".toCharArray());
-		treeWriter.writeLeaf(record.getField(INTEGER_FIELD));
-		treeWriter.writeEndNode("intValue".toCharArray());
+		writer.writeStartNode("intValue".toCharArray());
+		writer.writeLeaf(record.getField(INTEGER_FIELD));
+		writer.writeEndNode("intValue".toCharArray());
 
-		treeWriter.writeStartNode("stringValue".toCharArray());
-		treeWriter.writeLeaf(record.getField(STRING_FIELD));
-		treeWriter.writeEndNode("stringValue".toCharArray());
+		writer.writeStartNode("stringValue".toCharArray());
+		writer.writeLeaf(record.getField(STRING_FIELD));
+		writer.writeEndNode("stringValue".toCharArray());
 
-		treeWriter.writeEndNode("object".toCharArray());
-		treeWriter.writeEndTree();
+		writer.writeEndNode("object".toCharArray());
+		writer.writeEndTree();
 	}
 	
 	
@@ -71,44 +64,44 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 	protected static final int[] SIMPLE_MAP_EXPECTED_INTS = { 20, 10, 450 };
 	
 	
-	public void test_simpleMap() throws Exception {
+	public static <T extends TreeWriter> void writeSimpleMap(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 
 		for (int i = 0; i < SIMPLE_MAP_EXPECTED_INTS.length; i++) {
-			DataRecord record = new DataRecord(metadata);
+			DataRecord record = new DataRecord(test.metadata);
 			record.init();
 			record.getField(STRING_FIELD).setValue(SIMPLE_MAP_EXPECTED_STRINGS[i]);
 			record.getField(INTEGER_FIELD).setValue(SIMPLE_MAP_EXPECTED_INTS[i]);
 			inputData.add(record);
 		}
 
-		treeWriter.writeStartTree();
-		treeWriter.writeStartNode("object".toCharArray());
+		writer.writeStartTree();
+		writer.writeStartNode("object".toCharArray());
 
-		treeWriter.writeStartNode("mapStringToSimpleType".toCharArray());
+		writer.writeStartNode("mapStringToSimpleType".toCharArray());
 		for (DataRecord rec : inputData) {
-			treeWriter.writeStartNode("entry".toCharArray());
+			writer.writeStartNode("entry".toCharArray());
 
-			treeWriter.writeStartNode("key".toCharArray());
-			treeWriter.writeLeaf(rec.getField(STRING_FIELD));
-			treeWriter.writeEndNode("key".toCharArray());
+			writer.writeStartNode("key".toCharArray());
+			writer.writeLeaf(rec.getField(STRING_FIELD));
+			writer.writeEndNode("key".toCharArray());
 
-			treeWriter.writeStartNode("value".toCharArray());
+			writer.writeStartNode("value".toCharArray());
 
-			treeWriter.writeStartNode("intValue".toCharArray());
-			treeWriter.writeLeaf(rec.getField(INTEGER_FIELD));
-			treeWriter.writeEndNode("intValue".toCharArray());
-			treeWriter.writeStartNode("stringValue".toCharArray());
-			treeWriter.writeLeaf(rec.getField(STRING_FIELD));
-			treeWriter.writeEndNode("stringValue".toCharArray());
+			writer.writeStartNode("intValue".toCharArray());
+			writer.writeLeaf(rec.getField(INTEGER_FIELD));
+			writer.writeEndNode("intValue".toCharArray());
+			writer.writeStartNode("stringValue".toCharArray());
+			writer.writeLeaf(rec.getField(STRING_FIELD));
+			writer.writeEndNode("stringValue".toCharArray());
 
-			treeWriter.writeEndNode("value".toCharArray());
-			treeWriter.writeEndNode("entry".toCharArray());
+			writer.writeEndNode("value".toCharArray());
+			writer.writeEndNode("entry".toCharArray());
 		}
-		treeWriter.writeEndNode("mapStringToSimpleType".toCharArray());
+		writer.writeEndNode("mapStringToSimpleType".toCharArray());
 
-		treeWriter.writeEndNode("object".toCharArray());
-		treeWriter.writeEndTree();
+		writer.writeEndNode("object".toCharArray());
+		writer.writeEndTree();
 	}
 	
 
@@ -116,7 +109,7 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 	protected static final int[] ARRAY_EXPECTED_INTS = { 20, 10, 450, 345 };
 
 	
-	public static <T extends TreeWriter & CollectionWriter> void test_array(T writer, TreeWriterTestBase test) throws Exception {
+	public static <T extends TreeWriter & CollectionWriter> void writeArray(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 
 		for (int i = 0; i < ARRAY_EXPECTED_INTS.length; i++) {
@@ -159,7 +152,7 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 	protected static final double[] COLLECTION_EXPECTED_DOUBLES = { 204534534l, 1345345340l, 450l, 3452342l, -23435l, 234l };
 	
 	
-	public static <T extends TreeWriter & CollectionWriter> void test_collectionInBean(T writer, TreeWriterTestBase test) throws Exception {
+	public static <T extends TreeWriter & CollectionWriter> void writeCollectionInBean(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 
 		for (int i = 0; i < COLLECTION_EXPECTED_INTS.length; i++) {
@@ -207,7 +200,7 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 	protected static final String[] LIST_EXPECTED_STRINGS = { "Buddy ", "you’re a", " young man", " hard man", "Shoutin’ in", " the street gonna", " take on the", " world some day", "You got blood", " on yo’ face", "You big", " disgrace", "Wavin’ ", "your banner", " all over", " the place" };
 	protected static final String[] LIST_EXPECTED_KEYS = { "We will,", " we will", " rock", " you" };
 	
-	public static <T extends TreeWriter & CollectionWriter> void test_list(T writer, TreeWriterTestBase test) throws Exception {
+	public static <T extends TreeWriter & CollectionWriter> void writeList(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 
 		for (int i = 0; i < LIST_EXPECTED_STRINGS.length; i++) {
@@ -254,7 +247,7 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 
 	protected static final String[] LIST_OF_BEANS_EXPECTED_STRINGS = { "Dobra rada", "do zivota:", "\"Nejez", "zluty", "snih\"" };
 	
-	public static <T extends TreeWriter & CollectionWriter> void test_list_of_beans(T writer, TreeWriterTestBase test) throws Exception {
+	public static <T extends TreeWriter & CollectionWriter> void writeListOfBeans(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 		
 		for (int i = 0; i < LIST_OF_BEANS_EXPECTED_STRINGS.length; i++) {
@@ -282,7 +275,7 @@ public abstract class TreeWriterTest extends TreeWriterTestBase {
 	
 	protected static final String[] LIST_OF_PROPERTIES_EXPECTED_STRINGS = { "Dobra rada", "do zivota:", "\"Nejez", "zluty", "snih\"" };
 	
-	public static <T extends TreeWriter & CollectionWriter> void test_list_of_properties(T writer, TreeWriterTestBase test) throws Exception {
+	public static <T extends TreeWriter & CollectionWriter> void writeListOfProperties(T writer, TreeWriterTestBase test) throws Exception {
 		List<DataRecord> inputData = new ArrayList<DataRecord>();
 
 		for (int i = 0; i < LIST_OF_PROPERTIES_EXPECTED_STRINGS.length; i++) {

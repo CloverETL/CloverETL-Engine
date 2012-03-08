@@ -30,7 +30,7 @@ import org.jetel.data.tree.json.formatter.JsonWriterAdapter;
  * 
  * @created Mar 2012
  */
-public class JsonWriterAdapterTest extends TreeWriterTest {
+public class JsonWriterAdapterTest extends SampleTreeWriter {
 
 	private static final String ENCODING = "UTF-8";
 	private final ByteArrayOutputStream outStream = new ByteArrayOutputStream(1024);
@@ -45,9 +45,7 @@ public class JsonWriterAdapterTest extends TreeWriterTest {
 	}
 	
 	public void test_simpleStructure() throws Exception {
-		setTreeWriter(jsonWriter);
-		
-		super.test_simpleStructure();
+		writeSimpleStructure(jsonWriter, this);
 		
 		String expected = "{"+simpleIntField(SIMPLE_STRUCTURE_EXPECTED_INT)+","+simpleStringField(SIMPLE_STRUCTURE_EXPECTED_STRING)+"}";
 		cleanupAndResultCheck(expected);
@@ -88,9 +86,7 @@ public class JsonWriterAdapterTest extends TreeWriterTest {
 		
 		sb.append("}}");
 
-		setTreeWriter(jsonWriter);
-
-		super.test_simpleMap();
+		writeSimpleMap(jsonWriter, this);
 	
 		cleanupAndResultCheck(sb.toString());
 	}
