@@ -365,7 +365,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
 			    if (field.getCardinalityType() != null) {
-			    	fieldElement.setAttribute(CARDINALITY_TYPE_ATTR, field.getCardinalityType().toString());
+			    	fieldElement.setAttribute(CARDINALITY_TYPE_ATTR, field.getCardinalityType().toString().toLowerCase());
 			    }
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
