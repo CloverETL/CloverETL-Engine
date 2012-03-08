@@ -245,6 +245,9 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.LONGVARCHAR:
 			case Types.VARCHAR:
 			case Types.CLOB:
+			case Types.NCHAR:
+			case Types.NVARCHAR:
+			case Types.NCLOB:
 				return DataFieldMetadata.STRING_FIELD;
 			//------------------
 			case Types.DATE:
