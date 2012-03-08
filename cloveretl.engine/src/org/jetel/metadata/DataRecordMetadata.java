@@ -269,7 +269,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	@Deprecated
 	public char getRecType() {
-		return parsingType.getObsoleteIdnetifier();
+		if (parsingType != null) {
+			return parsingType.getObsoleteIdnetifier();
+		} else {
+			return 0;
+		}
 	}
 
 	/**
