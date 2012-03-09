@@ -96,6 +96,8 @@ public class SimpleDataParser extends AbstractTextParser {
 			logger.debug("This parser can't be used because of the 'skipRows' feature");
 		} else if (!isSimpleData(cfg.getMetadata())) {
 			logger.debug("This parser can't be used because of the data record complexity");
+		} else if (cfg.isTryToMatchLongerDelimiter()) {
+			logger.debug("This parser can't be used because of the delimiter complexity");
 		} else {
 			logger.debug("This parser may be used");
 			return 80;

@@ -45,6 +45,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.DataRecordUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -389,6 +390,7 @@ public class DataReader extends Node {
 		}
         parserCfg.setSkipLeadingBlanks(skipLeadingBlanks);
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
+        parserCfg.setTryToMatchLongerDelimiter(DataRecordUtils.containsPrefixDelimiters(parserCfg.getMetadata()));
         parserCfg.setTrim(trim);
         if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
