@@ -739,6 +739,30 @@ public class DataParser extends AbstractTextParser {
 							}
 						}
 					}
+				} else {
+					for (int j = 0; j < fieldLengths[i]; j++) {
+						character = readChar();
+					}
+					if (i + 1 == numFields) {
+						delimiterSearcher.reset();
+						boolean delimiterFound = false;
+						while ((character = readChar()) != -1) {
+							if (!delimiterSearcher.update((char) character)) {
+								return false;
+							}
+							if (recordDelimiterFound()) {
+								delimiterFound = true;
+								break;
+							}
+						}
+						if (!delimiterFound) {
+							return false;
+						}
+						if (tryToFindLongerDelimiter) {
+							stretchRecordDelimiter(RECORD_DELIMITER_IDENTIFIER);
+						}
+						return true;
+					}
 				}
 			}
 		} catch (IOException e) {
