@@ -926,6 +926,7 @@ defined.version.suffix=release
 			<jvmarg value="-Xmx2048m"/>
 			<jvmarg value="-XX:MaxPermSize=512m"/>
 			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+			<jvmarg value="-Djava.library.path=/opt/addressdoctor"/>
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<classpath>
 				<pathelement path="${dir.classestest}"/>
