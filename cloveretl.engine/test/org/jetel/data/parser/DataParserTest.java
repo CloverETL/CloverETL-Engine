@@ -3,6 +3,9 @@
  */
 package org.jetel.data.parser;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
@@ -24,6 +27,12 @@ public class DataParserTest extends CloverTestCase {
 	private final static String TEST_FILE_CP1250 = "data/street-names.cp1250.dat";
 	private final static String TEST_FILE_UTF16 = "data/street-names.utf16.dat";
 	private final static String TEST_FILE_ISO88591 = "data/street-names.ISO88591.dat";
+
+	private final static String TEST_FILE_DELIM1 = "data/delimiter_test.dat";
+	private final static String TEST_FILE_DELIM2 = "data/delimiter_test2.dat";
+	private final static String TEST_FILE_DELIM3 = "data/delimiter_test3.dat";
+	private final static String TEST_FILE_DELIM3_FIELDS = "data/delimiter_test3_field.dat";
+	
 	
 	// DataRecordMetadata metadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD); This doesn't work -- engine is not yet initialized
 	DataRecordMetadata metadata;
@@ -102,7 +111,133 @@ public class DataParserTest extends CloverTestCase {
 		parserUTF16.close();
 		parserUTF16.close();
 	}
+	
+	public void testDelimiters_genericEOL() throws Exception {
+		DataRecordMetadata testMetadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+		testMetadata.setFieldDelimiter("|");
+		testMetadata.setRecordDelimiter("\n\\|\r\\|\n\r\\|\r\n");
+		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
+	
+		DataRecord record = new DataRecord(metadata);
+		record.init();
+		TextParserConfiguration parserConf = new TextParserConfiguration();
+		parserConf.setMetadata(testMetadata);
+		parserConf.setCharset("UTF-8");
+		parserConf.setTrim(false);
+		parserConf.setTryToMatchLongerDelimiter(true);
 
+		
+		DataParser parser = new DataParser(parserConf);
+		parser.init();
+		parser.setDataSource(FileUtils.getInputStream(null, TEST_FILE_DELIM1));
+		
+		int i=1;
+		while ((record = parser.getNext(record)) != null) {
+			assertEquals("text"+i, record.getField(0).getValue().toString());
+			i++;
+		}
+		parser.close();
+		
+	}
+
+	public void testDelimiters_substringContinued() throws Exception {
+		DataRecordMetadata testMetadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+		testMetadata.setFieldDelimiter("|");
+		testMetadata.setRecordDelimiter("#\\|##&\\|##&&");
+		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
+	
+		DataRecord record = new DataRecord(metadata);
+		record.init();
+		TextParserConfiguration parserConf = new TextParserConfiguration();
+		parserConf.setMetadata(testMetadata);
+		parserConf.setCharset("UTF-8");
+		parserConf.setTrim(false);
+		parserConf.setTryToMatchLongerDelimiter(true);
+
+		
+		DataParser parser = new DataParser(parserConf);
+		parser.init();
+		parser.setDataSource(FileUtils.getInputStream(null, TEST_FILE_DELIM2));
+		
+		int i=1;
+		while ((record = parser.getNext(record)) != null) {
+			assertEquals("text"+i, record.getField(0).getValue().toString());
+			i++;
+		}
+		parser.close();
+		
+	}
+	
+	public void testDelimiters_substring() throws Exception {
+		DataRecordMetadata testMetadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+		testMetadata.setFieldDelimiter("|");
+
+		testMetadata.setRecordDelimiter("#\\|#&&&");
+		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
+	
+		DataRecord record = new DataRecord(testMetadata);
+		record.init();
+		TextParserConfiguration parserConf = new TextParserConfiguration();
+		parserConf.setMetadata(testMetadata);
+		parserConf.setCharset("UTF-8");
+		parserConf.setTrim(false);
+		parserConf.setTryToMatchLongerDelimiter(true);
+
+		
+		DataParser parser = new DataParser(parserConf);
+		parser.init();
+		parser.setDataSource(FileUtils.getInputStream(null, TEST_FILE_DELIM3));
+		
+		List<String> parsed = new LinkedList<String>();
+		while ((record = parser.getNext(record)) != null) {
+			parsed.add(record.getField(0).getValue().toString());
+		}
+		parser.close();
+		
+		assertEquals(4, parsed.size());
+		assertEquals("text1", parsed.get(0));
+		assertEquals("text2", parsed.get(1));
+		assertEquals("text3", parsed.get(2));
+		assertEquals("&&a", parsed.get(3));
+	}
+
+	public void testFieldDelimiters_substring() throws Exception {
+		DataRecordMetadata testMetadata = new DataRecordMetadata("meta", DataRecordMetadata.DELIMITED_RECORD);
+		testMetadata.setFieldDelimiter("#\\|#&&&");
+
+		testMetadata.setRecordDelimiter("\r\n");
+		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
+		testMetadata.addField(new DataFieldMetadata("Field2", DataFieldMetadata.STRING_FIELD, null));
+		testMetadata.addField(new DataFieldMetadata("Field3", DataFieldMetadata.STRING_FIELD, null));
+		testMetadata.addField(new DataFieldMetadata("Field4", DataFieldMetadata.STRING_FIELD, null));
+		
+		DataRecord record = new DataRecord(testMetadata);
+		record.init();
+		TextParserConfiguration parserConf = new TextParserConfiguration();
+		parserConf.setMetadata(testMetadata);
+		parserConf.setCharset("UTF-8");
+		parserConf.setTrim(false);
+		parserConf.setTryToMatchLongerDelimiter(true);
+		
+		DataParser parser = new DataParser(parserConf);
+		parser.init();
+		parser.setDataSource(FileUtils.getInputStream(null, TEST_FILE_DELIM3_FIELDS));
+		
+		List<String> parsed = new LinkedList<String>();
+		record = parser.getNext(record);
+		for (int i=0; i < record.getNumFields(); i++) {
+			parsed.add(record.getField(i).getValue().toString());
+		}
+		parser.close();
+		
+		assertEquals(4, parsed.size());
+		assertEquals("text1", parsed.get(0));
+		assertEquals("text2", parsed.get(1));
+		assertEquals("text3", parsed.get(2));
+		assertEquals("&&a", parsed.get(3));
+	}
+	
+	
 	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
 	public void testOddBufferSize() throws Exception {
 		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = 15;
