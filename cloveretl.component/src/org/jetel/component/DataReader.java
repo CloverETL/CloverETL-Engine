@@ -148,8 +148,9 @@ public class DataReader extends Node {
     private String incrementalFile;
     private String incrementalKey;
     private String parserClassName;
+	private ClassLoader parserClassLoader;
 
-	private TextParser parser;
+	protected TextParser parser;
     private MultiFileReader reader;
     private PolicyType policyType = PolicyType.STRICT;
 
@@ -210,7 +211,7 @@ public class DataReader extends Node {
         super.init();
 
 		//is the logging port attached?
-		if (getOutPorts().size() == 2) {
+		if (getOutputPort(LOG_PORT) != null) {
 			if (checkLogPortMetadata()) {
 				logging = true;
 			} else {
@@ -395,7 +396,7 @@ public class DataReader extends Node {
         if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
         }
-        parser = TextParserFactory.getParser(parserCfg, parserClassName);
+        parser = TextParserFactory.getParser(parserCfg, parserClassName, parserClassLoader);
 		if( logger.isDebugEnabled()){
 			logger.debug("Component " + getId() + " uses parser " + parser.getClass().getName() );
 		}
@@ -563,6 +564,17 @@ public class DataReader extends Node {
 		return skipFirstLine;
 	}
 
+	
+	/**
+	 * Checks input and output ports
+	 * 
+	 * @param status
+	 * @return <b>true</b> if all ports are configured properly, <b>false</b> in other case
+	 */
+	protected boolean checkPorts(ConfigurationStatus status) {
+		return checkInputPorts(status, 0, 1) && checkOutputPorts(status, 1, 2);
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -572,8 +584,7 @@ public class DataReader extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if(!checkInputPorts(status, 0, 1)
-        		|| !checkOutputPorts(status, 1, 2)) {
+        if(!checkPorts(status)) {
         	return status;
         }
 
@@ -610,6 +621,10 @@ public class DataReader extends Node {
 	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+	
+	public void setFileURL(String fileURL){
+		this.fileURL = fileURL;
 	}
 	
 	/**
@@ -713,4 +728,8 @@ public class DataReader extends Node {
 		this.parserClassName = parserClassName;
 	}
 
+	public void setParserClass(String parserClassName, ClassLoader parserClassLoader){
+		this.parserClassName = parserClassName;
+		this.parserClassLoader = parserClassLoader;
+	}
 }
