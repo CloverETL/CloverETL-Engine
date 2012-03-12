@@ -346,6 +346,38 @@ public final class ByteBufferUtils {
     	return Math.max(minLength, bytes.length); 
     }
     
+    
+    /**
+     * Fills the ByteBuffer with defined value. Does not change buffer's current position.
+     * @param buffer buffer to be filled
+     * @param value byte valued to be used
+     */
+    public static void fill(ByteBuffer buffer, byte value){
+    	final int pos = buffer.position();
+    	while(buffer.hasRemaining()) buffer.put(value);
+    	buffer.position(pos);
+    }
+
+    /**
+     * Fills the ByteBuffer with defined value. Does not change buffer's current position.
+     * @param buffer buffer to be filled
+     * @param value byte valued to be used
+     * @param count how many bytes to be filled
+     * @param advance whether buffer's current position should be moved
+     */
+    public static void fill(ByteBuffer buffer, byte value,int count, boolean advance){
+    	final int pos = buffer.position();
+    	while(buffer.hasRemaining() && count>0){
+    		buffer.put(value);
+    		count--;
+    	}
+    	if (!advance) buffer.position(pos);
+    }
+    
+    public static void fill(ByteBuffer buffer, byte value,int count){
+    	fill(buffer,value,count,false);
+    }
+    
     /**
      * Creates deep copy of the given {@link CharBuffer} with at least requested capacity and at most maximum capacity.
      * The resulted deep copy has same internal state (position, limit, mark) as the given buffer. 
@@ -399,3 +431,4 @@ public final class ByteBufferUtils {
     }
     
 }
+
