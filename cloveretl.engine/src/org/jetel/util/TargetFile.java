@@ -41,8 +41,6 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.dictionary.IDictionaryType;
-import org.jetel.graph.dictionary.WritableChannelDictionaryType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.RestrictedByteArrayOutputStream;
 import org.jetel.util.file.FileUtils;
@@ -73,7 +71,7 @@ public class TargetFile {
 	private FormatterProvider formatterProvider;		// creates new formatter
 	private DataRecordMetadata metadata;			// metadata
 	
-    private Iterator<String> fileNames;				// returns filename string
+    private MultiOutFile fileNames;				// returns filename string
     private Formatter formatter;					// writes records into output
 	
     private int records;							// count of record sent to formatter
@@ -145,7 +143,10 @@ public class TargetFile {
      * @throws ComponentNotReadyException
      */
     public void init() throws IOException, ComponentNotReadyException {
-    	if (charset == null) charset = DEFAULT_CHARSET;
+    	if (charset == null) {
+    		charset = DEFAULT_CHARSET;
+    	}
+    	
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
         	initPortFields();
     	} else if (outputPort != null) {
@@ -171,7 +172,7 @@ public class TargetFile {
     
     public void reset() {
     	if (fileNames != null) {
-			((MultiOutFile) fileNames).reset();
+			fileNames.reset();
 		}
 		formatter.reset();
 	}
@@ -207,7 +208,9 @@ public class TargetFile {
      * @throws ComponentNotReadyException
      */
     private void initFileNames(String value) throws IOException, ComponentNotReadyException {
-    	if (fileURL != null) fileNames = new MultiOutFile(value == null ? fileURL : before + value + after);
+    	if (fileURL != null) {
+    		fileNames = new MultiOutFile(value == null ? fileURL : before + value + after);
+    	}
     }
     
     /**
@@ -235,16 +238,15 @@ public class TargetFile {
     }
 
 	private void initDictTarget() throws ComponentNotReadyException {
-		// parse target url
-		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
 		if (dictionary == null) {
 			throw new RuntimeException("The component doesn't support dictionary writing.");
 		}
-		
+
+		// parse target url
+		String[] aDict = fileURL.substring(DICT_PROTOCOL.length()).split(PARAM_DELIMITER);
 		Object dictValue = dictionary.getValue(aDict[0]);
-		IDictionaryType dictType = dictionary.getType(aDict[0]);
 		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, null);
-		
+
 		if (dictProcesstingType == null) {
 			if (dictValue != null) {
 				dictProcesstingType = ProcessingType.STREAM;
@@ -252,20 +254,16 @@ public class TargetFile {
 				dictProcesstingType = ProcessingType.DISCRETE;
 			}
 		}
-		
+
 		// create target
 		switch (dictProcesstingType) {
 		case STREAM:
-			if (dictValue == null) {
-				// predpoklada se, ze pred spustenim grafu je do dictionary dan OutputStream, kam se vystup nasype
-				throw new IllegalStateException("Dictionary doesn't contain value for the key '" + aDict[0] + "'.");
-			}
-			if (!(dictType instanceof WritableChannelDictionaryType)) {
-				throw new IllegalStateException("Dictionary contains invalid type '" + dictType + "' for the key '" + aDict[0] + "'.");
-			}
 			if (dictValue instanceof WritableByteChannel) {
-				WritableByteChannel channel = (WritableByteChannel) dictValue;
-				dictOutChannel = channel;
+				dictOutChannel = (WritableByteChannel) dictValue;
+			} else if (dictValue instanceof OutputStream) {
+				dictOutChannel = Channels.newChannel((OutputStream) dictValue);
+			} else {
+				throw new IllegalStateException("Dictionary doesn't contain valid value for the key '" + aDict[0] + "' in stream processing mode.");
 			}
 			break;
 		case DISCRETE:
@@ -283,24 +281,39 @@ public class TargetFile {
 	}
     
 	private void initPortFields() throws ComponentNotReadyException {
+		if (outputPort == null) {
+			throw new ComponentNotReadyException("Output port is not connected.");
+		}
+
 		// prepare output record
-		if (outputPort == null) throw new ComponentNotReadyException("Output port is not connected.");
 		record = new DataRecord(outputPort.getMetadata());
 		record.init();
-		
+
 		// parse target url
 		String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(PARAM_DELIMITER);
-		if (aField.length < 1) throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		if (aField.length < 1) {
+			throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		}
+
 		String[] aFieldNamePort = aField[0].split(PORT_DELIMITER);
 		fieldProcesstingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
-		if (aFieldNamePort.length < 2) throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
-		String fName = aFieldNamePort[1];
+		if (aFieldNamePort.length < 2) {
+			throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		}
 
 		// check setting
-		if (record.hasField(fName)) field = record.getField(fName);
-		if (field == null) throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
-		if (field instanceof StringDataField) isStringDataField = true;
-		else if (!(field instanceof ByteDataField))	throw new ComponentNotReadyException("The field '" + field.getMetadata().getName() + "' must be String or (Compressed) Byte data field.");
+		String fName = aFieldNamePort[1];
+		if (record.hasField(fName)) {
+			field = record.getField(fName);
+		} else if (field == null) {
+			throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
+		}
+
+		if (field instanceof StringDataField) {
+			isStringDataField = true;
+		} else if (!(field instanceof ByteDataField)) {
+			throw new ComponentNotReadyException("The field '" + field.getMetadata().getName() + "' must be String or (Compressed) Byte data field.");
+		}
 	}
 
     /**
@@ -333,10 +346,14 @@ public class TargetFile {
     
     private void write2FieldOrDict() throws IOException {
     	if (fieldOrDictOutput) {
-        	if (bbOutputStream != null) write2OutportOrDictionary(bbOutputStream.toByteArray());
+        	if (bbOutputStream != null) {
+        		write2OutportOrDictionary(bbOutputStream.toByteArray());
+        	}
     		try {
     			// there is only one target for port and dictionary protocol
-				if (outputPort != null) outputPort.eof();
+				if (outputPort != null) {
+					outputPort.eof();
+				}
 			} catch (InterruptedException e) {
 				throw new IOException(e.getMessage());
 			}
@@ -348,29 +365,28 @@ public class TargetFile {
      * @param aData
      * @throws IOException
      */
-    private void write2OutportOrDictionary(byte[] aData) throws IOException {
-    	if (bbOutputStream != null) {
-            if (dictProcesstingType != null) {
-            	if (dictOutArray != null) {
-            		dictOutArray.add(aData);
-            	}
-            }
-            if (field != null) {
-        		if (aData.length == 0)	return;
-				boolean streamType = fieldProcesstingType == ProcessingType.STREAM;
-				
-            	// write to string field
-    			if (isStringDataField) {
-    				write2StringField(aData, streamType);
+	private void write2OutportOrDictionary(byte[] aData) throws IOException {
+		if (bbOutputStream != null) {
+			if (dictProcesstingType != null) {
+				if (dictOutArray != null) {
+					dictOutArray.add(aData);
+				}
+			}
+			if (field != null) {
+				if (aData.length == 0) {
+					return;
+				}
 
-            	// write to byte field
-    			} else {
-    				write2ByteField(aData, streamType);
-    			}
-            }
-    	}
-    }
-    
+				boolean streamType = fieldProcesstingType == ProcessingType.STREAM;
+				if (isStringDataField) {
+					write2StringField(aData, streamType);
+				} else {
+					write2ByteField(aData, streamType);
+				}
+			}
+		}
+	}
+
     /**
      * Write byte array to string field for n records
      * @param aData
@@ -516,19 +532,13 @@ public class TargetFile {
             		write2OutportOrDictionary(bbOutputStream.toByteArray());
                 	bbOutputStream.reset();
             	} else {
-                    // stream mode
-            		if (fieldProcesstingType == ProcessingType.STREAM) {
+                    if (fieldProcesstingType == ProcessingType.STREAM) {
                        	bbOutputStream = new ByteArrayOutputStream();
-                    
-               		// discrete mode
-            		} else {
-                       	bbOutputStream = new RestrictedByteArrayOutputStream();
-                       	if (field != null) 
-                       		((RestrictedByteArrayOutputStream)bbOutputStream).setMaxArrayLength(Defaults.Record.FIELD_LIMIT_SIZE);
+                    } else { // discrete mode
             			if (storeRawData) {
 							RestrictedByteArrayOutputStream outStream = new RestrictedByteArrayOutputStream();
 							if (field != null) {
-								outStream.setMaxArrayLength(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+								outStream.setMaxArrayLength(Defaults.Record.FIELD_LIMIT_SIZE);
 							}
 							bbOutputStream = outStream;
 						} else {
@@ -543,7 +553,9 @@ public class TargetFile {
     		
     	} else if (fileNames != null) {
             String fName = fileNames.next();
-            if (fileName != null) fName = addUnassignedName(fName);
+            if (fileName != null) {
+            	fName = addUnassignedName(fName);
+            }
             OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
         	byteChannel = Channels.newChannel(os);
         	

@@ -19,6 +19,7 @@
 package org.jetel.data.tree.bean.formatter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,24 +49,26 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 	private int depth;
 	private int writtenDepth;
 
+	private ObjectType requestedObjectType;
+
 	private Stack<List<Object>> listStack = new Stack<List<Object>>();
 	private Stack<Map<String, Object>> mapStack = new Stack<Map<String, Object>>();
 
 	public void push(ObjectType objectType, char[] name) {
 		if (depth == nameStack.length) {
-			String[] newNameStack = new String[nameStack.length * 2 + 1];
-			System.arraycopy(nameStack, 0, newNameStack, 0, depth);
-			nameStack = newNameStack;
+			int newLength = nameStack.length * 2 + 1;
 
-			ObjectType[] newTypeStack = new ObjectType[nameStack.length];
-			System.arraycopy(typeStack, 0, newTypeStack, 0, depth);
-			typeStack = newTypeStack;
+			nameStack = Arrays.copyOf(nameStack, newLength);
+			typeStack = Arrays.copyOf(typeStack, newLength);
 		}
 		if (typeStack[depth] == ObjectType.SIMPLE_PROPERTY) {
-			typeStack[depth] = ObjectType.MAP;
+			typeStack[depth] = requestedObjectType;
 		}
+
 		depth++;
-		typeStack[depth] = objectType;
+		typeStack[depth] = ObjectType.SIMPLE_PROPERTY;
+
+		this.requestedObjectType = objectType;
 		if (name != null) {
 			nameStack[depth] = new String(name);
 		}
@@ -101,7 +104,7 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 
 	@Override
 	public void writeStartNode(char[] name) throws JetelException {
-		push(ObjectType.SIMPLE_PROPERTY, name);
+		push(ObjectType.MAP, name);
 	}
 
 	@Override
@@ -120,7 +123,7 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 		}
 		writtenDepth = depth;
 	}
-	
+
 	private Object createObjectForType(ObjectType type, Object value) {
 		switch (type) {
 		case LIST:
@@ -134,7 +137,7 @@ public class MapWriter implements TreeWriter, CollectionWriter {
 				return getActualValue(value);
 			}
 		}
-		
+
 		throw new IllegalStateException("Simple property is allowed only as map entry");
 	}
 

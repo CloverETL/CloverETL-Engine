@@ -18,19 +18,23 @@
  */
 package org.jetel.component;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -65,6 +69,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.sequence.PrimitiveSequence;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.SourceIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
@@ -83,7 +88,7 @@ import org.xml.sax.XMLReader;
 public abstract class TreeReader extends Node implements DataRecordProvider, DataRecordReceiver, XPathSequenceProvider {
 
 	private static enum ProcessingMode {
-		STREAM, XPATH_DIRECT, XPATH_CONVERT_DIRECT, XPATH_CONVERT_STREAM
+		STREAM, XPATH_DIRECT, /* XPATH_CONVERT_DIRECT, */XPATH_CONVERT_STREAM
 	}
 
 	private static final Log LOG = LogFactory.getLog(TreeReader.class);
@@ -121,7 +126,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			throw new XMLConfigurationException(treeReader.getType() + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 	}
-	
+
 	// DataRecordProvider, DataRecordReceiver, XPathSequenceProvider properties
 	private DataRecord outputRecords[];
 	private OutputPort outputPorts[];
@@ -138,15 +143,16 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private String mappingURL;
 
 	private TreeReaderParserProvider parserProvider;
-	private ProcessingMode processingMode;
-	private XPathPushParser parser;
-	private MappingContext rootContext;
-	
+	private TreeProcessor treeProcessor;
+
+	private AutoFilling autoFilling = new AutoFilling();
+	private Throwable throwableException;
+
 	public TreeReader(String id) {
 		super(id);
 		this.parserProvider = getTreeReaderParserProvider();
 	}
-	
+
 	protected abstract TreeReaderParserProvider getTreeReaderParserProvider();
 
 	@Override
@@ -175,25 +181,33 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		super.init();
 
-		initOutPort();
-		rootContext = createMapping();
+		recordProviderReceiverInit();
+		for (OutputPort outPort : outPortsArray) {
+			autoFilling.addAutoFillingFields(outPort.getMetadata());
+		}
+		
 		sourceIterator = createSourceIterator();
-		sourceIterator.init();
-
-		processingMode = resolveProcessingMode();
+		
+		// FIXME: mapping should not be initialized here in init if is passed via external file, since it is possible
+		// that mapping file does not exist at this moment, or its content can change
+		MappingContext rootContext = createMapping();
+		XPathPushParser pushParser;
+		ProcessingMode processingMode = resolveProcessingMode();
 		switch (processingMode) {
 		case XPATH_CONVERT_STREAM:
-			parser = new XPathPushParser(this, this, new XmlXPathEvaluator(), parserProvider.getValueHandler(), this);
+			pushParser = new XPathPushParser(this, this, new XmlXPathEvaluator(), parserProvider.getValueHandler(), this);
+			treeProcessor = new StreamConvertingXPathProcessor(parserProvider, pushParser, rootContext, charset);
 			break;
 		case XPATH_DIRECT:
-			parser = new XPathPushParser(this, this, parserProvider.getXPathEvaluator(), parserProvider.getValueHandler(), this);
+			pushParser = new XPathPushParser(this, this, parserProvider.getXPathEvaluator(), parserProvider.getValueHandler(), this);
+			treeProcessor = new XPathProcessor(pushParser, rootContext, charset);
 			break;
 		default:
-			throw new UnsupportedOperationException("Processing mode" + processingMode + "is not supported");
+			throw new UnsupportedOperationException("Processing mode " + processingMode + " is not supported");
 		}
 	}
 
-	private void initOutPort() {
+	private void recordProviderReceiverInit() {
 		int portCount = getOutPorts().size();
 		outputRecords = new DataRecord[portCount];
 		outputPorts = new OutputPort[portCount];
@@ -209,7 +223,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	private ProcessingMode resolveProcessingMode() {
 		if (parserProvider.providesXPathEvaluator()) {
-			return ProcessingMode.XPATH_DIRECT; 
+			return ProcessingMode.XPATH_DIRECT;
 		} else {
 			return ProcessingMode.XPATH_CONVERT_STREAM;
 		}
@@ -254,59 +268,39 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		
+		// FIXME: init of source iterator is not implemented well right now, so it has to
+		sourceIterator.init();
 		sourceIterator.preExecute();
-
-		if (!firstRun()) {
-			sequences.clear();
-		}
 	}
 
 	@Override
 	public Result execute() throws Exception {
-		// FIXME: introduce some kind of mode processor
-		switch (processingMode) {
-		case XPATH_CONVERT_STREAM:
-			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
-			treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
-			XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-
-			Object inputData = getNextSource();
-			while (inputData != null) {
-				if (inputData instanceof ReadableByteChannel) {
-					InputStream inputStream = Channels.newInputStream((ReadableByteChannel) inputData);
-					InputSource source = new InputSource(inputStream);
-					StringWriter writer = new StringWriter();
-					javax.xml.transform.Result result = new StreamResult(writer);
-					transformer.transform(new SAXSource(treeXmlReader, source), result);
-					
-					// TODO: There is definitely better way how to do this... I'm just right now running out of time :-/
-					parser.parse(rootContext, new SAXSource(new InputSource(new StringReader(writer.toString()))));
-				} else {
-					throw new JetelRuntimeException("Could not read input " + inputData);
+		Object inputData = getNextSource();
+		while (inputData != null) {
+			try {
+				treeProcessor.processInput(inputData);
+			} catch (AbortParsingException e) {
+				if (!runIt) {
+					return Result.ABORTED;
+				} else if (e.getCause() instanceof BadDataFormatException) {
+					throw (BadDataFormatException) e.getCause();
 				}
 
-				inputData = getNextSource();
+				throw new IllegalStateException("Unexpected exception", e);
 			}
-			break;
-		case XPATH_DIRECT:
 			inputData = getNextSource();
-			while (inputData != null) {
-				if (inputData instanceof ReadableByteChannel) {
-					parser.parse(rootContext, new SAXSource(new InputSource(Channels.newInputStream((ReadableByteChannel) inputData))));
-				} else {
-					throw new JetelRuntimeException("Could not read input " + inputData);
-				}
-
-				inputData = getNextSource();
-			}
-			break;
-		default:
-			throw new JetelRuntimeException();
 		}
+
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
-	
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		sequences.clear();
+	}
+
 	private Object getNextSource() throws JetelException {
 		Object input = null;
 		while (sourceIterator.hasNext()) {
@@ -315,6 +309,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				continue; // if record no record found
 			}
 			
+			autoFilling.resetSourceCounter();
+			autoFilling.resetGlobalSourceCounter();
+			autoFilling.setFilename(sourceIterator.getCurrentFileName());
+			File tmpFile = new File(autoFilling.getFilename());
+			long timestamp = tmpFile.lastModified();
+			autoFilling.setFileSize(tmpFile.length());
+			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));	
+
 			return input;
 		}
 
@@ -346,7 +348,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public void receive(DataRecord record, int port) throws AbortParsingException {
 		if (runIt) {
 			try {
+				// FIXME: some autofilling fields should be filled sooner - so that it can be used with combination of
+				// generated key pointing at autofilled field
+				autoFilling.setLastUsedAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
+				
+	            autoFilling.incGlobalCounter();
+	            autoFilling.incSourceCounter();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -359,8 +367,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public void exceptionOccurred(BadDataFormatException e) throws AbortParsingException {
 		if (policyType == PolicyType.STRICT) {
 			LOG.error("Could not assign data field.", e);
-			throw new AbortParsingException();
+			throw new AbortParsingException(e);
 		}
+		// TODO: review this part of handling autofilling
+		autoFilling.incGlobalCounter();
+        autoFilling.incSourceCounter();
 	}
 
 	@Override
@@ -387,6 +398,175 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			sequences.put(context, sequence);
 		}
 		return sequence;
+	}
+
+	private interface TreeProcessor {
+		void processInput(Object input) throws Exception;
+	}
+
+	private static class XPathProcessor implements TreeProcessor {
+
+		private XPathPushParser pushParser;
+		private MappingContext rootContext;
+		private String charset;
+
+		public XPathProcessor(XPathPushParser pushParser, MappingContext rootContext, String charset) {
+			this.pushParser = pushParser;
+			this.rootContext = rootContext;
+			this.charset = charset;
+		}
+
+		@Override
+		public void processInput(Object input) throws AbortParsingException {
+			if (input instanceof ReadableByteChannel) {
+				InputSource inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
+				if (charset != null) {
+					inputSource.setEncoding(charset);
+				}
+				pushParser.parse(rootContext, new SAXSource(inputSource));
+			} else {
+				throw new JetelRuntimeException("Could not read input " + input);
+			}
+		}
+	}
+
+	private class StreamConvertingXPathProcessor implements TreeProcessor {
+
+		private PipeTransformer pipeTransformer;
+		private PipeParser pipeParser;
+		boolean killIt = false;
+
+		private String charset;
+
+		public StreamConvertingXPathProcessor(TreeReaderParserProvider parserProvider, XPathPushParser pushParser,
+				MappingContext rootContext, String charset) {
+			this.charset = charset;
+
+			try {
+				TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
+				treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
+				XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
+				pipeTransformer = new PipeTransformer(treeXmlReader);
+
+				pipeParser = new PipeParser(pushParser, rootContext);
+			} catch (TransformerFactoryConfigurationError e) {
+				throw new JetelRuntimeException("Failed to instantiate transformer", e);
+			}
+		}
+
+		@Override
+		public void processInput(Object input) throws Exception {
+			if (input instanceof ReadableByteChannel) {
+				/*
+				 * Convert input stream to XML
+				 */
+				InputSource source = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
+				if (charset != null) {
+					source.setEncoding(charset);
+				}
+
+				Pipe pipe = Pipe.open();
+				pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+				pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+				
+				pipeTransformer.start();
+				pipeParser.start();
+				
+				manageThread(pipeTransformer);
+				manageThread(pipeParser);
+			} else {
+				throw new JetelRuntimeException("Could not read input " + input);
+			}
+
+		}
+		
+		private void manageThread(Thread thread) throws Exception {
+			while (thread.getState() != Thread.State.TERMINATED) {
+				if (killIt) {
+					thread.interrupt();
+					break;
+				}
+				
+				if (throwableException != null) {
+					if (throwableException instanceof AbortParsingException) {
+						throw (AbortParsingException) throwableException;
+					} else {
+						throw new Exception(throwableException);
+					}
+				}
+				
+				killIt = !runIt;
+				try {
+					thread.join(1000);
+				} catch (InterruptedException e) {
+					LOG.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					killIt = true;
+				}
+			}
+		}
+
+	}
+
+	private class PipeTransformer extends Thread {
+
+		private XMLReader treeXmlReader;
+		private Transformer transformer;
+		private Writer pipedWriter;
+		private InputSource source;
+
+		public PipeTransformer(XMLReader treeXmlReader) {
+			try {
+				this.transformer = TransformerFactory.newInstance().newTransformer();
+				this.treeXmlReader = treeXmlReader;
+			} catch (TransformerConfigurationException e) {
+				throw new JetelRuntimeException("Failed to instantiate transformer", e);
+			} catch (TransformerFactoryConfigurationError e) {
+				throw new JetelRuntimeException("Failed to instantiate transformer", e);
+			}
+		}
+
+		@Override
+		public void run() {
+			javax.xml.transform.Result result = new StreamResult(pipedWriter);
+			try {
+				transformer.transform(new SAXSource(treeXmlReader, source), result);
+				pipedWriter.close();
+			} catch (Throwable t) {
+				throwableException = t;
+			}
+		}
+
+		public void setInputOutput(Writer pipedWriter, InputSource source) {
+			this.pipedWriter = pipedWriter;
+			this.source = source;
+		}
+	}
+
+	private class PipeParser extends Thread {
+
+		private XPathPushParser pushParser;
+		private MappingContext rootContext;
+
+		private Reader pipedReader;
+
+		public PipeParser(XPathPushParser pushParser, MappingContext rootContext) {
+			this.pushParser = pushParser;
+			this.rootContext = rootContext;
+		}
+
+		@Override
+		public void run() {
+			try {
+				pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
+			} catch (Throwable t) {
+				throwableException = t;
+			}
+		}
+
+		private void setInput(Reader pipedReader) {
+			this.pipedReader = pipedReader;
+		}
+
 	}
 
 }

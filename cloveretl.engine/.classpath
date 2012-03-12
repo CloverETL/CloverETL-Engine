@@ -46,9 +46,6 @@
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-bean-collections-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-core-1.8.3.jar"/>
-	<classpathentry kind="lib" path="lib/easymock-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/objenesis-tck-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jdbm-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.3.jar"/>
 	<classpathentry kind="output" path="bin"/>

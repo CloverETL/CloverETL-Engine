@@ -524,7 +524,7 @@ public abstract class TreeWriter extends Node {
 				try {
 					inputReader.join(1000);
 				} catch (InterruptedException e) {
-					LOGGER.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					LOGGER.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}

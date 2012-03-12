@@ -95,6 +95,7 @@ public class SourceIterator {
 			charset = DEFAULT_CHARSET;
 		}
 
+		// FIXME: resolving all files at this point is premature as files might not exist yet
 		prepareSourceIterator();
 		preparePortIterator();
 		prepareDictionaryIterator();
