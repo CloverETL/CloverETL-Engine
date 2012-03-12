@@ -18,7 +18,7 @@
 
 	<extension point-id="component">
 		<parameter id="className" value="org.jetel.component.XPathBeanReader"/>
-		<parameter id="type" value="XPATH_BEAN_READER"/>
+		<parameter id="type" value="BEAN_READER"/>
 	</extension>
 
 	<extension point-id="component">
