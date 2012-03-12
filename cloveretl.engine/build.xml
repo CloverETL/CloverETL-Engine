@@ -1179,7 +1179,8 @@ defined.version.suffix=release
 				<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
 				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
 				<exclude name="org/jetel/util/ddl2clover/DDL2*"/>
-				<exclude name="**/ConsoleDemoJava.java"/>
+				<exclude name="ConsoleDemoJava.java"/>
+				<exclude name="com/opensys/cloveretl/addressdoctor/**"/>
 			</fileset>
 		</fileheading>
 		<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
