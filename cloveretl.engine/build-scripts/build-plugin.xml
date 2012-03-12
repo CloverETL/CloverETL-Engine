@@ -591,7 +591,6 @@
 			<fileset dir="${dir.src}">
 				<include name="**/*.java"/>
 				<exclude name="ConsoleDemoJava.java"/>
-				<exclude name="com/opensys/cloveretl/addressdoctor/**"/>
 			</fileset>
 		</fileheading>
 		<fail message="File ${java.src.header.invalid} has invalid header - must be ${plugin.java.src.header.file}" if="java.src.header.invalid"/>
