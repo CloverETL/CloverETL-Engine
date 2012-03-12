@@ -25,11 +25,26 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
 
 public class WebdavOutputStream extends OutputStream {
+	private static Log logger = LogFactory.getLog(WebdavOutputStream.class);
+
+	/*
+	 * Path (with directories) to output file. It begins with http or https followed by domain name and path to file separated by slash.
+	 * This pattern is not for validation but for parsing directories.
+	 */
+	private static final Pattern SUBDIR_REGEXP = Pattern.compile("(http[s]?://[^/]+)/(.+)/([^/]+)$");
+
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
@@ -107,7 +122,27 @@ public class WebdavOutputStream extends OutputStream {
 		public Throwable getError() {
 			return error;
 		}
-		
+
+		/*
+		 * Returns list of paths to each directory which is part of a path to a file.
+		 * 
+		 * E.g. for inputs (http://google.com, upload/ONE/TWO) returns [http://google.com/upload,
+		 * http://google.com/upload/ONE, http://google.com/upload/ONE/TWO]
+		 */
+		private List<String> getSubDirectoriesPaths(String domainName, String relativePathToFile) {
+			String[] dirs = relativePathToFile.split("/");
+			List<String> pathList = new LinkedList<String>();
+
+			for (int dirCount = 0; dirCount < dirs.length; ++dirCount) {
+				StringBuffer strBuf = new StringBuffer(domainName);
+				for (int i = 0; i <= dirCount; ++i) {
+					strBuf.append("/").append(dirs[i]);
+				}
+				pathList.add(strBuf.toString());
+			}
+			return pathList;
+		}
+
 		@Override
 		public void run() {
 			try {
@@ -118,7 +153,25 @@ public class WebdavOutputStream extends OutputStream {
 				// Digest authorization will be performed on this request and then the PUT
 				// method (where retry caused by authorization would fail) is already authorized.
 				sardine.exists(URL);
-				
+
+				Matcher matcher = SUBDIR_REGEXP.matcher(URL);
+				if (!matcher.matches()) {
+					logger.warn("url:" + URL + " for storing file on webdav doesn't match regexp:\"" + SUBDIR_REGEXP.pattern() + "\". Skipping creating directories");
+				} else {
+					// expecting valid url
+					String domain = matcher.group(1);
+					String relativePathToFile = matcher.group(2);
+
+					List<String> subDirectoriesPaths = getSubDirectoriesPaths(domain, relativePathToFile);
+					for (String path : subDirectoriesPaths) {
+						if (!sardine.exists(path)) {
+							sardine.createDirectory(path);
+							logger.info("webdav directory:" + path + " created.");
+						}
+					}
+
+				}
+
 				sardine.put(URL, is);
 			}
 			catch (Throwable e) {
