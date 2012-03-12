@@ -1200,6 +1200,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(Arrays.asList(12l, null, 98l), getVariable("longList"));
 		assertEquals(Arrays.asList(12.34, null, 56.78), getVariable("numberList"));
 		assertEquals(Arrays.asList("aa", null, "bb"), getVariable("stringList2"));
+		
+		List<?> decimalList2 = (List<?>) getVariable("decimalList2");
+		for (Object o: decimalList2) {
+			assertTrue(o instanceof BigDecimal);
+		}
 	}
 	
 	public void test_type_list_field() {
