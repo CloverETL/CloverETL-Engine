@@ -118,8 +118,8 @@ public class DataWriter extends Node {
 	
 	private String fileURL;
 	private boolean appendData;
-	private DataFormatterProvider formatterProvider;
-    private MultiFileWriter writer;
+	protected DataFormatterProvider formatterProvider;
+    protected MultiFileWriter writer;
     private boolean outputFieldNames;
 	private int bytesPerFile;
 	private int recordsPerFile;
@@ -275,7 +275,10 @@ public class DataWriter extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		
+		prepareWriter();
+	}
+	
+	protected void prepareWriter() throws ComponentNotReadyException {
 		if (firstRun()) {
 	        try {
 	            writer.init(getInputPort(READ_FROM_PORT).getMetadata());
@@ -433,7 +436,7 @@ public class DataWriter extends Node {
 		return aDataWriter;
 	}
 
-    private boolean checkPorts(ConfigurationStatus status) {
+    protected boolean checkPorts(ConfigurationStatus status) {
         return !checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 0, 1);
 	}
 
@@ -508,6 +511,10 @@ public class DataWriter extends Node {
 
     public void setOutputFieldNames(boolean outputFieldNames) {
         this.outputFieldNames = outputFieldNames;
+    }
+    
+    public boolean getOutputFieldNames(){
+    	return outputFieldNames;
     }
     
     /**
@@ -612,7 +619,7 @@ public class DataWriter extends Node {
 	 * 
 	 * @param partitionUnassignedFileName
 	 */
-    private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+    public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
 
@@ -620,12 +627,16 @@ public class DataWriter extends Node {
 	 * Sets make directory.
 	 * @param mkDir - true - creates output directories for output file
 	 */
-	private void setMkDirs(boolean mkDir) {
+	public void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
 	}
 
-    private void setExcludeFields(String excludeFields) {
+    public void setExcludeFields(String excludeFields) {
         this.excludeFields = excludeFields;
+    }
+    
+    public String getExcludedFields(){
+    	return excludeFields;
     }
 
     public void setQuotedStrings(boolean quotedStrings) {
@@ -638,6 +649,10 @@ public class DataWriter extends Node {
     
     public boolean getQuotedStrings() {
     	return quotedStrings;
+    }
+    
+    public void setFileURL(String fileURL){
+    	this.fileURL = fileURL;
     }
     
 	@Override
