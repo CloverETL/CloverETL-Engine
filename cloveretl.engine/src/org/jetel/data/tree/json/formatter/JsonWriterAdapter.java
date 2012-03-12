@@ -206,18 +206,23 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 	}
 
 	private void writeDataFieldValue(DataField field) throws JsonGenerationException, IOException {
-		switch (field.getMetadata().getDataType()) {
-		case BYTE:
-		case CBYTE:
-		case DATE:
-		case STRING:
-			jsonGenerator.writeString(field.toString());
-			break;
-		case DECIMAL:
-			jsonGenerator.writeNumber(((DecimalDataField) field).getValue().getBigDecimalOutput());
-			break;
-		default:
-			jsonGenerator.writeObject(field.getValue());
+		if (field.isNull()) {
+			jsonGenerator.writeNull();
+		} else {
+			switch (field.getMetadata().getDataType()) {
+			case BYTE:
+			case CBYTE:
+			case DATE:
+			case STRING:
+				jsonGenerator.writeString(field.toString());
+				break;
+			case DECIMAL:
+				jsonGenerator.writeNumber(((DecimalDataField) field).getValue().getBigDecimalOutput());
+				break;
+			default:
+				jsonGenerator.writeObject(field.getValue());
+				break;
+			}
 		}
 	}
 
