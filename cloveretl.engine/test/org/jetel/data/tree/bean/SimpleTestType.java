@@ -18,13 +18,15 @@
  */
 package org.jetel.data.tree.bean;
 
+import java.io.Serializable;
+
 /**
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
  *
  * @created 25.10.2011
  */
-public class SimpleTestType {
+public class SimpleTestType implements Serializable {
 
 	private int intValue;
 	

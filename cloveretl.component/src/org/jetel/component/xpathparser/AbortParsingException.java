@@ -29,4 +29,13 @@ package org.jetel.component.xpathparser;
 public class AbortParsingException extends Exception {
 	
 	private static final long serialVersionUID = 1L;
+
+	public AbortParsingException() {
+		super();
+	}
+
+	public AbortParsingException(Throwable cause) {
+		super(cause);
+	}
+	
 }

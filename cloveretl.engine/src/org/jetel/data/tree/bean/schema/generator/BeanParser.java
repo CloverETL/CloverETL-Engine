@@ -206,6 +206,9 @@ public class BeanParser {
 			}
 		}
 		for (Type genericInterface : type.getGenericInterfaces()) {
+			if (isMarkerInterface(genericInterface)) {
+				continue;
+			}
 			SchemaObject schemaObject = parseType(genericInterface, container, context);
 			if (schemaObject != null) {
 				return schemaObject;
@@ -241,6 +244,17 @@ public class BeanParser {
 			}
 		}
 		return new TypedObjectRef(container, typedObject);
+	}
+	
+	private boolean isMarkerInterface(Type type) {
+		
+		if (type instanceof Class<?>) {
+			Class<?> klass = (Class<?>)type;
+			if (klass.isInterface() && klass.getDeclaredMethods().length == 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	protected class ParsingContext {
