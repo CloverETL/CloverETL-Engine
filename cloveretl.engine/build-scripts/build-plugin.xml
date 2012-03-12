@@ -511,8 +511,6 @@
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
 					<include name="**/*Test.java"/>
-					<!-- remove when issue CL-2185 solved -->
-					<exclude name="com/opensys/cloveretl/lookup/PersistentLookupTest.java"/>
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
