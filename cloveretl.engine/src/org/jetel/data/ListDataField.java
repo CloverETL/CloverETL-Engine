@@ -376,7 +376,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		sb.append('[');
 		for (;;) {
 			DataField e = i.next();
-			sb.append(e.getValue());
+			sb.append(e.toString());
 			if (!i.hasNext()) {
 				return sb.append(']').toString();
 			}

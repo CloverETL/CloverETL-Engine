@@ -328,7 +328,7 @@ public class MapDataField extends DataField {
 			DataField value = e.getValue();
 			sb.append(key);
 			sb.append('=');
-			sb.append(value.getValue());
+			sb.append(value.toString());
 			if (!i.hasNext()) {
 				return sb.append('}').toString();
 			}

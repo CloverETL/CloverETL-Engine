@@ -1358,4 +1358,26 @@ public class ListDataFieldTest extends CloverTestCase {
 		}
 	}
 	
+	public void testByteDataFieldToString() {
+		ListDataField listDataField = new ListDataField(createListMetadata(DataFieldType.BYTE));
+
+		listDataField.setNull(true);
+		assertEquals("", listDataField.toString());
+		
+		listDataField.setNull(false);
+		assertEquals("[]", listDataField.toString());
+			
+		listDataField.addField();
+		assertEquals("[]", listDataField.toString());
+		
+		listDataField.addField().setValue(new byte[] {'a', 'b', 'c' });
+		assertEquals("[, abc]", listDataField.toString());
+
+		listDataField.addField().setNull(false);
+		assertEquals("[, abc, ]", listDataField.toString());
+
+		listDataField.addField().setValue(new byte[] {'e', 'f', 'g' });
+		assertEquals("[, abc, , efg]", listDataField.toString());
+	}
+	
 }
