@@ -14,6 +14,8 @@ long[] longList = [12l, null, 98l];
 number[] numberList = [12.34, null, 56.78];
 string[] stringList2 = ["aa", null, "bb"];
 
+decimal[] decimalList2;
+
 function void changeList(string[] lst) {
 	lst.push( "extra" );	
 }
@@ -47,5 +49,9 @@ function integer transform() {
 	stringListCopy2 = stringList;
 	printErr(stringList);
 	printErr(stringListCopy);
+	
+	decimal tmpDecimal;
+	decimalList2 = [tmpDecimal = random(), random(), random(), iif(randomBoolean(), random() * 100, random())];
+	
 	return 0;
 }
