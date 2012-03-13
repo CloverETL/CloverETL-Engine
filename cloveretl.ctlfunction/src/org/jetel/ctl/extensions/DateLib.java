@@ -231,8 +231,7 @@ public class DateLib extends TLFunctionLibrary {
     	cal.set(Calendar.DAY_OF_MONTH, portion[0]);
     	cal.set(Calendar.MONTH, portion[1]);
     	cal.set(Calendar.YEAR, portion[2]);
-    	d.setTime(cal.getTimeInMillis());
-    	return d;
+    	return cal.getTime();
     }
     
     // extractTime
@@ -266,8 +265,7 @@ public class DateLib extends TLFunctionLibrary {
     	cal.set(Calendar.MINUTE, portion[1]);
     	cal.set(Calendar.SECOND, portion[2]);
     	cal.set(Calendar.MILLISECOND, portion[3]);
-    	d.setTime(cal.getTimeInMillis());
-    	return d;
+    	return cal.getTime();
     }
 
     //Trunc
