@@ -94,6 +94,17 @@ public class SlaveReader implements InputReader {
 			needsRewind = false;
 			if (firstRun) {
 				firstRun = false;
+				boolean nullInKey = false;
+				for (int keyF: key.getKeyFields()) {
+					if (rec[NEXT].getField(keyF).isNull()) {
+						nullInKey = true;
+						break;
+					}
+				}
+				if (!nullInKey) {
+					swap();
+					return true;
+				}
 			} else {
 				int comparison = key.compare(rec[CURRENT], rec[NEXT]);
 				if (comparison != 0) {
