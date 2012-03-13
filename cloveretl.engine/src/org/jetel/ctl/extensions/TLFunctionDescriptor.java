@@ -41,6 +41,7 @@ package org.jetel.ctl.extensions;
  */
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.jetel.ctl.data.TLType;
 
@@ -54,6 +55,7 @@ public class TLFunctionDescriptor {
 	private boolean isGeneric;
 	private boolean isVarArg;
 	private boolean hasInit; 
+	private boolean deprecated;
     
     protected TLFunctionDescriptor(TLFunctionLibrary library,String name,String description,TLType[] formalParameters,
             TLType returnType, boolean isGeneric, boolean isVarArg, boolean hasInit) {
@@ -80,7 +82,15 @@ public class TLFunctionDescriptor {
 		return isVarArg;
 	}
     
-    public TLType[] getFormalParameters() {
+	public boolean isDeprecated() {
+		return deprecated;
+	}
+
+	public void setDeprecated(boolean deprecated) {
+		this.deprecated = deprecated;
+	}
+
+	public TLType[] getFormalParameters() {
         return formalParameters;
     }
     
@@ -163,6 +173,22 @@ public class TLFunctionDescriptor {
 	 */
 	public boolean hasInit() {
 		return hasInit;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(name).append('(');
+		if (formalParameters != null) {
+			for (int i = 0; i < formalParameters.length; i++) {
+				sb.append(formalParameters[i].name());
+				if (i < formalParameters.length-1) {
+					sb.append(", ");
+				}
+			}
+		}
+		sb.append(')');
+		return sb.toString();
 	}
 
 }

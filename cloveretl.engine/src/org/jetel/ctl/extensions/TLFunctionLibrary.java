@@ -146,8 +146,12 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		TLType[] formal = new TLType[javaFormal.length-1]; // we're skipping first java formal parameter (with TLFunctionCallContext)
 	    		System.arraycopy(converted, 1, formal, 0, formal.length);
 	    		
-	    		registerFunction(new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
-	    				initMethods.contains(m.getName() + "Init")));
+	    		TLFunctionDescriptor descriptor = new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
+	    				initMethods.contains(m.getName() + "Init"));
+	    		if (m.getAnnotation(Deprecated.class) != null) {
+	    			descriptor.setDeprecated(true);
+	    		}
+	    		registerFunction(descriptor);
         		if (logger.isTraceEnabled()) {
         			logger.trace("Method " + m.toString() + " registered as ctl function: " + functionName);
         		}
