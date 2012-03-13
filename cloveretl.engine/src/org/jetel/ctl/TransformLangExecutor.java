@@ -2798,17 +2798,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 */
 	@java.lang.SuppressWarnings("unchecked")
 	public static final <T> T getDeepCopy(T value) {
-		// it may not be necessary to deeo copy dates and byte arrays
+		// it may not be necessary to deep copy dates and byte arrays
 		// as there are no CTL functions that can modify these values
 		if (value instanceof Date) {// FIXME maybe not necessary
+			// trunc() and truncDate() can modify a date
 			return (T) new Date(((Date) value).getTime());
 		} else if (value instanceof List) {
 			return (T) copyOf((List<?>) value); 
 		} else if (value instanceof Map) {
 			return (T) copyOf((Map<?, ?>) value);
-		} else if (value instanceof byte[]) { // FIXME maybe not necessary
-			byte[] array = (byte[]) value;
-			return (T) Arrays.copyOf(array, array.length);
+//		} else if (value instanceof byte[]) { // FIXME probably not necessary, uncomment if there is a function that can modify a byte array 
+//			byte[] array = (byte[]) value;
+//			return (T) Arrays.copyOf(array, array.length);
 		} else if (value instanceof DataRecord) {
 			// FIXME performance?
 			return (T) ((DataRecord) value).duplicate();
