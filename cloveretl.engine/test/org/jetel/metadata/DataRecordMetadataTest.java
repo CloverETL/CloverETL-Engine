@@ -232,14 +232,15 @@ public class DataRecordMetadataTest extends CloverTestCase {
 
 	public void test_checkConfigMixed(){
 		
-		aMixedDataRecordMetadata= new DataRecordMetadata("record3",'u');
+		try {
+			aMixedDataRecordMetadata= new DataRecordMetadata("record3",'u');
+			assertTrue("Unreported error with unknown record parsing type.", false);
+		} catch (IllegalArgumentException e) {
+			//OK
+		}
 
 		ConfigurationStatus status = new ConfigurationStatus();
 
-		aMixedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
-		
 		aMixedDataRecordMetadata = new DataRecordMetadata("record3", DataRecordMetadata.MIXED_RECORD);
 		
 		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
