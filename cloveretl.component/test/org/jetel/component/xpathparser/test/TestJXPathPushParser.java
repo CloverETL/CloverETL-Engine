@@ -57,7 +57,7 @@ public class TestJXPathPushParser {
 
 	@BeforeClass
 	public static void beforeAll() {
-		Defaults.init(null);
+		Defaults.init();
 	}
 	
 	@Test

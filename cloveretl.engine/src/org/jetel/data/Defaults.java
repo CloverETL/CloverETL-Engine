@@ -210,7 +210,7 @@ public final class Defaults {
 
 	public static void init(String configurationFile) {
 		initProperties(configurationFile);
-                initializeInternal();
+		initializeInternal();
 	}
 
     public static void init(URL configurationFile) {
