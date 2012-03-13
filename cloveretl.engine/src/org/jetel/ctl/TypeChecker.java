@@ -653,16 +653,7 @@ public class TypeChecker extends NavigatingVisitor {
 		return data;
 	}
 
-	
-	@Override
-	public Object visit(CLVFFunctionCall node, Object data) {
-		// infer types of function arguments
-		super.visit(node, null);
-
-		if (!checkChildren(node)) {
-			return data;
-		}
-		
+	private void findCallTarget(CLVFFunctionCall node) {
 		CLVFFunctionDeclaration localCandidate = null;
 		int minResult = Integer.MAX_VALUE;
 
@@ -711,7 +702,7 @@ public class TypeChecker extends NavigatingVisitor {
 		if (localCandidate != null && minResult == 0) {
 			node.setCallTarget(localCandidate);
 			node.setType(localCandidate.getType());
-			return data;
+			return;
 		}
 
 				
@@ -763,7 +754,7 @@ public class TypeChecker extends NavigatingVisitor {
 				//infer the real return type (if necessary) by binding the type variables
 				node.setType(bindType(extCandidate.getReturnType()));
 			}
-			return data;
+			return;
 		}
 		
 		
@@ -788,6 +779,26 @@ public class TypeChecker extends NavigatingVisitor {
 				error(node, "Function '" + node.getName() + "' is not declared");
 			}
 			node.setType(TLType.ERROR);
+		}
+		
+	}
+	
+	@Override
+	public Object visit(CLVFFunctionCall node, Object data) {
+		// infer types of function arguments
+		super.visit(node, null);
+
+		if (!checkChildren(node)) {
+			return data;
+		}
+		
+		findCallTarget(node);
+		
+		TLFunctionDescriptor descriptor = node.getExternalFunction();
+		if (descriptor != null) {
+			if (descriptor.isDeprecated()) {
+				warn(node, String.format("Function %s is deprecated", descriptor));
+			}
 		}
 		
 		return data;

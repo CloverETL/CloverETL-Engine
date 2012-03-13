@@ -286,8 +286,9 @@ public class DateLib extends TLFunctionLibrary {
     public static final void truncInit(TLFunctionCallContext context) {
     	context.setCache(new TLCalendarCache());
     }
-    
-    @TLFunctionAnnotation("Truncates other, but date-time values to zero.")
+
+    @Deprecated
+    @TLFunctionAnnotation("Deprecated, use extractDate() instead. The function modifies its argument.\nTruncates other, but date-time values to zero.")
     public static final Date trunc(TLFunctionCallContext context, Date date) {
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(date);
@@ -319,7 +320,8 @@ public class DateLib extends TLFunctionLibrary {
     	context.setCache(new TLCalendarCache());
     }
 
-    @TLFunctionAnnotation("Truncates other, but day time values to zero.")
+    @Deprecated
+    @TLFunctionAnnotation("Deprecated, use extractTime() instead. The function modifies its argument.\nTruncates other, but day time values to zero.")
     public static final Date truncDate(TLFunctionCallContext context, Date date) {
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(date);
