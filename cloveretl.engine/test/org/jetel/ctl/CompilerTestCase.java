@@ -3206,6 +3206,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.SECOND, portion[2]);
     	cal.set(Calendar.MILLISECOND, portion[3]);
     	check("bornExtractTime", cal.getTime());
+    	check("originalDate", BORN_VALUE);
 	}
 	
 	public void test_datelib_extractDate() {
@@ -3219,6 +3220,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.MONTH, portion[1]);
     	cal.set(Calendar.YEAR, portion[2]);
     	check("bornExtractDate", cal.getTime());
+    	check("originalDate", BORN_VALUE);
 	}
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {

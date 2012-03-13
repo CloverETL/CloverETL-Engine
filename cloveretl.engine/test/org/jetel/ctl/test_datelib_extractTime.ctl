@@ -1,6 +1,8 @@
+date originalDate;
 date bornExtractTime;
 
 function integer transform() {
-	bornExtractTime = extractTime($firstInput.Born);
+	originalDate = $firstInput.Born;
+	bornExtractTime = extractTime(originalDate);
 	return 0;
 }
