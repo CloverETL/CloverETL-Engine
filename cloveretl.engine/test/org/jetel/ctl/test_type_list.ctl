@@ -15,6 +15,7 @@ number[] numberList = [12.34, null, 56.78];
 string[] stringList2 = ["aa", null, "bb"];
 
 decimal[] decimalList2;
+integer[] intList4;
 
 function void changeList(string[] lst) {
 	lst.push( "extra" );	
@@ -52,6 +53,8 @@ function integer transform() {
 	
 	decimal tmpDecimal;
 	decimalList2 = [tmpDecimal = random(), random(), random(), iif(randomBoolean(), random() * 100, random())];
+	integer tmpInt;
+	intList4 = [tmpInt = 1, tmpInt = 2, tmpInt = 3];
 	
 	return 0;
 }

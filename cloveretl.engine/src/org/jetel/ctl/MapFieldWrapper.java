@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jetel.data.MapDataField;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.util.MiscUtils;
 
 /**
@@ -66,11 +67,13 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> T toCTL(T o) {
+	private static <T> T toCTL(Object o) {
 		if (o instanceof CharSequence) {
 			return (T) o.toString(); // convert CharSequences to Strings
+		} else if (o instanceof Decimal) {
+			return (T) ((Decimal) o).getBigDecimalOutput(); // convert to BigDecimal
 		}
-		return o;
+		return (T) o;
 	}
 
 	/*
