@@ -938,7 +938,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 			return TLType.forRecord(meta);
 		case TransformLangParserConstants.MAP_VAR:
-			return TLType.createMap((TLTypePrimitive) createType((CLVFType) typeNode.jjtGetChild(0)),
+			return TLType.createMap(createType((CLVFType) typeNode.jjtGetChild(0)),
 					createType((CLVFType) typeNode.jjtGetChild(1)));
 		case TransformLangParserConstants.LIST_VAR:
 			return TLType.createList(createType((CLVFType)typeNode.jjtGetChild(0)));
