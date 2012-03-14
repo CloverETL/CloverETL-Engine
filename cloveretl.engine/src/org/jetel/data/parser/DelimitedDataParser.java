@@ -414,6 +414,7 @@ public class DelimitedDataParser extends AbstractParser {
 
 		// populate all data fields
 
+		System.out.println("### entering parseNext");
 		while (fieldCounter < metadata.getNumFields()) {
 			// skip all fields that are internally filled 
 			if (isAutoFilling[fieldCounter]) {
@@ -484,9 +485,13 @@ public class DelimitedDataParser extends AbstractParser {
 					}
 					charCounter++;
 				}// while
+				System.out.println("### character " + character);
+				System.out.println("### totalCharCounter " + totalCharCounter);
 				if ((character == -1) && (totalCharCounter > 1)) {
 					// EOF
 					// is EOF delimiter specified for this field?
+					System.out.println("### eofAsDelimiters " + eofAsDelimiters);
+					System.out.println("### eofAsDelimiters[fieldCounter] " + eofAsDelimiters[fieldCounter]);
 					if (eofAsDelimiters[fieldCounter]){
 						eofDelimiter = true;
 					} else {
