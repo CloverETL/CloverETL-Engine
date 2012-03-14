@@ -67,13 +67,13 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> T toCTL(T o) {
+	private static <T> T toCTL(Object o) {
 		if (o instanceof CharSequence) {
 			return (T) o.toString(); // convert CharSequences to Strings
 		} else if (o instanceof Decimal) {
 			return (T) ((Decimal) o).getBigDecimalOutput(); // convert to BigDecimal
 		}
-		return o;
+		return (T) o;
 	}
 
 	/*
@@ -101,7 +101,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	 */
 	@Override
 	public V get(Object key) {
-		return toCTL(parentMap.get(key));
+		return MapFieldWrapper.<V>toCTL(parentMap.get(key));
 	}
 	
 	/*
@@ -120,7 +120,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	 */
 	@Override
 	public V put(String key, V value) {
-		return toCTL(parentMap.put(key, value));
+		return MapFieldWrapper.<V>toCTL(parentMap.put(key, value));
 	}
 
 	/*
@@ -128,7 +128,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	 */
 	@Override
 	public V remove(Object key) {
-		return toCTL(parentMap.remove(key));
+		return MapFieldWrapper.<V>toCTL(parentMap.remove(key));
 	}
 	
     /**
@@ -157,7 +157,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 		 */
 		@Override
 		public V getValue() {
-			return toCTL(parentEntry.getValue());
+			return MapFieldWrapper.<V>toCTL(parentEntry.getValue());
 		}
 
 		/*
@@ -165,7 +165,7 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 		 */
 		@Override
 		public V setValue(V value) {
-			return toCTL(parentEntry.setValue(value));
+			return MapFieldWrapper.<V>toCTL(parentEntry.setValue(value));
 		}
 
 		/**
