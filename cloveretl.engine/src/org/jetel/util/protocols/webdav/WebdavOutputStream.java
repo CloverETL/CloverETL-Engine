@@ -25,6 +25,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
@@ -72,7 +73,7 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	public WebdavOutputStream(String url) throws IOException {
-		URL parsedUrl = new URL(url);
+		URL parsedUrl = new URL(URLDecoder.decode(url, "UTF-8"));
 		String username = getUsername(parsedUrl);
 		String password = getPassword(parsedUrl);
 		String outputURL = url;
