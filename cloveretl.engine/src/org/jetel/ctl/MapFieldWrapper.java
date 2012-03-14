@@ -67,13 +67,13 @@ public class MapFieldWrapper<V> extends AbstractMap<String, V> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> T toCTL(Object o) {
+	private static <T> T toCTL(T o) {
 		if (o instanceof CharSequence) {
 			return (T) o.toString(); // convert CharSequences to Strings
 		} else if (o instanceof Decimal) {
 			return (T) ((Decimal) o).getBigDecimalOutput(); // convert to BigDecimal
 		}
-		return (T) o;
+		return o;
 	}
 
 	/*
