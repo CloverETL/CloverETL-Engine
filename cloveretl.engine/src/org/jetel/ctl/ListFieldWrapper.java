@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.RandomAccess;
 
 import org.jetel.data.ListDataField;
+import org.jetel.data.primitive.Decimal;
 
 /**
  * The wrapper converts CharSequences into Strings.
@@ -59,11 +60,13 @@ public class ListFieldWrapper<T> extends AbstractList<T> implements RandomAccess
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T> T toCTL(T o) {
+	private static <T> T toCTL(Object o) {
 		if (o instanceof CharSequence) {
 			return (T) o.toString(); // convert CharSequences to Strings
+		} else if (o instanceof Decimal) {
+			return (T) ((Decimal) o).getBigDecimalOutput(); // convert to BigDecimal
 		}
-		return o;
+		return (T) o;
 	}
 
 	@Override

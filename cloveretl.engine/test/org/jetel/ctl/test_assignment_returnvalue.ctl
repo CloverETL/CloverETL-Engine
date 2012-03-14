@@ -1,3 +1,9 @@
+string stringFieldValue;
+decimal decimalFieldValue;
+string stringFromListField;
+decimal decimalFromListField;
+string stringFromMapField;
+decimal decimalFromMapField;
 string[] stringList1;
 string[] stringList2;
 string[] stringList3;
@@ -53,7 +59,23 @@ function integer transform() {
 	recordMap1[0].stringField = "unmodified";
 	(recordMap1[1] = recordMap1[0]).modifyRecord(); 
 	
-	// field access expression
+	// field access expression - check conversion of CloverString and Decimal
+	stringFieldValue = ($out.firstOutput.Name = "aa");
+	decimal tmpDecimal = 12.34;
+	decimalFieldValue = ($out.firstOutput.Currency = tmpDecimal);
+
+	stringFromListField = ($out.firstMultivalueOutput.stringListField = ["aa"])[0];
+	decimal[] tmpDecimalList;
+	tmpDecimalList[0] = 12.34;
+	decimalFromListField = ($out.firstMultivalueOutput.decimalListField = tmpDecimalList)[0];
+	
+	map[string, string] tmpStringMap;
+	tmpStringMap["key"] = "value";
+	stringFromMapField = ($out.firstMultivalueOutput.stringMapField = tmpStringMap)["key"]; 	
+	map[string, decimal] tmpDecimalMap;
+	tmpDecimalMap["key"] = 12.34;
+	decimalFromMapField = ($out.firstMultivalueOutput.decimalMapField = tmpDecimalMap)["key"]; 	
+	
 	stringList4 = ["aa", "bb", "cc"];
 	integerMap1["first"] = 1;
 	integerMap1["second"] = 2;
