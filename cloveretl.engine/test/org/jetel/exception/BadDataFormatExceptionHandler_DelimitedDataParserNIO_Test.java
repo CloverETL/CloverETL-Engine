@@ -28,6 +28,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.test.CloverTestCase;
 
+import de.schlichtherle.io.File;
+
 /**
  * @author maciorowski
  *
@@ -47,6 +49,8 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/DL_null_def_rec.xml"));
+		System.out.println("### " + (new File(".").getAbsolutePath()));
+		System.out.println("### " + (new File("data/in/good/DL28_NL.txt").getAbsolutePath()));
 		in = new FileInputStream("data/in/good/DL28_NL.txt");
 		in2 = new FileInputStream("data/in/bad/DL_NL_nulls.txt");
 		
