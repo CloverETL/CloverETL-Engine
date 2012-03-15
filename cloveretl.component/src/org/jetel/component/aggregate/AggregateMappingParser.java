@@ -262,6 +262,15 @@ public class AggregateMappingParser {
 				} else {
 					throw new AggregationException("Invalid mapping format");
 				}
+			} catch (NotAKeyFieldException e) {
+				String messagePart1 = "Field \"" + e.getInputField() + "\" is not a key field. Aggregation function " 
+					+ "must be used ";
+				String messagePart2 = "with this field or the field needs to be added to Aggregate key.";
+				if (lenient) {
+					errors.add(messagePart1 + "\n" + messagePart2);
+				} else {
+					throw new AggregationException(messagePart1 + messagePart2, e);
+				}
 			} catch (AggregationException e) {
 				String message = "Invalid mapping '" + expr2 + "' :\n" + e.getMessage();
 				if (lenient) {
@@ -360,20 +369,21 @@ public class AggregateMappingParser {
 	 * 
 	 * @param expression
 	 * @throws AggregationException
+	 * @throws NotAKeyFieldException
 	 */
-	private void parseFieldMapping(String expression) throws AggregationException {
+	private void parseFieldMapping(String expression) throws AggregationException, NotAKeyFieldException {
 		String[] parsedExpression = expression.split(Defaults.ASSIGN_SIGN);
 		String inputField = parsedExpression[1].trim().substring(Defaults.CLOVER_FIELD_INDICATOR.length()); // skip the leading "$"
 		String outputField = parseOutputField(parsedExpression[0]);
 
-		// check existence of fields in metadata
-		if (!isKeyField(inputField)) {
-			throw new AggregationException("Input field is not the key: " + inputField);
-		}
-
 		checkFieldExistence(inputField, outputField);
 		registerOutputFieldUsage(outputField);
 		fieldMapping.add(new FieldMapping(inputField, outputField));
+		
+		// check existence of fields in metadata
+		if (!isKeyField(inputField)) {
+			throw new NotAKeyFieldException(inputField);
+		}
 	}
 	
 	/**
@@ -837,6 +847,34 @@ public class AggregateMappingParser {
 		 */
 		public String getStringValue() {
 			return stringValue;
+		}
+	}
+	
+	/**
+	 * 
+	 * @author Martin Slama (martin.slama@javlin.eu) (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Feb 13th 2012
+	 */
+	public class NotAKeyFieldException extends Exception {
+
+		private static final long serialVersionUID = 8839038536121748816L;
+		private final String inputField;
+
+		/**
+		 * Constructor.
+		 * @param inputField Field which isn't a key field.
+		 */
+		public NotAKeyFieldException(String inputField) {
+			super();
+			this.inputField = inputField;
+		}
+		
+		/**
+		 * @return the inputField
+		 */
+		public String getInputField() {
+			return inputField;
 		}
 	}
 }

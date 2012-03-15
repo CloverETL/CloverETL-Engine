@@ -109,6 +109,7 @@ import org.w3c.dom.Text;
  * is implemented - is resolved to Integer.MIN_INT value <i>(good for MySQL JDBC driver)</i></td>
  *  <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr>
+ *  <tr><td><b>autoCommit</b><i>optional</i></td><td>Whether the commit should automatically be called after retrieving data. Default: Yes</td></tr>
  *  </table>
  *
  *  <br>sqlQuery and url are mutually exclusive.  url is the primary and if found the sqlQuery will not be used.<br>
@@ -155,6 +156,7 @@ public class DBInputTable extends Node {
 	public static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
 	public static final String XML_URL_ATTRIBUTE = "url";
 	public static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
+	public static final String XML_AUTOCOMMIT_ATTRIBUTE = "autoCommit";
 	public static final String XML_SQLCODE_ELEMENT = "SQLCode";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset"; 
 	public static final String XML_INCREMENTAL_FILE_ATTRIBUTE = "incrementalFile";
@@ -186,7 +188,8 @@ public class DBInputTable extends Node {
 	private Properties incrementalKeyPosition = new Properties();
 	
     private AutoFilling autoFilling = new AutoFilling();
-
+    private boolean autoCommit = true;
+    
 	/**
 	 *Constructor for the DBInputTable object
 	 *
@@ -199,6 +202,22 @@ public class DBInputTable extends Node {
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
+	}    
+    
+	/**
+	 *Constructor for the DBInputTable object
+	 *
+	 * @param  id                Description of Parameter
+	 * @param  dbConnectionName  Description of Parameter
+	 * @param  sqlQuery          Description of Parameter
+	 * @param  autoCommit        Description of Parameter
+	 * @since                    September 27, 2002
+	 */
+	public DBInputTable(String id, String dbConnectionName, String sqlQuery, boolean autoCommit) {
+		super(id);
+		this.dbConnectionName = dbConnectionName;
+		this.sqlQuery = sqlQuery;
+		this.autoCommit = autoCommit;
 	}
 
 
@@ -311,6 +330,8 @@ public class DBInputTable extends Node {
 		try {
 			parser.setIncrementalKey(incrementalKeyDef);
 			parser.setIncrementalFile(incrementalFile);
+			parser.setAutoCommit(autoCommit);
+			
 			//set fetch size (if defined)
 			if (fetchSize != 0) parser.setFetchSize(fetchSize);
 			parser.init();
@@ -392,6 +413,9 @@ public class DBInputTable extends Node {
 			xmlElement.setAttribute(XML_FETCHSIZE_ATTRIBUTE, String.valueOf(fetchSize));
 		}
 		
+		if (!autoCommit) {
+			xmlElement.setAttribute(XML_AUTOCOMMIT_ATTRIBUTE, String.valueOf(autoCommit));
+		}		
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
 		if (policyType != null){
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
@@ -469,7 +493,9 @@ public class DBInputTable extends Node {
                 if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
                 	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
                 }
-                
+                if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
+                	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
+                }                
             }catch (Exception ex) {
                 throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
             }
@@ -610,5 +636,13 @@ public class DBInputTable extends Node {
 
 	public void setPrintStatements(boolean printStatements) {
 		this.printStatements = printStatements;
+	}
+
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
 	}
  }

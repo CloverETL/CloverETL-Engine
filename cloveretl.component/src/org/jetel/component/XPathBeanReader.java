@@ -76,7 +76,7 @@ public class XPathBeanReader
 	static Log logger = LogFactory.getLog(XPathBeanReader.class);
 
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "XPATH_BEAN_READER";
+	public final static String COMPONENT_TYPE = "BEAN_READER";
 
 	/** XML attribute names */
 	public final static String XML_FILE_ATTRIBUTE = "fileURL";

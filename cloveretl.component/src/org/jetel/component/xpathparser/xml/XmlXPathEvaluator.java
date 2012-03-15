@@ -68,7 +68,7 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 		try {
 			return expression.evaluate(source).iterator();
 		} catch (XPathException e) {
-			throw new JetelRuntimeException("XPath evaluation failed");
+			throw new JetelRuntimeException("XPath evaluation failed", e);
 		}
 	}
 

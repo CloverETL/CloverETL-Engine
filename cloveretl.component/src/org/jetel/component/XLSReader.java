@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.security.InvalidParameterException;
 import java.util.Iterator;
 
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -139,7 +138,7 @@ public class XLSReader extends Node {
 
     protected static Log logger = LogFactory.getLog(XLSReader.class);
 
-    public static final String COMPONENT_TYPE = "XLS_READER";
+    public static final String COMPONENT_TYPE = AdditionalComponentAttributes.XLS_READER.getComponentType();
 
     public static final String XML_PARSER_ATTRIBUTE = "parser";
     public static final String XML_STARTROW_ATTRIBUTE = "startRow";
