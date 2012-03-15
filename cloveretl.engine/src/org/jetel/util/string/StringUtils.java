@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -2415,6 +2416,90 @@ public class StringUtils {
 			return s2 == null;
 		}
 		return s1.equals(s2);
+	}
+	
+	private static String toStringInternalBytes(byte[] bytes) {
+		try {
+			return new String(bytes, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(String.format("Unknown charset: %s", Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER));
+		}
+	}
+
+	private static final <E> String toStringInternalList(List<E> list) {
+        Iterator<E> i = list.iterator();
+		if (! i.hasNext())
+		    return "[]";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		for (;;) {
+		    E e = i.next();
+		    if (e instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) e));
+		    } else {
+		    	sb.append(e == list ? "(this Collection)" : e);
+		    }
+		    if (! i.hasNext()) {
+		    	return sb.append(']').toString();
+		    }
+		    sb.append(", ");
+		}
+	}
+	
+	private static final <K, V> String toStringInternalMap(Map<K, V> map) {
+		Iterator<Entry<K,V>> i = map.entrySet().iterator();
+		if (! i.hasNext())
+		    return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+		    Entry<K,V> e = i.next();
+		    K key = e.getKey();
+		    V value = e.getValue();
+		    if (key instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) key));
+		    } else {
+			    sb.append(key   == map ? "(this Map)" : key);
+		    }
+		    sb.append('=');
+		    if (value instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) value));
+		    } else {
+			    sb.append(value == map ? "(this Map)" : value);
+		    }
+		    if (! i.hasNext())
+			return sb.append('}').toString();
+		    sb.append(", ");
+		}
+	}
+
+	/**
+	 * Converts an object into a human readable string.
+	 * Used in CTL.
+	 * 
+	 * Converts byte arrays into
+	 * Strings using the default charset
+	 * instead of the default Java byte[].toString(). 
+	 * 
+	 * @param o an object
+	 * @return string represention of o
+	 */
+	public static String toOutputStringCTL(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		if (o instanceof byte[]) {
+			return toStringInternalBytes((byte[]) o);
+		}
+		if (o instanceof List) {
+			return toStringInternalList((List<?>) o);
+		}
+		if (o instanceof Map) {
+			return toStringInternalMap((Map<?, ?>) o);
+		}
+		return o.toString();
 	}
 	
 	private static interface VariableResolver{
