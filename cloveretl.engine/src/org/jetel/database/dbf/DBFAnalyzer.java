@@ -53,13 +53,21 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @SuppressWarnings("EI")
 public class DBFAnalyzer {
 	
-	private static final int DBF_HEADER_SIZE_BASIC=32;
-	private static final int DBF_HEADER_SIZE_ENHANCE=68;
-	private static final int DBF_FIELD_DEF_SIZE=32;
-	private static final int DBF_FIELD_DEF_SIZE_ENHANCE=48;
-    private static final byte DBF_FIELD_HEADER_TERMINATOR=0x0D;
-    private static final byte DBF_ENHANCE_RESERVED=4;
-	private static final String HEADER_CHARACTER_ENCODING="ISO-8859-1";
+	/**
+	 * 
+	 */
+	public static final String DBF_IS_DELETED_INDICATOR_FIELD = "_IS_DELETED_";
+	public static final int DBF_HEADER_SIZE_BASIC=32;
+	public static final int DBF_HEADER_SIZE_ENHANCE=68;
+	public static final int DBF_FIELD_DEF_SIZE=32;
+	public static final int DBF_FIELD_DEF_SIZE_ENHANCE=48;
+	public static final int DBF_FIELD_MAX_LENGTH=255;
+    public static final byte DBF_FIELD_HEADER_TERMINATOR=0x0D;
+    public static final byte DBF_FILE_EOF_INDICATOR = 0x1A;
+    public static final byte DBF_ENHANCE_RESERVED=4;
+    public static final int  DBF_HEADER_NUM_REC_OFFSET=4;
+    public static final int DBF_MAX_NUMBER_OF_FIELDS=128;
+	public static final String HEADER_CHARACTER_ENCODING="ISO-8859-1";
 	private final static String VERSION = "1.1";
 	private final static String LAST_UPDATED = "2006/10/03";  
 	
@@ -364,35 +372,6 @@ public class DBFAnalyzer {
 		return dbfRecSize;
 	}
 	
-	/**
-	 * @param dBase field type
-	 * @return CloverETL field type
-	 */
-	@SuppressWarnings("DB")
-	public static char dbfFieldType2Clover(char type){
-		switch(Character.toUpperCase(type)){
-			case 'C': //Character
-				return DataFieldMetadata.STRING_FIELD;
-			case 'N': //Numeric
-			case 'O': //Double (dBase Level 7)
-				return DataFieldMetadata.NUMERIC_FIELD;
-			case 'D': //Date
-			case 'T': //DateTime
-			case '@': //Timestamp (dBase Level 7)
-				return DataFieldMetadata.DATE_FIELD;
-			case 'L': //Logical 
-				return DataFieldMetadata.BOOLEAN_FIELD;
-			case 'M': //Memo
-			case 'P': //Picture
-				return DataFieldMetadata.BYTE_FIELD;
-			case 'I': //Integer
-			case '+': //Autoincrement
-				return DataFieldMetadata.INTEGER_FIELD;
-			default: return DataFieldMetadata.STRING_FIELD;
-            //throw new DBFErrorException("Unsupported DBF field type: \""+String.valueOf(type)+"\" hex: "+Integer.toHexString(type));
-		}
-	}
-	
 	public DataRecordMetadata getCloverMetadata(){
 		DataRecordMetadata record=new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME,
 							DataRecordMetadata.FIXEDLEN_RECORD);
@@ -407,13 +386,13 @@ public class DBFAnalyzer {
 		
 		// add "hidden" field indicatind deletion status
 		DataFieldMetadata isDeletedField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME,DataFieldMetadata.STRING_FIELD,(short)1);
-		isDeletedField.setLabel("_IS_DELETED_");
+		isDeletedField.setLabel(DBF_IS_DELETED_INDICATOR_FIELD);
 		record.addField(isDeletedField);
 		
 		for (int i=0;i<dbfNumFields;i++){
 			// create field definition based on what we read from DBF file header
 			DataFieldMetadata field=new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME,
-					dbfFieldType2Clover(dbfFields[i].type),
+					DBFTypes.dbfFieldType2Clover(dbfFields[i].type),
 					dbfFields[i].length);
 			field.setLabel(dbfFields[i].name);
 
@@ -421,6 +400,11 @@ public class DBFAnalyzer {
 			if (dbfFields[i].type=='D'){
 				field.setFormatStr(DBFTypes.DATE_FORMAT_MASK);			
 			}
+			// if DBF type converted to Decimal, then extract number of decinmal places/ scale
+			if (field.getType()==DataFieldMetadata.DECIMAL_FIELD){
+				field.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(dbfFields[i].decPlaces));
+			}
+				
 			record.addField(field);
 		}
 		

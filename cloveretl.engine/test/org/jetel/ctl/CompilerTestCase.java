@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.AssertionFailedError;
 
@@ -31,6 +32,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -397,6 +399,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		integerListField.setCardinalityType(DataFieldCardinalityType.LIST);
 		ret.addField(integerListField);
 		
+		DataFieldMetadata decimalListField = new DataFieldMetadata("decimalListField", DataFieldType.DECIMAL, "|");
+		decimalListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		ret.addField(decimalListField);
+		
+		DataFieldMetadata decimalMapField = new DataFieldMetadata("decimalMapField", DataFieldType.DECIMAL, "|");
+		decimalMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		ret.addField(decimalMapField);
+		
 		return ret;
 	}
 
@@ -448,6 +458,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 					case BYTE:
 						value.addAll(Arrays.asList(new byte[] {0x12, 0x34}, new byte[] {0x56, 0x78}));
 						break;
+					case DECIMAL:
+						value.addAll(Arrays.asList(12.34, 56.78));
+						break;
 					default:
 						throw new UnsupportedOperationException("Not implemented.");
 					}
@@ -475,6 +488,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 					case BYTE:
 						value.put("hash", new byte[] {0x12, 0x34});
 						value.put("checksum", new byte[] {0x56, 0x78});
+						break;
+					case DECIMAL:
+						value.put("asset", 12.34);
+						value.put("liability", 56.78);
 						break;
 					default:
 						throw new UnsupportedOperationException("Not implemented.");
@@ -1200,6 +1217,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(Arrays.asList(12l, null, 98l), getVariable("longList"));
 		assertEquals(Arrays.asList(12.34, null, 56.78), getVariable("numberList"));
 		assertEquals(Arrays.asList("aa", null, "bb"), getVariable("stringList2"));
+		
+		List<?> decimalList2 = (List<?>) getVariable("decimalList2");
+		for (Object o: decimalList2) {
+			assertTrue(o instanceof BigDecimal);
+		}
+		
+		List<?> intList4 = (List<?>) getVariable("intList4");
+		Set<Object> intList4Set = new HashSet<Object>(intList4);
+		assertEquals(3, intList4Set.size());
 	}
 	
 	public void test_type_list_field() {
@@ -1248,8 +1274,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			}
 		} else if (o1 instanceof Date) {
 			assertFalse(o1 == o2);
-		} else if (o1 instanceof byte[]) {
-			assertFalse(o1 == o2);
+//		} else if (o1 instanceof byte[]) { // not required anymore
+//			assertFalse(o1 == o2);
 		}
 	}
 	
@@ -1260,6 +1286,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @param o2
 	 */
 	private static void assertDeepEquals(Object o1, Object o2) {
+		if ((o1 == null) && (o2 == null)) {
+			return;
+		}
+		assertTrue((o1 == null) == (o2 == null));
 		if (o1 instanceof DataRecord) {
 			DataRecord r1 = (DataRecord) o1;
 			DataRecord r2 = (DataRecord) o2;
@@ -1294,9 +1324,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				}
 			}
 		} else if (o1 instanceof CharSequence) {
-			String s1 = o1 != null ? ((CharSequence) o1).toString() : null;
-			String s2 = o2 != null ? ((CharSequence) o2).toString() : null;
+			String s1 = ((CharSequence) o1).toString();
+			String s2 = ((CharSequence) o2).toString();
 			assertEquals(s1, s2);
+		} else if ((o1 instanceof Decimal) || (o1 instanceof BigDecimal)) {
+			BigDecimal d1 = o1 instanceof Decimal ? ((Decimal) o1).getBigDecimalOutput() : (BigDecimal) o1;
+			BigDecimal d2 = o2 instanceof Decimal ? ((Decimal) o2).getBigDecimalOutput() : (BigDecimal) o2;
+			assertEquals(d1, d2);
 		} else {
 			assertEquals(o1, o2);
 		}
@@ -3201,6 +3235,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.SECOND, portion[2]);
     	cal.set(Calendar.MILLISECOND, portion[3]);
     	check("bornExtractTime", cal.getTime());
+    	check("originalDate", BORN_VALUE);
 	}
 	
 	public void test_datelib_extractDate() {
@@ -3214,6 +3249,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.MONTH, portion[1]);
     	cal.set(Calendar.YEAR, portion[2]);
     	check("bornExtractDate", cal.getTime());
+    	check("originalDate", BORN_VALUE);
 	}
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {
@@ -3484,6 +3520,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalString", "-6847521431.1545874");
 		check("listString", "[not ALI A, not ALI B, not ALI D..., but, ALI H!]");
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
+		String byteMapString = getVariable("byteMapString").toString();
+		assertTrue(byteMapString.contains("1=value1"));
+		assertTrue(byteMapString.contains("2=value2"));
+		String fieldByteMapString = getVariable("fieldByteMapString").toString();
+		assertTrue(fieldByteMapString.contains("key1=value1"));
+		assertTrue(fieldByteMapString.contains("key2=value2"));
+		check("byteListString", "[firstElement, secondElement]");
+		check("fieldByteListString", "[firstElement, secondElement]");
 	}
 	
 	public void test_convertlib_str2byte() {

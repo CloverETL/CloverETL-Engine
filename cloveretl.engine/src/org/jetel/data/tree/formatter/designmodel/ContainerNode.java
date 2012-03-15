@@ -136,7 +136,7 @@ public abstract class ContainerNode extends AbstractNode {
 			return false;
 		}
 		// container is not simple if has any children with one exception - it is simple when it has one child of type value. 
-		if (!children.isEmpty() && (children.size() != 1 || children.get(0).getType() == AbstractNode.VALUE)) {
+		if (!children.isEmpty() && !(children.size() == 1 && children.get(0).getType() == AbstractNode.VALUE)) {
 			return false;
 		}
 		

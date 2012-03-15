@@ -29,7 +29,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	
-	public static final String DUMMY_ROOT_ELEMENT_NAME = "object";
+	public static final String DUMMY_ROOT_ELEMENT_NAME = "root";
 	
 	private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
 	private ContentHandler contentHander;

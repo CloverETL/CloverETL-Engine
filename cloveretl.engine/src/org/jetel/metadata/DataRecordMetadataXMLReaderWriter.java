@@ -303,8 +303,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			metadataElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 		}
 
-		if(record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) rt = "delimited";
-		else if(record.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) rt = "fixed";
+		if(record.getParsingType() == DataRecordParsingType.DELIMITED) rt = "delimited";
+		else if(record.getParsingType() == DataRecordParsingType.FIXEDLEN) rt = "fixed";
 		else rt = "mixed";
 
         metadataElement.setAttribute(TYPE_ATTR, rt);
@@ -364,9 +364,12 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
+			    if (field.getCardinalityType() != null) {
+			    	fieldElement.setAttribute(CARDINALITY_TYPE_ATTR, field.getCardinalityType().toString().toLowerCase());
+			    }
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
-				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD 
+				if (record.getParsingType() == DataRecordParsingType.DELIMITED 
 						&& !StringUtils.isEmpty(delimiterStr)) {
 					fieldElement.setAttribute(DELIMITER_ATTR, delimiterStr);
 				} else {
@@ -515,10 +518,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"Attribute \"name\" or \"type\" not defined within Record !");
 		}
 
-		char rt;
-		if (recordType.equalsIgnoreCase("delimited")) rt = DataRecordMetadata.DELIMITED_RECORD;
-		else if (recordType.equalsIgnoreCase("fixed")) rt = DataRecordMetadata.FIXEDLEN_RECORD;
-		else if (recordType.equalsIgnoreCase("mixed")) rt = DataRecordMetadata.MIXED_RECORD;
+		DataRecordParsingType rt;
+		if (recordType.equalsIgnoreCase("delimited")) rt = DataRecordParsingType.DELIMITED;
+		else if (recordType.equalsIgnoreCase("fixed")) rt = DataRecordParsingType.FIXEDLEN;
+		else if (recordType.equalsIgnoreCase("mixed")) rt = DataRecordParsingType.MIXED;
 		else throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
 				"Unknown record type '" + recordType + "'. One of these options is supported delimited|fixed|mixed.");
 

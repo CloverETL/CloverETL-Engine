@@ -156,6 +156,7 @@ public class MultiFileWriter {
 	public void reset() throws ComponentNotReadyException {
 		if (multiTarget != null){
 			multiTarget.clear();
+			currentTarget = null;
 		}else{
 			currentTarget.reset();
 		}

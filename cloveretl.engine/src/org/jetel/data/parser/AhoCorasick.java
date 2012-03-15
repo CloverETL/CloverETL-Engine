@@ -161,16 +161,33 @@ public class AhoCorasick {
 	 * Update state of Aho-Corasick algorithm.
 	 * @param c incoming char of text
 	 */
-	public void update(char c) {
-		while(currentNode != rootTrie && currentNode.children[c] == null) {
+	public boolean update(char c) {
+		boolean withoutFailStep = true;
+		while (currentNode != rootTrie && currentNode.children[c] == null) {
 			currentNode = currentNode.fail;
+			withoutFailStep = false;
 		}
+		
 		currentNode = currentNode.children[c];
-		if(currentNode == null) currentNode = rootTrie;
+		
+		if (currentNode == null) { 
+			currentNode = rootTrie;
+			withoutFailStep = false;
+		}
+		
+		return withoutFailStep;
 	}
 	
 	public boolean isPattern(int idx) {
 		return currentNode.patternsFinal[idx - minPattern];
+	}
+	
+	public boolean canUpdateWithoutFail() {
+		List<NodeTrie> children = currentNode.getChildren();
+		if (children == null || children.size() == 0) {
+			return false;
+		}
+		return true;
 	}
 	
 	public int getMatchLength() {
@@ -253,6 +270,25 @@ public class AhoCorasick {
 			}
 			return ch;
 		}
+		
+		@Override
+		public String toString() {
+			NodeTrie current = this;
+			StringBuilder result = new StringBuilder();
+			result.append("Node for: [");
+			StringBuilder path = new StringBuilder();
+			while (current != null) {
+				path.insert(0, StringUtils.specCharToString(""+current.transition));
+				current = current.parent;
+			}
+			result.append(path.toString());
+			result.append("]\nPossible continuation:");
+			for (NodeTrie trans : getChildren()) {
+				result.append("[").append(StringUtils.specCharToString(""+trans.transition)).append("]\n");
+			}
+			return result.toString();
+		}
+		
 	}
 	
 	/**

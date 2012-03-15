@@ -117,6 +117,15 @@ public class DataParser extends AbstractTextParser {
 	 * We are in the middle of process of record parsing.
 	 */
 	private boolean recordIsParsed;
+
+	/** Indicates, whether the parser should try to find longer delimiter when a match is found. This
+	 *  applies for e.g. delimiter set \r | \r\n. When this flag is false and a \r is found, parser
+	 *  should take \r as a delimiter. If the flag is true, parser should look if the next char is \n and 
+	 *  if so, take \r\n as delimiter. 
+	 */	
+	private boolean tryToFindLongerDelimiter = false;  
+	
+	
 	
 	public DataParser(TextParserConfiguration cfg){
 		super(cfg);
@@ -253,6 +262,7 @@ public class DataParser extends AbstractTextParser {
 		}
 		
 		metadataFields = cfg.getMetadata().getFields();
+		tryToFindLongerDelimiter = cfg.isTryToMatchLongerDelimiter();
 	}
 
     @Override
@@ -353,6 +363,13 @@ public class DataParser extends AbstractTextParser {
 		recordCounter++;
 		if (cfg.isVerbose()) {
 			recordBuffer.clear();
+			
+			// FIX: add the content of tempReadBuffer (holding characters, that has been read already, but should be read again) to recordBuffer (used
+			// for printing the raw data in case of parse error. In case of an error, this caused that some characters were missing at the beginning 
+			// of the raw data in the error message, but they were actually read by the parser
+			for (int i=0; i < tempReadBuffer.length(); i++) {
+				recordBuffer.putChar(tempReadBuffer.charAt(i));
+			}
 		}
 		recordIsParsed = false;
 		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
@@ -426,9 +443,16 @@ public class DataParser extends AbstractTextParser {
 								if (skipTBlanks) {
 									StringUtils.trimTrailing(fieldBuffer);
 								}
+								
+								// if we should consume the longest possible delimiter, try to stretch the match
+								if (tryToFindLongerDelimiter && delimiterSearcher.canUpdateWithoutFail()) {
+									stretchRecordDelimiter(fieldCounter);
+								}
+								
 								if(cfg.isTreatMultipleDelimitersAsOne())
 									while(followFieldDelimiter(fieldCounter));
 
+								
 								delimiterSearcher.reset(); // CL-1859 Fix: We don't want prefix of some other delimiter to be already matched
 								break;
 							}
@@ -527,6 +551,10 @@ public class DataParser extends AbstractTextParser {
 		return record;
 	}
 
+	public int getOverStepChars() {
+		return tempReadBuffer.length();
+	}
+	
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
         if(exceptionHandler != null) {
             exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum , getLastRawRecord(), new BadDataFormatException("Parsing error: " + exceptionMessage));
@@ -711,6 +739,30 @@ public class DataParser extends AbstractTextParser {
 							}
 						}
 					}
+				} else {
+					for (int j = 0; j < fieldLengths[i]; j++) {
+						character = readChar();
+					}
+					if (i + 1 == numFields) {
+						delimiterSearcher.reset();
+						boolean delimiterFound = false;
+						while ((character = readChar()) != -1) {
+							if (!delimiterSearcher.update((char) character)) {
+								return false;
+							}
+							if (recordDelimiterFound()) {
+								delimiterFound = true;
+								break;
+							}
+						}
+						if (!delimiterFound) {
+							return false;
+						}
+						if (tryToFindLongerDelimiter) {
+							stretchRecordDelimiter(RECORD_DELIMITER_IDENTIFIER);
+						}
+						return true;
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -793,6 +845,7 @@ public class DataParser extends AbstractTextParser {
 //            findEndOfRecord(fieldNum);
 //        }
 //    }
+	
 	/**
 	 * Is record delimiter in the input channel?
 	 * @return
@@ -868,6 +921,35 @@ public class DataParser extends AbstractTextParser {
 		return -1;
 	}
 
+	private void stretchRecordDelimiter(int patternID) {
+		StringBuffer temp = new StringBuffer();
+		try {
+			int character;
+			while (delimiterSearcher.canUpdateWithoutFail() && (character = readChar()) != -1) {
+				// always append a character to a temp buffer
+				temp.append((char)character);
+				
+				// if fail occurs - the string can no more be stretched to a pattern:
+				// just finish stretching and update temp read buffer
+				if (!delimiterSearcher.update((char) character)) {
+					break;
+				}
+				
+				// we have moved in the tree - do we have a node, that is final?
+				// if yes, clear the buffer - this is the stretched delimiter. 
+				if (delimiterSearcher.isPattern(patternID)) {
+					temp.setLength(0);
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
+		} finally {
+			//end of file or longest delimiter found
+			tempReadBuffer.append(temp);
+		}
+	}
+	
+	
 	public boolean endOfInputChannel() {
 		return reader == null || !reader.isOpen();
 	}

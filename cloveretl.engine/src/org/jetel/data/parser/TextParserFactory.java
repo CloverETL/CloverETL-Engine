@@ -50,15 +50,23 @@ public final class TextParserFactory {
 	 * 
 	 * @param cfg
 	 *            requested parser configuration
+	 * @param parserClassName
+	 *            parser class name
+	 * @param parserClassLoader
+	 *            Class loader of the parser. Can be null (in this case current class loader is used).
 	 * @return fastest parse implemementation, always is not null
 	 * @throws JetelRuntimeException
 	 *             if no parser found
 	 */
-	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName) {
+	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName, ClassLoader parserClassLoader) {
 		Class bestParserClass = null;
 		if (parserClassName != null) {
 			try {
-				bestParserClass = Class.forName(parserClassName);
+				if (parserClassLoader != null) {
+					bestParserClass = Class.forName(parserClassName, true, parserClassLoader);
+				} else {
+					bestParserClass = Class.forName(parserClassName);
+				}
 			} catch (ClassNotFoundException e) {
 				throw new JetelRuntimeException("Invalid parser '" + parserClassName + "'", e);
 			}
@@ -95,6 +103,10 @@ public final class TextParserFactory {
 		}
 	}
 
+	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName){
+		return getParser(cfg, parserClassName, null);
+	}
+	
 	public static final TextParser getParser(TextParserConfiguration cfg) {
 		return getParser(cfg, null);
 	}

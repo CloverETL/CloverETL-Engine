@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +36,7 @@ import org.jetel.util.string.StringUtils;
 /**
  * Helper class which contains some framework-wide constants definitions.<br>
  * Change the compile-time defaults here !
- * 
+ *
  * @author dpavlis
  * @created January 23, 2003
  */
@@ -60,21 +61,23 @@ public final class Defaults {
 		return p;
 	}
 
-	private static void initProperties(String configurationFile) {
-		InputStream is;
-		
-		//load defaults from build-in properties file as a java resource - defaultProperties
-		is = openResourceStream("defaultProperties");
-		if (is != null) {
-			appendProperties(loadPropertiesFromStream(is, "defaultPropeties"));
-		}
+    private static void initProperties(URL configurationFile) {
+        loadDefaultProperties();
 
-		//name of a resource file with properties can be also specify via 'cloveretl.properties' system property
-		is = openResourceStream(System.getProperty("cloveretl.properties"));
-		if (is != null) {
-			appendProperties(loadPropertiesFromStream(is, "cloveretl.properties"));
-		}
-		
+        //properties file name can be also passed as method parameter - configurationFile
+        if (configurationFile != null) {
+            try {
+                logger.info("Loading Clover properties from file:" + configurationFile);
+                appendProperties(loadPropertiesFromStream(configurationFile.openStream(), configurationFile.toString()));
+            } catch (IOException e) {
+                logger.warn("Unable to load properties from '" + configurationFile + "'.", e);
+            }
+        }
+    }
+
+	private static void initProperties(String configurationFile) {
+		loadDefaultProperties();
+
 		//properties file name can be also passed as method parameter - configurationFile
 		if (!StringUtils.isEmpty(configurationFile)) {
 			try {
@@ -85,6 +88,23 @@ public final class Defaults {
 			}
 		}
 	}
+
+    private static void loadDefaultProperties() {
+        InputStream is;
+
+        //load defaults from build-in properties file as a java resource - defaultProperties
+        is = openResourceStream("defaultProperties");
+        if (is != null) {
+            appendProperties(loadPropertiesFromStream(is, "defaultPropeties"));
+        }
+
+        //name of a resource file with properties can be also specify via 'cloveretl.properties' system property
+        is = openResourceStream(System.getProperty("cloveretl.properties"));
+        if (is != null) {
+            appendProperties(loadPropertiesFromStream(is, "cloveretl.properties"));
+        }
+
+    }
 
 	private static InputStream openResourceStream(String resourcename) {
 		if (resourcename == null || resourcename.length() == 0) {
@@ -120,49 +140,49 @@ public final class Defaults {
 		}
 		return prop;
 	}
-	
+
 	private static void appendProperties(Properties prop) {
 		properties = new Properties(properties);
 		properties.putAll(prop);
 	}
-	
+
 	private static int getIntProperties(String key, int def) {
 		String ret = getStringProperty(key);
-		
+
 		if (ret == null) {
 			return def;
 		}
-		
+
 		return Integer.parseInt(ret);
 	}
 
 	private static short getShortProperties(String key, short def) {
 		String ret = getStringProperty(key);
-		
+
 		if (ret == null) {
 			return def;
 		}
-		
+
 		return Short.parseShort(ret);
 	}
 
 	private static String getStringProperties(String key, String def) {
 		String ret = getStringProperty(key);
-		
+
 		if (ret == null) {
 			return def;
 		}
-		
+
 		return ret;
 	}
 
 	private static boolean getBooleanProperties(String key, boolean def) {
 		String ret = getStringProperty(key);
-		
+
 		if (ret == null) {
 			return def;
 		}
-		
+
 		return Boolean.parseBoolean(ret);
 	}
 
@@ -172,7 +192,7 @@ public final class Defaults {
 	 */
 	private static String getStringProperty(String key) {
 		String ret = System.getProperty(key);
-		
+
 		if (ret == null) {
 			ret = properties.getProperty(key);
 		} else {
@@ -182,47 +202,56 @@ public final class Defaults {
 
 		return ret;
 	}
-	
-	// public static void init() {
-	// init(null);
-	// }
+
+    public static void init() {
+        loadDefaultProperties();
+        initializeInternal();
+    }
 
 	public static void init(String configurationFile) {
 		initProperties(configurationFile);
-
-		DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
-		DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
-		DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
-		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
-		DEFAULT_LOCALE = getStringProperties("DEFAULT_LOCALE", MiscUtils.localeToString(Locale.getDefault()));
-		DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
-		DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
-		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
-		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
-		DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
-		DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
-		DEFAULT_LICENSE_LOCATION = getStringProperties("DEFAULT_LICENSE_DIRECTORY", "./license");
-		CLOVER_FIELD_INDICATOR = getStringProperties("CLOVER_FIELD_INDICATOR", "$");
-		CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
-		ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
-		INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
-		PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
-
-		Record.init();
-		DataFieldMetadata.init();
-		DataParser.init();
-		DataFormatter.init();
-		Component.init();
-		Data.init();
-		Lookup.init();
-		WatchDog.init();
-		GraphProperties.init();
-		InternalSortDataRecord.init();
-		Graph.init();
-		OracleConnection.init();
-		CTL.init();
-		PortReadingWriting.init();
+		initializeInternal();
 	}
+
+    public static void init(URL configurationFile) {
+        initProperties(configurationFile);
+        initializeInternal();
+    }
+
+    private static void initializeInternal() {
+        DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
+        DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
+        DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
+        DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
+        DEFAULT_LOCALE = getStringProperties("DEFAULT_LOCALE", MiscUtils.localeToString(Locale.getDefault()));
+        DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
+        DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
+        DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
+        DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
+        DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
+        DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
+		DEFAULT_LICENSE_LOCATION = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./license");
+        CLOVER_FIELD_INDICATOR = getStringProperties("CLOVER_FIELD_INDICATOR", "$");
+        CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
+        ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
+        INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
+        PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
+
+        Record.init();
+        DataFieldMetadata.init();
+        DataParser.init();
+        DataFormatter.init();
+        Component.init();
+        Data.init();
+        Lookup.init();
+        WatchDog.init();
+        GraphProperties.init();
+        InternalSortDataRecord.init();
+        Graph.init();
+        OracleConnection.init();
+        CTL.init();
+        PortReadingWriting.init();
+    }
 
 	/**
 	 * when buffering IO, what is the default size of the buffer
@@ -294,10 +323,10 @@ public final class Defaults {
 	 * Prevents GreedyClassLoader from loading interfaces and common classes from external libs.
 	 * */
 	public static String PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING;
-	
+
 	/**
 	 * Defaults regarding DataRecord structure/manipulation
-	 * 
+	 *
 	 * @author dpavlis
 	 * @created January 23, 2003
 	 */
@@ -319,10 +348,10 @@ public final class Defaults {
 		 * Should be used as initial size of CloverBuffer dedicated to handle a data record.
 		 * Determines expected upper bounds of record size (serialized) in bytes.<br>
 		 * Clover engine is able to handle even bigger records. Underlying buffer
-		 * may be re-allocated in the case a bigger record appears.  
+		 * may be re-allocated in the case a bigger record appears.
 		 */
 		public static int RECORD_INITIAL_SIZE;// = 65536;
-		
+
 		/**
 		 * Determines maximum size of record (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
@@ -337,15 +366,15 @@ public final class Defaults {
 		 */
 		@Deprecated
 		public static int MAX_RECORD_SIZE;// = 65536;
-		
+
 		/**
 		 * Should be used as initial size of CloverBuffer dedicated to handle a data field.
 		 * Determines expected upper bounds of field size (serialized) in bytes.<br>
 		 * Clover engine is able to handle even bigger fields. Underlying buffer
-		 * may be re-allocated in the case a bigger field appears.  
+		 * may be re-allocated in the case a bigger field appears.
 		 */
 		public static int FIELD_INITIAL_SIZE;// = 65536;
-		
+
 		/**
 		 * Determines maximum size of single field (serialized) in bytes.<br>
 		 * If you are getting BufferOverflow, increase the limit here.
@@ -377,7 +406,7 @@ public final class Defaults {
 
 	/**
 	 * Defaults regarding DataFieldMetadata
-	 * 
+	 *
 	 * @author dpavlis
 	 * @created January 23, 2003
 	 */
@@ -402,7 +431,7 @@ public final class Defaults {
 
 	/**
 	 * Defaults for all DataParsers
-	 * 
+	 *
 	 * @author dpavlis
 	 * @created January 23, 2003
 	 */
@@ -428,7 +457,7 @@ public final class Defaults {
 
 	/**
 	 * Defaults for DataFormatters
-	 * 
+	 *
 	 * @author dpavlis
 	 * @created January 23, 2003
 	 */
@@ -459,7 +488,7 @@ public final class Defaults {
 
 	/**
 	 * Defaults for various components
-	 * 
+	 *
 	 * @author david
 	 * @created January 26, 2003
 	 */
@@ -481,28 +510,28 @@ public final class Defaults {
 		 * Delimiter character used when exporting components to XML
 		 */
 		public static String KEY_FIELDS_DELIMITER;// = ";";
-		
+
 		/**
 		 * This long value is used as a header for internal clover binary data sources/targets.
-		 * CloverDataReader and CloverDataWriter components are dedicated to work with this data format. 
+		 * CloverDataReader and CloverDataWriter components are dedicated to work with this data format.
 		 * Each clover data source (since 2.9 version) starts with this value and follows
 		 * with compatibility value @see CLOVER_DATA_COMPATIBILITY_HASH, one byte for major version number,
 		 * one byte for minor version number, one byte for revision number, and other four bytes
 		 * for type of encoding.
 		 * NOTE: cannot be changed from defaultProperties file
 		 */
-		public final static long CLOVER_DATA_HEADER = 7198760165196065077L; 
+		public final static long CLOVER_DATA_HEADER = 7198760165196065077L;
 
 		/**
-		 * This long value is used for decision about inter-version compatibility 
-		 * of clover binary format. Need to be changed whenever clover engine changed way how to 
+		 * This long value is used for decision about inter-version compatibility
+		 * of clover binary format. Need to be changed whenever clover engine changed way how to
 		 * data records are serialized.
 		 * NOTE: cannot be changed from defaultProperties file
 		 */
 		public final static long CLOVER_DATA_COMPATIBILITY_HASH = 620003156160528134L;
-		
+
     	/**
-    	 * This is the size of header (in bytes) for clover binary data format (@see CLOVER_DATA_HEADER). 
+    	 * This is the size of header (in bytes) for clover binary data format (@see CLOVER_DATA_HEADER).
 		 * NOTE: cannot be changed from defaultProperties file
 		 */
     	public final static int CLOVER_DATA_HEADER_SIZE = 23;
@@ -510,7 +539,7 @@ public final class Defaults {
 
 	/**
 	 * Defaults for section Data
-	 * 
+	 *
 	 * @author dpavlis
 	 * @created 6. duben 2003
 	 */
@@ -529,7 +558,7 @@ public final class Defaults {
 				NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD = getIntProperties("Data.StringDataField.NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD", 6);
 			}
 
-			public static int DIRECT_BULK_SERIALIZATION_THRESHOLD;// 130 
+			public static int DIRECT_BULK_SERIALIZATION_THRESHOLD;// 130
 
 			public static int DIRECT_BULK_DESERIALIZATION_THRESHOLD;// 20
 
@@ -537,14 +566,14 @@ public final class Defaults {
 
 			public static int NON_DIRECT_BULK_DESERIALIZATION_THRESHOLD;// 6
 		}
-		
+
 		/**
 		 * Unit size of data buffer which keeps data records for sorting/hashing
 		 * @deprecated invalidated without substitution, consider to use {@link Record#RECORDS_BUFFER_SIZE}
 		 */
 		@Deprecated
 		public static int DATA_RECORDS_BUFFER_SIZE;// = 10 * 1048576; // 10MB
-		
+
 		/**
 		 * How many units (buffers) can be allocated
 		 * @deprecated invalidated without substitution
@@ -556,10 +585,10 @@ public final class Defaults {
 
 	/**
 	 * Defaults for lookup tables
-	 * 
+	 *
 	 * @author david
 	 * @since 25.3.2005
-	 * 
+	 *
 	 */
 	public final static class Lookup {
 		public static void init() {
@@ -583,14 +612,14 @@ public final class Defaults {
 
 		/**
 		 * how long watchdog thread sleeps (milliseconds) between each awakening.
-		 * 
+		 *
 		 * @since July 30, 2002
 		 */
 
 		public static int WATCHDOG_SLEEP_INTERVAL;// = 1000;
 		/**
 		 * how often is watchdog reporting about graph progress
-		 * 
+		 *
 		 * @since July 30, 2002
 		 */
 		public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 5000;
@@ -599,7 +628,7 @@ public final class Defaults {
 		 * One tick is one awakening of watch dog. Sleep interval * number_of_ticks determines how often is checked
 		 * status of each component.<br>
 		 * If watchdog determines that there was an error in some component, the whole graph processing is aborted.
-		 * 
+		 *
 		 * @since October 1, 2002
 		 */
 		public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 1;
@@ -676,7 +705,7 @@ public final class Defaults {
 		 */
 		public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
 	}
-	
+
 	public final static class OracleConnection {
 		public static void init() {
 			ROW_PREFETCH = getIntProperties("OracleConnection.ROW_PREFETCH", -1);
@@ -688,7 +717,7 @@ public final class Defaults {
 		 */
 		public static int ROW_PREFETCH; // -1
 	}
-	
+
 	/**
 	 * Default settings for CTL.
 	 *
@@ -704,10 +733,10 @@ public final class Defaults {
 		public static String VOID_METADATA_NAME;
 
 	}
-	
+
 	/**
 	 * Defaults for port reading/writing - stream mode.
-	 * 
+	 *
 	 * @author jausperger
 	 * @created September 10, 2009
 	 */
@@ -717,7 +746,7 @@ public final class Defaults {
 		}
 
 		/**
-		 * It determines what is the maximum size of one particular data field for stream mode for writer components. 
+		 * It determines what is the maximum size of one particular data field for stream mode for writer components.
 		 * This value must be less or equal to similar field or record buffers.
 		 */
 		public static int DATA_LENGTH;// = 2048;

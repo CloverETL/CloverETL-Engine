@@ -1147,7 +1147,7 @@ public class ListDataFieldTest extends CloverTestCase {
 		otherListDataField.clear();
 		listDataField.addField();
 		otherListDataField.addField();
-		assertFalse(listDataField.equals(otherListDataField));
+		assertTrue(listDataField.equals(otherListDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1171,7 +1171,7 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField.addField();
 		otherListDataField.addField().setValue("neco");
 		otherListDataField.addField();
-		assertFalse(listDataField.equals(otherListDataField));
+		assertTrue(listDataField.equals(otherListDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1226,8 +1226,8 @@ public class ListDataFieldTest extends CloverTestCase {
 		otherListDataField.clear();
 		listDataField.addField();
 		otherListDataField.addField();
-		assertEquals(-1, listDataField.compareTo(otherListDataField));
-		assertEquals(-1, otherListDataField.compareTo(listDataField));
+		assertEquals(0, listDataField.compareTo(otherListDataField));
+		assertEquals(0, otherListDataField.compareTo(listDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1254,8 +1254,8 @@ public class ListDataFieldTest extends CloverTestCase {
 		listDataField.addField();
 		otherListDataField.addField().setValue("neco");
 		otherListDataField.addField();
-		assertEquals(-1, listDataField.compareTo(otherListDataField));
-		assertEquals(-1, otherListDataField.compareTo(listDataField));
+		assertEquals(0, listDataField.compareTo(otherListDataField));
+		assertEquals(0, otherListDataField.compareTo(listDataField));
 
 		listDataField.clear();
 		otherListDataField.clear();
@@ -1356,6 +1356,28 @@ public class ListDataFieldTest extends CloverTestCase {
 		for (DataField field : listDataField) {
 			assertEquals("necojineho", ((StringDataField) field).getValue().toString());
 		}
+	}
+	
+	public void testByteDataFieldToString() {
+		ListDataField listDataField = new ListDataField(createListMetadata(DataFieldType.BYTE));
+
+		listDataField.setNull(true);
+		assertEquals("", listDataField.toString());
+		
+		listDataField.setNull(false);
+		assertEquals("[]", listDataField.toString());
+			
+		listDataField.addField();
+		assertEquals("[]", listDataField.toString());
+		
+		listDataField.addField().setValue(new byte[] {'a', 'b', 'c' });
+		assertEquals("[, abc]", listDataField.toString());
+
+		listDataField.addField().setNull(false);
+		assertEquals("[, abc, ]", listDataField.toString());
+
+		listDataField.addField().setValue(new byte[] {'e', 'f', 'g' });
+		assertEquals("[, abc, , efg]", listDataField.toString());
 	}
 	
 }

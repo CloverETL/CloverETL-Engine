@@ -45,7 +45,13 @@ public class TextParserConfiguration implements Cloneable {
 	private boolean skipRows = false;
 	private PolicyType policyType = null;
 	private IParserExceptionHandler exceptionHandler = null;
-
+	/** Indicates, whether the parser should try to find longer delimiter when a match is found. This
+	 *  applies for e.g. delimiter set \r | \r\n. When this flag is false and a \r is found, parser
+	 *  should take \r as a delimiter. If the flag is true, parser should look if the next char is \n and 
+	 *  if so, take \r\n as delimiter. 
+	 */
+	private boolean tryToMatchLongerDelimiter = false;
+	
 	public TextParserConfiguration() {
 		super();
 	}
@@ -282,10 +288,32 @@ public class TextParserConfiguration implements Cloneable {
 	public boolean isSingleByteCharset() {
 		return isSingleByteCharset(charset);
 	}
+	
+	/**  Indicates, whether the parser should try to find longer delimiter when a match is found. This
+	 *  applies for e.g. delimiter set \r | \r\n. When this flag is false and a \r is found, parser
+	 *  should take \r as a delimiter. If the flag is true, parser should look if the next char is \n and 
+	 *  if so, take \r\n as delimiter. 
+	 * 
+	 * @return the tryToMatchLongerDelimiter
+	 */
+	public boolean isTryToMatchLongerDelimiter() {
+		return tryToMatchLongerDelimiter;
+	}
+
+	/** Sets the flag indicating, whether the parser should try to find longer delimiter when a match is found. This
+	 *  applies for e.g. delimiter set \r | \r\n. When this flag is false and a \r is found, parser
+	 *  should take \r as a delimiter. If the flag is true, parser should look if the next char is \n and 
+	 *  if so, take \r\n as delimiter. 
+	 * 
+	 * @param tryToMatchLongerDelimiter the tryToMatchLongerDelimiter to set
+	 */
+	public void setTryToMatchLongerDelimiter(boolean tryToMatchLongerDelimiter) {
+		this.tryToMatchLongerDelimiter = tryToMatchLongerDelimiter;
+	}
 
 	@Override
 	public String toString() {
-		return "ParserConfiguration [charset=" + charset + ", verbose=" + verbose + ", metadata=" + metadata + ", treatMultipleDelimitersAsOne=" + treatMultipleDelimitersAsOne + ", quotedStrings=" + quotedStrings + ", skipLeadingBlanks=" + skipLeadingBlanks + ", skipTrailingBlanks=" + skipTrailingBlanks + ", trim=" + trim + "]";
+		return "ParserConfiguration [charset=" + charset + ", verbose=" + verbose + ", metadata=" + metadata + ", treatMultipleDelimitersAsOne=" + treatMultipleDelimitersAsOne + ", quotedStrings=" + quotedStrings + ", skipLeadingBlanks=" + skipLeadingBlanks + ", skipTrailingBlanks=" + skipTrailingBlanks + ", trim=" + trim + ", tryToMatchLongerDelimiter=" + tryToMatchLongerDelimiter + "]";
 	}
 
 	public TextParserConfiguration(TextParserConfiguration cfg) {

@@ -21,6 +21,7 @@ package org.jetel.data.tree.json.formatter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
 
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
@@ -28,6 +29,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.jetel.data.DataField;
+import org.jetel.data.DecimalDataField;
 import org.jetel.data.ListDataField;
 import org.jetel.data.tree.formatter.CollectionWriter;
 import org.jetel.data.tree.formatter.TreeWriter;
@@ -41,13 +43,18 @@ import org.jetel.exception.JetelRuntimeException;
  */
 public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 
-	private JsonGenerator jsonGenerator;
-	private StateStack stateStack = new StateStack();
+	private static enum NodeType {
+		LIST, OBJECT, PROPERTY
+	}
 
-	/**
-	 * @param outStream
-	 * @param encoding
-	 */
+	private JsonGenerator jsonGenerator;
+
+	private String[] nameStack = new String[11];
+	private NodeType[] typeStack = new NodeType[11];
+	private int depth;
+	private int writtenDepth;
+	private NodeType requestedObjectType;
+
 	public JsonWriterAdapter(OutputStream outStream, String encoding, boolean omitNewLines) {
 		JsonFactory jsonFactory = new JsonFactory();
 		try {
@@ -71,39 +78,75 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 		throw new UnsupportedCharsetException(encoding);
 	}
 
+	public void push(NodeType objectType, boolean enforceType, char[] name) {
+		if (depth == nameStack.length) {
+			int newLength = nameStack.length * 2 + 1;
+
+			nameStack = Arrays.copyOf(nameStack, newLength);
+			typeStack = Arrays.copyOf(typeStack, newLength);
+		}
+
+		if (depth > 0 && typeStack[depth - 1] == NodeType.PROPERTY) {
+			typeStack[depth - 1] = requestedObjectType;
+		}
+		if (enforceType) {
+			typeStack[depth] = objectType;
+		} else {
+			typeStack[depth] = NodeType.PROPERTY;
+		}
+
+		this.requestedObjectType = objectType;
+		if (name != null) {
+			nameStack[depth] = new String(name);
+		}
+
+		depth++;
+	}
+
+	public void pop() {
+		depth--;
+		if (writtenDepth > depth) {
+			writtenDepth = depth;
+		}
+	}
+
 	@Override
 	public void writeStartTree() throws JetelException {
 		// Do nothing
 	}
-	
+
 	private boolean inAnnonymousContext() {
 		return jsonGenerator.getOutputContext().inRoot() || jsonGenerator.getOutputContext().inArray();
 	}
 
 	@Override
 	public void writeStartNode(char[] name) throws JetelException {
-		try {
-			boolean writeFieldName = !inAnnonymousContext();
-			if (!stateStack.isObject()) {
+		push(NodeType.OBJECT, false, name);
+	}
+
+	private void performDeferredWrite() throws JsonGenerationException, IOException {
+		for (int i = writtenDepth; i < depth; i++) {
+			if (!inAnnonymousContext()) {
+				jsonGenerator.writeFieldName(nameStack[i]);
+			}
+
+			switch (typeStack[i]) {
+			case LIST:
+				jsonGenerator.writeStartArray();
+				break;
+			case OBJECT:
 				jsonGenerator.writeStartObject();
+			default:
+				break;
 			}
-			if (writeFieldName) {
-				jsonGenerator.writeFieldName(new String(name));
-				stateStack.push(false);
-			} else {
-				stateStack.push(true);
-			}
-		} catch (JsonGenerationException e) {
-			throw new JetelException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new JetelException(e.getMessage(), e);
 		}
+		writtenDepth = depth;
 	}
 
 	@Override
 	public void writeLeaf(Object value) throws JetelException {
 		try {
-			stateStack.setHasValue();
+			performDeferredWrite();
 			writeObjectInternal(value);
 		} catch (JsonGenerationException e) {
 			throw new JetelException(e.getMessage(), e);
@@ -115,13 +158,12 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 	@Override
 	public void writeEndNode(char[] name) throws JetelException {
 		try {
-			if (stateStack.isObject()) { 
-				jsonGenerator.writeEndObject();
-			} else if (!stateStack.hasValue()) {
-				jsonGenerator.writeStartObject();
+			performDeferredWrite();
+			pop();
+
+			if (typeStack[depth] == NodeType.OBJECT) {
 				jsonGenerator.writeEndObject();
 			}
-			stateStack.pop();
 		} catch (JsonGenerationException e) {
 			throw new JetelException(e.getMessage(), e);
 		} catch (IOException e) {
@@ -131,53 +173,56 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 
 	@Override
 	public void writeStartCollection(char[] collectionName) throws JetelException {
-		try {
-			if (!inAnnonymousContext()) {
-				jsonGenerator.writeFieldName(new String(collectionName));
-			}
-			jsonGenerator.writeStartArray();
-			
-			stateStack.push(false);
-		} catch (JsonGenerationException e) {
-			throw new JetelException(e.getMessage(), e);
-		} catch (IOException e) {
-			throw new JetelException(e.getMessage(), e);
-		}
+		push(NodeType.LIST, true, collectionName);
 	}
 
 	@Override
 	public void writeEndCollection(char[] collectionName) throws JetelException {
 		try {
+			performDeferredWrite();
 			jsonGenerator.writeEndArray();
-			stateStack.pop();
 		} catch (JsonGenerationException e) {
 			throw new JetelException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new JetelException(e.getMessage(), e);
 		}
+
+		pop();
 	}
 
 	private void writeObjectInternal(Object content) throws JsonProcessingException, IOException {
 		if (content instanceof ListDataField) {
 			ListDataField list = (ListDataField) content;
 			for (DataField dataField : list) {
-				jsonGenerator.writeObject(getDataFieldValue(dataField));
+				writeDataFieldValue(dataField);
 			}
 		} else if (content instanceof DataField) {
-			jsonGenerator.writeObject(getDataFieldValue((DataField)content));
+			writeDataFieldValue((DataField) content);
 		} else if (content instanceof String) {
-			jsonGenerator.writeObject((String) content);
+			jsonGenerator.writeString((String) content);
 		} else {
 			throw new IllegalArgumentException("Unknown type of property content");
 		}
 	}
-	
-	private Object getDataFieldValue(DataField field) {
-		switch (field.getMetadata().getDataType()) {
-		case STRING:
-			return field.toString();
-		default:
-			return field.getValue();
+
+	private void writeDataFieldValue(DataField field) throws JsonGenerationException, IOException {
+		if (field.isNull()) {
+			jsonGenerator.writeNull();
+		} else {
+			switch (field.getMetadata().getDataType()) {
+			case BYTE:
+			case CBYTE:
+			case DATE:
+			case STRING:
+				jsonGenerator.writeString(field.toString());
+				break;
+			case DECIMAL:
+				jsonGenerator.writeNumber(((DecimalDataField) field).getValue().getBigDecimalOutput());
+				break;
+			default:
+				jsonGenerator.writeObject(field.getValue());
+				break;
+			}
 		}
 	}
 
@@ -192,44 +237,6 @@ public class JsonWriterAdapter implements TreeWriter, CollectionWriter {
 	@Override
 	public void writeEndTree() throws JetelException {
 		// Do nothing
-	}
-
-	private static class StateStack {
-		private boolean[] isObject = new boolean[11];
-		private boolean[] hasValue = new boolean[11];
-		private int depth;
-
-		public void push(boolean state) {
-			if (depth == hasValue.length) {
-				boolean[] newHasChild = new boolean[hasValue.length * 2 + 1];
-				System.arraycopy(hasValue, 0, newHasChild, 0, depth);
-				hasValue = newHasChild;
-
-				boolean[] newShouldIndent = new boolean[hasValue.length];
-				System.arraycopy(isObject, 0, newShouldIndent, 0, depth);
-				isObject = newShouldIndent;
-
-			}
-			hasValue[depth] = true;
-			depth++;
-			isObject[depth] = state;
-		}
-
-		public void pop() {
-			depth--;
-		}
-
-		public boolean hasValue() {
-			return hasValue[depth];
-		}
-
-		public void setHasValue() {
-			hasValue[depth] = true;
-		}
-
-		public boolean isObject() {
-			return isObject[depth];
-		}
 	}
 
 }

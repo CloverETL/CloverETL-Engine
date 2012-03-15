@@ -938,7 +938,12 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 			return TLType.forRecord(meta);
 		case TransformLangParserConstants.MAP_VAR:
-			return TLType.createMap((TLTypePrimitive) createType((CLVFType) typeNode.jjtGetChild(0)),
+			TLType keyType = createType((CLVFType) typeNode.jjtGetChild(0));
+			if (!keyType.isPrimitive()) {
+				error(typeNode, "Map key must be a boolean, date, decimal, integer, long, number or string");
+				return TLType.ERROR;
+			}
+			return TLType.createMap(keyType,
 					createType((CLVFType) typeNode.jjtGetChild(1)));
 		case TransformLangParserConstants.LIST_VAR:
 			return TLType.createList(createType((CLVFType)typeNode.jjtGetChild(0)));

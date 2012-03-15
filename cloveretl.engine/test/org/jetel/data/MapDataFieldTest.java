@@ -1626,7 +1626,8 @@ public class MapDataFieldTest extends CloverTestCase {
 		assertFalse(mapDataField2.equals(mapDataField1));
 
 		mapDataField2.putField(null);
-		assertFalse(mapDataField1.equals(mapDataField2));
+		assertTrue(mapDataField1.equals(mapDataField2));
+		assertTrue(mapDataField2.equals(mapDataField1));
 		
 		mapDataField1.putField(null).setValue("");
 		assertFalse(mapDataField1.equals(mapDataField2));
@@ -1660,4 +1661,26 @@ public class MapDataFieldTest extends CloverTestCase {
 		try { mapDataField1.compareTo(mapDataField2); assertTrue(false); } catch (UnsupportedOperationException e) { /*OK*/ }
 	}
 
+	public void testByteDataFieldToString() {
+		MapDataField mapDataField = new MapDataField(createMapMetadata(DataFieldType.BYTE));
+		
+		mapDataField.setNull(true);
+		assertEquals("", mapDataField.toString());
+		
+		mapDataField.setNull(false);
+		assertEquals("{}", mapDataField.toString());
+		
+		mapDataField.putField("key");
+		assertEquals("{key=}", mapDataField.toString());
+
+		mapDataField.putField("");
+		assertEquals("{key=, =}", mapDataField.toString());
+
+		mapDataField.putField("key1").setValue(new byte[] {'a', 'b', 'c'});
+		assertEquals("{key=, =, key1=abc}", mapDataField.toString());
+		
+		mapDataField.putField(null).setValue(new byte[] {'e', 'f', 'g'});
+		assertEquals("{key=, =, key1=abc, null=efg}", mapDataField.toString());
+	}
+	
 }

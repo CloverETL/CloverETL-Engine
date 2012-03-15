@@ -54,8 +54,7 @@ public class EngineInitializer {
 
 	private static boolean alreadyInitialized = false;
 	
-	private static String licensesLocations = null;
-	
+	private static String licensesLocations = null;	
     /**
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsRootDirectory directory path, where plugins specification is located 
@@ -102,6 +101,24 @@ public class EngineInitializer {
     	for (URL pluginUrl : pluginsUrls) {
     		pluginLocations.add(new PluginLocation(pluginUrl));
     	}
+        Plugins.init(pluginLocations.toArray(new PluginLocation[pluginLocations.size()]));
+    }
+    
+    public static synchronized void initEngine(URL[] pluginsUrls, URL defaultPropertiesFile, String logHost) {
+        if (alreadyInitialized) {
+            //clover engine is already initialized
+            return;
+        }
+        alreadyInitialized = true;
+        
+        //shared part of initialiation
+        internalInit(defaultPropertiesFile, logHost);
+
+        //init clover plugins system
+        List<PluginLocation> pluginLocations = new ArrayList<PluginLocation>();
+        for (URL pluginUrl : pluginsUrls) {
+            pluginLocations.add(new PluginLocation(pluginUrl));
+        }
         Plugins.init(pluginLocations.toArray(new PluginLocation[pluginLocations.size()]));
     }
 
@@ -155,6 +172,17 @@ public class EngineInitializer {
     private static void internalInit(String defaultPropertiesFile, String logHost) {
     	//init logging
     	initLogging(logHost);
+
+        // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
+        runGraph.printRuntimeHeader();
+
+        //init framework constants
+        Defaults.init(defaultPropertiesFile);
+    }
+    
+    private static void internalInit(URL defaultPropertiesFile, String logHost) {
+        //init logging
+        initLogging(logHost);
 
         // print out the basic environment information to log4j interface - has to be after log4j initialization - issue #1911
         runGraph.printRuntimeHeader();

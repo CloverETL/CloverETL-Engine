@@ -314,6 +314,9 @@ public class ByteDataField extends DataField implements Comparable<Object> {
         if (isNull()) {
 			return metadata.getNullValue();
         }
+        if (value == null) {
+        	return "";
+        }
         try{
             return new String(getByteArray(),charset);
         }catch(UnsupportedEncodingException ex){
