@@ -120,6 +120,7 @@ public class runGraph {
 	public final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	public final static String INFO_SWITCH = "-info";
     public final static String PLUGINS_SWITCH = "-plugins";
+    public final static String LICENSES_SWITCH = "-licenses";
     public final static String PASSWORD_SWITCH = "-pass";
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
     public final static String LOG_HOST_SWITCH = "-loghost";
@@ -143,6 +144,7 @@ public class runGraph {
 	public static void main(String args[]) {
         boolean loadFromSTDIN = false;
         String pluginsRootDirectory = null;
+        String licenseLocations = null;
         String logHost = null;
         String graphFileName = null;
         String configFileName = null;
@@ -218,6 +220,9 @@ public class runGraph {
             } else if (args[i].startsWith(PLUGINS_SWITCH)) {
                 i++;
                 pluginsRootDirectory = args[i];
+            } else if (args[i].startsWith(LICENSES_SWITCH)) {
+                i++;
+                licenseLocations = args[i];
             } else if (args[i].startsWith(PASSWORD_SWITCH)) {
                 i++;
                 password = args[i];
@@ -280,6 +285,7 @@ public class runGraph {
         if (logLevel != null)
         	Logger.getRootLogger().setLevel(logLevel);
 
+        EngineInitializer.initLicenses(licenseLocations);
         // engine initialization - should be called only once
         EngineInitializer.initEngine(pluginsRootDirectory, configFileName, logHost);
         

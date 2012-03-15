@@ -76,6 +76,9 @@ public class Plugins {
     }
     
     public static void init(String directory) {
+    	if (directory == null) {
+    		init((PluginRepositoryLocation[]) null);
+    	}
         String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         List<PluginRepositoryLocation> repositoryLocations = new ArrayList<PluginRepositoryLocation>();
         for (String dir : dirs) {
