@@ -19,8 +19,11 @@
 
 package org.jetel.exception;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -49,8 +52,21 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/DL_null_def_rec.xml"));
-		System.out.println("### " + (new File(".").getAbsolutePath()));
-		System.out.println("### " + (new File("data/in/good/DL28_NL.txt").getAbsolutePath()));
+		
+		File testFile = new File("data/in/good/DL28_NL.txt");
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(testFile)));
+		System.out.println("### CONTENT OF THE FILE " + testFile.getAbsolutePath());
+		String line = null;
+		try {
+			while ((line = br.readLine()) != null) {
+				System.out.println(line);
+			}
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		in = new FileInputStream("data/in/good/DL28_NL.txt");
 		in2 = new FileInputStream("data/in/bad/DL_NL_nulls.txt");
 		
