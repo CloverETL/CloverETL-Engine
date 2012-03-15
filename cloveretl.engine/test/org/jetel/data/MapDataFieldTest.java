@@ -1626,7 +1626,8 @@ public class MapDataFieldTest extends CloverTestCase {
 		assertFalse(mapDataField2.equals(mapDataField1));
 
 		mapDataField2.putField(null);
-		assertFalse(mapDataField1.equals(mapDataField2));
+		assertTrue(mapDataField1.equals(mapDataField2));
+		assertTrue(mapDataField2.equals(mapDataField1));
 		
 		mapDataField1.putField(null).setValue("");
 		assertFalse(mapDataField1.equals(mapDataField2));

@@ -41,7 +41,7 @@ import org.jetel.util.primitive.IdentityArrayList;
 
 /**
  * This data field implementation represents a list of fields, which are uniformly typed by a simple type
- * (string, integer, decimal, ...). Lists of lists are not supported. Metadata for this data container
+ * (string, integer, decimal, ...). Lists of lists (or maps) are not supported. Metadata for this data container
  * are same as for other data fields, only {@link DataFieldMetadata#getCardinalityType()} method returns
  * {@link DataFieldCardinalityType#LIST}.
  * 
@@ -63,7 +63,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	//to the end of the list and size is decremented
 	private int size;
 	
-	//this common attribute of all datafield is actually ingored by list data field
+	//this common attribute of all datafield is actually ignored by list data field
 	//and transparently delegated to the nested fields
 	private boolean plain;
 	
@@ -477,9 +477,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
             for (int i = 0; i < size; i++) {
             	final DataField subfield = fields.get(i);
             	final DataField otherSubfield = otherListDataField.getField(i);
-                if (!subfield.equals(otherSubfield)) {
-                    return false;
-                }
+            	if (!(subfield.isNull() && otherSubfield.isNull())) {
+	                if (!subfield.equals(otherSubfield)) {
+	                    return false;
+	                }
+            	}
             }
             return true;
         } else {
@@ -488,13 +490,13 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
-	public int compareTo(Object otherField) {
+	public int compareTo(Object otherObject) {
 		if (isNull) return -1;
-		if (otherField == null) return 1;
-	    if (this == otherField) return 0;
+		if (otherObject == null) return 1;
+	    if (this == otherObject) return 0;
 	    
-	    if (otherField instanceof ListDataField) {
-        	ListDataField otherListDataField = (ListDataField) otherField; 
+	    if (otherObject instanceof ListDataField) {
+        	ListDataField otherListDataField = (ListDataField) otherObject; 
 	    	
             if (!TLUtils.equals(metadata, otherListDataField.getMetadata())) {
                 throw new RuntimeException("Can't compare - data field lists have different metadata objects assigned!");
@@ -510,10 +512,14 @@ public class ListDataField extends DataField implements Iterable<DataField> {
             int cmp;
             // check field by field that they are the same
             for (int i = 0; i < compareLength; i++) {
-                cmp = fields.get(i).compareTo(otherListDataField.getField(i));
-                if (cmp != 0) {
-                    return cmp;
-                }
+            	final DataField field = fields.get(i);
+            	final DataField otherField = otherListDataField.getField(i);
+            	if (!(field.isNull() && otherField.isNull())) {
+                    cmp = fields.get(i).compareTo(otherListDataField.getField(i));
+                    if (cmp != 0) {
+                        return cmp;
+                    }
+            	}
             }
             if (size == otherListDataFieldSize) {
             	return 0;
@@ -523,7 +529,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
             	return -1;
             }
         } else {
-            throw new ClassCastException("Can't compare ListDataField with " + otherField.getClass().getName());
+            throw new ClassCastException("Can't compare ListDataField with " + otherObject.getClass().getName());
         }
 	}
 
