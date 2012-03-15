@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation Devel" modified="Mon May 02 11:43:03 CEST 2011" modifiedBy="avackova" name="graphDBExecuteSybase" revision="1.30" showComponentDetails="true">
+<Graph author="avackova" created="Tue Jan 06 10:30:07 CET 2009" guiVersion="0.0.0.devel" id="1231234967225" licenseType="Evaluation Devel" modified="Wed Feb 22 15:57:36 CET 2012" modifiedBy="Tom" name="graphDBExecuteSybase" revision="1.41" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/date.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -20,16 +20,39 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" errorActions="CONTINUE" guiHeight="64" guiName="Procedure creation" guiWidth="166" guiX="36" guiY="31" id="DB_EXECUTE1" sqlQuery="create table proc_table (&#10;&#9;id INTEGER,&#10;&#9;string VARCHAR(80),&#10;&#9;date DATETIME&#10;);&#10;drop procedure SPDownload;&#10;CREATE PROCEDURE SPDownload(@last_dl_ts DATETIME)&#10;AS&#10;BEGIN&#10;     SELECT id, string, date&#10;       FROM proc_table&#10;          WHERE date &lt;= @last_dl_ts&#10;END;" type="DB_EXECUTE"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="64" guiName="Error info" guiWidth="128" guiX="225" guiY="27" id="TRASH0" type="TRASH"/>
-<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiHeight="93" guiName="Table creation" guiWidth="128" guiX="33" guiY="20" id="TABLE_CREATION" sqlQuery="drop table proc_table;&#13;&#10;create table proc_table (&#13;&#10;&#9;id INTEGER,&#13;&#10;&#9;string VARCHAR(80),&#13;&#10;&#9;date DATETIME&#13;&#10;);" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Database table is dropped. If it does not exist, an error message is sent through the optional seconed output port.
+Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiHeight="93" guiName="Error info" guiWidth="128" guiX="222" guiY="20" id="TRASH0" type="TRASH">
+<attr name="guiDescription"><![CDATA[Writes output to Console.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="TABLE_CREATION:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="98" guiName="Dates" guiWidth="128" guiX="36" guiY="111" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/proc_table.txt" guiHeight="93" guiName="Table data" guiWidth="128" guiX="33" guiY="137" id="TABLE_DATA" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read data from a flat file.]]></attr>
+</Node>
+<Node dbConnection="Connection0" dbTable="proc_table" enabled="enabled" fieldMap="$id:=id;$string:=string;$date:=date;" guiHeight="93" guiName="Table filling" guiWidth="128" guiX="222" guiY="137" id="TABLE_FILLING" type="DB_OUTPUT_TABLE">
+<attr name="guiDescription"><![CDATA[Database table is filled. Used the DB table and Field mapping attributes.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="TABLE_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="TABLE_FILLING:0"/>
+</Phase>
+<Phase number="2">
+<Node dbConnection="Connection0" enabled="enabled" errorActions="CONTINUE" guiHeight="93" guiName="Procedure creation" guiWidth="137" guiX="28" guiY="253" id="DB_EXECUTE1" sqlQuery="drop procedure SPDownload;&#13;&#10;CREATE PROCEDURE SPDownload(@last_dl_ts DATETIME)&#13;&#10;AS&#13;&#10;BEGIN&#13;&#10;     SELECT id, string, date&#13;&#10;       FROM proc_table&#13;&#10;          WHERE date &lt;= @last_dl_ts&#13;&#10;END;" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Procedure is dropped (if it exists) and created. If the procedure still does not exist (during the first graph run), an error code with the error message is sent to the optional output port. Error actions attribute is set to MIN_INT=CONTINUE. That ensures that graph may continue even when an error occurs.]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiHeight="93" guiName="Error info" guiWidth="128" guiX="222" guiY="253" id="TRASH1" type="TRASH">
+<attr name="guiDescription"><![CDATA[Writes output to Console.]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="true" fromNode="DB_EXECUTE1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (error output)" toNode="TRASH1:0"/>
+</Phase>
+<Phase number="3">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/dates.txt" guiHeight="93" guiName="Dates" guiWidth="128" guiX="33" guiY="363" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read procedure arguments from a flat file.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sybase.out" guiHeight="98" guiName="Procedure output" guiWidth="157" guiX="404" guiY="111" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="Procedure call" guiWidth="132" guiX="225" guiY="111" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" sqlQuery="{call SPDownload(?)}" type="DB_EXECUTE">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sybase.out" guiHeight="93" guiName="Procedure output" guiWidth="129" guiX="401" guiY="363" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node callStatement="true" dbConnection="Connection0" enabled="enabled" guiHeight="93" guiName="Procedure call" guiWidth="128" guiX="222" guiY="363" id="DB_EXECUTE2" inParameters="1:=$date" outputFields="id;string;date" sqlQuery="{call SPDownload(?)}" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Procedure is subsequently called for each input record.]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (input parameters)" metadata="Metadata1" outPort="Port 0 (output)" toNode="DB_EXECUTE2:0"/>
