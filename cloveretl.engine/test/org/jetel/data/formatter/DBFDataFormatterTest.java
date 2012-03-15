@@ -3,22 +3,16 @@
  */
 package org.jetel.data.formatter;
 
-import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.channels.FileChannel;
 import java.util.Calendar;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.database.dbf.DBFDataFormatter;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.file.FileUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 
 public class DBFDataFormatterTest extends CloverTestCase {
@@ -69,10 +63,4 @@ public class DBFDataFormatterTest extends CloverTestCase {
 		formatter.close();
 	}
 
-	
-	@Override
-	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-	protected void tearDown() throws Exception {
-		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = oldBufferSize;
-	}
 }
