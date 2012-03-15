@@ -190,13 +190,8 @@ public class DBFDataParser extends AbstractParser {
                 continue;
         	}
             limit += fieldSizes[fieldCounter];
-            try{
-            	charBuffer.limit(limit);
-            	charBuffer.position(position);
-            }catch(IllegalArgumentException ex){
-            	throw new JetelException(String.format("Error when reading field '%s' of record #%i - possible corrupted DBF data.",metadata.getField(fieldCounter).getName(),
-            			recordCounter+1), ex);
-            }
+            charBuffer.limit(limit);
+            charBuffer.position(position);
             populateField(record, fieldCounter, charBuffer);
             position = limit;
             fieldCounter++;
