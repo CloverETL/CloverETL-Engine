@@ -120,6 +120,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -1107,12 +1108,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		Object argument = stack.pop();
 
 		if (printLine) {
-			StringBuilder buf = new StringBuilder((argument != null ? argument.toString() : "<null>"));
+			StringBuilder buf = new StringBuilder((argument != null ? StringUtils.toOutputStringCTL(argument) : "<null>"));
 			buf.append(" (on line: ").append(node.getBegin().getLine());
 			buf.append(" col: ").append(node.getBegin().getColumn()).append(")");
 			System.err.println(buf);
 		} else {
-			System.err.println(argument != null ? argument : "<null>");
+			System.err.println(argument != null ? StringUtils.toOutputStringCTL(argument) : "<null>");
 		}
 		
 		return data;
@@ -1122,7 +1123,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFPrintStackNode node, Object data) {
 		final Object[] contents = stack.getStackContents();
 		for (int i = stack.length()-1; i >= 0; i--) {
-			System.err.println("[" + i + "] : " + contents[i]);
+			System.err.println("[" + i + "] : " + StringUtils.toOutputStringCTL(contents[i]));
 		}
 
 		return data;
