@@ -65,7 +65,14 @@ public class LicenseVerifier {
 		
 		try {
 			Class<?> c = Class.forName(CLASS_NAME);
+			
+//			if(!JarCertVerifier.checkJar(c)) {
+//				return false;
+//			}
+			
 			Method method = c.getDeclaredMethod(METHOD_NAME, new Class[] {String.class, int.class, int.class, String.class} );
+			
+			
 			
 			Object result = method.invoke(null, new Object[] {productId, major, minor, featureId});
 			
@@ -74,22 +81,18 @@ public class LicenseVerifier {
 			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			return false;
 		} catch (SecurityException e) {
 			e.printStackTrace();
-			return false;
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
-			return false;
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
-			return false;
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
-			return false;
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
-			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return false;
 	}
