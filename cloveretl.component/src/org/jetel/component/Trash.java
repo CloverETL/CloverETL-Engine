@@ -179,6 +179,7 @@ public class Trash extends Node {
 		}
 		
 		super.init();
+		
 		TransformationGraph graph = getGraph();
 
 		// creates necessary directories

@@ -54,6 +54,7 @@ public class EngineInitializer {
 
 	private static boolean alreadyInitialized = false;
 	
+	private static String licensesLocations = null;	
     /**
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsRootDirectory directory path, where plugins specification is located 
@@ -268,6 +269,25 @@ public class EngineInitializer {
         graph.init();
 	}
 
+	/**
+	 * Initializes location of licenses. If you want to use this method, it has to be called BEFORE initEngine call.
+	 * @param licenses Location(s) where licenses are stored.
+	 */
+	public static void initLicenses(String licenses) {
+		if(isInitialized()) {
+			throw new RuntimeException("Licenses have to be initialized before engine. Call initLicenses before initEngine.");
+		}
+		licensesLocations = licenses;
+	}
+	
+	public static String getLicensesLocation() {
+		if(licensesLocations == null) {
+			return Defaults.DEFAULT_LICENSE_LOCATION;
+		}
+		
+		return licensesLocations+";"+Defaults.DEFAULT_LICENSE_LOCATION;
+	}
+	
 	public static boolean isInitialized() {
 		return alreadyInitialized;
 	}
