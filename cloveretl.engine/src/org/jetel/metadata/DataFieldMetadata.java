@@ -1170,7 +1170,8 @@ public class DataFieldMetadata implements Serializable {
 
 	@Override
 	public String toString(){
-		return "Field["+this.type+"|"+this.number+"|"+this.name+"]";
+		return "Field [name:" + this.name + ", type:" + this.type.toString(getCardinalityType()) + ", position:" + this.number + 
+				(cardinalityType != DataFieldCardinalityType.SINGLE ? ", multivalue:" + cardinalityType.getDisplayName() : "") + "]";
 	}
 	
 	/**

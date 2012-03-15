@@ -376,7 +376,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		sb.append('[');
 		for (;;) {
 			DataField e = i.next();
-			sb.append(e.toString());
+			if (e.isNull()) {
+				sb.append("null");
+			} else {
+				sb.append(e.toString());
+			}
 			if (!i.hasNext()) {
 				return sb.append(']').toString();
 			}
@@ -386,27 +390,27 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from string.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from string. Only non-multivalue fields are supported.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override

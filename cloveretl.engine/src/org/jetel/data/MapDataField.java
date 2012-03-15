@@ -334,6 +334,11 @@ public class MapDataField extends DataField {
 			DataField value = e.getValue();
 			sb.append(key);
 			sb.append('=');
+			if (value.isNull()) {
+				sb.append("null");
+			} else {
+				sb.append(value.toString());
+			}
 			sb.append(value.toString());
 			if (!i.hasNext()) {
 				return sb.append('}').toString();
@@ -344,27 +349,27 @@ public class MapDataField extends DataField {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException("MapDataField cannot be deserialized from string.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from string. Only non-multivalue fields are supported.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("MapDataField cannot be deserialized from byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("MapDataField cannot be deserialized from clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("MapDataField cannot be serialized to byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("MapDataField cannot be serialized to clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
 	}
 	
 	@Override
@@ -452,7 +457,7 @@ public class MapDataField extends DataField {
 
 	@Override
 	public int compareTo(Object otherField) {
-        throw new UnsupportedOperationException("Can't compare map data fields.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be compared to each other. Map fields are not supported.");
 	}
 
 	/**

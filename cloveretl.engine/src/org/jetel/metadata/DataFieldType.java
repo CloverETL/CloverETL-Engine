@@ -230,6 +230,37 @@ public enum DataFieldType {
 		return name;
 	}
 	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	/**
+	 * Returns string form of this data field type in relation with a cardinality type.
+	 * For example integer data type with
+	 * <li>SINGLE cardinality returns 'integer'
+	 * <li>LIST cardinality returns 'integer[]'
+	 * <li>MAP cardinality returns 'map[string, integer]'
+	 * @param cardinalityType
+	 * @return
+	 */
+	public String toString(DataFieldCardinalityType cardinalityType) {
+		if (cardinalityType == null) {
+			return toString();
+		} else {
+			switch(cardinalityType) {
+			case SINGLE:
+				return toString();
+			case LIST:
+				return toString() + "[]";
+			case MAP:
+				return "map[string, " + toString() + "]";
+			default:
+				throw new IllegalArgumentException("unsupported multivalue type");
+			}
+		}
+	}
+	
 	/**
 	 * This class is type of internal representation of respective data field.
 	 * For example type {@link #STRING} corresponds with {@link StringDataField}
