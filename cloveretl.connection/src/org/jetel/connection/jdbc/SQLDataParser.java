@@ -85,6 +85,8 @@ public class SQLDataParser extends AbstractParser {
 	private SQLIncremental incremental;
 	private SQLCloverStatement sqlCloverStatement;
 	
+	private boolean autoCommit = true;
+	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
 
 	/**
@@ -346,7 +348,7 @@ public class SQLDataParser extends AbstractParser {
 			}
 			// try to commit (as some DBs apparently need commit even when data is read only
 			Connection conn = dbConnection.getSqlConnection();
-			if (!conn.isClosed() && !conn.getAutoCommit()) {
+			if (!conn.isClosed() && !conn.getAutoCommit() && autoCommit) {
 				conn.commit();
 			}            
 			// close statement
@@ -480,4 +482,11 @@ public class SQLDataParser extends AbstractParser {
 		return false;
 	}
 
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
+	}
 }
