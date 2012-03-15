@@ -23,8 +23,10 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
@@ -854,11 +856,72 @@ public class ConvertLib extends TLFunctionLibrary {
 			stack.push(str2bool(context, stack.popString()));
 		}
 	}
-
 	
+	private static String toStringInternalBytes(byte[] bytes) {
+		return byte2str(null, bytes, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+	}
+
+	private static final <E> String toStringInternalList(List<E> list) {
+        Iterator<E> i = list.iterator();
+		if (! i.hasNext())
+		    return "[]";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		for (;;) {
+		    E e = i.next();
+		    if (e instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) e));
+		    } else {
+		    	sb.append(e == list ? "(this Collection)" : e);
+		    }
+		    if (! i.hasNext()) {
+		    	return sb.append(']').toString();
+		    }
+		    sb.append(", ");
+		}
+	}
+	
+	private static final <K, V> String toStringInternalMap(Map<K, V> map) {
+		Iterator<Entry<K,V>> i = map.entrySet().iterator();
+		if (! i.hasNext())
+		    return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+		    Entry<K,V> e = i.next();
+		    K key = e.getKey();
+		    V value = e.getValue();
+		    if (key instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) key));
+		    } else {
+			    sb.append(key   == map ? "(this Map)" : key);
+		    }
+		    sb.append('=');
+		    if (value instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) value));
+		    } else {
+			    sb.append(value == map ? "(this Map)" : value);
+		    }
+		    if (! i.hasNext())
+			return sb.append('}').toString();
+		    sb.append(", ");
+		}
+	}
+
 	// this method is not annotated as it should not be directly visible in CTL
 	private static final String toStringInternal(Object o) {
-		return o != null ? o.toString() : "null";
+		if (o == null) {
+			return "null";
+		}
+		if (o instanceof List) {
+			return toStringInternalList((List<?>) o);
+		}
+		if (o instanceof Map) {
+			return toStringInternalMap((Map<?, ?>) o);
+		}
+		return o.toString();
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")

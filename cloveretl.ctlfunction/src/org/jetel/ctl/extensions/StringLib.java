@@ -882,7 +882,7 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll("");
 	}
 
-	@TLFunctionAnnotation("Removes pattern from input string")
+	@TLFunctionAnnotation("Removes regexp pattern from input string")
 	public static final String chop(TLFunctionCallContext context, String input, String pattern) {
 		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern);
 		final Matcher m = p.matcher(input);
