@@ -21,9 +21,9 @@ function integer transform() {
 	mapToString[3] = "me";
 	mapToString[4] = "crazy :-)";
 	
-	map[byte, byte] byteByteMap;
-	byteByteMap[str2byte("key1", "utf-8")] = str2byte("value1", "utf-8");
-	byteByteMap[str2byte("key2", "utf-8")] = str2byte("value2", "utf-8");
+	map[integer, byte] byteByteMap;
+	byteByteMap[1] = str2byte("value1", "utf-8");
+	byteByteMap[2] = str2byte("value2", "utf-8");
 	
 	map[string, byte] stringByteMap;
 	stringByteMap["key1"] = str2byte("value1", "utf-8");

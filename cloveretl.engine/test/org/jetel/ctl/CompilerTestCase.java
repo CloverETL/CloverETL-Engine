@@ -3521,8 +3521,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("listString", "[not ALI A, not ALI B, not ALI D..., but, ALI H!]");
 		check("mapString", "{1=Testing, 2=makes, 3=me, 4=crazy :-)}");
 		String byteMapString = getVariable("byteMapString").toString();
-		assertTrue(byteMapString.contains("key1=value1"));
-		assertTrue(byteMapString.contains("key2=value2"));
+		assertTrue(byteMapString.contains("1=value1"));
+		assertTrue(byteMapString.contains("2=value2"));
 		String fieldByteMapString = getVariable("fieldByteMapString").toString();
 		assertTrue(fieldByteMapString.contains("key1=value1"));
 		assertTrue(fieldByteMapString.contains("key2=value2"));
