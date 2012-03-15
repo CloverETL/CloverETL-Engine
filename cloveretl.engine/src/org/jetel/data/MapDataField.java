@@ -137,7 +137,7 @@ public class MapDataField extends DataField {
 	
 	/**
 	 * Remove a field on the given index.
-	 * Removed field is stored in a cache and can be used later by this {@link ListDataField} for {@link #addField()}
+	 * Removed field is stored in a cache and can be used later by this {@link MapDataField} for {@link #addField()}
 	 * operation, so the return value is still under control of this list.
 	 * @param index index of a field, which is requested to be removed 
 	 * @return removed field
@@ -244,12 +244,12 @@ public class MapDataField extends DataField {
 	/**
 	 * This method returns list of values represented by the list of fields.
 	 * The resulted list is a thin view to the real underlying values.
-	 * All operations above the returned list are transparently applied 
-	 * to this ListDataField.
-	 * For example if a {@link List#add(Object)} is invoked, new data field
+	 * All operations above the returned map are transparently applied 
+	 * to this MapDataField.
+	 * For example if a {@link Map#put(String, Object)} is invoked, new data field
 	 * is created and the given value is passed to the new data field.
 	 * Be careful, actually shallow copy of data is returned and all changes
-	 * on the returned list are applied to this {@link ListDataField}.
+	 * on the returned map are applied to this {@link MapDataField}.
 	 * @see #getValueDuplicate()
 	 */
 	@Override
@@ -338,27 +338,27 @@ public class MapDataField extends DataField {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from string.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from string.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from byte buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from byte buffer.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from clover buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be deserialized from clover buffer.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to byte buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be serialized to byte buffer.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to clover buffer.");
+		throw new UnsupportedOperationException("MapDataField cannot be serialized to clover buffer.");
 	}
 	
 	@Override
@@ -449,7 +449,6 @@ public class MapDataField extends DataField {
 
 	/**
 	 * 
-	 * NOTE: does not count with backedListDataField.isNull == true, in that case empty list is considered
 	 * @author Kokon (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
