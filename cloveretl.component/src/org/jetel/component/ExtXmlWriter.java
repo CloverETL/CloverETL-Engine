@@ -20,11 +20,11 @@ package org.jetel.component;
 
 import java.util.Map;
 
-import org.jetel.data.tree.formatter.BaseTreeFormatterProvider;
-import org.jetel.data.tree.formatter.runtimemodel.WritableMapping;
-import org.jetel.data.tree.xml.formatter.XmlFormatterProvider;
-import org.jetel.data.tree.xml.formatter.util.AbstractMappingValidator;
-import org.jetel.data.tree.xml.formatter.util.XmlMappingValidator;
+import org.jetel.component.tree.writer.BaseTreeFormatterProvider;
+import org.jetel.component.tree.writer.model.runtime.WritableMapping;
+import org.jetel.component.tree.writer.util.AbstractMappingValidator;
+import org.jetel.component.tree.writer.xml.XmlFormatterProvider;
+import org.jetel.component.tree.writer.xml.XmlMappingValidator;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
