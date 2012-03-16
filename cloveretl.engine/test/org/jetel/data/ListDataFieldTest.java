@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.IntegerDecimal;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -57,7 +57,7 @@ public class ListDataFieldTest extends CloverTestCase {
 	private DataFieldMetadata createListMetadata(DataFieldType type) {
 		DataFieldMetadata listDataFieldMetadata = new DataFieldMetadata("listDataField", ";");
 		listDataFieldMetadata.setDataType(type);
-		listDataFieldMetadata.setCardinalityType(DataFieldCardinalityType.LIST);
+		listDataFieldMetadata.setContainerType(DataFieldContainerType.LIST);
 		return listDataFieldMetadata;
 	}
 	

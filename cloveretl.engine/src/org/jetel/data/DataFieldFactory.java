@@ -18,7 +18,7 @@
  */
 package org.jetel.data;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 
@@ -53,8 +53,8 @@ public class DataFieldFactory {
 	 * @since                 May 2, 2002
 	 */
 	public final static DataField createDataField(DataFieldType fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
-		DataFieldCardinalityType cardinality = fieldMetadata.getCardinalityType();
-		switch (cardinality) {
+		DataFieldContainerType containerType = fieldMetadata.getContainerType();
+		switch (containerType) {
 		case SINGLE: 
 			try {
 				switch (fieldType) {
@@ -89,7 +89,7 @@ public class DataFieldFactory {
 		case MAP:
 			return new MapDataField(fieldMetadata, plain);
 		default:
-			throw new RuntimeException("Unsupported field cardinality: " + cardinality);
+			throw new RuntimeException("Unsupported field container type: " + containerType);
 		}
 	}
 	

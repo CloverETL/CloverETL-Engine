@@ -19,39 +19,39 @@
 package org.jetel.metadata;
 
 /**
- * Cardinality type of data field - SINGLE, LIST and MAP.
+ * Container type of data field - SINGLE, LIST and MAP.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 17 Jan 2012
  */
-public enum DataFieldCardinalityType {
+public enum DataFieldContainerType {
 
 	SINGLE("single"), LIST("list"), MAP("map");
 	
 	private final String displayName;
 	
-	private DataFieldCardinalityType(String displayName) {
+	private DataFieldContainerType(String displayName) {
 		this.displayName = displayName;
 	}
 	
 	/**
 	 * @param strType
-	 * @return cardinality type based on string without case sensitivity
+	 * @return container type based on string without case sensitivity
 	 */
-	public static DataFieldCardinalityType fromString(String strType) {
-		for (DataFieldCardinalityType type : values()) {
+	public static DataFieldContainerType fromString(String strType) {
+		for (DataFieldContainerType type : values()) {
 			if (type.name().equalsIgnoreCase(strType)) {
 				return type;
 			}
 		}
 		
-		throw new IllegalArgumentException("Uknown type of data field cardinality '" + strType + "'.");
+		throw new IllegalArgumentException("Uknown type of data field container '" + strType + "'.");
 	}
 
 	/**
-	 * @return the display name of the cardinality type
+	 * @return the display name of the container type
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -62,7 +62,7 @@ public enum DataFieldCardinalityType {
 	 * @return
 	 */
 	public static String[] getDisplayNames() {
-		DataFieldCardinalityType[] values = values();
+		DataFieldContainerType[] values = values();
 		String[] result = new String[values.length];
 		for (int i = 0; i < values.length; i++) {
 			result[i] = values[i].displayName;

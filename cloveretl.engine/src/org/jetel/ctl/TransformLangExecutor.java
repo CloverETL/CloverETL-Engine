@@ -115,7 +115,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -2215,8 +2215,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		DataFieldMetadata metadata = field.getMetadata();
 		
 		// a list or map cannot be copied, it must be wrapped to enable passing by reference
-		if ((metadata.getCardinalityType() == DataFieldCardinalityType.LIST)
-				|| (metadata.getCardinalityType() == DataFieldCardinalityType.MAP)) {
+		if ((metadata.getContainerType() == DataFieldContainerType.LIST)
+				|| (metadata.getContainerType() == DataFieldContainerType.MAP)) {
 			Object fieldValue = field.getValue();
 			return wrapMultivalueField(fieldValue, getClass(metadata.getDataType()));
 		}

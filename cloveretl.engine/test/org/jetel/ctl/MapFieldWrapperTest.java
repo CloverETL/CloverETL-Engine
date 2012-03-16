@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataFieldFactory;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -63,7 +63,7 @@ public class MapFieldWrapperTest extends CloverTestCase {
 		super.setUp();
 		initEngine();
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata("stringListField", DataFieldType.STRING, "|");
-		fieldMetadata.setCardinalityType(DataFieldCardinalityType.MAP);
+		fieldMetadata.setContainerType(DataFieldContainerType.MAP);
 		DataField stringMapField = DataFieldFactory.createDataField(fieldMetadata, true);
 		stringMapField.setValue(INITIAL_VALUE);
 		map = new MapFieldWrapper<String>(stringMapField.getValue());

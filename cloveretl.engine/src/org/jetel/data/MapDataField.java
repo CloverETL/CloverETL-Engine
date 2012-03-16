@@ -36,7 +36,7 @@ import java.util.Set;
 
 import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -45,8 +45,8 @@ import org.jetel.util.bytes.CloverBuffer;
 /**
  * This data field implementation represents a map of fields, which are uniformly typed by a simple type
  * (string, integer, decimal, ...). Type of key is {@link String}. Maps of maps (or lists) are not supported. Metadata for this data container
- * are same as for other data fields, only {@link DataFieldMetadata#getCardinalityType()} method returns
- * {@link DataFieldCardinalityType#MAP}.
+ * are same as for other data fields, only {@link DataFieldMetadata#getContainerType()} method returns
+ * {@link DataFieldContainerType#MAP}.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -80,11 +80,11 @@ public class MapDataField extends DataField {
 	
 	public MapDataField(DataFieldMetadata fieldMetadata, boolean plain) {
 		super(fieldMetadata);
-		if (fieldMetadata.getCardinalityType() != DataFieldCardinalityType.MAP) {
+		if (fieldMetadata.getContainerType() != DataFieldContainerType.MAP) {
 			throw new IllegalStateException("Unexpected operation, MapDataField can be created only for map fields.");
 		}
 		this.singleValueMetadata = fieldMetadata.duplicate();
-		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
+		singleValueMetadata.setContainerType(DataFieldContainerType.SINGLE);
 
 		fields = new LinkedHashMap<String, DataField>();
 		fieldsCache = new ArrayList<DataField>();
