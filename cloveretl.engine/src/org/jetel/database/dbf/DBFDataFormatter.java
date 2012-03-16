@@ -31,7 +31,7 @@ import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
-import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -44,7 +44,7 @@ import org.jetel.util.formatter.DateFormatterFactory;
  *
  * @created Feb 7, 2012
  */
-public class DBFDataFormatter implements Formatter {
+public class DBFDataFormatter extends AbstractFormatter {
 
 	private static final int CONTINGENCY = 32;
 	private FileChannel writer;

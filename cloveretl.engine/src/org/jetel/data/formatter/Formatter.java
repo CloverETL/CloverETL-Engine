@@ -90,10 +90,25 @@ public interface Formatter {
 
 	/**
 	 * This method writes all data (header, body, footer) which are to write, but doesn't close underlying streams.
-	 * 
+	 * TODO remove this method, {@link #flush()} is good enough, see CL-2196 
 	 * @throws IOException
 	 */
 	public void finish() throws IOException;
+	
+    /**
+     * Formatter should return true if preferred type of data target passed into {@link #setDataTarget(Object)}
+     * is {@link File}. It is intended just a hint for source provider, so other types of data targets 
+     * should be expected.
+     * @return true if {@link File} type of source is preferred
+     */
+    public boolean isFileSourcePreferred();
+
+    /**
+     * This method should be used to inform formatter about type of writing to data target.
+     * @param append <code>true</code> if append mode of writing is used; <code>false</code> otherwise
+     */
+    public void setAppend(boolean append);
+    
 }
 /*
  *  end class DataFormatter

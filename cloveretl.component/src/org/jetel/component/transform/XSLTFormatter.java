@@ -22,11 +22,11 @@ import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class XSLTFormatter implements Formatter {
+public class XSLTFormatter extends AbstractFormatter {
 	
 	private WritableByteChannel writableByteChannel;
 	

@@ -503,6 +503,7 @@ public class TargetFile {
     private void initOutput() throws IOException, ComponentNotReadyException {
     	if (formatter == null) formatter = formatterProvider.getNewFormatter();
     	formatter.init(metadata);
+    	formatter.setAppend(appendData);
     	setNextOutput();
     }
     
@@ -556,6 +557,16 @@ public class TargetFile {
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
+        	
+        	if (isFileSourcePreferred()) {
+        		//formatter request java.io.File as data target
+        		try {
+        			setDataTarget(FileUtils.getJavaFile(contextURL, fName));
+        			return;
+        		} catch (Exception e) {
+					//DO NOTHING - just try to open a stream based on the fName in the next step
+        		}
+        	}
             OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
         	byteChannel = Channels.newChannel(os);
         	
@@ -564,7 +575,6 @@ public class TargetFile {
         	} else {
            		setDataTarget(new Object[] {contextURL, fName, os});
         	}
-        	
         } else {
         	byteChannel = channels.next();
         	setDataTarget(byteChannel);
@@ -584,6 +594,13 @@ public class TargetFile {
     	}
     }
     
+    /**
+     * @return <code>true</code> if java.io.File source type is preferred instead of channel
+     */
+    private boolean isFileSourcePreferred() {
+    	return formatter.isFileSourcePreferred();
+    }
+
     /**
      * Sets logger.
      * 
