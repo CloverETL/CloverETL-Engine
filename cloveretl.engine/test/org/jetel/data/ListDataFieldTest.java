@@ -1371,13 +1371,13 @@ public class ListDataFieldTest extends CloverTestCase {
 		assertEquals("[null]", listDataField.toString());
 		
 		listDataField.addField().setValue(new byte[] {'a', 'b', 'c' });
-		assertEquals("[, abc]", listDataField.toString());
+		assertEquals("[null, abc]", listDataField.toString());
 
 		listDataField.addField().setNull(false);
-		assertEquals("[, abc, ]", listDataField.toString());
+		assertEquals("[null, abc, ]", listDataField.toString());
 
 		listDataField.addField().setValue(new byte[] {'e', 'f', 'g' });
-		assertEquals("[, abc, , efg]", listDataField.toString());
+		assertEquals("[null, abc, , efg]", listDataField.toString());
 	}
 	
 }
