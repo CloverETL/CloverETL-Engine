@@ -364,8 +364,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
-			    if (field.getContainerType() != null) {
-			    	fieldElement.setAttribute(CONTAINER_TYPE_ATTR, field.getContainerType().toString().toLowerCase());
+			    if (field.getContainerType() != null && field.getContainerType() != DataFieldContainerType.SINGLE) {
+			    	fieldElement.setAttribute(CONTAINER_TYPE_ATTR, field.getContainerType().toString());
 			    }
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
