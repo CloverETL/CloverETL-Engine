@@ -598,7 +598,7 @@ public class TargetFile {
      * @return <code>true</code> if java.io.File source type is preferred instead of channel
      */
     private boolean isFileSourcePreferred() {
-    	return formatter.isFileSourcePreferred();
+    	return formatter.isFileTargetPreferred();
     }
 
     /**

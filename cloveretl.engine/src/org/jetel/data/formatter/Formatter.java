@@ -101,7 +101,7 @@ public interface Formatter {
      * should be expected.
      * @return true if {@link File} type of source is preferred
      */
-    public boolean isFileSourcePreferred();
+    public boolean isFileTargetPreferred();
 
     /**
      * This method should be used to inform formatter about type of writing to data target.
