@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.saxon.om.XMLChar;
+
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
 import org.jetel.component.tree.writer.model.design.Comment;
@@ -45,7 +47,6 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
-import com.sun.org.apache.xml.internal.utils.XMLChar;
 
 /**
  * Visitor which validates xml mapping.
