@@ -1671,16 +1671,16 @@ public class MapDataFieldTest extends CloverTestCase {
 		assertEquals("{}", mapDataField.toString());
 		
 		mapDataField.putField("key");
-		assertEquals("{key=}", mapDataField.toString());
+		assertEquals("{key=null}", mapDataField.toString());
 
 		mapDataField.putField("");
-		assertEquals("{key=, =}", mapDataField.toString());
+		assertEquals("{key=null, =null}", mapDataField.toString());
 
 		mapDataField.putField("key1").setValue(new byte[] {'a', 'b', 'c'});
-		assertEquals("{key=, =, key1=abc}", mapDataField.toString());
+		assertEquals("{key=null, =null, key1=abc}", mapDataField.toString());
 		
 		mapDataField.putField(null).setValue(new byte[] {'e', 'f', 'g'});
-		assertEquals("{key=, =, key1=abc, null=efg}", mapDataField.toString());
+		assertEquals("{key=null, =null, key1=abc, null=efg}", mapDataField.toString());
 	}
 	
 }

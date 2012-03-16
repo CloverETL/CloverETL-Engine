@@ -339,7 +339,6 @@ public class MapDataField extends DataField {
 			} else {
 				sb.append(value.toString());
 			}
-			sb.append(value.toString());
 			if (!i.hasNext()) {
 				return sb.append('}').toString();
 			}

@@ -1368,7 +1368,7 @@ public class ListDataFieldTest extends CloverTestCase {
 		assertEquals("[]", listDataField.toString());
 			
 		listDataField.addField();
-		assertEquals("[]", listDataField.toString());
+		assertEquals("[null]", listDataField.toString());
 		
 		listDataField.addField().setValue(new byte[] {'a', 'b', 'c' });
 		assertEquals("[, abc]", listDataField.toString());

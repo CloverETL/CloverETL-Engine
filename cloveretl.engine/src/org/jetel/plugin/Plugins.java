@@ -298,7 +298,12 @@ public class Plugins {
      * @return
      */
     public static boolean isActive(String pluginId) {
-        return getPluginDescriptor(pluginId).isActive();
+        PluginDescriptor pluginDescriptor = getPluginDescriptor(pluginId);
+        if (pluginDescriptor != null) {
+        	return pluginDescriptor.isActive();
+        } else {
+        	throw new IllegalArgumentException("unknown pluginId '" + pluginId + "'");
+        }
     }
     
     /**
