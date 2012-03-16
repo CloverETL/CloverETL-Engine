@@ -26,11 +26,31 @@ import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.util.HttpURLConnection;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
+import com.googlecode.sardine.impl.SardineException;
 
 public class WebdavOutputStream extends OutputStream {
+	
+	private static Log logger = LogFactory.getLog(WebdavOutputStream.class);
+
+	/*
+	 * Path (with directories) to output file. It begins with http or https followed by domain name and path to file separated by slash.
+	 * This pattern is not for validation but for parsing directories.
+	 */
+	private static final Pattern SUBDIR_REGEXP = Pattern.compile("(http[s]?://[^/]+)/(.+)/([^/]+)$");
+	
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
@@ -109,6 +129,26 @@ public class WebdavOutputStream extends OutputStream {
 			return error;
 		}
 		
+		/*
+		 * Returns list of paths to each directory which is part of a path to a file.
+		 * 
+		 * E.g. for inputs (http://google.com, upload/ONE/TWO) returns [http://google.com/upload,
+		 * http://google.com/upload/ONE, http://google.com/upload/ONE/TWO]
+		 */
+		private List<String> getSubDirectoriesPaths(String domainName, String relativePathToFile) {
+			String[] dirs = relativePathToFile.split("/");
+			List<String> pathList = new LinkedList<String>();
+
+			for (int dirCount = 0; dirCount < dirs.length; ++dirCount) {
+				StringBuffer strBuf = new StringBuffer(domainName);
+				for (int i = 0; i <= dirCount; ++i) {
+					strBuf.append("/").append(dirs[i]);
+				}
+				pathList.add(strBuf.toString());
+			}
+			return pathList;
+		}
+		
 		@Override
 		public void run() {
 			try {
@@ -118,7 +158,32 @@ public class WebdavOutputStream extends OutputStream {
 				// It will avoid retry on non-repeatable request error.
 				// Digest authorization will be performed on this request and then the PUT
 				// method (where retry caused by authorization would fail) is already authorized.
-				sardine.exists(URL);
+				boolean targetFileExists = sardine.exists(URL);
+
+				if (!targetFileExists) {
+					//target file does not exists
+					Matcher matcher = SUBDIR_REGEXP.matcher(URL);
+					if (!matcher.matches()) {
+						logger.warn("url:" + URL + " for storing file on webdav doesn't match regexp:\"" + SUBDIR_REGEXP.pattern() + "\". Skipping creating directories");
+					} else {
+						// expecting valid url
+						String domain = matcher.group(1);
+						String relativePathToFile = matcher.group(2);
+
+						List<String> subDirectoriesPaths = getSubDirectoriesPaths(domain, relativePathToFile);
+						//check whether all directories exists (try to create missing directories)
+						for (String path : subDirectoriesPaths) {
+							if (!dirExists(path, username, password)) {
+								try {
+									sardine.createDirectory(path);
+									logger.info("webdav directory:" + path + " created.");
+								} catch (SardineException e) {
+									logger.warn("Failed to create firectory " + path);
+								}
+							}
+						}
+					}
+				}
 				
 				sardine.put(URL, is);
 			} catch (Throwable e) {
@@ -159,5 +224,30 @@ public class WebdavOutputStream extends OutputStream {
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
 		os.write(b, off, len);
+	}
+	
+	/**
+	 * Check whether remote directory exists with the help of GET method instead of HEAD used by Sardine.exists.
+	 * See http://code.google.com/p/sardine/issues/detail?id=48 for more information and motivation.
+	 * 
+	 * @param url
+	 *            Path to the directory.
+	 * @param user
+	 *            User name.
+	 * @param pass
+	 *            Password.
+	 * @return True if the directory exists.
+	 * @throws IOException
+	 */
+	private boolean dirExists(String url, String user, String pass) throws IOException {
+		
+		URL url2 = new URL(url);
+		HttpClient client = new HttpClient();
+		client.getState().setCredentials(new AuthScope(url2.getHost(), url2.getPort()), new UsernamePasswordCredentials(user, pass));
+		GetMethod get = new GetMethod(url);
+		get.setDoAuthentication(true);
+		int status = client.executeMethod(get);
+		get.releaseConnection();
+		return status == HttpURLConnection.HTTP_OK;
 	}
 }
