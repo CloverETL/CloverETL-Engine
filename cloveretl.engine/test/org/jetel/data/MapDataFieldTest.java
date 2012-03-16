@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.IntegerDecimal;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -59,7 +59,7 @@ public class MapDataFieldTest extends CloverTestCase {
 	private DataFieldMetadata createMapMetadata(DataFieldType type) {
 		DataFieldMetadata mapDataFieldMetadata = new DataFieldMetadata("mapDataField", ";");
 		mapDataFieldMetadata.setDataType(type);
-		mapDataFieldMetadata.setCardinalityType(DataFieldCardinalityType.MAP);
+		mapDataFieldMetadata.setContainerType(DataFieldContainerType.MAP);
 		return mapDataFieldMetadata;
 	}
 

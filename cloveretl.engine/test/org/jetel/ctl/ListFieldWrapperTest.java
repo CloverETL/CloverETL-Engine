@@ -26,7 +26,7 @@ import java.util.ListIterator;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataFieldFactory;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -46,7 +46,7 @@ public class ListFieldWrapperTest extends CloverTestCase {
 		super.setUp();
 		initEngine();
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata("stringListField", DataFieldType.STRING, "|");
-		fieldMetadata.setCardinalityType(DataFieldCardinalityType.LIST);
+		fieldMetadata.setContainerType(DataFieldContainerType.LIST);
 		DataField stringListField = DataFieldFactory.createDataField(fieldMetadata, true);
 		stringListField.setValue(Arrays.asList(INITIAL_VALUE));
 		list = new ListFieldWrapper<String>(stringListField.getValue());

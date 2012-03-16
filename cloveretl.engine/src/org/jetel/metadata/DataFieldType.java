@@ -236,19 +236,19 @@ public enum DataFieldType {
 	}
 	
 	/**
-	 * Returns string form of this data field type in relation with a cardinality type.
+	 * Returns string form of this data field type in relation with a container type.
 	 * For example integer data type with
-	 * <li>SINGLE cardinality returns 'integer'
-	 * <li>LIST cardinality returns 'integer[]'
-	 * <li>MAP cardinality returns 'map[string, integer]'
-	 * @param cardinalityType
+	 * <li>SINGLE container returns 'integer'
+	 * <li>LIST container returns 'integer[]'
+	 * <li>MAP container returns 'map[string, integer]'
+	 * @param containerType
 	 * @return
 	 */
-	public String toString(DataFieldCardinalityType cardinalityType) {
-		if (cardinalityType == null) {
+	public String toString(DataFieldContainerType containerType) {
+		if (containerType == null) {
 			return toString();
 		} else {
-			switch(cardinalityType) {
+			switch(containerType) {
 			case SINGLE:
 				return toString();
 			case LIST:
