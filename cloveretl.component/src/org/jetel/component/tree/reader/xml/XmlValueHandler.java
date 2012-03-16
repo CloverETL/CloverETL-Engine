@@ -43,7 +43,7 @@ public class XmlValueHandler implements ValueHandler {
 			throw new IllegalArgumentException("Unexpected type of value " + value);
 		}
 
-		switch (field.getMetadata().getCardinalityType()) {
+		switch (field.getMetadata().getContainerType()) {
 		case LIST:
 			ListDataField list = (ListDataField) field;
 			for (Object object : nodeList) {
