@@ -399,8 +399,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				autoFilling.setLastUsedAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
 
-				autoFilling.incGlobalCounter();
-				autoFilling.incSourceCounter();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
