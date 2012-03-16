@@ -267,7 +267,7 @@
 
 			<keepattribute name="InnerClasses" />
 			<keepattribute name="Exceptions" />
-			<keepattributes filter="*Annotation*" />
+			<keepattributes filter="*Annotation*,Signature" />
 			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
 			
 			<keep extends="java.io.Serializable">
@@ -384,6 +384,20 @@
 			<keep name="com.opensys.cloveretl.component.SpreadsheetReader"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.SpreadsheetWriter"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.spreadsheet.formatter.FieldNamesForSheetPartitioningParser"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.model.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.generator.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.util.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.*"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanMappingValidator"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.writer.json.JsonMappingValidator"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.BeanReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.BeanWriter"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.MapReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.JSONReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.JSONWriter"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>

@@ -43,10 +43,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.8-beta4-20110826.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.8-beta4-20110826.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-1.8.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-bean-collections-1.8.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-beanutils-core-1.8.3.jar"/>
-	<classpathentry kind="lib" path="lib/jdbm-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

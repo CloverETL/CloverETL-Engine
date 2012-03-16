@@ -40,22 +40,23 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.tree.TreeReaderParserProvider;
-import org.jetel.component.xpathparser.AbortParsingException;
-import org.jetel.component.xpathparser.DataRecordProvider;
-import org.jetel.component.xpathparser.DataRecordReceiver;
-import org.jetel.component.xpathparser.XPathPushParser;
-import org.jetel.component.xpathparser.XPathSequenceProvider;
-import org.jetel.component.xpathparser.mappping.MalformedMappingException;
-import org.jetel.component.xpathparser.mappping.MappingContext;
-import org.jetel.component.xpathparser.mappping.MappingElementFactory;
-import org.jetel.component.xpathparser.xml.XmlXPathEvaluator;
+import org.jetel.component.tree.reader.AbortParsingException;
+import org.jetel.component.tree.reader.DataRecordProvider;
+import org.jetel.component.tree.reader.DataRecordReceiver;
+import org.jetel.component.tree.reader.TreeReaderParserProvider;
+import org.jetel.component.tree.reader.TreeStreamParser;
+import org.jetel.component.tree.reader.TreeXMLReaderAdaptor;
+import org.jetel.component.tree.reader.TreeXmlContentHandlerAdapter;
+import org.jetel.component.tree.reader.XPathEvaluator;
+import org.jetel.component.tree.reader.XPathPushParser;
+import org.jetel.component.tree.reader.XPathSequenceProvider;
+import org.jetel.component.tree.reader.mappping.MalformedMappingException;
+import org.jetel.component.tree.reader.mappping.MappingContext;
+import org.jetel.component.tree.reader.mappping.MappingElementFactory;
+import org.jetel.component.tree.reader.xml.XmlXPathEvaluator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
-import org.jetel.data.tree.parser.TreeStreamParser;
-import org.jetel.data.tree.parser.TreeXMLReaderAdaptor;
-import org.jetel.data.tree.parser.TreeXmlContentHandlerAdapter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -87,8 +88,33 @@ import org.xml.sax.XMLReader;
  */
 public abstract class TreeReader extends Node implements DataRecordProvider, DataRecordReceiver, XPathSequenceProvider {
 
+	/**
+	 * TreeReader works in several processing modes. Chosen processing mode depends on provided
+	 * {@link TreeReaderParserProvider} and mapping complexity. The priority of modes:
+	 * <ol>
+	 * <li>{@link ProcessingMode#STREAM}</li>
+	 * <li>{@link ProcessingMode#XPATH_DIRECT}</li>
+	 * <li>{@link ProcessingMode#XPATH_CONVERT_STREAM}</li>
+	 * </ol>
+	 * 
+	 * @author krejcil (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+	 */
 	private static enum ProcessingMode {
-		STREAM, XPATH_DIRECT, /* XPATH_CONVERT_DIRECT, */XPATH_CONVERT_STREAM
+		/**
+		 * #NOT IMPLEMENTED# {@link TreeReaderParserProvider} provides {@link TreeStreamParser} and mapping is simple
+		 * enough input is processed in SAX-like manner
+		 */
+		STREAM,
+		/**
+		 * {@link TreeReaderParserProvider} provides {@link XPathEvaluator} xpath expressions are evaluated directly on
+		 * input
+		 */
+		XPATH_DIRECT,
+		/**
+		 * {@link TreeReaderParserProvider} provides {@link TreeReaderParserProvider} -- input is converted to xml and
+		 * xml xpath evaluator is used to resolve xpath expressions on converted input
+		 */
+		XPATH_CONVERT_STREAM
 	}
 
 	private static final Log LOG = LogFactory.getLog(TreeReader.class);
@@ -134,7 +160,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
 
 	private String fileURL;
-	private String charset;
+	protected String charset;
 	private SourceIterator sourceIterator;
 
 	private PolicyType policyType;
@@ -150,11 +176,24 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	public TreeReader(String id) {
 		super(id);
-		this.parserProvider = getTreeReaderParserProvider();
 	}
 
 	protected abstract TreeReaderParserProvider getTreeReaderParserProvider();
 
+	protected ConfigurationStatus disallowEmptyCharsetOnDictionaryAndPort(ConfigurationStatus status) {
+		ConfigurationStatus configStatus = super.checkConfig(status);
+		
+		for (String fileUrlEntry : this.getFileUrl().split(";")) {
+			if (fileUrlEntry.startsWith("dict:") || (fileUrlEntry.startsWith("port:")) && charset==null) {
+				status.add(new ConfigurationProblem("Charset cannot be auto-detected for input from a port or dictionary. Define it in the \"Charset\" attribute explicitly.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			}
+		}
+
+		
+		return configStatus;
+	}
+
+	
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -180,14 +219,16 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			return;
 		}
 		super.init();
+		
+		this.parserProvider = getTreeReaderParserProvider();
 
 		recordProviderReceiverInit();
 		for (OutputPort outPort : outPortsArray) {
 			autoFilling.addAutoFillingFields(outPort.getMetadata());
 		}
-		
+
 		sourceIterator = createSourceIterator();
-		
+
 		// FIXME: mapping should not be initialized here in init if is passed via external file, since it is possible
 		// that mapping file does not exist at this moment, or its content can change
 		MappingContext rootContext = createMapping();
@@ -217,6 +258,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 			DataRecord record = new DataRecord(port.getMetadata());
 			record.init();
+			record.reset();
 			outputRecords[i] = record;
 		}
 	}
@@ -229,7 +271,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 	}
 
-	private MappingContext createMapping() throws ComponentNotReadyException {
+	protected MappingContext createMapping() throws ComponentNotReadyException {
 		Document mappingDocument;
 
 		try {
@@ -268,7 +310,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		
+
 		// FIXME: init of source iterator is not implemented well right now, so it has to
 		sourceIterator.init();
 		sourceIterator.preExecute();
@@ -308,14 +350,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			if (input == null) {
 				continue; // if record no record found
 			}
-			
+
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
 			autoFilling.setFilename(sourceIterator.getCurrentFileName());
 			File tmpFile = new File(autoFilling.getFilename());
 			long timestamp = tmpFile.lastModified();
 			autoFilling.setFileSize(tmpFile.length());
-			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));	
+			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
 
 			return input;
 		}
@@ -324,6 +366,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		return input;
 	}
 
+	public String getFileUrl() {
+		return fileURL;
+	}
+	
 	public void setFileURL(String fileURL) {
 		this.fileURL = fileURL;
 	}
@@ -352,9 +398,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				// generated key pointing at autofilled field
 				autoFilling.setLastUsedAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
-				
-	            autoFilling.incGlobalCounter();
-	            autoFilling.incSourceCounter();
+
+				autoFilling.incGlobalCounter();
+				autoFilling.incSourceCounter();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -371,7 +417,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		// TODO: review this part of handling autofilling
 		autoFilling.incGlobalCounter();
-        autoFilling.incSourceCounter();
+		autoFilling.incSourceCounter();
 	}
 
 	@Override
@@ -400,10 +446,24 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		return sequence;
 	}
 
+	/**
+	 * Interface for classes encapsulating the functionality of one {@link ProcessingMode} of TreeReader
+	 * 
+	 * @author krejcil (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+	 * 
+	 * @created 10.3.2012
+	 */
 	private interface TreeProcessor {
 		void processInput(Object input) throws Exception;
 	}
 
+	/**
+	 * TreeProcessor implementing {@link ProcessingMode#XPATH_DIRECT} mode
+	 * 
+	 * @author krejcil (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+	 * 
+	 * @created 10.3.2012
+	 */
 	private static class XPathProcessor implements TreeProcessor {
 
 		private XPathPushParser pushParser;
@@ -430,6 +490,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 	}
 
+	/**
+	 * TreeProcessor implementing {@link ProcessingMode#XPATH_CONVERT_STREAM} mode.
+	 * 
+	 * @author krejcil (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+	 * 
+	 * @created 14.3.2012
+	 */
 	private class StreamConvertingXPathProcessor implements TreeProcessor {
 
 		private PipeTransformer pipeTransformer;
@@ -468,10 +535,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				Pipe pipe = Pipe.open();
 				pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
 				pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
-				
+
 				pipeTransformer.start();
 				pipeParser.start();
-				
+
 				manageThread(pipeTransformer);
 				manageThread(pipeParser);
 			} else {
@@ -479,14 +546,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 		}
-		
+
 		private void manageThread(Thread thread) throws Exception {
 			while (thread.getState() != Thread.State.TERMINATED) {
 				if (killIt) {
 					thread.interrupt();
 					break;
 				}
-				
+
 				if (throwableException != null) {
 					if (throwableException instanceof AbortParsingException) {
 						throw (AbortParsingException) throwableException;
@@ -494,7 +561,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 						throw new Exception(throwableException);
 					}
 				}
-				
+
 				killIt = !runIt;
 				try {
 					thread.join(1000);

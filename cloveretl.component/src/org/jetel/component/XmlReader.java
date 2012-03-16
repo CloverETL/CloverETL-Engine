@@ -18,9 +18,10 @@
  */
 package org.jetel.component;
 
-import org.jetel.component.tree.TreeReaderParserProvider;
-import org.jetel.component.tree.XmlReaderParserProvider;
+import org.jetel.component.tree.reader.TreeReaderParserProvider;
+import org.jetel.component.tree.reader.xml.XmlReaderParserProvider;
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -60,6 +61,15 @@ public class XmlReader extends TreeReader {
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
+	}
+
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		ConfigurationStatus configStatus = super.checkConfig(status);
+		
+		disallowEmptyCharsetOnDictionaryAndPort(configStatus);
+		
+		return configStatus;
 	}
 
 }
