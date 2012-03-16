@@ -38,17 +38,16 @@ public class DataFieldContainerTypeTest extends CloverTestCase {
 	}
 	
 	public void testFromString() {
-		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromString("siNglE"));
+		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromString(null));
+		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromString(""));
 		assertEquals(DataFieldContainerType.LIST, DataFieldContainerType.fromString("list"));
 		assertEquals(DataFieldContainerType.MAP, DataFieldContainerType.fromString("MAP"));
 		
-		try { DataFieldContainerType.fromString(null); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
-		try { DataFieldContainerType.fromString(""); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
 		try { DataFieldContainerType.fromString("neco"); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
 	}
 	
 	public void testGetDisplayName() {
-		assertEquals("single", DataFieldContainerType.SINGLE.getDisplayName());
+		assertEquals("", DataFieldContainerType.SINGLE.getDisplayName());
 		assertEquals("list", DataFieldContainerType.LIST.getDisplayName());
 		assertEquals("map", DataFieldContainerType.MAP.getDisplayName());
 	}
@@ -57,7 +56,7 @@ public class DataFieldContainerTypeTest extends CloverTestCase {
 		String[] names = DataFieldContainerType.getDisplayNames();
 		List<String> namesList = Arrays.asList(names);
 		assertEquals(3, names.length);
-		assertTrue(namesList.contains("single"));
+		assertTrue(namesList.contains(""));
 		assertTrue(namesList.contains("list"));
 		assertTrue(namesList.contains("map"));
 	}

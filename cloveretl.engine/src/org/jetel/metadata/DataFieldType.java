@@ -256,7 +256,7 @@ public enum DataFieldType {
 			case MAP:
 				return "map[string, " + toString() + "]";
 			default:
-				throw new IllegalArgumentException("unsupported multivalue type");
+				throw new IllegalArgumentException("unsupported container type");
 			}
 		}
 	}
