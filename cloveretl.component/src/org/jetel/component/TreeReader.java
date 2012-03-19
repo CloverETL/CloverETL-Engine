@@ -172,7 +172,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private TreeProcessor treeProcessor;
 
 	private AutoFilling autoFilling = new AutoFilling();
-	private Throwable throwableException;
+	private volatile Throwable throwableException;
 
 	public TreeReader(String id) {
 		super(id);
@@ -551,14 +551,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					thread.interrupt();
 					break;
 				}
-
-				if (throwableException != null) {
-					if (throwableException instanceof AbortParsingException) {
-						throw (AbortParsingException) throwableException;
-					} else {
-						throw new Exception(throwableException);
-					}
-				}
+				
+				checkThrownException();
 
 				killIt = !runIt;
 				try {
@@ -566,6 +560,18 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				} catch (InterruptedException e) {
 					LOG.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
+				}
+			}
+			
+			checkThrownException();
+		}
+		
+		private void checkThrownException() throws Exception {
+			if (throwableException != null) {
+				if (throwableException instanceof AbortParsingException) {
+					throw (AbortParsingException) throwableException;
+				} else {
+					throw new Exception(throwableException);
 				}
 			}
 		}
