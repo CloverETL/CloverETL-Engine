@@ -188,7 +188,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				status.add(new ConfigurationProblem("Charset cannot be auto-detected for input from a port or dictionary. Define it in the \"Charset\" attribute explicitly.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
 		}
-
 		
 		return configStatus;
 	}
@@ -258,7 +257,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 			DataRecord record = new DataRecord(port.getMetadata());
 			record.init();
-			record.reset();
 			outputRecords[i] = record;
 		}
 	}
@@ -311,7 +309,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
-		// FIXME: init of source iterator is not implemented well right now, so it has to
+		// FIXME: init of source iterator is not implemented well right now, so it has to be called here in preExecute!
 		sourceIterator.init();
 		sourceIterator.preExecute();
 	}
@@ -396,9 +394,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			try {
 				// FIXME: some autofilling fields should be filled sooner - so that it can be used with combination of
 				// generated key pointing at autofilled field
-				autoFilling.setLastUsedAutoFillingFields(record);
+				autoFilling.setAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
-
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -421,7 +418,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public DataRecord getDataRecord(int port) throws AbortParsingException {
 		if (runIt) {
-			return outputRecords[port];
+			DataRecord record = outputRecords[port];
+			record.reset();
+			return record;
 		} else {
 			throw new AbortParsingException();
 		}

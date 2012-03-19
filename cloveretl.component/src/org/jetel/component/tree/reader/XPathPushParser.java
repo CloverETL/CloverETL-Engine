@@ -92,7 +92,6 @@ public class XPathPushParser {
 		/*
 		 * iterate through XPath results
 		 */
-		DataRecord newTarget = recordProvider.getDataRecord(mapping.getOutputPort().intValue());
 		Iterator<Object> it = evaluator.iterate(mapping.getXPath(), mapping.getNamespaceBinding(), context, mapping);
 		/*
 		 * prepare keys to be bound from children (if any)
@@ -105,7 +104,10 @@ public class XPathPushParser {
 				parentKeyFields[i] = dataTarget.getField(parentKeys[i]);
 			}
 		}
+		
+		int portIndex = mapping.getOutputPort().intValue();
 		while (it.hasNext()) {
+			DataRecord newTarget = recordProvider.getDataRecord(portIndex);
 			/*
 			 * process sequence (if any)
 			 */
@@ -134,8 +136,7 @@ public class XPathPushParser {
 			/*
 			 * pass record data to consumer
 			 */
-			recordReceiver.receive(newTarget, mapping.getOutputPort().intValue());
-			newTarget.reset();
+			recordReceiver.receive(newTarget, portIndex);
 		}
 	}
 
