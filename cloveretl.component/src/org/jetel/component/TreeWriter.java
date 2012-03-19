@@ -171,7 +171,7 @@ public abstract class TreeWriter extends Node {
 	private CacheRecordManager sharedCache;
 
 	protected int recordsPerFile;
-	private int recordsCount;
+	protected int recordsCount;
 	private String attrPartitionKey;
 	private String partition;
 	private String partitionOutFields;

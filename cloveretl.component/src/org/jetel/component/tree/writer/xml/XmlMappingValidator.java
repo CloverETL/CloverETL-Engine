@@ -47,7 +47,6 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
-
 /**
  * Visitor which validates xml mapping.
  * 
@@ -72,7 +71,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		String includeString = element.getProperty(MappingProperty.INCLUDE);
 		String excludeString = element.getProperty(MappingProperty.EXCLUDE);
 		wildcardIncludeExcludeCheck(includeString, excludeString, element);
-		
+
 		gatherAndValidateAvailableFields(includeString, excludeString, element);
 
 		String writeNullString = element.getProperty(MappingProperty.WRITE_NULL_ELEMENT);
@@ -85,7 +84,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		String includeString = element.getProperty(MappingProperty.INCLUDE);
 		String excludeString = element.getProperty(MappingProperty.EXCLUDE);
 		wildcardIncludeExcludeCheck(includeString, excludeString, element);
-		
+
 		Set<DataFieldMetadataWrapper> availableFields = gatherAndValidateAvailableFields(includeString, excludeString, element);
 
 		Set<String> attributeNames = collectAttributeNames(element.getParent());
@@ -106,10 +105,11 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		String omitNullString = element.getParent().getProperty(MappingProperty.OMIT_NULL_ATTRIBUTE);
 		reportWildcardNullProblems(writeNullString, omitNullString, element, false, attributeNames);
 	}
-	
-	private void reportWildcardNullProblems(String writeNullString, String omitNullString, AbstractNode element, boolean isElement, Set<String> attributeNames) {
+
+	private void reportWildcardNullProblems(String writeNullString, String omitNullString, AbstractNode element,
+			boolean isElement, Set<String> attributeNames) {
 		Set<DataFieldMetadataWrapper> availableFields = new HashSet<DataFieldMetadataWrapper>();
-		
+
 		if (writeNullString != null) {
 			MappingProperty property = isElement ? MappingProperty.WRITE_NULL_ELEMENT : MappingProperty.WRITE_NULL_ATTRIBUTE;
 			AbstractNode errorElement = isElement ? element : element.getParent();
@@ -162,7 +162,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 			}
 		}
 	}
-	
+
 	private void wildcardIncludeExcludeCheck(String includeString, String excludeString, AbstractNode wildcard) {
 		if (includeString == null && excludeString == null) {
 			MappingError error = new MappingError("Missing attribute " + MappingProperty.INCLUDE.getName(), Severity.ERROR);
@@ -172,8 +172,9 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 			addProblem(wildcard, MappingProperty.EXCLUDE, error);
 		}
 	}
-	
-	private Set<DataFieldMetadataWrapper> gatherAndValidateAvailableFields(String includeString, String excludeString, AbstractNode wildcard) {
+
+	private Set<DataFieldMetadataWrapper> gatherAndValidateAvailableFields(String includeString, String excludeString,
+			AbstractNode wildcard) {
 		Set<DataFieldMetadataWrapper> availableFields = new HashSet<DataFieldMetadataWrapper>();
 		if (includeString != null) {
 			String[] include = includeString.split(TreeWriterMapping.DELIMITER);
@@ -216,7 +217,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 				}
 			}
 		}
-		
+
 		return availableFields;
 	}
 
@@ -277,7 +278,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		}
 		Relation recurringInfo = element.getRelation();
 		if (element.getParent().getParent() == null && recurringInfo != null && !oneRecordPerFile) {
-			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Set 'Records per file' component attribute to '1' and adjust file URL. Well-formed XML must have one root element", Severity.WARNING));
+			addProblem(element, MappingProperty.UNKNOWN, new MappingError("With port binded to root element, result might contain multiple root elements. Such XML is not well-formed. To avoid that, set 'Records per file' or 'Max number of records' component attribute to '1'.", Severity.WARNING));
 		}
 		if (element.getWildcardAttribute() == null) {
 			String writeNull = element.getProperty(MappingProperty.WRITE_NULL_ATTRIBUTE);
@@ -320,7 +321,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 				}
 			}
 		}
-		
+
 		if (recurringInfo == null) {
 			String hideString = element.getProperty(MappingProperty.HIDE);
 			if (hideString != null) {
@@ -329,7 +330,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 				}
 			}
 		}
-		
+
 	}
 
 	private Set<String> collectAttributeNames(ContainerNode container) {
