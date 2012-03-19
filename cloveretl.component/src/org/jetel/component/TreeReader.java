@@ -123,7 +123,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	// this attribute is not used at runtime right now
 	public static final String XML_SCHEMA_ATTRIBUTE = "schema";
-	public final static String XML_FILE_URL_ATTRIBUTE = "fileURL";
+	protected final static String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	public final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public final static String XML_MAPPING_ATTRIBUTE = "mapping";
 	public final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
@@ -159,7 +159,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private int sequenceId;
 	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
 
-	private String fileURL;
+	protected String fileURL;
 	protected String charset;
 	private SourceIterator sourceIterator;
 
@@ -240,7 +240,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			break;
 		case XPATH_DIRECT:
 			pushParser = new XPathPushParser(this, this, parserProvider.getXPathEvaluator(), parserProvider.getValueHandler(), this);
-			treeProcessor = new XPathProcessor(pushParser, rootContext, charset);
+			InputAdapter inputAdapter = parserProvider.getInputAdapter();
+			treeProcessor = new XPathProcessor(pushParser, rootContext, inputAdapter);
 			break;
 		default:
 			throw new UnsupportedOperationException("Processing mode " + processingMode + " is not supported");
@@ -264,8 +265,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private ProcessingMode resolveProcessingMode() {
 		if (parserProvider.providesXPathEvaluator()) {
 			return ProcessingMode.XPATH_DIRECT;
-		} else {
+		} else if (parserProvider.providesTreeStreamParser()) {
 			return ProcessingMode.XPATH_CONVERT_STREAM;
+		} else {
+			throw new IllegalStateException("Invalid parser provider configuration");
 		}
 	}
 
@@ -435,7 +438,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				sequence = getGraph().getSequence(context.getSequenceId());
 			}
 			if (sequence == null) {
-				String id = "XPathBeanReaderSeq_" + sequenceId++;
+				
+				String id = getType() + "Seq_" + sequenceId++;
 				sequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE, new Object[] { id, getGraph(), context.getSequenceField() }, new Class[] { String.class, TransformationGraph.class, String.class });
 			}
 			sequences.put(context, sequence);
@@ -443,6 +447,39 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		return sequence;
 	}
 
+	public static interface InputAdapter {
+		Object adapt(Object input);
+	}
+	
+	public static class ReadableByteChannelToSourceAdapter implements InputAdapter {
+		
+		private String charset;
+		
+		public ReadableByteChannelToSourceAdapter(String charset) {
+			this.charset = charset;
+		}
+
+		@Override
+		public Object adapt(Object input) {
+			if (input instanceof ReadableByteChannel) {
+				InputSource inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
+				if (charset != null) {
+					inputSource.setEncoding(charset);
+				}
+				return new SAXSource(inputSource);
+			} else {
+				throw new JetelRuntimeException("Could not read input " + input);
+			}
+		}
+	}
+	
+	public static class PassThroughInputAdapter implements InputAdapter {
+		@Override
+		public Object adapt(Object input) {
+			return input;
+		}
+	}
+	
 	/**
 	 * Interface for classes encapsulating the functionality of one {@link ProcessingMode} of TreeReader
 	 * 
@@ -453,6 +490,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private interface TreeProcessor {
 		void processInput(Object input) throws Exception;
 	}
+
 
 	/**
 	 * TreeProcessor implementing {@link ProcessingMode#XPATH_DIRECT} mode
@@ -465,25 +503,17 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		private XPathPushParser pushParser;
 		private MappingContext rootContext;
-		private String charset;
+		private InputAdapter inputAdapter;
 
-		public XPathProcessor(XPathPushParser pushParser, MappingContext rootContext, String charset) {
+		private XPathProcessor(XPathPushParser pushParser, MappingContext rootContext, InputAdapter inputAdapter) {
 			this.pushParser = pushParser;
 			this.rootContext = rootContext;
-			this.charset = charset;
+			this.inputAdapter = inputAdapter;
 		}
 
 		@Override
 		public void processInput(Object input) throws AbortParsingException {
-			if (input instanceof ReadableByteChannel) {
-				InputSource inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
-				if (charset != null) {
-					inputSource.setEncoding(charset);
-				}
-				pushParser.parse(rootContext, new SAXSource(inputSource));
-			} else {
-				throw new JetelRuntimeException("Could not read input " + input);
-			}
+			pushParser.parse(rootContext, inputAdapter.adapt(input));
 		}
 	}
 

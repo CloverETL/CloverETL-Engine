@@ -55,7 +55,7 @@ public class XmlReader extends TreeReader {
 
 	@Override
 	protected TreeReaderParserProvider getTreeReaderParserProvider() {
-		return new XmlReaderParserProvider();
+		return new XmlReaderParserProvider(charset);
 	}
 
 	@Override

@@ -46,4 +46,8 @@ public enum ProcessingType {
         
         return defaultValue;
     }
+    
+    public String getId() {
+    	return id;
+    }
 }

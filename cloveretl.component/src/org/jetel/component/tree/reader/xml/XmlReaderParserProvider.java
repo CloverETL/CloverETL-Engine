@@ -18,6 +18,8 @@
  */
 package org.jetel.component.tree.reader.xml;
 
+import org.jetel.component.TreeReader.InputAdapter;
+import org.jetel.component.TreeReader.ReadableByteChannelToSourceAdapter;
 import org.jetel.component.tree.reader.TreeReaderParserProvider;
 import org.jetel.component.tree.reader.TreeStreamParser;
 import org.jetel.component.tree.reader.ValueHandler;
@@ -30,6 +32,12 @@ import org.jetel.component.tree.reader.XPathEvaluator;
  * @created 22.2.2012
  */
 public class XmlReaderParserProvider implements TreeReaderParserProvider {
+
+	private String charset;
+	
+	public XmlReaderParserProvider(String charset) {
+		this.charset = charset;
+	}
 
 	@Override
 	public boolean providesTreeStreamParser() {
@@ -56,4 +64,8 @@ public class XmlReaderParserProvider implements TreeReaderParserProvider {
 		return new XmlXPathEvaluator();
 	}
 
+	@Override
+	public InputAdapter getInputAdapter() {
+		return new ReadableByteChannelToSourceAdapter(charset);
+	}
 }
