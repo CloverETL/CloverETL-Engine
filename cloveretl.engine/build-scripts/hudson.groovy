@@ -96,7 +96,11 @@ if( !runTests ){
 	engineJobName = "cloveretl.engine-" + versionSuffix
 	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/api/xml?xpath=/*/number/text%28%29").text
 	println "engineBuildNumber   = " + engineBuildNumber
-	cloverVersionProperties = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties").text
+
+        cloverVersionPropertiesURL = "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
+        println "cloverVersionPropertiesURL ${cloverVersionPropertiesURL}"
+
+	cloverVersionProperties = new URL( env['HUDSON_URL'] + cloverVersionPropertiesURL ).text
 	cloverVersionPropertiesM = cloverVersionProperties =~ /^version=(.*)$/
 	cloverVersion = cloverVersionPropertiesM[0][1]
 	cloverVersionDash = cloverVersion.replaceAll("\\.","-")
