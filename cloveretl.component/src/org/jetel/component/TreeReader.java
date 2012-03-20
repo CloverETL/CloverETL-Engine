@@ -27,9 +27,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.Pipe;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -43,6 +46,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.tree.reader.AbortParsingException;
 import org.jetel.component.tree.reader.DataRecordProvider;
 import org.jetel.component.tree.reader.DataRecordReceiver;
+import org.jetel.component.tree.reader.FieldFillingException;
 import org.jetel.component.tree.reader.InputAdapter;
 import org.jetel.component.tree.reader.TreeReaderParserProvider;
 import org.jetel.component.tree.reader.TreeStreamParser;
@@ -51,14 +55,15 @@ import org.jetel.component.tree.reader.TreeXmlContentHandlerAdapter;
 import org.jetel.component.tree.reader.XPathEvaluator;
 import org.jetel.component.tree.reader.XPathPushParser;
 import org.jetel.component.tree.reader.XPathSequenceProvider;
+import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MalformedMappingException;
 import org.jetel.component.tree.reader.mappping.MappingContext;
 import org.jetel.component.tree.reader.mappping.MappingElementFactory;
+import org.jetel.component.tree.reader.mappping.MappingVisitor;
 import org.jetel.component.tree.reader.xml.XmlXPathEvaluator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
-import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -70,6 +75,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.SourceIterator;
@@ -173,8 +181,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private TreeProcessor treeProcessor;
 
 	private AutoFilling autoFilling = new AutoFilling();
+	private int[] sourcePortRecordCounters; // counters of records written to particular ports per source
 	private volatile Throwable throwableException;
 
+	private boolean errorPortLogging;
+	private DataRecord errorLogRecord;
+	private int maxErrors = -1;
+	private int errorsCount;
+	
 	public TreeReader(String id) {
 		super(id);
 	}
@@ -226,6 +240,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		for (OutputPort outPort : outPortsArray) {
 			autoFilling.addAutoFillingFields(outPort.getMetadata());
 		}
+		sourcePortRecordCounters = new int[outPortsSize];
 
 		sourceIterator = createSourceIterator();
 
@@ -246,6 +261,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			break;
 		default:
 			throw new UnsupportedOperationException("Processing mode " + processingMode + " is not supported");
+		}
+		
+		errorPortLogging = isErrorPortLogging(rootContext);
+		if (errorPortLogging) {
+			LOG.info("Using port " + getErrorPortIndex() + " as error logging port");
+			errorLogRecord = new DataRecord(getOutputPort(getErrorPortIndex()).getMetadata());
+			errorLogRecord.init();
 		}
 	}
 
@@ -309,6 +331,40 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		return iterator;
 	}
 
+	/**
+	 * @return true iff the last out port is not used in the mapping and it has prescribed metadata
+	 */
+	private boolean isErrorPortLogging(MappingContext rootContext) {
+		OutputPort errorPortCandidate = outPortsArray[getErrorPortIndex()];
+        return !isPortUsed(errorPortCandidate.getOutputPortNumber(), rootContext) && hasErrorLoggingMetadata(errorPortCandidate);
+    }
+	
+	private int getErrorPortIndex() {
+		return outPortsSize - 1;
+	}
+
+	private boolean hasErrorLoggingMetadata(OutputPort errorPort) {
+		DataRecordMetadata metadata = errorPort.getMetadata();
+        int errorNumFields = metadata.getNumFields();
+        return errorNumFields == 6
+        		&& metadata.getField(0).getDataType() == DataFieldType.INTEGER	// port record number per source
+        		&& isStringOrByte(metadata.getField(1))							// source name
+        		&& metadata.getField(2).getDataType() == DataFieldType.INTEGER	// field number
+        		&& isStringOrByte(metadata.getField(3))							// field name
+        		&& isStringOrByte(metadata.getField(4))							// offending value
+        		&& isStringOrByte(metadata.getField(5));						// error message
+	}
+
+	private boolean isStringOrByte(DataFieldMetadata field) {
+		return field.getDataType() == DataFieldType.STRING || field.getDataType() == DataFieldType.BYTE || field.getDataType() == DataFieldType.CBYTE;
+	}
+	
+	private static boolean isPortUsed(int portIndex, MappingContext rootContext) {
+		PortUsageMappingVisitor portUsageMappingVisitor = new PortUsageMappingVisitor();
+		rootContext.acceptVisitor(portUsageMappingVisitor);
+		return portUsageMappingVisitor.isPortUsed(portIndex);
+	}
+	
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
@@ -327,11 +383,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			} catch (AbortParsingException e) {
 				if (!runIt) {
 					return Result.ABORTED;
-				} else if (e.getCause() instanceof BadDataFormatException) {
-					throw (BadDataFormatException) e.getCause();
+				} else if (e.getCause() instanceof MaxErrorsCountExceededException) {
+					return Result.ERROR;
+				} else if (e.getCause() instanceof Exception) { // TODO BadDataFormatException / Exception ?
+					throw (Exception) e.getCause();
 				}
-
-				throw new IllegalStateException("Unexpected exception", e);
 			}
 			inputData = getNextSource();
 		}
@@ -360,6 +416,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			long timestamp = tmpFile.lastModified();
 			autoFilling.setFileSize(tmpFile.length());
 			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
+			
+			Arrays.fill(sourcePortRecordCounters, 0);
 
 			return input;
 		}
@@ -396,10 +454,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public void receive(DataRecord record, int port) throws AbortParsingException {
 		if (runIt) {
 			try {
+				sourcePortRecordCounters[port]++;
+				autoFilling.incGlobalCounter();
+				autoFilling.incSourceCounter();
 				// FIXME: some autofilling fields should be filled sooner - so that it can be used with combination of
 				// generated key pointing at autofilled field
 				autoFilling.setAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
+
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -409,16 +471,38 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	}
 
 	@Override
-	public void exceptionOccurred(BadDataFormatException e) throws AbortParsingException {
+	public void exceptionOccurred(FieldFillingException e) throws AbortParsingException {
 		if (policyType == PolicyType.STRICT) {
-			LOG.error("Could not assign data field.", e);
+			LOG.error("Could not assign data field \"" + e.getFieldMetadata().getName() + "\" ("
+					+ e.getFieldMetadata().getDataType().getName() + ") on port " + e.getPortIndex(), e.getCause());
 			throw new AbortParsingException(e);
+		} else if (policyType == PolicyType.CONTROLLED) {
+			if (errorPortLogging) {
+				writeErrorLogRecord(e);
+			} else {
+				LOG.error(e);
+			}
+			if (maxErrors != -1 && ++errorsCount > maxErrors) {
+				LOG.error("Max errors count exceeded.", e);
+				throw new AbortParsingException(new MaxErrorsCountExceededException());
+			}
 		}
-		// TODO: review this part of handling autofilling
-		autoFilling.incGlobalCounter();
-		autoFilling.incSourceCounter();
 	}
 
+	private void writeErrorLogRecord(FieldFillingException e) {
+		errorLogRecord.getField(0).setValue(sourcePortRecordCounters[e.getPortIndex()]);
+		errorLogRecord.getField(1).setValue(sourceIterator.getCurrentFileName());
+		errorLogRecord.getField(2).setValue(e.getFieldMetadata().getNumber());
+		errorLogRecord.getField(3).setValue(e.getFieldMetadata().getName());
+		errorLogRecord.getField(4).setValue(e.getCause().getOffendingValue());
+		errorLogRecord.getField(5).setValue(e.getCause().getMessage());
+		try {
+			outputPorts[getErrorPortIndex()].writeRecord(errorLogRecord);
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
 	@Override
 	public DataRecord getDataRecord(int port) throws AbortParsingException {
 		if (runIt) {
@@ -645,4 +729,33 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	}
 
+	
+	private static class MaxErrorsCountExceededException extends RuntimeException {
+		private static final long serialVersionUID = -3499614028763254366L;
+	}
+	
+	private static class PortUsageMappingVisitor implements MappingVisitor {
+		
+		private Set<Integer> usedPortIndexes = new HashSet<Integer>();
+
+		@Override
+		public void visitBegin(MappingContext context) {
+			Integer port = context.getOutputPort();
+			if (port != null) {
+				usedPortIndexes.add(port);
+			}
+		}
+
+		@Override
+		public void visitEnd(MappingContext context) { }
+
+		@Override
+		public void visit(FieldMapping mapping) { }
+		
+		public boolean isPortUsed(int portIndex) {
+			return usedPortIndexes.contains(portIndex);
+		}
+		
+	}
+	
 }

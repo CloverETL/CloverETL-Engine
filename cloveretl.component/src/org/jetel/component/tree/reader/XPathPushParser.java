@@ -86,7 +86,7 @@ public class XPathPushParser {
 		 */
 		if (mapping.getOutputPort() == null) {
 			Object newContext = evaluator.evaluatePath(mapping.getXPath(), mapping.getNamespaceBinding(), context, mapping);
-			applyContextMappings(mapping, newContext, dataTarget);
+			applyContextMappings(mapping, newContext, dataTarget, -1);
 			return;
 		}
 		/*
@@ -112,7 +112,7 @@ public class XPathPushParser {
 			 * process sequence (if any)
 			 */
 			if (mapping.getSequenceField() != null) {
-				fillSequenceField(mapping.getSequenceField(), newTarget, getSequence(mapping));
+				fillSequenceField(mapping.getSequenceField(), newTarget, getSequence(mapping), portIndex);
 			}
 			/*
 			 * process keying from child to parent (if any)
@@ -124,7 +124,7 @@ public class XPathPushParser {
 					try {
 						currentRecordParentKeyField.setValue(parentKeyFields[i]);
 					} catch (BadDataFormatException e) {
-						recordReceiver.exceptionOccurred(e);
+						recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
 					}
 				}
 			}
@@ -132,7 +132,7 @@ public class XPathPushParser {
 			 * process nested mappings on each element
 			 */
 			Object element = it.next();
-			applyContextMappings(mapping, element, newTarget);
+			applyContextMappings(mapping, element, newTarget, portIndex);
 			/*
 			 * pass record data to consumer
 			 */
@@ -140,7 +140,7 @@ public class XPathPushParser {
 		}
 	}
 
-	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord)
+	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord, int portIndex)
 			throws AbortParsingException {
 
 		if (evaluationContext == null) {
@@ -149,7 +149,7 @@ public class XPathPushParser {
 		for (MappingElement element : mapping.getChildren()) {
 			if (element instanceof FieldMapping) {
 				FieldMapping fieldMapping = (FieldMapping) element;
-				handleFieldMapping(fieldMapping, evaluationContext, targetRecord);
+				handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
 			} else if (element instanceof MappingContext) {
 				MappingContext nestedContext = (MappingContext) element;
 				handleContext(nestedContext, evaluationContext, targetRecord);
@@ -157,7 +157,7 @@ public class XPathPushParser {
 		}
 	}
 
-	protected void handleFieldMapping(FieldMapping mapping, Object context, DataRecord target)
+	protected void handleFieldMapping(FieldMapping mapping, Object context, DataRecord target, int portIndex)
 			throws AbortParsingException {
 
 		DataField field = null;
@@ -177,7 +177,7 @@ public class XPathPushParser {
 			try {
 				valueHandler.storeValueToField(value, field);
 			} catch (BadDataFormatException e) {
-				recordReceiver.exceptionOccurred(e);
+				recordReceiver.exceptionOccurred(generateException(e, field, target, portIndex));
 			}
 			// if (field.getType() == DataFieldMetadata.STRING_FIELD
 			// && value instanceof String
@@ -193,7 +193,7 @@ public class XPathPushParser {
 		}
 	}
 
-	protected void fillSequenceField(String fieldName, DataRecord record, Sequence sequence)
+	protected void fillSequenceField(String fieldName, DataRecord record, Sequence sequence, int portIndex)
 			throws AbortParsingException {
 
 		DataField field = null;
@@ -220,11 +220,20 @@ public class XPathPushParser {
 			}
 			}
 		} catch (BadDataFormatException e) {
-			recordReceiver.exceptionOccurred(e);
+			recordReceiver.exceptionOccurred(generateException(e, field, record, portIndex));
 		}
 	}
 
 	protected Sequence getSequence(MappingContext context) {
 		return sequenceProvider.getSequence(context);
 	}
+	
+	private FieldFillingException generateException(BadDataFormatException ex, DataField field, DataRecord record, int portIndex) {
+		FieldFillingException newEx = new FieldFillingException(ex);
+		newEx.setFieldMetadata(field.getMetadata());
+		newEx.setIncompleteRecord(record);
+		newEx.setPortIndex(portIndex);
+		return newEx;
+	}
+	
 }
