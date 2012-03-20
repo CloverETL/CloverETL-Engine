@@ -35,6 +35,7 @@ import org.jetel.component.tree.writer.model.design.Value;
 import org.jetel.component.tree.writer.model.design.WildcardAttribute;
 import org.jetel.component.tree.writer.model.design.WildcardNode;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.TagName;
 
 /**
  * Visitor which serializes mapping into xml.
@@ -87,9 +88,9 @@ public class MappingWriter implements MappingVisitor {
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
 			if (element.getChildren().isEmpty()) {
-				writer.writeEmptyElement(element.getProperty(MappingProperty.NAME));
+				writer.writeEmptyElement(TagName.encode(element.getProperty(MappingProperty.NAME)));
 			} else {
-				writer.writeStartElement(element.getProperty(MappingProperty.NAME));
+				writer.writeStartElement(TagName.encode(element.getProperty(MappingProperty.NAME)));
 			}
 		}
 		
