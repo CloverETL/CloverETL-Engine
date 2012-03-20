@@ -1025,7 +1025,7 @@ defined.version.suffix=release
 		<echo message="Executing Clover Test Environment environment - coverage"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="scenarios" value="after-commit.ts" />
+			<property name="scenarios" value="detail.ts" />
 			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.package.classes}"/>
 			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
