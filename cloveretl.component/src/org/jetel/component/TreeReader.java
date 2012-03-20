@@ -185,7 +185,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		ConfigurationStatus configStatus = super.checkConfig(status);
 		
 		for (String fileUrlEntry : this.getFileUrl().split(";")) {
-			if (fileUrlEntry.startsWith("dict:") || (fileUrlEntry.startsWith("port:")) && charset==null) {
+			if ((fileUrlEntry.startsWith("dict:") || fileUrlEntry.startsWith("port:")) && charset == null) {
 				status.add(new ConfigurationProblem("Charset cannot be auto-detected for input from a port or dictionary. Define it in the \"Charset\" attribute explicitly.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 			}
 		}
