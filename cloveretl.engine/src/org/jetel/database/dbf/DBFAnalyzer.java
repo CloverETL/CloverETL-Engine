@@ -65,6 +65,9 @@ public class DBFAnalyzer {
     public static final byte DBF_FIELD_HEADER_TERMINATOR=0x0D;
     public static final byte DBF_FILE_EOF_INDICATOR = 0x1A;
     public static final byte DBF_ENHANCE_RESERVED=4;
+    public static final int DBF_HEADER_LENGTH_OFFSET=8;
+    public static final int DBF_HEADER_REC_LENGTH_OFFSET=10;
+    public static final int DBF_HEADER_LAST_UPDATED_OFFSET=1;
     public static final int  DBF_HEADER_NUM_REC_OFFSET=4;
     public static final int DBF_MAX_NUMBER_OF_FIELDS=128;
 	public static final String HEADER_CHARACTER_ENCODING="ISO-8859-1";

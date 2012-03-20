@@ -18,7 +18,9 @@
  */
 package org.jetel.database.dbf;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
@@ -47,6 +49,8 @@ import org.jetel.util.formatter.DateFormatterFactory;
 public class DBFDataFormatter extends AbstractFormatter {
 
 	private static final int CONTINGENCY = 32;
+	private static final String FILE_ACCESS_MODE = "rw";
+	
 	private FileChannel writer;
 	private CharsetEncoder encoder;
 	private ByteBuffer dataBuffer;
@@ -114,12 +118,11 @@ public class DBFDataFormatter extends AbstractFormatter {
         // create buffered input stream reader
         if (outputDataTarget == null) {
             writer = null;
-        } else if (outputDataTarget instanceof FileChannel) {
-            writer = (FileChannel) outputDataTarget;
+        } else if (outputDataTarget instanceof File) {
+            writer =  new RandomAccessFile(((File)outputDataTarget), FILE_ACCESS_MODE).getChannel();
 		}else {
             throw new IOException("Unsupported output data stream type: "+outputDataTarget.getClass()+". (need seekable stream).");
         }
-
     }
 
 
@@ -184,19 +187,17 @@ public class DBFDataFormatter extends AbstractFormatter {
 	}
 	
 	private void fillDBFHeader(ByteBuffer buffer){
-		Calendar cal=Calendar.getInstance();
 		org.jetel.util.bytes.ByteBufferUtils.fill(buffer, (byte)0x0); // fill with zeros
 		// DBF TYPE  - 0x0
 		buffer.position(0);
 		buffer.put(DBFTypes.KNOWN_TYPES[0]); // FoxPro
-		// LAST UPDATE - 0x01
-		buffer.put((byte) (cal.get(Calendar.YEAR) - 1900)); //year
-		buffer.put((byte) cal.get(Calendar.MONTH)); //month
-		buffer.put((byte)cal.get(Calendar.DAY_OF_MONTH)); //day
-		// NUM RECORDS - 0x04
-		buffer.putInt(0); //Integer.MAX_VALUE); // don't know yet
+		// LAST UPDATE - 0x01  (updated when writing footer)
+		buffer.put((byte)0); //year
+		buffer.put((byte)0); //month
+		buffer.put((byte)0); //day
+		// NUM RECORDS - 0x04 (updated when writing footer)
+		buffer.putInt(0); // 0
 		// POSITION OF FIRST DATA RECORD - 0x08
-		//buffer.position(8);
 		buffer.putShort((short)( DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (metadata.getNumFields() * DBFAnalyzer.DBF_FIELD_DEF_SIZE) +1));
 		// LENGTH OF EACH RECORD - 0x0A
 		buffer.putShort((short) (getRecordSizeConverted(metadata)+1)); // cater for delete flag
@@ -213,7 +214,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 		buffer.put(DBFAnalyzer.DBF_FIELD_HEADER_TERMINATOR);
 				
 	}
-
+	
 	private void fillDBFFieldMetadata(ByteBuffer buffer){
 		int counter=0;
 		for(DataFieldMetadata field : metadata){
@@ -248,12 +249,39 @@ public class DBFDataFormatter extends AbstractFormatter {
 	
 	@Override
 	public int writeHeader() throws IOException {
-		dataBuffer.clear();
-		fillDBFHeader(dataBuffer);
-		dataBuffer.flip();
-		int size=dataBuffer.remaining();
-		writer.write(dataBuffer);
-		return size;
+		if (append && writer.size() > 0) {
+			long curPosInFile;
+			try {
+				curPosInFile = writer.size();
+				// basic sanity check during append - at least the same number of fields:
+				writer.position(DBFAnalyzer.DBF_HEADER_NUM_REC_OFFSET);
+				dataBuffer.clear();
+				writer.read(dataBuffer);
+			} catch (IOException ex) {
+				throw new IOException("Can't append to DBase/DBF file - file does not seem to contain valid DBF header.", ex);
+			}
+			dataBuffer.flip();
+			final int recCount = dataBuffer.getInt();
+			final int headerSize = dataBuffer.getShort();
+			final int recSize = dataBuffer.getShort();
+			final int expectedHeaderSize = (DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (metadata.getNumFields() * DBFAnalyzer.DBF_FIELD_DEF_SIZE) + 1);
+			final int expectedRecSize = (getRecordSizeConverted(metadata) + 1);
+			if ((headerSize != expectedHeaderSize) || (recSize != expectedRecSize)) {
+				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverETL metadata [rec.size DBF/CloverETL  %i/%i bytes].", recSize, expectedRecSize));
+			}
+			recordCounter = recCount;
+			writer.position(curPosInFile - 1); // removing EOF flag in file, so following write starts after the current
+												// last record
+			return 0;
+		} else {
+			writer.position(0); // creating new or overwriting
+			dataBuffer.clear();
+			fillDBFHeader(dataBuffer);
+			dataBuffer.flip();
+			int size = dataBuffer.remaining();
+			writer.write(dataBuffer);
+			return size;
+		}
 	}
 
 	@Override
@@ -263,15 +291,25 @@ public class DBFDataFormatter extends AbstractFormatter {
 		dataBuffer.put(DBFAnalyzer.DBF_FILE_EOF_INDICATOR);
 		dataBuffer.flip();
 		writer.write(dataBuffer);
-		
-		// update the record count in header
+
+		// truncate the file if necessary
+		if (writer.position() < writer.size())
+			writer.truncate(writer.position());
+				
+		// update header - last update + rec counter
+		Calendar cal=Calendar.getInstance();
 		dataBuffer.clear();
+		dataBuffer.put((byte) (cal.get(Calendar.YEAR) - 1900)); //year
+		dataBuffer.put((byte) cal.get(Calendar.MONTH)); //month
+		dataBuffer.put((byte)cal.get(Calendar.DAY_OF_MONTH)); //day
+		
 		dataBuffer.putInt(recordCounter);
 		dataBuffer.flip();
-		// seek to rec num position
-		writer.position(DBFAnalyzer.DBF_HEADER_NUM_REC_OFFSET);
+		
+		writer.position(DBFAnalyzer.DBF_HEADER_LAST_UPDATED_OFFSET);
 		writer.write(dataBuffer);
-		return Integer.SIZE;
+
+		return 0;
 	}
 
 	@Override
@@ -281,9 +319,17 @@ public class DBFDataFormatter extends AbstractFormatter {
 
 	@Override
 	public void finish() throws IOException {
-		// TODO Auto-generated method stub
+		writeFooter();
+		flush();
 
 	}
+	
+
+	@Override
+	public boolean isFileTargetPreferred() {
+		return true;
+	}
+	
 	
 	private static int getRecordSizeConverted(DataRecordMetadata record){
 		int size=0;
@@ -292,4 +338,5 @@ public class DBFDataFormatter extends AbstractFormatter {
 		}
 		return size;
 	}
+	
 }
