@@ -529,6 +529,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		private PipeTransformer pipeTransformer;
 		private PipeParser pipeParser;
 		boolean killIt = false;
+		TreeReaderParserProvider parserProvider;
+		XPathPushParser pushParser;
+		MappingContext rootContext;
 
 		private String charset;
 
@@ -536,16 +539,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				MappingContext rootContext, String charset) {
 			this.charset = charset;
 
-			try {
-				TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
-				treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
-				XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-				pipeTransformer = new PipeTransformer(treeXmlReader);
-
-				pipeParser = new PipeParser(pushParser, rootContext);
-			} catch (TransformerFactoryConfigurationError e) {
-				throw new JetelRuntimeException("Failed to instantiate transformer", e);
-			}
+			this.parserProvider = parserProvider;
+			this.pushParser = pushParser;
+			this.rootContext = rootContext;
+			
 		}
 
 		@Override
@@ -560,8 +557,19 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				}
 
 				Pipe pipe = Pipe.open();
-				pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
-				pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+				
+				try {
+					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
+					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
+					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
+					pipeTransformer = new PipeTransformer(treeXmlReader);
+
+					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+					pipeParser = new PipeParser(pushParser, rootContext);
+					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+				} catch (TransformerFactoryConfigurationError e) {
+					throw new JetelRuntimeException("Failed to instantiate transformer", e);
+				}
 
 				pipeTransformer.start();
 				pipeParser.start();
