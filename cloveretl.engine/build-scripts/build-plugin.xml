@@ -398,6 +398,9 @@
 			<keep name="com.opensys.cloveretl.component.MapReader"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.component.JSONReader"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.component.JSONWriter"><field access="protected public"/><method access="protected public"/></keep>
+	
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$MapEntry"><field access="private protected public"/><method access="private protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$CollectionEntry"><field access="private protected public"/><method access="private protected public"/></keep>
 			
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
