@@ -43,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.tree.reader.AbortParsingException;
 import org.jetel.component.tree.reader.DataRecordProvider;
 import org.jetel.component.tree.reader.DataRecordReceiver;
+import org.jetel.component.tree.reader.InputAdapter;
 import org.jetel.component.tree.reader.TreeReaderParserProvider;
 import org.jetel.component.tree.reader.TreeStreamParser;
 import org.jetel.component.tree.reader.TreeXMLReaderAdaptor;
@@ -445,39 +446,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			sequences.put(context, sequence);
 		}
 		return sequence;
-	}
-
-	public static interface InputAdapter {
-		Object adapt(Object input);
-	}
-	
-	public static class ReadableByteChannelToSourceAdapter implements InputAdapter {
-		
-		private String charset;
-		
-		public ReadableByteChannelToSourceAdapter(String charset) {
-			this.charset = charset;
-		}
-
-		@Override
-		public Object adapt(Object input) {
-			if (input instanceof ReadableByteChannel) {
-				InputSource inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
-				if (charset != null) {
-					inputSource.setEncoding(charset);
-				}
-				return new SAXSource(inputSource);
-			} else {
-				throw new JetelRuntimeException("Could not read input " + input);
-			}
-		}
-	}
-	
-	public static class PassThroughInputAdapter implements InputAdapter {
-		@Override
-		public Object adapt(Object input) {
-			return input;
-		}
 	}
 	
 	/**

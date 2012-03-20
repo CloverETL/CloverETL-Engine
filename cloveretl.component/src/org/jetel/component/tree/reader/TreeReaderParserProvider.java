@@ -18,7 +18,6 @@
  */
 package org.jetel.component.tree.reader;
 
-import org.jetel.component.TreeReader.InputAdapter;
 
 
 /**
