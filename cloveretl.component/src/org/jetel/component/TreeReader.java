@@ -64,6 +64,7 @@ import org.jetel.component.tree.reader.xml.XmlXPathEvaluator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -492,7 +493,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			if (errorPortLogging) {
 				writeErrorLogRecord(e);
 			} else {
-				LOG.error(e);
+				BadDataFormatException bdfe = e.getCause();
+				bdfe.setRecordNumber(sourcePortRecordCounters[e.getPortIndex()]);
+				bdfe.setFieldNumber(e.getFieldMetadata().getNumber() + 1);
+				bdfe.setFieldName(e.getFieldMetadata().getName());
+				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
+				LOG.error(bdfe.getMessage() + "; input source: " + sourceIterator.isSingleSource());
 			}
 			if (maxErrors != -1 && ++errorsCount > maxErrors) {
 				LOG.error("Max errors count exceeded.", e);
@@ -505,11 +511,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		int i = 0;
 		errorLogRecord.getField(i++).setValue(e.getPortIndex());
 		errorLogRecord.getField(i++).setValue(sourcePortRecordCounters[e.getPortIndex()]);
-		errorLogRecord.getField(i++).setValue(sourceIterator.getCurrentFileName());
 		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getNumber() + 1);
 		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getName());
 		errorLogRecord.getField(i++).setValue(e.getCause().getOffendingValue());
 		errorLogRecord.getField(i++).setValue(e.getCause().getMessage());
+		if (errorLogRecord.getNumFields() > i) {
+			errorLogRecord.getField(i++).setValue(sourceIterator.getCurrentFileName());
+		}
+
 		try {
 			outputPorts[getErrorPortIndex()].writeRecord(errorLogRecord);
 		} catch (Exception ex) {
