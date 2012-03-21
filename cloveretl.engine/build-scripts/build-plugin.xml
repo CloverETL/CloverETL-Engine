@@ -362,6 +362,9 @@
 
 			<keep name="com.opensys.cloveretl.ctl.CTLUtils"><field access="protected public"/><method access="protected public"/></keep>
 
+			<keep name="org.jetel.license.Activator"><field access="protected public"/><method access="protected public"/></keep>
+
+			
 			<keep name="com.opensys.cloveretl.component.complexdatareader.*"><field access="protected public"/><method access="protected public"/></keep>
 
 			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.*"><field access="public"/><method access="public"/></keep>
