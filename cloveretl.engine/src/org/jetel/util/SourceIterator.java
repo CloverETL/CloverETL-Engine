@@ -323,6 +323,10 @@ public class SourceIterator {
 	public Iterator<String> getFileIterator() {
 		return files.iterator();
 	}
+	
+	public boolean isSingleSource() {
+		return files.size() <= 1;
+	}
 
 	public String getCurrentFileName() {
 		return currentSourceName;
