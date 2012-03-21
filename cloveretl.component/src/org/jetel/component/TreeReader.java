@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -61,7 +62,9 @@ import org.jetel.component.tree.reader.mappping.MappingContext;
 import org.jetel.component.tree.reader.mappping.MappingElementFactory;
 import org.jetel.component.tree.reader.mappping.MappingVisitor;
 import org.jetel.component.tree.reader.xml.XmlXPathEvaluator;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -512,17 +515,43 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		errorLogRecord.getField(i++).setValue(e.getPortIndex());
 		errorLogRecord.getField(i++).setValue(sourcePortRecordCounters[e.getPortIndex()]);
 		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getNumber() + 1);
-		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getName());
-		errorLogRecord.getField(i++).setValue(e.getCause().getOffendingValue());
-		errorLogRecord.getField(i++).setValue(e.getCause().getMessage());
+		setCharSequenceToField(e.getFieldMetadata().getName(), errorLogRecord.getField(i++));
+		setCharSequenceToField(e.getCause().getOffendingValue(), errorLogRecord.getField(i++));
+		setCharSequenceToField(e.getCause().getMessage(), errorLogRecord.getField(i++));
 		if (errorLogRecord.getNumFields() > i) {
-			errorLogRecord.getField(i++).setValue(sourceIterator.getCurrentFileName());
+			setCharSequenceToField(sourceIterator.getCurrentFileName(), errorLogRecord.getField(i++));
 		}
 
 		try {
 			outputPorts[getErrorPortIndex()].writeRecord(errorLogRecord);
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
+		}
+	}
+	
+	private void setCharSequenceToField(CharSequence charSeq, DataField field) {
+		if (charSeq == null) {
+			field.setNull(true);
+		} else {
+			field.setNull(false);
+			
+			if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+				field.setValue(charSeq);
+			} else if (field.getMetadata().getDataType() == DataFieldType.BYTE || field.getMetadata().getDataType() == DataFieldType.CBYTE) {
+				String cs;
+				if (charset != null) {
+					cs = charset;
+				} else {
+					cs = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+				}
+				try {
+					field.setValue(charSeq.toString().getBytes(cs));
+				} catch (UnsupportedEncodingException e) {
+					LOG.error(getId() + ": failed to write log record", e);
+				}
+			} else {
+				throw new IllegalArgumentException("Type of field \""+ field.getMetadata().getName() +"\" has to be string, byte or cbyte");
+			}
 		}
 	}
 	
