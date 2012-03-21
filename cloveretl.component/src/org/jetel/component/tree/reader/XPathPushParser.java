@@ -19,6 +19,7 @@
 package org.jetel.component.tree.reader;
 
 import java.util.Iterator;
+import java.util.Stack;
 
 import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MappingContext;
@@ -37,12 +38,18 @@ import org.jetel.exception.BadDataFormatException;
  * @created 5.12.2011
  */
 public class XPathPushParser {
+	
+	private static enum OutContextState {
+		OK, ERROR
+	}
 
 	protected DataRecordProvider recordProvider;
 	protected DataRecordReceiver recordReceiver;
 	protected XPathEvaluator evaluator;
 	protected ValueHandler valueHandler;
 	protected XPathSequenceProvider sequenceProvider;
+	
+	protected Stack<OutContextState> outContextStateStack = new Stack<OutContextState>();
 
 	/**
 	 * Constructs new XPath push parser.
@@ -80,7 +87,6 @@ public class XPathPushParser {
 
 	protected void handleContext(MappingContext mapping, Object context, DataRecord dataTarget)
 			throws AbortParsingException {
-
 		/*
 		 * for unbound context, switch evaluation context and process nested mappings
 		 */
@@ -89,6 +95,9 @@ public class XPathPushParser {
 			applyContextMappings(mapping, newContext, dataTarget, -1);
 			return;
 		}
+		
+		outContextStateStack.push(OutContextState.OK);
+
 		/*
 		 * iterate through XPath results
 		 */
@@ -124,7 +133,7 @@ public class XPathPushParser {
 					try {
 						currentRecordParentKeyField.setValue(parentKeyFields[i]);
 					} catch (BadDataFormatException e) {
-						recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
+						handleException(portIndex, newTarget, currentRecordParentKeyField, e);
 					}
 				}
 			}
@@ -133,11 +142,19 @@ public class XPathPushParser {
 			 */
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
+
 			/*
-			 * pass record data to consumer
+			 * pass record data to consumer if no error occured
 			 */
-			recordReceiver.receive(newTarget, portIndex);
+			if (outContextStateStack.peek() == OutContextState.OK) {
+				recordReceiver.receive(newTarget, portIndex);
+			} else {
+				// replace error state with OK state
+				outContextStateStack.pop(); 
+				outContextStateStack.push(OutContextState.OK);
+			}
 		}
+		outContextStateStack.pop();
 	}
 
 	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord, int portIndex)
@@ -177,7 +194,7 @@ public class XPathPushParser {
 			try {
 				valueHandler.storeValueToField(value, field);
 			} catch (BadDataFormatException e) {
-				recordReceiver.exceptionOccurred(generateException(e, field, target, portIndex));
+				handleException(portIndex, target, field, e);
 			}
 			// if (field.getType() == DataFieldMetadata.STRING_FIELD
 			// && value instanceof String
@@ -220,14 +237,20 @@ public class XPathPushParser {
 			}
 			}
 		} catch (BadDataFormatException e) {
-			recordReceiver.exceptionOccurred(generateException(e, field, record, portIndex));
+			handleException(portIndex, record, field, e);
 		}
 	}
 
 	protected Sequence getSequence(MappingContext context) {
 		return sequenceProvider.getSequence(context);
 	}
-	
+
+	private void handleException(int portIndex, DataRecord newTarget, DataField currentRecordParentKeyField, BadDataFormatException e) throws AbortParsingException {
+		recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
+		outContextStateStack.pop();
+		outContextStateStack.push(OutContextState.ERROR);
+	}
+
 	private FieldFillingException generateException(BadDataFormatException ex, DataField field, DataRecord record, int portIndex) {
 		FieldFillingException newEx = new FieldFillingException(ex);
 		newEx.setFieldMetadata(field.getMetadata());

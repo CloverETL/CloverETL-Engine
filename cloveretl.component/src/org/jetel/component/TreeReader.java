@@ -336,7 +336,18 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	 */
 	private boolean isErrorPortLogging(MappingContext rootContext) {
 		OutputPort errorPortCandidate = outPortsArray[getErrorPortIndex()];
-        return !isPortUsed(errorPortCandidate.getOutputPortNumber(), rootContext) && hasErrorLoggingMetadata(errorPortCandidate);
+		if (isPortUsed(errorPortCandidate.getOutputPortNumber(), rootContext)) {
+			return false;
+		} else {
+			if (hasErrorLoggingMetadata(errorPortCandidate)) {
+				return true;
+			} else {
+				LOG.warn("If the last output port is intended for error logging, metadata should be: "
+						+ "integer (out port number), integer (record number per source and port), integer (field number), "
+						+ "string (field name), string (value which caused the error), string (error message), string (source name - optional field)");
+				return false;
+			}
+		}
     }
 	
 	private int getErrorPortIndex() {
@@ -346,14 +357,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private boolean hasErrorLoggingMetadata(OutputPort errorPort) {
 		DataRecordMetadata metadata = errorPort.getMetadata();
         int errorNumFields = metadata.getNumFields();
-        return errorNumFields == 7
+        return (errorNumFields == 6 || errorNumFields  == 7)
         		&& metadata.getField(0).getDataType() == DataFieldType.INTEGER	// port number
         		&& metadata.getField(1).getDataType() == DataFieldType.INTEGER	// port record number per source
-        		&& isStringOrByte(metadata.getField(2))							// source name
-        		&& metadata.getField(3).getDataType() == DataFieldType.INTEGER	// field number
-        		&& isStringOrByte(metadata.getField(4))							// field name
-        		&& isStringOrByte(metadata.getField(5))							// offending value
-        		&& isStringOrByte(metadata.getField(6));						// error message
+        		&& metadata.getField(2).getDataType() == DataFieldType.INTEGER	// field number
+        		&& isStringOrByte(metadata.getField(3))							// field name
+        		&& isStringOrByte(metadata.getField(4))							// offending value
+        		&& isStringOrByte(metadata.getField(5))							// error message
+        		&& (errorNumFields == 6 || isStringOrByte(metadata.getField(6)));	// optional source name
 	}
 
 	private boolean isStringOrByte(DataFieldMetadata field) {
