@@ -98,7 +98,17 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		}
 		return super.jetelType2sql(field);
 	}
-    
+	
+	@Override
+	public char sqlType2jetel(int sqlType) {
+		//OracleResultSetMetadata.getColumnType(int column) returns 100 for BINARY_FLOAT and 101 for BINARY_DOUBLE type
+		//100 and 101 are not constants from java.sql.Types
+		if (sqlType == 100 || sqlType == 101) {
+			return DataFieldMetadata.NUMERIC_FIELD;
+		}
+		return super.sqlType2jetel(sqlType);
+	}
+
 	@Override
 	public String sqlType2str(int sqlType) {
 		switch(sqlType) {
