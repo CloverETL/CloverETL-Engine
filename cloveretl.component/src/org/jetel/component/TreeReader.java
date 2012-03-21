@@ -346,13 +346,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private boolean hasErrorLoggingMetadata(OutputPort errorPort) {
 		DataRecordMetadata metadata = errorPort.getMetadata();
         int errorNumFields = metadata.getNumFields();
-        return errorNumFields == 6
-        		&& metadata.getField(0).getDataType() == DataFieldType.INTEGER	// port record number per source
-        		&& isStringOrByte(metadata.getField(1))							// source name
-        		&& metadata.getField(2).getDataType() == DataFieldType.INTEGER	// field number
-        		&& isStringOrByte(metadata.getField(3))							// field name
-        		&& isStringOrByte(metadata.getField(4))							// offending value
-        		&& isStringOrByte(metadata.getField(5));						// error message
+        return errorNumFields == 7
+        		&& metadata.getField(0).getDataType() == DataFieldType.INTEGER	// port number
+        		&& metadata.getField(1).getDataType() == DataFieldType.INTEGER	// port record number per source
+        		&& isStringOrByte(metadata.getField(2))							// source name
+        		&& metadata.getField(3).getDataType() == DataFieldType.INTEGER	// field number
+        		&& isStringOrByte(metadata.getField(4))							// field name
+        		&& isStringOrByte(metadata.getField(5))							// offending value
+        		&& isStringOrByte(metadata.getField(6));						// error message
 	}
 
 	private boolean isStringOrByte(DataFieldMetadata field) {
@@ -490,12 +491,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	}
 
 	private void writeErrorLogRecord(FieldFillingException e) {
-		errorLogRecord.getField(0).setValue(sourcePortRecordCounters[e.getPortIndex()]);
-		errorLogRecord.getField(1).setValue(sourceIterator.getCurrentFileName());
-		errorLogRecord.getField(2).setValue(e.getFieldMetadata().getNumber());
-		errorLogRecord.getField(3).setValue(e.getFieldMetadata().getName());
-		errorLogRecord.getField(4).setValue(e.getCause().getOffendingValue());
-		errorLogRecord.getField(5).setValue(e.getCause().getMessage());
+		int i = 0;
+		errorLogRecord.getField(i++).setValue(e.getPortIndex());
+		errorLogRecord.getField(i++).setValue(sourcePortRecordCounters[e.getPortIndex()]);
+		errorLogRecord.getField(i++).setValue(sourceIterator.getCurrentFileName());
+		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getNumber() + 1);
+		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getName());
+		errorLogRecord.getField(i++).setValue(e.getCause().getOffendingValue());
+		errorLogRecord.getField(i++).setValue(e.getCause().getMessage());
 		try {
 			outputPorts[getErrorPortIndex()].writeRecord(errorLogRecord);
 		} catch (Exception ex) {
