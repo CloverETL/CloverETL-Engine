@@ -169,6 +169,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	// DataRecordProvider, DataRecordReceiver, XPathSequenceProvider properties
 	private DataRecord outputRecords[];
 	private OutputPort outputPorts[];
+	private boolean recordReadWithException[];
 	private int sequenceId;
 	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
 
@@ -279,6 +280,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		int portCount = getOutPorts().size();
 		outputRecords = new DataRecord[portCount];
 		outputPorts = new OutputPort[portCount];
+		recordReadWithException = new boolean[portCount];
 		for (int i = 0; i < portCount; ++i) {
 			OutputPort port = getOutputPort(i);
 			outputPorts[i] = port;
@@ -496,6 +498,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			if (errorPortLogging) {
 				writeErrorLogRecord(e);
 			} else {
+				if (!recordReadWithException[e.getPortIndex()]) {
+					recordReadWithException[e.getPortIndex()] = true;
+					sourcePortRecordCounters[e.getPortIndex()]++;
+				}
 				BadDataFormatException bdfe = e.getCause();
 				bdfe.setRecordNumber(sourcePortRecordCounters[e.getPortIndex()]);
 				bdfe.setFieldNumber(e.getFieldMetadata().getNumber() + 1);
@@ -558,6 +564,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public DataRecord getDataRecord(int port) throws AbortParsingException {
 		if (runIt) {
+			recordReadWithException[port] = false;
 			DataRecord record = outputRecords[port];
 			record.reset();
 			return record;
