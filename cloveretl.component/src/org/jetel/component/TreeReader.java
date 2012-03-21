@@ -507,7 +507,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				bdfe.setFieldNumber(e.getFieldMetadata().getNumber() + 1);
 				bdfe.setFieldName(e.getFieldMetadata().getName());
 				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
-				LOG.error(bdfe.getMessage() + "; input source: " + sourceIterator.isSingleSource());
+				LOG.error(bdfe.getMessage() + "; output port: " + e.getPortIndex() + "; input source: " + sourceIterator.isSingleSource());
 			}
 			if (maxErrors != -1 && ++errorsCount > maxErrors) {
 				LOG.error("Max errors count exceeded.", e);
