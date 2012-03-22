@@ -57,6 +57,7 @@ import org.jetel.component.tree.reader.XPathEvaluator;
 import org.jetel.component.tree.reader.XPathPushParser;
 import org.jetel.component.tree.reader.XPathSequenceProvider;
 import org.jetel.component.tree.reader.mappping.FieldMapping;
+import org.jetel.component.tree.reader.mappping.ImplicitMappingAddingVisitor;
 import org.jetel.component.tree.reader.mappping.MalformedMappingException;
 import org.jetel.component.tree.reader.mappping.MappingContext;
 import org.jetel.component.tree.reader.mappping.MappingElementFactory;
@@ -141,6 +142,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public final static String XML_MAPPING_ATTRIBUTE = "mapping";
 	public final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	public static final String XML_IMPLICIT_MAPPING_ATTRIBUTE = "implicitMapping";
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException {
@@ -161,6 +163,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				// throw configuration exception
 				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
 			}
+
+			treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(treeReader.getType() + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
@@ -181,6 +185,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	private String mappingString;
 	private String mappingURL;
+	private boolean implicitMapping;
 
 	private TreeReaderParserProvider parserProvider;
 	private TreeProcessor treeProcessor;
@@ -252,6 +257,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		// FIXME: mapping should not be initialized here in init if is passed via external file, since it is possible
 		// that mapping file does not exist at this moment, or its content can change
 		MappingContext rootContext = createMapping();
+		
+		if (implicitMapping) {
+			MappingVisitor implicitMapping = new ImplicitMappingAddingVisitor(getOutMetadata());
+			rootContext.acceptVisitor(implicitMapping);
+		}
+		
 		XPathPushParser pushParser;
 		ProcessingMode processingMode = resolveProcessingMode();
 		switch (processingMode) {
@@ -466,6 +477,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	public void setMappingURL(String mappingURL) {
 		this.mappingURL = mappingURL;
+	}
+	
+	public void setImplicitMapping(boolean implicitMapping) {
+		this.implicitMapping = implicitMapping;
 	}
 
 	@Override
@@ -820,5 +835,5 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		
 	}
-	
+
 }

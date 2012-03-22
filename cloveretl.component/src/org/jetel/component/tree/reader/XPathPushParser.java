@@ -23,7 +23,6 @@ import java.util.Stack;
 
 import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MappingContext;
-import org.jetel.component.tree.reader.mappping.MappingElement;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
@@ -163,14 +162,11 @@ public class XPathPushParser {
 		if (evaluationContext == null) {
 			return;
 		}
-		for (MappingElement element : mapping.getChildren()) {
-			if (element instanceof FieldMapping) {
-				FieldMapping fieldMapping = (FieldMapping) element;
-				handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
-			} else if (element instanceof MappingContext) {
-				MappingContext nestedContext = (MappingContext) element;
-				handleContext(nestedContext, evaluationContext, targetRecord);
-			}
+		for (FieldMapping fieldMapping : mapping.getFieldMappingChildren()) {
+			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
+		}
+		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
+			handleContext(constantMapping, evaluationContext, targetRecord);
 		}
 	}
 
