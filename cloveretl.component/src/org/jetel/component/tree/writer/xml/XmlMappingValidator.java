@@ -380,70 +380,12 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 
 	@Override
 	protected void validateRelation(Relation element) {
-
-		checkCloverNamespaceAvailable(element.getParent());
-
-		String inPortString = element.getProperty(MappingProperty.INPUT_PORT);
-		Integer inPortIndex = null;
-		if (inPortString == null) {
-			addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port not specified!", Severity.ERROR));
-			return;
-		} else {
-			inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.INPUT_PORT);
-			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + inPortString + "' is not connected!", Severity.ERROR));
-				return;
-			}
-		}
-
-		String keyString = element.getProperty(MappingProperty.KEY);
-		String parentKeyString = element.getProperty(MappingProperty.PARENT_KEY);
-
-		if (parentKeyString != null && keyString == null) {
-			addProblem(element, MappingProperty.KEY, new MappingError(MappingProperty.KEY.getName() + " attribute not specified!", Severity.ERROR));
-		}
-		if (parentKeyString == null && keyString != null) {
-			addProblem(element, MappingProperty.PARENT_KEY, new MappingError(MappingProperty.PARENT_KEY.getName() + " attribute not specified!", Severity.ERROR));
-		}
-
-		if (keyString != null) {
-			String[] keyList = keyString.split(TreeWriterMapping.DELIMITER);
-			checkAvailableData(element, MappingProperty.KEY, inPorts.get(inPortIndex), keyList);
-
-			if (parentKeyString != null) {
-				if (parentKeyString.split(TreeWriterMapping.DELIMITER).length != keyList.length) {
-					addProblem(element, MappingProperty.KEY, new MappingError("Count of fields must match parent key field count", Severity.ERROR));
-					addProblem(element, MappingProperty.PARENT_KEY, new MappingError("Count of fields must match key field count", Severity.ERROR));
-				}
-			}
-
-		}
-		if (parentKeyString != null) {
-			inPortString = null;
-			ContainerNode parent = getRecurringParent(element.getParent());
-			if (parent != null) {
-				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
-			}
-			if (inPortString == null) {
-				addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
-			} else {
-				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
-				if (inPortIndex == null) {
-					addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
-				} else {
-					checkAvailableData(element, MappingProperty.PARENT_KEY, inPorts.get(inPortIndex), parentKeyString.split(TreeWriterMapping.DELIMITER));
-				}
-			}
-		}
+		// No format specific validation
 	}
 
 	@Override
 	protected void validateTemplateEntry(TemplateEntry objectTemplateEntry) {
-		String templateName = objectTemplateEntry.getProperty(MappingProperty.NAME);
-		if (templateName == null || !mapping.getTemplates().containsKey(templateName)) {
-			addProblem(objectTemplateEntry, MappingProperty.NAME, new MappingError("Unknown template", Severity.ERROR));
-			return;
-		}
+		// No format specific validation
 	}
 
 	private void checkNamespacePrefixAvailable(AbstractNode element, String prefix, MappingProperty property) {
