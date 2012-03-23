@@ -1092,7 +1092,7 @@ defined.version.suffix=release
 	
 	<target name="pmd">
 		<mkdir dir="${dir.pmdreport}"/>
-	    <pmd rulesetfiles="imports.xml,unusedcode">
+	    <pmd rulesetfiles="basic">
 	    	<classpath>
                 <path refid="pmd.classpath"/>
             </classpath>
