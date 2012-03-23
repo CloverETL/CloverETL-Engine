@@ -40,8 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class ImplicitMappingAddingVisitor implements MappingVisitor {
 	
 	private List<DataRecordMetadata> outPortsMetadata;
-	private Stack<BitSet> contextFieldUsageStack = new Stack<BitSet>();
-	private Stack<DataRecordMetadata> contextMetadata = new Stack<DataRecordMetadata>();
+	private Stack<FieldUsage> contextFieldUsageStack = new Stack<FieldUsage>();
 	
 	public ImplicitMappingAddingVisitor(List<DataRecordMetadata> outPortsMetadata) {
 		this.outPortsMetadata = outPortsMetadata;
@@ -51,8 +50,7 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 	public void visitBegin(MappingContext context) {
 		DataRecordMetadata metadata = getPortMetadata(context);
 		if (metadata != null) {
-			contextFieldUsageStack.push(new BitSet(metadata.getNumFields()));
-			contextMetadata.push(metadata);
+			contextFieldUsageStack.push(new FieldUsage(new BitSet(metadata.getNumFields()), metadata));
 			
 			String[] keys = context.getGeneratedKeys();
 			if (keys != null) {
@@ -69,10 +67,10 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 	}
 
 	private void markFieldUsed(String fieldName) {
-		DataRecordMetadata metadata = contextMetadata.peek();
+		DataRecordMetadata metadata = contextFieldUsageStack.peek().metadata;
 		DataFieldMetadata field = metadata.getField(fieldName);
 		if (field != null) {
-			contextFieldUsageStack.peek().set(field.getNumber());
+			contextFieldUsageStack.peek().usedFields.set(field.getNumber());
 		} else {
 			throw new IllegalArgumentException("Field \"" + fieldName + "\" does not exist in metadata " + metadata.getName());
 		}
@@ -85,17 +83,21 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 	
 	@Override
 	public void visitEnd(MappingContext context) {
-		DataRecordMetadata metadata = contextMetadata.pop();
-		BitSet fieldUsage = contextFieldUsageStack.pop();
-
-		fieldUsage.flip(0, metadata.getNumFields());
-		
-		for (int i = fieldUsage.nextSetBit(0); i >= 0; i = fieldUsage.nextSetBit(i+1)) {
-			String fieldName = metadata.getField(i).getName();
-			FieldMapping fieldMapping = new FieldMapping();
-			fieldMapping.setXPath(fieldName); // TODO noneName instead?
-			fieldMapping.setCloverField(fieldName);
-			context.addChild(fieldMapping);
+		DataRecordMetadata metadata = getPortMetadata(context);
+		if (metadata != null) {
+			FieldUsage fieldUsage = contextFieldUsageStack.pop();
+			// note: fieldUsage.metadata == metadata
+	
+			BitSet usageFields = fieldUsage.usedFields;
+			usageFields.flip(0, metadata.getNumFields());
+			
+			for (int i = usageFields.nextSetBit(0); i >= 0; i = usageFields.nextSetBit(i+1)) {
+				String fieldName = metadata.getField(i).getName();
+				FieldMapping fieldMapping = new FieldMapping();
+				fieldMapping.setXPath(fieldName); // TODO noneName instead?
+				fieldMapping.setCloverField(fieldName);
+				context.addChild(fieldMapping);
+			}
 		}
 	}
 
@@ -107,8 +109,20 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 		}
 		if (portIndex >= outPortsMetadata.size()) {
 			throw new IndexOutOfBoundsException("Output port index " + portIndex + " out of range [0, " + (outPortsMetadata.size() - 1) + "]");
-			// TODO or ignore instead?
 		}
 		return outPortsMetadata.get(portIndex);
 	}
+	
+	private static class FieldUsage {
+		
+		public final BitSet usedFields;
+		public final DataRecordMetadata metadata;
+
+		private FieldUsage(BitSet usedFields, DataRecordMetadata metadata) {
+			this.usedFields = usedFields;
+			this.metadata = metadata;
+		}
+		
+	}
+	
 }
