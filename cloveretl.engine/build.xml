@@ -5,6 +5,7 @@
 
 	<property name="dir.tools" value="${basedir}/tools"/>
 	<property name="dir.findbugs" value="/opt/findbugs"/>
+	<property name="dir.pmd" value="/opt/pmd"/>
 
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
@@ -65,6 +66,7 @@
 	<property name="cobertura.ser" value="${dir.build}/cobertura.ser"/>
 	<property name="dir.src.javadoc" value="${dir.build}/src-javadoc" />
 	<property name="dir.lib.javadoc" value="${dir.build}/lib-javadoc" />
+	<property name="dir.pmdreport" value="${basedir}/pmdreport" />
 
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -118,6 +120,15 @@
 	</path>
 
 	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />
+	
+	<path id="pmd.classpath">
+	    <pathelement location="${build}"/>
+	    <fileset dir="${dir.pmd}">
+	        <include name="*.jar"/>
+	    </fileset>
+	</path>
+
+	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath"/>
 
 	<!-- =========================== PUBLIC TARGETS ============================== -->
 	<target name="build" depends="build-engine,build-plugins" description="Compiles sources and creates a JAR file">
@@ -840,7 +851,7 @@ defined.version.suffix=release
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
@@ -1078,6 +1089,16 @@ defined.version.suffix=release
 		<exec executable="${dir.examples}/ExtExamples/lib/derby/bin/startNetworkServer">
 			<env key="DERBY_HOME" value="${derby.home}"/>
 		</exec>
+	</target>
+	
+	<target name="pmd">
+		<mkdir dir="${dir.pmdreport}"/>
+	    <pmd rulesetfiles="imports.xml,unusedcode">
+	        <formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
+	        <fileset dir="${basedir}">
+	            <include name="**/*.java"/>
+	        </fileset>
+	    </pmd>
 	</target>
 	
 	<target name="findbugs-init">
