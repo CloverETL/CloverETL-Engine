@@ -122,7 +122,6 @@
 	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />
 	
 	<path id="pmd.classpath">
-	    <pathelement location="${build}"/>
 	    <fileset dir="${dir.pmd}">
 	        <include name="*.jar"/>
 	    </fileset>
