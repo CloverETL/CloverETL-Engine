@@ -1093,6 +1093,9 @@ defined.version.suffix=release
 	<target name="pmd">
 		<mkdir dir="${dir.pmdreport}"/>
 	    <pmd rulesetfiles="imports.xml,unusedcode">
+	    	<classpath>
+                <path refid="pmd.classpath"/>
+            </classpath>
 	        <formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 	        <fileset dir="${basedir}">
 	            <include name="**/*.java"/>
