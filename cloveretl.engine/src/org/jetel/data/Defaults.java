@@ -230,7 +230,7 @@ public final class Defaults {
         DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
         DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
         DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
-		DEFAULT_LICENSE_LOCATION = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./license");
+		DEFAULT_LICENSE_LOCATION = getStringProperties("DEFAULT_LICENSE_DIRECTORY", "./license");
         CLOVER_FIELD_INDICATOR = getStringProperties("CLOVER_FIELD_INDICATOR", "$");
         CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
         ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
