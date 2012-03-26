@@ -259,8 +259,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		MappingContext rootContext = createMapping();
 		
 		if (implicitMapping) {
-			MappingVisitor implicitMapping = new ImplicitMappingAddingVisitor(getOutMetadata());
-			rootContext.acceptVisitor(implicitMapping);
+			MappingVisitor implicitMappingVisitor = new ImplicitMappingAddingVisitor(getOutMetadata());
+			rootContext.acceptVisitor(implicitMappingVisitor);
 		}
 		
 		XPathPushParser pushParser;
