@@ -22,6 +22,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Stack;
 
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -93,8 +94,12 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 			
 			for (int i = usageFields.nextSetBit(0); i >= 0; i = usageFields.nextSetBit(i+1)) {
 				String fieldName = metadata.getField(i).getName();
+				String xpath = fieldName;
+				if (metadata.getField(i).getContainerType() == DataFieldContainerType.SINGLE) {
+					xpath += "[1]";
+				}
 				FieldMapping fieldMapping = new FieldMapping();
-				fieldMapping.setXPath(fieldName); // TODO noneName instead?
+				fieldMapping.setXPath(xpath);
 				fieldMapping.setCloverField(fieldName);
 				context.addChild(fieldMapping);
 			}
