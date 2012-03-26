@@ -251,7 +251,7 @@ public class ResetTest extends CloverTestCase {
 			}
 
 		} catch (Throwable e) {
-			throw new IllegalStateException("Error executing grap " + graphFile);
+			throw new IllegalStateException("Error executing grap " + graphFile, e);
 		} finally {
 			if (cleanUp) {
 				cleanupData();
