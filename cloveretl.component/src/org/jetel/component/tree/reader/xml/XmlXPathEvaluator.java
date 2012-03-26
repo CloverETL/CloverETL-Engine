@@ -26,12 +26,8 @@ import java.util.Map.Entry;
 
 import javax.xml.transform.Source;
 
-import net.sf.saxon.om.Axis;
-import net.sf.saxon.om.AxisIterator;
-import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.sxpath.IndependentContext;
 import net.sf.saxon.sxpath.XPathExpression;
-import net.sf.saxon.tinytree.TinyNodeImpl;
 import net.sf.saxon.trans.XPathException;
 
 import org.jetel.component.tree.reader.XPathEvaluator;
@@ -102,18 +98,8 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 	}
 
 	@Override
-	public Object evaluateNodeName(String nodeName, Map<String, String> namespaceBinding, Object context,
-			MappingElement element) {
-		setNamespacesToEvaluator(namespaceBinding);
-		NodeInfo typedContext = (NodeInfo) context;
-		AxisIterator childIterator = typedContext.iterateAxis(Axis.CHILD);
-		while (childIterator.moveNext()) {
-			TinyNodeImpl child = (TinyNodeImpl) childIterator.current();
-			if (child.getDisplayName().equals(nodeName)) {
-				return child.getStringValue();
-			}
-		}
-		return null;
+	public Object evaluateNodeName(String nodeName, Map<String, String> namespaceBinding, Object context, MappingElement element) {
+		return evaluatePath(nodeName, namespaceBinding, context, element);
 	}
 
 	@Override
