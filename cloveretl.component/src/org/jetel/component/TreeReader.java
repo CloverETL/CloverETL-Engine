@@ -519,7 +519,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				}
 				BadDataFormatException bdfe = e.getCause();
 				bdfe.setRecordNumber(sourcePortRecordCounters[e.getPortIndex()]);
-				bdfe.setFieldNumber(e.getFieldMetadata().getNumber() + 1);
+				bdfe.setFieldNumber(e.getFieldMetadata().getNumber());
 				bdfe.setFieldName(e.getFieldMetadata().getName());
 				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
 				String errorMsg = bdfe.getMessage() + "; output port: " + e.getPortIndex();
