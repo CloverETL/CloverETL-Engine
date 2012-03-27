@@ -297,7 +297,7 @@ public final class Defaults {
 	 * List of directories, where licenses are located. Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX
 	 * property.
 	 */
-	public static String DEFAULT_LICENSE_LOCATION;// = "./license"
+	public static String DEFAULT_LICENSE_LOCATION;// = "./licenses"
 	/**
 	 * string used for recognizing of clover field
 	 */
