@@ -134,6 +134,8 @@ public class MappingWriter implements MappingVisitor {
 	public void visit(Value element) throws XMLStreamException {
 		String toWrite = element.getProperty(MappingProperty.VALUE);
 		if (toWrite != null) {
+			// If CRLF is written, LFLF is subsequently read 
+			toWrite = toWrite.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
 			writer.writeCharacters(toWrite);
 		}
 	}
