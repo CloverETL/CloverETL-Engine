@@ -510,13 +510,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					+ e.getFieldMetadata().getDataType().getName() + ") on port " + e.getPortIndex(), e.getCause());
 			throw new AbortParsingException(e);
 		} else if (policyType == PolicyType.CONTROLLED) {
+			if (!recordReadWithException[e.getPortIndex()]) {
+				recordReadWithException[e.getPortIndex()] = true;
+				sourcePortRecordCounters[e.getPortIndex()]++;
+			}
 			if (errorPortLogging) {
 				writeErrorLogRecord(e);
 			} else {
-				if (!recordReadWithException[e.getPortIndex()]) {
-					recordReadWithException[e.getPortIndex()] = true;
-					sourcePortRecordCounters[e.getPortIndex()]++;
-				}
 				BadDataFormatException bdfe = e.getCause();
 				bdfe.setRecordNumber(sourcePortRecordCounters[e.getPortIndex()]);
 				bdfe.setFieldNumber(e.getFieldMetadata().getNumber());
