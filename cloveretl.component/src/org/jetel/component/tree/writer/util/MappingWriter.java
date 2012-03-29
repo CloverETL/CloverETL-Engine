@@ -25,6 +25,7 @@ import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
+import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
 import org.jetel.component.tree.writer.model.design.Namespace;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
@@ -87,11 +88,18 @@ public class MappingWriter implements MappingVisitor {
 			writer.writeStartElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, ObjectNode.XML_TEMPLATE_DEFINITION);
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
-			if (element.getChildren().isEmpty()) {
-				writer.writeEmptyElement(TagName.encode(element.getProperty(MappingProperty.NAME)));
+			String name = element.getProperty(MappingProperty.NAME);
+			String prefix = getBoundPrefix(name, element);
+			if (prefix != null) {
+				name = prefix + ":" + TagName.encode(name.substring(name.indexOf(':') + 1));
 			} else {
-				writer.writeStartElement(TagName.encode(element.getProperty(MappingProperty.NAME)));
+				name = TagName.encode(name);
 			}
+			if (element.getChildren().isEmpty()) {
+				writer.writeEmptyElement(name);
+			} else {
+				writer.writeStartElement(name);
+			} 
 		}
 		
 		//write namespaces
@@ -232,6 +240,23 @@ public class MappingWriter implements MappingVisitor {
 			}
 			writer.writeEndElement();
 		}
+	}
+	
+	private String getBoundPrefix(String name, ObjectNode node) {
+		
+		final int colPos = name.indexOf(':');
+		if (colPos > 0) {
+			
+			String prefix = name.substring(0, colPos);
+			for (ContainerNode container = node; container != null; container = container.getParent()) {
+				for (Namespace ns : container.getNamespaces()) {
+					if (prefix.equals(ns.getProperty(MappingProperty.NAME))) { // prefix is NAME - hmm
+						return prefix;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 }

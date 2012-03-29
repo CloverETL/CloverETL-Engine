@@ -19,6 +19,7 @@
 package org.jetel.component.tree.writer.util;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -85,8 +86,11 @@ public class StaxPrettyPrintHandler implements InvocationHandler {
 			indent(depth);
 			
 		}
-		
-		return method.invoke(target, args);
+		try {
+			return method.invoke(target, args);
+		} catch (Throwable t) {
+			return handleException(method, t);
+		}
 	}
 
 	private void indent(int depth) throws XMLStreamException {
@@ -95,5 +99,27 @@ public class StaxPrettyPrintHandler implements InvocationHandler {
 		Arrays.fill(indent, 1, indent.length, INDENT);
 
 		target.writeCharacters(indent, 0, indent.length);
+	}
+	
+	private Object handleException(Method method, Throwable throwable) throws Throwable {
+		
+		if (throwable instanceof InvocationTargetException) {
+			InvocationTargetException itex = (InvocationTargetException)throwable;
+			throwable = itex.getTargetException();
+		}
+		if (throwable instanceof RuntimeException) {
+			throw throwable;
+		}
+		if (throwable instanceof Error) {
+			throw throwable; 
+		}
+		for (Class<?> exType : method.getExceptionTypes())
+		{
+			if (exType.isAssignableFrom(throwable.getClass()))
+			{
+				throw throwable;
+			}
+		}
+		throw new RuntimeException(throwable.getMessage(), throwable);
 	}
 }
