@@ -558,6 +558,7 @@
 				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
 				effort="max"
 				reportlevel="low"
+				noClassOk="true"
 				jvmargs="-Xmx500m">
 			<class location="${dir.classes}"/>
 			<class location="${dir.classestest}"/>
