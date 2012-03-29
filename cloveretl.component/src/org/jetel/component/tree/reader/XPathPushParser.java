@@ -27,6 +27,8 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * This unit traverses tree structure using given mapping. Results of the traversal are pushed into
@@ -186,23 +188,11 @@ public class XPathPushParser {
 			value = evaluator.evaluateNodeName(mapping.getNodeName(), mapping.getNamespaceBinding(), context, mapping);
 		}
 		if (value != null) {
-			// TODO: reimplement trim functionality
 			try {
-				valueHandler.storeValueToField(value, field);
+				valueHandler.storeValueToField(value, field, mapping.isTrim());
 			} catch (BadDataFormatException e) {
 				handleException(portIndex, target, field, e);
 			}
-			// if (field.getType() == DataFieldMetadata.STRING_FIELD
-			// && value instanceof String
-			// && mapping.isTrim()) {
-			// value = ((String)value).trim();
-			//
-			// }
-			// try {
-			// field.setValue(value);
-			// } catch (BadDataFormatException e) {
-			// recordReceiver.exceptionOccurred(e);
-			// }
 		}
 	}
 

@@ -30,4 +30,7 @@ import org.jetel.data.DataField;
 public interface ValueHandler {
 
 	void storeValueToField(Object value, DataField field);
+	
+	void storeValueToField(Object value, DataField field, boolean doTrim);
+	
 }
