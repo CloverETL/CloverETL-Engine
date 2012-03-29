@@ -840,7 +840,7 @@ defined.version.suffix=release
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="dist,findbugs-xml,findbugs-xml-plugins">
+	<target name="reports-hudson-detail" depends="dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
