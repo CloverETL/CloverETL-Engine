@@ -1120,6 +1120,7 @@ defined.version.suffix=release
 					excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
 					effort="max"
 					reportlevel="low"
+					noClassOk="true"
 					jvmargs="-Xmx600m">
 			<class location="${dir.bin}"/>
 			<class location="${dir.classestest}"/>
