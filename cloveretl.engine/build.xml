@@ -840,7 +840,7 @@ defined.version.suffix=release
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	<target name="reports-hudson-detail" depends="dist,findbugs-xml,findbugs-xml-plugins">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
@@ -1120,11 +1120,9 @@ defined.version.suffix=release
 					excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
 					effort="max"
 					reportlevel="low"
-					noClassOk="true"
 					jvmargs="-Xmx600m">
-<!--			<class location="${dir.bin}"/>
-			<class location="${dir.classestest}"/> -->
-			<class location="${dir.build}"/>
+			<class location="${dir.bin}"/>
+			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
 			<sourcePath path="${dir.src.test}" />
 			<auxclasspath path="${tools}"/>
