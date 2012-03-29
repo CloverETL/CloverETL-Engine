@@ -466,7 +466,7 @@
 	</target>
 
 	
-	<target name="compile-tests" depends="find-required-plugins,compile" if="tests-available">
+	<target name="compile-tests" depends="find-required-plugins,compile">
 		<mkdir dir="${dir.classestest}"/>
 		<if><isset property="tests-available"/><then>
 			<echo>fileset dir="${dir.engine.classestest}"</echo>
@@ -558,7 +558,6 @@
 				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
 				effort="max"
 				reportlevel="low"
-				noClassOk="true"
 				jvmargs="-Xmx500m">
 			<class location="${dir.classes}"/>
 			<class location="${dir.classestest}"/>
