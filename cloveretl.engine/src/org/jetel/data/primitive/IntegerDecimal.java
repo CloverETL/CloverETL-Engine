@@ -129,12 +129,12 @@ public final class IntegerDecimal implements Decimal {
             setNaN(false);
             if(!satisfyPrecision()) {
                 setNaN(true);
-                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + decimal + ")");
+                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal) + ")");
             }
         } else {
             BigInteger bi = decimal.getBigDecimal().setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
             if(HugeDecimal.precision(bi) > precision) {
-                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + decimal + ")");
+                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal) + ")");
             }
             value = bi.longValue();
             setNaN(false);

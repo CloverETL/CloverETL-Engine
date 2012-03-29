@@ -235,8 +235,13 @@ public class SQLDataParser extends AbstractParser {
 				throw bdfe;
 			}
 		} catch (Exception ex) {
-            logger.debug(ex.getMessage(),ex);
-			throw new RuntimeException(ex.getMessage(),ex);
+			String fieldName = null;
+			if (record != null && record.getMetadata() != null && record.getMetadata().getFieldNamesArray() != null && record.getMetadata().getFieldNamesArray().length  >= fieldNum) {
+				fieldName = record.getMetadata().getFieldNamesArray()[fieldNum - 1];
+			}
+
+            logger.debug("Error parsing field '" + fieldName + "': " + ex.getMessage(), ex);
+			throw new RuntimeException("Error parsing field '" + fieldName + "': " + ex.getMessage(), ex);
 		}
 	}
 
