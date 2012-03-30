@@ -52,7 +52,6 @@ import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
-@edu.umd.cs.findbugs.annotations.SuppressWarnings(value="DMI_BAD_MONTH", justification="Just testing if annotations work")
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
