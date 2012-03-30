@@ -445,9 +445,6 @@ public class HashJoin extends Node {
 		} else {
 			inRecords[0] = new DataRecord(driverPort.getMetadata());
 			inRecords[0].init();
-			for (DataRecordMap mapItem : hashMap) {
-				mapItem.clear();
-			}
 			transformation.reset();
 		}
 		if (errorLogURL != null) {
@@ -748,6 +745,12 @@ public class HashJoin extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+
+		if (hashMap != null) {
+			for (DataRecordMap mapItem : hashMap) {
+				mapItem.clear();
+			}
+		}
 
 		transformation.postExecute();
 		transformation.finished();
