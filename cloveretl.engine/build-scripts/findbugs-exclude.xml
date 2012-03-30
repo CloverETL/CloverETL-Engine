@@ -24,6 +24,13 @@
      <Match>
        <Class name="~org\.jetel\.interpreter\.TransformLangParser[^.]*" />
      </Match>
+     
+     <!-- Test if it works for check run by jenkins -->
+     <Match>
+     	<Class name="org.jetel.component.XMLExtract" />
+     	<Method name="checkConfig" />
+     	<Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE" />
+     </Match>
 
      <Match>
      	<Bug code="PZLA" />
