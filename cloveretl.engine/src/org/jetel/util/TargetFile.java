@@ -27,6 +27,7 @@ import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -248,7 +249,8 @@ public class TargetFile {
 		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, null);
 
 		if (dictProcesstingType == null) {
-			if (dictValue != null) {
+			//a test (dictValue instanceof List) is a dirty fix for a case when a default value is set to an initial value (new ArrayList<byte[]>())
+			if (dictValue != null && !(dictValue instanceof List)) {
 				dictProcesstingType = ProcessingType.STREAM;
 			} else {
 				dictProcesstingType = ProcessingType.DISCRETE;
