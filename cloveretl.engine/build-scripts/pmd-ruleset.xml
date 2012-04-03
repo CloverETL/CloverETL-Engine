@@ -12,7 +12,7 @@
   <rule ref="rulesets/sunsecure.xml"/>
   <rule ref="rulesets/strings.xml"/>
   <rule ref="rulesets/unusedcode.xml"/>
-  <rule ref="rulesets/unnecessary.xml"/>
+  <rule ref="rulesets/junit.xml"/>
   <rule ref="rulesets/imports.xml"/>
   <rule ref="rulesets/basic.xml"/>
 </ruleset>
