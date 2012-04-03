@@ -1181,8 +1181,7 @@ defined.version.suffix=release
 		<mkdir dir="${dir.pmdreport}"/>
 		<pmd rulesetfiles="${pmd.ruleset.file}">
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
-			<fileset dir="${dir.src}" includes="**/*.java"/>
-			<fileset dir="${dir.src.test}" includes="**/*.java"/>
+			<fileset dir="../" includes="**/*.java"/>
 		</pmd>
 	</target>
 	
