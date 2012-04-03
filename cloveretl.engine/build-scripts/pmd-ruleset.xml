@@ -9,10 +9,10 @@
   Clover ruleset
   </description>
 
-  <rule ref="rulesets/sunsecure.xml"/>
-  <rule ref="rulesets/strings.xml"/>
-  <rule ref="rulesets/unusedcode.xml"/>
-  <rule ref="rulesets/unnecessary.xml"/>
-  <rule ref="rulesets/imports.xml"/>
-  <rule ref="rulesets/basic.xml"/>
+  <rule ref="rulesets/java/sunsecure.xml"/>
+  <rule ref="rulesets/java/strings.xml"/>
+  <rule ref="rulesets/java/unusedcode.xml"/>
+  <rule ref="rulesets/java/unnecessary.xml"/>
+  <rule ref="rulesets/java/imports.xml"/>
+  <rule ref="rulesets/java/basic.xml"/>
 </ruleset>
