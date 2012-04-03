@@ -41,7 +41,8 @@ public enum AdditionalComponentAttributes {
 	SPREADSHEET_DATA_READER("SPREADSHEET_READER", true, "xls", "xlsx"),
 	SPREADSHEET_DATA_WRITER("SPREADSHEET_WRITER", false, "xls", "xlsx"),
 	XLS_READER("XLS_READER", true, "xls", "xlsx"),
-	XLS_WRITER("XLS_WRITER", false, "xls", "xlsx");
+	XLS_WRITER("XLS_WRITER", false, "xls", "xlsx"),
+	JSON_READER("JSON_READER", true, "json");
 	
 	static public enum ComponentOperation {
 		READER, WRITER;
