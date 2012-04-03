@@ -1170,8 +1170,9 @@ public class DataFieldMetadata implements Serializable {
 
 	@Override
 	public String toString(){
-		return "Field [name:" + this.name + ", type:" + this.type.toString(getContainerType()) + ", position:" + this.number + 
-				(containerType != DataFieldContainerType.SINGLE ? ", multivalue:" + containerType.getDisplayName() : "") + "]";
+		return "Field [name:" + this.name + ", type:" + this.type.toString(getContainerType()) +
+				(containerType != DataFieldContainerType.SINGLE ? ", containerType:" + containerType.getDisplayName() : "") +
+				", position:" + this.number  + "]";
 	}
 	
 	/**
