@@ -850,7 +850,7 @@ defined.version.suffix=release
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="pmd,dist">
+	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
@@ -1179,7 +1179,7 @@ defined.version.suffix=release
 	
 	<target name="pmd" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
-		<pmd rulesetfiles="${pmd.ruleset.file}">
+		<pmd targetjdk="1.6" rulesetfiles="${pmd.ruleset.file}">
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 			<fileset dir="../" includes="**/*.java"/>
 		</pmd>
