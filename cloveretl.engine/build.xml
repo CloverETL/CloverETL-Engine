@@ -123,12 +123,8 @@
 
 	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />
 	
-	<path id="pmd.classpath">
-		<fileset dir="${dir.pmd.lib}" includes="**/*.jar" />
-	</path>
 	
-	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath" />
-
+	
 	<!-- =========================== PUBLIC TARGETS ============================== -->
 	<target name="build" depends="build-engine,build-plugins" description="Compiles sources and creates a JAR file">
 	</target>
@@ -1177,7 +1173,14 @@ defined.version.suffix=release
 		</cobertura-report>
 	</target>
 	
-	<target name="pmd" description="Analyze the source code with PMD">
+	<target name="pmd-init">
+		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.classpath" />
+		<path id="pmd.classpath">
+				<fileset dir="${dir.pmd.lib}" includes="**/*.jar" />
+		</path>
+	</target>
+	
+	<target name="pmd" depends="pmd-init" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
 		<pmd targetjdk="1.6" rulesetfiles="${pmd.ruleset.file}">
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
