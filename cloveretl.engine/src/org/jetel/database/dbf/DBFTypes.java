@@ -174,7 +174,7 @@ public class DBFTypes  {
 		/* we don't support memos / byte fields */
 		case DataFieldMetadata.BYTE_FIELD:
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data types (check metadata definition).");
+			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
 		default:
 			return 'C'; // C - Character
 		}
@@ -199,7 +199,7 @@ public class DBFTypes  {
 		/* we don't support memos / byte fields */
 		case DataFieldMetadata.BYTE_FIELD:
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data types (check metadata definition).");
+			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
 		default:
 			return field.getSize();
 		}
