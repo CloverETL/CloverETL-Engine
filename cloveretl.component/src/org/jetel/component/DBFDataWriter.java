@@ -26,7 +26,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.database.dbf.DBFAnalyzer;
 import org.jetel.database.dbf.DBFDataFormatter;
+import org.jetel.database.dbf.DBFTypes;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -34,6 +36,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -241,6 +244,16 @@ public class DBFDataWriter extends Node {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
+        
+        for(DataFieldMetadata field : getInputPort(READ_FROM_PORT).getMetadata()){
+        	try{
+        		DBFTypes.cloverType2dbf(field.getType());
+        	}catch(Exception ex){
+        		status.add(String.format("Error at field \"%s\". %s",field.getName(),ex.getMessage()),ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+        	}
+        }
+        
         
         return status;
     }
