@@ -109,19 +109,34 @@ public class RecordKey {
 	 * @since          May 2, 2002
 	 */
 	public String getKeyString(DataRecord record) {
+		return getKeyString(record, "");
+	}
+
+	/**
+	 *  Assembles delimited string values of the key fields.
+	 *
+	 * @param  record  DataRecord whose field's values will be used to create key string.
+	 * @param  delimiter delimiter inserted between individual field values.
+	 * @return         The KeyString value with delimiters
+	 * @since          April, 2012
+	 */
+	public String getKeyString(DataRecord record, String delimiter) {
 		
 		if (keyStr == null){ 
 			keyStr = new StringBuffer(DEFAULT_STRING_KEY_LENGTH);
 		}else{ 
 			keyStr.setLength(0); 
 		}
-		for (int i = 0; i < keyFields.length; i++) {
+
+		if (keyFields.length > 0) {
+			keyStr.append(record.getField(keyFields[0]).toString());
+		}
+		for (int i = 1; i < keyFields.length; i++) {
+			keyStr.append(delimiter);
 			keyStr.append(record.getField(keyFields[i]).toString());
-			// not used for now keyStr.append(KEY_ITEMS_DELIMITER);
 		}
 		return keyStr.toString();
 	}
-
 
 	/**
 	 *  Performs initialization of internal data structures
