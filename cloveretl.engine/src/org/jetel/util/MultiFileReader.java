@@ -417,6 +417,7 @@ public class MultiFileReader {
         } catch(JetelException e) {
             autoFilling.incGlobalCounter();
             autoFilling.incSourceCounter();
+            autoFilling.incL3Counter();
             throw e;
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
