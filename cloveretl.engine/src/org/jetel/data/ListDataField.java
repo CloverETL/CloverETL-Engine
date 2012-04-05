@@ -390,27 +390,27 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from string. Only non-multivalue fields are supported.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from string. List and map container types are not supported.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. Only non-multivalue fields are supported.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. Only non-multivalue fields are supported.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. List and map container types are not supported.");
 	}
 	
 	@Override

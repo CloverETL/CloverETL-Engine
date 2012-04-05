@@ -161,7 +161,7 @@ public class XmlXPathReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
-    private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    public static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
 	
 	private final static int OUTPUT_PORT = 0;

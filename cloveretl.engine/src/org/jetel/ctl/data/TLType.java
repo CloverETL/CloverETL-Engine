@@ -941,7 +941,8 @@ public abstract class TLType {
 		}
 		
 		if (from.isByteArray()) {
-			return	to.isByteArray() ?	0 : Integer.MAX_VALUE;
+			return	to.isByteArray() 	?	0		:
+					to.isTypeVariable()	?	10		:	Integer.MAX_VALUE;
 		}
 		
 		throw new IllegalArgumentException(" Unknown types for type-distance calculation: '" 

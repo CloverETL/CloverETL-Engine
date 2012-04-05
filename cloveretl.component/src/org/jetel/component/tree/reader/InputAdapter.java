@@ -18,19 +18,13 @@
  */
 package org.jetel.component.tree.reader;
 
-import org.jetel.data.DataField;
-
 /**
- * 
- * @author lkrejci (info@cloveretl.com)
+ * @author krejcil (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 16.10.2011
+ * @created 20.3.2012
  */
-public interface ValueHandler {
+public interface InputAdapter {
 
-	void storeValueToField(Object value, DataField field);
-	
-	void storeValueToField(Object value, DataField field, boolean doTrim);
-	
+	Object adapt(Object input);
 }

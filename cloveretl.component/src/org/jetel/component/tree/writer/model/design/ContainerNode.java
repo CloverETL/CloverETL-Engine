@@ -167,24 +167,11 @@ public abstract class ContainerNode extends AbstractNode {
 	public String getHierarchicalName() {
 		if (parent == null) {
 			return "";
+		} else if (Boolean.parseBoolean(getProperty(MappingProperty.HIDE))) {
+			return parent.getHierarchicalName();
 		} else {
 			return super.getHierarchicalName();
 		}
-	}
-
-	@Override
-	public AbstractNode findDescendant(String hierarchicalName) {
-		AbstractNode element = super.findDescendant(hierarchicalName);
-		if (element != null) {
-			return element;
-		}
-		for (AbstractNode child : getChildren()) {
-			AbstractNode matchingChild = child.findDescendant(hierarchicalName);
-			if (matchingChild != null) {
-				return matchingChild;
-			}
-		}
-		return null;
 	}
 
 	@Override

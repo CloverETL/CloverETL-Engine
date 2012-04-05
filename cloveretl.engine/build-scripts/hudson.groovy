@@ -9,7 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-functional|tests-after-commit|tests-reset|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional|tests-after-commit|tests-reset)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -96,8 +96,13 @@ if( !runTests ){
 	engineJobName = "cloveretl.engine-" + versionSuffix
 	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/api/xml?xpath=/*/number/text%28%29").text
 	println "engineBuildNumber   = " + engineBuildNumber
-	cloverVersionProperties = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties").text
-	cloverVersionPropertiesM = cloverVersionProperties =~ /^version=(.*)$/
+
+        cloverVersionPropertiesURL = env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
+        println "cloverVersionPropertiesURL ${cloverVersionPropertiesURL}"
+
+	cloverVersionProperties = new URL( cloverVersionPropertiesURL ).text
+        cloverVersionPropertiesM = cloverVersionProperties =~ /version=([^\n]*)/
+
 	cloverVersion = cloverVersionPropertiesM[0][1]
 	cloverVersionDash = cloverVersion.replaceAll("\\.","-")
 	println "cloverVersion   = " + cloverVersion

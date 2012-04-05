@@ -19,7 +19,6 @@
 package org.jetel.component.tree.reader.mappping;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,22 +37,30 @@ public class MappingContext extends MappingElement {
 	private String sequenceField;
 	private String sequenceId;
 	
-	private List<MappingElement> children = new ArrayList<MappingElement>();
+	private List<FieldMapping> fieldMappingChildren = new ArrayList<FieldMapping>();
+	private List<MappingContext> mappingContextChildren = new ArrayList<MappingContext>();
 
 	@Override
 	public void acceptVisitor(MappingVisitor visitor) {
 		
 		visitor.visitBegin(this);
-		for (MappingElement child : children) {
+		for (MappingElement child : getChildren()) {
 			child.acceptVisitor(visitor);
 		}
 		visitor.visitEnd(this);
 	}
 	
-	public void addChild(MappingElement child) {
-		if (!children.contains(child)) {
-			child.setParent(this);
-			children.add(child);
+	public void addChild(MappingContext contextChild) {
+		if (!mappingContextChildren.contains(contextChild)) {
+			contextChild.setParent(this);
+			mappingContextChildren.add(contextChild);
+		}
+	}
+	
+	public void addChild(FieldMapping fieldChild) {
+		if (!fieldMappingChildren.contains(fieldChild)) {
+			fieldChild.setParent(this);
+			fieldMappingChildren.add(fieldChild);
 		}
 	}
 	
@@ -98,6 +105,17 @@ public class MappingContext extends MappingElement {
 	}
 
 	public List<MappingElement> getChildren() {
-		return Collections.unmodifiableList(children);
+		List<MappingElement> l = new ArrayList<MappingElement>(mappingContextChildren.size() + fieldMappingChildren.size());
+		l.addAll(fieldMappingChildren);
+		l.addAll(mappingContextChildren);
+		return l;
+	}
+	
+	public List<FieldMapping> getFieldMappingChildren() {
+		return fieldMappingChildren;
+	}
+	
+	public List<MappingContext> getMappingContextChildren() {
+		return mappingContextChildren;
 	}
 }

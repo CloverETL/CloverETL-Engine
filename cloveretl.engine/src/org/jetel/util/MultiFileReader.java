@@ -500,6 +500,7 @@ public class MultiFileReader {
 		iSource = -1;
 
 		channelIterator.reset();
+		skipped = 0;
         try {
     		incrementalReading.reset();
 			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 

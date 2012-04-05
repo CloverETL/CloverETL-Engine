@@ -287,7 +287,7 @@ public class DataReader extends Node {
 							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(bdfe.getMessage());
+							logger.warn(bdfe.getMessage() + "; input source: " + reader.getSourceName());
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()

@@ -143,7 +143,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
-							&& !pathname.getName().equals("testdata_intersection.grf"); // remove after CL-1792 solved
+							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
+							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf"); // ok, is to fail
 				}
 			});
 			
@@ -251,7 +252,7 @@ public class ResetTest extends CloverTestCase {
 			}
 
 		} catch (Throwable e) {
-			throw new IllegalStateException("Error executing grap " + graphFile);
+			throw new IllegalStateException("Error executing grap " + graphFile, e);
 		} finally {
 			if (cleanUp) {
 				cleanupData();
