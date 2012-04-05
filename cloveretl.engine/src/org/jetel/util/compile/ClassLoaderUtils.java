@@ -186,7 +186,7 @@ public class ClassLoaderUtils {
 		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
 		for (int i = 0; i < urls.length; ++i) {
-			if (new File(urls[i].toURI()).isDirectory()) {
+			if (new File(urls[i].toURI()).isDirectory() && !urls[i].toString().endsWith("/")) {
 				urls[i] = new URL(urls[i].toString() + "/");
 			}
 		}

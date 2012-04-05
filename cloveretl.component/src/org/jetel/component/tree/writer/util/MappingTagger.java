@@ -75,10 +75,12 @@ public class MappingTagger extends AbstractVisitor {
 
 	private Map<Integer, PortTag> portTagMap = new HashMap<Integer, PortTag>();
 	private boolean resolvePartition = false;
+	private boolean singleTopLevelRecord;
 
-	public MappingTagger(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString) {
+	public MappingTagger(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord) {
 		this.inPorts = inPorts;
 		this.sortHints = resolveSortHints(sortHintsString, inPorts.keySet());
+		this.singleTopLevelRecord = singleTopLevelRecord;
 	}
 
 	public void tag() {
@@ -229,6 +231,8 @@ public class MappingTagger extends AbstractVisitor {
 
 				Tag parentTag = tagMap.get(parent);
 				if (parentTag != null) { // Is it loop element?
+					boolean secondLevelBinding = isSecondLevelBinding(element);
+					
 					Integer parentInputPortIndex = parentTag.getPortIndex();
 					boolean parentCached = portTagMap.get(parentInputPortIndex).isCached();
 					SortHint sortHint = sortHints.get(usedPortIndex);
@@ -245,14 +249,21 @@ public class MappingTagger extends AbstractVisitor {
 					String reason = null;
 					if (portTagMap.containsKey(usedPortIndex)) {
 						reason = REASON_MULTIPLE_USAGE;
-					} else if (parentKey == null) {
-						reason = REASON_NO_RELATION;
-					} else if (parentSortHint == null) {
-						reason = REASON_UNSORTED_PARENT + parentKey;
-					} else if (parentCached) {
-						reason = REASON_PARENT_CACHED;
-					} else if (sortHint == null) {
-						reason = REASON_UNSORTED_PORT + key;
+					} else {
+						if (secondLevelBinding && singleTopLevelRecord) {
+							setPortTag(usedPortIndex, false, null);
+							break;
+						} else {
+							if (parentKey == null) {
+								reason = REASON_NO_RELATION;
+							} else if (parentSortHint == null) {
+								reason = REASON_UNSORTED_PARENT + parentKey;
+							} else if (parentCached) {
+								reason = REASON_PARENT_CACHED;
+							} else if (sortHint == null) {
+								reason = REASON_UNSORTED_PORT + key;
+							}
+						}
 					}
 					if (reason != null) {
 						setPortTag(usedPortIndex, true, reason);
@@ -291,6 +302,20 @@ public class MappingTagger extends AbstractVisitor {
 		}
 
 		getPortTagInternal(usedPortIndex).addKey(key);
+	}
+	
+	private boolean isSecondLevelBinding(ContainerNode container) {
+		int parentBindingsCount = 0;
+		ContainerNode parent = container.getParent();
+		while (parent != null) {
+			if (tagMap.containsKey(parent)) {
+				parentBindingsCount++;
+			}
+			
+			parent = parent.getParent();
+		}
+		
+		return parentBindingsCount == 1;
 	}
 
 	private boolean isPrefix(String[] list, List<String> prefix) {

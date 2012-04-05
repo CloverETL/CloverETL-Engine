@@ -25,6 +25,7 @@ import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
+import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
 import org.jetel.component.tree.writer.model.design.Namespace;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
@@ -35,6 +36,7 @@ import org.jetel.component.tree.writer.model.design.Value;
 import org.jetel.component.tree.writer.model.design.WildcardAttribute;
 import org.jetel.component.tree.writer.model.design.WildcardNode;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.TagName;
 
 /**
  * Visitor which serializes mapping into xml.
@@ -86,11 +88,18 @@ public class MappingWriter implements MappingVisitor {
 			writer.writeStartElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, ObjectNode.XML_TEMPLATE_DEFINITION);
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
-			if (element.getChildren().isEmpty()) {
-				writer.writeEmptyElement(element.getProperty(MappingProperty.NAME));
+			String name = element.getProperty(MappingProperty.NAME);
+			String prefix = getBoundPrefix(name, element);
+			if (prefix != null) {
+				name = prefix + ":" + TagName.encode(name.substring(name.indexOf(':') + 1));
 			} else {
-				writer.writeStartElement(element.getProperty(MappingProperty.NAME));
+				name = TagName.encode(name);
 			}
+			if (element.getChildren().isEmpty()) {
+				writer.writeEmptyElement(name);
+			} else {
+				writer.writeStartElement(name);
+			} 
 		}
 		
 		//write namespaces
@@ -133,6 +142,8 @@ public class MappingWriter implements MappingVisitor {
 	public void visit(Value element) throws XMLStreamException {
 		String toWrite = element.getProperty(MappingProperty.VALUE);
 		if (toWrite != null) {
+			// If CRLF is written, LFLF is subsequently read 
+			toWrite = toWrite.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
 			writer.writeCharacters(toWrite);
 		}
 	}
@@ -229,6 +240,23 @@ public class MappingWriter implements MappingVisitor {
 			}
 			writer.writeEndElement();
 		}
+	}
+	
+	private String getBoundPrefix(String name, ObjectNode node) {
+		
+		final int colPos = name.indexOf(':');
+		if (colPos > 0) {
+			
+			String prefix = name.substring(0, colPos);
+			for (ContainerNode container = node; container != null; container = container.getParent()) {
+				for (Namespace ns : container.getNamespaces()) {
+					if (prefix.equals(ns.getProperty(MappingProperty.NAME))) { // prefix is NAME - hmm
+						return prefix;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 }

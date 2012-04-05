@@ -462,9 +462,14 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 			value = numericFormatter.parseLong(seq);
 			setNull(this.value == Long.MIN_VALUE);
 		} catch (Exception ex) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"" 
-					+ (!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\"" : ""),
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()));
+			BadDataFormatException e = new BadDataFormatException(String.format("Field %s(%s) cannot be set to " +
+					"value \"%s\"; doesn't match the specified format \"%s\"" + 
+					(!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\";" : ""), getMetadata().getName(), 
+					DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()),
+					(new StringBuilder(seq)).toString());
+			e.setAdditionalMessage("(note that for ParallelReader or Server parallel transformation run the record " +
+					"number might be incorrect)");
+			throw e;
 		}
 	}
 	

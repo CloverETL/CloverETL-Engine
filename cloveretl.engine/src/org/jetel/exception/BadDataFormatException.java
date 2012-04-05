@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
-
 /**
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
@@ -121,11 +118,6 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         StringBuffer ret = new StringBuffer();
         ret.append(super.getMessage());
         
-        if (additionalMessage != null) {
-        	ret.append(" ");
-        	ret.append(additionalMessage);
-        }
-        
         if(recordNumber > -1) {
             ret.append(" in record ");
             ret.append(recordNumber);
@@ -156,6 +148,11 @@ public class BadDataFormatException extends RuntimeException implements Iterable
             ret.append("; value: '");
             ret.append(offendingValue);
             ret.append("'");
+        }
+        
+        if (additionalMessage != null) {
+        	ret.append(" ");
+        	ret.append(additionalMessage);
         }
         
         return ret.toString();

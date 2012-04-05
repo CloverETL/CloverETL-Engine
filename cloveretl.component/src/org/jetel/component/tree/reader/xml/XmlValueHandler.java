@@ -35,7 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 public class XmlValueHandler implements ValueHandler {
 
 	@Override
-	public void storeValueToField(Object value, DataField field) {
+	public void storeValueToField(Object value, DataField field, boolean doTrim) {
 		List<?> nodeList;
 		if (value instanceof List<?>) {
 			nodeList = (List<?>) value;
@@ -47,7 +47,7 @@ public class XmlValueHandler implements ValueHandler {
 		case LIST:
 			ListDataField list = (ListDataField) field;
 			for (Object object : nodeList) {
-				fillValueToField(object, list.addField());
+				fillValueToField(object, list.addField(), doTrim);
 			}
 			break;
 		case SINGLE:
@@ -55,7 +55,7 @@ public class XmlValueHandler implements ValueHandler {
 			case 0:
 				return;
 			case 1:
-				fillValueToField(nodeList.get(0), field);
+				fillValueToField(nodeList.get(0), field, doTrim);
 				break;
 			default:
 				throw new JetelRuntimeException("Result of xpath filling field '" + field.getMetadata().getName() + "' contains two or more values!");
@@ -65,13 +65,23 @@ public class XmlValueHandler implements ValueHandler {
 		}
 	}
 	
-	private void fillValueToField(Object value, DataField field) {
+	private void fillValueToField(Object value, DataField field, boolean doTrim) {
 		String stringValue;
 		if (value instanceof NodeInfo) {
 			stringValue = ((NodeInfo) value).getStringValue();
 		} else {
 			stringValue = value.toString();
 		}
+		
+		if (doTrim) {
+			stringValue = stringValue.trim();
+		}
+		
 		field.fromString(stringValue);
+	}
+
+	@Override
+	public void storeValueToField(Object value, DataField field) {
+		storeValueToField(value, field, false);
 	}
 }

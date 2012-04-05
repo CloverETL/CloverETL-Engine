@@ -79,7 +79,7 @@ public class ExtXmlWriter extends TreeWriter {
 
 	@Override
 	protected AbstractMappingValidator createValidator(Map<Integer, DataRecordMetadata> connectedPorts) {
-		return new XmlMappingValidator(connectedPorts, recordsPerFile == 1);
+		return new XmlMappingValidator(connectedPorts, recordsPerFile == 1 || recordsCount == 1);
 	}
 
 	public void setMkDir(boolean mkDir) {

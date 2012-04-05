@@ -88,7 +88,14 @@ public class PortBinding {
 			System.arraycopy(availableData, 0, currentAvailableData, 0, availableData.length);
 			currentAvailableData[portIndex] = record;
 
-			iterator = portData.iterator(keys, parentKeys, availableData[parentPort], parentBinding != null ? parentBinding.getNextRecord() : null);
+			DataRecord keyDataRecord = null;
+			DataRecord nextKeyDataRecord = null;
+			if (parentBinding != null) {
+				keyDataRecord = availableData[parentPort];
+				nextKeyDataRecord = parentBinding.getNextRecord();
+			}
+			
+			iterator = portData.iterator(keys, parentKeys, keyDataRecord, nextKeyDataRecord);
 
 			container.writeContainerStart(formatter);
 			while (iterator.hasNext()) {

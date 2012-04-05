@@ -171,7 +171,7 @@ public abstract class TreeWriter extends Node {
 	private CacheRecordManager sharedCache;
 
 	protected int recordsPerFile;
-	private int recordsCount;
+	protected int recordsCount;
 	private String attrPartitionKey;
 	private String partition;
 	private String partitionOutFields;
@@ -268,7 +268,7 @@ public abstract class TreeWriter extends Node {
 			}
 
 		} else {
-			MappingTagger tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null);
+			MappingTagger tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1);
 
 			tagger.setMapping(mapping);
 			boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
@@ -360,7 +360,7 @@ public abstract class TreeWriter extends Node {
 			}
 		}
 
-		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null);
+		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null, recordsCount == 1);
 		compiler.setGraph(getGraph());
 		compiler.setComponentId(getType());
 		compiler.setLogger(LOGGER);

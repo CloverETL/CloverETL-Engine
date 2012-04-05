@@ -450,7 +450,6 @@ public class SimpleDataParser extends AbstractTextParser {
 		try {
 			record.getField(fieldIndex).fromString(data);
 		} catch (BadDataFormatException bdfe) {
-			bdfe.setAdditionalMessage("(be aware parallel run, record number is probably wrong)");
 			if (exceptionHandler != null) {
 				exceptionHandler.populateHandler(bdfe.getMessage(), record,
 						recordCounter, fieldIndex, data.toString(), bdfe);

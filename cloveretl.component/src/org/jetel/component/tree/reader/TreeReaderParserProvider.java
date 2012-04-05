@@ -19,6 +19,7 @@
 package org.jetel.component.tree.reader;
 
 
+
 /**
  * @author lkrejci (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -26,15 +27,46 @@ package org.jetel.component.tree.reader;
  * @created 19 Jan 2012
  */
 public interface TreeReaderParserProvider {
-	
+
+	/**
+	 * Indicates whether this instance provides {@link TreeStreamParser}.
+	 * One of {@link #providesTreeStreamParser()} and {@link #providesXPathEvaluator()} methods has to return true.
+	 * @return true iff {@link #getTreeStreamParser()} does not return null.
+	 */
 	boolean providesTreeStreamParser();
 	
+	/**
+	 * Provides parser which reads a tree of some concrete structure/format and during the process 
+	 * it generates evens which describe such a tree in a general way. Used for conversions between tree formats.
+	 * Called only if {@link #providesTreeStreamParser()} returns true.
+	 * @return tree parser.
+	 */
 	TreeStreamParser getTreeStreamParser();
 	
+	/**
+	 * Provides a handler able to fill Clover data fields with some value read from a tree.
+	 * @return a handler. Must not be null.
+	 */
 	ValueHandler getValueHandler();
 	
+	/**
+	 * Signals if this instance provides {@link XPathEvaluator}.
+	 * One of {@link #providesTreeStreamParser()} and {@link #providesXPathEvaluator()} methods has to return true.
+	 * @return true iff {@link #getXPathEvaluator()} does not return null. 
+	 */
 	boolean providesXPathEvaluator();
 	
+	/**
+	 * Provides {@link XPathEvaluator} which evaluates XPath expressions directly on a tree of some concrete format.
+	 * @return an evaluator. Or null if {@link #providesXPathEvaluator()} returns false.
+	 */
 	XPathEvaluator getXPathEvaluator();
-
+	
+	/**
+	 * Provides adapter which processes input provided by SourceIterator into a form understood by the {@link XPathEvaluator}
+	 * provided by this instance (the "input" is is refereed to as "evaluationContext" in the {@link XPathEvaluator}).
+	 * @return an input adapter. Must not be null.
+	 */
+	InputAdapter getInputAdapter();
+	
 }

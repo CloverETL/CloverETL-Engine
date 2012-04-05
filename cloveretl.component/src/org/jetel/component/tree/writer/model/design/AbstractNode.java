@@ -101,15 +101,6 @@ public abstract class AbstractNode {
 	public String getHierarchicalName() {
 		return parent.getHierarchicalName() + AbstractNode.LEVEL_DELIMITER + getDisplayName();
 	}
-
-	public AbstractNode findDescendant(String hierarchicalName) {
-
-		String thisNodeName = getHierarchicalName();
-		if (hierarchicalName.equals(thisNodeName)) {
-			return this;
-		}
-		return null;
-	}
 	
 	public abstract short getType();
 	

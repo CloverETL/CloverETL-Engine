@@ -37,7 +37,9 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jetel.component.tree.writer.util.MappingVisitor;
 import org.jetel.component.tree.writer.util.MappingWriter;
 import org.jetel.component.tree.writer.util.StaxPrettyPrintHandler;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.TagName;
 import org.xml.sax.SAXException;
 
 /**
@@ -94,7 +96,7 @@ public class TreeWriterMapping {
 			updateTemplates();
 			rootNode.accept(visitor);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new JetelRuntimeException(e);
 		}
 	}
 
@@ -232,9 +234,9 @@ public class TreeWriterMapping {
 			ObjectNode currentContainer = new ObjectNode(previousElement);
 			String name = reader.getPrefix();
 			if (StringUtils.isEmpty(name)) {
-				name = reader.getLocalName();
+				name = TagName.decode(reader.getLocalName());
 			} else {
-				name += ":" + reader.getLocalName();
+				name += ":" + TagName.decode(reader.getLocalName());
 			}
 			currentContainer.setProperty(MappingProperty.NAME, name);
 

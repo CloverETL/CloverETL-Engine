@@ -19,7 +19,6 @@
 package org.jetel.component.tree.reader;
 
 import org.jetel.data.DataRecord;
-import org.jetel.exception.BadDataFormatException;
 
 /**
  * 
@@ -43,11 +42,11 @@ public interface DataRecordReceiver {
 	void receive(DataRecord record, int port) throws AbortParsingException;
 	
 	/**
-	 * Callback to notify an exception occurred while setting data field value.
+	 * Callback to notify that exception occurred while setting data field value.
 	 * 
 	 * @param e
 	 * 
 	 * @throws AbortParsingException to notify that the parsing should not proceed
 	 */
-	void exceptionOccurred(BadDataFormatException e) throws AbortParsingException;
+	void exceptionOccurred(FieldFillingException e) throws AbortParsingException;
 }
