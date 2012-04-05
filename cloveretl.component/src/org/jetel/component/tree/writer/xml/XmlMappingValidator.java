@@ -173,7 +173,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		}
 	}
 
-	private Set<DataFieldMetadataWrapper> gatherAndValidateAvailableFields(String includeString, String excludeString,
+	protected Set<DataFieldMetadataWrapper> gatherAndValidateAvailableFields(String includeString, String excludeString,
 			AbstractNode wildcard) {
 		Set<DataFieldMetadataWrapper> availableFields = new HashSet<DataFieldMetadataWrapper>();
 		if (includeString != null) {
