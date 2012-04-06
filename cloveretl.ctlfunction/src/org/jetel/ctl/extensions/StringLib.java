@@ -41,55 +41,55 @@ public class StringLib extends TLFunctionLibrary {
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
 		TLFunctionPrototype ret = 
-			"concat".equals(functionName) ? new ConcatFunction() :
-			"upperCase".equals(functionName) ? new UpperCaseFunction() :
-			"lowerCase".equals(functionName) ? new LowerCaseFunction() :
-			"substring".equals(functionName) ? new SubstringFunction() :
-			"left".equals(functionName) ? new LeftFunction() :
-			"right".equals(functionName) ? new RightFunction() :
-			"trim".equals(functionName) ? new TrimFunction() : 
-			"length".equals(functionName) ? new LengthFunction() :
-			"replace".equals(functionName) ? new ReplaceFunction() :
-			"split".equals(functionName) ? new SplitFunction() :
-			"charAt".equals(functionName) ? new CharAtFunction() :
-			"isBlank".equals(functionName) ? new IsBlankFunction() :
-			"isAscii".equals(functionName) ? new IsAsciiFunction() :
-			"isNumber".equals(functionName) ? new IsNumberFunction() :
-			"isInteger".equals(functionName) ? new IsIntegerFunction() :
-			"isLong".equals(functionName) ? new IsLongFunction() :
-			"isDate".equals(functionName) ? new IsDateFunction() :
-			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() :
-			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() :
-			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() :
-			"removeNonAscii".equals(functionName) ? new RemoveNonAsciiFunction() :
-			"getAlphanumericChars".equals(functionName) ? new GetAlphanumericCharsFunction() :
-			"translate".equals(functionName) ? new TranslateFunction() :
-			"join".equals(functionName) ? new JoinFunction() :
-			"indexOf".equals(functionName) ? new IndexOfFunction() :
-			"countChar".equals(functionName) ? new CountCharFunction() :
-			"find".equals(functionName) ? new FindFunction() :
-			"matches".equals(functionName) ? new MatchesFunction() :
-			"chop".equals(functionName) ? new ChopFunction() :
-			"cut".equals(functionName) ? new CutFunction() :
-			"isUrl".equals(functionName) ? new IsUrlFunction() :
-			"getUrlProtocol".equals(functionName) ? new GetUrlProtocolFunction() :
-			"getUrlUserInfo".equals(functionName) ? new GetUrlUserInfo() :
-			"getUrlHost".equals(functionName) ? new GetUrlHostFunction() :
-			"getUrlPort".equals(functionName) ? new GetUrlPortFunction() :
-			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() :
-			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() :
-			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() :
-			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() :
-			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null;
+			"concat".equals(functionName) ? new ConcatFunction() : //$NON-NLS-1$
+			"upperCase".equals(functionName) ? new UpperCaseFunction() : //$NON-NLS-1$
+			"lowerCase".equals(functionName) ? new LowerCaseFunction() : //$NON-NLS-1$
+			"substring".equals(functionName) ? new SubstringFunction() : //$NON-NLS-1$
+			"left".equals(functionName) ? new LeftFunction() : //$NON-NLS-1$
+			"right".equals(functionName) ? new RightFunction() : //$NON-NLS-1$
+			"trim".equals(functionName) ? new TrimFunction() :  //$NON-NLS-1$
+			"length".equals(functionName) ? new LengthFunction() : //$NON-NLS-1$
+			"replace".equals(functionName) ? new ReplaceFunction() : //$NON-NLS-1$
+			"split".equals(functionName) ? new SplitFunction() : //$NON-NLS-1$
+			"charAt".equals(functionName) ? new CharAtFunction() : //$NON-NLS-1$
+			"isBlank".equals(functionName) ? new IsBlankFunction() : //$NON-NLS-1$
+			"isAscii".equals(functionName) ? new IsAsciiFunction() : //$NON-NLS-1$
+			"isNumber".equals(functionName) ? new IsNumberFunction() : //$NON-NLS-1$
+			"isInteger".equals(functionName) ? new IsIntegerFunction() : //$NON-NLS-1$
+			"isLong".equals(functionName) ? new IsLongFunction() : //$NON-NLS-1$
+			"isDate".equals(functionName) ? new IsDateFunction() : //$NON-NLS-1$
+			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() : //$NON-NLS-1$
+			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
+			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
+			"removeNonAscii".equals(functionName) ? new RemoveNonAsciiFunction() : //$NON-NLS-1$
+			"getAlphanumericChars".equals(functionName) ? new GetAlphanumericCharsFunction() : //$NON-NLS-1$
+			"translate".equals(functionName) ? new TranslateFunction() : //$NON-NLS-1$
+			"join".equals(functionName) ? new JoinFunction() : //$NON-NLS-1$
+			"indexOf".equals(functionName) ? new IndexOfFunction() : //$NON-NLS-1$
+			"countChar".equals(functionName) ? new CountCharFunction() : //$NON-NLS-1$
+			"find".equals(functionName) ? new FindFunction() : //$NON-NLS-1$
+			"matches".equals(functionName) ? new MatchesFunction() : //$NON-NLS-1$
+			"chop".equals(functionName) ? new ChopFunction() : //$NON-NLS-1$
+			"cut".equals(functionName) ? new CutFunction() : //$NON-NLS-1$
+			"isUrl".equals(functionName) ? new IsUrlFunction() : //$NON-NLS-1$
+			"getUrlProtocol".equals(functionName) ? new GetUrlProtocolFunction() : //$NON-NLS-1$
+			"getUrlUserInfo".equals(functionName) ? new GetUrlUserInfo() : //$NON-NLS-1$
+			"getUrlHost".equals(functionName) ? new GetUrlHostFunction() : //$NON-NLS-1$
+			"getUrlPort".equals(functionName) ? new GetUrlPortFunction() : //$NON-NLS-1$
+			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() : //$NON-NLS-1$
+			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
+			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
+			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
+			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
 
 		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
+    		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
     	}
 
 		return ret;
 	}
 	
-	private static String LIBRARY_NAME = "String";
+	private static String LIBRARY_NAME = "String"; //$NON-NLS-1$
 
 	@Override
 	public String getName() {
@@ -195,7 +195,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String left(TLFunctionCallContext context, String input, int length, boolean spacePad) {
 		if (input.length() < length) {
 			if (spacePad) {
-				return String.format("%-" + length + "s", input);
+				return String.format("%-" + length + "s", input); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			return input;
 		}
@@ -225,15 +225,21 @@ public class StringLib extends TLFunctionLibrary {
 	// RIGHT
 	@TLFunctionAnnotation("Returns suffix of the specified length")
 	public static final String right(TLFunctionCallContext context, String input, int length) {
+		if (input == null) {
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		}
 		return StringLib.right(context, input, length, false);
 	}
 
 	@TLFunctionAnnotation("Returns suffix of the specified length. If input string is shorter than specified length " +
 			"and 3th argument is true, left side of result is padded with blank spaces so that the result has specified length.")
 	public static final String right(TLFunctionCallContext context, String input, int length, boolean spacePad) {
+		if (input == null) {
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		}
 		if (input.length() < length) {
 			if (spacePad) {
-				return String.format("%"+length+"s", input);
+				return String.format("%"+length+"s", input); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			return input;
 		}
@@ -339,7 +345,7 @@ public class StringLib extends TLFunctionLibrary {
 			}
 
 			throw new TransformLangExecutorRuntimeException(
-					"length - Unknown type: " + context.getParams()[0].name());
+					CtlExtensionsMessages.getString("StringLib.unknown_type") + context.getParams()[0].name()); //$NON-NLS-1$
 		}
 
 	}
@@ -703,7 +709,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
 		StringBuffer buf = new StringBuffer();
 		for (int i=0; i<values.size(); i++) {
-			buf.append(values.get(i) == null ? "null" : values.get(i).toString());
+			buf.append(values.get(i) == null ? CtlExtensionsMessages.getString("StringLib.null") : values.get(i).toString()); //$NON-NLS-1$
 			if (i < values.size()-1) {
 				buf.append(delimiter);
 			}
@@ -719,8 +725,8 @@ public class StringLib extends TLFunctionLibrary {
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
 			K key = it.next();
 			V value = values.get(key);
-			buf.append(key.toString()).append("=").append(
-					value == null ? "null" : value.toString());
+			buf.append(key.toString()).append("=").append( //$NON-NLS-1$
+					value == null ? CtlExtensionsMessages.getString("StringLib.null") : value.toString()); //$NON-NLS-1$
 			if (it.hasNext()) {
 				buf.append(delimiter);
 			}
@@ -874,19 +880,19 @@ public class StringLib extends TLFunctionLibrary {
 		context.setCache(new TLRegexpCache(context, 1));
 	}
 	
-	private static final Pattern chopPattern = Pattern.compile("[\r\n]+");
+	private static final Pattern chopPattern = Pattern.compile("[\r\n]+"); //$NON-NLS-1$
 	
 	@TLFunctionAnnotation("Removes new line characters from input string")
 	public static final String chop(TLFunctionCallContext context, String input) {
 		final Matcher m = chopPattern.matcher(input);
-		return m.replaceAll("");
+		return m.replaceAll(""); //$NON-NLS-1$
 	}
 
 	@TLFunctionAnnotation("Removes regexp pattern from input string")
 	public static final String chop(TLFunctionCallContext context, String input, String pattern) {
 		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern);
 		final Matcher m = p.matcher(input);
-		return m.replaceAll("");
+		return m.replaceAll(""); //$NON-NLS-1$
 
 	}
 	class ChopFunction implements TLFunctionPrototype {
@@ -915,8 +921,8 @@ public class StringLib extends TLFunctionLibrary {
 	public static final List<String> cut(TLFunctionCallContext context, String input, List<Integer> indexes) {
 		if (indexes.size() % 2 != 0) {
 			throw new TransformLangExecutorRuntimeException(
-					"Incorrect number of indices: " + indexes.size()
-							+ ". Must be an even number");
+					CtlExtensionsMessages.getString("StringLib.bad_count_of_indices") + indexes.size() //$NON-NLS-1$
+							+ CtlExtensionsMessages.getString("StringLib.even_number_expected")); //$NON-NLS-1$
 		}
 		final Iterator<Integer> it = indexes.iterator();
 		final List<String> ret = new ArrayList<String>();
@@ -1001,7 +1007,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String getUrlUserInfo(TLFunctionCallContext context, String url) {
 		try {
 			String ui = new URL(url).getUserInfo();
-			return ui == null ? "" : ui;
+			return ui == null ? "" : ui; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1090,7 +1096,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String getUrlQuery(TLFunctionCallContext context, String url) {
 		try {
 			String q = new URL(url).getQuery();
-			return q == null ? "" : q;
+			return q == null ? "" : q; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1113,7 +1119,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String getUrlRef(TLFunctionCallContext context, String url) {
 		try {
 			String query = new URL(url).getRef();
-			return query == null ? "" : query;
+			return query == null ? "" : query; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1143,9 +1149,9 @@ public class StringLib extends TLFunctionLibrary {
 			// create URI representation of the URL which handles character quoting
 			return new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toASCIIString();
 		} catch (MalformedURLException e) {
-			throw new TransformLangExecutorRuntimeException("Failed to parse input string as URL", e);
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.failed_to_pass_input_as_URL"), e); //$NON-NLS-1$
 		} catch (URISyntaxException e) {
-			throw new TransformLangExecutorRuntimeException("Failed to escape URL", e);
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.failed_to_escape_URL"), e); //$NON-NLS-1$
 		}
 	}
 	
@@ -1180,7 +1186,7 @@ public class StringLib extends TLFunctionLibrary {
 			
 			// reconstruct URL from unescaped parts and return its String representation
 			StringBuilder sb = new StringBuilder();
-			if (scheme != null) sb.append(scheme).append("://");
+			if (scheme != null) sb.append(scheme).append("://"); //$NON-NLS-1$
 			if (authority != null) sb.append(authority);
 			if (path != null) sb.append(path);
 			if (query != null) sb.append('?').append(query);
@@ -1188,9 +1194,9 @@ public class StringLib extends TLFunctionLibrary {
 			
 			return new URL(sb.toString()).toString();
 		} catch (MalformedURLException e) {
-			throw new TransformLangExecutorRuntimeException("Failed to unescape URL", e);
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.failed_to_unescape_URL"), e); //$NON-NLS-1$
 		} catch (URISyntaxException e) {
-			throw new TransformLangExecutorRuntimeException("Failed to unescape URL. Wrong syntax of input string?", e);
+			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.failed_to_unescape_URL_detailed"), e); //$NON-NLS-1$
 		}
 	}
 	
