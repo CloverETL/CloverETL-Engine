@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
-import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -489,6 +488,16 @@ public class MultiFileReader {
 	 */
     public void preExecute() throws ComponentNotReadyException {
     	parser.preExecute();
+    	
+		noInputFile = false;
+
+        try {
+    		if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) { 
+    		    noInputFile = true;
+    		}
+    	} catch (JetelException e) {
+			logger.error("preExecute", e);
+		}
     }
     
     /**
@@ -496,7 +505,6 @@ public class MultiFileReader {
      */
     public void postExecute() throws ComponentNotReadyException {
 		parser.postExecute();
-		noInputFile = false;
 		autoFilling.reset();
 		iSource = -1;
 
@@ -504,10 +512,6 @@ public class MultiFileReader {
 		skipped = 0;
         try {
     		incrementalReading.reset();
-			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 
-			    noInputFile = true;
-		} catch (JetelException e) {
-			logger.error("postExecute", e);
 		} catch (IOException e) {
 			logger.error("postExecute", e);
 		}
@@ -536,6 +540,7 @@ public class MultiFileReader {
     @Deprecated
 	public void reset() throws ComponentNotReadyException {
     	postExecute();
+    	preExecute();
 	}
 
 	public void setCharset(String charset) {
