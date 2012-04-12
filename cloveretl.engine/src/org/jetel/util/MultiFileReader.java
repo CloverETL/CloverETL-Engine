@@ -268,6 +268,7 @@ public class MultiFileReader {
 		while (channelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
+			autoFilling.resetL3Counter();
 			try {
 				source = channelIterator.next();
 				if (source == null) continue; // if record no record found
@@ -324,7 +325,6 @@ public class MultiFileReader {
 	 * @throws JetelException 
 	 */
 	private void skip() throws JetelException {
-		int skippedInCurrentSubsource = 0;
         try {
         	// perform L3 skip
     		if (skipL3Rows > 0) {
