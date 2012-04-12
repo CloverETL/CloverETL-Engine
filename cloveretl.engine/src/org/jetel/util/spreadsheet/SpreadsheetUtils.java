@@ -36,6 +36,9 @@ public class SpreadsheetUtils {
 	private SpreadsheetUtils() {
 	}
 
+	public static final int INFINITY_COORDINATE = Integer.MAX_VALUE - 1;
+	public static final String INFINITY_COORDINATE_STRING = "inf";
+	
 	public static final char SHEET_NAME_ESCAPE_START = '[';
 	public static final char SHEET_NAME_ESCAPE_END = ']';
 	
@@ -54,6 +57,10 @@ public class SpreadsheetUtils {
 	private static final int CHAR_COUNT = Z - A + 1;
 	
 	public static int getColumnIndex(String cellReference) {
+		if (INFINITY_COORDINATE_STRING.equals(cellReference)) {
+			return INFINITY_COORDINATE;
+		}
+		
 		// TODO maybe use CellReference.convertColStringToIndex() instead
 		int columnIndex = 0;
 		char c;
@@ -70,24 +77,39 @@ public class SpreadsheetUtils {
 	
 	
 	public static Point getCellCoordinates(String cellReference) {
-		int columnIndex = 0;
-		char c;
-		int i = 0;
-		for (; i < cellReference.length(); i++) {
-			 c = cellReference.charAt(i);
-			 if (c < A || c > Z) {
-				 break;
-			 }
-			columnIndex *= CHAR_COUNT;
-			columnIndex += c - A + 1;
+		int columnIndex;
+		int rowCoordStartIndex;
+		if (cellReference.startsWith(INFINITY_COORDINATE_STRING)) {
+			columnIndex = INFINITY_COORDINATE;
+			rowCoordStartIndex = INFINITY_COORDINATE_STRING.length();
+		} else {
+			columnIndex = 0;
+			char c;
+			int i = 0;
+			for (; i < cellReference.length(); i++) {
+				 c = cellReference.charAt(i);
+				 if (c < A || c > Z) {
+					 break;
+				 }
+				columnIndex *= CHAR_COUNT;
+				columnIndex += c - A + 1;
+			}
+			columnIndex--;
+			rowCoordStartIndex = i;
 		}
+		
+		String rowCoordSubstring = cellReference.substring(rowCoordStartIndex, cellReference.length());
 		int row;
-		try {
-			row = Integer.valueOf(cellReference.substring(i, cellReference.length())) - 1;
-		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Invalid cell reference '" + cellReference + "'", e);
+		if (INFINITY_COORDINATE_STRING.equals(rowCoordSubstring)) {
+			row = INFINITY_COORDINATE;
+		} else {
+			try {
+				row = Integer.valueOf(rowCoordSubstring) - 1;
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Invalid cell reference '" + cellReference + "'", e);
+			}
 		}
-		return new Point(columnIndex - 1, row);
+		return new Point(columnIndex, row);
 	}
 	
 	/**
@@ -97,10 +119,13 @@ public class SpreadsheetUtils {
 	 * @return cell reference (e.g. "C5" for coordinates (3,4))
 	 */
 	public static String getCellReference(int column, int row) {
-		return getColumnReference(column) + (row + 1);
+		return getColumnReference(column) + (row == INFINITY_COORDINATE ? INFINITY_COORDINATE_STRING : (row + 1));
 	}
 	
 	public static String getColumnReference(int columnIndex) {
+		if (columnIndex == INFINITY_COORDINATE) {
+			return INFINITY_COORDINATE_STRING;
+		}
 		return CellReference.convertNumToColString(columnIndex);
 	}
 	
