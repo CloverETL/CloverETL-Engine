@@ -126,11 +126,11 @@
 		<parameter id="dbDriver" value="oracle.jdbc.OracleDriver"/>
 		<parameter id="driverLibrary" value="lib/oracle/ojdbc6.jar"/>
 		<parameter id="urlHint">
-			<value>jdbc:oracle:thin@host:1521:SID</value>	
+			<value>jdbc:oracle:thin:@host:1521:SID</value>	
 			<value>jdbc:oracle:thin:@cluster-alias:1521/service_name</value>
 			<value>jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=host1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
 			<value>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cluster_alias)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
-			<value>jdbc:oracle:thin@host:1521/service_name</value>	
+			<value>jdbc:oracle:thin:@host:1521/service_name</value>	
 		</parameter>
 		<parameter id="jdbcSpecific" value="ORACLE"/>
 	</extension>
