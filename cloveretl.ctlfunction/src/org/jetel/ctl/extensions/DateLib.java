@@ -149,35 +149,34 @@ public class DateLib extends TLFunctionLibrary {
         switch (unit) {
         case SECOND:
             // we have the difference in seconds
-        	diff = (long) Seconds.secondsBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getSeconds();
+        	diff = (long) Seconds.secondsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getSeconds();
             break;
         case MINUTE:
             // how many minutes'
-        	diff = (long) Minutes.minutesBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getMinutes();
+        	diff = (long) Minutes.minutesBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getMinutes();
             break;
         case HOUR:
-        	diff = (long) Hours.hoursBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getHours();
+        	diff = (long) Hours.hoursBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getHours();
             break;
         case DAY:
             // how many days is the difference
-        	diff = (long) Days.daysBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getDays();
+        	diff = (long) Days.daysBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getDays();
             break;
         case WEEK:
             // how many weeks
-        	diff = (long) Weeks.weeksBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getWeeks();
+        	diff = (long) Weeks.weeksBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getWeeks();
             break;
         case MONTH:
-        	diff = (long) Months.monthsBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getMonths();
+        	diff = (long) Months.monthsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getMonths();
             break;
         case YEAR:
-        	diff = (long) Years.yearsBetween(new DateTime(lhs.getTime()), new DateTime(rhs.getTime())).getYears();
+        	diff = (long) Years.yearsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getYears();
             break;
         default:
             throw new TransformLangExecutorRuntimeException("Unknown time unit " + unit);
         }
         
-        return Math.abs(diff);
-
+        return diff;
     }
 	
     @TLFunctionAnnotation("Returns 1.1.1970 date.")
