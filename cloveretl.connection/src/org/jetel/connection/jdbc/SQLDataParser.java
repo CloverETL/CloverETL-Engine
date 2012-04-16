@@ -42,6 +42,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.GraphElement;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -212,6 +213,30 @@ public class SQLDataParser extends AbstractParser {
 		return record;
 	}
 
+	private String getErrorMessage(Exception ex, DataRecord record, int fieldNum) {
+		String fieldName = null;
+		String fieldType = null;
+		String metadataName = null;
+		
+		if (record != null && record.getMetadata() != null) {
+			DataRecordMetadata metadata = record.getMetadata();
+			metadataName = metadata.getName();
+
+			if (metadata.getField(fieldNum-1)  != null) {
+				DataFieldMetadata fieldMetadata = metadata.getField(fieldNum-1);
+				
+				fieldType = fieldMetadata.getDataType().toString(fieldMetadata.getContainerType());
+				fieldName = fieldMetadata.getName();
+			}
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(fieldName).append(" (").append(fieldType).append(") ");
+		builder.append("- ").append(ex.getMessage()).append("; in field ").append(fieldNum).append(" (\"").append(fieldName).append("\")").append(", metadata ").append(metadataName);
+		
+		return builder.toString();
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -235,13 +260,9 @@ public class SQLDataParser extends AbstractParser {
 				throw bdfe;
 			}
 		} catch (Exception ex) {
-			String fieldName = null;
-			if (record != null && record.getMetadata() != null && record.getMetadata().getFieldNamesArray() != null && record.getMetadata().getFieldNamesArray().length  >= fieldNum) {
-				fieldName = record.getMetadata().getFieldNamesArray()[fieldNum - 1];
-			}
-
-            logger.debug("Error parsing field '" + fieldName + "': " + ex.getMessage(), ex);
-			throw new RuntimeException("Error parsing field '" + fieldName + "': " + ex.getMessage(), ex);
+			
+            logger.debug(getErrorMessage(ex, record, fieldNum) ,ex);
+			throw new RuntimeException(getErrorMessage(ex, record, fieldNum), ex);
 		}
 	}
 
