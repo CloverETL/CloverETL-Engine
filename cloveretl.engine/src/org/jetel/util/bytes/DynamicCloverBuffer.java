@@ -202,7 +202,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
             //// Reallocate.
             ByteBuffer oldBuf = buf;
-            ByteBuffer newBuf = allocateByteBuffer(newCapacity, isDirect());
+            ByteBuffer newBuf = reallocateByteBuffer(newCapacity, isDirect());
             oldBuf.clear();
             newBuf.put(oldBuf);
             buf(newBuf);
@@ -365,7 +365,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
         //// Reallocate.
         ByteBuffer oldBuf = buf;
-        ByteBuffer newBuf = allocateByteBuffer(newCapacity, isDirect());
+        ByteBuffer newBuf = reallocateByteBuffer(newCapacity, isDirect());
         oldBuf.position(0);
         oldBuf.limit(limit);
         newBuf.put(oldBuf);
@@ -645,7 +645,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
             //// Reallocate.
             ByteBuffer oldBuf = buf;
-            ByteBuffer newBuf = allocateByteBuffer(newCapacity, isDirect());
+            ByteBuffer newBuf = reallocateByteBuffer(newCapacity, isDirect());
             newBuf.put(oldBuf);
             buf(newBuf);
             deallocateByteBuffer(oldBuf);
@@ -1284,11 +1284,11 @@ public class DynamicCloverBuffer extends CloverBuffer {
     }
 
     @Override
-	protected ByteBuffer allocateByteBuffer(int requestedCapacity, boolean direct) {
+	protected ByteBuffer reallocateByteBuffer(int requestedCapacity, boolean direct) {
     	if (requestedCapacity > maximumCapacity) {
     		throw new BufferOverflowException();
     	}
-    	return super.allocateByteBuffer(requestedCapacity, direct);
+    	return super.reallocateByteBuffer(requestedCapacity, direct);
     }
     
 }

@@ -381,5 +381,20 @@ public class CloverBufferTest extends CloverTestCase {
     	
     	assertEquals(underlyingBuffer, cloverBuffer.buf());
     }
+ 
+    public void testUseDirectMemory() {
+    	boolean formerUseDirectMemory = Defaults.USE_DIRECT_MEMORY;
+    	Defaults.USE_DIRECT_MEMORY = false;
+    	
+    	assertFalse(CloverBuffer.allocate(100).isDirect());
+    	assertFalse(CloverBuffer.allocateDirect(100).isDirect());
+
+    	Defaults.USE_DIRECT_MEMORY = true;
+    	
+    	assertFalse(CloverBuffer.allocate(100).isDirect());
+    	assertTrue(CloverBuffer.allocateDirect(100).isDirect());
+
+    	Defaults.USE_DIRECT_MEMORY = formerUseDirectMemory;
+    }
     
 }
