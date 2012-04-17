@@ -429,9 +429,9 @@
 10474.0;PERIC;Pericles Comidas clásicas;28.0;36.4;36.4;18.0;0.0;8
 10474.0;PERIC;Pericles Comidas clásicas;40.0;14.7;14.7;21.0;0.0;8
 10474.0;PERIC;Pericles Comidas clásicas;75.0;6.2;6.2;10.0;0.0;8
-10475.0;SUPRD;Supremes délices;31.0;10.0;9.996;35.0;0.15;20
-10475.0;SUPRD;Supremes délices;66.0;13.6;13.598;60.0;0.15;20
-10475.0;SUPRD;Supremes délices;76.0;14.4;14.396;42.0;0.15;20
+10475.0;SUPRD;Supremes délices;31.0;10.0;9.996;35.0;0.15;21
+10475.0;SUPRD;Supremes délices;66.0;13.6;13.598;60.0;0.15;21
+10475.0;SUPRD;Supremes délices;76.0;14.4;14.396;42.0;0.15;21
 10477.0;PRINI;Princesa Isabel Vinhos;1.0;14.4;14.4;15.0;0.0;8
 10477.0;PRINI;Princesa Isabel Vinhos;21.0;8.0;7.988;21.0;0.25;8
 10477.0;PRINI;Princesa Isabel Vinhos;39.0;14.4;14.388;20.0;0.25;8
@@ -442,16 +442,16 @@
 10479.0;RATTC;Rattlesnake Canyon Grocery;64.0;26.6;26.6;30.0;0.0;2
 10481.0;RICAR;Ricardo Adocicados;49.0;16.0;16;24.0;0.0;5
 10481.0;RICAR;Ricardo Adocicados;60.0;27.2;27.2;40.0;0.0;5
-10483.0;WHITC;White Clover Markets;34.0;11.2;11.199;35.0;0.05;31
-10483.0;WHITC;White Clover Markets;77.0;10.4;10.398;30.0;0.05;31
-10484.0;BSBEV;B's Beverages;21.0;8.0;8;14.0;0.0;7
-10484.0;BSBEV;B's Beverages;40.0;14.7;14.7;10.0;0.0;7
-10484.0;BSBEV;B's Beverages;51.0;42.4;42.4;3.0;0.0;7
+10483.0;WHITC;White Clover Markets;34.0;11.2;11.199;35.0;0.05;32
+10483.0;WHITC;White Clover Markets;77.0;10.4;10.398;30.0;0.05;32
+10484.0;BSBEV;B's Beverages;21.0;8.0;8;14.0;0.0;8
+10484.0;BSBEV;B's Beverages;40.0;14.7;14.7;10.0;0.0;8
+10484.0;BSBEV;B's Beverages;51.0;42.4;42.4;3.0;0.0;8
 10487.0;QUEEN;Queen Cozinha;19.0;7.3;7.3;5.0;0.0;2
 10487.0;QUEEN;Queen Cozinha;26.0;24.9;24.9;30.0;0.0;2
 10487.0;QUEEN;Queen Cozinha;54.0;5.9;5.89;24.0;0.25;2
-10489.0;PICCO;Piccolo und mehr;11.0;16.8;16.783;15.0;0.25;11
-10489.0;PICCO;Piccolo und mehr;16.0;13.9;13.9;18.0;0.0;11
+10489.0;PICCO;Piccolo und mehr;11.0;16.8;16.783;15.0;0.25;12
+10489.0;PICCO;Piccolo und mehr;16.0;13.9;13.9;18.0;0.0;12
 10492.0;BOTTM;Bottom-Dollar Markets;25.0;11.2;11.199;60.0;0.05;10
 10492.0;BOTTM;Bottom-Dollar Markets;42.0;11.2;11.198;20.0;0.05;10
 10494.0;COMMI;Comércio Mineiro;56.0;30.4;30.4;30.0;0.0;7
@@ -1180,9 +1180,9 @@
 10920.0;AROUT;Around the Horn;50.0;16.25;16.25;24.0;0.0;6
 10921.0;VAFFE;Vaffeljernet;35.0;18.0;18;10.0;0.0;6
 10921.0;VAFFE;Vaffeljernet;63.0;43.9;43.9;40.0;0.0;6
-10924.0;BERGS;Berglunds snabbköp;10.0;31.0;30.995;20.0;0.1;34
-10924.0;BERGS;Berglunds snabbköp;28.0;45.6;45.597;30.0;0.1;34
-10924.0;BERGS;Berglunds snabbköp;75.0;7.75;7.75;6.0;0.0;34
+10924.0;BERGS;Berglunds snabbköp;10.0;31.0;30.995;20.0;0.1;35
+10924.0;BERGS;Berglunds snabbköp;28.0;45.6;45.597;30.0;0.1;35
+10924.0;BERGS;Berglunds snabbköp;75.0;7.75;7.75;6.0;0.0;35
 10926.0;ANATR;Ana Trujillo Emparedados y helados;11.0;21.0;21;2.0;0.0;7
 10926.0;ANATR;Ana Trujillo Emparedados y helados;13.0;6.0;6;10.0;0.0;7
 10926.0;ANATR;Ana Trujillo Emparedados y helados;19.0;9.2;9.2;7.0;0.0;7
@@ -1227,9 +1227,9 @@
 10949.0;BOTTM;Bottom-Dollar Markets;10.0;31.0;31;30.0;0.0;4
 10949.0;BOTTM;Bottom-Dollar Markets;17.0;39.0;39;6.0;0.0;4
 10949.0;BOTTM;Bottom-Dollar Markets;62.0;49.3;49.3;60.0;0.0;4
-10951.0;RICSU;Richter Supermarkt;33.0;2.5;2.497;15.0;0.05;21
-10951.0;RICSU;Richter Supermarkt;41.0;9.65;9.642;6.0;0.05;21
-10951.0;RICSU;Richter Supermarkt;75.0;7.75;7.749;50.0;0.05;21
+10951.0;RICSU;Richter Supermarkt;33.0;2.5;2.497;15.0;0.05;22
+10951.0;RICSU;Richter Supermarkt;41.0;9.65;9.642;6.0;0.05;22
+10951.0;RICSU;Richter Supermarkt;75.0;7.75;7.749;50.0;0.05;22
 10952.0;ALFKI;Alfreds Futterkiste;6.0;25.0;24.997;16.0;0.05;8
 10952.0;ALFKI;Alfreds Futterkiste;28.0;45.6;45.6;2.0;0.0;8
 10953.0;AROUT;Around the Horn;20.0;81.0;80.999;50.0;0.05;9
@@ -1238,8 +1238,8 @@
 10956.0;BLAUS;Blauer See Delikatessen;21.0;10.0;10;12.0;0.0;3
 10956.0;BLAUS;Blauer See Delikatessen;47.0;9.5;9.5;14.0;0.0;3
 10956.0;BLAUS;Blauer See Delikatessen;51.0;53.0;53;8.0;0.0;3
-10961.0;QUEEN;Queen Cozinha;52.0;7.0;6.992;6.0;0.05;10
-10961.0;QUEEN;Queen Cozinha;76.0;18.0;18;60.0;0.0;10
+10961.0;QUEEN;Queen Cozinha;52.0;7.0;6.992;6.0;0.05;11
+10961.0;QUEEN;Queen Cozinha;76.0;18.0;18;60.0;0.0;11
 10962.0;QUICK;QUICK-Stop;7.0;30.0;30;45.0;0.0;4
 10962.0;QUICK;QUICK-Stop;13.0;6.0;6;77.0;0.0;4
 10962.0;QUICK;QUICK-Stop;53.0;32.8;32.8;20.0;0.0;4
@@ -1248,32 +1248,32 @@
 10964.0;SPECD;Spécialités du monde;18.0;62.5;62.5;6.0;0.0;4
 10964.0;SPECD;Spécialités du monde;38.0;263.5;263.5;5.0;0.0;4
 10964.0;SPECD;Spécialités du monde;69.0;36.0;36;10.0;0.0;4
-10965.0;OLDWO;Old World Delicatessen;51.0;53.0;53;16.0;0.0;9
-10967.0;TOMSP;Toms Spezialitäten;19.0;9.2;9.2;12.0;0.0;9
-10967.0;TOMSP;Toms Spezialitäten;49.0;20.0;20;40.0;0.0;9
-10968.0;ERNSH;Ernst Handel;12.0;38.0;38;30.0;0.0;8
-10968.0;ERNSH;Ernst Handel;24.0;4.5;4.5;30.0;0.0;8
-10968.0;ERNSH;Ernst Handel;64.0;33.25;33.25;4.0;0.0;8
-10969.0;COMMI;Comércio Mineiro;46.0;12.0;12;9.0;0.0;6
-10970.0;BOLID;Bólido Comidas preparadas;52.0;7.0;6.995;40.0;0.2;30
-10974.0;SPLIR;Split Rail Beer & Ale;63.0;43.9;43.9;10.0;0.0;8
+10965.0;OLDWO;Old World Delicatessen;51.0;53.0;53;16.0;0.0;10
+10967.0;TOMSP;Toms Spezialitäten;19.0;9.2;9.2;12.0;0.0;10
+10967.0;TOMSP;Toms Spezialitäten;49.0;20.0;20;40.0;0.0;10
+10968.0;ERNSH;Ernst Handel;12.0;38.0;38;30.0;0.0;9
+10968.0;ERNSH;Ernst Handel;24.0;4.5;4.5;30.0;0.0;9
+10968.0;ERNSH;Ernst Handel;64.0;33.25;33.25;4.0;0.0;9
+10969.0;COMMI;Comércio Mineiro;46.0;12.0;12;9.0;0.0;7
+10970.0;BOLID;Bólido Comidas preparadas;52.0;7.0;6.995;40.0;0.2;31
+10974.0;SPLIR;Split Rail Beer & Ale;63.0;43.9;43.9;10.0;0.0;9
 10975.0;BOTTM;Bottom-Dollar Markets;8.0;40.0;40;16.0;0.0;2
 10975.0;BOTTM;Bottom-Dollar Markets;75.0;7.75;7.75;10.0;0.0;2
-10977.0;FOLKO;Folk och fä HB;39.0;18.0;18;30.0;0.0;14
-10977.0;FOLKO;Folk och fä HB;47.0;9.5;9.5;30.0;0.0;14
-10977.0;FOLKO;Folk och fä HB;51.0;53.0;53;10.0;0.0;14
-10977.0;FOLKO;Folk och fä HB;63.0;43.9;43.9;20.0;0.0;14
-10979.0;ERNSH;Ernst Handel;7.0;30.0;30;18.0;0.0;4
-10979.0;ERNSH;Ernst Handel;12.0;38.0;38;20.0;0.0;4
-10979.0;ERNSH;Ernst Handel;24.0;4.5;4.5;80.0;0.0;4
-10979.0;ERNSH;Ernst Handel;27.0;43.9;43.9;30.0;0.0;4
-10979.0;ERNSH;Ernst Handel;31.0;12.5;12.5;24.0;0.0;4
-10979.0;ERNSH;Ernst Handel;63.0;43.9;43.9;35.0;0.0;4
-10980.0;FOLKO;Folk och fä HB;75.0;7.75;7.745;40.0;0.2;20
-10982.0;BOTTM;Bottom-Dollar Markets;7.0;30.0;30;20.0;0.0;11
-10982.0;BOTTM;Bottom-Dollar Markets;43.0;46.0;46;9.0;0.0;11
-10983.0;SAVEA;Save-a-lot Markets;13.0;6.0;5.998;84.0;0.15;9
-10983.0;SAVEA;Save-a-lot Markets;57.0;19.5;19.5;15.0;0.0;9
+10977.0;FOLKO;Folk och fä HB;39.0;18.0;18;30.0;0.0;15
+10977.0;FOLKO;Folk och fä HB;47.0;9.5;9.5;30.0;0.0;15
+10977.0;FOLKO;Folk och fä HB;51.0;53.0;53;10.0;0.0;15
+10977.0;FOLKO;Folk och fä HB;63.0;43.9;43.9;20.0;0.0;15
+10979.0;ERNSH;Ernst Handel;7.0;30.0;30;18.0;0.0;5
+10979.0;ERNSH;Ernst Handel;12.0;38.0;38;20.0;0.0;5
+10979.0;ERNSH;Ernst Handel;24.0;4.5;4.5;80.0;0.0;5
+10979.0;ERNSH;Ernst Handel;27.0;43.9;43.9;30.0;0.0;5
+10979.0;ERNSH;Ernst Handel;31.0;12.5;12.5;24.0;0.0;5
+10979.0;ERNSH;Ernst Handel;63.0;43.9;43.9;35.0;0.0;5
+10980.0;FOLKO;Folk och fä HB;75.0;7.75;7.745;40.0;0.2;21
+10982.0;BOTTM;Bottom-Dollar Markets;7.0;30.0;30;20.0;0.0;12
+10982.0;BOTTM;Bottom-Dollar Markets;43.0;46.0;46;9.0;0.0;12
+10983.0;SAVEA;Save-a-lot Markets;13.0;6.0;5.998;84.0;0.15;10
+10983.0;SAVEA;Save-a-lot Markets;57.0;19.5;19.5;15.0;0.0;10
 10984.0;SAVEA;Save-a-lot Markets;16.0;17.45;17.45;55.0;0.0;4
 10984.0;SAVEA;Save-a-lot Markets;24.0;4.5;4.5;20.0;0.0;4
 10984.0;SAVEA;Save-a-lot Markets;36.0;19.0;19;40.0;0.0;4
