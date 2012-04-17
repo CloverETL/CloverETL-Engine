@@ -652,8 +652,29 @@ public abstract class CloverBuffer {
     /**
      * Request to prepare a new byte buffer. Memory tracker is updated.
      */
-    protected ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
+    protected ByteBuffer reallocateByteBuffer(int capacity, boolean direct) {
     	memoryAllocated(capacity);
+    	return allocateByteBuffer(capacity, direct);
+    }
+
+    /**
+     * Event listener, that an underlying byte buffer is no more used.
+     * Memory tracker is updated. 
+     */
+    protected void deallocateByteBuffer(ByteBuffer byteBuffer) {
+    	memoryDeallocated(byteBuffer.capacity());
+    }
+
+    /**
+     * Allocates new {@link ByteBuffer} instance with given capacity.
+     * Resulted {@link ByteBuffer} is direct if and only if direct buffer is requested
+     * and if usage of direct memory is allowed (Defaults.USE_DIRECT_MEMORY = true)
+     * and if free direct memory is still available.
+     * @param capacity capacity of requested {@link ByteBuffer}
+     * @param direct <code>true</code> if direct buffer is requested
+     * @return new {@link ByteBuffer}
+     */
+    public static ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
     	if (direct && Defaults.USE_DIRECT_MEMORY) {
     		try {
     			return ByteBuffer.allocateDirect(capacity);
@@ -663,14 +684,6 @@ public abstract class CloverBuffer {
     	} else {
     		return ByteBuffer.allocate(capacity);
     	}
-    }
-
-    /**
-     * Event listener, that an underlying byte buffer is no more used.
-     * Memory tracker is updated. 
-     */
-    protected void deallocateByteBuffer(ByteBuffer byteBuffer) {
-    	memoryDeallocated(byteBuffer.capacity());
     }
     
 }
