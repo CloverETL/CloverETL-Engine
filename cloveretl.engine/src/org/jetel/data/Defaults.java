@@ -31,6 +31,7 @@ import java.util.zip.Deflater;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -236,7 +237,8 @@ public final class Defaults {
         ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
         INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
         PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
-
+        USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
+        
         Record.init();
         DataFieldMetadata.init();
         DataParser.init();
@@ -324,6 +326,16 @@ public final class Defaults {
 	 * */
 	public static String PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING;
 
+	/**
+	 * Clover engine intensively uses direct memory for data records manipulation.
+	 * For example underlying memory of {@link CloverBuffer} (serialised data records container)
+	 * is allocated outside the Java heap space in direct memory.
+	 * This attribute is <code>true</code> by default due better performance.
+	 * Since direct memory is out of control java virtual machine, try to turn off 
+	 * usage of direct memory in case OutOfMemory exception occurs. 
+	 */
+	public static boolean USE_DIRECT_MEMORY;
+	
 	/**
 	 * Defaults regarding DataRecord structure/manipulation
 	 *
