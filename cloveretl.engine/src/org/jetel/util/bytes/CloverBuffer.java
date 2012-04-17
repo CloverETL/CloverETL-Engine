@@ -32,6 +32,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -653,7 +654,7 @@ public abstract class CloverBuffer {
      */
     protected ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
     	memoryAllocated(capacity);
-    	if (direct) {
+    	if (direct && Defaults.USE_DIRECT_MEMORY) {
     		try {
     			return ByteBuffer.allocateDirect(capacity);
     		} catch (OutOfMemoryError e) {
