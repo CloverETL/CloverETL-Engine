@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<project name="cloveretl.component.hadoop" default="build" basedir=".">
+
+	<property name="dir.engine" value="../cloveretl.engine"/>
+	<property name="dir.engine.tools" value="${dir.engine}/tools"/>		
+	
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+	  <classpath>
+	    <pathelement location="${dir.engine.tools}/ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+	
+	<target name="build">
+		<ant target="build" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
+	<target name="clean">
+		<ant target="clean" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+
+	<target name="coverage-instrument">
+		<ant target="coverage-instrument" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
+	<target name="runtests">
+		<ant target="runtests" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+		
+	<target name="dist.src">
+		<ant target="dist.src" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
+	<target name="findbugs-xml">
+		<ant target="findbugs-xml" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
+	<target name="collect-javadoc-src">
+		<ant target="collect-javadoc-src" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+
+	<target name="check-sources">
+		<ant target="check-sources" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+	</target>
+	
+</project>
