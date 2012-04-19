@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific;
 
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,8 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
 
     private final static String NAME_PARAMETER = "name";
 
+    private final static String PRODUCT_NAME_PARAMETER = "productName";
+
     private final static String MAJOR_VERSION_PARAMETER = "majorVersion";
 
     private final static String CLASS_PARAMETER = "class";
@@ -57,7 +60,13 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
      * Name of this JDBC driver is used for communication with user - for example in the clover.GUI.
      */
     private String name;
-    
+
+    /**
+     * Product name is used to identify database type of a {@link Connection} instance.
+     * @see JdbcSpecificFactory#getJdbcSpecificDescription(java.sql.Connection)
+     */
+    private String productName;
+
     /**
      * Major version number targeted database.
      */
@@ -86,6 +95,11 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
             name = extension.getParameter(NAME_PARAMETER).getString();
         }
 
+        //reads 'productName' parameter 
+        if(extension.hasParameter(PRODUCT_NAME_PARAMETER)) {
+            productName = extension.getParameter(PRODUCT_NAME_PARAMETER).getString();
+        }
+
         //reads 'majorVersion' parameter 
         if(extension.hasParameter(MAJOR_VERSION_PARAMETER)) {
             majorVersion = extension.getParameter(MAJOR_VERSION_PARAMETER).getString();
@@ -104,6 +118,10 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
 
     public String getName() {
         return name;
+    }
+    
+    public String getProductName() {
+    	return productName;
     }
     
     public String getMajorVersion() {

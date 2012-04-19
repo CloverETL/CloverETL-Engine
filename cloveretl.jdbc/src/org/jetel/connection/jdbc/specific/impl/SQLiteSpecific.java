@@ -36,13 +36,10 @@ import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.CopySQLData.CopyDecimal;
-import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.SQLUtil;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DecimalDataField;
-import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -67,14 +64,6 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
-	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createCopyObject(int, org.jetel.metadata.DataFieldMetadata, org.jetel.data.DataRecord, int, int)
 	 */

@@ -18,15 +18,11 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
-import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -49,14 +45,6 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
-	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
-	}
-	
 	/**
 	 * Returns true, since Derby supports single-row auto-generated keys retrieval. 
 	 */

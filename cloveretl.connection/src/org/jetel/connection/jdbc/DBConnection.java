@@ -486,7 +486,11 @@ public class DBConnection extends GraphElement implements IConnection {
         	try {
             	Context initContext = new InitialContext();
            		DataSource ds = (DataSource)initContext.lookup(getJndiName());
-               	return ds.getConnection();
+               	Connection jndiConnection = ds.getConnection();
+               	//update jdbc specific of this DBConnection according given JNDI connection
+               	updateJdbcSpecific(jndiConnection);
+               	//wrap the given JNDI connection to a DefaultConnection instance 
+               	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
         	} catch (Exception e) {
         		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
         	}
@@ -499,6 +503,19 @@ public class DBConnection extends GraphElement implements IConnection {
     	}
     }
 
+    /**
+     * Determines jdbc specific for this {@link DBConnection} based on given {@link Connection}.
+     * This is used for {@link Connection} given from JNDI interface to guess proper {@link JdbcSpecific}.
+     */
+    private void updateJdbcSpecific(Connection connection) {
+       	if (jdbcSpecific == null) {
+       		JdbcSpecificDescription jdbcSpecificDescription = JdbcSpecificFactory.getJdbcSpecificDescription(connection);
+       		if (jdbcSpecificDescription != null) {
+       			jdbcSpecific = jdbcSpecificDescription.getJdbcSpecific();
+       		}
+       	}
+    }
+    
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();

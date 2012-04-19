@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -60,13 +61,10 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 		return COMMENTS_PATTERN;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException {
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		//that is intentional usage of MSSQLConnection!!!
-		return new MSSQLConnection(connection, operationType);
+		return new MSSQLConnection(dbConnection, operationType);
 	}
 
 	@Override

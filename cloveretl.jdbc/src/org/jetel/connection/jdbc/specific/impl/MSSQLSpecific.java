@@ -18,12 +18,12 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -52,12 +52,9 @@ public class MSSQLSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException {
-		return new MSSQLConnection(connection, operationType);
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+		return new MSSQLConnection(dbConnection, operationType);
 	}
 
     @Override

@@ -18,7 +18,6 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 
 import org.jetel.connection.jdbc.DBConnection;
@@ -45,9 +44,10 @@ public class DefaultConservativeJdbcSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType(), true);
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+		DefaultConnection connection = super.prepareSQLConnection(dbConnection, operationType);
+		connection.setConservative(true);
+		return connection;
 	}
 
 	@Override
