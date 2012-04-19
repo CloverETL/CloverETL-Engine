@@ -28,6 +28,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="DERBY"/>
 		<parameter id="name" value="Derby"/>
+		<parameter id="productName" value="Apache Derby"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
 	</extension>
 	
@@ -59,6 +60,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="MS SQL Server 2008"/>
+		<parameter id="productName" value="Microsoft SQL Server"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific"/>
 	</extension>
@@ -73,6 +75,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
+		<parameter id="productName" value="MySQL"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MySQLSpecific"/>
 	</extension>
@@ -80,6 +83,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="ORACLE"/>
 		<parameter id="name" value="Oracle"/>
+		<parameter id="productName" value="Oracle"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.OracleSpecific"/>
 	</extension>

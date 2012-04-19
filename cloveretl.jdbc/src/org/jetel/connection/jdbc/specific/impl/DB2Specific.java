@@ -18,14 +18,10 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
-import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -48,14 +44,6 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
-	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
-	}
-	
 	@Override
 	public String quoteIdentifier(String identifier) {
         return ('"' + identifier + '"');

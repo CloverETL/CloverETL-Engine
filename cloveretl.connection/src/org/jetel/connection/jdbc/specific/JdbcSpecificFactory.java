@@ -18,14 +18,19 @@
  */
 package org.jetel.connection.jdbc.specific;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class provides access to all registered JDBC specifics via the 'jdbcSpecific' extension point.
@@ -79,7 +84,27 @@ public class JdbcSpecificFactory {
     public static JdbcSpecificDescription getJdbcSpecificDescription(String specificId) {
         return jdbcSpecifics.get(specificId);
     }
-    
+
+    /**
+     * Returns jdbc specific for given {@link Connection} instance based on product name
+     * specified in {@link Connection#getMetaData()#getDatabaseProductName()}.
+     * This method is now used by {@link DBConnection} when a {@link Connection} instance is retrieved
+     * from JNDI and we need to look up proper {@link JdbcSpecific}.
+     */
+    public static JdbcSpecificDescription getJdbcSpecificDescription(Connection connection) {
+    	for (JdbcSpecificDescription jdbcSpecific : getAllJdbcSpecificDescriptions()) {
+    		String productName = jdbcSpecific.getProductName();
+    		try {
+	    		if (!StringUtils.isEmpty(productName) && productName.equalsIgnoreCase((connection.getMetaData().getDatabaseProductName()))) {
+	    			return jdbcSpecific;
+	    		}
+    		} catch (SQLException e) {
+    			//DO NOTHING lets try the other specifics
+    		}
+    	}
+    	return getJdbcSpecificDescription(DefaultJdbcSpecific.DATABASE_ID);
+    }
+
     /**
      * @return list of all registered JDBC specifics
      */

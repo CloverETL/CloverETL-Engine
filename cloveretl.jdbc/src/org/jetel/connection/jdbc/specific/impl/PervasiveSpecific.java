@@ -24,10 +24,10 @@ import java.sql.Types;
 import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.PervasiveConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -44,7 +44,7 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new PervasiveConnection(dbConnection, operationType, getAutoKeyType());
 	}
 
