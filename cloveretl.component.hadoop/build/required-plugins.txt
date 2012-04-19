@@ -1,3 +1,0 @@
-required.plugins=org.jetel.component,org.jetel.connection
-required.plugins.dist=;/Users/dpavlis/Documents/eclipse/workspace_trunk/cloveretl.gui/lib/plugins/org.jetel.component/cloveretl.component.jar;/Users/dpavlis/Documents/eclipse/workspace_trunk/cloveretl.gui/lib/plugins/org.jetel.connection/cloveretl.connection.jar
-required.plugins.classes=;/Users/dpavlis/Documents/eclipse/workspace_trunk/cloveretl.component.hadoop/../cloveretl.component/build/classes;/Users/dpavlis/Documents/eclipse/workspace_trunk/cloveretl.component.hadoop/../cloveretl.connection/build/classes
