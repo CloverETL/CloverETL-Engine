@@ -547,10 +547,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		if(nodeThread != null) {
     		this.nodeThread = nodeThread;
     		
-			//thread context classloader is preset to a reasonable classloader
-			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
-    		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
-    		
 			String oldName = nodeThread.getName();
     		ContextProvider.registerNode(this);
     		long runId = getGraph().getRuntimeContext().getRunId();

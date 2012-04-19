@@ -58,7 +58,6 @@ public class SimpleThreadManager implements IThreadManager {
 	@Override
 	public void executeNode(Runnable node) {
 		Thread nodeThread = new Thread(node);
-		nodeThread.setContextClassLoader(node.getClass().getClassLoader());
 		nodeThread.setPriority(Thread.MIN_PRIORITY);
 		nodeThread.setDaemon(false);
 		nodeThread.start();
@@ -70,7 +69,6 @@ public class SimpleThreadManager implements IThreadManager {
 	@Override
 	public void execute(Runnable runnable) {
 		Thread nodeThread = new Thread(runnable.getClass().getName());
-		nodeThread.setContextClassLoader(runnable.getClass().getClassLoader());
 		nodeThread.setPriority(Thread.MIN_PRIORITY);
 		nodeThread.setDaemon(false);
 		nodeThread.start();
