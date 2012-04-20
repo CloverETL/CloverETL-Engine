@@ -170,7 +170,7 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(record);
-        	dataTape.flush(true);
+        	dataTape.flush(false);
         	debuggedRecords++;
         }
     }
@@ -209,7 +209,7 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(byteBuffer);
-        	dataTape.flush(true);
+        	dataTape.flush(false);
         	debuggedRecords++;
         }
     }
