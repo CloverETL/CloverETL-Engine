@@ -213,20 +213,12 @@ public class LdapManager {
 		 }
 		 System.out.println("*****************");
 		 */
-
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		this.ctx = new InitialDirContext(this.env);
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		this.ctx = new InitialDirContext(this.env);
 
 		if (ctx == null)
 			throw new NamingException(
 					"Internal Error with jndi connection: No Context was returned, however no exception was reported by jndi.");
+
 	}
 	
 	/**
@@ -236,16 +228,12 @@ public class LdapManager {
 	 * @return the existence of the nodeDN (or false if an error occurs).
 	 */
 	public boolean exists(String nodeDN) throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		try {
 			ctx.search(nodeDN, "(objectclass=*)", existanceSearchControl);
 			return true;
 		} catch (NameNotFoundException e) {//it's *BAD*.
 			return false;
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		}
 	}
 
 	/**
@@ -263,37 +251,31 @@ public class LdapManager {
 	public NamingEnumeration search(String searchbase, String filter,
 			String[] returnAttributes, int scope, int limit, int timeout)
 			throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		SearchControls constraints = new SearchControls();
 
-    		if (SearchControls.ONELEVEL_SCOPE == scope) {
-    			constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-    		} else if (SearchControls.SUBTREE_SCOPE == scope) {
-    			constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-    		} else if (SearchControls.OBJECT_SCOPE == scope) {
-    			constraints.setSearchScope(SearchControls.OBJECT_SCOPE);
-    		} else {
-    			throw new NamingException("Unknown search scope: " + scope);
-    		}
+		SearchControls constraints = new SearchControls();
 
-    		if (returnAttributes != null && returnAttributes.length == 0)
-    			returnAttributes = new String[] { "objectClass" };
+		if (SearchControls.ONELEVEL_SCOPE == scope) {
+			constraints.setSearchScope(SearchControls.ONELEVEL_SCOPE);
+		} else if (SearchControls.SUBTREE_SCOPE == scope) {
+			constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		} else if (SearchControls.OBJECT_SCOPE == scope) {
+			constraints.setSearchScope(SearchControls.OBJECT_SCOPE);
+		} else {
+			throw new NamingException("Unknown search scope: " + scope);
+		}
 
-    		constraints.setCountLimit(limit);
-    		constraints.setTimeLimit(timeout);
+		if (returnAttributes != null && returnAttributes.length == 0)
+			returnAttributes = new String[] { "objectClass" };
 
-    		constraints.setReturningAttributes(returnAttributes);
+		constraints.setCountLimit(limit);
+		constraints.setTimeLimit(timeout);
 
-    		NamingEnumeration results = ctx.search(searchbase, filter, constraints);
+		constraints.setReturningAttributes(returnAttributes);
 
-    		return results;
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		NamingEnumeration results = ctx.search(searchbase, filter, constraints);
+
+		return results;
+
 	}
 
 	/**
@@ -413,15 +395,7 @@ public class LdapManager {
 	 *         objects.
 	 */
 	public synchronized Attributes getAttributes(String dn, String[] returnAttributes) throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		return ctx.getAttributes(dn, returnAttributes);
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		return ctx.getAttributes(dn, returnAttributes);
 	}
 
 	/**
@@ -437,16 +411,8 @@ public class LdapManager {
 
 	public void close() throws NamingException {
 		if (ctx == null) return;
-		
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		ctx.close();		
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+//		nameParser = null;
+		ctx.close();		
 	}
 
 
@@ -460,16 +426,9 @@ public class LdapManager {
 	 *                 DirContext.ADD_ATTRIBUTE.
 	 * @param attr     the new attributes to update the object with.
 	 */
-	public void modifyAttributes(String dn, int mod_type, Attributes attr) throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		ctx.modifyAttributes(dn, mod_type, attr);
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+	public void modifyAttributes(String dn, int mod_type, Attributes attr)
+			throws NamingException {
+		ctx.modifyAttributes(dn, mod_type, attr);
 	}
 
 	/**
@@ -501,15 +460,7 @@ public class LdapManager {
 	 * @param atts attributes for the new object
 	 */
 	public void addEntry(String dn, Attributes atts) throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		ctx.createSubcontext(dn, atts);
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		ctx.createSubcontext(dn, atts);
 	}
 
 	/**
@@ -519,15 +470,7 @@ public class LdapManager {
 	 * @param dn
 	 */
 	public void deleteEntry(String dn) throws NamingException {
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-    		//let's do the work
-    		ctx.destroySubcontext(dn);
-    		////
-		} finally {
-			Thread.currentThread().setContextClassLoader(formerContextClassLoader);
-	    }
+		ctx.destroySubcontext(dn);
 	}
 	
 }

@@ -159,6 +159,7 @@ public class Phase extends GraphElement implements Comparable {
 		for(Node node : nodes.values()) {
 			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 			try {
+				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
                 // is it a leaf node ?
                 if (node.isLeaf() || node.isPhaseLeaf()) {
                     leafNodes.add(node);
@@ -177,6 +178,8 @@ public class Phase extends GraphElement implements Comparable {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
 				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), new JetelException(ex.getMessage(), ex));
+			} finally {
+				Thread.currentThread().setContextClassLoader(formerClassLoader);
 			}
 		}
         
