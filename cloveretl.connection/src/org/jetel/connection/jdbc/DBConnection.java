@@ -483,9 +483,7 @@ public class DBConnection extends GraphElement implements IConnection {
 
     protected Connection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
-    		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
         	try {
-        		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
             	Context initContext = new InitialContext();
            		DataSource ds = (DataSource)initContext.lookup(getJndiName());
                	Connection jndiConnection = ds.getConnection();
@@ -495,8 +493,6 @@ public class DBConnection extends GraphElement implements IConnection {
                	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
         	} catch (Exception e) {
         		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
-        	} finally {
-        		Thread.currentThread().setContextClassLoader(formerContextClassLoader);
         	}
     	} else {
         	try {

@@ -529,18 +529,37 @@ public class DefaultConnection implements Connection {
 		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
 		connectionProperties.putAll(dbConnection.createConnectionProperties());
 		
-		ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-    	try {
-    		Thread.currentThread().setContextClassLoader(DefaultConnection.class.getClassLoader());
+        try {
             connection = driver.connect(dbConnection.getDbUrl(), connectionProperties);
         } catch (SQLException ex) {
             throw new JetelRuntimeException("Can't connect to DB.", ex);
-    	} finally {
-    		Thread.currentThread().setContextClassLoader(formerContextClassLoader);
         }
         if (connection == null) {
             throw new JetelRuntimeException("Not suitable driver for specified DB URL (" + driver + " / " + dbConnection.getDbUrl());
         }
+//        // try to set Transaction isolation level, it it was specified
+//        if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
+//            int trLevel;
+//            String isolationLevel = config.getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
+//            if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
+//                trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+//            } else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
+//                trLevel = Connection.TRANSACTION_READ_COMMITTED;
+//            } else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
+//                trLevel = Connection.TRANSACTION_REPEATABLE_READ;
+//            } else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
+//                trLevel = Connection.TRANSACTION_SERIALIZABLE;
+//            } else {
+//                trLevel = Connection.TRANSACTION_NONE;
+//            }
+//            try {
+//                connection.setTransactionIsolation(trLevel);
+//            } catch (SQLException ex) {
+//                // we do nothing, if anything goes wrong, we just
+//                // leave whatever was the default
+//            }
+//        }
+        // DEBUG logger.debug("DBConenction (" + getId() +") finishes connect function to the database at " + simpleDateFormat.format(new Date()));
         
         return connection;
 	}
