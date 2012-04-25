@@ -19,6 +19,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
@@ -198,10 +199,10 @@ public class HadoopReader extends Node {
 		if (conn == null) {
 			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
 		}
-		if (!(conn instanceof IHadoopConnection)) {
-			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class.");
+		if (!(conn instanceof HadoopConnection)) {
+			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
 		}
-		this.connection= (IHadoopConnection) conn;
+		this.connection= ((HadoopConnection) conn).getConnection();
 		
 		
 		try {

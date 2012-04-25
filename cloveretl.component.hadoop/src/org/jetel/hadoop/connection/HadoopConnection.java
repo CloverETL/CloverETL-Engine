@@ -277,8 +277,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 	        super.checkConfig(status);
 	        try{
-	        	init();
-	        	connection.close();
+	        //  do not try to connecti.	
+	        //	init();
+	        //	connection.close();
 	        }catch(Exception ex){
 	        	status.add(new ConfigurationProblem("Error: "+ex.getMessage(), Severity.ERROR, this, Priority.NORMAL));
 	        }

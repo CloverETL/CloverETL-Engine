@@ -16,6 +16,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
@@ -76,11 +77,11 @@ public class HadoopWriter extends Node {
 	 * @param appendData
 	 * @param fields
 	 */
-	public HadoopWriter(String id, String fileURL, String connectionName, String keyField, String valueField, 
+	public HadoopWriter(String id, String fileURL, String connectionID, String keyField, String valueField, 
 			boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
-		this.connectionID=id;
+		this.connectionID=connectionID;
 		this.appendData = appendData;
 		this.keyField=keyField;
 		this.valueField=valueField;
@@ -192,10 +193,10 @@ public class HadoopWriter extends Node {
 		if (conn == null) {
 			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
 		}
-		if (!(conn instanceof IHadoopConnection)) {
-			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class.");
+		if (!(conn instanceof HadoopConnection)) {
+			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
 		}
-		this.connection= (IHadoopConnection) conn;
+		this.connection= ((HadoopConnection) conn).getConnection();
 
 		inPort = getInputPort(READ_FROM_PORT);
 
