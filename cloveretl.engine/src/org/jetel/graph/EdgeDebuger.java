@@ -44,6 +44,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class EdgeDebuger {
 
+	private static final int MINIMUM_DELAY_BETWEEN_FLUSHES = 5000;
+	
 	private static Log logger = LogFactory.getLog(EdgeDebuger.class);
 
     private final String debugFile;
@@ -68,7 +70,9 @@ public class EdgeDebuger {
     /** the number of data records processed so far */
     private int recordsCounter = 0;
     /** the number of debugged (stored) records */
-    private int debuggedRecords = 0; 
+    private int debuggedRecords = 0;
+    
+    private long lastFlushTime = 0L;
 
     public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode) {
     	this(parentEdge, debugFile, readMode, 0, true, null, null, false);
@@ -170,9 +174,16 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(record);
-        	dataTape.flush(false);
+        	flushIfNeeded();
         	debuggedRecords++;
         }
+    }
+    
+    private void flushIfNeeded() throws IOException, InterruptedException {
+    	if ((System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES && dataTape != null) {
+    		dataTape.flush(false);
+    		lastFlushTime = System.currentTimeMillis();
+    	}
     }
 
     private boolean checkRecordToWrite(DataRecord record) {
@@ -209,7 +220,7 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(byteBuffer);
-        	dataTape.flush(false);
+        	flushIfNeeded();
         	debuggedRecords++;
         }
     }
