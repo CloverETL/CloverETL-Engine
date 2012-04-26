@@ -27,8 +27,6 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataFieldType;
 
 /**
  * This unit traverses tree structure using given mapping. Results of the traversal are pushed into
