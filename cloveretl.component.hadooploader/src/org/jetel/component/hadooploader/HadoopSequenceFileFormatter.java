@@ -84,12 +84,19 @@ public class HadoopSequenceFileFormatter implements
 			if (dfs==null){
 				throw new IOException("Can't create output data stream - no Hadoop FileSystem object defined");
 			}
-			writer = SequenceFile.createWriter(dfs,                    // FileSystem
-	                new Configuration(),                  // Configuration
-	                new Path((URI)outputDataTarget), // Path to new file in HDFS
-	                keyType.getClass(),     		// Key Data Type
-	                valueType.getClass(),            // Value Data Type
-	                SequenceFile.CompressionType.NONE); 
+			ClassLoader formerContextClassloader = Thread.currentThread().getContextClassLoader();
+			try {
+				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+				
+				writer = SequenceFile.createWriter(dfs,                    // FileSystem
+		                new Configuration(),                  // Configuration
+		                new Path((URI)outputDataTarget), // Path to new file in HDFS
+		                keyType.getClass(),     		// Key Data Type
+		                valueType.getClass(),            // Value Data Type
+		                SequenceFile.CompressionType.NONE);
+			} finally {
+				Thread.currentThread().setContextClassLoader(formerContextClassloader);
+			}
 			
 		}else if (outputDataTarget instanceof SequenceFile.Writer){
 			writer=(SequenceFile.Writer)outputDataTarget;
