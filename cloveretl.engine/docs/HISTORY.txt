@@ -2,6 +2,13 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-3-0-M2
+------------
+* Support for list and map fields in metadata (container types)
+* CTL2 change in assignment operator '=' (now it assigns by value, not reference)
+- Webservice client: added "Timeout" attribute + ability to print SOAP request/response in DEBUG mode
+
+
 REL 3-3-0-M1
 ------------
 + Introducing MS Access and Generic ODBC
@@ -16,6 +23,9 @@ REL 3-3-0-M1
 
 REL 3-2-1
 ---------
+- WebServiceClient name space support fixed
+- XMLExtract mapping dialog not handling recursive XSDs correctly fixed
+
 
 REL 3-2-0
 ---------
