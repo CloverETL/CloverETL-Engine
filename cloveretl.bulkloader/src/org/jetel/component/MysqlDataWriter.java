@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -1132,7 +1133,7 @@ public class MysqlDataWriter extends BulkLoader {
 
 			checkErrPortMetadata();
 
-			errRecord = new DataRecord(errMetadata);
+			errRecord = DataRecordFactory.newRecord(errMetadata);
 			errRecord.init();
 
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
