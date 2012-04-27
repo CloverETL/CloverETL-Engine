@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.util.Random;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -48,17 +49,17 @@ public class SimpleLookupTest extends CloverTestCase {
 		DataRecordMetadata meta = new DataRecordMetadata("input");
 		meta.addField(new DataFieldMetadata("integer_field", DataFieldMetadata.INTEGER_FIELD, null));
 		RecordKey key = new RecordKey(new int[]{0}, meta);
-		inRecord = new DataRecord(meta);
+		inRecord = DataRecordFactory.newRecord(meta);
 		inRecord.init();
 		lookup = lookupTable.createLookup(key, inRecord);
 
 		RecordKey key2 = new RecordKey(new int[]{0}, meta);
-		inRecord2 = new DataRecord(meta);
+		inRecord2 = DataRecordFactory.newRecord(meta);
 		inRecord2.init();
 		lookup2 = lookupTable.createLookup(key2, inRecord2);
 		
 		RecordKey key3 = new RecordKey(new int[]{0}, meta);
-		inRecord3 = new DataRecord(meta);
+		inRecord3 = DataRecordFactory.newRecord(meta);
 		inRecord3.init();
 		lookup3 = lookupTable.createLookup(key3, inRecord3);
 	}

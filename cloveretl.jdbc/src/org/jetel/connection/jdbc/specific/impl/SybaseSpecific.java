@@ -19,7 +19,6 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -27,6 +26,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.SybaseConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -48,11 +48,8 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new SybaseConnection(dbConnection, operationType);
 	}
 

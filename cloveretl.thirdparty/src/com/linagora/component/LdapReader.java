@@ -26,6 +26,7 @@ import javax.naming.directory.SearchControls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -223,7 +224,7 @@ public class LdapReader extends Node {
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
-		DataRecord record = new DataRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		try {
 			// till it reaches end of data or it is stopped from outside

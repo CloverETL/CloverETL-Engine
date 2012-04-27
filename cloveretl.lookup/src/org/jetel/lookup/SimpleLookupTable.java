@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordMap;
 import org.jetel.data.DataRecordMap.DataRecordIterator;
 import org.jetel.data.Defaults;
@@ -199,7 +200,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		indexKey.init();
 		indexKey.setEqualNULLs(true);
 
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		if (lookupTable == null) {
@@ -244,7 +245,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			 * populate the lookupTable (Map) with data if provided dataParser is not null, otherwise it is assumed that
 			 * the lookup table will be populated later by calling put() method
 			 */
-			DataRecord record = new DataRecord(metadata);
+			DataRecord record = DataRecordFactory.newRecord(metadata);
 			record.init();
 			try {
 				if (fileURL != null) {

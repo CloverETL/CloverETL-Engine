@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.UniqueLabelsValidator;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -213,7 +214,7 @@ public class LdapWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		try {
 			while (null != inRecord && runIt) {

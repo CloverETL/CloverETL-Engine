@@ -28,6 +28,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="DERBY"/>
 		<parameter id="name" value="Derby"/>
+		<parameter id="productName" value="Apache Derby"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
 	</extension>
 	
@@ -59,6 +60,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="MS SQL Server 2008"/>
+		<parameter id="productName" value="Microsoft SQL Server"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific"/>
 	</extension>
@@ -73,6 +75,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
+		<parameter id="productName" value="MySQL"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MySQLSpecific"/>
 	</extension>
@@ -80,6 +83,7 @@
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="ORACLE"/>
 		<parameter id="name" value="Oracle"/>
+		<parameter id="productName" value="Oracle"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.OracleSpecific"/>
 	</extension>
@@ -126,11 +130,11 @@
 		<parameter id="dbDriver" value="oracle.jdbc.OracleDriver"/>
 		<parameter id="driverLibrary" value="lib/oracle/ojdbc6.jar"/>
 		<parameter id="urlHint">
-			<value>jdbc:oracle:thin:@hostname:1521:database</value>	
+			<value>jdbc:oracle:thin:@host:1521:SID</value>	
 			<value>jdbc:oracle:thin:@cluster-alias:1521/service_name</value>
 			<value>jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=host1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
 			<value>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cluster_alias)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
-			<value>jdbc:oracle:thin:@host:1521/SID</value>	
+			<value>jdbc:oracle:thin:@host:1521/service_name</value>	
 		</parameter>
 		<parameter id="jdbcSpecific" value="ORACLE"/>
 	</extension>
@@ -168,8 +172,8 @@
 		<parameter id="dbDriver" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
 		<parameter id="driverLibrary" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
 		<parameter id="urlHint">
-			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb)};DBQ=database </value>
-			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=database</value>
+			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb)};DBQ=database_file</value>
+			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=database_file</value>
 			<value>jdbc:odbc:odbc_source_name</value>
 		</parameter>
 		<parameter id="jdbcSpecific" value="MSACCESS"/>
