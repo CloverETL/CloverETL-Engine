@@ -107,6 +107,7 @@ import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
@@ -115,11 +116,12 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CharSequenceReader;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -218,6 +220,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			
 			try {
 				if (node.isExternal()) {
+					node.getFunctionCallContext().setGraph(getGraph()); // CL-2203
 					TLFunctionPrototype executable = node.getExternalFunction().getExecutable();
 					node.setExecutable(executable);
 					executable.init(node.getFunctionCallContext());
@@ -1107,12 +1110,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		Object argument = stack.pop();
 
 		if (printLine) {
-			StringBuilder buf = new StringBuilder((argument != null ? argument.toString() : "<null>"));
+			StringBuilder buf = new StringBuilder((argument != null ? StringUtils.toOutputStringCTL(argument) : "<null>"));
 			buf.append(" (on line: ").append(node.getBegin().getLine());
 			buf.append(" col: ").append(node.getBegin().getColumn()).append(")");
 			System.err.println(buf);
 		} else {
-			System.err.println(argument != null ? argument : "<null>");
+			System.err.println(argument != null ? StringUtils.toOutputStringCTL(argument) : "<null>");
 		}
 		
 		return data;
@@ -1122,7 +1125,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFPrintStackNode node, Object data) {
 		final Object[] contents = stack.getStackContents();
 		for (int i = stack.length()-1; i >= 0; i--) {
-			System.err.println("[" + i + "] : " + contents[i]);
+			System.err.println("[" + i + "] : " + StringUtils.toOutputStringCTL(contents[i]));
 		}
 
 		return data;
@@ -1515,7 +1518,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private DataRecord createNewRecord(TLTypeRecord type) {
 		final DataRecordMetadata metaData = type.getMetadata();
-		final DataRecord record = new DataRecord(metaData);
+		final DataRecord record = DataRecordFactory.newRecord(metaData);
 		record.init();
 		record.reset();
 		return record;
@@ -2214,8 +2217,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		DataFieldMetadata metadata = field.getMetadata();
 		
 		// a list or map cannot be copied, it must be wrapped to enable passing by reference
-		if ((metadata.getCardinalityType() == DataFieldCardinalityType.LIST)
-				|| (metadata.getCardinalityType() == DataFieldCardinalityType.MAP)) {
+		if ((metadata.getContainerType() == DataFieldContainerType.LIST)
+				|| (metadata.getContainerType() == DataFieldContainerType.MAP)) {
 			Object fieldValue = field.getValue();
 			return wrapMultivalueField(fieldValue, getClass(metadata.getDataType()));
 		}
@@ -2347,6 +2350,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFFunctionCall node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
+			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";  
 			node.getExtecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);
@@ -2661,7 +2665,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				// no need to call LookupTable.init() as it was already called in AST building
 				// phase to receive information about key fields
 				DataRecord keyRecord = null;
-				keyRecord = new DataRecord(keyRecordMetadata);
+				keyRecord = DataRecordFactory.newRecord(keyRecordMetadata);
 				keyRecord.init();
 				
 				node.setLookup(node.getLookupTable().createLookup(new RecordKey(keyFields,keyRecordMetadata),keyRecord));

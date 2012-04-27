@@ -48,9 +48,9 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		DataRecordMetadata metadata = new DataRecordMetadata("test", DataRecordMetadata.DELIMITED_RECORD);
 		metadata.addField(new DataFieldMetadata("int_field", DataFieldMetadata.INTEGER_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("string_field", DataFieldMetadata.STRING_FIELD, ";"));
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
-		next = new DataRecord(metadata);
+		next = DataRecordFactory.newRecord(metadata);
 		next.init();
 	}
 

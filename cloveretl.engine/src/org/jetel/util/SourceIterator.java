@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -52,8 +53,8 @@ public class SourceIterator {
 	
 	private static Log DEFAULT_LOGGER = LogFactory.getLog(SourceIterator.class);
 
-	private static final String DICT_PREFIX = "dict:";
-	private static final String DICT_DISCRETE_SUFFIX = ":discrete";
+	public static final String DICT_PREFIX = "dict:";
+	public static final String DICT_DISCRETE_SUFFIX = ":" + ProcessingType.DISCRETE;
 	private static final String PORT_PREFIX = "port:";
 	private static final String FILE_PROTOCOL_PREFIX = "file";
 
@@ -78,6 +79,8 @@ public class SourceIterator {
 
 	private int currentSourcePosition = 0;
 	private String currentSourceName = UNKNOWN_SOURCE_NAME;
+	
+	private ProcessingType defaultProcessingType = ProcessingType.STREAM;
 
 	public SourceIterator(InputPort inputPort, URL contextURL, String fileURL) {
 		this.inputPort = inputPort;
@@ -147,10 +150,9 @@ public class SourceIterator {
 
 			// read from dictionary
 			if (currentSourceName.indexOf(DICT_PREFIX) == 0) {
-				if (currentSourceName.endsWith(DICT_DISCRETE_SUFFIX)) {
-					String key = currentSourceName.substring(DICT_PREFIX.length(),
-							currentSourceName.length() - DICT_DISCRETE_SUFFIX.length());
-					return dictionary.getValue(key);
+				SourceWithProcessingType sourceWithProcessingType = resolveProcessingType(currentSourceName.substring(DICT_PREFIX.length()));
+				if (sourceWithProcessingType.processingType == ProcessingType.DISCRETE) {
+					return dictionary.getValue(sourceWithProcessingType.source);
 				}
 				dictionaryIterator.init(currentSourceName);
 				return next();
@@ -159,6 +161,26 @@ public class SourceIterator {
 			return createReadableByteChannel(currentSourceName);
 		}
 		return null;
+	}
+	
+	private SourceWithProcessingType resolveProcessingType(String source) {
+		for (ProcessingType procType : ProcessingType.values()) {
+			String procTypeName = procType.getId();
+			if (source.endsWith(":" + procTypeName)) {
+				return new SourceWithProcessingType(source.substring(0, source.length() - procTypeName.length()), procType);
+			}
+		}
+		return new SourceWithProcessingType(source, defaultProcessingType);
+	}
+	
+	private static class SourceWithProcessingType {
+		public final String source;
+		public final ProcessingType processingType;
+		
+		public SourceWithProcessingType(String source, ProcessingType processingType) {
+			this.source = source;
+			this.processingType = processingType;
+		}
 	}
 
 	public void postExecute() throws ComponentNotReadyException {
@@ -301,6 +323,10 @@ public class SourceIterator {
 	public Iterator<String> getFileIterator() {
 		return files.iterator();
 	}
+	
+	public boolean isSingleSource() {
+		return files.size() <= 1;
+	}
 
 	public String getCurrentFileName() {
 		return currentSourceName;
@@ -316,6 +342,22 @@ public class SourceIterator {
 
 	public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
 		this.propertyRefResolve = propertyRefResolve;
+	}
+
+	public ProcessingType getDefaultProcessingType() {
+		return defaultProcessingType;
+	}
+
+	/**
+	 * Sets default processing type for port/dictionary reading. Used when no processing type specified in input URL.
+	 * Port/dictionary reading URL syntax: port:$0.FieldName[:processingType]
+	 * 
+	 * Default default processing type is "stream".
+	 * 
+	 * @param defaultProcessingType
+	 */
+	public void setDefaultProcessingType(ProcessingType defaultProcessingType) {
+		this.defaultProcessingType = defaultProcessingType;
 	}
 
 }

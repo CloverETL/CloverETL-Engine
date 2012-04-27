@@ -16,14 +16,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.data.tree.bean;
+package org.jetel.data;
+
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author lkrejci (info@cloveretl.com)
+ * Class for factorisation of {@link DataRecord} object. Constructors of {@link DataRecord} are deprecated.
+ * 
+ * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 4.11.2011
+ * @created 27 Apr 2012
  */
-public class IntegerArray extends GenericArray<Integer> {
+public final class DataRecordFactory {
+
+    /**
+	 * Create new instance of DataRecord based on specified metadata (
+	 * how many fields, what field types, etc.)
+	 * 
+	 * @param _metadata  description of the record structure
+     */
+    @SuppressWarnings("deprecation")
+	public static DataRecord newRecord(DataRecordMetadata metadata) {
+		return new DataRecord(metadata);
+    }
 
 }

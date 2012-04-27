@@ -29,7 +29,7 @@ import org.jetel.test.CloverTestCase;
  *
  * @created 17 Jan 2012
  */
-public class DataFieldCardinalityTypeTest extends CloverTestCase {
+public class DataFieldContainerTypeTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
@@ -38,26 +38,25 @@ public class DataFieldCardinalityTypeTest extends CloverTestCase {
 	}
 	
 	public void testFromString() {
-		assertEquals(DataFieldCardinalityType.SINGLE, DataFieldCardinalityType.fromString("siNglE"));
-		assertEquals(DataFieldCardinalityType.LIST, DataFieldCardinalityType.fromString("list"));
-		assertEquals(DataFieldCardinalityType.MAP, DataFieldCardinalityType.fromString("MAP"));
+		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromString(null));
+		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromString(""));
+		assertEquals(DataFieldContainerType.LIST, DataFieldContainerType.fromString("list"));
+		assertEquals(DataFieldContainerType.MAP, DataFieldContainerType.fromString("MAP"));
 		
-		try { DataFieldCardinalityType.fromString(null); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
-		try { DataFieldCardinalityType.fromString(""); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
-		try { DataFieldCardinalityType.fromString("neco"); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
+		try { DataFieldContainerType.fromString("neco"); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
 	}
 	
 	public void testGetDisplayName() {
-		assertEquals("single", DataFieldCardinalityType.SINGLE.getDisplayName());
-		assertEquals("list", DataFieldCardinalityType.LIST.getDisplayName());
-		assertEquals("map", DataFieldCardinalityType.MAP.getDisplayName());
+		assertEquals("", DataFieldContainerType.SINGLE.getDisplayName());
+		assertEquals("list", DataFieldContainerType.LIST.getDisplayName());
+		assertEquals("map", DataFieldContainerType.MAP.getDisplayName());
 	}
 	
 	public void testGetDisplayNames() {
-		String[] names = DataFieldCardinalityType.getDisplayNames();
+		String[] names = DataFieldContainerType.getDisplayNames();
 		List<String> namesList = Arrays.asList(names);
 		assertEquals(3, names.length);
-		assertTrue(namesList.contains("single"));
+		assertTrue(namesList.contains(""));
 		assertTrue(namesList.contains("list"));
 		assertTrue(namesList.contains("map"));
 	}

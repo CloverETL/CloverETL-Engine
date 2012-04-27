@@ -19,6 +19,7 @@
 package org.jetel.interpreter.ASTnode;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -92,7 +93,7 @@ public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		keyFields[i] = i;
 	  }
 	  RecordKey lookupKey = new RecordKey(keyFields, lookupMetadata);
-	  lookupRecord = new DataRecord(lookupMetadata);
+	  lookupRecord = DataRecordFactory.newRecord(lookupMetadata);
 	  lookupRecord.init();
 	  lookup = lookupTable.createLookup(lookupKey, lookupRecord);
   }
@@ -102,7 +103,7 @@ public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 	 * 
 	 */
 	private void prepareLookupRecord() {
-		lookupRecord = new DataRecord(lookup.getKey().generateKeyRecordMetadata());
+		lookupRecord = DataRecordFactory.newRecord(lookup.getKey().generateKeyRecordMetadata());
 		lookupRecord.init();
 	}
   

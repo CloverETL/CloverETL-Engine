@@ -38,19 +38,18 @@ import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
-
 /**
  * @author David Pavlis, JavlinConsulting, s.r.o.
- * @since  27.3.2006
- *
+ * @since 27.3.2006
+ * 
  * 
  */
 
 public class ClassLoaderUtils {
-    
-    static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
-    
-    public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
+
+	static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
+
+	public static String getClasspath(ClassLoader loader, URL... classPathUrls) {
 		URL[] urls = null;
 
 		try {
@@ -71,93 +70,92 @@ public class ClassLoaderUtils {
 			}
 		}
 
-        if (urls == null || urls.length == 0) {
-        	urls = classPathUrls;
-        } else if (classPathUrls != null && classPathUrls.length != 0) {
-        	URL[] cpUrls = new URL[urls.length + classPathUrls.length];
-    		System.arraycopy(urls, 0, cpUrls, 0, urls.length);
-    		System.arraycopy(classPathUrls, 0, cpUrls, urls.length, classPathUrls.length);
+		if (urls == null || urls.length == 0) {
+			urls = classPathUrls;
+		} else if (classPathUrls != null && classPathUrls.length != 0) {
+			URL[] cpUrls = new URL[urls.length + classPathUrls.length];
+			System.arraycopy(urls, 0, cpUrls, 0, urls.length);
+			System.arraycopy(classPathUrls, 0, cpUrls, urls.length, classPathUrls.length);
 
-    		urls = cpUrls;
-        }
+			urls = cpUrls;
+		}
 
-        String classpath = "";
+		String classpath = "";
 
-        if (urls != null) {
-        	StringBuilder classPathBuilder = new StringBuilder();
+		if (urls != null) {
+			StringBuilder classPathBuilder = new StringBuilder();
 
-        	for (int i = 0; i < urls.length; i++) {
-                String fileName = getCheckedFileName(urls[i]);
+			for (int i = 0; i < urls.length; i++) {
+				String fileName = getCheckedFileName(urls[i]);
 
-                if (fileName.length() > 0) {
-                	classPathBuilder.append(File.pathSeparator);
-                    classPathBuilder.append(fileName);
-                }
-            }
+				if (fileName.length() > 0) {
+					classPathBuilder.append(File.pathSeparator);
+					classPathBuilder.append(fileName);
+				}
+			}
 
-        	if (classPathBuilder.length() > 0) {
-        		classpath = classPathBuilder.substring(File.pathSeparator.length());
-        	}
+			if (classPathBuilder.length() > 0) {
+				classpath = classPathBuilder.substring(File.pathSeparator.length());
+			}
 		}
 
 		return classpath;
-    }
+	}
 
-    private static String getCheckedFileName(URL url) {
-        String fileName;
-        
-        try {
-            fileName = URLDecoder.decode(url.getPath(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            logger.error("Unsupported encoding UTF-8: " + e.toString());
-            return "";
-        }
-        
-        if (isFileOk(fileName)) {
-            return fileName;
-        }
-        
-        fileName = fileName.substring(1);
-        if (isFileOk(fileName)) {
-            return fileName;
-        }
-        
-        fileName = url.getFile();
-        if (isFileOk(fileName)) {
-            return fileName;
-        }
-        
-        return "";
-    }
-    
-    private static boolean isFileOk(String fileName) {
-        File file = new File(fileName);
-        if (file.exists()
-                && (fileName.endsWith(".jar")
-                        || fileName.endsWith(".zip")
-                        || file.isDirectory())) {
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Returns instance of GreedyURLClassLoader able to load classes from specified locations.
-     * @see GreedyURLClassLoader
-     * @param contextURL
-     * @param libraryPaths
-     * @return
-     * @throws ComponentNotReadyException
-     */
-	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)	throws ComponentNotReadyException {
+	private static String getCheckedFileName(URL url) {
+		String fileName;
+
+		try {
+			fileName = URLDecoder.decode(url.getPath(), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Unsupported encoding UTF-8: " + e.toString());
+			return "";
+		}
+
+		if (isFileOk(fileName)) {
+			return fileName;
+		}
+
+		fileName = fileName.substring(1);
+		if (isFileOk(fileName)) {
+			return fileName;
+		}
+
+		fileName = url.getFile();
+		if (isFileOk(fileName)) {
+			return fileName;
+		}
+
+		return "";
+	}
+
+	private static boolean isFileOk(String fileName) {
+		File file = new File(fileName);
+		if (file.exists() && (fileName.endsWith(".jar") || fileName.endsWith(".zip") || file.isDirectory())) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns instance of GreedyURLClassLoader able to load classes from specified locations.
+	 * 
+	 * @see GreedyURLClassLoader
+	 * @param contextURL
+	 * @param libraryPaths
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)
+			throws ComponentNotReadyException {
 		return new GreedyURLClassLoader(libraryPaths, parentCl);
 	}
-	
+
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {
 		ClassLoader classLoader;
 		if (StringUtils.isEmpty(classpath)) {
 			classLoader = Thread.currentThread().getContextClassLoader();
-		} else{
+		} else {
 			try {
 				final URL urls[] = getClassloaderUrls(contextUrl, classpath);
 				classLoader = AccessController.doPrivileged(new PrivilegedExceptionAction<ClassLoader>() {
@@ -169,24 +167,33 @@ public class ClassLoaderUtils {
 				});
 			} catch (MalformedURLException e) {
 				throw new ComponentNotReadyException(e);
-			} catch (URISyntaxException e) {
-				throw new ComponentNotReadyException(e);
 			} catch (PrivilegedActionException e) {
 				throw new ComponentNotReadyException(e);
 			}
 		}
-		
+
 		return classLoader;
 	}
-	
+
 	/**
 	 * Ensures that directory paths contains '/' at the end so that URLClassLoader will treat is as directory.
 	 */
-	private static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException, URISyntaxException {
+	private static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException {
 		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
 		for (int i = 0; i < urls.length; ++i) {
-			if (new File(urls[i].toURI()).isDirectory()) {
+			File file;
+			try {
+				file = new File(urls[i].toURI());
+			} catch (URISyntaxException e) {
+				try {
+					file = new File(URLDecoder.decode(urls[i].getFile(), "utf-8"));
+				} catch (UnsupportedEncodingException ex) {
+					// cannot happen with utf-8
+					throw new RuntimeException(ex);
+				}
+			}
+			if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
 				urls[i] = new URL(urls[i].toString() + "/");
 			}
 		}

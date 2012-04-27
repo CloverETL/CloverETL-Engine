@@ -32,6 +32,7 @@ import java.nio.charset.CoderResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -145,7 +146,7 @@ public class DelimitedDataParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 
 		record.init();
 

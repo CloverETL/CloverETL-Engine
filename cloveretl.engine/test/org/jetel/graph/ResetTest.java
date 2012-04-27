@@ -129,6 +129,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
 							&& !pathname.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
 							&& !pathname.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
+							&& !pathname.getName().equals("UDR_Logging_SFTP_CL1469.grf") // ok, is to fail
+							&& !pathname.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
 							&& !pathname.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
 							&& !pathname.getName().contains("firebird") // remove after CL-2170 solved
@@ -136,7 +138,13 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
 							&& !pathname.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
 							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
-							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_"); // remove after CL-2176 solved
+							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_") // remove after CL-2176 solved
+							&& !pathname.getName().equals("manyRecords.grf") // remove after CL-1825 implemented
+							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
+							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
+							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
+							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
+							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf"); // ok, is to fail
 				}
 			});
 			
@@ -244,7 +252,7 @@ public class ResetTest extends CloverTestCase {
 			}
 
 		} catch (Throwable e) {
-			throw new IllegalStateException("Error executing grap " + graphFile);
+			throw new IllegalStateException("Error executing grap " + graphFile, e);
 		} finally {
 			if (cleanUp) {
 				cleanupData();

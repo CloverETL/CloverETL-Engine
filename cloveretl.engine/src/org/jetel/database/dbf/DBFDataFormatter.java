@@ -40,6 +40,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 
+import sun.nio.ch.FileChannelImpl;
+
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -120,7 +122,10 @@ public class DBFDataFormatter extends AbstractFormatter {
             writer = null;
         } else if (outputDataTarget instanceof File) {
             writer =  new RandomAccessFile(((File)outputDataTarget), FILE_ACCESS_MODE).getChannel();
-		}else {
+		} else if (outputDataTarget instanceof FileChannel) {
+			writer = (FileChannel) outputDataTarget;
+		}
+        else {
             throw new IOException("Unsupported output data stream type: "+outputDataTarget.getClass()+". (need seekable stream).");
         }
     }

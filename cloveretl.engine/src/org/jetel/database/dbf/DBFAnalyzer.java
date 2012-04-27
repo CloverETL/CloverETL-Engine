@@ -258,7 +258,7 @@ public class DBFAnalyzer {
 	private int findSubRecordEofMark(ByteBuffer buffer) {
 		int fEof;
 		int fMax = buffer.limit();
-		buffer.position(DBF_HEADER_SIZE_BASIC + DBF_FIELD_DEF_SIZE);
+		buffer.position(DBF_HEADER_SIZE_BASIC);
 		for (fEof = 0; fEof < fMax ;fEof+=DBF_FIELD_DEF_SIZE) {
 			if (buffer.get(fEof) == DBF_FIELD_HEADER_TERMINATOR) return fEof;
 		}

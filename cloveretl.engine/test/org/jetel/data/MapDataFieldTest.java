@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.IntegerDecimal;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -59,7 +59,7 @@ public class MapDataFieldTest extends CloverTestCase {
 	private DataFieldMetadata createMapMetadata(DataFieldType type) {
 		DataFieldMetadata mapDataFieldMetadata = new DataFieldMetadata("mapDataField", ";");
 		mapDataFieldMetadata.setDataType(type);
-		mapDataFieldMetadata.setCardinalityType(DataFieldCardinalityType.MAP);
+		mapDataFieldMetadata.setContainerType(DataFieldContainerType.MAP);
 		return mapDataFieldMetadata;
 	}
 
@@ -1671,16 +1671,16 @@ public class MapDataFieldTest extends CloverTestCase {
 		assertEquals("{}", mapDataField.toString());
 		
 		mapDataField.putField("key");
-		assertEquals("{key=}", mapDataField.toString());
+		assertEquals("{key=null}", mapDataField.toString());
 
 		mapDataField.putField("");
-		assertEquals("{key=, =}", mapDataField.toString());
+		assertEquals("{key=null, =null}", mapDataField.toString());
 
 		mapDataField.putField("key1").setValue(new byte[] {'a', 'b', 'c'});
-		assertEquals("{key=, =, key1=abc}", mapDataField.toString());
+		assertEquals("{key=null, =null, key1=abc}", mapDataField.toString());
 		
 		mapDataField.putField(null).setValue(new byte[] {'e', 'f', 'g'});
-		assertEquals("{key=, =, key1=abc, null=efg}", mapDataField.toString());
+		assertEquals("{key=null, =null, key1=abc, null=efg}", mapDataField.toString());
 	}
 	
 }

@@ -144,7 +144,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String NAME_ATTR = "name"; 
 	private static final String LABEL_ATTR = "label"; 
     private static final String TYPE_ATTR = "type";
-    private static final String CARDINALITY_TYPE_ATTR = "cardinalityType";
+    private static final String CONTAINER_TYPE_ATTR = "containerType";
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
     public  static final String FIELD_DELIMITER_ATTR = "fieldDelimiter";
@@ -364,8 +364,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
 			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
-			    if (field.getCardinalityType() != null) {
-			    	fieldElement.setAttribute(CARDINALITY_TYPE_ATTR, field.getCardinalityType().toString().toLowerCase());
+			    if (field.getContainerType() != null && field.getContainerType() != DataFieldContainerType.SINGLE) {
+			    	fieldElement.setAttribute(CONTAINER_TYPE_ATTR, field.getContainerType().toString());
 			    }
 
 				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
@@ -597,7 +597,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String autoFilling = null;
 			String trim = null;
 			char fieldType = ' ';
-			DataFieldCardinalityType cardinalityType = null;
+			DataFieldContainerType containerType = null;
 			Properties fieldProperties = new Properties();
 
 			for (int j = 0; j < attributes.getLength(); j++) {
@@ -606,8 +606,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
                             .getNodeValue());
 				if (itemName.equalsIgnoreCase("type")) {
 					fieldType = getFieldType(itemValue);
-				} else if (itemName.equalsIgnoreCase(CARDINALITY_TYPE_ATTR)) {
-					cardinalityType = DataFieldCardinalityType.fromString(itemValue);
+				} else if (itemName.equalsIgnoreCase(CONTAINER_TYPE_ATTR)) {
+					containerType = DataFieldContainerType.fromString(itemValue);
 				} else if (itemName.equalsIgnoreCase("name")) {
 					name = itemValue;
 				} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
@@ -696,9 +696,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			// set properties
 			field.setFieldProperties(fieldProperties);
 
-			// set cardinality type
-			if (cardinalityType != null) {
-				field.setCardinalityType(cardinalityType);
+			// set container type
+			if (containerType != null) {
+				field.setContainerType(containerType);
 			}
 			// set the label
 			if (label != null) {

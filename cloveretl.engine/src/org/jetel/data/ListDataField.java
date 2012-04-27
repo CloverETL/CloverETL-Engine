@@ -33,7 +33,7 @@ import java.util.RandomAccess;
 
 import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -42,8 +42,8 @@ import org.jetel.util.primitive.IdentityArrayList;
 /**
  * This data field implementation represents a list of fields, which are uniformly typed by a simple type
  * (string, integer, decimal, ...). Lists of lists (or maps) are not supported. Metadata for this data container
- * are same as for other data fields, only {@link DataFieldMetadata#getCardinalityType()} method returns
- * {@link DataFieldCardinalityType#LIST}.
+ * are same as for other data fields, only {@link DataFieldMetadata#getContainerType()} method returns
+ * {@link DataFieldContainerType#LIST}.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -79,11 +79,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	
 	public ListDataField(DataFieldMetadata fieldMetadata, boolean plain) {
 		super(fieldMetadata);
-		if (fieldMetadata.getCardinalityType() != DataFieldCardinalityType.LIST) {
+		if (fieldMetadata.getContainerType() != DataFieldContainerType.LIST) {
 			throw new IllegalStateException("Unexpected operation, ListDataField can be created only for list fields.");
 		}
 		this.singleValueMetadata = fieldMetadata.duplicate();
-		singleValueMetadata.setCardinalityType(DataFieldCardinalityType.SINGLE);
+		singleValueMetadata.setContainerType(DataFieldContainerType.SINGLE);
 
 		fields = new IdentityArrayList<DataField>();
 		size = 0;
@@ -376,7 +376,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 		sb.append('[');
 		for (;;) {
 			DataField e = i.next();
-			sb.append(e.toString());
+			if (e.isNull()) {
+				sb.append("null");
+			} else {
+				sb.append(e.toString());
+			}
 			if (!i.hasNext()) {
 				return sb.append(']').toString();
 			}
@@ -386,27 +390,27 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from string.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from string. List and map container types are not supported.");
 	}
 
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be deserialized from clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be deserialized from bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to byte buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. List and map container types are not supported.");
 	}
 	
 	@Override
 	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		throw new UnsupportedOperationException("ListDataField cannot be serialized to clover buffer.");
+		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. List and map container types are not supported.");
 	}
 	
 	@Override

@@ -29,6 +29,7 @@ import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
@@ -39,7 +40,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -359,7 +360,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataRecordMetadata ret = new DataRecordMetadata(name);
 
 		DataFieldMetadata stringListField = new DataFieldMetadata("stringListField", DataFieldType.STRING, "|");
-		stringListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		stringListField.setContainerType(DataFieldContainerType.LIST);
 		ret.addField(stringListField);
 		
 		DataFieldMetadata dateField = new DataFieldMetadata("dateField", DataFieldType.DATE, "|");
@@ -369,42 +370,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		ret.addField(byteField);
 
 		DataFieldMetadata dateListField = new DataFieldMetadata("dateListField", DataFieldType.DATE, "|");
-		dateListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		dateListField.setContainerType(DataFieldContainerType.LIST);
 		ret.addField(dateListField);
 
 		DataFieldMetadata byteListField = new DataFieldMetadata("byteListField", DataFieldType.BYTE, "|");
-		byteListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		byteListField.setContainerType(DataFieldContainerType.LIST);
 		ret.addField(byteListField);
 		
 		DataFieldMetadata stringField = new DataFieldMetadata("stringField", DataFieldType.STRING, "|");
 		ret.addField(stringField);
 
 		DataFieldMetadata integerMapField = new DataFieldMetadata("integerMapField", DataFieldType.INTEGER, "|");
-		integerMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		integerMapField.setContainerType(DataFieldContainerType.MAP);
 		ret.addField(integerMapField);
 
 		DataFieldMetadata stringMapField = new DataFieldMetadata("stringMapField", DataFieldType.STRING, "|");
-		stringMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		stringMapField.setContainerType(DataFieldContainerType.MAP);
 		ret.addField(stringMapField);
 
 		DataFieldMetadata dateMapField = new DataFieldMetadata("dateMapField", DataFieldType.DATE, "|");
-		dateMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		dateMapField.setContainerType(DataFieldContainerType.MAP);
 		ret.addField(dateMapField);
 
 		DataFieldMetadata byteMapField = new DataFieldMetadata("byteMapField", DataFieldType.BYTE, "|");
-		byteMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		byteMapField.setContainerType(DataFieldContainerType.MAP);
 		ret.addField(byteMapField);
 
 		DataFieldMetadata integerListField = new DataFieldMetadata("integerListField", DataFieldType.INTEGER, "|");
-		integerListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		integerListField.setContainerType(DataFieldContainerType.LIST);
 		ret.addField(integerListField);
 		
 		DataFieldMetadata decimalListField = new DataFieldMetadata("decimalListField", DataFieldType.DECIMAL, "|");
-		decimalListField.setCardinalityType(DataFieldCardinalityType.LIST);
+		decimalListField.setContainerType(DataFieldContainerType.LIST);
 		ret.addField(decimalListField);
 		
 		DataFieldMetadata decimalMapField = new DataFieldMetadata("decimalMapField", DataFieldType.DECIMAL, "|");
-		decimalMapField.setCardinalityType(DataFieldCardinalityType.MAP);
+		decimalMapField.setContainerType(DataFieldContainerType.MAP);
 		ret.addField(decimalMapField);
 		
 		return ret;
@@ -419,14 +420,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return record initialized to default values
 	 */
 	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
-		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
 		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
 			DataField field = ret.getField(i);
 			DataFieldMetadata fieldMetadata = field.getMetadata();
 			
-			switch (fieldMetadata.getCardinalityType()) {
+			switch (fieldMetadata.getContainerType()) {
 			case SINGLE:
 				switch (fieldMetadata.getDataType()) {
 				case STRING:
@@ -500,7 +501,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				}
 				break;
 			default:
-				throw new IllegalArgumentException(fieldMetadata.getCardinalityType().toString());
+				throw new IllegalArgumentException(fieldMetadata.getContainerType().toString());
 			}
 		}
 
@@ -517,7 +518,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return record initialized to default values
 	 */
 	protected DataRecord createDefaultRecord(DataRecordMetadata dataRecordMetadata) {
-		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
 		ret.init();
 
 		SetVal.setString(ret, "Name", NAME_VALUE);
@@ -541,7 +542,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return empty record
 	 */
 	protected DataRecord createEmptyRecord(DataRecordMetadata metadata) {
-		DataRecord ret = new DataRecord(metadata);
+		DataRecord ret = DataRecordFactory.newRecord(metadata);
 		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {

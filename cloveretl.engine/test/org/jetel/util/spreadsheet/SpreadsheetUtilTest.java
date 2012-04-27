@@ -18,8 +18,9 @@
  */
 package org.jetel.util.spreadsheet;
 
+import java.awt.Point;
+
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.spreadsheet.SpreadsheetUtils;
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -37,6 +38,9 @@ public class SpreadsheetUtilTest extends CloverTestCase {
 		assertEquals(25, SpreadsheetUtils.getColumnIndex("Z"));
 		assertEquals(26, SpreadsheetUtils.getColumnIndex("AA"));
 		assertEquals(2730, SpreadsheetUtils.getColumnIndex("DAA"));
+		assertEquals(SpreadsheetUtils.INFINITY_COORDINATE, SpreadsheetUtils.getColumnIndex(SpreadsheetUtils.INFINITY_COORDINATE_STRING));
+		assertEquals(new Point(SpreadsheetUtils.INFINITY_COORDINATE, 10), SpreadsheetUtils.getCellCoordinates(SpreadsheetUtils.INFINITY_COORDINATE_STRING + "11"));
+		assertEquals(new Point(10, SpreadsheetUtils.INFINITY_COORDINATE), SpreadsheetUtils.getCellCoordinates("K" + SpreadsheetUtils.INFINITY_COORDINATE_STRING));
 	}
 
 }

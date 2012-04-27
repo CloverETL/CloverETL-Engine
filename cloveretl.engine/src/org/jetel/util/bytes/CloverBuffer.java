@@ -32,6 +32,7 @@ import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -651,17 +652,9 @@ public abstract class CloverBuffer {
     /**
      * Request to prepare a new byte buffer. Memory tracker is updated.
      */
-    protected ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
+    protected ByteBuffer reallocateByteBuffer(int capacity, boolean direct) {
     	memoryAllocated(capacity);
-    	if (direct) {
-    		try {
-    			return ByteBuffer.allocateDirect(capacity);
-    		} catch (OutOfMemoryError e) {
-        		return ByteBuffer.allocate(capacity);
-    		}
-    	} else {
-    		return ByteBuffer.allocate(capacity);
-    	}
+    	return allocateByteBuffer(capacity, direct);
     }
 
     /**
@@ -670,6 +663,27 @@ public abstract class CloverBuffer {
      */
     protected void deallocateByteBuffer(ByteBuffer byteBuffer) {
     	memoryDeallocated(byteBuffer.capacity());
+    }
+
+    /**
+     * Allocates new {@link ByteBuffer} instance with given capacity.
+     * Resulted {@link ByteBuffer} is direct if and only if direct buffer is requested
+     * and if usage of direct memory is allowed (Defaults.USE_DIRECT_MEMORY = true)
+     * and if free direct memory is still available.
+     * @param capacity capacity of requested {@link ByteBuffer}
+     * @param direct <code>true</code> if direct buffer is requested
+     * @return new {@link ByteBuffer}
+     */
+    public static ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
+    	if (direct && Defaults.USE_DIRECT_MEMORY) {
+    		try {
+    			return ByteBuffer.allocateDirect(capacity);
+    		} catch (OutOfMemoryError e) {
+        		return ByteBuffer.allocate(capacity);
+    		}
+    	} else {
+    		return ByteBuffer.allocate(capacity);
+    	}
     }
     
 }

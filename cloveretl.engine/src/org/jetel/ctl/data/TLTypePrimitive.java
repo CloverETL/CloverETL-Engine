@@ -279,7 +279,7 @@ public abstract class TLTypePrimitive extends TLType {
 	
 	
 	public static TLType fromCloverType(DataFieldMetadata field) throws UnknownTypeException {
-		switch (field.getCardinalityType()) {
+		switch (field.getContainerType()) {
 			case SINGLE:
 				switch (field.getDataType()) {
 				case INTEGER:
@@ -346,7 +346,7 @@ public abstract class TLTypePrimitive extends TLType {
 				default:
 					throw new UnknownTypeException(field.getDataType().toString());
 				}
-			default: throw new UnknownTypeException(field.getCardinalityType().toString());
+			default: throw new UnknownTypeException(field.getContainerType().toString());
 		}
 	}
 	

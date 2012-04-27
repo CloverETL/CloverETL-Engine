@@ -141,9 +141,9 @@ public class DataFieldMetadata implements Serializable {
 	private String collatorSensitivity = null;
 
 	/**
-	 * Cardinality type of data field - SINGLE, LIST, MAP.
+	 * Container type of data field - SINGLE, LIST, MAP.
 	 */
-	private DataFieldCardinalityType cardinalityType = DataFieldCardinalityType.SINGLE;
+	private DataFieldContainerType containerType = DataFieldContainerType.SINGLE;
 	
 	/**
 	 * Constructor for a delimited type of field.
@@ -394,21 +394,21 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return cardinality type of this field - SINGLE, LIST, MAP
+	 * @return container type of this field - SINGLE, LIST, MAP
 	 */
-	public DataFieldCardinalityType getCardinalityType() {
-		return cardinalityType;
+	public DataFieldContainerType getContainerType() {
+		return containerType;
 	}
 	
 	/**
-	 * Sets cardinality type of this field - SINGLE, LIST, MAP.
-	 * @param cardinalityType
+	 * Sets container type of this field - SINGLE, LIST, MAP.
+	 * @param containerType
 	 */
-	public void setCardinalityType(DataFieldCardinalityType cardinalityType) {
-		if (cardinalityType == null) {
-			throw new NullPointerException("Data field cardinality cannot be null.");
+	public void setContainerType(DataFieldContainerType containerType) {
+		if (containerType == null) {
+			throw new NullPointerException("Data field container type cannot be null.");
 		}
-		this.cardinalityType = cardinalityType;
+		this.containerType = containerType;
 	}
 	
 	/**
@@ -1057,7 +1057,7 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setLabel(label);
 		dataFieldMetadata.setDescription(description);
 		dataFieldMetadata.setDataType(type);
-		dataFieldMetadata.setCardinalityType(cardinalityType);
+		dataFieldMetadata.setContainerType(containerType);
 		dataFieldMetadata.setDelimiter(delimiter);
 		dataFieldMetadata.setEofAsDelimiter(eofAsDelimiter);
 		dataFieldMetadata.setFormatStr(formatStr);
@@ -1170,7 +1170,9 @@ public class DataFieldMetadata implements Serializable {
 
 	@Override
 	public String toString(){
-		return "Field["+this.type+"|"+this.number+"|"+this.name+"]";
+		return "Field [name:" + this.name + ", type:" + this.type.toString(getContainerType()) +
+				(containerType != DataFieldContainerType.SINGLE ? ", containerType:" + containerType.getDisplayName() : "") +
+				", position:" + this.number  + "]";
 	}
 	
 	/**

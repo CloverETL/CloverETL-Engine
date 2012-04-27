@@ -33,6 +33,7 @@ import java.nio.charset.CoderResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -157,7 +158,7 @@ public class DataParser extends AbstractTextParser {
 	 */
     @Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(cfg.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);
@@ -416,7 +417,7 @@ public class DataParser extends AbstractTextParser {
 										//and check whether the field delimiter follows
 										tempReadBuffer.append((char) character);
 										if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
-											findNextRecordDelimiterRecoverFromFailure();
+											findFirstRecordDelimiter();
 											return parsingErrorFound("Bad quote format", record, fieldCounter);
 										}
 										break;
@@ -458,7 +459,7 @@ public class DataParser extends AbstractTextParser {
 							}
 							//test default field delimiter 
 							if(defaultFieldDelimiterFound()) {
-								findNextRecordDelimiterRecoverFromFailure();
+								findFirstRecordDelimiter();
 								return parsingErrorFound("Unexpected default field delimiter, probably record has too many fields.", record, fieldCounter);
 							}
 							//test record delimiter
@@ -707,62 +708,19 @@ public class DataParser extends AbstractTextParser {
 	}
 
 	/**
-	 * Searches for next record delimiter from current position at the input channel. It's expected that the position at
-	 * the input channel is start of the record.
-	 * 
-	 * @return True if record skipped, false otherwise.
-	 * @throws JetelException
+	 * Find first record delimiter in input channel.
 	 */
-	private boolean findNextRecordDelimiter() throws JetelException {
-
-		int character = -1;
+	private boolean findFirstRecordDelimiter() throws JetelException {
+        if(!cfg.getMetadata().isSpecifiedRecordDelimiter()) {
+            return false;
+        }
+		int character;
 		try {
-			for (int i = 0; i < numFields; i++) {
-				//read all fields of the record
-				if (fieldLengths[i] == 0) {
-					//delimited field is being read
-					boolean inQuote = false;
-					while ((character = readChar()) != -1) {
-						delimiterSearcher.update((char) character);
-						if (quotedFields[i] && isQuoteChar(character)) {
-							inQuote = !inQuote;
-						}
-						if (((!quotedFields[i] || !inQuote)) && delimiterSearcher.isPattern(i)) {
-							// end of field reached
-							inQuote = false;
-							if (i + 1 < numFields) {
-								//end of field followed by another field
-								break;
-							} else {
-								//end of record
-								return recordDelimiterFound();
-							}
-						}
-					}
-				} else {
-					for (int j = 0; j < fieldLengths[i]; j++) {
-						character = readChar();
-					}
-					if (i + 1 == numFields) {
-						delimiterSearcher.reset();
-						boolean delimiterFound = false;
-						while ((character = readChar()) != -1) {
-							if (!delimiterSearcher.update((char) character)) {
-								return false;
-							}
-							if (recordDelimiterFound()) {
-								delimiterFound = true;
-								break;
-							}
-						}
-						if (!delimiterFound) {
-							return false;
-						}
-						if (tryToFindLongerDelimiter) {
-							stretchRecordDelimiter(RECORD_DELIMITER_IDENTIFIER);
-						}
-						return true;
-					}
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				//test record delimiter
+				if (recordDelimiterFound()) {
+					return true;
 				}
 			}
 		} catch (IOException e) {
@@ -772,40 +730,6 @@ public class DataParser extends AbstractTextParser {
 		return false;
 	}
 	
-	private boolean isQuoteChar(int charToTest) {
-		if (cfg.getMetadata().getQuoteChar() == null) {
-			return (charToTest == '\'' || charToTest == '\"');
-		} else {
-			return cfg.getMetadata().getQuoteChar() == charToTest;
-		}
-	}
-	
-	/**
-	 * Searches for next record delimiter from current position at the input channel to recover from the failure.
-	 * 
-	 * @return True if there is record delimiter at the input channel, false otherwise.
-	 * @throws JetelException
-	 */
-	private boolean findNextRecordDelimiterRecoverFromFailure() throws JetelException {
-		if (!cfg.getMetadata().isSpecifiedRecordDelimiter()) {
-			return false;
-		}
-		int character;
-		try {
-			while ((character = readChar()) != -1) {
-				delimiterSearcher.update((char) character);
-				// test record delimiter
-				if (recordDelimiterFound()) {
-					return true;
-				}
-			}
-		} catch (IOException e) {
-			throw new JetelException("Can not find a record delimiter.", e);
-		}
-		// end of file
-		return false;
-	}
-
 	/**
 	 * Find end of record for metadata without record delimiter specified.
 	 * @throws JetelException 
@@ -997,7 +921,7 @@ public class DataParser extends AbstractTextParser {
 
         if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			for(skipped = 0; skipped < count; skipped++) {
-				if(!findNextRecordDelimiter()) {
+				if(!findFirstRecordDelimiter()) {
 				    break;
                 }
 				recordBuffer.clear();

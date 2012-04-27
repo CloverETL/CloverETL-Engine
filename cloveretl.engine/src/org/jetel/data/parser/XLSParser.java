@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -72,7 +73,7 @@ public abstract class XLSParser extends AbstractParser {
 	
 	protected final static String DEFAULT_SHEET_NUMBER = "0";
 
-	static Log logger = LogFactory.getLog(XLSParser.class);
+	protected Log logger = LogFactory.getLog(this.getClass());
 
 	protected DataRecordMetadata metadata = null;
 	protected IParserExceptionHandler exceptionHandler;
@@ -125,7 +126,7 @@ public abstract class XLSParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		return getNext(record);
@@ -493,11 +494,11 @@ public abstract class XLSParser extends AbstractParser {
 	public void setMappingType(int mappingType) {
 		this.mappingType = mappingType;
 		switch (mappingType) {
-		case NO_METADATA_INFO:logger.info("Mapping type set to NO_METADATA_INFO");break;
-		case ONLY_CLOVER_FIELDS:logger.info("Mapping type set to ONLY_CLOVER_FIELDS");break;
-		case CLOVER_FIELDS_AND_XLS_NUMBERS:logger.info("Mapping type set to CLOVER_FIELDS_AND_XLS_NUMBERS");break;
-		case MAP_NAMES:logger.info("Mapping type set to MAP_NAMES");break;
-		case CLOVER_FIELDS_AND_XLS_NAMES:logger.info("Mapping type set to CLOVER_FIELDS_AND_XLS_NAMES");break;
+		case NO_METADATA_INFO:logger.debug("Mapping type set to NO_METADATA_INFO");break;
+		case ONLY_CLOVER_FIELDS:logger.debug("Mapping type set to ONLY_CLOVER_FIELDS");break;
+		case CLOVER_FIELDS_AND_XLS_NUMBERS:logger.debug("Mapping type set to CLOVER_FIELDS_AND_XLS_NUMBERS");break;
+		case MAP_NAMES:logger.debug("Mapping type set to MAP_NAMES");break;
+		case CLOVER_FIELDS_AND_XLS_NAMES:logger.debug("Mapping type set to CLOVER_FIELDS_AND_XLS_NAMES");break;
 		}
 	}
 

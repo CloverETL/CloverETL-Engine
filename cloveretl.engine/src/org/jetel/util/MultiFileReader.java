@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
-import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -269,6 +268,7 @@ public class MultiFileReader {
 		while (channelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
+			autoFilling.resetL3Counter();
 			try {
 				source = channelIterator.next();
 				if (source == null) continue; // if record no record found
@@ -325,7 +325,6 @@ public class MultiFileReader {
 	 * @throws JetelException 
 	 */
 	private void skip() throws JetelException {
-		int skippedInCurrentSubsource = 0;
         try {
         	// perform L3 skip
     		if (skipL3Rows > 0) {
@@ -417,6 +416,7 @@ public class MultiFileReader {
         } catch(JetelException e) {
             autoFilling.incGlobalCounter();
             autoFilling.incSourceCounter();
+            autoFilling.incL3Counter();
             throw e;
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
@@ -488,6 +488,16 @@ public class MultiFileReader {
 	 */
     public void preExecute() throws ComponentNotReadyException {
     	parser.preExecute();
+    	
+		noInputFile = false;
+
+        try {
+    		if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) { 
+    		    noInputFile = true;
+    		}
+    	} catch (JetelException e) {
+			logger.error("preExecute", e);
+		}
     }
     
     /**
@@ -495,17 +505,13 @@ public class MultiFileReader {
      */
     public void postExecute() throws ComponentNotReadyException {
 		parser.postExecute();
-		noInputFile = false;
 		autoFilling.reset();
 		iSource = -1;
 
 		channelIterator.reset();
+		skipped = 0;
         try {
     		incrementalReading.reset();
-			if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) 
-			    noInputFile = true;
-		} catch (JetelException e) {
-			logger.error("postExecute", e);
 		} catch (IOException e) {
 			logger.error("postExecute", e);
 		}
@@ -534,6 +540,7 @@ public class MultiFileReader {
     @Deprecated
 	public void reset() throws ComponentNotReadyException {
     	postExecute();
+    	preExecute();
 	}
 
 	public void setCharset(String charset) {

@@ -76,6 +76,9 @@ public class Plugins {
     }
     
     public static void init(String directory) {
+    	if (directory == null) {
+    		init((PluginRepositoryLocation[]) null);
+    	}
         String[] dirs = directory.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         List<PluginRepositoryLocation> repositoryLocations = new ArrayList<PluginRepositoryLocation>();
         for (String dir : dirs) {
@@ -295,7 +298,12 @@ public class Plugins {
      * @return
      */
     public static boolean isActive(String pluginId) {
-        return getPluginDescriptor(pluginId).isActive();
+        PluginDescriptor pluginDescriptor = getPluginDescriptor(pluginId);
+        if (pluginDescriptor != null) {
+        	return pluginDescriptor.isActive();
+        } else {
+        	throw new IllegalArgumentException("unknown pluginId '" + pluginId + "'");
+        }
     }
     
     /**

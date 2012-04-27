@@ -27,12 +27,14 @@ import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
@@ -248,7 +250,8 @@ public class TargetFile {
 		dictProcesstingType = ProcessingType.fromString(aDict.length > 1 ? aDict[1] : null, null);
 
 		if (dictProcesstingType == null) {
-			if (dictValue != null) {
+			//a test (dictValue instanceof List) is a dirty fix for a case when a default value is set to an initial value (new ArrayList<byte[]>())
+			if (dictValue != null && !(dictValue instanceof List)) {
 				dictProcesstingType = ProcessingType.STREAM;
 			} else {
 				dictProcesstingType = ProcessingType.DISCRETE;
@@ -286,7 +289,7 @@ public class TargetFile {
 		}
 
 		// prepare output record
-		record = new DataRecord(outputPort.getMetadata());
+		record = DataRecordFactory.newRecord(outputPort.getMetadata());
 		record.init();
 
 		// parse target url

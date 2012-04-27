@@ -72,8 +72,9 @@ public class GraphRuntimeContext {
 	private boolean transactionMode;
 	private boolean batchMode;
 	private URL contextURL;
+	private ClassLoader classLoader;
 	
-	
+
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -111,6 +112,7 @@ public class GraphRuntimeContext {
 		ret.transactionMode = isTransactionMode();
 		ret.batchMode = isBatchMode();
 		ret.contextURL = getContextURL();
+		ret.classLoader = getClassLoader();
 		
 		return ret;
 	}
@@ -438,8 +440,26 @@ public class GraphRuntimeContext {
     public void setContextURL(URL contextURL) {
     	this.contextURL = contextURL;
     }
+
+	/**
+	 * Sets a class loader to be used for loading classes used in a graph
+	 * 
+	 * @param classLoader
+	 */
+	public void setClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
     
-    
+	/**
+	 * Returns a class loader to be used for loading classes used in a graph
+	 * 
+	 * @return
+	 */
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
+	
 //	/**
 //	 * @return trackingFlushInterval
 //	 */

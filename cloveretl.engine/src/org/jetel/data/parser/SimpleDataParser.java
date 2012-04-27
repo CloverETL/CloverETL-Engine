@@ -30,6 +30,7 @@ import java.nio.channels.ReadableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -151,7 +152,7 @@ public class SimpleDataParser extends AbstractTextParser {
 
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(cfg.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);
@@ -450,7 +451,6 @@ public class SimpleDataParser extends AbstractTextParser {
 		try {
 			record.getField(fieldIndex).fromString(data);
 		} catch (BadDataFormatException bdfe) {
-			bdfe.setAdditionalMessage("(be aware parallel run, record number is probably wrong)");
 			if (exceptionHandler != null) {
 				exceptionHandler.populateHandler(bdfe.getMessage(), record,
 						recordCounter, fieldIndex, data.toString(), bdfe);

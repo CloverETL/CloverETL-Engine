@@ -149,3 +149,11 @@ PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING=java.;javax.;sun.misc.
 # It determines what is the maximum size of one particular data field for stream mode for writer components. 
 # This value must be less or equal to similar field or record buffers.
 PortReadingWriting.DATA_LENGTH = 2048
+
+# Clover engine intensively uses direct memory for data records manipulation.
+# For example underlying memory of CloverBuffer (serialised data records container)
+# is allocated outside the Java heap space in direct memory.
+# This attribute is <code>true</code> by default due better performance.
+# Since direct memory is out of control java virtual machine, try to turn off 
+# usage of direct memory in case OutOfMemory exception occurs. 
+# USE_DIRECT_MEMORY = true;

@@ -91,7 +91,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
 	}
 
@@ -105,7 +105,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
 	}
 
@@ -119,7 +119,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
 		setNaN(false);
 	}
@@ -134,7 +134,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + (_value.getBigDecimal() != null ? _value.getBigDecimal() : _value));
         }
     }
 
@@ -148,7 +148,7 @@ public final class HugeDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"]. (" + _value + ")");
+            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
     }
     

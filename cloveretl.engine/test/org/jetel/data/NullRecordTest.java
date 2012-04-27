@@ -16,7 +16,7 @@ public class NullRecordTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("int_field", DataFieldMetadata.INTEGER_FIELD,";"));
 		metadata.addField(new DataFieldMetadata("string_field", DataFieldMetadata.STRING_FIELD,";"));
 		metadata.addField(new DataFieldMetadata("date_field", DataFieldMetadata.DATE_FIELD, "\n"));
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		record.getField(0).setValue(1);
 		record.getField(1).setValue("test");

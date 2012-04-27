@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.IntegerDecimal;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldCardinalityType;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
@@ -57,7 +57,7 @@ public class ListDataFieldTest extends CloverTestCase {
 	private DataFieldMetadata createListMetadata(DataFieldType type) {
 		DataFieldMetadata listDataFieldMetadata = new DataFieldMetadata("listDataField", ";");
 		listDataFieldMetadata.setDataType(type);
-		listDataFieldMetadata.setCardinalityType(DataFieldCardinalityType.LIST);
+		listDataFieldMetadata.setContainerType(DataFieldContainerType.LIST);
 		return listDataFieldMetadata;
 	}
 	
@@ -1368,16 +1368,16 @@ public class ListDataFieldTest extends CloverTestCase {
 		assertEquals("[]", listDataField.toString());
 			
 		listDataField.addField();
-		assertEquals("[]", listDataField.toString());
+		assertEquals("[null]", listDataField.toString());
 		
 		listDataField.addField().setValue(new byte[] {'a', 'b', 'c' });
-		assertEquals("[, abc]", listDataField.toString());
+		assertEquals("[null, abc]", listDataField.toString());
 
 		listDataField.addField().setNull(false);
-		assertEquals("[, abc, ]", listDataField.toString());
+		assertEquals("[null, abc, ]", listDataField.toString());
 
 		listDataField.addField().setValue(new byte[] {'e', 'f', 'g' });
-		assertEquals("[, abc, , efg]", listDataField.toString());
+		assertEquals("[null, abc, , efg]", listDataField.toString());
 	}
 	
 }

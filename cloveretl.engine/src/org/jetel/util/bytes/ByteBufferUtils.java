@@ -345,18 +345,6 @@ public final class ByteBufferUtils {
     	
     	return Math.max(minLength, bytes.length); 
     }
-    
-    
-    /**
-     * Fills the ByteBuffer with defined value. Does not change buffer's current position.
-     * @param buffer buffer to be filled
-     * @param value byte valued to be used
-     */
-    public static void fill(ByteBuffer buffer, byte value){
-    	final int pos = buffer.position();
-    	while(buffer.hasRemaining()) buffer.put(value);
-    	buffer.position(pos);
-    }
 
     /**
      * Fills the ByteBuffer with defined value. Does not change buffer's current position.
@@ -430,5 +418,15 @@ public final class ByteBufferUtils {
         }
     }
     
+    /**
+     * Fills the ByteBuffer with defined value. Does not change buffer's current position.
+     * @param buffer buffer to be filled
+     * @param value byte valued to be used
+     */
+    public static void fill(ByteBuffer buffer, byte value){
+    	final int pos = buffer.position();
+    	while(buffer.hasRemaining()) buffer.put(value);
+    	buffer.position(pos);
+    }
 }
 

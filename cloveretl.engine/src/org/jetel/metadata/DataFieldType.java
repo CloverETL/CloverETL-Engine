@@ -230,6 +230,37 @@ public enum DataFieldType {
 		return name;
 	}
 	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
+	/**
+	 * Returns string form of this data field type in relation with a container type.
+	 * For example integer data type with
+	 * <li>SINGLE container returns 'integer'
+	 * <li>LIST container returns 'integer[]'
+	 * <li>MAP container returns 'map[string, integer]'
+	 * @param containerType
+	 * @return
+	 */
+	public String toString(DataFieldContainerType containerType) {
+		if (containerType == null) {
+			return toString();
+		} else {
+			switch(containerType) {
+			case SINGLE:
+				return toString();
+			case LIST:
+				return toString() + "[]";
+			case MAP:
+				return "map[string, " + toString() + "]";
+			default:
+				throw new IllegalArgumentException("unsupported container type");
+			}
+		}
+	}
+	
 	/**
 	 * This class is type of internal representation of respective data field.
 	 * For example type {@link #STRING} corresponds with {@link StringDataField}

@@ -28,6 +28,7 @@ import java.nio.channels.Channels;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -82,7 +83,7 @@ public class PortDataProducer implements DataProducer {
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to close previous data target.", e);
 		}
-        record = new DataRecord(metadata);
+        record = DataRecordFactory.newRecord(metadata);
         record.init();
 	}
 	
