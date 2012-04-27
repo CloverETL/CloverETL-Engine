@@ -1,4 +1,3 @@
-
 /*
  * jETeL/CloverETL - Java based ETL application framework.
  * Copyright (c) Javlin, a.s. (info@cloveretl.com)
