@@ -14,7 +14,7 @@ Pueblo|CO|38.29|-104.52
 Denver|CO|39.75|-104.87
 Washington|DC|38.85|-77.04
 Key West|FL|24.58|-81.75
-Miami Int'l|FL|25.80|-80.28
+Miami|FL|25.80|-80.28
 Orlando|FL|28.55|-81.33
 Tampa|FL|27.97|-82.53
 Boise|ID|43.57|-116.22
@@ -43,7 +43,7 @@ Albuquerque|NM|35.05|-106.60
 Albany|NY|42.75|-73.80
 Buffalo|NY|42.93|-78.73
 Syracuse|NY|43.12|-76.12
-New York City|NY|40.77|-73.98
+New York|NY|40.77|-73.98
 Bismarck|ND|46.77|-100.75
 Fargo|ND|46.90|-96.80
 Minot|ND|48.27|-101.28
@@ -60,7 +60,7 @@ Nashville|TN|36.17|-86.78
 Austin|TX|30.30|-97.70
 Brownsville|TX|25.90|-97.43
 Dallas|TX|32.90|-97.03
-ElPaso|TX|31.80|-106.40
+El Paso|TX|31.80|-106.40
 Midland|TX|32.00|-102.08
 Houston|TX|29.65|-95.28
 San Antonio|TX|29.53|-98.47

@@ -65,9 +65,8 @@
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
 	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
 	 <FlatFile outputFile="data-out/allCustomersStrict.txt" supposedFile="supposed-out/allCustomers.DataPolicy.Strict.txt"/>
-		<RegEx expression="org.jetel.exception.BadDataFormatException: account_num \(long\) cannot be set to &quot;8747577056D&quot; - doesn't match defined format &quot;&quot; with reason &quot;Incomplete parsing&quot; in record 3, field 2 \(&quot;account_num&quot;\), metadata &quot;customer&quot;; value: '8747577056D'" occurences="1"/>
+		<RegEx expression="org.jetel.exception.BadDataFormatException: Field account_num\(long\) cannot be set to value &quot;8747577056D&quot;; doesn't match the specified format &quot;&quot; with reason &quot;Incomplete parsing&quot;; in record 3, field 2" occurences="1"/>
 </FunctionalTest>
-
 
 <FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf">
 	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
@@ -80,8 +79,8 @@
 </FunctionalTest>
 
 <FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf">
-	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
-	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
+	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.New.out"/>
+	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.New.out"/>
      
 <DeleteFile file="data-out/joinedDBForders.out"/>
 <DeleteFile file="data-out/joinedDBFordersNA.out"/>

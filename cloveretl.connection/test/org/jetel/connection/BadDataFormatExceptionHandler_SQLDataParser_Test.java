@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -55,7 +56,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 		aParser2.init();
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
 

@@ -51,6 +51,7 @@ import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -116,12 +117,29 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return "([\\p{Alnum}\\._]+)|([\"\'][\\p{Alnum}\\._ ]+[\"\'])"; 
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.JdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	abstract public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
-
+	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+		DefaultConnection connection = prepareSQLConnection(dbConnection, operationType);
+		connection.init();
+		return connection;
+	}
+	
+	@Override
+	public Connection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException {
+		DefaultConnection connection = prepareSQLConnection(dbConnection, operationType);
+		connection.setInnerConnection(sqlConnection);
+		connection.init();
+		return connection;
+	}
+	
+	/**
+	 * Just creates respective implementation of {@link DefaultConnection} for this jdbc specific.
+	 * Is intended to be overridden.
+	 */
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.JdbcSpecific#getAutoKeyType()
 	 */

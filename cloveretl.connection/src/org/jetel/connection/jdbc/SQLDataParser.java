@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -42,6 +43,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.GraphElement;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -163,7 +165,7 @@ public class SQLDataParser extends AbstractParser {
 
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord localOutRecord=new DataRecord(metadata);
+		DataRecord localOutRecord=DataRecordFactory.newRecord(metadata);
 		localOutRecord.init();
 
 		return getNext(localOutRecord);
@@ -212,6 +214,30 @@ public class SQLDataParser extends AbstractParser {
 		return record;
 	}
 
+	private String getErrorMessage(Exception ex, DataRecord record, int fieldNum) {
+		String fieldName = null;
+		String fieldType = null;
+		String metadataName = null;
+		
+		if (record != null && record.getMetadata() != null) {
+			DataRecordMetadata metadata = record.getMetadata();
+			metadataName = metadata.getName();
+
+			if (metadata.getField(fieldNum-1)  != null) {
+				DataFieldMetadata fieldMetadata = metadata.getField(fieldNum-1);
+				
+				fieldType = fieldMetadata.getDataType().toString(fieldMetadata.getContainerType());
+				fieldName = fieldMetadata.getName();
+			}
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		builder.append(fieldName).append(" (").append(fieldType).append(") ");
+		builder.append("- ").append(ex.getMessage()).append("; in field ").append(fieldNum).append(" (\"").append(fieldName).append("\")").append(", metadata ").append(metadataName);
+		
+		return builder.toString();
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -235,8 +261,9 @@ public class SQLDataParser extends AbstractParser {
 				throw bdfe;
 			}
 		} catch (Exception ex) {
-            logger.debug(ex.getMessage(),ex);
-			throw new RuntimeException(ex.getMessage(),ex);
+			
+            logger.debug(getErrorMessage(ex, record, fieldNum) ,ex);
+			throw new RuntimeException(getErrorMessage(ex, record, fieldNum), ex);
 		}
 	}
 

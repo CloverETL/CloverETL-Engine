@@ -24,6 +24,14 @@ import java.util.Date;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import org.joda.time.Hours;
+import org.joda.time.Minutes;
+import org.joda.time.Months;
+import org.joda.time.Seconds;
+import org.joda.time.Weeks;
+import org.joda.time.Years;
 
 public class DateLib extends TLFunctionLibrary {
 
@@ -136,50 +144,39 @@ public class DateLib extends TLFunctionLibrary {
     	if (unit == DateFieldEnum.MILLISEC) { // CL-1087
     		return lhs.getTime() - rhs.getTime();
     	}
-		long diffSec = (lhs.getTime() - rhs.getTime()) / 1000L;
+    	
         long diff = 0;
-        
-        Calendar cal = null;
         switch (unit) {
         case SECOND:
             // we have the difference in seconds
-            diff = diffSec;
+        	diff = (long) Seconds.secondsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getSeconds();
             break;
         case MINUTE:
             // how many minutes'
-            diff = diffSec / 60L;
+        	diff = (long) Minutes.minutesBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getMinutes();
             break;
         case HOUR:
-            diff = diffSec / 3600L;
+        	diff = (long) Hours.hoursBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getHours();
             break;
         case DAY:
             // how many days is the difference
-            diff = diffSec / 86400L;
+        	diff = (long) Days.daysBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getDays();
             break;
         case WEEK:
             // how many weeks
-            diff = diffSec / 604800L;
+        	diff = (long) Weeks.weeksBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getWeeks();
             break;
         case MONTH:
-        	cal = ((TLCalendarCache)context.getCache()).getCalendar();
-            cal.setTime(lhs);
-            diff = cal.get(Calendar.MONTH) + cal.get(Calendar.YEAR) * 12; 
-            cal.setTime(rhs);
-            diff -= cal.get(Calendar.MONTH) + cal.get(Calendar.YEAR) * 12;
+        	diff = (long) Months.monthsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getMonths();
             break;
         case YEAR:
-        	cal = ((TLCalendarCache)context.getCache()).getCalendar();
-        	cal.setTime(lhs);
-        	diff = cal.get(Calendar.YEAR);
-        	cal.setTime(rhs);
-            diff -= cal.get(Calendar.YEAR);
+        	diff = (long) Years.yearsBetween(new DateTime(rhs.getTime()), new DateTime(lhs.getTime())).getYears();
             break;
         default:
             throw new TransformLangExecutorRuntimeException("Unknown time unit " + unit);
         }
         
         return diff;
-
     }
 	
     @TLFunctionAnnotation("Returns 1.1.1970 date.")
