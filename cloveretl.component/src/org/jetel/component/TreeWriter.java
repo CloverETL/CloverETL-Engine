@@ -49,6 +49,7 @@ import org.jetel.component.tree.writer.util.MappingCompiler;
 import org.jetel.component.tree.writer.util.MappingError;
 import org.jetel.component.tree.writer.util.MappingTagger;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
@@ -657,7 +658,7 @@ public abstract class TreeWriter extends Node {
 		public void run() {
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(inPort.getMetadata());
+					DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 					record.init();
 					if (inPort.readRecord(record) == null) {
 						return;

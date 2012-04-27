@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
@@ -288,7 +289,7 @@ public class TargetFile {
 		}
 
 		// prepare output record
-		record = new DataRecord(outputPort.getMetadata());
+		record = DataRecordFactory.newRecord(outputPort.getMetadata());
 		record.init();
 
 		// parse target url

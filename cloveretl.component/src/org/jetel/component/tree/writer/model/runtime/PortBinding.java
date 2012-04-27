@@ -27,6 +27,7 @@ import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWrit
 import org.jetel.component.tree.writer.portdata.DataIterator;
 import org.jetel.component.tree.writer.portdata.PortData;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -63,7 +64,7 @@ public class PortBinding {
 		this.recordFilter = recordFilter;
 
 		DataRecordMetadata metadata = portData.getInPort().getMetadata();
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		portIndex = portData.getInPort().getInputPortNumber();

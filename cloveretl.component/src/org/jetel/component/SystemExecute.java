@@ -34,6 +34,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -298,7 +299,7 @@ public class SystemExecute extends Node{
 		//If there is input port read metadadata, initialize in_record and create data formater
 		if (inPort!=null) {
 			DataRecordMetadata meta=inPort.getMetadata();
-			in_record = new DataRecord(meta);
+			in_record = DataRecordFactory.newRecord(meta);
 			in_record.init();
 			formatter = charset != null ? new DataFormatter(charset) : new DataFormatter();
 		}else{
@@ -310,7 +311,7 @@ public class SystemExecute extends Node{
 		//If there is output port read metadadata, initialize out_record and create proper data parser
 		if (outPort!=null) {
 			DataRecordMetadata meta=outPort.getMetadata();
-			out_record= new DataRecord(meta);
+			out_record= DataRecordFactory.newRecord(meta);
 			out_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
 				parser= charset != null ? new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());

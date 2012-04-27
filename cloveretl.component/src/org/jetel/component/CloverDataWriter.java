@@ -28,6 +28,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -202,7 +203,7 @@ public class CloverDataWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		long iRec = 0;
 		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();

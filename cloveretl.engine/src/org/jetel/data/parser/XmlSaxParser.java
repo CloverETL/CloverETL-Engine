@@ -45,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.SAXContentHandler;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.sequence.Sequence;
@@ -678,7 +679,7 @@ public class XmlSaxParser {
                 if (outPort != null) {
                 	DataRecordMetadata dataRecordMetadata = outPort.getMetadata();
                 	autoFilling.addAutoFillingFields(dataRecordMetadata);
-                    m_outRecord = new DataRecord(dataRecordMetadata);
+                    m_outRecord = DataRecordFactory.newRecord(dataRecordMetadata);
                     m_outRecord.init();
                     m_outRecord.reset();
                 } // Original code is commented, it is valid to have null port now

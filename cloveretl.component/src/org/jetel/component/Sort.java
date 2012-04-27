@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.InternalSortDataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -146,7 +147,7 @@ public class Sort extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		//InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		// --- store input records into internal buffer

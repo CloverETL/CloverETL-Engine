@@ -12,6 +12,7 @@ import junit.framework.AssertionFailedError;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.SetVal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
@@ -92,13 +93,13 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		inMetadata = new DataRecordMetadata[]{metadata, metadata1};
 		outMatedata = new DataRecordMetadata[]{ metaOut, metaOut1};
 		
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
-		record1 = new DataRecord(metadata1);
+		record1 = DataRecordFactory.newRecord(metadata1);
 		record1.init();
-		out = new DataRecord(metaOut);
+		out = DataRecordFactory.newRecord(metaOut);
 		out.init();
-		out1 = new DataRecord(metaOut1);
+		out1 = DataRecordFactory.newRecord(metaOut1);
 		out1.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
@@ -215,7 +216,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		metaOut.addField(decField);
 		metadata1.addField(decField.duplicate());
 		
-		record1 = new DataRecord(metadata1);
+		record1 = DataRecordFactory.newRecord(metadata1);
 		record1.init();
 		SetVal.setString(record1,0,"  My name ");
 		SetVal.setDouble(record1,1,13.25);
@@ -223,7 +224,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		SetVal.setValue(record1,3,Calendar.getInstance().getTime());
 		record1.getField("Value").setNull(true);
 		SetVal.setDouble(record1, "DecimalValue", 1.1);
-		out = new DataRecord(metaOut);
+		out = DataRecordFactory.newRecord(metaOut);
 		out.init();
         
 		

@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
@@ -414,7 +415,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					dbMetadata.normalize();
 				}
 		   }
-		   DataRecord record = new DataRecord(dbMetadata);
+		   DataRecord record = DataRecordFactory.newRecord(dbMetadata);
 		   record.init();
 			CopySQLData[] transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, dbConnection.getJdbcSpecific()), 
 					dbMetadata, record, dbConnection.getJdbcSpecific());
@@ -669,7 +670,7 @@ class DBLookup implements Lookup{
 			return false;
 		}
 		if (transMap == null) {
-			currentResult = new DataRecord(dbMetadata);
+			currentResult = DataRecordFactory.newRecord(dbMetadata);
 			currentResult.init();
 			transMap =  CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, lookupTable.dbConnection.getJdbcSpecific()), 
 					dbMetadata, currentResult, lookupTable.dbConnection.getJdbcSpecific());

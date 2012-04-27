@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.SQLCloverCallableStatement;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserFactory;
@@ -378,12 +379,12 @@ public class DBExecute extends Node {
 			}
 		}
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
-			outRecord = new DataRecord(outPort.getMetadata());
+			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRecord.init();
 		}
 		errPort = getOutputPort(ERROR_PORT);
 		if (errPort != null){
-			errRecord = new DataRecord(errPort.getMetadata());
+			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
 			errRecord.init();
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
@@ -434,7 +435,7 @@ public class DBExecute extends Node {
     		}
     	}
 		if (getInPorts().size() > 0) {
-			inRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
+			inRecord = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
 		}
 		initStatements();
@@ -627,7 +628,7 @@ public class DBExecute extends Node {
     				tmp = channelIterator.next();
     				if (tmp == null) break;
     				parser.setDataSource(tmp);
-    				statementRecord = new DataRecord(statementMetadata);
+    				statementRecord = DataRecordFactory.newRecord(statementMetadata);
     				statementRecord.init();
     				int index = 0;
     				//read statements from byte channel

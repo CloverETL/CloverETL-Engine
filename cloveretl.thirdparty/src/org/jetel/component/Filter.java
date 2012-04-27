@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -111,7 +112,7 @@ public class Filter extends Node {
 		InputPort inPort=getInputPort(READ_FROM_PORT);
 		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
 		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 
 		record.init();
 		boolean isData=true;

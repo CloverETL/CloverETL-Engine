@@ -29,6 +29,7 @@ import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -51,7 +52,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     /** an array for input data records passed to CTL functions -- for optimization purposes */
     private final DataRecord[] inputRecords = new DataRecord[1];
     /** empty data record used instead of null group accumulator for better error reporting in scope of CTL */
-    private final DataRecord emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
+    private final DataRecord emptyRecord = DataRecordFactory.newRecord(new DataRecordMetadata("emptyGroupAccumulator"));
 
     /** an array for arguments passed to *group() functions -- for optimization purposes */
     private final Object[] groupArguments = new Object[1];

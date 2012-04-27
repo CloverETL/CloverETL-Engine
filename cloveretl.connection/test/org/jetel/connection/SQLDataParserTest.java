@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -40,7 +41,7 @@ public class SQLDataParserTest extends CloverTestCase {
 
 		aDBConnection.init();
 
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		aParser2 = new SQLDataParser(metadata,"connection", "SELECT * FROM good");

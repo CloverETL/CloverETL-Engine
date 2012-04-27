@@ -29,6 +29,7 @@ import jdbm.helper.Tuple;
 import jdbm.helper.TupleBrowser;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.metadata.DataRecordMetadata;
@@ -172,9 +173,9 @@ class ExternalComplexPortData extends ExternalPortData {
 			indexKey = generateKey(metadata, key);
 			index = dataMap.get(indexKey);
 
-			current = new DataRecord(metadata);
+			current = DataRecordFactory.newRecord(metadata);
 			current.init();
-			next = new DataRecord(metadata);
+			next = DataRecordFactory.newRecord(metadata);
 			next.init();
 			tuple = new Tuple<byte[], byte[]>();
 
@@ -232,9 +233,9 @@ class ExternalComplexPortData extends ExternalPortData {
 		public SimpleCachedDataIterator() throws IOException {
 			DataRecordMetadata metadata = inPort.getMetadata();
 
-			current = new DataRecord(metadata);
+			current = DataRecordFactory.newRecord(metadata);
 			current.init();
-			next = new DataRecord(metadata);
+			next = DataRecordFactory.newRecord(metadata);
 			next.init();
 			tuple = new Tuple<byte[], byte[]>();
 

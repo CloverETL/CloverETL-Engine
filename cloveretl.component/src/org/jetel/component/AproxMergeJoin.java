@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
@@ -560,7 +561,7 @@ public class AproxMergeJoin extends Node {
 		DataRecord[] data = new DataRecord[count];
 
 		for (int i = 0; i < count; i++) {
-			data[i] = new DataRecord(metadata);
+			data[i] = DataRecordFactory.newRecord(metadata);
 			data[i].init();
 		}
 		return data;
@@ -609,12 +610,12 @@ public class AproxMergeJoin extends Node {
 
 		// initialize output record
 		DataRecordMetadata outConformingMetadata = conformingPort.getMetadata();
-		DataRecord outConformingRecord = new DataRecord(outConformingMetadata);
+		DataRecord outConformingRecord = DataRecordFactory.newRecord(outConformingMetadata);
 		outConformingRecord.init();
 		outConformingRecord.reset();
 
 		DataRecordMetadata outSuspiciousMetadata = suspiciousPort.getMetadata();
-		DataRecord outSuspiciousRecord = new DataRecord(outSuspiciousMetadata);
+		DataRecord outSuspiciousRecord = DataRecordFactory.newRecord(outSuspiciousMetadata);
 		outSuspiciousRecord.init();
 		outSuspiciousRecord.reset();
 

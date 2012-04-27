@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -164,7 +165,7 @@ public class SQLDataParser extends AbstractParser {
 
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord localOutRecord=new DataRecord(metadata);
+		DataRecord localOutRecord=DataRecordFactory.newRecord(metadata);
 		localOutRecord.init();
 
 		return getNext(localOutRecord);

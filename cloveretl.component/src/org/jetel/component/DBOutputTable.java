@@ -37,6 +37,7 @@ import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -420,7 +421,7 @@ public class DBOutputTable extends Node {
 		inPort = getInputPort(READ_FROM_PORT);
 
 		rejectedPort = getOutputPort(WRITE_REJECTED_TO_PORT);
-		rejectedRecord = rejectedPort != null ? new DataRecord(rejectedPort.getMetadata()) : null;
+		rejectedRecord = rejectedPort != null ? DataRecordFactory.newRecord(rejectedPort.getMetadata()) : null;
 		if (rejectedRecord != null) {
 			rejectedRecord.init();
 			errorCodeFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
@@ -465,7 +466,7 @@ public class DBOutputTable extends Node {
 		keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
 		returnResult = new boolean[sqlQuery.length];
 		Arrays.fill(returnResult, false);
-		keysRecord = keysPort != null ? new DataRecord(keysPort.getMetadata()) : null;
+		keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
 		if (keysRecord != null) {
 			keysRecord.init();
 			keysRecord.reset();
@@ -486,7 +487,7 @@ public class DBOutputTable extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		
-		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		
 		if (firstRun()) {// a phase-dependent part of initialization
@@ -822,7 +823,7 @@ public class DBOutputTable extends Node {
 	        dataRecordHolder=new DataRecord[statement.length][batchSize];
 	        for (int i = 0; i < statement.length; i++) {
 				for (int j = 0; j < batchSize; j++) {
-					dataRecordHolder[i][j] = new DataRecord(rejectedMetadata);
+					dataRecordHolder[i][j] = DataRecordFactory.newRecord(rejectedMetadata);
 					dataRecordHolder[i][j].init();
 				}
 			}
@@ -1057,7 +1058,7 @@ public class DBOutputTable extends Node {
 								exception = exception.getNextException();
 							}
 						}else if (records != null){//records[i][count] == null - it wasn't added to batch, prepare for next batch
-							records[i][count] = new DataRecord(rejectedPort.getMetadata());
+							records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
 							records[i][count].init();
 						}
 					}
@@ -1090,7 +1091,7 @@ public class DBOutputTable extends Node {
 						countError++;
 						rejectedPort.writeRecord(records[i][count]);
 					}else if (records != null){
-						records[i][count] = new DataRecord(rejectedPort.getMetadata());
+						records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
 						records[i][count].init();
 					}
 					count++;
@@ -1326,7 +1327,7 @@ public class DBOutputTable extends Node {
 				// TODO Auto-generated catch block
 			}
 			if (inPort.getMetadata() != null) {
-				inRecord = new DataRecord(inPort.getMetadata());
+				inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 				inRecord.init();
 				int start = 0, end;
 				for (int i = 0; i < sqlQuery.length; i++) {

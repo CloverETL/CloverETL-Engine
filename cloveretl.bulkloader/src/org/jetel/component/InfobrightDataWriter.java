@@ -40,6 +40,7 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.Parser;
@@ -492,7 +493,7 @@ public class InfobrightDataWriter extends Node {
 		Result result = Result.RUNNING;
 		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		//thread that writes data to database
 		InfoBrightWriter infobrightWriter = 
@@ -503,7 +504,7 @@ public class InfobrightDataWriter extends Node {
 		//thread that sends debug data to output port
 		if (dataParser != null) {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-			DataRecord out_record = new DataRecord(outPort.getMetadata());
+			DataRecord out_record = DataRecordFactory.newRecord(outPort.getMetadata());
 			out_record.init();
 			portWriter  = new PortWriter(Thread.currentThread(), outPort, out_record, dataParser);
 			portWriter.start();

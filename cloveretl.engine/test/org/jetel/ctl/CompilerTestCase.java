@@ -29,6 +29,7 @@ import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
@@ -419,7 +420,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return record initialized to default values
 	 */
 	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
-		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
 		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
@@ -517,7 +518,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return record initialized to default values
 	 */
 	protected DataRecord createDefaultRecord(DataRecordMetadata dataRecordMetadata) {
-		final DataRecord ret = new DataRecord(dataRecordMetadata);
+		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
 		ret.init();
 
 		SetVal.setString(ret, "Name", NAME_VALUE);
@@ -541,7 +542,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @return empty record
 	 */
 	protected DataRecord createEmptyRecord(DataRecordMetadata metadata) {
-		DataRecord ret = new DataRecord(metadata);
+		DataRecord ret = DataRecordFactory.newRecord(metadata);
 		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {

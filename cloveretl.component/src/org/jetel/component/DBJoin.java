@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
@@ -226,7 +227,7 @@ public class DBJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		//initialize in and out records
-		DataRecord[] outRecord = {new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
+		DataRecord[] outRecord = {DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outRecord[0].init();
 		outRecord[0].reset();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
@@ -507,7 +508,7 @@ public class DBJoin extends Node {
 		}
 		lookupTable.preExecute();
 		
-		inRecord = new DataRecord(inPort.getMetadata());
+		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		lookup = lookupTable.createLookup(recordKey, inRecord);
 		if (errorLogURL != null) {
