@@ -21,6 +21,7 @@ package org.jetel.component;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -173,7 +174,7 @@ public class SimpleDataGenerator extends DataGenerator {
 
 	@Override
 	public Result execute() throws Exception {
-		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
 		for (int i=0;i<recordsNumber && runIt;i++){
 			record = recordGenerator.getNext(record);

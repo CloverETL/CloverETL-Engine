@@ -51,7 +51,7 @@ public class DataRecordTest extends CloverTestCase {
 			metadata.addField(new DataFieldMetadata("f" + i, DataFieldMetadata.INTEGER_FIELD, ";"));
 		}
 
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {
@@ -63,7 +63,7 @@ public class DataRecordTest extends CloverTestCase {
 	 * Test method for {@link org.jetel.data.DataRecord#serialize(java.nio.ByteBuffer)}.
 	 */
 	public void testSerialize() {
-		DataRecord deserializedRecord = new DataRecord(record.getMetadata());
+		DataRecord deserializedRecord = DataRecordFactory.newRecord(record.getMetadata());
 		deserializedRecord.init();
 
 		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);

@@ -21,6 +21,7 @@ package org.jetel.data.reader;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
@@ -52,10 +53,10 @@ public class SlaveReaderDup implements InputReader {
 	public SlaveReaderDup(InputPort inPort, RecordKey key) {
 		this.inPort = inPort;
 		this.key = key;
-		this.deserializedRec = new DataRecord(inPort.getMetadata());
+		this.deserializedRec = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.deserializedRec.init();
-		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
-		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
+		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		this.recBuf = new FileRecordBuffer(null);
@@ -64,8 +65,8 @@ public class SlaveReaderDup implements InputReader {
 	
 	@Override
 	public void reset() throws ComponentNotReadyException {
-		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
-		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
+		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		recBuf.clear();

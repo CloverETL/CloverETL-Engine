@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordMap;
 import org.jetel.data.DataRecordMap.DataRecordIterator;
 import org.jetel.data.DataRecordMap.DataRecordLookup;
@@ -381,10 +382,10 @@ public class HashJoin extends Node {
 		}
 
 		inRecords = new DataRecord[1 + slaveCnt];
-		inRecords[0] = new DataRecord(driverPort.getMetadata());
+		inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
 		inRecords[0].init();
 		outRecords = new DataRecord[1];
-		outRecords[0] = new DataRecord(outPort.getMetadata());
+		outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
 		outRecords[0].init();
 		outRecords[0].reset();
 
@@ -443,7 +444,7 @@ public class HashJoin extends Node {
 		if (firstRun()) {// a phase-dependent part of initialization
 			// all necessary elements have been initialized in init()
 		} else {
-			inRecords[0] = new DataRecord(driverPort.getMetadata());
+			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
 			inRecords[0].init();
 			transformation.reset();
 		}
@@ -983,10 +984,10 @@ public class HashJoin extends Node {
 			}
 
 			inRecords = new DataRecord[1 + slaveCnt];
-			inRecords[0] = new DataRecord(driverPort.getMetadata());
+			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
 			inRecords[0].init();
 			outRecords = new DataRecord[1];
-			outRecords[0] = new DataRecord(outPort.getMetadata());
+			outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRecords[0].init();
 
 			driverKeys = new RecordKey[slaveCnt];
@@ -1088,7 +1089,7 @@ public class HashJoin extends Node {
 
 		@Override
 		public void run() {
-			DataRecord record = new DataRecord(metadata);
+			DataRecord record = DataRecordFactory.newRecord(metadata);
 			record.init();
 
 			while (runIt) {

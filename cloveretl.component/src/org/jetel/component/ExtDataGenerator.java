@@ -28,6 +28,7 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -137,7 +138,7 @@ public class ExtDataGenerator extends DataGenerator {
 		int numOutputPorts = getOutPorts().size();
 		DataRecord outRecord[] = new DataRecord[numOutputPorts];
 		for (int i = 0; i < numOutputPorts; i++) {
-			outRecord[i] = new DataRecord(getOutputPort(i).getMetadata());
+			outRecord[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
 			outRecord[i].init();
 			outRecord[i].reset();
 		}

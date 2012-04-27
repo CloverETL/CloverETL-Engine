@@ -33,6 +33,7 @@ import java.nio.charset.CoderResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -157,7 +158,7 @@ public class DataParser extends AbstractTextParser {
 	 */
     @Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(cfg.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);

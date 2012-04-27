@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -263,7 +264,7 @@ public class LdapParser extends AbstractParser {
 	 */
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord localOutRecord = new DataRecord(metadata);
+		DataRecord localOutRecord = DataRecordFactory.newRecord(metadata);
 		localOutRecord.init();
 		return getNext(localOutRecord);
 	}

@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.reader.DriverReader;
@@ -456,7 +457,7 @@ public class DataIntersection extends Node {
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
 		
 		// initialize output record
-		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
+		DataRecord outRecord = DataRecordFactory.newRecord(outPortAB.getMetadata());
 		outRecord.init();
 		driverReader.loadNextRun();
 		slaveReader.loadNextRun();

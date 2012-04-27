@@ -56,6 +56,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
@@ -504,7 +505,7 @@ public class XmlWriter extends Node {
 		public void run() {
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(metadata);
+					DataRecord record = DataRecordFactory.newRecord(metadata);
 					record.init();
 					if (inPort.readRecord(record) == null) // no more input data
 						return;

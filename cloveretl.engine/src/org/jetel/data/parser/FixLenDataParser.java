@@ -28,6 +28,7 @@ import java.nio.charset.CharsetDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -217,7 +218,7 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord rec = new DataRecord(metadata);
+		DataRecord rec = DataRecordFactory.newRecord(metadata);
 		rec.init();
 		return getNext(rec);
 	}

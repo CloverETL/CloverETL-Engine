@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.RingRecordBuffer;
@@ -256,9 +257,9 @@ public class Dedup extends Node {
 	@Override
 	public Result execute() throws Exception {
 		records = new DataRecord[2];
-        records[0] = new DataRecord(inPort.getMetadata());
+        records[0] = DataRecordFactory.newRecord(inPort.getMetadata());
         records[0].init();
-        records[1] = new DataRecord(inPort.getMetadata());
+        records[1] = DataRecordFactory.newRecord(inPort.getMetadata());
         records[1].init();
         isFirst = true; // special treatment for 1st record
         current = 1;

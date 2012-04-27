@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -35,7 +36,7 @@ public class TLRecordValue extends TLContainerValue {
 	
 	public TLRecordValue(DataRecordMetadata metadata){
 		super(TLValueType.RECORD);
-		record=new DataRecord(metadata);
+		record=DataRecordFactory.newRecord(metadata);
 		record.init();
 		record.getMetadata().getFieldTypes();
 	}

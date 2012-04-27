@@ -30,6 +30,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -89,7 +90,7 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 			usedByteMsgCharset = Charset.forName(byteMsgCharset);
 		decoder = usedByteMsgCharset.newDecoder();
 
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
 

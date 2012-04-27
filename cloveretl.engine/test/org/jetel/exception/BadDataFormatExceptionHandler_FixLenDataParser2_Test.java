@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.metadata.DataRecordMetadata;
@@ -57,7 +58,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 		aParser2 = new FixLenCharDataParser(metadata);
 
 		aFixLenDataParser = new FixLenCharDataParser(metadata);
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
 	

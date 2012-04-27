@@ -39,6 +39,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -234,7 +235,7 @@ public class SQLIncremental {
 			keyMetadata.addField(SQLUtil.dbMetadata2jetel((String)keyDef[i][NAME], dbMetadata, index, jdbcSpecific));
 		}
 		keyMetadata.normalize();
-		keyRecord = new DataRecord(keyMetadata);
+		keyRecord = DataRecordFactory.newRecord(keyMetadata);
 		keyRecord.init();
 		//prepare trans map for filling key record with updated values
 		for (int i = 0; i < keyDef.length; i++) {
@@ -390,7 +391,7 @@ public class SQLIncremental {
 	 * Result of the merge is stored in <code>position</code> object.
 	 */
 	public void mergePosition(Properties position) {
-		DataRecord posKeyRecord = new DataRecord(keyRecord.getMetadata());
+		DataRecord posKeyRecord = DataRecordFactory.newRecord(keyRecord.getMetadata());
 		posKeyRecord.init();
 		posKeyRecord.setToNull();
 		initPositionKeyRecord(posKeyRecord, position);

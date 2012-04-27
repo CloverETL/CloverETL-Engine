@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
@@ -199,7 +200,7 @@ public class FixLenDataReader extends Node {
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
-		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
 		try {

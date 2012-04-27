@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
@@ -219,7 +220,7 @@ import org.w3c.dom.Element;
                 }
             }
             // get record consisting of key-fields only
-            defaultRecord = new DataRecord(foreignKey.generateKeyRecordMetadata());
+            defaultRecord = DataRecordFactory.newRecord(foreignKey.generateKeyRecordMetadata());
             defaultRecord.init();
             for(int i=0;i<defaultForeignKeys.length;i++){
                 try{
@@ -254,7 +255,7 @@ import org.w3c.dom.Element;
     		DataRecord foreignRecord;
     		DataRecord storeRecord;
     
-    		primaryRecord=new DataRecord(inPrimaryPort.getMetadata());
+    		primaryRecord=DataRecordFactory.newRecord(inPrimaryPort.getMetadata());
     		primaryRecord.init();
     		while (primaryRecord!=null && runIt) {
    				if ((primaryRecord=inPrimaryPort.readRecord(primaryRecord)) != null) {
@@ -264,7 +265,7 @@ import org.w3c.dom.Element;
    				SynchronizeUtils.cloverYield();
     		}
 
-    		foreignRecord = new DataRecord(inForeignPort.getMetadata());
+    		foreignRecord = DataRecordFactory.newRecord(inForeignPort.getMetadata());
     		foreignRecord.init();
     		HashKey foreignHashKey = new HashKey(foreignKey, foreignRecord);
     		int numFields=defaultRecord.getNumFields();

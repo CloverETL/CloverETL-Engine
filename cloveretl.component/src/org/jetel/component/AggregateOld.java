@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.jetel.component.aggregate.AggregateFunctionOld;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -120,10 +121,10 @@ public class AggregateOld extends Node {
 			boolean firstLoop = true;
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-			DataRecord currentRecord = new DataRecord(inPort.getMetadata());
-			DataRecord previousRecord = new DataRecord(inPort.getMetadata());
+			DataRecord currentRecord = DataRecordFactory.newRecord(inPort.getMetadata());
+			DataRecord previousRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			DataRecord tempRecord;
-			DataRecord outRecord = new DataRecord(outPort.getMetadata());
+			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 
 			currentRecord.init();
 			previousRecord.init();
@@ -152,8 +153,8 @@ public class AggregateOld extends Node {
 		} else { // sorted == false
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-			DataRecord currentRecord = new DataRecord(inPort.getMetadata());
-			DataRecord outRecord = new DataRecord(outPort.getMetadata());
+			DataRecord currentRecord = DataRecordFactory.newRecord(inPort.getMetadata());
+			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 
 			currentRecord.init();
 			outRecord.init();

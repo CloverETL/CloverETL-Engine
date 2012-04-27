@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
@@ -233,8 +234,8 @@ public class XMLExtractTest extends CloverTestCase {
 		assertNotNull("No edge connected to out port " + outPort, edge);
 		assertEquals("Number of buffered out port " + outPort + " records ", expectedRecords.length, edge.getBufferedRecords());
 		
-		DataRecord actualRecord = new DataRecord(edge.getMetadata());
-		DataRecord expectedRecord = new DataRecord(edge.getMetadata());
+		DataRecord actualRecord = DataRecordFactory.newRecord(edge.getMetadata());
+		DataRecord expectedRecord = DataRecordFactory.newRecord(edge.getMetadata());
 		actualRecord.init();
 		expectedRecord.init();
 		expectedRecord.setToNull(); // fields excluded from expectedRecords[i] are considered to be nulls
@@ -279,7 +280,7 @@ public class XMLExtractTest extends CloverTestCase {
 	}
 
 	private void printEdgeRecords(Edge edge) throws IOException, InterruptedException {
-		DataRecord record = new DataRecord(edge.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(edge.getMetadata());
 		record.init();
 		while (edge.readRecord(record) != null) {
 			System.out.println(record);

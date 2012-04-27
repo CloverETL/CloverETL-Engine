@@ -43,7 +43,7 @@ public class FileRecordBufferTest extends CloverTestCase {
 	public void testReadWriteRecord() throws IOException, InterruptedException {
 		FileRecordBuffer fileBuffer = new FileRecordBuffer(null, 50000);
 		
-		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();
 		
 		
@@ -65,7 +65,7 @@ public class FileRecordBufferTest extends CloverTestCase {
 	public void testReadWriteBigRecord() throws IOException, InterruptedException {
 		FileRecordBuffer fileBuffer = new FileRecordBuffer(null, 50000);
 		
-		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {

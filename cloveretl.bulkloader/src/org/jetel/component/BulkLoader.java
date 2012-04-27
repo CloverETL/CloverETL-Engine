@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -315,7 +316,7 @@ public abstract class BulkLoader extends Node {
 		formatter.setDataTarget(dataTarget);
 		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(dbMetadata);
+		DataRecord record = DataRecordFactory.newRecord(dbMetadata);
 		record.init();
 
 		try {

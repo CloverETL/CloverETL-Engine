@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -53,7 +54,7 @@ public class DataParserTest extends CloverTestCase {
 		metadata.setRecordDelimiter("\n");
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 
-		recordUTF8 = new DataRecord(metadata);
+		recordUTF8 = DataRecordFactory.newRecord(metadata);
 		recordUTF8.init();
 		TextParserConfiguration parserUTF8Cfg = new TextParserConfiguration();
 		parserUTF8Cfg.setMetadata(metadata);
@@ -61,7 +62,7 @@ public class DataParserTest extends CloverTestCase {
 		parserUTF8Cfg.setTrim(true);
 		parserUTF8 = new DataParser(parserUTF8Cfg);
 		
-		recordUTF16 = new DataRecord(metadata);
+		recordUTF16 = DataRecordFactory.newRecord(metadata);
 		recordUTF16.init();
 		TextParserConfiguration parserUTF16Cfg = new TextParserConfiguration();
 		parserUTF16Cfg.setMetadata(metadata);
@@ -70,7 +71,7 @@ public class DataParserTest extends CloverTestCase {
 		parserUTF16 = new DataParser(parserUTF16Cfg);
 
 		
-		recordCp1250 = new DataRecord(metadata);
+		recordCp1250 = DataRecordFactory.newRecord(metadata);
 		recordCp1250.init();
 		TextParserConfiguration parserCp1250Cfg = new TextParserConfiguration();
 		parserCp1250Cfg.setMetadata(metadata);
@@ -78,7 +79,7 @@ public class DataParserTest extends CloverTestCase {
 		parserCp1250Cfg.setTrim(true);
 		parserCp1250 = new DataParser(parserCp1250Cfg);
 		
-		recordISO88591 = new DataRecord(metadata);
+		recordISO88591 = DataRecordFactory.newRecord(metadata);
 		recordISO88591.init();
 		TextParserConfiguration parserISO88591Cfg = new TextParserConfiguration();
 		parserISO88591Cfg.setMetadata(metadata);
@@ -118,7 +119,7 @@ public class DataParserTest extends CloverTestCase {
 		testMetadata.setRecordDelimiter("\n\\|\r\\|\n\r\\|\r\n");
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
@@ -146,7 +147,7 @@ public class DataParserTest extends CloverTestCase {
 		testMetadata.setRecordDelimiter("#\\|##&\\|##&&");
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
@@ -175,7 +176,7 @@ public class DataParserTest extends CloverTestCase {
 		testMetadata.setRecordDelimiter("#\\|#&&&");
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
-		DataRecord record = new DataRecord(testMetadata);
+		DataRecord record = DataRecordFactory.newRecord(testMetadata);
 		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
@@ -211,7 +212,7 @@ public class DataParserTest extends CloverTestCase {
 		testMetadata.addField(new DataFieldMetadata("Field3", DataFieldMetadata.STRING_FIELD, null));
 		testMetadata.addField(new DataFieldMetadata("Field4", DataFieldMetadata.STRING_FIELD, null));
 		
-		DataRecord record = new DataRecord(testMetadata);
+		DataRecord record = DataRecordFactory.newRecord(testMetadata);
 		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);

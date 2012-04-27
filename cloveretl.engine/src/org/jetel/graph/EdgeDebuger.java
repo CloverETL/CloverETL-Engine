@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.RecordFilter;
 import org.jetel.component.RecordFilterFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
@@ -94,11 +95,11 @@ public class EdgeDebuger {
     	DataRecordMetadata recordOrdinalMetadata = new DataRecordMetadata("recordOrdinal", DataRecordMetadata.DELIMITED_RECORD);
     	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldMetadata.INTEGER_FIELD, ";"));
 
-    	recordOrdinal = new DataRecord(recordOrdinalMetadata);
+    	recordOrdinal = DataRecordFactory.newRecord(recordOrdinalMetadata);
     	recordOrdinal.init();
 
     	if (!StringUtils.isEmpty(filterExpression)) {
-	    	filterTmpRecord = new DataRecord(metadata);
+	    	filterTmpRecord = DataRecordFactory.newRecord(metadata);
 	    	filterTmpRecord.init();
     	}
 
@@ -271,7 +272,7 @@ public class EdgeDebuger {
 	public void close() {
 		try {
 			if (recordBuffer != null) {
-				DataRecord dataRecord = new DataRecord(metadata);
+				DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
 				dataRecord.init();
 
 				while (recordBuffer.popRecord(recordOrdinal) != null && recordBuffer.popRecord(dataRecord) != null) {

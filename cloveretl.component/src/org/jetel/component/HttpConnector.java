@@ -57,6 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
@@ -295,7 +296,7 @@ public class HttpConnector extends Node {
 		// input port initialization
 		inPort = getInputPortDirect(IN_PORT);
 		if (inPort != null) {
-			inRecord = new DataRecord(inPort.getMetadata());
+			inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			inRecord.init();
 			if (inputFieldName != null) {
 				inField = (StringDataField) inRecord.getField(inputFieldName);
@@ -305,7 +306,7 @@ public class HttpConnector extends Node {
 		// output port initialization
 		outPort = getOutputPortDirect(OUT_PORT);
 		if (outPort != null) {
-			outRecord = new DataRecord(outPort.getMetadata());
+			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRecord.init();
 			if (outputFieldName == null) {
 				outField = (StringDataField) outRecord.getField(0);

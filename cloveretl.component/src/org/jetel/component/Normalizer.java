@@ -38,6 +38,7 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -252,9 +253,9 @@ public class Normalizer extends Node {
 	 * @throws TransformException
 	 */
 	private void processInput() throws IOException, InterruptedException, TransformException {
-		DataRecord inRecord = new DataRecord(inMetadata);
+		DataRecord inRecord = DataRecordFactory.newRecord(inMetadata);
 		inRecord.init();
-		DataRecord outRecord = new DataRecord(outMetadata);
+		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
 		outRecord.init();
 		outRecord.reset();
 		int src = 0;

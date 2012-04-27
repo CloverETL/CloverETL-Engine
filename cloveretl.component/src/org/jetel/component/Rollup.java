@@ -38,6 +38,7 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
 import org.jetel.data.HashKey;
@@ -496,7 +497,7 @@ public class Rollup extends Node {
         outputRecords = new DataRecord[getOutPorts().size()];
 
         for (int i = 0; i < outputRecords.length; i++) {
-            outputRecords[i] = new DataRecord(getOutputPort(i).getMetadata());
+            outputRecords[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
             outputRecords[i].init();
         }
     }
@@ -619,7 +620,7 @@ public class Rollup extends Node {
         DataRecord groupAccumulator = null;
 
         if (groupAccumulatorMetadataId != null) {
-            groupAccumulator = new DataRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
+            groupAccumulator = DataRecordFactory.newRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
             groupAccumulator.init();
             groupAccumulator.reset();
         }
@@ -723,7 +724,7 @@ public class Rollup extends Node {
     private void executeInputUnsorted() throws TransformException, IOException, InterruptedException {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
-        DataRecord inputRecord = new DataRecord(inputPort.getMetadata());
+        DataRecord inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
         inputRecord.init();
 
         DataRecordMetadata groupAccumulatorMetadata = (groupAccumulatorMetadataId != null)
@@ -737,7 +738,7 @@ public class Rollup extends Node {
 
             if (groupAccumulator == null && !groupAccumulators.containsKey(lookupKey)) {
                 if (groupAccumulatorMetadata != null) {
-                    groupAccumulator = new DataRecord(groupAccumulatorMetadata);
+                    groupAccumulator = DataRecordFactory.newRecord(groupAccumulatorMetadata);
                     groupAccumulator.init();
                     groupAccumulator.reset();
                 }

@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -198,7 +199,7 @@ public class Merge extends Node {
 		}
 		// initialize array of data records (for each input port one)
 		for (int i = 0; i < inPorts.length; i++) {
-			inputRecords[i] = new DataRecord(inPorts[i].getMetadata());
+			inputRecords[i] = DataRecordFactory.newRecord(inPorts[i].getMetadata());
 			inputRecords[i].init();
 		}
 
