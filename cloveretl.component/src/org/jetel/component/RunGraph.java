@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -227,7 +228,7 @@ public class RunGraph extends Node{
 	
 	private DataRecord initInRecord() {
 		if (inPort != null) {
-			DataRecord inRecord = new DataRecord(inPort.getMetadata());
+			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			inRecord.init();	
 			return inRecord;
 		}
@@ -237,13 +238,13 @@ public class RunGraph extends Node{
 	
 	private DataRecord initOutRecord() {
 		if (outPort != null) {
-			DataRecord outRec = new DataRecord(outPort.getMetadata());
+			DataRecord outRec = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRec.init();
 			return outRec;
 		} 
 	
 		if (outPortErr != null) {
-			DataRecord outRec = new DataRecord(outPortErr.getMetadata());
+			DataRecord outRec = DataRecordFactory.newRecord(outPortErr.getMetadata());
 			outRec.init();
 			return outRec;
 		}

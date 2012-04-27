@@ -38,6 +38,7 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -339,9 +340,9 @@ public class Denormalizer extends Node {
 	 * @throws TransformException
 	 */
 	protected void processInput() throws IOException, InterruptedException, TransformException {
-		DataRecord outRecord = new DataRecord(outMetadata);
+		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
 		outRecord.init();
-		DataRecord srcRecord[] = new DataRecord[] {new DataRecord(inMetadata),new DataRecord(inMetadata)} ;
+		DataRecord srcRecord[] = new DataRecord[] {DataRecordFactory.newRecord(inMetadata),DataRecordFactory.newRecord(inMetadata)} ;
 		srcRecord[0].init();
 		srcRecord[1].init();
 		int src=0;

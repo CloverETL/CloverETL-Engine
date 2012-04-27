@@ -33,6 +33,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordOrderedKey;
@@ -570,7 +571,7 @@ public class MergeJoin extends Node {
 			minIndicator[i] = true;
 		}
 		inRecords = new DataRecord[inputCnt];
-		outRecords = new DataRecord[]{new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
+		outRecords = new DataRecord[]{DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outRecords[0].init();
 		outRecords[0].reset();
 		outPort = getOutputPort(WRITE_TO_PORT);

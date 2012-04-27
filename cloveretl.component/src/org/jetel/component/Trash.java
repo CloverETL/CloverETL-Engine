@@ -26,6 +26,7 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -179,6 +180,7 @@ public class Trash extends Node {
 		}
 		
 		super.init();
+		
 		TransformationGraph graph = getGraph();
 
 		// creates necessary directories
@@ -245,7 +247,7 @@ public class Trash extends Node {
 	
 	private Result executeWithWriter() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
 		
 		while ((record = inPort.readRecord(record)) != null && runIt) {
@@ -465,7 +467,7 @@ public class Trash extends Node {
 
 		@Override
 		public void run() {
-			DataRecord record = new DataRecord(inPort.getMetadata());
+			DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			if (mode.equals(Mode.VALIDATE_RECORDS)) {
 				record.init();

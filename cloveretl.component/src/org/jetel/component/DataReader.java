@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.parser.TextParser;
@@ -250,14 +251,14 @@ public class DataReader extends Node {
 		OutputPort outPort = getOutputPort(OUTPUT_PORT);
 		// we need to create data record - take the metadata from first output
 		// port
-		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		// if we have second output port we can logging - create data record for
 		// log port
 		DataRecord logRecord = null;
 		boolean hasFileNameField = false;
 		if (logging) {
-			logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
+			logRecord = DataRecordFactory.newRecord(getOutputPort(LOG_PORT).getMetadata());
 			logRecord.init();
 			hasFileNameField = logRecord.getNumFields() == 5;
 		}
@@ -287,7 +288,7 @@ public class DataReader extends Node {
 							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(bdfe.getMessage());
+							logger.warn(bdfe.getMessage() + "; input source: " + reader.getSourceName());
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()

@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.DataRecord2JmsMsg;
 import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -237,7 +238,7 @@ public class JmsWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		DataRecord nextRecord = new DataRecord(inPort.getMetadata());
+		DataRecord nextRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		nextRecord.init();
 		try {
 			while (runIt) {

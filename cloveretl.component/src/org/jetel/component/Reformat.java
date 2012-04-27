@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -246,14 +247,14 @@ public class Reformat extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord inRecord[] = {new DataRecord(inPort.getMetadata())};
+		DataRecord inRecord[] = {DataRecordFactory.newRecord(inPort.getMetadata())};
 		int numOutputPorts=getOutPorts().size();
 		DataRecord outRecord[] = new DataRecord[numOutputPorts]; 
 		
 		inRecord[0].init();
 		// initialize output ports
 		for (int i = 0; i < numOutputPorts; i++) {
-			outRecord[i] = new DataRecord(getOutputPort(i).getMetadata());
+			outRecord[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
 			outRecord[i].init();
 			outRecord[i].reset();
 		}

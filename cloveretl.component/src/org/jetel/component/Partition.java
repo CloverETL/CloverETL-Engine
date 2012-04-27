@@ -28,6 +28,7 @@ import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.PartitionFunctionFactory;
 import org.jetel.component.partition.RangePartition;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -257,7 +258,7 @@ public class Partition extends Node {
 	
 	private void executeNonDirect(InputPortDirect inPort,
 			OutputPortDirect[] outPorts) throws Exception {
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		CloverBuffer inRecordDirect = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 

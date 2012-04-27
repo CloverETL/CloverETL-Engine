@@ -21,6 +21,7 @@ package org.jetel.component;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -169,7 +170,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		OutputPortDirect outPort=getOutputPortDirect(WRITE_TO_PORT);
 		OutputPortDirect rejectedPort=getOutputPortDirect(REJECTED_PORT);
 		boolean isData=true;
-        DataRecord record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
+        DataRecord record = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
         record.init();
         CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
         

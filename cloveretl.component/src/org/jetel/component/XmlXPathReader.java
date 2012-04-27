@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -161,7 +162,7 @@ public class XmlXPathReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
-    private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    public static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
 	
 	private final static int OUTPUT_PORT = 0;
@@ -239,7 +240,7 @@ public class XmlXPathReader extends Node {
 			outputPort = getOutputPort(outputPortNumber);
 			if (outputPort == null) 
 				throw new ComponentNotReadyException("Error: output port '"+ outputPortNumber +"' doesn't exist");
-			records[outputPortNumber] = new DataRecord(outputPort.getMetadata());
+			records[outputPortNumber] = DataRecordFactory.newRecord(outputPort.getMetadata());
 			records[outputPortNumber].init();
 			parser.assignRecord(records[outputPortNumber], outputPortNumber);
 		}

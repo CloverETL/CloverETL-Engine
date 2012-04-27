@@ -23,6 +23,7 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.provider.FixLenDataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
@@ -179,7 +180,7 @@ public class FixLenDataWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
 		
 		while (record != null && runIt) {

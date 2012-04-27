@@ -35,22 +35,23 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.tree.writer.BaseTreeFormatterProvider;
+import org.jetel.component.tree.writer.model.design.AbstractNode;
+import org.jetel.component.tree.writer.model.design.MappingProperty;
+import org.jetel.component.tree.writer.model.design.TreeWriterMapping;
+import org.jetel.component.tree.writer.model.runtime.PortBinding;
+import org.jetel.component.tree.writer.model.runtime.WritableMapping;
+import org.jetel.component.tree.writer.portdata.DataIterator;
+import org.jetel.component.tree.writer.portdata.PortData;
+import org.jetel.component.tree.writer.portdata.btree.CacheRecordManager;
+import org.jetel.component.tree.writer.util.AbstractMappingValidator;
+import org.jetel.component.tree.writer.util.MappingCompiler;
+import org.jetel.component.tree.writer.util.MappingError;
+import org.jetel.component.tree.writer.util.MappingTagger;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.portdata.DataIterator;
-import org.jetel.data.portdata.PortData;
-import org.jetel.data.portdata.btree.CacheRecordManager;
-import org.jetel.data.tree.formatter.BaseTreeFormatterProvider;
-import org.jetel.data.tree.formatter.designmodel.AbstractNode;
-import org.jetel.data.tree.formatter.designmodel.MappingProperty;
-import org.jetel.data.tree.formatter.designmodel.TreeWriterMapping;
-import org.jetel.data.tree.formatter.runtimemodel.PortBinding;
-import org.jetel.data.tree.formatter.runtimemodel.WritableMapping;
-import org.jetel.data.tree.formatter.util.MappingCompiler;
-import org.jetel.data.tree.formatter.util.MappingError;
-import org.jetel.data.tree.formatter.util.MappingTagger;
-import org.jetel.data.tree.xml.formatter.util.AbstractMappingValidator;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -171,7 +172,7 @@ public abstract class TreeWriter extends Node {
 	private CacheRecordManager sharedCache;
 
 	protected int recordsPerFile;
-	private int recordsCount;
+	protected int recordsCount;
 	private String attrPartitionKey;
 	private String partition;
 	private String partitionOutFields;
@@ -268,7 +269,7 @@ public abstract class TreeWriter extends Node {
 			}
 
 		} else {
-			MappingTagger tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null);
+			MappingTagger tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1);
 
 			tagger.setMapping(mapping);
 			boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
@@ -298,7 +299,7 @@ public abstract class TreeWriter extends Node {
 	}
 
 	protected abstract AbstractMappingValidator createValidator(Map<Integer, DataRecordMetadata> connectedPorts);
-
+	
 	private TreeWriterMapping initMapping() throws ComponentNotReadyException {
 
 		InputStream stream;
@@ -337,7 +338,7 @@ public abstract class TreeWriter extends Node {
 		}
 		super.init();
 		if (charset == null) {
-			charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
+			charset = getDefaultCharset();
 		}
 		designMapping = initMapping();
 		compileMapping(designMapping);
@@ -345,6 +346,10 @@ public abstract class TreeWriter extends Node {
 		configureWriter();
 	}
 
+	protected String getDefaultCharset() {
+		return Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER; 
+	}
+	
 	private void compileMapping(TreeWriterMapping mapping) throws ComponentNotReadyException {
 		AbstractMappingValidator validator = createValidator(prepareConnectedData());
 		if (validator != null) {
@@ -356,7 +361,7 @@ public abstract class TreeWriter extends Node {
 			}
 		}
 
-		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null);
+		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null, recordsCount == 1);
 		compiler.setGraph(getGraph());
 		compiler.setComponentId(getType());
 		compiler.setLogger(LOGGER);
@@ -653,7 +658,7 @@ public abstract class TreeWriter extends Node {
 		public void run() {
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(inPort.getMetadata());
+					DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 					record.init();
 					if (inPort.readRecord(record) == null) {
 						return;
