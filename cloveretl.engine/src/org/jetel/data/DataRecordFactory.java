@@ -21,6 +21,8 @@ package org.jetel.data;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Class for factorisation of {@link DataRecord} object. Constructors of {@link DataRecord} are deprecated.
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
