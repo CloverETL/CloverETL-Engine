@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
+import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -36,7 +37,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @created 18 Jan 2011
  */
-public abstract class TreeFormatter implements Formatter {
+public abstract class TreeFormatter extends AbstractFormatter {
 
 	private WritableMapping mapping;
 	private final int availableDataArrayLength;
