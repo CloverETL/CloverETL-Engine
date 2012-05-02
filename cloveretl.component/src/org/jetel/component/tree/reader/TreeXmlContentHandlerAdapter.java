@@ -19,6 +19,7 @@
 package org.jetel.component.tree.reader;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.string.TagName;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -33,13 +34,13 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	public static final String DUMMY_ROOT_ELEMENT_NAME = "root";
 	
 	private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
-	private ContentHandler contentHander;
+	private ContentHandler contentHandler;
 
 	@Override
 	public void startTree() {
 		try {
-			contentHander.startDocument();
-			contentHander.startElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME, EMPTY_ATTRIBUTES);
+			contentHandler.startDocument();
+			contentHandler.startElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME, EMPTY_ATTRIBUTES);
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
@@ -48,7 +49,11 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	@Override
 	public void startNode(String name) {
 		try {
-			contentHander.startElement("", name, name, EMPTY_ATTRIBUTES);
+			/*
+			 * name has to be valid NCName
+			 */
+			name = TagName.encode(name);
+			contentHandler.startElement("", name, name, EMPTY_ATTRIBUTES);
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
@@ -58,7 +63,7 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	public void leaf(Object value) {
 		char[] stringCharArray = value.toString().toCharArray();
 		try {
-			contentHander.characters(stringCharArray, 0, stringCharArray.length);
+			contentHandler.characters(stringCharArray, 0, stringCharArray.length);
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
@@ -67,7 +72,11 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	@Override
 	public void endNode(String name) {
 		try {
-			contentHander.endElement("", name, name);
+			/*
+			 * name has to be valid NCName
+			 */
+			name = TagName.encode(name);
+			contentHandler.endElement("", name, name);
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
@@ -76,19 +85,19 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	@Override
 	public void endTree() {
 		try {
-			contentHander.endElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME);
-			contentHander.endDocument();
+			contentHandler.endElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME);
+			contentHandler.endDocument();
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
 	}
 
 	public ContentHandler getContentHander() {
-		return contentHander;
+		return contentHandler;
 	}
 
 	public void setContentHander(ContentHandler contentHander) {
-		this.contentHander = contentHander;
+		this.contentHandler = contentHander;
 	}
 
 }
