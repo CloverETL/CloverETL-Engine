@@ -27,7 +27,11 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataField;
@@ -36,11 +40,12 @@ import org.jetel.data.DateDataField;
 import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
+import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
-
-import sun.nio.ch.FileChannelImpl;
 
 /**
  * @author dpavlis (info@cloveretl.com)
@@ -61,18 +66,25 @@ public class DBFDataFormatter extends AbstractFormatter {
 	private DataRecordMetadata metadata;
 	private int[] fieldSizes;
 	private byte[] fieldTypesDBF;
+	private Set<String> excludedFieldNames = Collections.emptySet();
 	private DateFormatter dateFormatter;
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param charset Char set of the formatter.
+	 */
 	public DBFDataFormatter(String charset){
 		this.encoder=Charset.forName(charset).newEncoder();
 	}
 	
 	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		if (_metadata.getRecType()!=DataRecordMetadata.FIXEDLEN_RECORD){
+		int countOfNotExcludedFields = getCountOfNotExcludedFields(_metadata);
+		if (_metadata.getParsingType() != DataRecordParsingType.FIXEDLEN){
 			throw new ComponentNotReadyException("Only fixed-lenght metadata allowed !");
 		}
-		if (_metadata.getNumFields()>DBFAnalyzer.DBF_MAX_NUMBER_OF_FIELDS){
+		if (countOfNotExcludedFields > DBFAnalyzer.DBF_MAX_NUMBER_OF_FIELDS){
 			throw new ComponentNotReadyException("Exceeded maximum number of fields in DBase file (128) !");
 			
 		}
@@ -82,7 +94,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 		try {
 			for (int i = 0; i < _metadata.getNumFields(); i++) {
 				fieldSizes[i] = DBFTypes.cloverSize2dbf(_metadata.getField(i));
-				fieldTypesDBF[i] = DBFTypes.cloverType2dbf(_metadata.getField(i).getType());
+				fieldTypesDBF[i] = DBFTypes.cloverType2dbf(_metadata.getField(i).getDataType());
 				if (_metadata.getField(i).getSize() > DBFAnalyzer.DBF_FIELD_MAX_LENGTH) {
 					throw new ComponentNotReadyException(String.format("Field '%s', size %i exceeds the maximum allowed size/length for DBase field (%i)", _metadata.getField(i).getName(), _metadata.getField(i).getSize(), DBFAnalyzer.DBF_FIELD_MAX_LENGTH));
 				}
@@ -91,9 +103,9 @@ public class DBFDataFormatter extends AbstractFormatter {
 			throw new ComponentNotReadyException(ex.getMessage(), ex);
 		}
 		
-		this.metadata=_metadata;
-		int rec_size=_metadata.getRecordSize();
-		int dbf_header_size= DBFAnalyzer.DBF_HEADER_SIZE_BASIC + 1 + metadata.getNumFields()*DBFAnalyzer.DBF_FIELD_DEF_SIZE;
+		this.metadata = _metadata;
+		int rec_size = getRecordSize(metadata);
+		int dbf_header_size= DBFAnalyzer.DBF_HEADER_SIZE_BASIC + 1 + countOfNotExcludedFields * DBFAnalyzer.DBF_FIELD_DEF_SIZE;
 		dataBuffer = ByteBuffer.allocate((rec_size > dbf_header_size ? rec_size : dbf_header_size) + CONTINGENCY );
 		dataBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		fillerBuffer = ByteBuffer.allocate(DBFAnalyzer.DBF_FIELD_MAX_LENGTH);
@@ -101,14 +113,13 @@ public class DBFDataFormatter extends AbstractFormatter {
 		fillerBuffer.flip();
 		
 		dateFormatter= DateFormatterFactory.getFormatter(DBFTypes.DATE_FORMAT_MASK);
-		recordCounter=0;
+		resetRecordCounter();
 		
 	}
 
 	@Override
 	public void reset() {
-		// TODO Auto-generated method stub
-		recordCounter=0;
+		resetRecordCounter();
 		dataBuffer.reset();
 	}
 
@@ -143,46 +154,47 @@ public class DBFDataFormatter extends AbstractFormatter {
 		dataBuffer.clear();
 		dataBuffer.put((byte)0x20); // delete flag - non deleted
 		for(DataField field:record){
-			saveLimit=dataBuffer.limit();
-			dataBuffer.limit(dataBuffer.position()+fieldSizes[i]);
-			switch (this.fieldTypesDBF[i]) {
-			case DBFTypes.DBF_TYPE_DATE:
-				 DateDataField d_field=(DateDataField)field;
-				 encoder.encode(CharBuffer.wrap(dateFormatter.format(d_field.getDate())), dataBuffer, true);
-			break;
-			case DBFTypes.DBF_TYPE_CHARACTER:
-				encoder.encode(CharBuffer.wrap(field.toString()), dataBuffer, true);
-				break;
-			case DBFTypes.DBF_TYPE_NUMBER:
-				// must be right-justified
-				CharBuffer cbuf=CharBuffer.wrap(field.toString());
-				if (cbuf.limit() > fieldSizes[i]){ 
-					cbuf.limit(fieldSizes[i]);
-				}else{
-					// fill in some spaces
-					org.jetel.util.bytes.ByteBufferUtils.fill(dataBuffer, (byte)0x20, fieldSizes[i] - cbuf.limit(), true); // space
+			if (!excludedFieldNames.contains(field.getMetadata().getName())) {
+				saveLimit = dataBuffer.limit();
+				dataBuffer.limit(dataBuffer.position() + fieldSizes[i]);
+				switch (this.fieldTypesDBF[i]) {
+				case DBFTypes.DBF_TYPE_DATE:
+					DateDataField d_field = (DateDataField) field;
+					encoder.encode(CharBuffer.wrap(dateFormatter.format(d_field.getDate())), dataBuffer, true);
+					break;
+				case DBFTypes.DBF_TYPE_CHARACTER:
+					encoder.encode(CharBuffer.wrap(field.toString()), dataBuffer, true);
+					break;
+				case DBFTypes.DBF_TYPE_NUMBER:
+					// must be right-justified
+					CharBuffer cbuf = CharBuffer.wrap(field.toString());
+					if (cbuf.limit() > fieldSizes[i]) {
+						cbuf.limit(fieldSizes[i]);
+					} else {
+						// fill in some spaces
+						ByteBufferUtils.fill(dataBuffer, (byte) 0x20, fieldSizes[i] - cbuf.limit(), true); // space
+					}
+					encoder.encode(cbuf, dataBuffer, true);
+					break;
+				case DBFTypes.DBF_TYPE_LOGICAL:
+					BooleanDataField b_field = (BooleanDataField) field;
+					if (b_field.isNull())
+						dataBuffer.put((byte) '?'); // 0x3f '?"
+					else if (b_field.getBoolean())
+						dataBuffer.put((byte) 'T'); // 0x54 'T'
+					else
+						dataBuffer.put((byte) 'F'); // 0x46 'F'
+					break;
 				}
-				encoder.encode(cbuf, dataBuffer, true);
-				break;
-			case DBFTypes.DBF_TYPE_LOGICAL:
-				BooleanDataField b_field = (BooleanDataField) field;
-				if (b_field.isNull())
-					dataBuffer.put((byte) '?'); // 0x3f '?"
-				else if (b_field.getBoolean())
-					dataBuffer.put((byte) 'T'); // 0x54 'T'
-				else
-					dataBuffer.put((byte) 'F'); // 0x46 'F'
-				break;
+				// pad with blanks if needed
+				if (dataBuffer.hasRemaining()) {
+					fillerBuffer.limit(dataBuffer.remaining());
+					dataBuffer.put(fillerBuffer);
+					fillerBuffer.limit(fillerBuffer.capacity());
+					fillerBuffer.rewind();
+				}
+				dataBuffer.limit(saveLimit);
 			}
-			
-			// pad with blanks if needed
-			if (dataBuffer.hasRemaining()){
-				fillerBuffer.limit(dataBuffer.remaining());
-				dataBuffer.put(fillerBuffer);
-				fillerBuffer.limit(fillerBuffer.capacity());
-				fillerBuffer.rewind();
-			}
-			dataBuffer.limit(saveLimit);
 			i++;
 		}
 		dataBuffer.flip();
@@ -203,7 +215,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 		// NUM RECORDS - 0x04 (updated when writing footer)
 		buffer.putInt(0); // 0
 		// POSITION OF FIRST DATA RECORD - 0x08
-		buffer.putShort((short)( DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (metadata.getNumFields() * DBFAnalyzer.DBF_FIELD_DEF_SIZE) +1));
+		buffer.putShort((short)( DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (getCountOfNotExcludedFields(metadata) * DBFAnalyzer.DBF_FIELD_DEF_SIZE) +1));
 		// LENGTH OF EACH RECORD - 0x0A
 		buffer.putShort((short) (getRecordSizeConverted(metadata)+1)); // cater for delete flag
 		// CODEPAGE
@@ -223,29 +235,30 @@ public class DBFDataFormatter extends AbstractFormatter {
 	private void fillDBFFieldMetadata(ByteBuffer buffer){
 		int counter=0;
 		for(DataFieldMetadata field : metadata){
-			// FIELD NAME
-			ByteBuffer name= encoder.charset().encode(field.getName());
-			if (name.remaining() > 10) name.limit(10);
-			int post=buffer.position();
-			buffer.put(name);
-			buffer.position(post + 10);
-			buffer.put((byte)0x00);
-			// FIELD TYPE - 0x0b
-			buffer.put((byte)this.fieldTypesDBF[counter]);
-			// FIELD ADDRESS - 0x0c
-			buffer.putInt(0x0);
-			// FIELD LENGTH - 0x10
-			buffer.put((byte)DBFTypes.cloverSize2dbf(field));
-			// FIELD DECIMAL COUNT - 0x11
-			if (field.getType()==DataFieldMetadata.DECIMAL_FIELD)
-				buffer.put((byte)Integer.parseInt(field.getProperty(DataFieldMetadata.SCALE_ATTR)));
-			else
-				buffer.put((byte)0x0);
-
-			// VARIOUS INDICATORS (not used/populated here) just fill with zeros
-			for(int i=18;i<=31;i++)
-				buffer.put((byte)0x0);
-			
+			if (!excludedFieldNames.contains(field.getName())) {
+				// FIELD NAME
+				ByteBuffer name = encoder.charset().encode(field.getName());
+				if (name.remaining() > 10)
+					name.limit(10);
+				int post = buffer.position();
+				buffer.put(name);
+				buffer.position(post + 10);
+				buffer.put((byte) 0x00);
+				// FIELD TYPE - 0x0b
+				buffer.put((byte) this.fieldTypesDBF[counter]);
+				// FIELD ADDRESS - 0x0c
+				buffer.putInt(0x0);
+				// FIELD LENGTH - 0x10
+				buffer.put((byte) DBFTypes.cloverSize2dbf(field));
+				// FIELD DECIMAL COUNT - 0x11
+				if (field.getDataType() == DataFieldType.DECIMAL)
+					buffer.put((byte) Integer.parseInt(field.getProperty(DataFieldMetadata.SCALE_ATTR)));
+				else
+					buffer.put((byte) 0x0);
+				// VARIOUS INDICATORS (not used/populated here) just fill with zeros
+				for (int i = 18; i <= 31; i++)
+					buffer.put((byte) 0x0);
+			}
 			counter++;
 			
 		}
@@ -269,7 +282,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 			final int recCount = dataBuffer.getInt();
 			final int headerSize = dataBuffer.getShort();
 			final int recSize = dataBuffer.getShort();
-			final int expectedHeaderSize = (DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (metadata.getNumFields() * DBFAnalyzer.DBF_FIELD_DEF_SIZE) + 1);
+			final int expectedHeaderSize = (DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (getCountOfNotExcludedFields(metadata) * DBFAnalyzer.DBF_FIELD_DEF_SIZE) + 1);
 			final int expectedRecSize = (getRecordSizeConverted(metadata) + 1);
 			if ((headerSize != expectedHeaderSize) || (recSize != expectedRecSize)) {
 				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverETL metadata [rec.size DBF/CloverETL  %i/%i bytes].", recSize, expectedRecSize));
@@ -328,18 +341,58 @@ public class DBFDataFormatter extends AbstractFormatter {
 		flush();
 
 	}
-	
 
 	@Override
 	public boolean isFileTargetPreferred() {
 		return true;
 	}
 	
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = new HashSet<String>(Arrays.asList(excludedFieldNames != null ? excludedFieldNames : new String[0]));
+	}
 	
-	private static int getRecordSizeConverted(DataRecordMetadata record){
+	public void resetRecordCounter() {
+		recordCounter = 0;
+	}
+	
+	/**
+	 * @param metadata
+	 * @return count of fields which are not excluded.
+	 */
+	private int getCountOfNotExcludedFields(DataRecordMetadata metadata) {
+		int countOfNotExcludedField = 0;
+		for (DataFieldMetadata fieldMetadata: metadata.getFields()) {
+			if (!excludedFieldNames.contains(fieldMetadata.getName())) {
+				countOfNotExcludedField++;
+			}
+		}
+		return countOfNotExcludedField;
+	}
+	
+	/**
+	 * @param record
+	 * @return Size of the record (excluded fields are skipped).
+	 */
+	private int getRecordSize(DataRecordMetadata record) {
 		int size=0;
 		for(DataFieldMetadata field : record){
-			size+= DBFTypes.cloverSize2dbf(field);
+			if (!excludedFieldNames.contains(field.getName())) {
+				size += field.getSize();
+			}
+		}
+		return size;
+	}
+	
+	/**
+	 * @param record
+	 * @return Size of converted record (excluded fields are skipped).
+	 */
+	private int getRecordSizeConverted(DataRecordMetadata record) {
+		int size=0;
+		for(DataFieldMetadata field : record){
+			if (!excludedFieldNames.contains(field.getName())) {
+				size += DBFTypes.cloverSize2dbf(field);
+			}
 		}
 		return size;
 	}

@@ -24,25 +24,31 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.provider.DBFDataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.database.dbf.DBFAnalyzer;
-import org.jetel.database.dbf.DBFDataFormatter;
 import org.jetel.database.dbf.DBFTypes;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -96,43 +102,50 @@ import org.w3c.dom.Element;
  */
 public class DBFDataWriter extends Node {
 
-	private static final String XML_APPEND_ATTRIBUTE = "append";
+	public final static String COMPONENT_TYPE = "DBF_DATA_WRITER";
+	
+	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
+	
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
-	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
-	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
+	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 
+	private static Log logger = LogFactory.getLog(DBFDataWriter.class);
+	
 	private String fileURL;
 	private boolean appendData;
-	private DBFDataFormatter formatter;
-	private MultiFileWriter writer;
-    private int skip;
-	private int numRecords;
-	private WritableByteChannel writableByteChannel;
-	private int recordsPerFile;
-	private int bytesPerFile;
 	private String charsetName;
 	
+	private boolean mkDir;
+	private int recordsPerFile;
+    private int skip;
+	private int numRecords;
+	private String excludeFields;
 	private String partition;
 	private String attrPartitionKey;
 	private LookupTable lookupTable;
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
+	private String partitionUnassignedFileName;
 
-	public final static String COMPONENT_TYPE = "DBF_DATA_WRITER";
-	private final static int READ_FROM_PORT = 0;
-	private final static int OUTPUT_PORT = 0;
-
-	private static Log logger = LogFactory.getLog(DBFDataWriter.class);
-
+	private DBFDataFormatterProvider formatterProvider;
+	private MultiFileWriter writer;
+	private WritableByteChannel writableByteChannel;
+	
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param id
 	 * @param fileURL
@@ -140,17 +153,16 @@ public class DBFDataWriter extends Node {
 	 * @param appendData
 	 * @param fields
 	 */
-	public DBFDataWriter(String id, String fileURL, String charset, 
-			boolean appendData) {
+	public DBFDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		this.charsetName = charset == null ? Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER : charset;
-		formatter =  new DBFDataFormatter(charsetName);
+		formatterProvider = new DBFDataFormatterProvider(charsetName);
 	}
 	
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
 	 * @param id
 	 * @param writableByteChannel
@@ -181,8 +193,7 @@ public class DBFDataWriter extends Node {
 		
 		if (firstRun()) {
 	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
-		}
-		else {
+		} else {
 			writer.reset();
 		}
 	}
@@ -190,12 +201,22 @@ public class DBFDataWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
+		int recordCount = 0;
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
+				int recordsAtFile = writer.getCountOfRecordsAtCurrentTarget();
+				if (recordsPerFile > 0 && recordsAtFile > 0 && recordsAtFile % recordsPerFile == 0) {
+					//not very nice but we need to "close the file" = write footer and reset counter of records 
+					//for current target hold by the formatter if maximum count of records is written at the file
+					//this means that following records will be written to some other file
+		        	formatterProvider.getCurrentFormatter().writeFooter();
+		        	formatterProvider.getCurrentFormatter().resetRecordCounter();
+		        }
 		        writer.write(record);
+		        recordCount++;
 			}
 			SynchronizeUtils.cloverYield();
 		}
@@ -238,8 +259,8 @@ public class DBFDataWriter extends Node {
 		}
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() 
-        			: null, fileURL);
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
+        			fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -247,13 +268,30 @@ public class DBFDataWriter extends Node {
         
         for(DataFieldMetadata field : getInputPort(READ_FROM_PORT).getMetadata()){
         	try{
-        		DBFTypes.cloverType2dbf(field.getType());
+        		DBFTypes.cloverType2dbf(field.getDataType());
         	}catch(Exception ex){
         		status.add(String.format("Error at field \"%s\". %s",field.getName(),ex.getMessage()),ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         	}
         }
         
+        if (!StringUtils.isEmpty(excludeFields)) {
+            DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+            int[] includedFieldIndices = null;
+
+            try {
+                includedFieldIndices = metadata.fieldsIndicesComplement(
+                        excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+                if (includedFieldIndices.length == 0) {
+                    status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
+                            Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                }
+            } catch (IllegalArgumentException exception) {
+                status.add(new ConfigurationProblem(exception.getMessage(), Severity.ERROR, this,
+                        Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+        }
         
         return status;
     }
@@ -271,15 +309,14 @@ public class DBFDataWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel =  new SystemOutByteChannel();
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterProvider, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
-        writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
         writer.setSkip(skip);
@@ -289,11 +326,20 @@ public class DBFDataWriter extends Node {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
+            writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
         }
+        
+        String[] excludedFieldNames = null;
+        if (!StringUtils.isEmpty(excludeFields)) {
+            excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            formatterProvider.setExcludedFieldNames(excludedFieldNames);
+        }
+        
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+        writer.setMkDir(mkDir);
 	}
 
 	/**
@@ -317,7 +363,7 @@ public class DBFDataWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		DBFDataWriter aDataWriter = null;
 		
@@ -335,9 +381,6 @@ public class DBFDataWriter extends Node {
             if(xattribs.exists(XML_RECORDS_PER_FILE)) {
             	aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
             }
-            if(xattribs.exists(XML_BYTES_PER_FILE)) {
-            	aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
-            }
 			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
 				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
             }
@@ -350,9 +393,17 @@ public class DBFDataWriter extends Node {
 			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
 				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
             }
-		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
-			return null;
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+                aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+				aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+            }
+		} catch(Exception ex){
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 		
 		return aDataWriter;
@@ -378,9 +429,6 @@ public class DBFDataWriter extends Node {
 		if (recordsPerFile > 0) {
 			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
 		}
-		if (bytesPerFile > 0) {
-			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
-		}
 		if (partition != null) {
 			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
 		} else if (lookupTable != null) {
@@ -392,6 +440,9 @@ public class DBFDataWriter extends Node {
 		if (attrPartitionOutFields != null) {
 			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
 		}
+		if (!StringUtils.isEmpty(excludeFields)) {
+            xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
+        }
 		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 	
@@ -409,10 +460,6 @@ public class DBFDataWriter extends Node {
      */
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
-    }
-
-    public void setBytesPerFile(int bytesPerFile) {
-        this.bytesPerFile = bytesPerFile;
     }
 
     public void setRecordsPerFile(int recordsPerFile) {
@@ -498,5 +545,30 @@ public class DBFDataWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	public void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
+	
+	public void setExcludeFields(String excludeFields) {
+        this.excludeFields = excludeFields;
+    }
+    
+    public String getExcludedFields(){
+    	return excludeFields;
+    }
+    
+    /**
+	 * Sets partition unassigned file name.
+	 * 
+	 * @param partitionUnassignedFileName
+	 */
+    public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+    	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
 }

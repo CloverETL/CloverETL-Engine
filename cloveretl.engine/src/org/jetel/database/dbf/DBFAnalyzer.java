@@ -35,9 +35,10 @@ import java.util.Properties;
 
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-import org.jetel.util.string.StringUtils;
+import org.jetel.metadata.DataRecordParsingType;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -376,8 +377,7 @@ public class DBFAnalyzer {
 	}
 	
 	public DataRecordMetadata getCloverMetadata(){
-		DataRecordMetadata record=new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME,
-							DataRecordMetadata.FIXEDLEN_RECORD);
+		DataRecordMetadata record=new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.FIXEDLEN);
 		record.setLabel(dbfTableName);
 	
 		// set record properties - additional info for DBF-type of data 
@@ -388,7 +388,7 @@ public class DBFAnalyzer {
 		record.setRecordProperties(recProp);
 		
 		// add "hidden" field indicatind deletion status
-		DataFieldMetadata isDeletedField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME,DataFieldMetadata.STRING_FIELD,(short)1);
+		DataFieldMetadata isDeletedField = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldType.STRING, (short)1);
 		isDeletedField.setLabel(DBF_IS_DELETED_INDICATOR_FIELD);
 		record.addField(isDeletedField);
 		
@@ -404,7 +404,7 @@ public class DBFAnalyzer {
 				field.setFormatStr(DBFTypes.DATE_FORMAT_MASK);			
 			}
 			// if DBF type converted to Decimal, then extract number of decinmal places/ scale
-			if (field.getType()==DataFieldMetadata.DECIMAL_FIELD){
+			if (field.getDataType() == DataFieldType.DECIMAL){
 				field.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(dbfFields[i].decPlaces));
 			}
 				

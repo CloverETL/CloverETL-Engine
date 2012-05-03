@@ -18,10 +18,8 @@
  */
 package org.jetel.database.dbf;
 
-import org.jetel.data.DataField;
 import org.jetel.metadata.DataFieldMetadata;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import org.jetel.metadata.DataFieldType;
 
 
 /**
@@ -129,51 +127,49 @@ public class DBFTypes  {
 	 * @param dBase field type
 	 * @return CloverETL field type
 	 */
-	@SuppressWarnings("DB")
-	public static char dbfFieldType2Clover(char type){
+	public static DataFieldType dbfFieldType2Clover(char type){
 		switch(Character.toUpperCase(type)){
 			case 'C': //Character
-				return DataFieldMetadata.STRING_FIELD;
+				return DataFieldType.STRING;
 			case 'N': //Numeric
 			case 'O': //Double (dBase Level 7)
 				// return DataFieldMetadata.NUMERIC_FIELD;
-				return DataFieldMetadata.DECIMAL_FIELD; //Dbase numeric is better represented by decimal
+				return DataFieldType.DECIMAL; //Dbase numeric is better represented by decimal
 			case 'D': //Date
 			case 'T': //DateTime
 			case '@': //Timestamp (dBase Level 7)
-				return DataFieldMetadata.DATE_FIELD;
+				return DataFieldType.DATE;
 			case 'L': //Logical 
-				return DataFieldMetadata.BOOLEAN_FIELD;
+				return DataFieldType.BOOLEAN;
 			case 'M': //Memo
 			case 'P': //Picture
-				return DataFieldMetadata.BYTE_FIELD;
+				return DataFieldType.BYTE;
 			case 'I': //Integer
 			case '+': //Autoincrement
-				return DataFieldMetadata.INTEGER_FIELD;
-			default: return DataFieldMetadata.STRING_FIELD;
-	        //throw new DBFErrorException("Unsupported DBF field type: \""+String.valueOf(type)+"\" hex: "+Integer.toHexString(type));
+				return DataFieldType.INTEGER;
+			default: return DataFieldType.STRING;
 		}
 	}
 	
-	public static byte cloverType2dbf(char type){
+	public static byte cloverType2dbf(DataFieldType type){
 		switch(type){
-		case DataFieldMetadata.STRING_FIELD:
+		case STRING:
 			return 'C'; // C - Character
-		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.INTEGER_FIELD:
+		case NUMBER:
+		case DECIMAL:
+		case LONG:
+		case INTEGER:
 			return 'N'; // N - Numeric
 			/* return 'I'; //Integer */
-		case DataFieldMetadata.DATE_FIELD:
-		case DataFieldMetadata.DATETIME_FIELD:
+		case DATE:
+		case DATETIME:
 			return 'D'; // D - Date
 			 /* return 'T'; //DateTime */
-		case DataFieldMetadata.BOOLEAN_FIELD:
+		case BOOLEAN:
 			return 'L'; // L - Logical
 		/* we don't support memos / byte fields */
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+		case BYTE:
+		case CBYTE:
 			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
 		default:
 			return 'C'; // C - Character
@@ -181,24 +177,24 @@ public class DBFTypes  {
 	}
 	
 	public static int cloverSize2dbf(DataFieldMetadata field){
-		switch(field.getType()){
-		case DataFieldMetadata.STRING_FIELD:
+		switch(field.getDataType()){
+		case STRING:
 			return field.getSize();
-		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.INTEGER_FIELD:
+		case NUMBER:
+		case DECIMAL:
+		case LONG:
+		case INTEGER:
 			return field.getSize();
 			/* return 'I'; //Integer */
-		case DataFieldMetadata.DATE_FIELD:
-		case DataFieldMetadata.DATETIME_FIELD:
+		case DATE:
+		case DATETIME:
 			return  8;	// YYYYMMDD
 			 /* return 'T'; //DateTime */
-		case DataFieldMetadata.BOOLEAN_FIELD:
+		case BOOLEAN:
 			return 1;
 		/* we don't support memos / byte fields */
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+		case BYTE:
+		case CBYTE:
 			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
 		default:
 			return field.getSize();
