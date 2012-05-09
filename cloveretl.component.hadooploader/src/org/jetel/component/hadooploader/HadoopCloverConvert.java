@@ -69,51 +69,52 @@ public class HadoopCloverConvert {
 	
 	abstract static class Clover2Hadoop {
 		 Object dest;
-		 abstract void init();
+		 abstract Clover2Hadoop init();
 		 abstract void setValue(DataField src);
 		 Object getValue() { return dest; }
+		 Class<? extends Object> getValueClass() {return dest.getClass();}
 	}
 
 	static Clover2Hadoop getC2HCopier(DataFieldMetadata field) throws IOException {
 		switch (field.getDataType()){
 		case STRING: 
 			return (new Clover2Hadoop() {
-				void init(){ dest = new Text(); }
+				Clover2Hadoop init(){ dest = new Text(); return this;}
 				void setValue(DataField src){ ((Text)dest).set(src.toString()); }
-			});
+			}).init();
 		case BYTE:
 		case CBYTE:
 			return (new Clover2Hadoop() {
-				void init(){ dest = new BytesWritable(); }
+				Clover2Hadoop init(){ dest = new BytesWritable(); return this;}
 				void setValue(DataField src){
 							final byte val[] = ((ByteDataField)src).getValue();
 							((BytesWritable)dest).set(val,0,val.length); }
-			});
+			}).init();
 		case INTEGER:
 			return (new Clover2Hadoop(){
-				void init(){ dest = new IntWritable(); }
+				Clover2Hadoop init(){ dest = new IntWritable(); return this; }
 				void setValue(DataField src){ ((IntWritable)dest).set(((IntegerDataField)src).getInt());}
-			});
+			}).init();
 		case LONG:
 			return (new Clover2Hadoop(){
-				void init(){ dest = new LongWritable(); }
+				Clover2Hadoop init(){ dest = new LongWritable(); return this; }
 				void setValue(DataField src){ ((LongWritable)dest).set(((LongDataField)src).getLong());}
-			});
+			}).init();
 		case NUMBER:
 			return (new Clover2Hadoop(){
-				void init(){ dest = new DoubleWritable(); }
+				Clover2Hadoop init(){ dest = new DoubleWritable(); return this; }
 				void setValue(DataField src){ ((DoubleWritable)dest).set(((NumericDataField)src).getDouble());}
-			});
+			}).init();
 		case DATE:
 			return (new Clover2Hadoop(){
-				void init(){ dest = new LongWritable(); }
+				Clover2Hadoop init(){ dest = new LongWritable(); return this;}
 				void setValue(DataField src){ ((LongWritable)dest).set(((DateDataField)src).getValue().getTime());}
-			});
+			}).init();
 		case BOOLEAN:
 			return (new Clover2Hadoop(){
-				void init(){ dest = new BooleanWritable(); }
+				Clover2Hadoop init(){ dest = new BooleanWritable(); return this; }
 				void setValue(DataField src){ ((BooleanWritable)dest).set(((BooleanDataField)src).getBoolean());}
-			});
+			}).init();
 		default:
 			throw new IOException(String.format("Unsupported CloverETL data type \"%s\" of field \"%s\" in conversion to Hadoop.",field.getDataType().getName(),field.getName()));
 		}

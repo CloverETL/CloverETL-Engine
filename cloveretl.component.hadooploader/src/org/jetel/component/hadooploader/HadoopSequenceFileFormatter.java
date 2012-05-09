@@ -1,5 +1,6 @@
 package org.jetel.component.hadooploader;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -22,8 +23,6 @@ public class HadoopSequenceFileFormatter implements
 	private int valueField;
 	private String keyFieldName;
 	private String valueFieldName;
-	private Object keyType;
-	private Object valueType;
 	private Clover2Hadoop keyCopy;
 	private Clover2Hadoop valCopy;
 	
@@ -63,8 +62,6 @@ public class HadoopSequenceFileFormatter implements
 			}
 		}
 		try{
-			keyType=HadoopCloverConvert.cloverType2Hadoop(_metadata.getField(keyField));
-			valueType=HadoopCloverConvert.cloverType2Hadoop(_metadata.getField(valueField));
 			keyCopy=HadoopCloverConvert.getC2HCopier(_metadata.getField(keyField));
 			valCopy=HadoopCloverConvert.getC2HCopier(_metadata.getField(valueField));
 		}catch(IOException ex){
@@ -80,10 +77,14 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {
+		if (outputDataTarget instanceof SequenceFile.Writer){
+			writer=(SequenceFile.Writer)outputDataTarget;
+			return;
+		}
+		if (dfs==null){
+			throw new IOException("Can't create output data stream - no Hadoop FileSystem object defined");
+		}
 		if (outputDataTarget instanceof URI){
-			if (dfs==null){
-				throw new IOException("Can't create output data stream - no Hadoop FileSystem object defined");
-			}
 			ClassLoader formerContextClassloader = Thread.currentThread().getContextClassLoader();
 			try {
 				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
@@ -91,15 +92,32 @@ public class HadoopSequenceFileFormatter implements
 				writer = SequenceFile.createWriter(dfs,                    // FileSystem
 		                new Configuration(),                  // Configuration
 		                new Path((URI)outputDataTarget), // Path to new file in HDFS
-		                keyType.getClass(),     		// Key Data Type
-		                valueType.getClass(),            // Value Data Type
+		                keyCopy.getValueClass(),     		// Key Data Type
+		                valCopy.getValueClass(),            // Value Data Type
 		                SequenceFile.CompressionType.NONE);
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerContextClassloader);
 			}
 			
-		}else if (outputDataTarget instanceof SequenceFile.Writer){
-			writer=(SequenceFile.Writer)outputDataTarget;
+		}else if (outputDataTarget instanceof File){
+			ClassLoader formerContextClassloader = Thread.currentThread()
+					.getContextClassLoader();
+			try {
+				Thread.currentThread().setContextClassLoader(
+						this.getClass().getClassLoader());
+
+				writer = SequenceFile.createWriter(dfs, // FileSystem
+						new Configuration(), // Configuration
+						new Path(((File) outputDataTarget).getPath()), // Path to  new file in HDFS
+						keyCopy.getValueClass(), // Key Data Type
+						valCopy.getValueClass(), // Value Data Type
+						SequenceFile.CompressionType.NONE);
+
+			} finally {
+				Thread.currentThread().setContextClassLoader(
+						formerContextClassloader);
+			}
+
 		}else{
 			throw new IOException("Unsupported data target type: "+outputDataTarget.getClass().getName());
 		}

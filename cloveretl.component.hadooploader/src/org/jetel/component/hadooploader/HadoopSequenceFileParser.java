@@ -1,5 +1,6 @@
 package org.jetel.component.hadooploader;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -122,18 +123,34 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	@Override
 	public void setDataSource(Object inputDataSource) throws IOException,
 			ComponentNotReadyException {
-		
-		if (inputDataSource instanceof URI){
-			if (dfs==null){
-				throw new IOException("Can't create input data stream - no Hadoop FileSystem object defined");
-			}
-			reader = new SequenceFile.Reader(dfs, new Path((URI)inputDataSource) , new Configuration());
-			
-			
-		}else if (inputDataSource instanceof SequenceFile.Reader){
+		if (inputDataSource instanceof SequenceFile.Reader){
 			reader=(SequenceFile.Reader)inputDataSource;
-		}else{
-			throw new IOException("Unsupported data source type: "+inputDataSource.getClass().getName());
+			return;
+		}
+		if (dfs==null){
+			throw new IOException("Can't create input data stream - no Hadoop FileSystem object defined");
+		}
+		
+		ClassLoader formerContextClassloader = Thread.currentThread()
+				.getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(
+					this.getClass().getClassLoader());
+
+			if (inputDataSource instanceof URI) {
+				reader = new SequenceFile.Reader(dfs, new Path(
+						(URI) inputDataSource), new Configuration());
+			} else if (inputDataSource instanceof File) {
+				reader = new SequenceFile.Reader(dfs, new Path(
+						((File) inputDataSource).getPath()),
+						new Configuration());
+			} else {
+				throw new IOException("Unsupported data source type: "
+						+ inputDataSource.getClass().getName());
+			}
+		} finally {
+			Thread.currentThread().setContextClassLoader(
+					formerContextClassloader);
 		}
 
 	}

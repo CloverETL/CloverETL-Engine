@@ -186,7 +186,14 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 
 	@Override
 	public IHadoopSequenceFileFormatter createFormatter(String keyFieldName, String valueFieldName, boolean overwrite) throws IOException {
-		return new HadoopSequenceFileFormatter(this.dfs,keyFieldName, valueFieldName);
+		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		
+		IHadoopSequenceFileFormatter formatter= new HadoopSequenceFileFormatter(this.dfs,keyFieldName, valueFieldName);
+		
+		Thread.currentThread().setContextClassLoader(formerCCL);
+		
+		return formatter;
 	}
 
 
