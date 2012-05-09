@@ -2,6 +2,7 @@ package org.jetel.hadoop.test;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -14,9 +15,16 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
+import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
+import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.connection.*;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
 
 
 public class TestHadoopConnection {
@@ -25,8 +33,13 @@ public class TestHadoopConnection {
 
 	private static final String PLUGINS_DEFAULT_DIR = "..";
 	
+	private  DataRecordMetadata metadata;
+	private  DataRecord record;
+	
+	
 	protected void initEngine() {
 		initEngine(null);
+		
 	}
 	
 	protected void initEngine(String defaultPropertiesFile) {
@@ -48,7 +61,13 @@ public class TestHadoopConnection {
 	@Before
 	public void setUp() throws Exception {
 		initEngine();
-		
+		metadata = new DataRecordMetadata("test");
+		metadata.addField(new DataFieldMetadata("key", DataFieldType.STRING, (short)20));
+		metadata.addField(new DataFieldMetadata("value", DataFieldType.STRING, (short)20));
+		record = new DataRecord(metadata);
+		record.init();
+		record.getField("key").fromString("1");
+		record.getField("value").fromString("1");
 	}
 
 	@After
@@ -97,7 +116,10 @@ public class TestHadoopConnection {
 			printDir(mycon, mycon.listStatus(new URI("/")));
 			readFile(mycon);
 			
-			
+			System.out.println("---- creating file -----");
+			crateFile(mycon); 
+			System.out.println("---- reading file -----");
+			readStructuredFile(mycon);
 			
 			
 		} catch (ComponentNotReadyException e) {
@@ -108,6 +130,8 @@ public class TestHadoopConnection {
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e){
 			e.printStackTrace();
 		}
 		
@@ -142,6 +166,28 @@ public class TestHadoopConnection {
 		}
 	}
 	
+	public void crateFile(IHadoopConnection conn) throws IOException, ComponentNotReadyException{
+		IHadoopSequenceFileFormatter formatter= conn.createFormatter("key", "value", true);
+		formatter.init(metadata);
+		formatter.setDataTarget(new File("/user/dpavlis/mytest2.dat"));
+		for(int i=0;i<100;i++){
+			record.getField(1).fromString(""+i);
+			formatter.write(record);
+		}
+		formatter.close();
+	}
+	
+	public void readStructuredFile(IHadoopConnection conn) throws JetelException, IOException, ComponentNotReadyException{
+		IHadoopSequenceFileParser reader= conn.createParser("key", "value", metadata);
+		reader.setDataSource(new File("/user/dpavlis/mytest2.dat"));
+		reader.init();
+		
+		for(int i=0;i<100;i++){
+			reader.getNext(record);
+			System.out.println(record.toString());
+		}
+		reader.free();
+	}
 	
 
 }
