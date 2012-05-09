@@ -40,13 +40,13 @@ public class TagName {
 	 * @param s
 	 * @return
 	 */
-	public static String encode(String s) {
+	public static String encode(final String s) {
 		
 		if (s == null) {
 			return null;
 		}
 		
-		StringBuilder sb = new StringBuilder(s.length());
+		final StringBuilder sb = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
 			if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
@@ -72,13 +72,13 @@ public class TagName {
 	 * @param s
 	 * @return
 	 */
-	public static String decode(String s) {
+	public static String decode(final String s) {
 		
 		if  (s == null) {
 			return null;
 		}
 		
-		StringBuilder sb = new StringBuilder(s.length());
+		final StringBuilder sb = new StringBuilder(s.length());
 		int pos = 0;
 		while (pos < s.length()) {
 			char c = s.charAt(pos++);
