@@ -347,6 +347,7 @@
 			
 			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="protected public"/><method access="protected public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.component.ws.ConnectionConfiguration"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.ws.proxy.WSOperationName"><field access="public"/><method access="public"/></keep>
 			
