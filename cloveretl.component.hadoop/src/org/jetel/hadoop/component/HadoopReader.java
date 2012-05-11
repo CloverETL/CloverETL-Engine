@@ -89,6 +89,28 @@ public class HadoopReader extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		if (firstRun()) {
+			DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+			
+			IConnection conn = getGraph().getConnection(connectionID);
+			if (conn == null) {
+				throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
+			}
+			if (!(conn instanceof HadoopConnection)) {
+				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
+			}
+			this.connection= ((HadoopConnection) conn).getConnection();
+			
+			
+			try {
+				this.parser=connection.createParser(this.keyFieldName, this.valueFieldName, metadata);
+				this.parser.setDataSource(new URI(this.fileURL));
+				this.parser.init();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
+			} catch (URISyntaxException e) {
+				throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
+			}
+			
 			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 		} else {
 			reader.reset();
@@ -133,7 +155,7 @@ public class HadoopReader extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			parser.free();
+			if (parser!=null) parser.free();
 			reader.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": "
@@ -155,13 +177,12 @@ public class HadoopReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (reader != null) {
 			try {
-				reader.close();
-			} catch (IOException e) {
-				logger.error(e);
+				if (reader != null) reader.close();
+				if (connection!=null) connection.close();
+			} catch(Throwable t) {
+				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
 			}
-		}
 	}
 
 	/**
@@ -192,28 +213,6 @@ public class HadoopReader extends Node {
 		if (isInitialized())
 			return;
 		super.init();
-		
-		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-		
-		IConnection conn = getGraph().getConnection(connectionID);
-		if (conn == null) {
-			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
-		}
-		if (!(conn instanceof HadoopConnection)) {
-			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
-		}
-		this.connection= ((HadoopConnection) conn).getConnection();
-		
-		
-		try {
-			this.parser=connection.createParser(this.keyFieldName, this.valueFieldName, metadata);
-			this.parser.setDataSource(new URI(this.fileURL));
-			this.parser.init();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
-		} catch (URISyntaxException e) {
-			throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
-		}
 		
 	}
 
