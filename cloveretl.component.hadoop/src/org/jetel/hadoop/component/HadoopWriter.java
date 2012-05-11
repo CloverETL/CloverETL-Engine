@@ -101,10 +101,33 @@ public class HadoopWriter extends Node {
 		super.preExecute();
 		
 		if (firstRun()) {
-	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	         //TODO:  writer.init(getInputPort(READ_FROM_PORT).getMetadata()); - not used for now, need change once isFile preffered is impemented
+			
+			IConnection conn = getGraph().getConnection(connectionID);
+			if (conn == null) {
+				throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
+			}
+			if (!(conn instanceof HadoopConnection)) {
+				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
+			}
+			
+			this.connection= ((HadoopConnection) conn).getConnection();
+
+			inPort = getInputPort(READ_FROM_PORT);
+			
+			try {
+				this.formatter=connection.createFormatter( this.keyField, this.valueField,! this.appendData);
+				this.formatter.init(inPort.getMetadata());
+				this.formatter.setDataTarget(new URI(this.fileURL));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
+			} catch (URISyntaxException e) {
+				throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
+			}
+			
 		}
 		else {
-			writer.reset();
+			//TODO: writer.reset(); - see above
 		}
 	}
 
@@ -128,7 +151,7 @@ public class HadoopWriter extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			formatter.close();
+			if (formatter!=null) formatter.close();
 		}
 		catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
@@ -138,9 +161,9 @@ public class HadoopWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (formatter != null)
 			try {
-				formatter.close();
+				if (formatter != null) formatter.close();
+				if (connection !=null) connection.close();
 			} catch(Throwable t) {
 				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
 			}
@@ -189,17 +212,6 @@ public class HadoopWriter extends Node {
 		
 		initLookupTable();
 		
-		IConnection conn = getGraph().getConnection(connectionID);
-		if (conn == null) {
-			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
-		}
-		if (!(conn instanceof HadoopConnection)) {
-			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
-		}
-		this.connection= ((HadoopConnection) conn).getConnection();
-
-		inPort = getInputPort(READ_FROM_PORT);
-
 		
 		/*  We don't use MultiFileWriter - we need Formatter to create Hadoop structured data output streams
 
@@ -229,15 +241,7 @@ public class HadoopWriter extends Node {
         }
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         */
-		try {
-			this.formatter=connection.createFormatter( this.keyField, this.valueField,! this.appendData);
-			this.formatter.init(inPort.getMetadata());
-			this.formatter.setDataTarget(new URI(this.fileURL));
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
-		} catch (URISyntaxException e) {
-			throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
-		}
+		
 	}
 
 	/**

@@ -171,14 +171,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 			Enigma enigma = getGraph().getEnigma();
 			if (enigma == null) {
-				throw new ComponentNotReadyException("Can't decrypt password on DominoConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+				throw new ComponentNotReadyException(this,"Can't decrypt password on DominoConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
 			}
 
 			String decryptedPassword = null;
 			try {
 				decryptedPassword = enigma.decrypt(password);
 			} catch (JetelException e) {
-				throw new ComponentNotReadyException("Can't decrypt password on DominoConnection (id=" + this.getId() + "). Incorrect password.", e);
+				throw new ComponentNotReadyException(this,"Can't decrypt password on DominoConnection (id=" + this.getId() + "). Incorrect password.", e);
 			}
 			// If password decryption fails, try to use the unencrypted password
 			if (decryptedPassword != null) {
@@ -253,11 +253,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 						connection.connect(hURI, this.properties);
 					}
 				} catch (HadoopConnectionException e) {
-					throw new ComponentNotReadyException(e);
+					throw new ComponentNotReadyException(this,e);
 				} catch (URISyntaxException e) {
-					throw new ComponentNotReadyException("Invalid HDFS host/port definition.",e);
+					throw new ComponentNotReadyException(this,"Invalid HDFS host/port definition.",e);
 				} catch (IOException e) {
-					throw new ComponentNotReadyException(e);
+					throw new ComponentNotReadyException(this,"Can't connect to HDFS - "+e.getMessage(),e);
 				}
 			}
 			return connection;

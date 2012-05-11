@@ -139,7 +139,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 
 			if (inputDataSource instanceof URI) {
 				reader = new SequenceFile.Reader(dfs, new Path(
-						(URI) inputDataSource), new Configuration());
+						((URI) inputDataSource).getPath()), new Configuration());
 			} else if (inputDataSource instanceof File) {
 				reader = new SequenceFile.Reader(dfs, new Path(
 						((File) inputDataSource).getPath()),

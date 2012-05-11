@@ -79,15 +79,15 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		//logger.debug(user);
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-		try {
+		try{
 			if (user != null) {
 				dfs = FileSystem
 						.get(host, property2Configuration(config), user);
 			} else {
 				dfs = FileSystem.get(host, property2Configuration(config));
 			}
-		} catch (Exception e) {
-			throw new IOException("Unable to connect to HDFS.", e);
+		} catch (InterruptedException e) {
+			throw new IOException(e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(formerCCL);
 		}

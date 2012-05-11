@@ -91,7 +91,7 @@ public class HadoopSequenceFileFormatter implements
 				
 				writer = SequenceFile.createWriter(dfs,                    // FileSystem
 		                new Configuration(),                  // Configuration
-		                new Path((URI)outputDataTarget), // Path to new file in HDFS
+		                new Path(((URI)outputDataTarget).getPath()), // Path to new file in HDFS
 		                keyCopy.getValueClass(),     		// Key Data Type
 		                valCopy.getValueClass(),            // Value Data Type
 		                SequenceFile.CompressionType.NONE);
