@@ -30,22 +30,6 @@ public class TagName {
 	private static final char ENC_SEQ_CHAR = '_';
 	private static final String ENC_SEQ_START = ENC_SEQ_CHAR + "x";
 	
-	public static boolean isAllowedTagName(String name) {
-		for (int i = 0; i < name.length(); ++i) {
-			char c = name.charAt(i);
-			if (!isAllowedTagCharacter(c,i)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	private static boolean isAllowedTagCharacter(char c, int index) {
-		return ('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.')
-				|| c == ENC_SEQ_CHAR
-				|| (index == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
-	}
-	
 	/**
 	 * Encodes given input string using unicodes.
 	 * <pre>
@@ -65,7 +49,8 @@ public class TagName {
 		final StringBuilder sb = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (!isAllowedTagCharacter(c,i)) {
+			if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
+					c == ENC_SEQ_CHAR || (i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'))) {
 				sb.append(ENC_SEQ_START);
 				String scode = Integer.toHexString(c);
 				for (int j = 0; j < 4 - scode.length(); ++j) {
