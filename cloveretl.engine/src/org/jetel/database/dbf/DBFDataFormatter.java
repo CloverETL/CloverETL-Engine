@@ -207,7 +207,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 		org.jetel.util.bytes.ByteBufferUtils.fill(buffer, (byte)0x0); // fill with zeros
 		// DBF TYPE  - 0x0
 		buffer.position(0);
-		buffer.put(DBFTypes.KNOWN_TYPES[0]); // FoxPro
+		buffer.put(DBFTypes.KNOWN_TYPES[1]); // FoxBASE+/Dbase III plus, no memo
 		// LAST UPDATE - 0x01  (updated when writing footer)
 		buffer.put((byte)0); //year
 		buffer.put((byte)0); //month
