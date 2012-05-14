@@ -676,6 +676,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return keyMetadata;
 	}
 
+	@Override
+	public void setCurrentPhase(int phase) {
+		//isn't required by the lookup table
+	}
+
 }
 
 class RangeLookup implements Lookup{

@@ -511,6 +511,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		return indexKey.generateKeyRecordMetadata();
 	}
 
+	@Override
+	public void setCurrentPhase(int phase) {
+		//isn't required by the lookup table
+	}
+
 }
 
 class SimpleLookup implements Lookup {

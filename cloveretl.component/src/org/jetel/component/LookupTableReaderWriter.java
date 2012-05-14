@@ -151,6 +151,7 @@ public class LookupTableReaderWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
+		lookupTable.setCurrentPhase(getPhaseNum());
 		if (writeToTable) {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
