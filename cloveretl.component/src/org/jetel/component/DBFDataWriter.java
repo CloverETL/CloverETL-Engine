@@ -19,7 +19,11 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -258,6 +262,18 @@ public class DBFDataWriter extends Node {
 			return status;
 		}
 
+		try {
+			CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
+			int length = encoder.encode(CharBuffer.wrap(new char[] {charsetName.charAt(0)})).limit();
+			if (length != 1) {
+				status.add(new ConfigurationProblem("Invalid charset used. 8bit charset needs to be used.", 
+						Severity.ERROR, this, Priority.NORMAL));
+			}
+		} catch (CharacterCodingException e1) {
+			status.add(e1.getMessage() ,ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL,XML_CHARSET_ATTRIBUTE);
+		}
+		
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
         			fileURL, mkDir);
