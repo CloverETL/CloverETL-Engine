@@ -501,6 +501,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public boolean remove(HashKey key) {
 		throw new UnsupportedOperationException(); 
 	}
+	@Override
+	public void setCurrentPhase(int phase) {
+		//isn't required by the lookup table
+	}
     
 }
 /**

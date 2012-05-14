@@ -186,4 +186,9 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      */
     public Lookup createLookup(RecordKey lookupKey, DataRecord dataRecord) throws ComponentNotReadyException;
 
+    /**
+     * Setter for the current phase when graph is running;
+     * @param phase
+     */
+    public void setCurrentPhase(int phase);
 }
