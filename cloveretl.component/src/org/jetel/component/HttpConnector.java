@@ -35,6 +35,7 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -79,6 +80,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.stream.StreamUtils;
@@ -279,6 +281,8 @@ public class HttpConnector extends Node {
 
 	private UsernamePasswordCredentials creds;
 	
+	private PropertyRefResolver refResolver;
+	
 	public HttpConnector(String id) {
 		super(id);
 	}
@@ -353,8 +357,9 @@ public class HttpConnector extends Node {
 				multipartEntities = null;
 			}
 		}
+		
+		refResolver = new PropertyRefResolver();
 	}
-
 
 	@Override
 	public Result execute() throws Exception {
@@ -810,29 +815,48 @@ public class HttpConnector extends Node {
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request properties reading.", e);
 			}
-
-			// pass request properties to the http connection
-			for (Entry<Object, Object> entry : requestProperties.entrySet()) {
-				// httpConnection.addRequestProperty((String) entry.getKey(), (String) entry.getValue());
-				if (requestMethod.equals(POST)) {
-					postMethod.getParams().setParameter((String) entry.getKey(), (String) entry.getValue());
-				} else if (requestMethod.equals(GET)) {
-					getMethod.getParams().setParameter((String) entry.getKey(), (String) entry.getValue());
-				}
-			}
 			
-			for(Entry<Object, Object> entry : requestProperties.entrySet()) {
-				if (requestMethod.equals(POST)) {
-					postMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
-				} else if (requestMethod.equals(GET)) {
-					getMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
-				}
-			}
+			setHeaderParameters(record);
 		}
-		
-
 	}
 
+	/** Sets the additional header parameters and resolving references in context of given record.
+	 * 
+	 * @param record - record to be used to resolve references
+	 * @throws ComponentNotReadyException
+	 */
+	private void setHeaderParameters(DataRecord record) throws ComponentNotReadyException {
+		Properties fieldValues = new Properties();
+		
+		Iterator<DataField> it = record.iterator();
+		while (it.hasNext()) {
+			DataField field = it.next();
+			fieldValues.setProperty(field.getMetadata().getName(), field.toString());
+		}
+		
+		setRefProperties(fieldValues);
+		
+		// pass request properties to the http connection
+		for (Entry<Object, Object> entry : requestProperties.entrySet()) {
+			String value = refResolver.resolveRef((String) entry.getValue());
+			
+			// check if the value is fully resolved
+			if (PropertyRefResolver.containsProperty(value)) {
+				throw new ComponentNotReadyException(this, "Could not resolve all references in additional HTTP header: '" + (String)entry.getValue() + "' (resolved as '" + value + "')");
+			}
+			
+			if (requestMethod.equals(POST)) {
+				postMethod.getParams().setParameter((String) entry.getKey(), value);
+				postMethod.addRequestHeader((String) entry.getKey(), value);
+				
+			} else if (requestMethod.equals(GET)) {
+				getMethod.getParams().setParameter((String) entry.getKey(), value);
+				getMethod.addRequestHeader((String) entry.getKey(), value);
+			}
+		}
+	}
+	
+	
 	/**
 	 * Prepares all parts of http request.
 	 * @throws ComponentNotReadyException
@@ -969,6 +993,16 @@ public class HttpConnector extends Node {
 		return possibleToMapVariables;
 	}
 	
+	/** Sets the properties to be used by reference resolver
+	 * 
+	 * @param props
+	 */
+	private void setRefProperties(Properties props) {
+		if (refResolver.getProperties() != null) {
+			refResolver.getProperties().clear();
+		}
+		refResolver.addProperties(props);
+	}
 
 	/**
 	 * @return String representation of result of the HTTP request
