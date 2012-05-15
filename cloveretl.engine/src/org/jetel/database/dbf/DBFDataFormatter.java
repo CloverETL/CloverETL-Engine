@@ -160,10 +160,14 @@ public class DBFDataFormatter extends AbstractFormatter {
 				switch (this.fieldTypesDBF[i]) {
 				case DBFTypes.DBF_TYPE_DATE:
 					DateDataField d_field = (DateDataField) field;
-					encoder.encode(CharBuffer.wrap(dateFormatter.format(d_field.getDate())), dataBuffer, true);
+					if (d_field != null && !d_field.isNull()) {
+						encoder.encode(CharBuffer.wrap(dateFormatter.format(d_field.getDate())), dataBuffer, true);
+					}
 					break;
 				case DBFTypes.DBF_TYPE_CHARACTER:
-					encoder.encode(CharBuffer.wrap(field.toString()), dataBuffer, true);
+					if (field != null && !field.isNull()) {
+						encoder.encode(CharBuffer.wrap(field.toString()), dataBuffer, true);
+					}
 					break;
 				case DBFTypes.DBF_TYPE_NUMBER:
 					// must be right-justified
@@ -179,7 +183,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 				case DBFTypes.DBF_TYPE_LOGICAL:
 					BooleanDataField b_field = (BooleanDataField) field;
 					if (b_field.isNull())
-						dataBuffer.put((byte) '?'); // 0x3f '?"
+						dataBuffer.put((byte) 0x20); // 0x20 space
 					else if (b_field.getBoolean())
 						dataBuffer.put((byte) 'T'); // 0x54 'T'
 					else
