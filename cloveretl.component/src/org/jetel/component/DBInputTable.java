@@ -288,6 +288,7 @@ public class DBInputTable extends Node {
 			//all necessary elements have been initialized in init()
 		} else {
 			autoFilling.reset();
+			channelIterator.reset();
 		}
 	}
 
