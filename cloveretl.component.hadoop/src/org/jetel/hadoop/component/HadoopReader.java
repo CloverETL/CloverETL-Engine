@@ -98,8 +98,9 @@ public class HadoopReader extends Node {
 			if (!(conn instanceof HadoopConnection)) {
 				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
 			}
-			this.connection= ((HadoopConnection) conn).getConnection();
 			
+			logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
+			this.connection= ((HadoopConnection) conn).getConnection();
 			
 			try {
 				this.parser=connection.createParser(this.keyFieldName, this.valueFieldName, metadata);
@@ -111,7 +112,7 @@ public class HadoopReader extends Node {
 				throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
 			}
 			
-			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+			//TODO: enable when multifilerreader is activated/updated  reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 		} else {
 			reader.reset();
 		}
@@ -156,7 +157,7 @@ public class HadoopReader extends Node {
 		super.postExecute();
 		try {
 			if (parser!=null) parser.free();
-			reader.close();
+			if (reader!=null) reader.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": "
 					+ e.getMessage(), e);
@@ -166,7 +167,7 @@ public class HadoopReader extends Node {
 	@Override
 	public void commit() {
 		super.commit();
-		storeValues();
+		//TODO: storeValues();
 	}
 
 	/*
@@ -368,7 +369,9 @@ public class HadoopReader extends Node {
 
 
 		checkMetadata(status, getOutMetadata());
-
+		
+		/* TODO: enable when MultifilerReader is used
+		
 		try {
 			// check inputs
 			//prepareMultiFileReader();
@@ -382,7 +385,9 @@ public class HadoopReader extends Node {
 						ConfigurationStatus.Severity.ERROR, this,
 						ConfigurationStatus.Priority.NORMAL));
 			}
+			
 			reader.checkConfig(metadata);
+			
 		} catch (ComponentNotReadyException e) {
 			ConfigurationProblem problem = new ConfigurationProblem(
 					e.getMessage(), ConfigurationStatus.Severity.WARNING, this,
@@ -394,7 +399,7 @@ public class HadoopReader extends Node {
 		} finally {
 			free();
 		}
-
+		*/
 		return status;
 	}
 

@@ -172,7 +172,8 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 			try {
-				reader.next(keyValue,dataValue);
+				if (!reader.next(keyValue,dataValue))
+					return null;
 			} catch (IOException e) {
 				throw new JetelException("Error when reading data record.", e);
 			}

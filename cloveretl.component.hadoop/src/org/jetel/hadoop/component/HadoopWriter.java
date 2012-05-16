@@ -111,6 +111,7 @@ public class HadoopWriter extends Node {
 				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
 			}
 			
+			logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
 			this.connection= ((HadoopConnection) conn).getConnection();
 
 			inPort = getInputPort(READ_FROM_PORT);
