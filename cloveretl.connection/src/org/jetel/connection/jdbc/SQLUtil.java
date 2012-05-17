@@ -634,11 +634,7 @@ public class SQLUtil {
 			StringBuilder newSelectPart = new StringBuilder();
 			for(int i = 0; parts != null && i < parts.length; i++) {
 				
-				if (
-						parts[i].trim().endsWith(")")
-						||
-						(specific != null && specific.isLiteral(parts[i]))
-					) {
+				if (parts[i].trim().endsWith(")")) {
 					parts[i] += " as AUTOCOLUMN" + String.valueOf(Math.round(Math.random() * 100000));
 				}
 				
