@@ -1040,7 +1040,7 @@ public class XmlSaxParser {
     		// store value of parent of currently starting element (if appropriate)
         	if (m_activeMapping != null && m_hasCharacters && m_level == m_activeMapping.getLevel() + 1) {
                 if (m_activeMapping.descendantReferences.containsKey(ELEMENT_VALUE_REFERENCE)) {
-               		m_activeMapping.descendantReferences.put(ELEMENT_VALUE_REFERENCE, trim ? m_characters.toString().trim() : m_characters.toString());
+               		m_activeMapping.descendantReferences.put(ELEMENT_VALUE_REFERENCE, getCurrentValue());
                 }
         		processCharacters(null,null, true);
         	}
@@ -1227,12 +1227,26 @@ public class XmlSaxParser {
          */
         @Override
         public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
+            System.out.println(localName + ": " + m_level + " " + (m_activeMapping != null ? m_activeMapping.getLevel() : "N/A")+ " " + (m_activeMapping != null ? m_activeMapping.getElement() : "N/A"));
+        	
             if (m_activeMapping != null) {
             	String fullName = "{" + namespaceURI + "}" + localName;
             	
             	// cache characters value if the xml field is referenced by descendant
                 if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.descendantReferences.containsKey(fullName)) {
-               		m_activeMapping.descendantReferences.put(fullName, trim ? m_characters.toString().trim() : m_characters.toString());
+               		m_activeMapping.descendantReferences.put(fullName, getCurrentValue());
+                }
+                
+                // if we are finishing the mapping, check for the mapping on this element through parent
+                if (m_activeMapping != null && m_level == m_activeMapping.getLevel()) {
+                	if (m_activeMapping.hasFieldsFromAncestor()) {
+                    	for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
+                    		if (afm.ancestor == m_activeMapping.getParent() && m_activeMapping.getOutRecord() != null && m_activeMapping.getOutRecord().hasField(afm.currentField) && afm.ancestor != null && 
+                    			afm.ancestorField.equals(fullName)) {
+                    			m_activeMapping.getOutRecord().getField(afm.currentField).fromString(getCurrentValue());
+                    		}
+                    	}
+                	}
                 }
                	processCharacters(namespaceURI, localName, m_level == m_activeMapping.getLevel());
                 
@@ -1297,6 +1311,13 @@ public class XmlSaxParser {
         }
 
 		/**
+		 * @return
+		 */
+		private String getCurrentValue() {
+			return trim ? m_characters.toString().trim() : m_characters.toString();
+		}
+
+		/**
 		 * Store the characters processed by the characters() call back only if we have corresponding 
 		 * output field and we are on the right level or we want to use data from nested unmapped nodes
 		 */
@@ -1339,7 +1360,7 @@ public class XmlSaxParser {
 			    	if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
 			    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
 			    	} else {
-			    		field.fromString(trim ? m_characters.toString().trim() : m_characters.toString());
+			    		field.fromString(getCurrentValue());
 			    	}
 			        } catch (BadDataFormatException ex) {
 			            // This is a bit hacky here SOOO let me explain...
