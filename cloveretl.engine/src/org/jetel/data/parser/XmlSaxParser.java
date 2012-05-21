@@ -1227,8 +1227,6 @@ public class XmlSaxParser {
          */
         @Override
         public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
-            System.out.println(localName + ": " + m_level + " " + (m_activeMapping != null ? m_activeMapping.getLevel() : "N/A")+ " " + (m_activeMapping != null ? m_activeMapping.getElement() : "N/A"));
-        	
             if (m_activeMapping != null) {
             	String fullName = "{" + namespaceURI + "}" + localName;
             	
