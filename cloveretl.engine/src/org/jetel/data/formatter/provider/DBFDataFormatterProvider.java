@@ -30,6 +30,7 @@ import org.jetel.database.dbf.DBFDataFormatter;
 public class DBFDataFormatterProvider implements FormatterProvider {
 
 	private final String charSet;
+	private final byte dbfType;
 	
 	private String[] excludedFieldNames;
 	
@@ -40,8 +41,9 @@ public class DBFDataFormatterProvider implements FormatterProvider {
 	 * 
 	 * @param charSet Charset set of all formatters.
 	 */
-	public DBFDataFormatterProvider(String charSet) {
+	public DBFDataFormatterProvider(String charSet, byte dbfType) {
 		this.charSet = charSet;
+		this.dbfType = dbfType;
 	}
 
 	/**
@@ -50,9 +52,16 @@ public class DBFDataFormatterProvider implements FormatterProvider {
 	 */
 	@Override
 	public Formatter getNewFormatter() {
-		formatter = new DBFDataFormatter(charSet);
+		formatter = new DBFDataFormatter(charSet, dbfType);
 		formatter.setExcludedFieldNames(excludedFieldNames);
 		return formatter;
+	}
+
+	/**
+	 * @return the dbfType
+	 */
+	public byte getDbfType() {
+		return dbfType;
 	}
 
 	/**

@@ -114,6 +114,7 @@ public class DBFDataWriter extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_DBF_TYPE = "dbfType";
 	
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
@@ -125,12 +126,15 @@ public class DBFDataWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	
+	private static final byte[] TYPES = new byte[] {0x02, 0x03, 0x30, 0x31, 0x32, 0x43, (byte) 0xFB};
 
 	private static Log logger = LogFactory.getLog(DBFDataWriter.class);
 	
 	private String fileURL;
 	private boolean appendData;
 	private String charsetName;
+	private int dbfType;
 	
 	private boolean mkDir;
 	private int recordsPerFile;
@@ -157,12 +161,12 @@ public class DBFDataWriter extends Node {
 	 * @param appendData
 	 * @param fields
 	 */
-	public DBFDataWriter(String id, String fileURL, String charset, boolean appendData) {
+	public DBFDataWriter(String id, String fileURL, String charset, boolean appendData, byte dbfType) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		this.charsetName = charset == null ? Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER : charset;
-		formatterProvider = new DBFDataFormatterProvider(charsetName);
+		formatterProvider = new DBFDataFormatterProvider(charsetName, dbfType);
 	}
 	
 	/**
@@ -266,7 +270,7 @@ public class DBFDataWriter extends Node {
 			URL url = FileUtils.getFileURL(fileURL);
 			if (!url.getProtocol().equals("file")) {
 				status.add(new ConfigurationProblem("Protocol " + url.getProtocol() + " is not supported by the component.", 
-						Severity.ERROR, this, Priority.NORMAL));
+						Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
 			}
 		} catch (MalformedURLException e1) {
 			//nothing to do here - error for invalid URL is reported by another check 
@@ -391,7 +395,8 @@ public class DBFDataWriter extends Node {
 			aDataWriter = new DBFDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
-									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
+									TYPES[xattribs.getInteger(XML_DBF_TYPE, 1)]);
 			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
 				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
 			}
@@ -439,6 +444,7 @@ public class DBFDataWriter extends Node {
 		if (charsetName != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.charsetName);
 		}
+		xmlElement.setAttribute(XML_DBF_TYPE, String.valueOf(dbfType));
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (skip != 0){
 			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));

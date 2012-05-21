@@ -43,7 +43,7 @@ public class DBFDataFormatterTest extends CloverTestCase {
 		
 		record = new DataRecord(metadata);
 		record.init();
-		formatter = new DBFDataFormatter("US-ASCII");
+		formatter = new DBFDataFormatter("US-ASCII", (byte) 0x03);
 		formatter.init(metadata);
 		
 		record.getField(0).setValue("AB");

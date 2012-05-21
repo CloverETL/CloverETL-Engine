@@ -58,6 +58,8 @@ public class DBFDataFormatter extends AbstractFormatter {
 	private static final int CONTINGENCY = 32;
 	private static final String FILE_ACCESS_MODE = "rw";
 	
+	private final byte dbfType;
+	
 	private FileChannel writer;
 	private CharsetEncoder encoder;
 	private ByteBuffer dataBuffer;
@@ -74,8 +76,9 @@ public class DBFDataFormatter extends AbstractFormatter {
 	 * 
 	 * @param charset Char set of the formatter.
 	 */
-	public DBFDataFormatter(String charset){
+	public DBFDataFormatter(String charset, byte dbfType){
 		this.encoder=Charset.forName(charset).newEncoder();
+		this.dbfType = dbfType;
 	}
 	
 	@Override
@@ -211,7 +214,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 		org.jetel.util.bytes.ByteBufferUtils.fill(buffer, (byte)0x0); // fill with zeros
 		// DBF TYPE  - 0x0
 		buffer.position(0);
-		buffer.put(DBFTypes.KNOWN_TYPES[1]); // FoxBASE+/Dbase III plus, no memo
+		buffer.put(dbfType);
 		// LAST UPDATE - 0x01  (updated when writing footer)
 		buffer.put((byte)0); //year
 		buffer.put((byte)0); //month
