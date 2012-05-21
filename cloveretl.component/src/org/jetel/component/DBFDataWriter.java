@@ -19,6 +19,8 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -258,6 +260,16 @@ public class DBFDataWriter extends Node {
 		if(!checkInputPorts(status, 1, 1)
 				|| !checkOutputPorts(status, 0, 1)) {
 			return status;
+		}
+		
+		try {
+			URL url = FileUtils.getFileURL(fileURL);
+			if (!url.getProtocol().equals("file")) {
+				status.add(new ConfigurationProblem("Protocol " + url.getProtocol() + " is not supported by the component.", 
+						Severity.ERROR, this, Priority.NORMAL));
+			}
+		} catch (MalformedURLException e1) {
+			//nothing to do here - error for invalid URL is reported by another check 
 		}
 
 		CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
