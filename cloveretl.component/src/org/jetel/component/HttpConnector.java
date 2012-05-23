@@ -826,15 +826,17 @@ public class HttpConnector extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private void setHeaderParameters(DataRecord record) throws ComponentNotReadyException {
-		Properties fieldValues = new Properties();
+		if (record != null) {
+			Properties fieldValues = new Properties();
+
+			Iterator<DataField> it = record.iterator();
+			while (it.hasNext()) {
+				DataField field = it.next();
+				fieldValues.setProperty(field.getMetadata().getName(), field.toString());
+			}
 		
-		Iterator<DataField> it = record.iterator();
-		while (it.hasNext()) {
-			DataField field = it.next();
-			fieldValues.setProperty(field.getMetadata().getName(), field.toString());
+			setRefProperties(fieldValues);
 		}
-		
-		setRefProperties(fieldValues);
 		
 		// pass request properties to the http connection
 		for (Entry<Object, Object> entry : requestProperties.entrySet()) {
