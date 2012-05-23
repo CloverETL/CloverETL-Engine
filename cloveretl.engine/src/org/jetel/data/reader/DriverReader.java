@@ -126,7 +126,9 @@ public class DriverReader implements InputReader {
 			blocked = false;
 		} else {
 			recCounter++;
-			blocked = (lastCompare = key.compare(rec[CURRENT], rec[NEXT])) != 0;
+			lastCompare = key.compare(rec[CURRENT], rec[NEXT]);
+			inputOrdering = SlaveReader.updateOrdering(lastCompare, inputOrdering);
+			blocked = lastCompare != 0;
 		}
 		return rec[CURRENT];
 	}
