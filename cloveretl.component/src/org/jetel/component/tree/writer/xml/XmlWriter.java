@@ -319,7 +319,15 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 				// Escape this char as underlying encoder cannot handle it
 				write("&#x");
-				write(Integer.toHexString(ch));
+				int codePoint;
+				if (!Character.isHighSurrogate(ch)) {
+					codePoint = (int)ch;
+				} else {
+					index++;
+					char ch2 = content[index];
+					codePoint = Character.toCodePoint(ch, ch2);
+				}
+				write(Integer.toHexString(codePoint));
 				write(";");
 				startWritePos = index + 1;
 				continue;
