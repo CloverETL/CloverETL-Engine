@@ -600,8 +600,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#getColumns(java.sql.Connection, java.lang.String, java.lang.String)
      */
     @Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
-		String sqlQuery = compileSelectQuery4Table(schema, table) + " where 0=1";
+	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
+		String sqlQuery = compileSelectQuery4Table(schema, owner, table) + " where 0=1";
 		ResultSet resultSet = connection.createStatement().executeQuery(sqlQuery);
 
 		return resultSet.getMetaData();
@@ -611,7 +611,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#compileSelectQuery4Table(java.lang.String, java.lang.String)
      */
     @Override
-	public String compileSelectQuery4Table(String schema, String table) {
+	public String compileSelectQuery4Table(String schema, String owner, String table) {
     	if (isSchemaRequired() && !StringUtils.isEmpty(schema)) {
     		return "select * from " + quoteIdentifier(schema) + "." + quoteIdentifier(table);
     	} else {

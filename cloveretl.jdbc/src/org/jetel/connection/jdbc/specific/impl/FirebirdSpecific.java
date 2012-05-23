@@ -85,8 +85,8 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	
 	
 	@Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
-		return super.getColumns(connection, null, table);
+	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
+		return super.getColumns(connection, null, null, table);
 	}
 
 	@Override

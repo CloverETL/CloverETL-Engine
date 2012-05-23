@@ -282,19 +282,21 @@ public interface JdbcSpecific {
 	 * 
 	 * @param connection
 	 * @param schema
+	 * @param owner
 	 * @param table
 	 * @return
 	 */
-	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String table) throws SQLException;
+	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String owner, String table) throws SQLException;
 
     /**
      * Return select sql statement for given table.
      * Usually returns <code>select * from tablename</code>.
      * @param schema
+     * @param owner
      * @param table
      * @return
      */
-    public String compileSelectQuery4Table(String schema, String table);
+    public String compileSelectQuery4Table(String schema, String owner, String table);
 
 	/**
 	 * Returns a Set of ResultSets representing columns in whole database, 

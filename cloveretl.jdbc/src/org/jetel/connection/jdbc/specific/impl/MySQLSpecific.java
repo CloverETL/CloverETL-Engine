@@ -86,7 +86,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
     }
 
 	@Override
-	public String compileSelectQuery4Table(String schema, String table) {
+	public String compileSelectQuery4Table(String schema, String owner, String table) {
     	if (isSchemaRequired() && !StringUtils.isEmpty(schema)) {
     		return "select * from `" + schema + "`.`" + table+"`";
     	} else {

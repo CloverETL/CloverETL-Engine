@@ -177,7 +177,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
+	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
 		if (connection == null || StringUtils.isEmpty(table)) {
 			return null;
 		}
