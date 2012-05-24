@@ -59,7 +59,7 @@
 	
 	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="MSSQL"/>
-		<parameter id="name" value="MS SQL Server 2008"/>
+		<parameter id="name" value="MS SQL Server 2008-2012"/>
 		<parameter id="productName" value="Microsoft SQL Server"/>
 		<!--parameter id="majorVersion" value="x"/-->
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific"/>
