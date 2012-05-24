@@ -16,7 +16,7 @@ jobGoal = jobNameM[0][3]
 versionSuffix = jobNameM[0][4]
 
 if( !jobGoal ) jobGoal = "after-commit"
-runTests = jobGoal.startsWith("tests") && (jobGoal.contains("java") || jobGoal.contains("performance"))
+runTests = jobGoal.startsWith("tests") && jobGoal.contains("java") 
 if( runTests ) {
 	testNameM = jobGoal =~ /^tests-(.+)-(java-[^-]+-[^-]+)(-(.*))?$/
 	assert testNameM.matches() 
