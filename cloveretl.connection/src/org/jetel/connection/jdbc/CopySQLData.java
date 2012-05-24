@@ -509,11 +509,11 @@ public abstract class CopySQLData {
 		DataRecordMetadata inMetadata, JdbcSpecific jdbcSpecific) throws SQLException{
 		ParameterMetaData pMeta = statement.getParameterMetaData();
 		if (transMap.length != pMeta.getParameterCount()) {
-			return "Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount();
+			return "Invalid sql query. Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount();
 		}
 		for (int i = 0; i < transMap.length; i++) {
 			if (inMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(pMeta.getParameterType(i + 1))) {
-				return "Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].fieldJetel).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].fieldJetel)) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
+				return "Invalid sql query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].fieldJetel).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].fieldJetel)) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
 			}
 		}
 		return null;
