@@ -1390,7 +1390,7 @@ public class DBOutputTable extends Node {
 						try {
 							keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
 							statement.checkConfig(status, keysPort == null ? null
-									: keysPort.getMetadata());
+									: keysPort.getMetadata(), this);
                         } finally {
                             // make sure we do not leak statements
                             statement.close();
