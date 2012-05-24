@@ -851,9 +851,6 @@ defined.version.suffix=release
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
 	</target>
-	
-	<target name="reports-hudson-performance" depends="dist,runtests-with-testdb">
-	</target>
 		
 	<target name="compile-tests" depends="compile">
 		<mkdir dir="${dir.classestest}"/>
@@ -1038,21 +1035,6 @@ defined.version.suffix=release
 			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.package.classes}"/>
 			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
 			<property name="cobertura.ser" value="${cobertura.ser}"/>
-			<property name="version.full" value="${version.full}"/>
-			<property name="hudson.link" value="${cte.hudson.link}"/>
-			<property name="logpath" value="${cte.logpath}"/>
-			<property name="testenv.etlenvironment" value="engine"/>
-		</ant>
-	</target>
-	
-	<target name="runtests-scenario-performance" if="cte.environment.config">
-		<echo message="Executing Clover Test Environment environment - performance"/>
-		<ant target="run-scenarios-with-engine-build" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="scenarios" value="performance.ts" />
-			<property name="dir.engine.classes" value="${dir.package.classes}"/>
-			<property name="dir.engine.build" value="${dir.package}/lib"/>
-			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
