@@ -40,7 +40,7 @@ public final class TextParserFactory {
 
 	private TextParserFactory() {
 	}
-
+	
 	/**
 	 * Creates data parser according to the configuration and data type. The fastes parser implementation is used.
 	 * 
@@ -54,11 +54,11 @@ public final class TextParserFactory {
 	 * @throws JetelRuntimeException
 	 *             if no parser found
 	 */
-	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName) {
+	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName, ClassLoader parserClassLoader) {
 		Class bestParserClass = null;
 		if (parserClassName != null) {
 			try {
-				bestParserClass = Class.forName(parserClassName);
+				bestParserClass = Class.forName(parserClassName, true, parserClassLoader);
 			} catch (ClassNotFoundException e) {
 				throw new JetelRuntimeException("Invalid parser '" + parserClassName + "'", e);
 			}
@@ -95,6 +95,10 @@ public final class TextParserFactory {
 		}
 	}
 
+	public static final TextParser getParser(TextParserConfiguration cfg, String parserClassName){
+		return getParser(cfg, parserClassName, null);
+	}
+	
 	public static final TextParser getParser(TextParserConfiguration cfg) {
 		return getParser(cfg, null);
 	}

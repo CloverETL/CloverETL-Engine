@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -35,6 +36,7 @@ import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -78,6 +80,7 @@ import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import java.net.URLDecoder;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -117,8 +120,9 @@ public class FileUtils {
 	/**
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
-	private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
-	
+    private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
+    private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
     }
@@ -166,7 +170,11 @@ public class FileUtils {
     	
     	// standard url
         try {
-            return new URL(contextURL, fileURL);
+        	if( fileURL.startsWith("/") ){
+                return new URL(fileURL);
+        	} else {
+        		return new URL(contextURL, fileURL);
+        	}
         } catch(MalformedURLException ex) {}
 
         // sftp url
@@ -345,7 +353,7 @@ public class FileUtils {
         if (getLocalArchiveInputPath(contextURL, input, localArchivePath)) {
         	// apply the contextURL
         	URL url = FileUtils.getFileURL(contextURL, localArchivePath.toString());
-			String absolutePath = url.getFile();
+			String absolutePath = getUrlFile(url);
 			registerTrueZipVSFEntry(new de.schlichtherle.io.File(localArchivePath.toString()));
 			return new de.schlichtherle.io.FileInputStream(absolutePath);
         }
@@ -388,7 +396,7 @@ public class FileUtils {
         	
         	// creates file input stream for incremental reading (random access file)
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
-            	return new FileInputStream(url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile());
+            	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
             	return url.openConnection().getInputStream();
         	}
@@ -899,7 +907,7 @@ public class FileUtils {
 			
         	// apply the contextURL
         	URL url = FileUtils.getFileURL(contextURL, archPath);
-			String absolutePath = url.getFile();
+			String absolutePath = getUrlFile(url);
 			
         	de.schlichtherle.io.File archive = new de.schlichtherle.io.File(absolutePath);
         	boolean mkdirsResult = archive.getParentFile().mkdirs();
@@ -971,7 +979,7 @@ public class FileUtils {
     		} else {
     			// file input stream 
     			URL url = FileUtils.getFileURL(contextURL, input);
-    			String filePath = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
+    			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
     			os = new FileOutputStream(filePath, appendData);
     		}
     	}
@@ -1042,7 +1050,7 @@ public class FileUtils {
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
             
             // if the url is a path, make a fake file
-            String sUrl = url.getPath();
+            String sUrl = getUrlFile(url);
             boolean isFile = !sUrl.endsWith("/") && !sUrl.endsWith("\\");
             if (!isFile) sUrl =  sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
 			file = new File(sUrl);
@@ -1109,7 +1117,37 @@ public class FileUtils {
 		return createDir;
 	}
 	
-	/**
+        /**
+         * Gets file path from URL, properly handles special URL characters (like %20)
+         * @param url
+         * @return
+         * @throws UnsupportedEncodingException
+         *
+         * @see #handleSpecialCharacters(java.net.URL)
+         */
+        private static String getUrlFile(URL url) {
+            try {
+                final String fixedFileUrl = handleSpecialCharacters(url);
+                return URLDecoder.decode(fixedFileUrl, "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                throw new RuntimeException("Encoding not supported!", ex);
+            }
+        }
+
+    /**
+     * Fix problems with special characters that occurs while running on Mac OS X enviroment and using path
+     * which contains '+' character, e.g. /var/folders/t6/t6VjEdukHKWHBtJyNy8wEU+++TI/-Tmp-/.
+     * Without special handling, method #getUrlFile will return /var/folders/t6/t6VjEdukHKWHBtJyNy8wEU   TI/-Tmp-/,
+     * handling '+' characeter as ' ' (space).
+     *
+     * @param url
+     * @return
+     */
+    private static String handleSpecialCharacters(URL url) {
+        return url.getFile().replace("+", PLUS_CHAR_ENCODED);
+    }
+
+    /**
 	 * Tries to create file and directories. 
 	 * @param fileURL
 	 * @return
@@ -1263,7 +1301,7 @@ public class FileUtils {
 		URL url = getFileURL(contextURL, input);
 		if (url.getRef() != null) return url.getRef();
 		else {
-			input = url.getFile();
+			input = getUrlFile(url);
 			if (input.startsWith("zip:") || input.startsWith("tar:")) {
 				input = input.contains("#") ? 
 					input.substring(input.lastIndexOf('#') + 1) : 

@@ -258,8 +258,10 @@ public class DataRecordTape {
 	public void clear() throws IOException, InterruptedException {
 		try {
 			dataChunks.clear();
-			tmpFileChannel.truncate(0);
-			tmpFileChannel.position(0);
+			if( tmpFileChannel.isOpen() ){
+				tmpFileChannel.truncate(0);
+				tmpFileChannel.position(0);
+			}
 			currentDataChunkIndex=-1;
 			currentDataChunk=null;
 		} catch (ClosedChannelException e) {

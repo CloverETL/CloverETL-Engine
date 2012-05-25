@@ -236,6 +236,8 @@ public class XSLDataTransformer extends Node {
 			throw e;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			currentTarget.finish();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -261,18 +263,9 @@ public class XSLDataTransformer extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			if (xsltMappingTransition != null) {
-				xsltIs.close(); //closing XSLT opened in xsltMappingTransition
-			}
-			else {
-				currentTarget.finish();
-				xsltIs.close(); //closing XSLT opened in transformer
-				//files opened by channelIterator are closed in execute()
-			}
-			
-			
-		}
-		catch (IOException e) {
+			xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
+			//files opened by channelIterator are closed in execute()
+		} catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
 		}
 	}

@@ -19,6 +19,7 @@
 package org.jetel.ctl.extensions;
 
 import org.jetel.ctl.data.TLType;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * @author jakub (info@cloveretl.com)
@@ -37,7 +38,10 @@ public class TLFunctionCallContext {
 	private String initMethodName;
 	private TLCache cache;
 	private final Object transformationID;
-	
+
+    /** Instance of running transformation graph where code executes */
+    private TransformationGraph graph;
+
 	
 	public TLFunctionCallContext(Object transformationID) {
 		this.transformationID = transformationID;
@@ -168,5 +172,13 @@ public class TLFunctionCallContext {
 	public void setCache(TLCache cache) {
 		this.cache = cache;
 	}
+
+    public TransformationGraph getGraph() {
+        return graph;
+    }
+
+    public void setGraph(TransformationGraph graph) {
+        this.graph = graph;
+    }
 
 }
