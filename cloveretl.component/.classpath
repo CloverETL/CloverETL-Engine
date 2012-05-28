@@ -9,7 +9,11 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/cloveretl.sequence"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/saxon8.jar"/>
-	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jdbm-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/signpost-commonshttp4-1.2.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/signpost-core-1.2.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
