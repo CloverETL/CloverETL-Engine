@@ -31,6 +31,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -1010,7 +1011,7 @@ public class HttpConnector extends Node {
 				preparedQueryString = "";
 				for (String property : unusedMetadata) {
 					NameValuePair pair = new BasicNameValuePair(property, record.getField(property).toString());
-					preparedQueryString += pair.getName() + "=" + pair.getValue() + "&";
+					preparedQueryString += URLEncoder.encode(pair.getName(),"UTF-8") + "=" + URLEncoder.encode(pair.getValue(),"UTF-8") + "&";
 				}
 				if (preparedQueryString.length() > 0) {
 					preparedQueryString = preparedQueryString.substring(0, preparedQueryString.length() - 1);
