@@ -58,7 +58,11 @@ public final class TextParserFactory {
 		Class bestParserClass = null;
 		if (parserClassName != null) {
 			try {
-				bestParserClass = Class.forName(parserClassName, true, parserClassLoader);
+				if (parserClassLoader != null) {
+					bestParserClass = Class.forName(parserClassName, true, parserClassLoader);
+				} else {
+					bestParserClass = Class.forName(parserClassName);
+				}
 			} catch (ClassNotFoundException e) {
 				throw new JetelRuntimeException("Invalid parser '" + parserClassName + "'", e);
 			}
