@@ -176,7 +176,7 @@ public class CloverDataParser extends AbstractParser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
 	/* (non-Javadoc)
@@ -238,7 +238,7 @@ public class CloverDataParser extends AbstractParser {
 		}
     }
 
-    private static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
+    public static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
         ByteBuffer headerBuffer = ByteBuffer.allocateDirect(Defaults.Component.CLOVER_DATA_HEADER_SIZE);
         headerBuffer.clear();
         
