@@ -409,7 +409,8 @@ public class HttpConnector extends Node {
 		if (inPort != null && outPort != null) {
 			// input and output ports are connected, so they will be used
 			for (record = inPort.readRecord(inRecord); record != null && runIt; record = inPort.readRecord(inRecord)) {
-
+				response = null;
+				
 				//urlInputField is set so it will be used (url field is ignored)
 				if (!StringUtils.isEmpty(getUrlInputField())) {
 					setUrl(record.getField(getUrlInputField()).toString());
@@ -644,10 +645,10 @@ public class HttpConnector extends Node {
 			if (addInputFieldsAsParameters) {
 				if (StringUtils.isEmpty(addInputFieldsAsParametersTo)) {
 					if (requestMethod.equals(POST)) {
-						status.add(new ConfigurationProblem("Add input fields as parametres must be specified.", Severity.ERROR, this, Priority.NORMAL));
+						status.add(new ConfigurationProblem("Add input fields as parameters must be specified.", Severity.ERROR, this, Priority.NORMAL));
 					}
 				} else if (addInputFieldsAsParametersTo.equals("BODY") && requestMethod.equals(GET)) {
-					status.add(new ConfigurationProblem("Add input fields as parametres must be specified.", Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem("Cannot add fields as parameters to body of HTTP request when GET method is used.", Severity.ERROR, this, Priority.NORMAL));
 				}
 			}
 			
@@ -716,6 +717,23 @@ public class HttpConnector extends Node {
 		if ((!StringUtils.isEmpty(getUsername()) && StringUtils.isEmpty(getPassword())) || (StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword()))) {
 			status.add(new ConfigurationProblem("Both username and password must be entered or none of them.", Severity.ERROR, this, Priority.NORMAL));
 		}
+		
+		// check restrictions of the GET method
+		if (requestMethod.equals(GET)) {
+			// no content allowed in GET request (actually, it is not invalid for GET request to contain content according to standard, but the HTTPClient library does not support it 
+			// as it is not used in practice)
+			if (!StringUtils.isEmpty(requestContent)) {
+				status.add(new ConfigurationProblem("Request content not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_CONTENT_ATTRIBUTE));
+			}
+			if (!StringUtils.isEmpty(inputFieldName)) {
+				status.add(new ConfigurationProblem("Input field not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+			}
+			if (!StringUtils.isEmpty(inputFileUrl)) {
+				status.add(new ConfigurationProblem("Input file URL not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
+			}
+		}
+		
+		
 		return status;
 	}
 	
@@ -740,7 +758,7 @@ public class HttpConnector extends Node {
 					throw new ComponentNotReadyException("Given URL has incompatible protocol: " + protocol);
 				}
 			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException("Given URL has incompatible protocol: " + protocol);
+				throw new ComponentNotReadyException("Given URL '" + rawUrl + "' is invalid.");
 			}
 		}
 
@@ -853,7 +871,7 @@ public class HttpConnector extends Node {
 			//we leave it as-is to make the behavior compatible with older version using httpClient 3.x
 			//which also cleared the previously set multipart entity.
 			if (body != null) {
-				postMethod.setEntity(new UrlEncodedFormEntity(Arrays.asList(body)));
+				postMethod.setEntity(new UrlEncodedFormEntity(Arrays.asList(body), charset));
 			}
 		} else if (requestMethod.equals(GET)) {
 			//request method is post
@@ -1150,16 +1168,17 @@ public class HttpConnector extends Node {
 	 * @throws IOException
 	 */
 	private void sendInput(String input) throws Exception {
-	
 		StringEntity entity = new StringEntity(input, charset == null? Defaults.DataParser.DEFAULT_CHARSET_DECODER: charset);
-		if(requestMethod.equals(POST))  {
+		if (requestMethod.equals(POST))  {
 		   this.postMethod.setEntity(entity);
-		   
-		   HttpResponse response = sendRequest(postMethod); 
-		   int statusCode = response.getStatusLine().getStatusCode();
-		   if (statusCode != 200) {
-			   logger.warn("Returned code for http request " + rawUrlToProceed + " is " + statusCode);
-		   }
+		   response = sendRequest(postMethod);
+		}
+
+		if (response != null) {
+		    int statusCode = response.getStatusLine().getStatusCode();
+		    if (statusCode != 200) {
+		    	logger.warn("Returned code for http request " + rawUrlToProceed + " is " + statusCode);
+		    }
 		}
 	}
 
