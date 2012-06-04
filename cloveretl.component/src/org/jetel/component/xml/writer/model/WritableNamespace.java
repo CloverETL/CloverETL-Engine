@@ -39,6 +39,7 @@ public class WritableNamespace implements Writable {
 	private final char[] namespaceURI;
 	
 	public WritableNamespace(String prefix, String namespaceURI) {
+		//handle null prefix
 		this.prefix = prefix == null ? null : prefix.toCharArray();
 		this.namespaceURI = namespaceURI.toCharArray();
 	}

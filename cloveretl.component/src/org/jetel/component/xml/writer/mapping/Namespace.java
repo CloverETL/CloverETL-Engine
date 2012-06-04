@@ -44,6 +44,7 @@ public class Namespace extends AbstractElement {
 
 	@Override
 	public String getDisplayName() {
+		//handle null prefix
 		String prefix = properties.get(MappingProperty.NAME);
 		return "xmlns" + (StringUtils.isBlank(prefix) ? "" : (":" + prefix));
 	}
