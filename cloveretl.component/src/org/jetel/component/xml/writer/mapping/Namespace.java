@@ -19,6 +19,7 @@
 package org.jetel.component.xml.writer.mapping;
 
 import org.jetel.component.xml.writer.MappingVisitor;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Class representing xml namespace declaration
@@ -43,7 +44,8 @@ public class Namespace extends AbstractElement {
 
 	@Override
 	public String getDisplayName() {
-		return "xmlns:" + properties.get(MappingProperty.NAME);
+		String prefix = properties.get(MappingProperty.NAME);
+		return "xmlns" + (StringUtils.isBlank(prefix) ? "" : (":" + prefix));
 	}
 	
 	@Override
