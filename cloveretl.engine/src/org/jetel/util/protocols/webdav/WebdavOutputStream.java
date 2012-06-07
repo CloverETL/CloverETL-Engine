@@ -35,11 +35,11 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.util.HttpURLConnection;
+import com.googlecode.sardine.impl.SardineException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
-import com.googlecode.sardine.impl.SardineException;
 
 public class WebdavOutputStream extends OutputStream {
 	
@@ -186,6 +186,8 @@ public class WebdavOutputStream extends OutputStream {
 				}
 				
 				sardine.put(URL, is);
+			} catch (SardineException e) {
+				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
 			}
@@ -204,7 +206,7 @@ public class WebdavOutputStream extends OutputStream {
 			sardineThread.join();
 			Throwable error = sardineThread.getError();
 			if (error != null) {
-				throw new IOException(error);
+				throw error instanceof IOException ? (IOException)error : new IOException(error);
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e.getCause());
