@@ -23,6 +23,7 @@ import java.nio.channels.Channels;
 import java.sql.SQLException;
 
 import org.jetel.graph.TransformationGraph;
+import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.file.FileUtils;
 import org.w3c.dom.DOMException;
 
@@ -53,12 +54,12 @@ public class MetadataFactory {
 		recordMetadata=metadataXMLRW.read(
 				Channels.newInputStream(FileUtils.getReadableChannel(graph.getRuntimeContext().getContextURL(), fileURL)));
 			if (recordMetadata==null){
-				throw new RuntimeException("Can't parse metadata definition file: "+fileURL);
+				throw new RuntimeException("Can't parse metadata definition file: " + SafeLogUtils.obfuscatePassword(fileURL));
 			}
-        }catch(IOException ex){
-            throw new IOException("Can't read metadata definition file: "+ex.getMessage());
+	    }catch(IOException ex){
+	        throw new IOException("Can't read metadata definition file: "+ex.getMessage());
 		}catch(Exception ex){
-			throw new RuntimeException("Can't get metadata file "+fileURL+" - "+ex.getClass().getName()+" : "+ex.getMessage()); 
+			throw new RuntimeException("Can't get metadata file "+ SafeLogUtils.obfuscatePassword(fileURL) +" - "+ex.getClass().getName()+" : "+ex.getMessage()); 
 		}
 		return recordMetadata;
 	}
