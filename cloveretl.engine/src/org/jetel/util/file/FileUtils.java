@@ -726,7 +726,7 @@ public class FileUtils {
 		return input.startsWith("zip:");
 	}
 	
-	private static boolean isRemoteFile(String input) {
+	public static boolean isRemoteFile(String input) {
 		return input.startsWith("http:")
 			|| input.startsWith("https:")
 			|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
@@ -740,7 +740,7 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
-	private static boolean isLocalFile(String input) {
+	public static boolean isLocalFile(String input) {
 		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input) && !isArchive(input);
 	}
 	

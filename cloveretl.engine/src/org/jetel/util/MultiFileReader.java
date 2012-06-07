@@ -271,11 +271,18 @@ public class MultiFileReader {
 			try {
 				stream = channelIterator.next();
 				if (stream == null) continue; // if record no record found
-				autoFilling.setFilename(channelIterator.getCurrentFileName());
-				File tmpFile = new File(autoFilling.getFilename());
-				long timestamp = tmpFile.lastModified();
-				autoFilling.setFileSize(tmpFile.length());
-				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
+				String fileName = channelIterator.getCurrentFileName();
+				autoFilling.setFilename(fileName);
+				Date fileTimestamp = null;
+				long fileSize = 0;
+				if (FileUtils.isLocalFile(fileName)) {
+					File tmpFile = new File(fileName);
+					long timestamp = tmpFile.lastModified();
+					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+					fileSize = tmpFile.length();
+				}
+				autoFilling.setFileSize(fileSize);
+				autoFilling.setFileTimestamp(fileTimestamp);
 				iSource++;
 				parser.setDataSource(stream);
 				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
