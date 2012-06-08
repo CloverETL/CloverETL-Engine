@@ -32,9 +32,9 @@ public interface TreeWriter {
 
 	void writeStartNode(char[] name) throws JetelException;
 
-	void writeLeaf(Object value) throws JetelException;
+	void writeLeaf(Object value, boolean writeNullElement) throws JetelException;
 
-	void writeEndNode(char[] name) throws JetelException;
+	void writeEndNode(char[] name, boolean writeNullElement) throws JetelException;
 
 	void writeEndTree() throws JetelException;
 

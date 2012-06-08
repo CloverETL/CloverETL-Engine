@@ -76,7 +76,7 @@ public class WritableObject extends WritableContainer {
 			}
 			state = formatter.getMapping().getState();
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
-				formatter.getTreeWriter().writeEndNode(name);
+				formatter.getTreeWriter().writeEndNode(name, writeNull);
 			}
 		}
 	}

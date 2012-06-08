@@ -47,7 +47,7 @@ public abstract class WritableValue implements Writable {
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
 		MappingWriteState state = formatter.getMapping().getState();
 		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
-			formatter.getTreeWriter().writeLeaf(getContent(availableData));
+			formatter.getTreeWriter().writeLeaf(getContent(availableData), false);
 		}
 	}
 
