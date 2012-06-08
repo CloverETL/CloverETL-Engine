@@ -85,7 +85,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		int countOfNotExcludedFields = getCountOfNotExcludedFields(_metadata);
 		if (_metadata.getParsingType() != DataRecordParsingType.FIXEDLEN){
-			throw new ComponentNotReadyException("Only fixed-lenght metadata allowed !");
+			throw new ComponentNotReadyException("Component DBFWriter supports only fixed-length metadata on input port.");
 		}
 		if (countOfNotExcludedFields > DBFAnalyzer.DBF_MAX_NUMBER_OF_FIELDS){
 			throw new ComponentNotReadyException("Exceeded maximum number of fields in DBase file (128) !");

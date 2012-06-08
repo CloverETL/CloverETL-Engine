@@ -46,6 +46,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -289,6 +290,11 @@ public class DBFDataWriter extends Node {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
+        
+        if (getInputPort(READ_FROM_PORT).getMetadata().getParsingType() != DataRecordParsingType.FIXEDLEN){
+        	status.add("Component DBFWriter supports only fixed-length metadata on input port.",
+        			ConfigurationStatus.Severity.ERROR,this, ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+		}
         
         for(DataFieldMetadata field : getInputPort(READ_FROM_PORT).getMetadata()){
         	try{
