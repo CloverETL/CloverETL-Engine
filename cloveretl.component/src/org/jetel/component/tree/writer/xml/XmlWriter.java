@@ -43,6 +43,8 @@ import org.jetel.exception.JetelException;
  */
 public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, CommentWriter {
 
+	private enum TagContent {EMPTY, ATTRIBUTE_COMMENT_NAMESPACE, VALUE_CHILD};
+	
 	private OutputStreamWriter outStreamWriter;
 	private String charset;
 	private String version;
@@ -67,7 +69,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	private static final char[] NAMESPACE_DELIMITER = ":".toCharArray();
 
 	private boolean[] shouldIndentStack = new boolean[11];
-	private boolean[] needsEndTagStack = new boolean[11];
+	private TagContent[] values = new TagContent[11];
 	private char[][] elementNameStack = new char[11][];
 	private int depth;
 	private int writtenDepth;
@@ -87,20 +89,18 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	}
 
 	public void push(char[] name) {
-		if (depth == needsEndTagStack.length) {
-			int newLength = needsEndTagStack.length * 2 + 1;
+		if (depth == values.length) {
+			int newLength = values.length * 2 + 1;
 
-			needsEndTagStack = Arrays.copyOf(needsEndTagStack, newLength);
+			values = Arrays.copyOf(values, newLength);
 			shouldIndentStack = Arrays.copyOf(shouldIndentStack, newLength);
 			elementNameStack = Arrays.copyOf(elementNameStack, newLength);
 		}
 		shouldIndentStack[depth] = true;
-		needsEndTagStack[depth] = true;
 		elementNameStack[depth] = name;
 
 		depth++;
 		shouldIndentStack[depth] = false;
-		needsEndTagStack[depth] = false;
 	}
 
 	public char[] pop() {
@@ -110,14 +110,6 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 		}
 		
 		return elementNameStack[depth];
-	}
-
-	public boolean needsEndTag() {
-		return needsEndTagStack[depth];
-	}
-
-	public void setNeedsEndTag() {
-		needsEndTagStack[depth] = true;
 	}
 
 	public boolean shouldIndent() {
@@ -132,10 +124,16 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 		return depth <= 0;
 	}
 
-	private void performDeferredWrite() throws JetelException {
+	private void performDeferredWrite(boolean update, TagContent value) throws JetelException {
+		if (update) {
+			for (int i = 0; i < depth; i++) {
+				values[i] = TagContent.VALUE_CHILD;
+			}
+			values[depth] = value;
+		}
 		for (int i = writtenDepth; i < depth; i++) {
 			if (startTagOpened) {
-				closeStartTag(needsEndTagStack[i]);
+				closeStartTag(values[i] == TagContent.VALUE_CHILD);
 			}
 
 			if (!omitNewLines) {
@@ -151,6 +149,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	@Override
 	public void writeStartNode(char[] name) throws JetelException {
 		push(name);
+		values[depth] = TagContent.EMPTY;
 	}
 
 	private void openStartTag() throws JetelException {
@@ -158,19 +157,26 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 		write(OPEN_START_TAG);
 	}
 
-	private void closeStartTag(boolean needsEndTag) throws JetelException {
+	/**
+	 * @param needsEndTag
+	 * @return true if the tag was closed, false otherwise.
+	 * @throws JetelException
+	 */
+	private boolean closeStartTag(boolean needsEndTag) throws JetelException {
 		startTagOpened = false;
 
 		if (needsEndTag) {
 			write(CLOSE_END_TAG);
+			return false;
 		} else {
 			write(CLOSE_EMPTY_ELEMENT);
+			return true;
 		}
 	}
 
 	@Override
 	public void writeAttribute(char[] name, Object value) throws JetelException {
-		performDeferredWrite();
+		performDeferredWrite(true, TagContent.ATTRIBUTE_COMMENT_NAMESPACE);
 
 		write(SPACE);
 		write(name);
@@ -181,7 +187,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeNamespace(char[] prefix, char[] namespaceURI) throws JetelException {
-		performDeferredWrite();
+		performDeferredWrite(true, TagContent.ATTRIBUTE_COMMENT_NAMESPACE);
 
 		write(NAMESPACE_PREFIX);
 		if (prefix != null && prefix.length > 0) {
@@ -195,23 +201,28 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	}
 
 	@Override
-	public void writeEndNode(char[] name) throws JetelException {
-		performDeferredWrite();
-
-		if (startTagOpened) {
-			closeStartTag(needsEndTagStack[depth]);
-		}
-
-		if (needsEndTag()) {
-			if (!omitNewLines && shouldIndent()) {
-				indent(depth - 1);
+	public void writeEndNode(char[] name, boolean writeNullElement) throws JetelException {
+		if (writeNullElement || depth == 1 || !isNodeEmpty()) {
+			performDeferredWrite(depth != 1, null);
+			boolean tagClosed = false;
+			if (startTagOpened) {
+				tagClosed = closeStartTag(values[depth] == TagContent.VALUE_CHILD);
 			}
+			if (!tagClosed) {
+				if (!omitNewLines && shouldIndent()) {
+					indent(depth - 1);
+				}
 
-			write(OPEN_END_TAG);
-			write(name);
-			write(CLOSE_END_TAG);
+				write(OPEN_END_TAG);
+				write(name);
+				write(CLOSE_END_TAG);
+			}
 		}
 		pop();
+	}
+	
+	private boolean isNodeEmpty() {
+		return values[depth] == TagContent.EMPTY;
 	}
 
 	@Override
@@ -226,13 +237,13 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	@Override
 	public void writeEndTree() throws JetelException {
 		if (startTagOpened) {
-			closeStartTag(needsEndTagStack[depth]);
+			closeStartTag(values[depth] == TagContent.VALUE_CHILD);
 		}
 	}
 
 	@Override
-	public void writeLeaf(Object value) throws JetelException {
-		performDeferredWrite();
+	public void writeLeaf(Object value, boolean writeNullElement) throws JetelException {
+		performDeferredWrite(true, TagContent.VALUE_CHILD);
 
 		if (value instanceof ListDataField) {
 			ListDataField list = (ListDataField) value;
@@ -243,11 +254,11 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 					writeStartNode(elementName);
 				}
 
-				writeLeaf(list.getField(i));
+				writeLeaf(list.getField(i), writeNullElement);
 
 				// for last element endNode will be called right away
 				if (i < list.getSize() - 1) {
-					writeEndNode(elementName);
+					writeEndNode(elementName, writeNullElement);
 				}
 			}
 		} else {
@@ -261,9 +272,8 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 			return;
 		}
 		
-		setNeedsEndTag();
 		if (startTagOpened) {
-			closeStartTag(needsEndTagStack[depth]);
+			closeStartTag(values[depth] == TagContent.VALUE_CHILD);
 		}
 
 		if (!omitNewLines && shouldIndent()) {
@@ -275,12 +285,11 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 
 	@Override
 	public void writeComment(Object content) throws JetelException {
-		performDeferredWrite();
+		performDeferredWrite(true, TagContent.ATTRIBUTE_COMMENT_NAMESPACE);
 
-		setNeedsEndTag();
 		setShouldIndent();
 		if (startTagOpened) {
-			closeStartTag(needsEndTagStack[depth]);
+			closeStartTag(values[depth] == TagContent.VALUE_CHILD);
 		}
 
 		if (!omitNewLines) {

@@ -59,6 +59,6 @@ public class WritableCollection extends WritableContainer {
 
 	@Override
 	public void writeContainerEnd(TreeFormatter formatter) throws JetelException {
-		formatter.getCollectionWriter().writeEndCollection(name);
+		formatter.getCollectionWriter().writeEndCollection(name, writeNull);
 	}
 }
