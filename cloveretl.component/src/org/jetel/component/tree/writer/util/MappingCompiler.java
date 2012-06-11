@@ -157,8 +157,10 @@ public class MappingCompiler extends AbstractVisitor {
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
+			WritableValue name = WritableValue.newInstance(new StaticValue(dataFieldWrapper.dataFieldMetadata.getName()));
+			WritableValue namespace = WritableValue.newInstance(new StaticValue(dataFieldWrapper.namespace));
 			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex) });
-			WritableAttribute attribute = new WritableAttribute(dataFieldWrapper.dataFieldMetadata.getName(), dataFieldWrapper.namespace, value, writeNullSet.contains(dataFieldWrapper));
+			WritableAttribute attribute = new WritableAttribute(name, namespace, value, writeNullSet.contains(dataFieldWrapper));
 			currentParent.addAttribute(attribute);
 		}
 	}
@@ -174,8 +176,10 @@ public class MappingCompiler extends AbstractVisitor {
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
+			WritableValue name = WritableValue.newInstance(new StaticValue(dataFieldWrapper.dataFieldMetadata.getName()));
+			WritableValue namespace = WritableValue.newInstance(new StaticValue(dataFieldWrapper.namespace));
 			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex) });
-			WritableObject subNode = new WritableObject(dataFieldWrapper.dataFieldMetadata.getName(), dataFieldWrapper.namespace, writeNullSet.contains(dataFieldWrapper), false);
+			WritableObject subNode = new WritableObject(name, namespace, writeNullSet.contains(dataFieldWrapper), false);
 			subNode.addChild(value);
 			currentParent.addChild(subNode);
 		}
@@ -274,7 +278,8 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		}
 
-		WritableAttribute attribute = new WritableAttribute(pName.getName(), pName.getPrefix(), value, writeNull);
+		// TODO writeNull should be evaluated later; at the time of writing, when the actual attribute name is known
+		WritableAttribute attribute = new WritableAttribute(pName.getNameValue(), pName.getPrefixValue(), value, writeNull);
 		currentParent.addAttribute(attribute);
 	}
 
@@ -291,30 +296,34 @@ public class MappingCompiler extends AbstractVisitor {
 		WritableContainer previousParent = currentParent;
 		WritableContainer previousLoopParent = currentLoopParent;
 
+		Tag tag = tagMap.get(element);
+		if (tag != null) {
+			availableData.push(tag.getPortIndex());
+			addedPorts.add(element);
+		}
+		
 		WritableObject writableNode;
 		ParsedName pName = parseName(element.getProperty(MappingProperty.NAME));
+		WritableValue name = pName.getNameValue();
+		WritableValue namespace = pName.getPrefixValue();
 		boolean isHidden = ObjectNode.HIDE_DEFAULT;
 		String isHiddenString = element.getProperty(MappingProperty.HIDE);
 		if (isHiddenString != null) {
 			isHidden = Boolean.parseBoolean(isHiddenString);
 		}
-		Tag tag = tagMap.get(element);
-		if (tag != null) {
 
+		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(element, tag);
-			writableNode = new WritableObject(pName.getName(), pName.getPrefix(), isWriteNull(element), portBinding, isHidden, element.getParent() == null);
+			writableNode = new WritableObject(name, namespace, isWriteNull(element), portBinding, isHidden, element.getParent() == null);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
-			availableData.push(tag.getPortIndex());
-			addedPorts.add(element);
-
 			currentParent = currentLoopParent = writableNode;
 			if (element == modelPartitionElement) {
 				partitionElement = writableNode;
 			}
 		} else {
-			writableNode = new WritableObject(pName.getName(), pName.getPrefix(), isWriteNull(element), isHidden, element.getParent() == null);
+			writableNode = new WritableObject(name, namespace, isWriteNull(element), isHidden, element.getParent() == null);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
@@ -326,8 +335,8 @@ public class MappingCompiler extends AbstractVisitor {
 
 		compiledMap.put(element, writableNode);
 
-		for (Namespace namespace : element.getNamespaces()) {
-			namespace.accept(this);
+		for (Namespace ns : element.getNamespaces()) {
+			ns.accept(this);
 		}
 		if (element.getWildcardAttribute() != null) {
 			element.getWildcardAttribute().accept(this);
@@ -354,10 +363,12 @@ public class MappingCompiler extends AbstractVisitor {
 
 		WritableCollection writableContainer;
 		ParsedName pName = parseName(collection.getProperty(MappingProperty.NAME));
+		WritableValue name = parseValue(pName.getName());
+		WritableValue namespace = parseValue(pName.getPrefix());
 		Tag tag = tagMap.get(collection);
 		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(collection, tag);
-			writableContainer = new WritableCollection(pName.getName(), pName.getPrefix(), isWriteNull(collection), portBinding);
+			writableContainer = new WritableCollection(name, namespace, isWriteNull(collection), portBinding);
 			if (currentParent != null) {
 				currentParent.addChild(writableContainer);
 			}
@@ -369,7 +380,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 
 		} else {
-			writableContainer = new WritableCollection(pName.getName(), pName.getPrefix(), isWriteNull(collection));
+			writableContainer = new WritableCollection(name, namespace, isWriteNull(collection));
 			if (currentParent != null) {
 				currentParent.addChild(writableContainer);
 			}
@@ -515,7 +526,7 @@ public class MappingCompiler extends AbstractVisitor {
 		return WritableValue.newInstance(value.toArray(new NodeValue[value.size()]));
 	}
 
-	private static class ParsedName {
+	private class ParsedName {
 		private final String prefix;
 		private final String name;
 
@@ -531,9 +542,17 @@ public class MappingCompiler extends AbstractVisitor {
 		public String getName() {
 			return name;
 		}
+
+		public WritableValue getPrefixValue() {
+			return prefix != null ? parseValue(prefix) : null;
+		}
+
+		public WritableValue getNameValue() {
+			return parseValue(name);
+		}
 	}
 
-	public static ParsedName parseName(String name) {
+	public ParsedName parseName(String name) {
 		int index = name != null ? name.indexOf(':') : -1;
 		if (index != -1) {
 			return new ParsedName(name.substring(0, index), name.substring(index + 1));

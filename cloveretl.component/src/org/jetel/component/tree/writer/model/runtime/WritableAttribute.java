@@ -30,17 +30,14 @@ import org.jetel.exception.JetelException;
  * @created 20 Dec 2010
  */
 public class WritableAttribute implements Writable {
-	private final char[] name;
+	
+	private final DynamicName name;
 	private final WritableValue value;
 
 	private final boolean writeNull;
 
-	public WritableAttribute(String name, String prefix, WritableValue value, boolean writeNull) {
-		if (prefix != null && !prefix.isEmpty()) {
-			this.name = (prefix + ":" + name).toCharArray();
-		} else {
-			this.name = name.toCharArray();
-		}
+	public WritableAttribute(WritableValue name, WritableValue prefix, WritableValue value, boolean writeNull) {
+		this.name = new DynamicName(name, prefix);
 		this.value = value;
 		this.writeNull = writeNull;
 	}
@@ -48,7 +45,7 @@ public class WritableAttribute implements Writable {
 	@Override
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
 		if (writeNull || !isEmpty(availableData)) {
-			formatter.getAttributeWriter().writeAttribute(name, value.getContent(availableData));
+			formatter.getAttributeWriter().writeAttribute(name.getValue(availableData), value.getContent(availableData));
 		}
 	}
 

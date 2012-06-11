@@ -32,7 +32,7 @@ import org.jetel.exception.JetelException;
  */
 public abstract class WritableValue implements Writable {
 
-	public static WritableValue newInstance(NodeValue[] value) {
+	public static WritableValue newInstance(NodeValue... value) {
 		if (value == null) {
 			throw new NullPointerException("value");
 		}

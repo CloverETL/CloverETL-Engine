@@ -33,6 +33,8 @@ public class ObjectNode extends ContainerNode {
 
 	public static final boolean HIDE_DEFAULT = false;
 	public static final boolean WRITE_NULL_DEFAULT = false;
+	
+	public static final String XML_ELEMENT_WITH_NAME_ATTRIBUTE = "element";
 
 	private static final MappingProperty[] AVAILABLE_PROPERTIES = { MappingProperty.NAME, MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.INPUT_PORT, MappingProperty.KEY, MappingProperty.PARENT_KEY, MappingProperty.HIDE, MappingProperty.FILTER, MappingProperty.PARTITION, MappingProperty.INCLUDE, MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ATTRIBUTE, MappingProperty.OMIT_NULL_ATTRIBUTE };
 	private static final MappingProperty[] AVAILABLE_PROPERTIES_SIMPLE = { MappingProperty.NAME, MappingProperty.VALUE, MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.INPUT_PORT, MappingProperty.KEY, MappingProperty.PARENT_KEY, MappingProperty.HIDE, MappingProperty.FILTER, MappingProperty.PARTITION, MappingProperty.INCLUDE, MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ATTRIBUTE, MappingProperty.OMIT_NULL_ATTRIBUTE };

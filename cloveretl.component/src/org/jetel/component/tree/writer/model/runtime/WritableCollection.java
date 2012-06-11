@@ -32,11 +32,11 @@ import org.jetel.exception.JetelException;
  */
 public class WritableCollection extends WritableContainer {
 	
-	public WritableCollection(String name, String prefix, boolean writeNull) {
+	public WritableCollection(WritableValue name, WritableValue prefix, boolean writeNull) {
 		super(name, prefix, writeNull, null);
 	}
 	
-	public WritableCollection(String name, String prefix, boolean writeNull, PortBinding portBinding) {
+	public WritableCollection(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding) {
 		super(name, prefix, writeNull, portBinding);
 	}
 
@@ -53,12 +53,12 @@ public class WritableCollection extends WritableContainer {
 	}
 
 	@Override
-	public void writeContainerStart(TreeFormatter formatter) throws JetelException {
-		formatter.getCollectionWriter().writeStartCollection(name);
+	public void writeContainerStart(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+		formatter.getCollectionWriter().writeStartCollection(name.getValue(availableData));
 	}
 
 	@Override
-	public void writeContainerEnd(TreeFormatter formatter) throws JetelException {
-		formatter.getCollectionWriter().writeEndCollection(name, writeNull);
+	public void writeContainerEnd(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+		formatter.getCollectionWriter().writeEndCollection(name.getValue(availableData), writeNull);
 	}
 }

@@ -104,6 +104,7 @@ public class TreeWriterMapping {
 		TreeWriterMapping mapping = new TreeWriterMapping();
 		TemplateEntry templateEntryElement = null;
 		WildcardNode aggregateElement = null;
+		Attribute attributeElement = null;
 		ContainerNode currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -132,6 +133,11 @@ public class TreeWriterMapping {
 						throw new XMLStreamException(TemplateEntry.INVALID_TEMPLATE_ELEMENT, parser.getLocation());
 					}
 					templateEntryElement = parseTemplateEntry(parser, currentElement);
+				} else if (keyword.equals(Attribute.XML_ATTRIBUTE_DEFINITION) && MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(parser.getNamespaceURI())) {
+					if (currentElement.getParent() == null) {
+						throw new XMLStreamException(Attribute.INVALID_TEMPLATE_ELEMENT, parser.getLocation());
+					}
+					attributeElement = parseAttributeEntry(parser, currentElement);
 				} else {
 					currentElement = parseContainer(parser, currentElement);
 				}
@@ -147,6 +153,8 @@ public class TreeWriterMapping {
 					aggregateElement = null;
 				} else if (templateEntryElement != null) {
 					templateEntryElement = null;
+				} else if (attributeElement != null) {
+					attributeElement = null;
 				} else if (currentElement != null) {
 					currentElement = currentElement.getParent();
 				}
@@ -196,6 +204,27 @@ public class TreeWriterMapping {
 		return aggregateElement;
 	}
 
+	private static Attribute parseAttributeEntry(XMLStreamReader parser, ContainerNode currentElement)
+			throws XMLStreamException {
+		Attribute attribute = new Attribute(currentElement);
+		for (int i = 0; i < parser.getAttributeCount(); i++) {
+			if (MAPPING_KEYWORDS_NAMESPACEURI.equalsIgnoreCase(parser.getAttributeNamespace(i))) {
+				attribute.setProperty(parser.getAttributeLocalName(i), parser.getAttributeValue(i));
+			}
+		}
+		
+		Integer index = null;
+		try {
+			index = Integer.valueOf(attribute.getProperty(MappingProperty.INDEX));
+		} catch (NumberFormatException e) {
+			// ignore
+		}
+		int attributesCount = currentElement.getAttributes().size();
+		currentElement.addAttribute(index != null && index > -1 && index <= attributesCount ? index : attributesCount, attribute);
+		  // TODO position and index of <attribute> elements can be inconsistent
+		return attribute;
+	}
+	
 	/**
 	 * @param uri
 	 * @param localName

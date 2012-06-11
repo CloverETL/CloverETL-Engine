@@ -34,19 +34,15 @@ public abstract class WritableContainer implements Writable {
 
 	private PortBinding portBinding;
 
-	protected final char[] name;
+	protected final DynamicName name;
 	protected final boolean writeNull;
 
 	protected Writable[] children = new Writable[0];
 	protected WritableNamespace[] namespaces = new WritableNamespace[0];
 	protected WritableAttribute[] attributes = new WritableAttribute[0];
 
-	public WritableContainer(String name, String prefix, boolean writeNull, PortBinding portBinding) {
-		if (prefix != null && !prefix.isEmpty()) {
-			this.name = (prefix + ":" + name).toCharArray();
-		} else {
-			this.name = name != null ? name.toCharArray() : null;
-		}
+	public WritableContainer(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding) {
+		this.name = new DynamicName(name, prefix);
 		this.writeNull = writeNull;
 		
 		this.portBinding = portBinding;
@@ -65,14 +61,14 @@ public abstract class WritableContainer implements Writable {
 			MappingWriteState state = mapping.getState();
 		
 			if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
-				writeContainerStart(formatter);
+				writeContainerStart(formatter, availableData);
 			} 
 
 			writeContent(formatter, availableData);
 			
 			state = mapping.getState();
 			if (state == MappingWriteState.ALL || state == MappingWriteState.FOOTER) {
-				writeContainerEnd(formatter);
+				writeContainerEnd(formatter, availableData);
 			}
 		}
 	}
@@ -127,9 +123,10 @@ public abstract class WritableContainer implements Writable {
 		return true;
 	}
 
-	public void writeContainerStart(TreeFormatter formatter) throws JetelException{
+	public void writeContainerStart(TreeFormatter formatter, DataRecord[] availableData) throws JetelException{
 	}
 
-	public void writeContainerEnd(TreeFormatter formatter) throws JetelException {
+	public void writeContainerEnd(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
 	}
+	
 }

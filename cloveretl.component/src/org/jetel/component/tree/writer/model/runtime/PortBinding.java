@@ -80,10 +80,10 @@ public class PortBinding {
 
 		if (state == MappingWriteState.HEADER && container == mapping.getPartitionElement()) {
 			mapping.setState(MappingWriteState.NOTHING);
-			container.writeContainerStart(formatter);
+			container.writeContainerStart(formatter, availableData);
 		} else if (state == MappingWriteState.FOOTER && container == mapping.getPartitionElement()) {
 			mapping.setState(MappingWriteState.ALL);
-			container.writeContainerEnd(formatter);
+			container.writeContainerEnd(formatter, availableData);
 		} else if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 			DataRecord[] currentAvailableData = new DataRecord[availableData.length];
 			System.arraycopy(availableData, 0, currentAvailableData, 0, availableData.length);
@@ -98,11 +98,11 @@ public class PortBinding {
 			
 			iterator = portData.iterator(keys, parentKeys, keyDataRecord, nextKeyDataRecord);
 
-			container.writeContainerStart(formatter);
+			container.writeContainerStart(formatter, availableData);
 			while (iterator.hasNext()) {
 				writeRecord(formatter, currentAvailableData, iterator.next());
 			}
-			container.writeContainerEnd(formatter);
+			container.writeContainerEnd(formatter, availableData);
 		}
 	}
 

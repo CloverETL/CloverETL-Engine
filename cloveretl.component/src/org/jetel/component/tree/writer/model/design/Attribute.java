@@ -18,7 +18,11 @@
  */
 package org.jetel.component.tree.writer.model.design;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jetel.component.tree.writer.util.MappingVisitor;
+import org.jetel.component.tree.writer.xml.XmlMappingValidator;
+import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -30,8 +34,12 @@ import org.jetel.component.tree.writer.util.MappingVisitor;
  */
 public class Attribute extends AbstractNode {
 	
+	public static final String XML_ATTRIBUTE_DEFINITION = "attribute";
+	
+	public static final String INVALID_TEMPLATE_ELEMENT = "Attribute element must be a child of standard element!";
+	
 	private static final MappingProperty[] AVAILABLE_PROPERTIES = {MappingProperty.NAME, 
-		MappingProperty.VALUE};
+		MappingProperty.VALUE, MappingProperty.INDEX};
 	
 	public static final boolean WRITE_NULL_DEFAULT = false;
 
@@ -42,6 +50,21 @@ public class Attribute extends AbstractNode {
 	@Override
 	public void accept(MappingVisitor visitor) throws Exception {
 		visitor.visit(this);
+	}
+	
+	public void setProperty(String localName, String attributeValue) throws XMLStreamException {
+		MappingProperty keyword = MappingProperty.fromString(localName);
+		if (!setProperty(keyword, attributeValue)) {
+			throw new XMLStreamException(TreeWriterMapping.UNKNOWN_ATTRIBUTE + localName);
+		}
+	}
+
+	@Override
+	public String getProperty(MappingProperty property) {
+		if (property == MappingProperty.INDEX) {
+			return String.valueOf(parent.getAttributes().indexOf(this));
+		}
+		return super.getProperty(property);
 	}
 	
 	@Override
@@ -73,4 +96,10 @@ public class Attribute extends AbstractNode {
 	public String getDescription() {
 		return "An XML attribute. Example: <element0 attribute=\"value\">";
 	}
+	
+	public boolean isChild() {
+		String name = getProperty(MappingProperty.NAME);
+		return !StringUtils.isEmpty(name) && name.matches(XmlMappingValidator.QUALIFIED_FIELD_REFERENCE_PATTERN);
+	}
+	
 }

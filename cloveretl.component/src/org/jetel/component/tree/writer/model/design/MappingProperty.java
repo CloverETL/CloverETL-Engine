@@ -41,6 +41,7 @@ public enum MappingProperty {
 	PARTITION("partition"), 	//True|False value
 	VALUE("value"),
 	WRITE("write"),
+	INDEX("index"), // position of attribute among all attributes
 	
 	OMIT_NULL_ATTRIBUTE("omitNullAttribute"),
 	WRITE_NULL_ATTRIBUTE("writeNullAttribute"),
