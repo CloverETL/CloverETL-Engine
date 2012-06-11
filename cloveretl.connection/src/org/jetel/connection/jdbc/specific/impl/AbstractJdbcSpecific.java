@@ -57,6 +57,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -644,11 +645,19 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
-		int jetelTypeToSql = jetelType2sql(field);
-		if (jetelTypeToSql == Types.VARCHAR && (sqlType == Types.CHAR || sqlType == Types.CLOB)) {
-			return true;
-		}
-		return sqlType == jetelTypeToSql;
+		if (field.getDataType() == DataFieldType.STRING) {
+    		//handle string type
+    		try {
+				//check if given type represents string
+				if (sqlType == Types.CHAR || sqlType == Types.NCHAR || sqlType == Types.VARCHAR ||  
+						sqlType == Types.NVARCHAR || sqlType == Types.CLOB || sqlType == Types.NCLOB) {
+					return true;
+				}
+			} catch (NumberFormatException e) {
+				return false;
+			}
+    	}
+		return sqlType == jetelType2sql(field);
 	}
 
 	@Override
