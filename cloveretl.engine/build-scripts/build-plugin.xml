@@ -167,7 +167,7 @@
 		<echo>required.plugins=${required.plugins}</echo>
 	</target>
 	
-	<target name="compile" depends="init,find-required-plugins" description="Compile sources">
+	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.classes}"/>
 
@@ -434,7 +434,7 @@
 		</copy>
 	</target>
 
-	<target name="dist.src" depends="plugin.xml" description="Creates source distribution">
+	<target name="dist.src" depends="plugin.xml,improve-java-sources" description="Creates source distribution">
 
 		<copy todir="${dist.src}/${plugin.name}/src">
 			<fileset dir="${dir.src.improved}" excludes="${java.src.exclude}"/>
