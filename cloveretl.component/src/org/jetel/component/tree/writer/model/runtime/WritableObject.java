@@ -38,15 +38,15 @@ public class WritableObject extends WritableContainer {
 	private final boolean hidden;
 	private final boolean root;
 
-	public WritableObject(String name, String prefix, boolean writeNull, boolean root) {
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean root) {
 		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root);
 	}
 	
-	public WritableObject(String name, String prefix, boolean writeNull, boolean hidden, boolean root) {
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean hidden, boolean root) {
 		this(name, prefix, writeNull, null, hidden, root);
 	}
 
-	public WritableObject(String name, String prefix, boolean writeNull, PortBinding portBinding, boolean hidden, boolean root) {
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding, boolean hidden, boolean root) {
 		super(name, prefix, writeNull, portBinding);
 		this.hidden = hidden;
 		this.root = root;
@@ -60,8 +60,9 @@ public class WritableObject extends WritableContainer {
 			}
 		} else if (!isNodeEmpty(availableData)) {
 			MappingWriteState state = formatter.getMapping().getState();
+			char[] nodeName = name.getValue(availableData);
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
-				formatter.getTreeWriter().writeStartNode(name);
+				formatter.getTreeWriter().writeStartNode(nodeName);
 				for (Writable namespace : namespaces) {
 					namespace.write(formatter, availableData);
 				}
@@ -76,7 +77,7 @@ public class WritableObject extends WritableContainer {
 			}
 			state = formatter.getMapping().getState();
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
-				formatter.getTreeWriter().writeEndNode(name, writeNull);
+				formatter.getTreeWriter().writeEndNode(nodeName, writeNull);
 			}
 		}
 	}

@@ -18,6 +18,9 @@
  */
 package org.jetel.component.tree.writer.util;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -83,23 +86,35 @@ public class MappingWriter implements MappingVisitor {
 			return;
 		}
 
+		List<Attribute> plainAttributes = new LinkedList<Attribute>();
+		List<Attribute> childAttributes = new LinkedList<Attribute>();
+		for (Attribute attribute : element.getAttributes()) {
+			if (attribute.isChild()) {
+				childAttributes.add(attribute);
+			} else {
+				plainAttributes.add(attribute);
+			}
+		}
+		
 		if (element.isTemplate()) {
 			checkCloverPrefix();
 			writer.writeStartElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, ObjectNode.XML_TEMPLATE_DEFINITION);
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
 			String name = element.getProperty(MappingProperty.NAME);
-			String prefix = getBoundPrefix(name, element);
-			if (prefix != null) {
-				name = prefix + ":" + TagName.encode(name.substring(name.indexOf(':') + 1));
+			boolean writeNameAsAttribute = TagName.hasInvalidCharacters(name);
+			
+			String elementName = writeNameAsAttribute ? TreeWriterMapping.MAPPING_KEYWORDS_PREFIX + ":" + ObjectNode.XML_ELEMENT_WITH_NAME_ATTRIBUTE : name;
+			
+			if (element.getChildren().isEmpty() && childAttributes.isEmpty()) {
+				writer.writeEmptyElement(elementName);
 			} else {
-				name = TagName.encode(name);
+				writer.writeStartElement(elementName);
 			}
-			if (element.getChildren().isEmpty()) {
-				writer.writeEmptyElement(name);
-			} else {
-				writer.writeStartElement(name);
-			} 
+			
+			if (writeNameAsAttribute) {
+				writePropertyAsCloverAttribute(element, MappingProperty.NAME);
+			}
 		}
 		
 		//write namespaces
@@ -108,7 +123,7 @@ public class MappingWriter implements MappingVisitor {
 		}
 		
 		//write attributes
-		for (Attribute attribute : element.getAttributes()) {
+		for (Attribute attribute : plainAttributes) {
 			attribute.accept(this);
 		}
 		
@@ -129,10 +144,13 @@ public class MappingWriter implements MappingVisitor {
 		}
 
 		//write children
-		if (!element.getChildren().isEmpty()) {
-			for (AbstractNode child : element.getChildren()) {
-				child.accept(this);
-			}
+		for (Attribute attribute : childAttributes) {
+			attribute.accept(this);
+		}
+		for (AbstractNode child : element.getChildren()) {
+			child.accept(this);
+		}
+		if (!element.getChildren().isEmpty() || !childAttributes.isEmpty()) {
 			writer.writeEndElement();
 		}
 
@@ -152,8 +170,15 @@ public class MappingWriter implements MappingVisitor {
 	public void visit(Attribute element) throws XMLStreamException {
 		String name = element.getProperty(MappingProperty.NAME);
 		if (!StringUtils.isEmpty(name)) {
-			String value = element.getProperty(MappingProperty.VALUE);
-			writer.writeAttribute(name, value == null ? "" : value);
+			if (element.isChild()) {
+				writer.writeEmptyElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, Attribute.XML_ATTRIBUTE_DEFINITION);
+				writePropertyAsCloverAttribute(element, MappingProperty.NAME);
+				writePropertyAsCloverAttribute(element, MappingProperty.VALUE);
+				writePropertyAsCloverAttribute(element, MappingProperty.INDEX);
+			} else {
+				String value = element.getProperty(MappingProperty.VALUE);
+				writer.writeAttribute(name, value == null ? "" : value);
+			}
 		}
 	}
 
