@@ -274,7 +274,7 @@ public class MultiFileReader {
 				if (source == null) continue; // if record no record found
 				if (!channelIterator.isGraphDependentSource()) {
 					autoFilling.setFilename(channelIterator.getCurrentFileName());
-					File tmpFile = FileUtils.getJavaFile(contextURL, autoFilling.getFilename());
+					File tmpFile = new File(autoFilling.getFilename());
 					long timestamp = tmpFile.lastModified();
 					autoFilling.setFileSize(tmpFile.length());
 					autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
