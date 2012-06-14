@@ -340,16 +340,32 @@ public abstract class TreeWriter extends Node {
 			charset = getDefaultCharset();
 		}
 		designMapping = initMapping();
-		compileMapping(designMapping);
+		try {
+			tempDirectory = newTempDir("tree-writer-cache-");
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this, "Could not create temp directory.", e);
+		}
+		compileMapping(designMapping, tempDirectory);
 
 		configureWriter();
+	}
+	
+	private File newTempDir(String prefix) throws IOException {
+		
+		synchronized (TreeWriter.class) {
+			File tmpDir = new File(this.tmpDir == null ? System.getProperty("java.io.tmpdir") : this.tmpDir);
+			File dir = File.createTempFile(prefix, null, tmpDir.exists() ? tmpDir : null);
+			dir.delete();
+			dir.mkdir();
+			return dir;
+		}
 	}
 
 	protected String getDefaultCharset() {
 		return Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER; 
 	}
 	
-	private void compileMapping(TreeWriterMapping mapping) throws ComponentNotReadyException {
+	private void compileMapping(TreeWriterMapping mapping, File tmpDir) throws ComponentNotReadyException {
 		AbstractMappingValidator validator = createValidator(prepareConnectedData());
 		if (validator != null) {
 			validator.setMapping(mapping);
@@ -368,16 +384,7 @@ public abstract class TreeWriter extends Node {
 
 		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
 
-		try {
-			tempDirectory = File.createTempFile("xmlCache", "", tmpDir != null ? new File(tmpDir) : null);
-			tempDirectory.delete();
-			tempDirectory.mkdir();
-			tempDirectory.deleteOnExit();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-
-		engineMapping = compiler.compile(inPorts, partition, tempDirectory.getAbsolutePath());
+		engineMapping = compiler.compile(inPorts, partition, tmpDir.getAbsolutePath());
 
 		portDataMap = compiler.getPortDataMap();
 		for (PortData portData : portDataMap.values()) {
@@ -437,11 +444,13 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
-			File f = File.createTempFile("cache", "", tempDirectory);
-			String fileName = f.getAbsolutePath();
+			File f = File.createTempFile("jdbm-cache-", null, tempDirectory);
+			/*
+			 * just unique name needed
+			 */
 			f.delete();
 
-			sharedCache = CacheRecordManager.createInstance(fileName, cacheSize);
+			sharedCache = CacheRecordManager.createInstance(f.getAbsolutePath(), cacheSize);
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -544,13 +553,12 @@ public abstract class TreeWriter extends Node {
 		try {
 			sharedCache.close();
 			writer.close();
-
 			// clear cache directory, but do not delete directory itself as it is to be reused in another run
 			if (tempDirectory.exists()) {
-				File[] files = tempDirectory.listFiles();
-				for (int i = 0; i < files.length; i++) {
-					files[i].deleteOnExit();
-					files[i].delete();
+				for (File file : tempDirectory.listFiles()) {
+					if (file.isFile()) {
+						file.delete();
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -567,13 +575,18 @@ public abstract class TreeWriter extends Node {
 			}
 		}
 		if (tempDirectory != null && tempDirectory.exists()) {
-			File[] files = tempDirectory.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				files[i].delete();
-			}
-			tempDirectory.deleteOnExit();
-			tempDirectory.delete();
+			delete(tempDirectory);
 		}
+	}
+	
+	private void delete(File file) {
+		
+		if (file.isDirectory()) {
+			for (File child : file.listFiles()) {
+				delete(child);
+			}
+		}
+		file.delete();
 	}
 
 	public void setFileUrl(String fileURL) {
