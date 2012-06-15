@@ -340,14 +340,18 @@ public abstract class TreeWriter extends Node {
 			charset = getDefaultCharset();
 		}
 		designMapping = initMapping();
-		try {
-			tempDirectory = newTempDir("tree-writer-cache-");
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(this, "Could not create temp directory.", e);
-		}
+		tempDirectory = newTreeWriterCacheTempDir();
 		compileMapping(designMapping, tempDirectory);
 
 		configureWriter();
+	}
+
+	private File newTreeWriterCacheTempDir() throws ComponentNotReadyException {
+		try {
+			return newTempDir("tree-writer-cache-");
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this, "Could not create temp directory.", e);
+		}
 	}
 	
 	private File newTempDir(String prefix) throws IOException {
@@ -444,6 +448,9 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
+			if (tempDirectory==null || !tempDirectory.exists()) {
+				tempDirectory = newTreeWriterCacheTempDir();
+			}
 			File f = File.createTempFile("jdbm-cache-", null, tempDirectory);
 			/*
 			 * just unique name needed
@@ -554,13 +561,10 @@ public abstract class TreeWriter extends Node {
 			sharedCache.close();
 			writer.close();
 			// clear cache directory, but do not delete directory itself as it is to be reused in another run
-			if (tempDirectory.exists()) {
-				for (File file : tempDirectory.listFiles()) {
-					if (file.isFile()) {
-						file.delete();
-					}
-				}
+			if (tempDirectory!=null && tempDirectory.exists()) {
+				delete(tempDirectory);
 			}
+			tempDirectory=null;
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
 		}
