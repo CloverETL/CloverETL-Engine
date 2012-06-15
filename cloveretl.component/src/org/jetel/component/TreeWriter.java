@@ -448,8 +448,11 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
-			if (tempDirectory==null || !tempDirectory.exists()) {
-				tempDirectory = newTreeWriterCacheTempDir();
+			if (!tempDirectory.exists()) {
+				boolean dirCreated = tempDirectory.mkdir();
+				if (!dirCreated) {
+					throw new ComponentNotReadyException("Cannot create a temporary directory " + tempDirectory.getAbsolutePath());
+				}
 			}
 			File f = File.createTempFile("jdbm-cache-", null, tempDirectory);
 			/*
@@ -564,7 +567,6 @@ public abstract class TreeWriter extends Node {
 			if (tempDirectory!=null && tempDirectory.exists()) {
 				delete(tempDirectory);
 			}
-			tempDirectory=null;
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
 		}
