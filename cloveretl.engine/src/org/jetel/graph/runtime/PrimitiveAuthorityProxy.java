@@ -91,21 +91,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         	return rr;
         }
         
-        GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-        runtimeContext.setRunId(getUniqueRunId(runId));
-        runtimeContext.setLogLevel(Level.ALL);
-        runtimeContext.setLogLocation(logFile);
-        if (logFile != null) {
-        	prepareLogger(runtimeContext);
-        }
-        runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
-        runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
-        
-        Future<Result> futureResult = null;                
-
-        // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
-		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
-        runtimeContext.setDebugMode(false);
+        GraphRuntimeContext runtimeContext = prepareGraphContext(runId, givenRuntimeContext, logFile);
         
         TransformationGraph graph = null;
 		try {
@@ -120,7 +106,44 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         	return rr;
 		} 
 
-        long startTime = System.currentTimeMillis();
+        return executeGraphBase(rr, runtimeContext, graph);
+	}
+
+	/**
+	 * @param runId
+	 * @param givenRuntimeContext
+	 * @param logFile
+	 * @return
+	 */
+	private GraphRuntimeContext prepareGraphContext(long runId, GraphRuntimeContext givenRuntimeContext, String logFile) {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+        runtimeContext.setRunId(getUniqueRunId(runId));
+        runtimeContext.setLogLevel(Level.ALL);
+        runtimeContext.setLogLocation(logFile);
+        if (logFile != null) {
+        	prepareLogger(runtimeContext);
+        }
+        runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
+        runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
+        
+
+        // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
+		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
+        runtimeContext.setDebugMode(false);
+		return runtimeContext;
+	}
+
+	/**
+	 * @param rr
+	 * @param runtimeContext
+	 * @param futureResult
+	 * @param graph
+	 * @return
+	 */
+	private RunResult executeGraphBase(RunResult rr, GraphRuntimeContext runtimeContext,
+			TransformationGraph graph) {
+		Future<Result> futureResult = null;
+		long startTime = System.currentTimeMillis();
         Result result = Result.N_A;
         try {
     		try {
@@ -159,6 +182,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         rr.duration = totalTime;
         
 		return rr;
+	}
+	
+	@Override
+	public RunResult executeGraph(long runId, TransformationGraph graph, String launcherEntityName, GraphRuntimeContext givenRuntimeContext,
+			String logFile, boolean persistentRunRecord) {
+        GraphRuntimeContext runtimeContext = prepareGraphContext(runId, givenRuntimeContext, logFile);
+        RunResult rr = new RunResult();
+        return executeGraphBase(rr, runtimeContext, graph);
 	}
 	
 	private static long getUniqueRunId(long parentRunId) {

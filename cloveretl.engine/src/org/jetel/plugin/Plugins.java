@@ -38,6 +38,7 @@ import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
+import org.jetel.plugin.generalobject.GeneralObjectFactory;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -166,6 +167,7 @@ public class Plugins {
         org.jetel.ctl.extensions.TLFunctionPluginRepository.init();
         DictionaryTypeFactory.init();
         TLCompilerFactory.init();
+        GeneralObjectFactory.init();
     }
     
     public static Map<String, PluginDescriptor> getPluginDescriptors(){
