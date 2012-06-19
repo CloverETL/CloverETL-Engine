@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -54,10 +55,11 @@ public class WebdavOutputStream extends OutputStream {
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
-	public static String getUsername(URL url) {
+	public static String getUsername(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return userInfo;
@@ -71,10 +73,11 @@ public class WebdavOutputStream extends OutputStream {
 		}
 	}
 	
-	public static String getPassword(URL url) {
+	public static String getPassword(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return "";
@@ -93,7 +96,7 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	public WebdavOutputStream(String url) throws IOException {
-		URL parsedUrl = new URL(URLDecoder.decode(url, "UTF-8"));
+		URL parsedUrl = new URL(url);
 		String username = getUsername(parsedUrl);
 		String password = getPassword(parsedUrl);
 		String outputURL = url;
