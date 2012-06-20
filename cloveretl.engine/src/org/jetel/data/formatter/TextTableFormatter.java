@@ -51,7 +51,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since Oct 27, 2006
  *
  */
-public class TextTableFormatter implements Formatter {
+public class TextTableFormatter extends AbstractFormatter {
 	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writerChannel;

@@ -542,5 +542,9 @@
 	 <FlatFile outputFile="data-out/random.txt" supposedFile="supposed-out/random.DataGeneratorExt.txt"/>
 	 <FlatFile outputFile="data-out/random1.txt" supposedFile="supposed-out/random1.DataGeneratorExt.txt"/>
  </FunctionalTest>
+ 
+ <FunctionalTest ident="DBFWrite" graphFile="graph/graphDBFWrite.grf">
+	 <FlatFile outputFile="data-out/employees.dbf" supposedFile="supposed-out/employees.dbf"/>
+ </FunctionalTest>
 
 </TestScenario>

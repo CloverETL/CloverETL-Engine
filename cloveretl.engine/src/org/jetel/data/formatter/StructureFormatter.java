@@ -48,7 +48,7 @@ import org.jetel.util.string.StringUtils;
  * @since Oct 27, 2006
  *
  */
-public class StructureFormatter implements Formatter {
+public class StructureFormatter extends AbstractFormatter {
 	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;

@@ -667,4 +667,13 @@ public class MultiFileWriter {
 		this.storeRawData = storeRawData; 
 	}
 	
+	/**
+	 * @return Count of records written to the current target.
+	 */
+	public int getCountOfRecordsAtCurrentTarget() {
+		if (currentTarget != null) {
+			return currentTarget.getRecords();
+		}
+		return -1;
+	}
 }

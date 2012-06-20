@@ -64,7 +64,7 @@ import de.schlichtherle.util.zip.ZipOutputStream;
  * @since Oct 12, 2006
  *
  */
-public class CloverDataFormatter implements Formatter {
+public class CloverDataFormatter extends AbstractFormatter {
 	
 	
 	public final static char FILE_SEPARATOR = '/';
@@ -85,7 +85,6 @@ public class CloverDataFormatter implements Formatter {
 	private String fileName;
 	private File idxTmpFile;
 	private ReadableByteChannel idxReader;
-	private boolean append;
 	private boolean isOpen = false;
 	private URL projectURL;
 	
@@ -332,14 +331,6 @@ public class CloverDataFormatter implements Formatter {
 	
 	public boolean isSaveIndex() {
 		return saveIndex;
-	}
-
-	public boolean isAppend() {
-		return append;
-	}
-
-	public void setAppend(boolean append) {
-		this.append = append;
 	}
 
 	@Override

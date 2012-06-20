@@ -44,7 +44,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since 9 Jan 2009
  *
  */
-public class BinaryDataFormatter implements Formatter {
+public class BinaryDataFormatter extends AbstractFormatter {
 
 	WritableByteChannel writer;
 	CloverBuffer buffer;

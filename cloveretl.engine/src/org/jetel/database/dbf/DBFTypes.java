@@ -18,6 +18,9 @@
  */
 package org.jetel.database.dbf;
 
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+
 
 /**
  * @author dpavlis
@@ -41,6 +44,12 @@ public class DBFTypes  {
 	public static final String DATA_ENCODING_XML_ATTRIB_NAME="charset";
 	
 	public static final String DATE_FORMAT_MASK="yyyyMMdd";
+	
+	public static final byte DBF_TYPE_CHARACTER = 'C';
+	public static final byte DBF_TYPE_DATE = 'D';
+	public static final byte DBF_TYPE_NUMBER = 'N';
+	public static final byte DBF_TYPE_LOGICAL = 'L';
+	
 	
 	/**
 	 * @param dBase codepage ID
@@ -68,6 +77,127 @@ public class DBFTypes  {
 			case (byte) 0xCA: return "windows-1254";
             default:
                 return "IBM850";
+		}
+	}
+	
+	public static byte javaCodepage2dbf(String codepage){
+		String name=codepage.toUpperCase();
+		if (name.equals("IBM850"))
+			return 0x02;
+		else if (name.equals("IBM437"))
+			return 0x01;
+		else if (name.equals("ISO-8859-1"))
+			return 0x02;
+		else if (name.equals("WINDOWS-1252"))
+			return 0x03;
+		else if (name.equals("WINDOWS-1255"))
+			return 0x7d;
+		else if (name.equals("WINDOWS-1256"))
+			return 0x7e;
+		else if (name.equals("IBM852"))
+			return 0x64;
+		else if (name.equals("IBM865"))
+			return 0x65;
+		else if (name.equals("IBM866"))
+			return 0x66;
+		else if (name.equals("IBM861"))
+			return 0x67;
+		else if (name.equals("KEYBCS2"))
+			return 0x68;
+		else if (name.equals("IBM737"))
+			return 0x6a;
+		else if (name.equals("IBM857"))
+			return 0x6b;
+		else if (name.equals("X-MAC-GREEK"))
+			return (byte) 0x98;
+		else if (name.equals("WINDOWS-1250"))
+			return (byte) 0xC8;
+		else if (name.equals("WINDOWS-1251"))
+			return (byte) 0xC9;
+		else if (name.equals("WINDOWS-1253"))
+			return (byte) 0xCB;
+		else if (name.equals("WINDOWS-1254"))
+			return (byte) 0xCA;
+		else
+			return 0x02;
+		
+	}
+
+	/**
+	 * @param dBase field type
+	 * @return CloverETL field type
+	 */
+	public static DataFieldType dbfFieldType2Clover(char type){
+		switch(Character.toUpperCase(type)){
+			case 'C': //Character
+				return DataFieldType.STRING;
+			case 'N': //Numeric
+			case 'O': //Double (dBase Level 7)
+				// return DataFieldMetadata.NUMERIC_FIELD;
+				return DataFieldType.DECIMAL; //Dbase numeric is better represented by decimal
+			case 'D': //Date
+			case 'T': //DateTime
+			case '@': //Timestamp (dBase Level 7)
+				return DataFieldType.DATE;
+			case 'L': //Logical 
+				return DataFieldType.BOOLEAN;
+			case 'M': //Memo
+			case 'P': //Picture
+				return DataFieldType.BYTE;
+			case 'I': //Integer
+			case '+': //Autoincrement
+				return DataFieldType.INTEGER;
+			default: return DataFieldType.STRING;
+		}
+	}
+	
+	public static byte cloverType2dbf(DataFieldType type){
+		switch(type){
+		case STRING:
+			return 'C'; // C - Character
+		case NUMBER:
+		case DECIMAL:
+		case LONG:
+		case INTEGER:
+			return 'N'; // N - Numeric
+			/* return 'I'; //Integer */
+		case DATE:
+		case DATETIME:
+			return 'D'; // D - Date
+			 /* return 'T'; //DateTime */
+		case BOOLEAN:
+			return 'L'; // L - Logical
+		/* we don't support memos / byte fields */
+		case BYTE:
+		case CBYTE:
+			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
+		default:
+			return 'C'; // C - Character
+		}
+	}
+	
+	public static int cloverSize2dbf(DataFieldMetadata field){
+		switch(field.getDataType()){
+		case STRING:
+			return field.getSize();
+		case NUMBER:
+		case DECIMAL:
+		case LONG:
+		case INTEGER:
+			return field.getSize();
+			/* return 'I'; //Integer */
+		case DATE:
+		case DATETIME:
+			return  8;	// YYYYMMDD
+			 /* return 'T'; //DateTime */
+		case BOOLEAN:
+			return 1;
+		/* we don't support memos / byte fields */
+		case BYTE:
+		case CBYTE:
+			throw new RuntimeException("DBFDataFormatter does not support Clover's BYTE/CBYTE data type.");
+		default:
+			return field.getSize();
 		}
 	}
 	
