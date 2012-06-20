@@ -80,7 +80,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		InputStream in = null;		
 
 		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
+            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
         } catch (IOException e) {
         	rr.description = "Error - graph definition file can't be read: " + e.getMessage();
         	rr.result = Result.ERROR;
