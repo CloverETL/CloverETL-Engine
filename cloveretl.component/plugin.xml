@@ -140,6 +140,11 @@
 	    <parameter id="className" value="org.jetel.component.DBFDataReader"/>
 	    <parameter id="type" value="DBF_DATA_READER"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBFDataWriter"/>
+	    <parameter id="type" value="DBF_DATA_WRITER"/>
+	</extension>
 
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.ExtFilter"/>
