@@ -1434,7 +1434,7 @@ public class DBOutputTable extends Node {
 			status.add(problem);
 		} finally {
 			if (dbConnection != null) {
-				dbConnection.closeConnection(getId());
+				dbConnection.closeConnection(getId(), OperationType.WRITE);
 			}
 		}
 
