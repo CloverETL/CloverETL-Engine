@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since    July 25, 2002
  * @see        DataFormatter
  */
-public class DelimitedDataFormatter implements Formatter {
+public class DelimitedDataFormatter extends AbstractFormatter {
 	
     private String charSet = null;
 	// Attributes

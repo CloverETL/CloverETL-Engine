@@ -48,7 +48,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see        FixLenDataParser
  * @revision   $Revision$
  */
-public class FixLenDataFormatter implements Formatter {
+public class FixLenDataFormatter extends AbstractFormatter {
 
 	private CloverBuffer dataBuffer;
 

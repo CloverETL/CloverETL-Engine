@@ -322,9 +322,9 @@ public class DBFDataParser extends AbstractParser {
         	}
         }
         
-        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
-            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
-        }
+//        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
+//            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
+//        }
         // initialize array of fields sizes
         fieldSizes = new int[metadata.getNumFields()];
         for (int i = 0; i < fieldSizes.length; i++) {

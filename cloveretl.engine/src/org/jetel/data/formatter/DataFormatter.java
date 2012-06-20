@@ -44,7 +44,7 @@ import org.jetel.util.string.QuotingDecoder;
  * @since      26. 9. 2005
  * @see        Formatter
  */
-public class DataFormatter implements Formatter {
+public class DataFormatter extends AbstractFormatter {
 	private String charSet = null;
 	private CloverBuffer fieldBuffer;
 	private CloverBuffer fieldFiller;

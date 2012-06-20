@@ -49,7 +49,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 17th July 2009
  * @since 15th January 2007
  */
-public abstract class XLSFormatter implements Formatter {
+public abstract class XLSFormatter extends AbstractFormatter {
 	
     /**
      * The type of a XLS(X) that should be used.
