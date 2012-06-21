@@ -507,6 +507,7 @@ public class RunGraph extends Node{
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphProperties()));
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
+		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
 		
 		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, runtimeContext, outputFileName);
 		
@@ -518,14 +519,14 @@ public class RunGraph extends Node{
 		if (rr.result == Result.ABORTED) {
         	outputRecordData.setResult("Aborted");
         	outputRecordData.setDescription("Graph execution aborted.");
-        	System.err.println(graphFileName + ": " + "Execution of graph aborted!");
+        	logger.info(graphFileName + ": " + "Execution of graph aborted!");
 		} else if (rr.result == Result.FINISHED_OK) {
         	outputRecordData.setResult("Finished successfully");
     		outputRecordData.setDescription("");
 		} else {
         	outputRecordData.setResult(Result.ERROR.equals(rr.result) ? "Error" : rr.result.message());
         	outputRecordData.setDescription("Execution of graph failed! " + rr.description);
-            System.err.println(graphFileName + ": " + "Execution of graph failed! " + rr.description);
+            logger.info(graphFileName + ": " + "Execution of graph failed! " + rr.description);
 		}
 		return Result.FINISHED_OK == rr.result;
 	}
