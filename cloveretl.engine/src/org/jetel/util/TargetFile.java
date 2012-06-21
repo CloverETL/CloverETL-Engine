@@ -506,7 +506,6 @@ public class TargetFile {
     private void initOutput() throws IOException, ComponentNotReadyException {
     	if (formatter == null) formatter = formatterProvider.getNewFormatter();
     	formatter.init(metadata);
-    	formatter.setAppend(appendData);
     	setNextOutput();
     }
     
