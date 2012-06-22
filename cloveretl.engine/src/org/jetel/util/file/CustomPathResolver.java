@@ -41,8 +41,8 @@ public interface CustomPathResolver {
 	 * to given relative path and home directory specified in contextURL attribute.
 	 * If null is returned the other CustomPathResolver implementation are used and finally if none of them has
 	 * success the default clover implementation is used.
-	 * @param contextURL
-	 * @param input
+	 * @param contextURL working/home directory
+	 * @param input URL of the source file
 	 * @return
 	 */
 	public InputStream getInputStream(URL contextURL, String input) throws IOException;
@@ -52,8 +52,8 @@ public interface CustomPathResolver {
 	 * to given relative path and home directory specified in contextURL attribute.
 	 * If null is returned the other CustomPathResolver implementation are used and finally if none of them has
 	 * success the default clover implementation is used.
-	 * @param contextURL
-	 * @param input
+	 * @param contextURL working/home directory
+	 * @param input URL of the target file
 	 * @return
 	 */
 	public OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel) throws IOException;
