@@ -50,7 +50,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class HadoopConnectionInstance implements IHadoopConnection {
 
 	
-	private static final Log logger = LogFactory.getLog(HadoopConnectionInstance.class);
+	// private static final Log logger = LogFactory.getLog(HadoopConnectionInstance.class);
 	private FileSystem dfs;
 	
 	
