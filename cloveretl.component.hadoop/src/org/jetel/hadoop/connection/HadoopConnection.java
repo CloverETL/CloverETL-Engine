@@ -407,7 +407,10 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			this.hadoopModuleImplementationPath = hadoopModuleImplementationPath;
 		}
 
-
+		
+		public void loadFromProperties(Properties properties) throws ComponentNotReadyException {
+			loadFromTypedProperties(new TypedProperties(properties));
+		}
 		
 		private void loadFromTypedProperties(TypedProperties properties) throws ComponentNotReadyException {
 			this.host=properties.getStringProperty(XML_HADOOP_HOST);
