@@ -24,7 +24,7 @@
 	<!-- =========================== FILESETS ============================= -->
 	<fileset id="libs" dir="${dir.lib}">
 		<include name="hadoop-core.jar"/>
-		<include name="commons-configuration.jar"/>
+		<!--<include name="commons-configuration.jar"/>-->
 	</fileset>
 
 	<fileset id="components" dir="${dir.projects}/${parent.project}/dist/plugins/org.jetel.component.hadoop/">
