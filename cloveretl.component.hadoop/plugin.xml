@@ -27,5 +27,10 @@
 		<parameter id="className" value="org.jetel.hadoop.component.HadoopReader"/>
 		<parameter id="type" value="HADOOP_READER"/>
 	</extension>
+	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.hadoop.connection.HadoopPathResolver"/>
+		<parameter id="type" value="HADOOP_HDFS"/>
+	</extension>
 
 </plugin>
