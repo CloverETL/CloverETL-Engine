@@ -39,6 +39,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.protocols.CustomPathResolverFactory;
 
 /**
  * This class contains all static method, which provide access to all loadable plugins.
@@ -166,6 +167,7 @@ public class Plugins {
         org.jetel.ctl.extensions.TLFunctionPluginRepository.init();
         DictionaryTypeFactory.init();
         TLCompilerFactory.init();
+        CustomPathResolverFactory.init();
     }
     
     public static Map<String, PluginDescriptor> getPluginDescriptors(){
