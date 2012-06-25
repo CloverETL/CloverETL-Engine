@@ -141,7 +141,7 @@
 	
 	<target name="copy-java-sources" depends="init">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
-			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
+			<fileset dir="${dir.src}" />
 		</copy>
 	</target>
 	
