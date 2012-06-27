@@ -46,7 +46,9 @@ public class HadoopPathResolver implements CustomPathResolver {
 					}
 				}
 			} catch (URISyntaxException e) {
-				throw new IOException(String.format("Invalid file path: \"%s\"",input));
+				throw new IOException(String.format("Invalid file path: \"%s\"",input),e);
+			} catch (Exception e){
+				throw new IOException(String.format("Unexpected error during processing file path: \"%s\"",input),e);
 			}
 		}else{
 			return null;
@@ -79,6 +81,8 @@ public class HadoopPathResolver implements CustomPathResolver {
 				}
 			}catch (URISyntaxException e) {
 				throw new IOException(String.format("Invalid file path: \"%s\"",input));
+			}catch (Exception e){
+				throw new IOException(String.format("Unexpected error during processing file path: \"%s\"",input),e);
 			}
 		}else{
 			return null;
