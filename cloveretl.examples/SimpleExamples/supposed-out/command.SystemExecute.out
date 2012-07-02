@@ -9,6 +9,7 @@ graphDBFJoin.grf
 graphDBFJoinTL.grf
 graphDBFJoinTLNew.grf
 graphDBFLoad.grf
+graphDBFWrite.grf
 graphDedup.grf
 graphDenormalizeInline.grf
 graphDenormalizeTL.grf
