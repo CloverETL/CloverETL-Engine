@@ -48,7 +48,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		DynamicRecordBuffer dynamicBuffer = new DynamicRecordBuffer(50000);
 		dynamicBuffer.init();
 		
-		DataRecord record = new DataRecord(getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getMetadata());
 		record.init();
 		
 		for (int i = 0; i < 1000; i++) {
@@ -73,7 +73,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		DynamicRecordBuffer dynamicBuffer = new DynamicRecordBuffer(50000);
 		dynamicBuffer.init();
 		
-		DataRecord record = new DataRecord(getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getMetadata());
 		record.init();
 		
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
@@ -103,7 +103,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		DynamicRecordBuffer dynamicBuffer = new DynamicRecordBuffer(50000);
 		dynamicBuffer.init();
 		
-		DataRecord record = new DataRecord(getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(getMetadata());
 		record.init();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {
@@ -151,7 +151,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		Callable<Void> producent = new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				DataRecord record = new DataRecord(getMetadata());
+				DataRecord record = DataRecordFactory.newRecord(getMetadata());
 				record.init();
 				for (int i = 0; i < 1000; i++) {
 					populateDataRecord(record, i, (i % 2) == 0);
@@ -165,7 +165,7 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		Callable<Void> consument = new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				DataRecord record = new DataRecord(getMetadata());
+				DataRecord record = DataRecordFactory.newRecord(getMetadata());
 				record.init();
 				
 				for (int i = 0; i < 1000; i++) {

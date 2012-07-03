@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
 import org.jetel.exception.ComponentNotReadyException;
@@ -164,7 +165,7 @@ public class SequenceChecker extends Node {
 		boolean isFirst = true; // special treatment for 1st record
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		boolean isOutPort = !getOutPorts().isEmpty();
-		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
+		DataRecord[] records = {DataRecordFactory.newRecord(inPort.getMetadata()), DataRecordFactory.newRecord(inPort.getMetadata())};
 		records[0].init();
 		records[1].init();
 		boolean error = false; 

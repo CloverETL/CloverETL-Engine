@@ -23,6 +23,7 @@
 	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
 	<property name="dir.engine.classes" value="${dir.engine}/build-tmp/classes" />
 	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
+	<property name="dir.license" value="${basedir}/../cloveretl.license"/>
 	
 	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
@@ -57,6 +58,10 @@
 
 	<fileset id="engine-tools" dir="${dir.engine.tools}">
 		<include name="**/*.jar"/>
+	</fileset>
+
+	<fileset id="license-libs" dir="${dir.license}">
+		<include name="dist/*.jar"/>
 	</fileset>
 
 	<path id="cp.cobertura">
@@ -141,7 +146,7 @@
 	
 	<target name="copy-java-sources" depends="init">
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
-			<fileset dir="${dir.src}" excludes="${java.src.exclude}"/>
+			<fileset dir="${dir.src}" />
 		</copy>
 	</target>
 	
@@ -183,6 +188,7 @@
 			<classpath>
 				<fileset refid="plugin-libs"/>
 				<fileset refid="engine-libs"/>
+				<fileset refid="license-libs"/>
 			</classpath>
 			<src path="${dir.src.improved}"/>
 		</javac>
@@ -228,6 +234,7 @@
 		
 		<pathconvert property="plugin-libs.classpath" refid="plugin-libs"/>
 		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
+		<pathconvert property="license-libs.classpath" refid="license-libs"/>
 
 		<if><available file="${engine.mapping.all}"/>
 			<then>
@@ -264,6 +271,7 @@
 			<libraryjar path="${cp.compile}"/>
 			<libraryjar path="${plugin-libs.classpath}"/>
 			<libraryjar path="${engine-libs.classpath}"/>
+			<libraryjar path="${license-libs.classpath}"/>
 
 			<keepattribute name="InnerClasses" />
 			<keepattribute name="Exceptions" />
@@ -347,6 +355,7 @@
 			
 			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="protected public"/><method access="protected public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.component.ws.ConnectionConfiguration"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.ws.proxy.WSOperationName"><field access="public"/><method access="public"/></keep>
 			
@@ -405,6 +414,15 @@
 			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$MapEntry"><field access="private protected public"/><method access="private protected public"/></keep>
 			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$CollectionEntry"><field access="private protected public"/><method access="private protected public"/></keep>
 			
+			<keep name="com.cloveretl.profiler.engine.DProfiler"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.functions.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.model.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ProfilerStore"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ConnectionValidator"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.utils.ModelUtils"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.components.Profiler"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.components.MappingMetadataFactory"><field access="protected public"/><method access="protected public"/></keep>
+
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->

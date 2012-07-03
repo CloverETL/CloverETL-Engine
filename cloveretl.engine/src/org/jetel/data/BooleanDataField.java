@@ -124,6 +124,11 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
             super.setValue(fromField);
         }
     }
+    
+    public void setValue(boolean value){
+    	this.value=value;
+    	setNull(false);
+    }
 
 	/**
 	 *  Gets the date represented by DateDataField object

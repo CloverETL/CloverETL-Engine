@@ -30,6 +30,6 @@ public interface CollectionWriter {
 	
 	void writeStartCollection(char[] collectionName) throws JetelException;
 	
-	void writeEndCollection(char[] collectionName) throws JetelException;
+	void writeEndCollection(char[] collectionName, boolean writeNullElement) throws JetelException;
 
 }

@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.RecordFilter;
 import org.jetel.component.RecordFilterFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
@@ -44,6 +45,8 @@ import org.jetel.util.string.StringUtils;
  */
 public class EdgeDebuger {
 
+	private static final int MINIMUM_DELAY_BETWEEN_FLUSHES = 5000;
+	
 	private static Log logger = LogFactory.getLog(EdgeDebuger.class);
 
     private final String debugFile;
@@ -68,7 +71,9 @@ public class EdgeDebuger {
     /** the number of data records processed so far */
     private int recordsCounter = 0;
     /** the number of debugged (stored) records */
-    private int debuggedRecords = 0; 
+    private int debuggedRecords = 0;
+    
+    private long lastFlushTime = 0L;
 
     public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode) {
     	this(parentEdge, debugFile, readMode, 0, true, null, null, false);
@@ -90,11 +95,11 @@ public class EdgeDebuger {
     	DataRecordMetadata recordOrdinalMetadata = new DataRecordMetadata("recordOrdinal", DataRecordMetadata.DELIMITED_RECORD);
     	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldMetadata.INTEGER_FIELD, ";"));
 
-    	recordOrdinal = new DataRecord(recordOrdinalMetadata);
+    	recordOrdinal = DataRecordFactory.newRecord(recordOrdinalMetadata);
     	recordOrdinal.init();
 
     	if (!StringUtils.isEmpty(filterExpression)) {
-	    	filterTmpRecord = new DataRecord(metadata);
+	    	filterTmpRecord = DataRecordFactory.newRecord(metadata);
 	    	filterTmpRecord.init();
     	}
 
@@ -170,9 +175,16 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(record);
-
+        	flushIfNeeded();
         	debuggedRecords++;
         }
+    }
+    
+    private void flushIfNeeded() throws IOException, InterruptedException {
+    	if ((System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES && dataTape != null) {
+    		dataTape.flush(false);
+    		lastFlushTime = System.currentTimeMillis();
+    	}
     }
 
     private boolean checkRecordToWrite(DataRecord record) {
@@ -209,7 +221,7 @@ public class EdgeDebuger {
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
         	dataTape.put(recordOrdinal);
         	dataTape.put(byteBuffer);
-
+        	flushIfNeeded();
         	debuggedRecords++;
         }
     }
@@ -260,7 +272,7 @@ public class EdgeDebuger {
 	public void close() {
 		try {
 			if (recordBuffer != null) {
-				DataRecord dataRecord = new DataRecord(metadata);
+				DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
 				dataRecord.init();
 
 				while (recordBuffer.popRecord(recordOrdinal) != null && recordBuffer.popRecord(dataRecord) != null) {

@@ -65,6 +65,7 @@ import org.jetel.component.tree.reader.mappping.MappingVisitor;
 import org.jetel.component.tree.reader.xml.XmlXPathEvaluator;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
@@ -282,7 +283,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		errorPortLogging = isErrorPortLogging(rootContext);
 		if (errorPortLogging) {
 			LOG.info("Using port " + getErrorPortIndex() + " as error logging port");
-			errorLogRecord = new DataRecord(getOutputPort(getErrorPortIndex()).getMetadata());
+			errorLogRecord = DataRecordFactory.newRecord(getOutputPort(getErrorPortIndex()).getMetadata());
 			errorLogRecord.init();
 		}
 	}
@@ -296,7 +297,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			OutputPort port = getOutputPort(i);
 			outputPorts[i] = port;
 
-			DataRecord record = new DataRecord(port.getMetadata());
+			DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
 			record.init();
 			outputRecords[i] = record;
 		}
@@ -441,11 +442,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
 			autoFilling.setFilename(sourceIterator.getCurrentFileName());
-			File tmpFile = new File(autoFilling.getFilename());
-			long timestamp = tmpFile.lastModified();
-			autoFilling.setFileSize(tmpFile.length());
-			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
-			
+			if (!sourceIterator.isGraphDependentSource()) {
+				File tmpFile = new File(autoFilling.getFilename());
+				long timestamp = tmpFile.lastModified();
+				autoFilling.setFileSize(tmpFile.length());
+				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
+			}
 			Arrays.fill(sourcePortRecordCounters, 0);
 
 			return input;

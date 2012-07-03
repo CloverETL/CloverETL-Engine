@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.FirebirdConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -53,7 +54,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new FirebirdConnection(dbConnection, operationType); 
 	}
 
@@ -84,8 +85,8 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	
 	
 	@Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String table) throws SQLException {
-		return super.getColumns(connection, null, table);
+	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
+		return super.getColumns(connection, null, null, table);
 	}
 
 	@Override

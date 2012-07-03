@@ -5,9 +5,13 @@
 
 	<runtime>
 		<library path="bin/"/>
-		<library path="lib/commons-httpclient-3.1.jar"/>
+		<library path="lib/httpclient-4.2.jar"/>
+		<library path="lib/httpcore-4.2.jar"/>
+		<library path="lib/httpmime-4.2.jar"/>
 		<library path="lib/jdbm-2.2.jar" />
 		<library path="lib/saxon8.jar"/>
+		<library path="lib/signpost-commonshttp4-1.2.1.2.jar"/>
+		<library path="lib/signpost-core-1.2.1.2.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
@@ -135,6 +139,11 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.DBFDataReader"/>
 	    <parameter id="type" value="DBF_DATA_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBFDataWriter"/>
+	    <parameter id="type" value="DBF_DATA_WRITER"/>
 	</extension>
 
 	<extension point-id="component">

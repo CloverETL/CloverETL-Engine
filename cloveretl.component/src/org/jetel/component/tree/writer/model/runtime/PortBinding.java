@@ -27,6 +27,7 @@ import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWrit
 import org.jetel.component.tree.writer.portdata.DataIterator;
 import org.jetel.component.tree.writer.portdata.PortData;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -63,7 +64,7 @@ public class PortBinding {
 		this.recordFilter = recordFilter;
 
 		DataRecordMetadata metadata = portData.getInPort().getMetadata();
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		portIndex = portData.getInPort().getInputPortNumber();
@@ -79,10 +80,10 @@ public class PortBinding {
 
 		if (state == MappingWriteState.HEADER && container == mapping.getPartitionElement()) {
 			mapping.setState(MappingWriteState.NOTHING);
-			container.writeContainerStart(formatter);
+			container.writeContainerStart(formatter, availableData);
 		} else if (state == MappingWriteState.FOOTER && container == mapping.getPartitionElement()) {
 			mapping.setState(MappingWriteState.ALL);
-			container.writeContainerEnd(formatter);
+			container.writeContainerEnd(formatter, availableData);
 		} else if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 			DataRecord[] currentAvailableData = new DataRecord[availableData.length];
 			System.arraycopy(availableData, 0, currentAvailableData, 0, availableData.length);
@@ -97,11 +98,11 @@ public class PortBinding {
 			
 			iterator = portData.iterator(keys, parentKeys, keyDataRecord, nextKeyDataRecord);
 
-			container.writeContainerStart(formatter);
+			container.writeContainerStart(formatter, availableData);
 			while (iterator.hasNext()) {
 				writeRecord(formatter, currentAvailableData, iterator.next());
 			}
-			container.writeContainerEnd(formatter);
+			container.writeContainerEnd(formatter, availableData);
 		}
 	}
 

@@ -45,7 +45,7 @@ public class DoubleRecordBuffer {
      */
     public DoubleRecordBuffer(DataRecordMetadata metadata) {
         for (int i = 0; i < dataRecords.length; i++) {
-        	dataRecords[i] = new DataRecord(metadata);
+        	dataRecords[i] = DataRecordFactory.newRecord(metadata);
         	dataRecords[i].init();
         }
 	}

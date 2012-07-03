@@ -18,12 +18,12 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.GenericODBCConnection;
 import org.jetel.exception.JetelException;
 
@@ -51,14 +51,11 @@ public class GenericODBCSpecific extends AbstractJdbcSpecific {
 		//do not close the result set
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException {
-		return new GenericODBCConnection(connection, operationType);
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+		return new GenericODBCConnection(dbConnection, operationType);
 	}
-	
+
 	@Override
 	public ArrayList<String> getSchemas(java.sql.Connection connection) throws SQLException {
 		ArrayList<String> currentCatalog = new ArrayList<String>();

@@ -286,7 +286,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
         // initial creation & initialization of source records
         for (int i = 0; i < sourceRecords.length; i++) {
-            sourceRecords[i] = new DataRecord(inMetadata);
+            sourceRecords[i] = DataRecordFactory.newRecord(inMetadata);
             sourceRecords[i].init();
         }
 

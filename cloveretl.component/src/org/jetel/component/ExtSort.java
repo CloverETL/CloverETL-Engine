@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
@@ -210,7 +211,7 @@ public class ExtSort extends Node {
     public Result execute() throws Exception {
         
         inPort = getInputPort(READ_FROM_PORT);
-        inRecord = new DataRecord(inPort.getMetadata());
+        inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
         inRecord.init();
         DataRecord tmpRecord = inRecord;
          

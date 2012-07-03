@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
@@ -1590,7 +1591,7 @@ public class DB2DataWriter extends Node {
 		inPort = getInputPort(READ_FROM_PORT);
 		inRecord =null;
 		if (inMetadata != null) {
-			inRecord = new DataRecord(fileMetadata);
+			inRecord = DataRecordFactory.newRecord(fileMetadata);
 			inRecord.init();
 		}
 		
@@ -2094,7 +2095,7 @@ class DB2DataConsumer implements DataConsumer {
 		linesRead = 0;
 		errPort = port;
 		if (errPort != null) {
-			errRecord = new DataRecord(errPort.getMetadata());
+			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
 			errRecord.init();
 		}
 	}

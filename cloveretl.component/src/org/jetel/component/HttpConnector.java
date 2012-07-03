@@ -28,35 +28,54 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthPolicy;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.client.utils.URIUtils;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
+import org.apache.http.impl.client.DefaultTargetAuthenticationHandler;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HttpContext;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
@@ -78,6 +97,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.stream.StreamUtils;
@@ -124,6 +144,8 @@ import org.w3c.dom.Element;
  *  (values: BASIC/DIGEST/ANY)</td>
  *  <tr><td><b>username</b></td><td>Username for http authentication</td>
  *  <tr><td><b>password</b></td><td>Password for http authentication</td>
+ *  <tr><td><b>consumerKey</b></td><td>Consumer key to be used with OAuth authentication</td>
+ *  <tr><td><b>consumerSecret</b></td><td>Consumer secret to be used with OAuth authentication</td>
  *  <tr><td><b>responseAsFileName</b></td><td>If specified, the component will write response to a temporary file and send the file name in output field User
  *  can then read with "indirect" reading. If not specified, the response is passed by value. (values true/false)</td>
  *  <tr><td><b>responseDirectory</b></td><td>Directory for response files.</td>
@@ -164,6 +186,8 @@ public class HttpConnector extends Node {
 	private final static String XML_IGNORED_FIELDS_ATTRIBUTE = "ignoredFields";
 	private final static String XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE = "multipartEntities";
 	private final static String XML_URL_FROM_INPUT_FIELD_ATTRIBUTE = "urlInputField";
+	private final static String XML_CONSUMER_KEY_ATTRIBUTE = "consumerKey";
+	private final static String XML_CONSUMER_SECRET_ATTRIBUTE = "consumerSecret";
 
 	private final static String XML_STORE_RESPONSE_TO_TEMP_FILE = "responseAsFileName";
 	/**
@@ -244,6 +268,10 @@ public class HttpConnector extends Node {
 	private String authenticationMethod;
 	private String username;
 	private String password;
+	
+	private String consumerKey;
+	private String consumerSecret;
+	
 	private boolean addInputFieldsAsParameters;
 	private String addInputFieldsAsParametersTo;
 	private String ignoredFields;
@@ -254,13 +282,13 @@ public class HttpConnector extends Node {
 	private String temporaryDirectory;
 	private String temporaryFilePrefix;
 	private String rawUrlToProceed;
-	private StringPart[] stringParts;
+	private PartWithName[] stringParts;
 	private NameValuePair[] body;
 	private String preparedQueryString;
 
-	private HttpClient httpClient;
-	private GetMethod getMethod;
-	private PostMethod postMethod;
+	private DefaultHttpClient httpClient;
+	private HttpGet getMethod;
+	private HttpPost postMethod;
 
 	private InputPortDirect inPort;
 	private OutputPortDirect outPort;
@@ -277,6 +305,25 @@ public class HttpConnector extends Node {
 	private DataRecord record;
 
 	private UsernamePasswordCredentials creds;
+	
+	private PropertyRefResolver refResolver;
+	
+	private HttpResponse response;
+	
+	private OAuthConsumer oauthConsumer;
+	
+	
+	protected class PartWithName {
+		public String name;
+		public StringBody value;
+
+		public PartWithName(String name, StringBody value) {
+			super();
+			this.name = name;
+			this.value = value;
+		}
+	}
+	
 	
 	public HttpConnector(String id) {
 		super(id);
@@ -295,7 +342,7 @@ public class HttpConnector extends Node {
 		// input port initialization
 		inPort = getInputPortDirect(IN_PORT);
 		if (inPort != null) {
-			inRecord = new DataRecord(inPort.getMetadata());
+			inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			inRecord.init();
 			if (inputFieldName != null) {
 				inField = (StringDataField) inRecord.getField(inputFieldName);
@@ -305,7 +352,7 @@ public class HttpConnector extends Node {
 		// output port initialization
 		outPort = getOutputPortDirect(OUT_PORT);
 		if (outPort != null) {
-			outRecord = new DataRecord(outPort.getMetadata());
+			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRecord.init();
 			if (outputFieldName == null) {
 				outField = (StringDataField) outRecord.getField(0);
@@ -352,8 +399,9 @@ public class HttpConnector extends Node {
 				multipartEntities = null;
 			}
 		}
+		
+		refResolver = new PropertyRefResolver();
 	}
-
 
 	@Override
 	public Result execute() throws Exception {
@@ -361,7 +409,8 @@ public class HttpConnector extends Node {
 		if (inPort != null && outPort != null) {
 			// input and output ports are connected, so they will be used
 			for (record = inPort.readRecord(inRecord); record != null && runIt; record = inPort.readRecord(inRecord)) {
-
+				response = null;
+				
 				//urlInputField is set so it will be used (url field is ignored)
 				if (!StringUtils.isEmpty(getUrlInputField())) {
 					setUrl(record.getField(getUrlInputField()).toString());
@@ -380,15 +429,14 @@ public class HttpConnector extends Node {
 				    sendInput(this.requestContent);
 				} else {
 					// execute selected method
-					int statusCode = 0;
 					if (requestMethod.equals(POST)) {
-						statusCode = httpClient.executeMethod(postMethod);
+						response = sendRequest(postMethod);
 					} else if (requestMethod.equals(GET)) {
-						statusCode = httpClient.executeMethod(getMethod);
+						response = sendRequest(getMethod);
 					}
 					// warn if the http response code isn't 200
-					if (statusCode != 200) {
-						logger.warn("Returned code for http request "+rawUrlToProceed+" is " + statusCode);
+					if (response != null && response.getStatusLine().getStatusCode() != 200) {
+						logger.warn("Returned code for http request "+rawUrlToProceed+" is " + response.getStatusLine().getStatusCode());
 					}
 				}
 				
@@ -397,11 +445,12 @@ public class HttpConnector extends Node {
 					outPort.writeRecord(outRecord);
 				}
 
-		        if (requestMethod.equals(POST)) {
-					postMethod.releaseConnection();
-				} else if (requestMethod.equals(GET)) {
-					getMethod.releaseConnection();
-				}
+				response.getEntity().consumeContent();
+//		        if (requestMethod.equals(POST)) {
+//					postMethod.abort();
+//				} else if (requestMethod.equals(GET)) {
+//					getMethod.abort();
+//				}
 
 				SynchronizeUtils.cloverYield();
 			}
@@ -422,14 +471,14 @@ public class HttpConnector extends Node {
 				sendInput(contentToSend);
 			} else {
 				//http request is defined by parameters (method, url, query, ...)
-				int statusCode = 0;
 				if (requestMethod.equals(POST)) {
-				    statusCode = httpClient.executeMethod(postMethod);
+					response = sendRequest(postMethod);
 				} else if (requestMethod.equals(GET)) {
-					statusCode = httpClient.executeMethod(getMethod);
+					response = sendRequest(getMethod);
 				}
-				if (statusCode != 200) {
-					logger.warn("Returned code for http request "+rawUrlToProceed+" is " + statusCode);
+				// warn if the http response code isn't 200
+				if (response != null && response.getStatusLine().getStatusCode() != 200) {
+					logger.warn("Returned code for http request "+rawUrlToProceed+" is " + response.getStatusLine().getStatusCode());
 				}
 			}
 
@@ -440,23 +489,22 @@ public class HttpConnector extends Node {
 				outputFile = Channels.newChannel(System.out);
 			}
 
-			ReadableByteChannel inputConnection = null;
-		
-			if (requestMethod.equals(POST)) {
-			    inputConnection = Channels.newChannel(postMethod.getResponseBodyAsStream());
-			} else if (requestMethod.equals(GET)) {
-				inputConnection = Channels.newChannel(getMethod.getResponseBodyAsStream());
-			}
+			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
 			
 			if (inputConnection != null) {
-				StreamUtils.copy(inputConnection, outputFile);
+				try {
+					StreamUtils.copy(inputConnection, outputFile);
+				} finally {
+					inputConnection.close();
+				}
 			}
 			
-	       if (requestMethod.equals(POST)) {
-				postMethod.releaseConnection();
-			} else if (requestMethod.equals(GET)) {
-				getMethod.releaseConnection();
-			}
+// 			TODO: is this done in 4.x by the line above?			
+// 	        if (requestMethod.equals(POST)) {
+//				postMethod.getreleaseConnection();
+//			} else if (requestMethod.equals(GET)) {
+//				getMethod.releaseConnection();
+//			}
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -489,6 +537,8 @@ public class HttpConnector extends Node {
 			httpConnector.setIgnoredFields(xattribs.getString(XML_IGNORED_FIELDS_ATTRIBUTE, null));
 			httpConnector.setMultipartEntities(xattribs.getString(XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE, null));
 			httpConnector.setUrlInputField(xattribs.getString(XML_URL_FROM_INPUT_FIELD_ATTRIBUTE, null));
+			httpConnector.setConsumerKey(xattribs.getString(XML_CONSUMER_KEY_ATTRIBUTE, null));
+			httpConnector.setConsumerSecret(xattribs.getString(XML_CONSUMER_SECRET_ATTRIBUTE, null));
 
 			return httpConnector;
 		} catch (Exception ex) {
@@ -595,10 +645,10 @@ public class HttpConnector extends Node {
 			if (addInputFieldsAsParameters) {
 				if (StringUtils.isEmpty(addInputFieldsAsParametersTo)) {
 					if (requestMethod.equals(POST)) {
-						status.add(new ConfigurationProblem("Add input fields as parametres must be specified.", Severity.ERROR, this, Priority.NORMAL));
+						status.add(new ConfigurationProblem("Add input fields as parameters must be specified.", Severity.ERROR, this, Priority.NORMAL));
 					}
 				} else if (addInputFieldsAsParametersTo.equals("BODY") && requestMethod.equals(GET)) {
-					status.add(new ConfigurationProblem("Add input fields as parametres must be specified.", Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem("Cannot add fields as parameters to body of HTTP request when GET method is used.", Severity.ERROR, this, Priority.NORMAL));
 				}
 			}
 			
@@ -667,6 +717,23 @@ public class HttpConnector extends Node {
 		if ((!StringUtils.isEmpty(getUsername()) && StringUtils.isEmpty(getPassword())) || (StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword()))) {
 			status.add(new ConfigurationProblem("Both username and password must be entered or none of them.", Severity.ERROR, this, Priority.NORMAL));
 		}
+		
+		// check restrictions of the GET method
+		if (requestMethod.equals(GET)) {
+			// no content allowed in GET request (actually, it is not invalid for GET request to contain content according to standard, but the HTTPClient library does not support it 
+			// as it is not used in practice)
+			if (!StringUtils.isEmpty(requestContent)) {
+				status.add(new ConfigurationProblem("Request content not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_CONTENT_ATTRIBUTE));
+			}
+			if (!StringUtils.isEmpty(inputFieldName)) {
+				status.add(new ConfigurationProblem("Input field not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+			}
+			if (!StringUtils.isEmpty(inputFileUrl)) {
+				status.add(new ConfigurationProblem("Input file URL not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
+			}
+		}
+		
+		
 		return status;
 	}
 	
@@ -691,12 +758,16 @@ public class HttpConnector extends Node {
 					throw new ComponentNotReadyException("Given URL has incompatible protocol: " + protocol);
 				}
 			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException("Given URL has incompatible protocol: " + protocol);
+				throw new ComponentNotReadyException("Given URL '" + rawUrl + "' is invalid.");
 			}
 		}
-		
-		httpClient = new HttpClient();
 
+		// TODO: need to use SingleClientConnManager, because of the bug introduced in httpclient-4.2 (https://issues.apache.org/jira/browse/HTTPCLIENT-1193). When it is fixed, 
+		// the HTTP client can be constructed as follows:
+		// httpClient = new DefaultHttpClient(); 
+		httpClient = new DefaultHttpClient(new SingleClientConnManager());
+		httpClient.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(3, false));
+		
 		//
 		// proxy usage
 		//
@@ -712,7 +783,9 @@ public class HttpConnector extends Node {
 				throw new ComponentNotReadyException("Malformed proxy URL!", exception);
 			}
 
-			httpClient.getHostConfiguration().setProxy(proxyUrl.getHost(), proxyUrl.getPort());
+			
+			HttpHost proxy = new HttpHost(proxyUrl.getHost(), proxyUrl.getPort());
+			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);			
 		}
 
 		//
@@ -722,7 +795,7 @@ public class HttpConnector extends Node {
 		if (username != null && password != null) {
 			//create credentials
 			creds = new UsernamePasswordCredentials(username, password);
-			httpClient.getState().setCredentials(AuthScope.ANY, creds);
+			httpClient.getCredentialsProvider().setCredentials(AuthScope.ANY, creds);
 			
 			//set authentication method
 			String authMethod = null;
@@ -736,17 +809,29 @@ public class HttpConnector extends Node {
 				//one of the possible authentication method will be used
 				authMethod = "ANY";
 			}
-			List<String> authPrefs = null;
+			final List<String> authPrefs = new ArrayList<String>();
 			if (authMethod.equals("ANY")) {
-				authPrefs = new ArrayList<String>(2);
 				authPrefs.add(AuthPolicy.BASIC);
 				authPrefs.add(AuthPolicy.DIGEST);
 			} else {
-				authPrefs = new ArrayList<String>(1);
 				authPrefs.add(authMethod);
 			}
 			authPrefs.add(authMethod);
-			httpClient.getParams().setParameter(AuthPolicy.AUTH_SCHEME_PRIORITY, authPrefs);
+			
+			httpClient.setTargetAuthenticationHandler(new DefaultTargetAuthenticationHandler() {
+
+				@Override
+				protected List<String> getAuthPreferences(HttpResponse response, HttpContext context) {
+					return authPrefs;
+				}
+				
+			});
+			
+		}
+		
+		if (!StringUtils.isEmpty(consumerKey) && !StringUtils.isEmpty(consumerSecret)){
+			// Consumer instance that should be used (used for OAuth authentication)
+			oauthConsumer = new CommonsHttpOAuthConsumer(getConsumerKey(), getConsumerSecret());				
 		}
 
 		if (requestMethod.equals(POST)) {
@@ -754,46 +839,61 @@ public class HttpConnector extends Node {
 			if( logger.isDebugEnabled() ){
 				logger.debug("Creating POST request to " + rawUrlToProceed);
 			}
-			postMethod = new PostMethod(FileURLParser.getOuterAddress(rawUrlToProceed));
-			postMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
-			//do authentication
-			if (username != null && password != null) {
-				postMethod.setDoAuthentication(true);
-			}
+			postMethod = new HttpPost(FileURLParser.getOuterAddress(rawUrlToProceed));
+			
+//			NOTICE: according to HttpClient 4.x tutorial, the authentication is handled automatically, 
+//			if 'ClientPNames.HANDLE_AUTHENTICATION' parameter is not set.
+//			
+//			if (username != null && password != null) {
+//				postMethod.setDoAuthentication(true);			
+//			}
+			
 			//set multipart request entity if any
 			if (stringParts != null) {
-				postMethod.setRequestEntity(new MultipartRequestEntity(stringParts, postMethod.getParams()));
+				MultipartEntity entity = new MultipartEntity();
+				for (PartWithName stringPart : stringParts) {
+					entity.addPart(stringPart.name, stringPart.value);
+				}
+				
+				postMethod.setEntity(entity);
 			}
 			//set query string if any
 			if (!StringUtils.isEmpty(preparedQueryString)) {
-				if (!StringUtils.isEmpty(postMethod.getQueryString())) {
-					postMethod.setQueryString(postMethod.getQueryString()+"&"+preparedQueryString);
+				if (!StringUtils.isEmpty(postMethod.getURI().getQuery())) {
+					postMethod.setURI(changeQueryString(postMethod.getURI(), postMethod.getURI().getRawQuery() + "&" + preparedQueryString));				
 				} else {
-					postMethod.setQueryString(preparedQueryString);
+					postMethod.setURI(changeQueryString(postMethod.getURI(), preparedQueryString));				
 				}
 			}
-			//set request body if any
-			if (body != null) {
-				postMethod.setRequestBody(body);
 			
+			//set request body if any
+			//FIXME: this replaces the multipart entity set in the previous step
+			//we leave it as-is to make the behavior compatible with older version using httpClient 3.x
+			//which also cleared the previously set multipart entity.
+			if (body != null) {
+				postMethod.setEntity(new UrlEncodedFormEntity(Arrays.asList(body), charset));
 			}
 		} else if (requestMethod.equals(GET)) {
 			//request method is post
 			if( logger.isDebugEnabled() ) {
 				logger.debug("Creating GET request to " + rawUrlToProceed);
 			}
-			getMethod = new GetMethod(FileURLParser.getOuterAddress(rawUrlToProceed));
-			getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
-			//do authentication
-			if (username != null && password != null) {
-				getMethod.setDoAuthentication(true);
-			}
+			getMethod = new HttpGet(FileURLParser.getOuterAddress(rawUrlToProceed));
+
+//			NOTICE: according to HttpClient 4.x tutorial, the authentication is handled automatically, 
+//			if 'ClientPNames.HANDLE_AUTHENTICATION' parameter is not set.
+//			
+//			//do authentication
+//			if (username != null && password != null) {
+//				getMethod.setDoAuthentication(true);
+//			}
+			
 			//set query string if any
 			if (!StringUtils.isEmpty(preparedQueryString)) {
-				if (!StringUtils.isEmpty(getMethod.getQueryString())) {
-					getMethod.setQueryString(getMethod.getQueryString()+"&"+preparedQueryString);
+				if (!StringUtils.isEmpty(getMethod.getURI().getQuery())) {
+					getMethod.setURI(changeQueryString(getMethod.getURI(), getMethod.getURI().getQuery() + "&" + preparedQueryString));
 				} else {
-					getMethod.setQueryString(preparedQueryString);
+					getMethod.setURI(changeQueryString(getMethod.getURI(), preparedQueryString));
 				}
 			}
 		} else {
@@ -809,29 +909,59 @@ public class HttpConnector extends Node {
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request properties reading.", e);
 			}
-
-			// pass request properties to the http connection
-			for (Entry<Object, Object> entry : requestProperties.entrySet()) {
-				// httpConnection.addRequestProperty((String) entry.getKey(), (String) entry.getValue());
-				if (requestMethod.equals(POST)) {
-					postMethod.getParams().setParameter((String) entry.getKey(), (String) entry.getValue());
-				} else if (requestMethod.equals(GET)) {
-					getMethod.getParams().setParameter((String) entry.getKey(), (String) entry.getValue());
-				}
-			}
 			
-			for(Entry<Object, Object> entry : requestProperties.entrySet()) {
-				if (requestMethod.equals(POST)) {
-					postMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
-				} else if (requestMethod.equals(GET)) {
-					getMethod.addRequestHeader((String) entry.getKey(), (String) entry.getValue());
-				}
-			}
+			setHeaderParameters(record);
 		}
-		
-
+	}
+	
+	private static URI changeQueryString(URI uri, String newQuery) {
+		try {
+			URI newURI = URIUtils.createURI(uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath(), newQuery, uri.getFragment());
+			return newURI;
+		} catch (URISyntaxException e) {
+		}
+		return null;
 	}
 
+	/** Sets the additional header parameters and resolving references in context of given record.
+	 * 
+	 * @param record - record to be used to resolve references
+	 * @throws ComponentNotReadyException
+	 */
+	private void setHeaderParameters(DataRecord record) throws ComponentNotReadyException {
+		if (record != null) {
+			Properties fieldValues = new Properties();
+
+			Iterator<DataField> it = record.iterator();
+			while (it.hasNext()) {
+				DataField field = it.next();
+				fieldValues.setProperty(field.getMetadata().getName(), field.toString());
+			}
+		
+			setRefProperties(fieldValues);
+		}
+		
+		// pass request properties to the http connection
+		for (Entry<Object, Object> entry : requestProperties.entrySet()) {
+			String value = refResolver.resolveRef((String) entry.getValue());
+			
+			// check if the value is fully resolved
+			if (PropertyRefResolver.containsProperty(value)) {
+				throw new ComponentNotReadyException(this, "Could not resolve all references in additional HTTP header: '" + (String)entry.getValue() + "' (resolved as '" + value + "')");
+			}
+			
+			if (requestMethod.equals(POST)) {
+				postMethod.getParams().setParameter((String) entry.getKey(), value);
+				postMethod.addHeader((String) entry.getKey(), value);
+				
+			} else if (requestMethod.equals(GET)) {
+				getMethod.getParams().setParameter((String) entry.getKey(), value);
+				getMethod.addHeader((String) entry.getKey(), value);
+			}
+		}
+	}
+	
+	
 	/**
 	 * Prepares all parts of http request.
 	 * @throws ComponentNotReadyException
@@ -891,15 +1021,15 @@ public class HttpConnector extends Node {
 				body = new NameValuePair[unusedMetadata.size()];
 				int i = 0;
 				for (String property : unusedMetadata) {
-					NameValuePair pair = new NameValuePair(property, record.getField(property).toString());
-					body[i] = pair;
+					body[i] = new BasicNameValuePair(property, record.getField(property).toString());
+					i++;
 				}
 			} else {
 				//metadata fields are add to the query string
 				preparedQueryString = "";
 				for (String property : unusedMetadata) {
-					NameValuePair pair = new NameValuePair(property, record.getField(property).toString());
-					preparedQueryString += pair.getName() + "=" + pair.getValue() + "&";
+					NameValuePair pair = new BasicNameValuePair(property, record.getField(property).toString());
+					preparedQueryString += URLEncoder.encode(pair.getName(),"UTF-8") + "=" + URLEncoder.encode(pair.getValue(),"UTF-8") + "&";
 				}
 				if (preparedQueryString.length() > 0) {
 					preparedQueryString = preparedQueryString.substring(0, preparedQueryString.length() - 1);
@@ -910,11 +1040,12 @@ public class HttpConnector extends Node {
 		//parse multipart entities
 		if (multipartEntities != null) {
 			StringTokenizer parts = new StringTokenizer(multipartEntities, ";");
-			stringParts = new StringPart[parts.countTokens()];
+			stringParts = new PartWithName[parts.countTokens()];
 			for (int i = 0; parts.hasMoreTokens(); i++) {
 				String token = parts.nextToken();
 				String value = record.getField(token).toString();
-				stringParts[i] = new StringPart(token, value);
+				
+				stringParts[i] = new PartWithName(token, new StringBody(value));
 			}
 		}
 
@@ -968,6 +1099,16 @@ public class HttpConnector extends Node {
 		return possibleToMapVariables;
 	}
 	
+	/** Sets the properties to be used by reference resolver
+	 * 
+	 * @param props
+	 */
+	private void setRefProperties(Properties props) {
+		if (refResolver.getProperties() != null) {
+			refResolver.getProperties().clear();
+		}
+		refResolver.addProperties(props);
+	}
 
 	/**
 	 * @return String representation of result of the HTTP request
@@ -975,11 +1116,9 @@ public class HttpConnector extends Node {
 	 */
 	private String getRequestResult() throws IOException {
 		InputStream result = null;
-		
-	    if (requestMethod.equals(POST)) {
-			result = postMethod.getResponseBodyAsStream();
-		} else if (requestMethod.equals(GET)) {
-			result = getMethod.getResponseBodyAsStream();
+		HttpEntity entity = response.getEntity();
+		if (entity != null) {
+			result = entity.getContent();
 		}
 
 		BufferedReader reader;
@@ -1007,32 +1146,40 @@ public class HttpConnector extends Node {
 		return sb.toString();
 	}	
 
+	/** Send the request. Additional steps may be done before sending - like signing the message, ...
+	 * 
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	private HttpResponse sendRequest(HttpUriRequest request) throws Exception {
+		// sign the request before sending it 
+		if (oauthConsumer != null) {
+			oauthConsumer.sign(request);
+		}
+		
+		return this.httpClient.execute(request);
+	}
+	
 	/**
 	 * Writes to the HTTP connection.
 	 * 
 	 * @param input
 	 * @throws IOException
 	 */
-	private void sendInput(String input) throws IOException {
-	
-		byte[] bytes;
-		if (charset == null) {
-			bytes = input.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
-		} else {
-			bytes = input.getBytes(charset);
+	private void sendInput(String input) throws Exception {
+		StringEntity entity = new StringEntity(input, charset == null? Defaults.DataParser.DEFAULT_CHARSET_DECODER: charset);
+		if (requestMethod.equals(POST))  {
+		   this.postMethod.setEntity(entity);
+		   response = sendRequest(postMethod);
 		}
-		
-		StringRequestEntity entity = new StringRequestEntity(input);
-		if(requestMethod.equals(POST))  {
-		   this.postMethod.setRequestEntity(entity);
-		   int resultCode = this.httpClient.executeMethod(postMethod);
-		   if(resultCode != 200) {
-			   logger.warn("Returned code for http request "+rawUrlToProceed+" is " + resultCode);
-		   }
-		}
-		
-	
 
+		if (response != null) {
+		    int statusCode = response.getStatusLine().getStatusCode();
+		    if (statusCode != 200) {
+		    	logger.warn("Returned code for http request " + rawUrlToProceed + " is " + statusCode);
+		    }
+		}
 	}
 
 	public void setUrl(String rawUrl) {
@@ -1251,6 +1398,34 @@ public class HttpConnector extends Node {
 	 */
 	public String getAuthenticationMethod() {
 		return authenticationMethod;
+	}
+
+	/**
+	 * @return the consumerKey
+	 */
+	public String getConsumerKey() {
+		return consumerKey;
+	}
+
+	/**
+	 * @param consumerKey the consumerKey to set
+	 */
+	public void setConsumerKey(String consumerKey) {
+		this.consumerKey = consumerKey;
+	}
+
+	/**
+	 * @return the consumerSecret
+	 */
+	public String getConsumerSecret() {
+		return consumerSecret;
+	}
+
+	/**
+	 * @param consumerSecret the consumerSecret to set
+	 */
+	public void setConsumerSecret(String consumerSecret) {
+		this.consumerSecret = consumerSecret;
 	}
 
 }

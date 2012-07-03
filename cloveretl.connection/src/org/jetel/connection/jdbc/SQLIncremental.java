@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -234,7 +236,7 @@ public class SQLIncremental {
 			keyMetadata.addField(SQLUtil.dbMetadata2jetel((String)keyDef[i][NAME], dbMetadata, index, jdbcSpecific));
 		}
 		keyMetadata.normalize();
-		keyRecord = new DataRecord(keyMetadata);
+		keyRecord = DataRecordFactory.newRecord(keyMetadata);
 		keyRecord.init();
 		//prepare trans map for filling key record with updated values
 		for (int i = 0; i < keyDef.length; i++) {
@@ -343,7 +345,7 @@ public class SQLIncremental {
 		StringBuffer preparedQueryBuilder = new StringBuffer();
 		Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(sqlQuery);
 		Matcher keyValueMatcher1 = KEY_VALUE_PATTERN.matcher(sqlQuery);
-		CopySQLData[] tMap = new CopySQLData[keyDef.length];
+		List<CopySQLData> tMap2 = new ArrayList<CopySQLData>();
 		int index = 0;
 		DataField field;
 		JdbcSpecific jdbcSpecific = dbConnection.getJdbcSpecific();
@@ -358,8 +360,8 @@ public class SQLIncremental {
 			//replace it with proper value for logging
 			keyValueMatcher1.appendReplacement(preparedQueryBuilder, field.toString());
 			//create trans map for setting proper values in prepared statement
-			tMap[index] = jdbcSpecific.createCopyObject(jdbcSpecific.jetelType2sql(field.getMetadata()), 
-					field.getMetadata(), keyRecord, index, keyRecord.getMetadata().getFieldPosition(keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length())));
+			tMap2.add(jdbcSpecific.createCopyObject(jdbcSpecific.jetelType2sql(field.getMetadata()), 
+					field.getMetadata(), keyRecord, index, keyRecord.getMetadata().getFieldPosition(keyValueMatcher.group().substring(INCREMENTAL_KEY_INDICATOR.length()))));
 			index++;
 		}
 		keyValueMatcher.appendTail(query);
@@ -368,7 +370,7 @@ public class SQLIncremental {
 		PreparedStatement statement = dbConnection.getSqlConnection().prepareStatement(query.toString());
 		//set starting values from prepared earlier key record
 		for (int i = 0; i < index; i++){
-			tMap[i].setSQL(statement);
+			tMap2.get(i).setSQL(statement);
 		}
 		return statement;
 	}
@@ -390,7 +392,7 @@ public class SQLIncremental {
 	 * Result of the merge is stored in <code>position</code> object.
 	 */
 	public void mergePosition(Properties position) {
-		DataRecord posKeyRecord = new DataRecord(keyRecord.getMetadata());
+		DataRecord posKeyRecord = DataRecordFactory.newRecord(keyRecord.getMetadata());
 		posKeyRecord.init();
 		posKeyRecord.setToNull();
 		initPositionKeyRecord(posKeyRecord, position);

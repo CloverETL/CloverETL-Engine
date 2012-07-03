@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.AbstractParser;
 import org.jetel.exception.BadDataFormatException;
@@ -140,7 +141,7 @@ public class DBFDataParser extends AbstractParser {
     @Override
 	public DataRecord getNext() throws JetelException {
         // create a new data record
-        DataRecord record = new DataRecord(metadata);
+        DataRecord record = DataRecordFactory.newRecord(metadata);
         record.init();
         record = parseNext(record);
         if (exceptionHandler != null) { //use handler only if configured
@@ -321,9 +322,9 @@ public class DBFDataParser extends AbstractParser {
         	}
         }
         
-        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
-            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
-        }
+//        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
+//            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
+//        }
         // initialize array of fields sizes
         fieldSizes = new int[metadata.getNumFields()];
         for (int i = 0; i < fieldSizes.length; i++) {

@@ -114,8 +114,8 @@ public class DBConnectionInstance {
 	 * @return
 	 * @throws SQLException 
 	 */
-	public ResultSetMetaData getColumns(String schema, String table) throws SQLException {
-		return getJdbcSpecific().getColumns(getSqlConnection(), schema, table);
+	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
+		return getJdbcSpecific().getColumns(getSqlConnection(), schema, owner, table);
 	}
 	
 }

@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
@@ -288,7 +289,7 @@ public class TargetFile {
 		}
 
 		// prepare output record
-		record = new DataRecord(outputPort.getMetadata());
+		record = DataRecordFactory.newRecord(outputPort.getMetadata());
 		record.init();
 
 		// parse target url
@@ -558,6 +559,16 @@ public class TargetFile {
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
+        	
+        	if (isFileSourcePreferred()) {
+        		//formatter request java.io.File as data target
+        		try {
+        			setDataTarget(FileUtils.getJavaFile(contextURL, fName));
+        			return;
+        		} catch (Exception e) {
+					//DO NOTHING - just try to open a stream based on the fName in the next step
+        		}
+        	}
             OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
         	byteChannel = Channels.newChannel(os);
         	
@@ -566,7 +577,6 @@ public class TargetFile {
         	} else {
            		setDataTarget(new Object[] {contextURL, fName, os});
         	}
-        	
         } else {
         	byteChannel = channels.next();
         	setDataTarget(byteChannel);
@@ -586,6 +596,13 @@ public class TargetFile {
     	}
     }
     
+    /**
+     * @return <code>true</code> if java.io.File source type is preferred instead of channel
+     */
+    private boolean isFileSourcePreferred() {
+    	return formatter.isFileTargetPreferred();
+    }
+
     /**
      * Sets logger.
      * 

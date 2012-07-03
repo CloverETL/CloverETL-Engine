@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
@@ -1249,12 +1250,12 @@ public class MsSqlDataWriter extends BulkLoader {
 			getNumberOfAddedFields();
 			checkErrPortMetadata();
 
-			errRecord = new DataRecord(errMetadata);
+			errRecord = DataRecordFactory.newRecord(errMetadata);
 			errRecord.init();
 
 			this.dbOutMetadata = createDbOutMetadata();
 
-			dbOutRecord = new DataRecord(dbOutMetadata);
+			dbOutRecord = DataRecordFactory.newRecord(dbOutMetadata);
 			dbOutRecord.init();
 
 			dbParser = new DelimitedDataParser(dbOutMetadata, Defaults.DataParser.DEFAULT_CHARSET_DECODER);

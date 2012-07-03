@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
@@ -889,10 +890,10 @@ public class InformixDataWriter extends BulkLoader {
     		this.dbOutMetadata = createDbOutMetadata();
     		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
 
-    		dbRecord = new DataRecord(dbOutMetadata);
+    		dbRecord = DataRecordFactory.newRecord(dbOutMetadata);
     		dbRecord.init();
     		
-			errRecord = new DataRecord(errMetadata);
+			errRecord = DataRecordFactory.newRecord(errMetadata);
 			errRecord.init();
     		
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);

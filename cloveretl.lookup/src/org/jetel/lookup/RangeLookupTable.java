@@ -32,6 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordComparator;
@@ -294,7 +295,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			dataParser = TextParserFactory.getParser(metadata, charset);
 	    }
 	    
-	    DataRecord tmpRecord = new DataRecord(metadata);
+	    DataRecord tmpRecord = DataRecordFactory.newRecord(metadata);
 	    tmpRecord.init();
 
 	    //read records from file
@@ -317,7 +318,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		
 		// read records from file
 		if (dataParser != null) {
-			DataRecord tmpRecord = new DataRecord(metadata);
+			DataRecord tmpRecord = DataRecordFactory.newRecord(metadata);
 			tmpRecord.init();
 			try {
 				if (fileURL != null) {
@@ -675,6 +676,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return keyMetadata;
 	}
 
+	@Override
+	public void setCurrentPhase(int phase) {
+		//isn't required by the lookup table
+	}
+
 }
 
 class RangeLookup implements Lookup{
@@ -699,7 +705,7 @@ class RangeLookup implements Lookup{
 
 	RangeLookup(RangeLookupTable lookup, RecordKey key, DataRecord record){
 		this.lookupTable = lookup;
-	    tmpRecord=new DataRecord(lookupTable.getMetadata());
+	    tmpRecord=DataRecordFactory.newRecord(lookupTable.getMetadata());
 	    tmpRecord.init();
 	    startField = lookupTable.getStartFields();
 	    endField = lookupTable.getEndFields();

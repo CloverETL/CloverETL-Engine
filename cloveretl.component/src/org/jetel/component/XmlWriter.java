@@ -56,17 +56,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
-import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -261,7 +262,7 @@ public class XmlWriter extends Node {
 	 * www.javlinconsulting.cz
 	 * @created Jan 4, 2008
 	 */
-	protected class XmlFormatter implements Formatter {
+	protected class XmlFormatter extends AbstractFormatter {
 		//File outFile = null;
 		OutputStream os = null; 
 		TransformerHandler th = null;
@@ -504,7 +505,7 @@ public class XmlWriter extends Node {
 		public void run() {
 			while (runIt) {
 				try {
-					DataRecord record = new DataRecord(metadata);
+					DataRecord record = DataRecordFactory.newRecord(metadata);
 					record.init();
 					if (inPort.readRecord(record) == null) // no more input data
 						return;

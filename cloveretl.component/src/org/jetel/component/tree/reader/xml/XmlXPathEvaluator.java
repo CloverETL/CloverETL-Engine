@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 
 import javax.xml.transform.Source;
 
+import net.sf.saxon.Configuration;
+import net.sf.saxon.functions.FunctionLibrary;
 import net.sf.saxon.sxpath.IndependentContext;
 import net.sf.saxon.sxpath.XPathExpression;
 import net.sf.saxon.trans.XPathException;
@@ -35,6 +37,7 @@ import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MappingContext;
 import org.jetel.component.tree.reader.mappping.MappingElement;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.string.TagName;
 
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -43,10 +46,17 @@ import org.jetel.exception.JetelRuntimeException;
  */
 public class XmlXPathEvaluator implements XPathEvaluator {
 
+	public static final String TAG_NAME_FUNCTIONS_NAMESPACE_URI = "http://www.cloveretl.com/ns/TagNameEncoder";
+	
 	private net.sf.saxon.sxpath.XPathEvaluator evaluator = new net.sf.saxon.sxpath.XPathEvaluator();
 	/* cache expression */
 	private Map<String, XPathExpression> expressions = new HashMap<String, XPathExpression>();
 
+	public XmlXPathEvaluator() {
+		FunctionLibrary javaFunctionLibrary = evaluator.getConfiguration().getExtensionBinder();
+		Configuration.getPlatform().declareJavaClass(javaFunctionLibrary, TAG_NAME_FUNCTIONS_NAMESPACE_URI, TagName.class);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<Object> iterate(String xpath, Map<String, String> namespaceBinding, Object context,

@@ -8,6 +8,7 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.exception.ComponentNotReadyException;
@@ -36,7 +37,7 @@ public class DBLookupTest extends CloverTestCase {
 		Properties p = new Properties();
 		p.put("sqlQuery", "select * from customer");
 		DataRecordMetadata customerMetadata = conn.createMetadata(p);
-		customer = new DataRecord(customerMetadata);
+		customer = DataRecordFactory.newRecord(customerMetadata);
 		customer.init();
 		parser = new SQLDataParser(customerMetadata, "select * from customer");
 		parser.init();
@@ -58,7 +59,7 @@ public class DBLookupTest extends CloverTestCase {
 		lookupTable.preExecute();
 		lookup = lookupTable.createLookup(recordKey, customer);
 		RecordKey key = new RecordKey(recordKey.getKeyFields(), customer.getMetadata());
-		DataRecord inRecord = new DataRecord(customer.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(customer.getMetadata());
 		inRecord.init();
 		Lookup lookup2 = lookupTable.createLookup(key, inRecord);
 		DataRecord record;

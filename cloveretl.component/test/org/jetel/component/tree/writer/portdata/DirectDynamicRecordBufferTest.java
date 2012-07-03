@@ -25,6 +25,7 @@ import java.util.List;
 import org.jetel.component.tree.writer.portdata.DirectDynamicRecordBuffer;
 import org.jetel.component.tree.writer.portdata.IndexKey;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.DynamicRecordBuffer1Test;
 import org.jetel.test.CloverTestCase;
@@ -51,7 +52,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		
 		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		
-		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();
 		record.reset();
 		
@@ -86,7 +87,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
 		buffer.init();
 		
-		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();
 		record.reset();
 		
@@ -123,7 +124,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
 		buffer.init();
 		
-		DataRecord record = new DataRecord(DynamicRecordBuffer1Test.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
 		record.init();
 		record.reset();
 

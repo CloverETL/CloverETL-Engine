@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DateDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.AbstractParser;
@@ -133,10 +134,10 @@ public class DataRecordGenerator extends AbstractParser {
 		counter = 0;
 		specialValue = new Object[metadata.getNumFields()][4];
 		// create and initialize output record
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
-		reusableRecord = new DataRecord(metadata);
+		reusableRecord = DataRecordFactory.newRecord(metadata);
 		reusableRecord.init();
 
 		// create metadata for pattern record - fields are set from pattern (not random and sequence values)
@@ -284,7 +285,7 @@ public class DataRecordGenerator extends AbstractParser {
 			random.setSeed(randomSeed);
 		}
 		if (cutMetadata.getNumFields() > 0) {
-			patternRecord = new DataRecord(cutMetadata);
+			patternRecord = DataRecordFactory.newRecord(cutMetadata);
 			patternRecord.init();
 			// prepare approperiate data parser
 			switch (metadata.getRecType()) {

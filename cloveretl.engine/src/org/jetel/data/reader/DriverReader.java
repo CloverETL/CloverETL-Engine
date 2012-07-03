@@ -21,6 +21,7 @@ package org.jetel.data.reader;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
@@ -46,8 +47,8 @@ public class DriverReader implements InputReader {
 	public DriverReader(InputPort inPort, RecordKey key) {
 		this.inPort = inPort;
 		this.key = key;
-		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
-		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
+		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		recCounter = 0;
@@ -56,8 +57,8 @@ public class DriverReader implements InputReader {
 	
 	@Override
 	public void reset() throws ComponentNotReadyException {
-		this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
-		this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
+		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		recCounter = 0;
@@ -125,7 +126,9 @@ public class DriverReader implements InputReader {
 			blocked = false;
 		} else {
 			recCounter++;
-			blocked = (lastCompare = key.compare(rec[CURRENT], rec[NEXT])) != 0;
+			lastCompare = key.compare(rec[CURRENT], rec[NEXT]);
+			inputOrdering = SlaveReader.updateOrdering(lastCompare, inputOrdering);
+			blocked = lastCompare != 0;
 		}
 		return rec[CURRENT];
 	}

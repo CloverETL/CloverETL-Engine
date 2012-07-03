@@ -107,6 +107,7 @@ import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
@@ -1517,7 +1518,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private DataRecord createNewRecord(TLTypeRecord type) {
 		final DataRecordMetadata metaData = type.getMetadata();
-		final DataRecord record = new DataRecord(metaData);
+		final DataRecord record = DataRecordFactory.newRecord(metaData);
 		record.init();
 		record.reset();
 		return record;
@@ -2664,7 +2665,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				// no need to call LookupTable.init() as it was already called in AST building
 				// phase to receive information about key fields
 				DataRecord keyRecord = null;
-				keyRecord = new DataRecord(keyRecordMetadata);
+				keyRecord = DataRecordFactory.newRecord(keyRecordMetadata);
 				keyRecord.init();
 				
 				node.setLookup(node.getLookupTable().createLookup(new RecordKey(keyFields,keyRecordMetadata),keyRecord));

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
@@ -70,11 +71,11 @@ class StreamedPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		next = new DataRecord(inPort.getMetadata());
+		next = DataRecordFactory.newRecord(inPort.getMetadata());
 		next.init();
-		current = new DataRecord(inPort.getMetadata());
+		current = DataRecordFactory.newRecord(inPort.getMetadata());
 		current.init();
-		unused = new DataRecord(inPort.getMetadata());
+		unused = DataRecordFactory.newRecord(inPort.getMetadata());
 		unused.init();
 	}
 

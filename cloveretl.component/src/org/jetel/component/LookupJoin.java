@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
@@ -321,11 +322,11 @@ public class LookupJoin extends Node {
 	public Result execute() throws Exception {
 		// initialize in and out records
 		InputPort inPort = getInputPort(WRITE_TO_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		lookup = getGraph().getLookupTable(lookupTableName).createLookup(recordKey, inRecord);
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
-		DataRecord[] outRecord = { new DataRecord(getOutputPort(READ_FROM_PORT)
+		DataRecord[] outRecord = { DataRecordFactory.newRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
 		outRecord[0].init();
 		outRecord[0].reset();

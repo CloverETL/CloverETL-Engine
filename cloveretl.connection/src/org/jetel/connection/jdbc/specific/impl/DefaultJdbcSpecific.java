@@ -18,11 +18,6 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
-
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
-import org.jetel.exception.JetelException;
 
 /**
  * The simplest implementation of JdbcSpecific, which is used by default 
@@ -35,6 +30,8 @@ import org.jetel.exception.JetelException;
  */
 public class DefaultJdbcSpecific extends AbstractJdbcSpecific {
 
+	public static final String DATABASE_ID = "GENERIC";
+	
 	private static final DefaultJdbcSpecific INSTANCE = new DefaultJdbcSpecific();
 	
 	protected DefaultJdbcSpecific() {
@@ -45,12 +42,4 @@ public class DefaultJdbcSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
-	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new DefaultConnection(dbConnection, operationType, getAutoKeyType());
-	}
-
 }

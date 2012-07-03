@@ -57,7 +57,8 @@ import org.jetel.util.string.StringUtils;
 public class XmlMappingValidator extends AbstractMappingValidator {
 
 	private final static String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
-	public final static String QUALIFIED_FIELD_REFERENCE_PATTERN = "(.*:)?\\$" + INPORT_REFERENCE_PATTERN + "\\.[_A-Za-z\\*]+[_A-Za-z0-9\\*]*";
+	public final static String FIELD_REFERENCE_PATTERN = "\\$" + INPORT_REFERENCE_PATTERN + "\\.[_A-Za-z\\*]+[_A-Za-z0-9\\*]*";
+	public final static String QUALIFIED_FIELD_REFERENCE_PATTERN = "(.*:)?" + FIELD_REFERENCE_PATTERN;
 
 	private boolean oneRecordPerFile = false;
 
@@ -371,6 +372,8 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		} else {
 			if (XMLChar.isValidName(name)) {
 				return true;
+			} else if (XMLChar.isValidName(name.replaceAll(FIELD_REFERENCE_PATTERN, "x"))) {
+				return true;
 			} else {
 				addProblem(element, MappingProperty.NAME, new MappingError("Invalid name " + name, Severity.ERROR));
 			}
@@ -394,7 +397,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 
 	private void checkNamespacePrefixAvailable(AbstractNode source, ContainerNode parent, String prefix,
 			MappingProperty property) {
-		if (!TreeWriterMappingUtil.isNamespacePrefixAvailable(parent, prefix)) {
+		if (!prefix.matches(FIELD_REFERENCE_PATTERN) && !TreeWriterMappingUtil.isNamespacePrefixAvailable(parent, prefix)) {
 			addProblem(source, property, new MappingError("Namespace '" + prefix + "' is not available!", Severity.ERROR));
 		}
 	}

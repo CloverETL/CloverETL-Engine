@@ -85,13 +85,26 @@ public interface JdbcSpecific {
 	/**
 	 * Creates java.sql.Connection, which should follow 
 	 * all specific behaviour with the given operation type.
+	 * Method is intended to be overridden.
 	 * @param connection
 	 * @param operationType
 	 * @return
 	 * @throws JetelException
 	 */
-	public Connection createSQLConnection(DBConnection connection, OperationType operationType) throws JetelException;
-	
+	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
+
+	/**
+	 * Wraps the given connection to a {@link Connection}, which should follow 
+	 * all specific behaviour with the given operation type.
+	 * Method is intended to be overridden.
+	 * @param dbConnection
+	 * @param operationType
+	 * @param sqlConnection
+	 * @return
+	 * @throws JetelException
+	 */
+	public Connection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException;
+
 	/**
 	 * Performs check of metatadata if there are some special (DB specific) requirements.
 	 * @param status
@@ -269,19 +282,21 @@ public interface JdbcSpecific {
 	 * 
 	 * @param connection
 	 * @param schema
+	 * @param owner
 	 * @param table
 	 * @return
 	 */
-	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String table) throws SQLException;
+	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String owner, String table) throws SQLException;
 
     /**
      * Return select sql statement for given table.
      * Usually returns <code>select * from tablename</code>.
      * @param schema
+     * @param owner
      * @param table
      * @return
      */
-    public String compileSelectQuery4Table(String schema, String table);
+    public String compileSelectQuery4Table(String schema, String owner, String table);
 
 	/**
 	 * Returns a Set of ResultSets representing columns in whole database, 

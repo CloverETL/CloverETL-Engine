@@ -23,6 +23,8 @@ package org.jetel.util.string;
  * as a tag name, this utility encodes them as well as any special ASCII characters. These characters are encoded as
  * "_xhhhh" where hhhh is the Unicode of the character as a hexa value. 
  * 
+ * Public static methods of this class can be used in XPath of TreeReader mapping. See XmlXPathEvaluator.
+ * 
  * @author jan.michalica
  */
 public class TagName {
@@ -40,17 +42,16 @@ public class TagName {
 	 * @param s
 	 * @return
 	 */
-	public static String encode(String s) {
+	public static String encode(final String s) {
 		
 		if (s == null) {
 			return null;
 		}
 		
-		StringBuilder sb = new StringBuilder(s.length());
+		final StringBuilder sb = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
-					c == ENC_SEQ_CHAR || (i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'))) {
+			if (isInvalidCharacter(i, c)) {
 				sb.append(ENC_SEQ_START);
 				String scode = Integer.toHexString(c);
 				for (int j = 0; j < 4 - scode.length(); ++j) {
@@ -63,6 +64,30 @@ public class TagName {
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * @param i index of the character
+	 * @param c the character
+	 * @return true iff the character would be escaped by the {@link #encode(String)} method 
+	 */
+	private static boolean isInvalidCharacter(int i, char c) {
+		return !('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
+				c == ENC_SEQ_CHAR || (i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
+	}
+	
+	/**
+	 * @param s
+	 * @return true iff at least one character of the string <code>s</code> would be escaped by the {@link #encode(String)} method
+	 */
+	public static boolean hasInvalidCharacters(String s) {
+		for (int i = 0; i < s.length(); ++i) {
+			char c = s.charAt(i);
+			if (isInvalidCharacter(i, c)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Decodes given input string previously encoded by this class.
@@ -72,13 +97,13 @@ public class TagName {
 	 * @param s
 	 * @return
 	 */
-	public static String decode(String s) {
+	public static String decode(final String s) {
 		
 		if  (s == null) {
 			return null;
 		}
 		
-		StringBuilder sb = new StringBuilder(s.length());
+		final StringBuilder sb = new StringBuilder(s.length());
 		int pos = 0;
 		while (pos < s.length()) {
 			char c = s.charAt(pos++);

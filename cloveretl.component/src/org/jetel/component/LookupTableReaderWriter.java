@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -150,9 +151,10 @@ public class LookupTableReaderWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
+		lookupTable.setCurrentPhase(getPhaseNum());
 		if (writeToTable) {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
-			DataRecord inRecord = new DataRecord(inPort.getMetadata());
+			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			inRecord.init();
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 				lookupTable.put(inRecord);

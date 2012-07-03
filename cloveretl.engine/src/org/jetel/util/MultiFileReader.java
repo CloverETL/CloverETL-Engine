@@ -272,14 +272,18 @@ public class MultiFileReader {
 			try {
 				source = channelIterator.next();
 				if (source == null) continue; // if record no record found
-				autoFilling.setFilename(channelIterator.getCurrentFileName());
-				File tmpFile = new File(autoFilling.getFilename());
-				long timestamp = tmpFile.lastModified();
-				autoFilling.setFileSize(tmpFile.length());
-				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
+				if (!channelIterator.isGraphDependentSource()) {
+					autoFilling.setFilename(channelIterator.getCurrentFileName());
+					File tmpFile = new File(autoFilling.getFilename());
+					long timestamp = tmpFile.lastModified();
+					autoFilling.setFileSize(tmpFile.length());
+					autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
+				}
 				iSource++;
 				parser.setDataSource(source);
-				parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
+				if (!channelIterator.isGraphDependentSource()) {
+					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
+				}
 				Object sourcePosition;
 				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
 					parser.movePosition(sourcePosition);

@@ -20,6 +20,7 @@ package org.jetel.util.file;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,6 +41,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
@@ -1540,6 +1542,60 @@ public class FileUtils {
 			return FileUtils.getInputStream(null, url.toString());
 		}
     }
+    
+
+    /**
+     * Quietly closes the passed IO object.
+     * Does nothing if the argument is <code>null</code>.
+     * Ignores any exceptions throw when closing the object.
+     * 
+     * @param closeable an IO object to be closed
+     */
+	public static void close(Closeable closeable) {
+		if (closeable != null) {
+			try {
+				closeable.close();
+			} catch (IOException ex) {
+				// ignore
+			}
+		}
+	}
+
+	/**
+     * Efficiently copies file contents from source to target.
+     * Creates the target file, if it does not exist.
+     * The parent directories of the target file are not created.
+     * 
+     * @param source source file
+     * @param target target file
+     * @return <code>true</code> if the whole content of the source file was copied.
+     * 
+     * @throws IOException
+     */
+	public static boolean copyFile(File source, File target) throws IOException {
+		FileInputStream inputStream = null;
+		FileOutputStream outputStream = null;
+		FileChannel inputChannel = null;
+		FileChannel outputChannel = null;
+		try {
+			inputStream = new FileInputStream(source);
+			outputStream = new FileOutputStream(target);
+			inputChannel = inputStream.getChannel();
+			outputChannel = outputStream.getChannel();
+	        long size = inputChannel.size();
+	        long pos = 0;
+	        while (pos < size) {
+	            pos += outputChannel.transferFrom(inputChannel, pos, size - pos);
+	        }
+			return pos == size;
+		} finally {
+			close(outputChannel);
+			close(outputStream);
+			close(inputChannel);
+			close(inputStream);
+		}
+	}
+
 
 }
 

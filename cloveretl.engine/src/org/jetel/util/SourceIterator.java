@@ -81,6 +81,9 @@ public class SourceIterator {
 	private String currentSourceName = UNKNOWN_SOURCE_NAME;
 	
 	private ProcessingType defaultProcessingType = ProcessingType.STREAM;
+	
+	// true if fileURL contains port or dictionary protocol
+	private boolean isGraphDependentSource;
 
 	public SourceIterator(InputPort inputPort, URL contextURL, String fileURL) {
 		this.inputPort = inputPort;
@@ -210,6 +213,8 @@ public class SourceIterator {
 
 		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
 		this.filenameIterator = files.iterator();
+		
+		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
 	}
 
 	private void preparePortIterator() throws ComponentNotReadyException {
@@ -360,4 +365,7 @@ public class SourceIterator {
 		this.defaultProcessingType = defaultProcessingType;
 	}
 
+	public boolean isGraphDependentSource() {
+		return isGraphDependentSource;
+	}
 }

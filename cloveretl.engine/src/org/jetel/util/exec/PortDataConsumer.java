@@ -24,6 +24,7 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
@@ -107,7 +108,7 @@ public class PortDataConsumer implements DataConsumer {
 		} catch (IOException e) {
 			throw new RuntimeException("Unable to close previous data source.", e);
 		}
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
 

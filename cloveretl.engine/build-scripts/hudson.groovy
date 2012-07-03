@@ -9,7 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional|tests-after-commit|tests-reset|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -57,7 +57,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial",
+		"-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -135,6 +135,9 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
 	}
 	if (testName == "night") { //night tests need more memory
+		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+	}
+	if (testName == "performance") {
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
 	

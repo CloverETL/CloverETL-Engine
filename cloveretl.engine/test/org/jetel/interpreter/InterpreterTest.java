@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
@@ -117,18 +118,18 @@ public class InterpreterTest extends CloverTestCase {
 		metadataBinary.addField(new DataFieldMetadata("Binary",DataFieldMetadata.BYTE_FIELD, ";"));
 		metadataBinary.addField(new DataFieldMetadata("Compressed",DataFieldMetadata.BYTE_FIELD_COMPRESSED, "\n"));
 
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
-		record1 = new DataRecord(metadata1);
+		record1 = DataRecordFactory.newRecord(metadata1);
 		record1.init();
-		out = new DataRecord(metaOut);
+		out = DataRecordFactory.newRecord(metaOut);
 		out.init();
-		out1 = new DataRecord(metaOut1);
+		out1 = DataRecordFactory.newRecord(metaOut1);
 		out1.init();
 		
-		recBinary= new DataRecord(metadataBinary);
+		recBinary= DataRecordFactory.newRecord(metadataBinary);
 		recBinary.init();
-		recBinaryOut=new DataRecord(metadataBinary);
+		recBinaryOut=DataRecordFactory.newRecord(metadataBinary);
 		recBinaryOut.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
@@ -2907,7 +2908,7 @@ public class InterpreterTest extends CloverTestCase {
 			for (int i=0; i<4; i++) {
 				outputMetadata[i] = metaOut.duplicate();
 				outputMetadata[i].setName("metaPort" + i);
-				outputRecords[i] = new DataRecord(outputMetadata[i]);
+				outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[i]);
 				outputRecords[i].init();
 			}
 
@@ -2919,7 +2920,7 @@ public class InterpreterTest extends CloverTestCase {
 			inputMetadata[0].setName("in");
 			
 			DataRecord[] inputRecords = new DataRecord[1];
-			inputRecords[0] = new DataRecord(inputMetadata[0]);
+			inputRecords[0] = DataRecordFactory.newRecord(inputMetadata[0]);
 			inputRecords[0].init();
 			
 			final String NAME_CONTENTS = "  My name ";
@@ -3163,7 +3164,7 @@ public class InterpreterTest extends CloverTestCase {
 			for (int i=0; i<4; i++) {
 				outputMetadata[i] = metaOut.duplicate();
 				outputMetadata[i].setName("metaPort" + i);
-				outputRecords[i] = new DataRecord(outputMetadata[i]);
+				outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[i]);
 				outputRecords[i].init();
 			}
 
@@ -3175,7 +3176,7 @@ public class InterpreterTest extends CloverTestCase {
 			inputMetadata[0].setName("in");
 			
 			DataRecord[] inputRecords = new DataRecord[1];
-			inputRecords[0] = new DataRecord(inputMetadata[0]);
+			inputRecords[0] = DataRecordFactory.newRecord(inputMetadata[0]);
 			inputRecords[0].init();
 			
 			final String NAME_CONTENTS = "  My name ";
@@ -3257,12 +3258,12 @@ public class InterpreterTest extends CloverTestCase {
 
 		for (int i = 0; i < inputRecords.length; i++) {
 			// init input records with their ordinal
-			inputRecords[i] = new DataRecord(inputMetadata[0]);
+			inputRecords[i] = DataRecordFactory.newRecord(inputMetadata[0]);
 			inputRecords[i].init();
 			inputRecords[i].getField("Name").setValue(Integer.toString(i + 1));
 
 			// keep output records blank
-			outputRecords[i] = new DataRecord(outputMetadata[0]);
+			outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[0]);
 			outputRecords[i].init();
 		}
 

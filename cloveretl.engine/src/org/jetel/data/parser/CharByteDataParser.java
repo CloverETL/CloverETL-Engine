@@ -33,6 +33,7 @@ import javax.naming.OperationNotSupportedException;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -160,7 +161,7 @@ public class CharByteDataParser extends AbstractTextParser {
 	 */
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(cfg.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);
@@ -500,7 +501,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			} else {
 				if (!field.isDelimited()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
-					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
+					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(), isSkipFieldLeadingBlanks(idx), field.getShift());
 				} else { // delimited
 					boolean acceptDefaultFieldDelimiter = (policyType == PolicyType.LENIENT && idx == lastNonAutoFilledField); 
 					if (field.isByteBased()) { // delimited byte field consumer
@@ -747,7 +748,6 @@ public class CharByteDataParser extends AbstractTextParser {
 		protected int fieldNumber;
 		private int fieldLength;
 		private boolean lTrim;
-		private boolean rTrim;
 		private int shift;
 
 		/** 
@@ -760,13 +760,12 @@ public class CharByteDataParser extends AbstractTextParser {
 		 * @param shift
 		 */
 		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength, boolean lTrim,
-				boolean rTrim, int shift) {
+				int shift) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.inputReader = inputReader;
 			this.fieldLength = fieldLength;
 			this.lTrim = lTrim;
-			this.rTrim = rTrim;
 			this.shift = shift;
 		}
 
@@ -776,6 +775,9 @@ public class CharByteDataParser extends AbstractTextParser {
 
 			inputReader.skip(shift);
 			inputReader.mark();
+			// DP-465 - DataParser always trims tailing whitespace for fixed-length string fields (search
+			// for "removes tailing blanks" comment). CharByteDataParser should behave the same way.
+			int tailingWhitespaces = 0;
 			for (int i = 0; i < fieldLength; i++) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
@@ -791,16 +793,16 @@ public class CharByteDataParser extends AbstractTextParser {
 						throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 					}
 				}
+				if (Character.isWhitespace(ichr)) {
+					tailingWhitespaces++;
+				} else {
+					tailingWhitespaces = 0;
+				}
 			}
-			CharSequence seq = inputReader.getCharSequence(0);
-			if (lTrim || rTrim) {
+			CharSequence seq = inputReader.getCharSequence(-tailingWhitespaces);
+			if (lTrim) {
 				StringBuilder sb = new StringBuilder(seq);
-				if (lTrim) {
-					StringUtils.trimLeading(sb);
-				}
-				if (rTrim) {
-					StringUtils.trimTrailing(sb);
-				}
+				StringUtils.trimLeading(sb);
 				record.getField(fieldNumber).fromString(sb);
 			} else {
 				record.getField(fieldNumber).fromString(seq);

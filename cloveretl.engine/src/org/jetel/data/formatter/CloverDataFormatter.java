@@ -29,11 +29,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.CloverDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
@@ -62,7 +64,7 @@ import de.schlichtherle.util.zip.ZipOutputStream;
  * @since Oct 12, 2006
  *
  */
-public class CloverDataFormatter implements Formatter {
+public class CloverDataFormatter extends AbstractFormatter {
 	
 	
 	public final static char FILE_SEPARATOR = '/';
@@ -83,7 +85,6 @@ public class CloverDataFormatter implements Formatter {
 	private String fileName;
 	private File idxTmpFile;
 	private ReadableByteChannel idxReader;
-	private boolean append;
 	private boolean isOpen = false;
 	private URL projectURL;
 	
@@ -118,8 +119,10 @@ public class CloverDataFormatter implements Formatter {
 	public void setDataTarget(Object outputDataTarget) {
         //create output stream
     	this.out = (OutputStream) outputDataTarget;
+    	File file = null;
         try {
-			this.fileName = new File(FileUtils.getFile(projectURL, fileURL)).getName();
+        	file = new File(FileUtils.getFile(projectURL, fileURL));
+			this.fileName = file.getName();
 		} catch (MalformedURLException e) {
 			// can't happen - used for obtaining output stream
 		}
@@ -138,8 +141,26 @@ public class CloverDataFormatter implements Formatter {
         }
         isOpen = true;
 
-        //write header information for compatibility testing while later reading
-        writeCompatibilityHeader();
+        if (append) {
+        	if (!(writer instanceof FileChannel)) {
+        		throw new RuntimeException("Seekable stream is required if append is true.");
+        	}
+        	try {
+				if (((FileChannel) writer).size() > 0) {
+					CloverDataParser.checkCompatibilityHeader(Channels.newChannel(new FileInputStream(file)));
+				} else {
+					//write header information for compatibility testing while later reading
+			        writeCompatibilityHeader();
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (ComponentNotReadyException e) {
+				throw new RuntimeException(e);
+			}
+        } else {
+        	//write header information for compatibility testing while later reading
+            writeCompatibilityHeader();
+        }
     }
 
     private void writeCompatibilityHeader() {
@@ -310,14 +331,6 @@ public class CloverDataFormatter implements Formatter {
 	
 	public boolean isSaveIndex() {
 		return saveIndex;
-	}
-
-	public boolean isAppend() {
-		return append;
-	}
-
-	public void setAppend(boolean append) {
-		this.append = append;
 	}
 
 	@Override

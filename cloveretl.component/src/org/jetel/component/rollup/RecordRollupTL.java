@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -74,7 +75,7 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     /** input records used when an array of input records is required */
     private final DataRecord[] inputRecords = new DataRecord[1];
     /** empty data record used instead of null group accumulator for better error reporting in scope of CTL */
-    private final DataRecord emptyRecord = new DataRecord(new DataRecordMetadata("emptyGroupAccumulator"));
+    private final DataRecord emptyRecord = DataRecordFactory.newRecord(new DataRecordMetadata("emptyGroupAccumulator"));
 
     /** group arguments */
     private final TLValue[] groupArguments = new TLValue[] { new TLRecordValue((DataRecord) null) };

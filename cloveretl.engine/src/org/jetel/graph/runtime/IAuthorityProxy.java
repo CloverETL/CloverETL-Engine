@@ -87,6 +87,19 @@ public abstract class IAuthorityProxy {
 	public abstract RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
 
 	/**
+	 * 
+	 * @param runId - ID of parent run, which calls this method.  
+	 * @param graph - ETL transformation graph to execute
+	 * @param launcherEntityName - Arbitrary identification of whoever is launching this graph
+	 * @param runtimeContext - this is a part of request to run a graph (graph will be run with as similar runtime context as is possible), 
+	 * at least additionalProperties are taken into account, also contextURL should be correctly predefined
+	 * @param logFile - path to file where log output of graph will be saved;
+	 * @param persistentRunRecord - whether to create run record for this graph run
+	 * @return
+	 */
+	public abstract RunResult executeGraph(long runId, TransformationGraph graph, String launcherEntityName, GraphRuntimeContext runtimeContext, String logFile, boolean persistentRunRecord);
+	
+	/**
 	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
 	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
 	 *

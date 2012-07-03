@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -1055,7 +1056,7 @@ public class OracleDataWriter extends BulkLoader {
 	    	
 	    	parser.setDataSource(new BufferedInputStream(new FileInputStream(sourceFile)));
 	    	
-	    	DataRecord record = new DataRecord(metadata);
+	    	DataRecord record = DataRecordFactory.newRecord(metadata);
 			record.init();
 	    	
 	    	while ((record = parser.getNext(record)) != null) {

@@ -67,19 +67,21 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
     
     /**
      * Should this record and all its fields be created in plain mode ?<br>
-     * Plai means no "decorators" will be added and this record is deemed to
+     * Plain means no "decorators" will be added and this record is deemed to
      * store values only, no formating or parsing will be performed on this
      * record.
-     * 
      */
     private boolean plain=false;
+    
     
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
 	 * 
 	 * @param _metadata  description of the record structure
+     * @deprecated use factory method {@link DataRecordFactory#newRecord(DataRecordMetadata)} instead
 	 */
+    @Deprecated
 	public DataRecord(DataRecordMetadata _metadata) {
 		this(_metadata,false);
 	}
@@ -91,7 +93,9 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
      * @param _metadata description of the record structure
      * @param plain if true, no formatters and other "extra" objects will be created for
      * fields
+     * @deprecated use factory method {@link DataRecordFactory#newRecord(DataRecordMetadata)} instead
      */
+    @Deprecated
     public DataRecord(DataRecordMetadata _metadata,boolean plain ) {
         this.metadata = _metadata;
         this.plain=plain;

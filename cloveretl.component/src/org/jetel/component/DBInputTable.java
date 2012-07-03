@@ -31,6 +31,7 @@ import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserFactory;
@@ -287,6 +288,9 @@ public class DBInputTable extends Node {
 			//all necessary elements have been initialized in init()
 		} else {
 			autoFilling.reset();
+			if (channelIterator != null) {
+				channelIterator.reset();
+			}
 		}
 	}
 
@@ -305,7 +309,7 @@ public class DBInputTable extends Node {
 					Object source = channelIterator.next();
 					if (source == null) break; // no more data in input port
 					inputParser.setDataSource(source);
-					DataRecord statementRecord = new DataRecord(statementMetadata);
+					DataRecord statementRecord = DataRecordFactory.newRecord(statementMetadata);
 					statementRecord.init();
     				//read statements from byte channel
     				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
@@ -339,7 +343,7 @@ public class DBInputTable extends Node {
 	        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 
     		// we need to create data record - take the metadata from first output port
-    		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+    		DataRecord record = DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
     		record.init();
     		record.reset();
 			parser.setDataSource(connection.getConnection(getId(), OperationType.READ));

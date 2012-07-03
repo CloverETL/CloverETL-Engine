@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.data.formatter.XLSFormatter.XLSType;
@@ -596,7 +597,7 @@ public class XLSReader extends Node {
     
     @Override
     public Result execute() throws Exception {
-        DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+        DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
 
         int errorCount = 0;

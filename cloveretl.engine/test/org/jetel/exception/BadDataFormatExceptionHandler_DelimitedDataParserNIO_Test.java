@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -53,7 +54,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		aParser2 = new DelimitedDataParser(metadata);
 
 		aParser = new DelimitedDataParser(metadata);
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
 	

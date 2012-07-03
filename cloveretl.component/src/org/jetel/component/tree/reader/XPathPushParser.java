@@ -18,17 +18,18 @@
  */
 package org.jetel.component.tree.reader;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 
 import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MappingContext;
+import org.jetel.component.tree.reader.mappping.MappingElement;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataFieldType;
 
 /**
  * This unit traverses tree structure using given mapping. Results of the traversal are pushed into
@@ -92,7 +93,7 @@ public class XPathPushParser {
 		 * for unbound context, switch evaluation context and process nested mappings
 		 */
 		if (mapping.getOutputPort() == null) {
-			Object newContext = evaluator.evaluatePath(mapping.getXPath(), mapping.getNamespaceBinding(), context, mapping);
+			Object newContext = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
 			applyContextMappings(mapping, newContext, dataTarget, -1);
 			return;
 		}
@@ -102,7 +103,7 @@ public class XPathPushParser {
 		/*
 		 * iterate through XPath results
 		 */
-		Iterator<Object> it = evaluator.iterate(mapping.getXPath(), mapping.getNamespaceBinding(), context, mapping);
+		Iterator<Object> it = evaluator.iterate(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
 		/*
 		 * prepare keys to be bound from children (if any)
 		 */
@@ -183,9 +184,9 @@ public class XPathPushParser {
 		}
 		Object value = null;
 		if (mapping.getXPath() != null) {
-			value = evaluator.evaluatePath(mapping.getXPath(), mapping.getNamespaceBinding(), context, mapping);
+			value = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
 		} else {
-			value = evaluator.evaluateNodeName(mapping.getNodeName(), mapping.getNamespaceBinding(), context, mapping);
+			value = evaluator.evaluateNodeName(mapping.getNodeName(), getNamespaceBinding(mapping), context, mapping);
 		}
 		if (value != null) {
 			try {
@@ -243,6 +244,19 @@ public class XPathPushParser {
 		newEx.setIncompleteRecord(record);
 		newEx.setPortIndex(portIndex);
 		return newEx;
+	}
+	
+	private static Map<String, String> getNamespaceBinding(MappingElement mappingElement) {
+		Map<String, String> nsBinging = new HashMap<String, String>();
+		getNamespaceBinding(mappingElement, nsBinging);
+		return nsBinging;
+	}
+
+	private static void getNamespaceBinding(MappingElement mappingElement, Map<String, String> nsBinging) {
+		if (mappingElement.getParent() != null) {
+			getNamespaceBinding(mappingElement.getParent(), nsBinging);
+		}
+		nsBinging.putAll(mappingElement.getNamespaceBinding());
 	}
 	
 }

@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -125,7 +126,7 @@ public abstract class XLSParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 
 		return getNext(record);

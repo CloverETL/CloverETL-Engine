@@ -29,6 +29,7 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.StructureFormatter;
 import org.jetel.data.formatter.provider.StructureFormatterProvider;
@@ -282,7 +283,7 @@ public class StructureWriter extends Node {
 		}
 		//main loop: processing "body" records
 		InputPort bodyPort = getInputPort(BODY_PORT);
-		DataRecord record = new DataRecord(bodyPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(bodyPort.getMetadata());
 		record.init();
 
 		//this initialization has to be here not in pre-execute method,
@@ -712,7 +713,7 @@ public class StructureWriter extends Node {
 
 		@Override
 		public void run() {
-			DataRecord record = new DataRecord(inputPort.getMetadata());
+			DataRecord record = DataRecordFactory.newRecord(inputPort.getMetadata());
 			record.init();
 			try {
 				while (record != null && runIt) {

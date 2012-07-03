@@ -33,6 +33,7 @@ import java.nio.charset.CoderResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -40,6 +41,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.bytes.ByteCharBuffer;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
@@ -72,6 +74,11 @@ public class DataParser extends AbstractTextParser {
 	private CharBuffer charBuffer;
 
 	private ByteBuffer byteBuffer;
+
+	//data source (setDataSource()) can be specified by an instance of ByteCharBuffer
+	//- in this case the instance is persisted in this variable
+	//generally data source is specified either by a ReadableByteChannel (reader) or by this ByteCharBuffer
+	private ByteCharBuffer byteCharBuffer;
 
 	private StringBuilder fieldBuffer;
 
@@ -157,7 +164,7 @@ public class DataParser extends AbstractTextParser {
 	 */
     @Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(cfg.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
 		record = parseNext(record);
@@ -294,6 +301,11 @@ public class DataParser extends AbstractTextParser {
 			if (inputDataSource instanceof CharBuffer) {
 				reader = null;
 				charBuffer = (CharBuffer) inputDataSource;
+			} if (inputDataSource instanceof ByteCharBuffer) {
+				//data source is specified by our custom buffer implementation
+				//which provides CharBuffer and a way how to re-load this buffer (byteCharBuffer.readChar())
+				byteCharBuffer = (ByteCharBuffer) inputDataSource;
+				charBuffer = byteCharBuffer.getCharBuffer();
 			} else if (inputDataSource instanceof ReadableByteChannel) {
 				reader = ((ReadableByteChannel)inputDataSource);
 			} else {
@@ -587,43 +599,51 @@ public class DataParser extends AbstractTextParser {
     		return character;
         }
 
-        if (isEof || reader == null)
+        if (isEof || (reader == null && byteCharBuffer == null)) {
             return -1;
-
-        charBuffer.clear();
-        if (byteBuffer.hasRemaining())
-        	byteBuffer.compact();
-        else
-        	byteBuffer.clear();
-
-        if ((size = reader.read(byteBuffer)) == -1) {
-            isEof = true;
-        } else {
-        	bytesProcessed += size;
         }
-        byteBuffer.flip();
 
-        result = decoder.decode(byteBuffer, charBuffer, isEof);
-//        if (result == CoderResult.UNDERFLOW) {
-//            // try to load additional data
-//        	byteBuffer.compact();
-//
-//            if (reader.read(byteBuffer) == -1) {
-//                isEof = true;
-//            }
-//            byteBuffer.flip();
-//            decoder.decode(byteBuffer, charBuffer, isEof);
-//        } else 
-        if (result.isError()) {
-            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+        //charBuffer is populated either by ReadableByteChannel (reader) or byteCharBuffer
+        if (byteCharBuffer != null) {
+        	//let's byteCharBuffer loads data to charBuffer
+        	byteCharBuffer.readChars();
+        } else { //(reader != null) let's decode bytes from reader to charBuffer
+        
+	        charBuffer.clear();
+	        if (byteBuffer.hasRemaining())
+	        	byteBuffer.compact();
+	        else
+	        	byteBuffer.clear();
+	
+	        if ((size = reader.read(byteBuffer)) == -1) {
+	            isEof = true;
+	        } else {
+	        	bytesProcessed += size;
+	        }
+	        byteBuffer.flip();
+	
+	        result = decoder.decode(byteBuffer, charBuffer, isEof);
+	//        if (result == CoderResult.UNDERFLOW) {
+	//            // try to load additional data
+	//        	byteBuffer.compact();
+	//
+	//            if (reader.read(byteBuffer) == -1) {
+	//                isEof = true;
+	//            }
+	//            byteBuffer.flip();
+	//            decoder.decode(byteBuffer, charBuffer, isEof);
+	//        } else 
+	        if (result.isError()) {
+	            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+	        }
+	        if (isEof) {
+	            result = decoder.flush(charBuffer);
+	            if (result.isError()) {
+	                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+	            }
+	        }
+	        charBuffer.flip();
         }
-        if (isEof) {
-            result = decoder.flush(charBuffer);
-            if (result.isError()) {
-                throw new IOException(result.toString()+" when converting from "+decoder.charset());
-            }
-        }
-        charBuffer.flip();
 		
 		if (charBuffer.hasRemaining()) {
 			final int ret = charBuffer.get();

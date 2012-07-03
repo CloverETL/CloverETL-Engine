@@ -35,6 +35,7 @@ import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.CopySQLData.CopyOracleXml;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.driver.JdbcDriver;
+import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.OracleConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
@@ -67,14 +68,11 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createSQLConnection(org.jetel.connection.jdbc.DBConnection, org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType)
-	 */
 	@Override
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
 	}
-	
+
 	@Override
 	public String quoteIdentifier(String identifier) {
         return ('"' + identifier + '"');

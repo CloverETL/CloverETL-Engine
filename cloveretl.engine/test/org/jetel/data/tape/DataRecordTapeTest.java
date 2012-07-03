@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -48,8 +49,8 @@ protected void setUp() {
     metadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.STRING_FIELD,(short)15));
     metadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,(short)10));
     
-    testRecordA=new DataRecord(metadata);
-    testRecordB=new DataRecord(metadata);
+    testRecordA=DataRecordFactory.newRecord(metadata);
+    testRecordB=DataRecordFactory.newRecord(metadata);
     testRecordA.init();
     testRecordB.init();
     testRecordA.getField(0).setValue("First");

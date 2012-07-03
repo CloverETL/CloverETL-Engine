@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.primitive.ByteArray;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -88,7 +89,7 @@ public class ReadableChannelPortIterator {
 		if (charset == null) charset = DEFAULT_CHARSET;
 
 		// data record
-		record = new DataRecord(inputPort.getMetadata());
+		record = DataRecordFactory.newRecord(inputPort.getMetadata());
 		record.init();
 
 		// create field data wrappers - array of discrete, stream, source data wrappers

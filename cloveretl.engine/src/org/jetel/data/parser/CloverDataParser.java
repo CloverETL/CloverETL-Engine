@@ -31,6 +31,7 @@ import java.nio.channels.ReadableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -92,7 +93,7 @@ public class CloverDataParser extends AbstractParser {
 	 */
 	@Override
 	public DataRecord getNext() throws JetelException {
-		DataRecord record = new DataRecord(metadata);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		return getNext(record);
 	}
@@ -156,7 +157,7 @@ public class CloverDataParser extends AbstractParser {
 			}
 			return (int)indexSkippedBytes%LONG_SIZE_BYTES;
 		} else {
-			DataRecord record = new DataRecord(metadata);
+			DataRecord record = DataRecordFactory.newRecord(metadata);
 			record.init();
 			for (int skipped = 0; skipped < nRec; skipped++) {
 				if (getNext(record) == null) {
@@ -175,7 +176,7 @@ public class CloverDataParser extends AbstractParser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
 	/* (non-Javadoc)
@@ -237,7 +238,7 @@ public class CloverDataParser extends AbstractParser {
 		}
     }
 
-    private static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
+    public static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
         ByteBuffer headerBuffer = ByteBuffer.allocateDirect(Defaults.Component.CLOVER_DATA_HEADER_SIZE);
         headerBuffer.clear();
         

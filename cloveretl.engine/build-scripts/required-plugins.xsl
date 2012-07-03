@@ -48,7 +48,16 @@
 		<xsl:text>/plugins/</xsl:text>
 		<xsl:value-of select="@plugin-id"/>
 		<xsl:text>/cloveretl.</xsl:text>
-		<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+	
+		<xsl:if test="starts-with(@plugin-id,'org.jetel.')">
+			<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+		</xsl:if>
+
+		<xsl:if test="starts-with(@plugin-id,'com.opensys.clover.')">
+			<xsl:value-of select="substring-after(@plugin-id,'com.opensys.clover.')"/>
+			<xsl:text>.commercial</xsl:text>
+		</xsl:if>
+	
 		<xsl:text>.jar</xsl:text>
 	</xsl:template>	
 	
@@ -61,7 +70,16 @@
 		<!-- escape \ for build on windows -->
 		<xsl:call-template name="escapeBackslash"><xsl:with-param name="string"><xsl:value-of select="$home" /></xsl:with-param></xsl:call-template>
 		<xsl:text>/cloveretl.</xsl:text>
-		<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+
+		<xsl:if test="starts-with(@plugin-id,'org.jetel.')">
+			<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+		</xsl:if>
+
+		<xsl:if test="starts-with(@plugin-id,'com.opensys.clover.')">
+			<xsl:value-of select="substring-after(@plugin-id,'com.opensys.clover.')"/>
+			<xsl:text>.commercial</xsl:text>
+		</xsl:if>
+		
 		<xsl:text>/build/classes</xsl:text>
 	</xsl:template>	
 		
