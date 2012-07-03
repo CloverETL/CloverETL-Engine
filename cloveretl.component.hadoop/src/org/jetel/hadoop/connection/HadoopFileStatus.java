@@ -48,6 +48,9 @@ public class HadoopFileStatus {
 		return file;
 	}
 
+	public String getPath(){
+		return file.getPath();
+	}
 
 	public long getSize() {
 		return size;

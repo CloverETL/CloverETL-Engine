@@ -17,15 +17,13 @@ import org.jetel.util.file.FileUtils;
 
 public class HadoopPathResolver implements CustomPathResolver {
 
-	public static String URL_HDFS_PROTOCOL_STRING = "hdfs";
-	private static String URL_HDFS_PROTOCOL_STRING_UPPER = URL_HDFS_PROTOCOL_STRING.toUpperCase();
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 	
 	@Override
 	public InputStream getInputStream(URL contextURL, String input)
 			throws IOException {
 		
-		if (input!=null && (input.startsWith(URL_HDFS_PROTOCOL_STRING) || input.startsWith(URL_HDFS_PROTOCOL_STRING_UPPER))){
+		if (HadoopURLUtils.isHDFSUrl(input)){
 
 			try{
 				final URI inputURI = URI.create(input);
@@ -59,7 +57,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 	public OutputStream getOutputStream(URL contextURL, String input,
 			boolean appendData, int compressLevel) throws IOException {
 		
-		if (input!=null && (input.startsWith(URL_HDFS_PROTOCOL_STRING) || input.startsWith(URL_HDFS_PROTOCOL_STRING_UPPER))){
+		if (HadoopURLUtils.isHDFSUrl(input)){
 
 			try{
 				final URI inputURI = URI.create(input);
