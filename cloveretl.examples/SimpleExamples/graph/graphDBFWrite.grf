@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Tom" created="Fri May 11 09:00:04 CEST 2012" guiVersion="0.0.0.devel" id="1336725904367" licenseType="Evaluation" modified="Fri May 11 11:51:20 CEST 2012" modifiedBy="Tom" name="graphDBFWrite" revision="1.10" showComponentDetails="true">
+<Graph author="Tom" created="Fri May 11 09:00:04 CEST 2012" guiVersion="0.0.0.devel" id="1336725904367" licenseType="Evaluation" modified="Wed Jul 04 14:25:39 CEST 2012" modifiedBy="Tom" name="graphDBFWrite" revision="1.16" showComponentDetails="true">
 <Global>
-<Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0" previewAttachmentCharset="ISO-8859-1"/>
+<Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="employee_fixlen" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="fixed">
 <Field delimiter="," eofAsDelimiter="false" format="#" name="EMP_NO" nullable="true" shift="0" size="16" type="integer"/>
@@ -9,6 +9,22 @@
 <Field delimiter="," eofAsDelimiter="false" name="LAST_NAME" nullable="true" shift="0" size="255" type="string"/>
 <Field delimiter="," eofAsDelimiter="false" name="PHONE_EXT" nullable="true" shift="0" size="16" type="string"/>
 <Field delimiter="," eofAsDelimiter="false" format="dd/MM/yyyy" name="HIRE_DATE" nullable="true" shift="0" size="8" type="date"/>
+<Field delimiter="," eofAsDelimiter="false" name="DEPT_NO" nullable="true" shift="0" size="16" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" name="JOB_CODE" nullable="true" shift="0" size="255" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" name="JOB_GRADE" nullable="true" shift="0" size="64" type="number"/>
+<Field delimiter="," eofAsDelimiter="false" name="JOB_COUNTRY" nullable="true" shift="0" size="128" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" name="SALARY" nullable="true" shift="0" size="64" type="number"/>
+<Field eofAsDelimiter="false" name="FULL_NAME" nullable="true" shift="0" size="255" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="employee_fixlen_reader" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="fixed">
+<Field name="DEL" size="1" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" format="#" name="EMP_NO" nullable="true" shift="0" size="16" type="integer"/>
+<Field delimiter="," eofAsDelimiter="false" name="FIRST_NAME" nullable="true" shift="0" size="255" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" name="LAST_NAME" nullable="true" shift="0" size="255" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" name="PHONE_EXT" nullable="true" shift="0" size="16" type="string"/>
+<Field delimiter="," eofAsDelimiter="false" format="yyyyMMdd" name="HIRE_DATE" nullable="true" shift="0" size="8" type="date"/>
 <Field delimiter="," eofAsDelimiter="false" name="DEPT_NO" nullable="true" shift="0" size="16" type="string"/>
 <Field delimiter="," eofAsDelimiter="false" name="JOB_CODE" nullable="true" shift="0" size="255" type="string"/>
 <Field delimiter="," eofAsDelimiter="false" name="JOB_GRADE" nullable="true" shift="0" size="64" type="number"/>
@@ -65,5 +81,53 @@ function integer transform() {
 </Node>
 <Edge debugMode="false" fromNode="LIST_OF_EMPLOYEES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
 <Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DBF_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/DBFWrite_out.txt" guiHeight="93" guiName="UniversalDataWriter" guiWidth="145" guiX="699" guiY="260" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.dbf" guiHeight="93" guiName="DBFDataReader" guiWidth="128" guiX="125" guiY="260" id="DBF_DATA_READER0" type="DBF_DATA_READER">
+<attr name="guiDescription"><![CDATA[Read the written DBF file]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="93" guiName="Reformat" guiWidth="128" guiX="410" guiY="260" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.EMP_NO = $in.0.EMP_NO;
+	$out.0.FIRST_NAME = trim($in.0.FIRST_NAME);
+	$out.0.LAST_NAME = trim($in.0.LAST_NAME);
+	$out.0.PHONE_EXT = trim($in.0.PHONE_EXT);
+	$out.0.HIRE_DATE = $in.0.HIRE_DATE;
+	$out.0.DEPT_NO = trim($in.0.DEPT_NO);
+	$out.0.JOB_CODE = trim($in.0.JOB_CODE);
+	$out.0.JOB_GRADE = $in.0.JOB_GRADE;
+	$out.0.JOB_COUNTRY = trim($in.0.JOB_COUNTRY);
+	$out.0.SALARY = $in.0.SALARY;
+	$out.0.FULL_NAME = trim($in.0.FULL_NAME);
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Reformat data to delimited]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DBF_DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
