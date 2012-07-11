@@ -40,7 +40,7 @@ public final class TextParserFactory {
 
 	private TextParserFactory() {
 	}
-
+	
 	/**
 	 * Creates data parser according to the configuration and data type. The fastes parser implementation is used.
 	 * 

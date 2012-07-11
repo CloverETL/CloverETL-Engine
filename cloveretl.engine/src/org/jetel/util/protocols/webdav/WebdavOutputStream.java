@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -54,10 +55,11 @@ public class WebdavOutputStream extends OutputStream {
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
-	public static String getUsername(URL url) {
+	public static String getUsername(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return userInfo;
@@ -71,10 +73,11 @@ public class WebdavOutputStream extends OutputStream {
 		}
 	}
 	
-	public static String getPassword(URL url) {
+	public static String getPassword(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return "";
@@ -186,6 +189,8 @@ public class WebdavOutputStream extends OutputStream {
 				}
 				
 				sardine.put(URL, is);
+			} catch (SardineException e) {
+				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
 			}
@@ -204,7 +209,7 @@ public class WebdavOutputStream extends OutputStream {
 			sardineThread.join();
 			Throwable error = sardineThread.getError();
 			if (error != null) {
-				throw new IOException(error);
+				throw error instanceof IOException ? (IOException)error : new IOException(error);
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e.getCause());

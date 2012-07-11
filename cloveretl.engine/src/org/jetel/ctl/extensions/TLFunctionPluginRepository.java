@@ -45,7 +45,7 @@ public class TLFunctionPluginRepository {
     private static List<TLFunctionLibraryDescription> functionLibraries = new ArrayList<TLFunctionLibraryDescription>();
 
     /** Consolidated map of functions where overloaded functions from under different libraries are kept under the same key */
-    private static Map<String,List<TLFunctionDescriptor>> consolidatedFunctions = null;
+    private static Map<String,List<TLFunctionDescriptor>> consolidatedFunctions = new TreeMap<String, List<TLFunctionDescriptor>>();
     
     private TLFunctionPluginRepository() {
         //private constructor - this class is not intended to instantiate
@@ -69,10 +69,21 @@ public class TLFunctionPluginRepository {
 
     }
   
-    public static void registerFunctionLibrary(TLFunctionLibraryDescription functionLibrary){
-        functionLibrary.getFunctionLibrary().init();
-    	functionLibraries.add(functionLibrary);
-    }
+	public static void registerFunctionLibrary(TLFunctionLibraryDescription functionLibrary) {
+		functionLibrary.getFunctionLibrary().init();
+		functionLibraries.add(functionLibrary);
+
+		Map<String, List<TLFunctionDescriptor>> contents = functionLibrary.getAllFunctions();
+		for (String name : contents.keySet()) {
+			// we want to have own lists because we will merge functions from all libraries
+			List<TLFunctionDescriptor> value = consolidatedFunctions.get(name);
+			if (value == null) {
+				value = new LinkedList<TLFunctionDescriptor>();
+				consolidatedFunctions.put(name, value);
+			}
+			value.addAll(contents.get(name));
+		}
+	}
 
     /**
      * Method to retrieve all functions declared within all accessible libraries.
@@ -82,27 +93,6 @@ public class TLFunctionPluginRepository {
      * @return	consolidated map of function to the descriptor
      */
 	public static Map<String,List<TLFunctionDescriptor>> getAllFunctions() {
-		if (consolidatedFunctions == null) {
-			synchronized (TLFunctionPluginRepository.class) {
-				if (consolidatedFunctions == null) {
-					consolidatedFunctions = new TreeMap<String, List<TLFunctionDescriptor>>();
-		
-					for(TLFunctionLibraryDescription libraryDescription : functionLibraries) {
-						Map<String, List<TLFunctionDescriptor>> contents = libraryDescription.getAllFunctions();
-						for (String name : contents.keySet()) {
-							// we want to have own lists because we will merge functions from all libraries
-							List<TLFunctionDescriptor> value = consolidatedFunctions.get(name);
-							if (value == null) {
-								value = new LinkedList<TLFunctionDescriptor>();
-								consolidatedFunctions.put(name,value);
-							}
-							value.addAll(contents.get(name));
-						}
-					}
-				}
-			}
-		}
-		
 		return Collections.unmodifiableMap(consolidatedFunctions);
 	}
 

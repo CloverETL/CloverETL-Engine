@@ -2350,7 +2350,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFFunctionCall node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
-			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";  
+			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";
 			node.getExtecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);

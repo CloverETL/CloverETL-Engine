@@ -43,6 +43,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.main.runGraph;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
@@ -92,6 +93,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         }
         
         GraphRuntimeContext runtimeContext = prepareGraphContext(runId, givenRuntimeContext, logFile);
+        runtimeContext.setUseJMX(givenRuntimeContext.useJMX());
         
         TransformationGraph graph = null;
 		try {
@@ -155,7 +157,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
             	rr.result = Result.ERROR;
             	return rr;
             } catch (RuntimeException e) {
-            	rr.description = "Error during graph initialization: " +  e.getMessage();           
+            	rr.description = "Error during graph initialization:\n" +  MiscUtils.stackTraceToString(e);           
             	rr.result = Result.ERROR;
             	return rr;
             }

@@ -236,24 +236,22 @@ public final class Defaults {
         CLOVER_FIELD_REGEX = getStringProperties("CLOVER_FIELD_REGEX", "\\$[\\w]+");
         ASSIGN_SIGN = getStringProperties("ASSIGN_SIGN", ":=");
         INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
-        PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
-        USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
-        
-        Record.init();
-        DataFieldMetadata.init();
-        DataParser.init();
-        DataFormatter.init();
-        Component.init();
-        Data.init();
-        Lookup.init();
-        WatchDog.init();
-        GraphProperties.init();
-        InternalSortDataRecord.init();
-        Graph.init();
-        OracleConnection.init();
-        CTL.init();
-        PortReadingWriting.init();
-    }
+
+            Record.init();
+            DataFieldMetadata.init();
+            DataParser.init();
+            DataFormatter.init();
+            Component.init();
+            Data.init();
+            Lookup.init();
+            WatchDog.init();
+            GraphProperties.init();
+            InternalSortDataRecord.init();
+            Graph.init();
+            OracleConnection.init();
+            CTL.init();
+            PortReadingWriting.init();
+        }
 
 	/**
 	 * when buffering IO, what is the default size of the buffer
