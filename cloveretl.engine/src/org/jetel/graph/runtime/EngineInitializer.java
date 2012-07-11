@@ -181,6 +181,12 @@ public class EngineInitializer {
     }
     
     private static void internalInit(URL defaultPropertiesFile, String logHost) {
+        if (alreadyInitialized) {
+            //clover engine is already initialized
+            return;
+        }
+        alreadyInitialized = true;
+
         //init logging
         initLogging(logHost);
 
