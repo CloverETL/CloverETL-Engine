@@ -127,9 +127,9 @@ public class HadoopReader extends Node {
 			}
 			
 			logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
-			this.connection= ((HadoopConnection) conn).getConnection();
 			
 			try {
+				this.connection= ((HadoopConnection) conn).getConnection();
 				this.parser=connection.createParser(this.keyFieldName, this.valueFieldName, metadata);
 				this.parser.setDataSource(new URI(this.fileURL));
 				this.parser.init();

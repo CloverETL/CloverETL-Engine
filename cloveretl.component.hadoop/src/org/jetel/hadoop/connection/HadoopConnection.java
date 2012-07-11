@@ -78,7 +78,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		private static final String HADOOP_LOAD_CHECKING_CLASS = "org.apache.hadoop.fs.FileAlreadyExistsException";
 			
 		private static final String ERROR_LOADING_IMPL_MOD =
-				"Internal Error. (Could not find Clover Hadoop Implementation module.)";
+				"Internal Error. (Could not find CloverETL Hadoop Implementation module.)";
 			
 	
 	    private static final Log logger = LogFactory.getLog(HadoopConnection.class);
@@ -225,10 +225,10 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			super.postExecute();
 			try {
 				if (getGraph().getRuntimeContext().isBatchMode()) {
-					connection.close();
+					if (connection !=null) connection.close();
 					connection = null;
 				} else {
-					connection.close();
+					if (connection !=null) connection.close();
 					connection = null;
 				}
 			} catch (IOException e) {
@@ -242,7 +242,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		 * 
 		 * @return Hadoop distributed filesystem object
 		 */
-		public IHadoopConnection getConnection() throws ComponentNotReadyException {
+		public IHadoopConnection getConnection() throws IOException, ComponentNotReadyException {
 			if(connection ==null){
 				try {
 					connection = instantiateConnection();
@@ -255,10 +255,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				} catch (HadoopConnectionException e) {
 					throw new ComponentNotReadyException(this,e);
 				} catch (URISyntaxException e) {
-					throw new ComponentNotReadyException(this,"Invalid HDFS host/port definition.",e);
-				} catch (IOException e) {
-					throw new ComponentNotReadyException(this,"Can't connect to HDFS - "+e.getMessage(),e);
-				}
+					throw new IOException("Invalid HDFS host/port definition.",e);
+				} 
 			}
 			return connection;
 
@@ -432,8 +430,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				return;
 			}
 			
-			if (loaderJars.length == 0) {
-				// for running in server where all jars are available
+			if (loaderJars==null || loaderJars.length == 0) {
+				// for running in server where all jars are available on class path
 				classLoader = getClass().getClassLoader();
 			}
 			else {

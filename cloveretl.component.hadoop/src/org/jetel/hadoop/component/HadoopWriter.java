@@ -140,11 +140,9 @@ public class HadoopWriter extends Node {
 			}
 			
 			logger.debug(String.format("Connecting to HDFS via [%s:%s].",conn.getName(),conn.getId()));
-			this.connection= ((HadoopConnection) conn).getConnection();
-
-			inPort = getInputPort(READ_FROM_PORT);
-			
 			try {
+				this.connection= ((HadoopConnection) conn).getConnection();
+				inPort = getInputPort(READ_FROM_PORT);
 				this.formatter=connection.createFormatter( this.keyField, this.valueField,! this.appendData);
 				this.formatter.init(inPort.getMetadata());
 				this.formatter.setDataTarget(new URI(this.fileURL));
