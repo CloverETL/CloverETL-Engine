@@ -280,11 +280,7 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n");
 	}
 
-	public static void main(String[] args) {
-		String s = "Ahoj\r\nneco";
-		
-		String a = escape(s);
-	}
+
 	
 	
 }
