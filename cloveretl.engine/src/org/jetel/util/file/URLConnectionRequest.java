@@ -23,7 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 
-import sun.misc.BASE64Encoder;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * 
@@ -67,9 +67,8 @@ public class URLConnectionRequest {
      * @param source
      * @return
      */
-    private static String encode(String source){
-    	BASE64Encoder enc = new sun.misc.BASE64Encoder();
-    	return enc.encode(source.getBytes());
+    static String encode(String source){
+    	return Base64.encodeBase64URLSafeString(source.getBytes());
     }
     
 	/**
@@ -77,7 +76,7 @@ public class URLConnectionRequest {
 	 * @param s
 	 * @return
 	 */
-	private static final String decodeString(String s) {
+	static final String decodeString(String s) {
 		try {
 			return URLDecoder.decode(s, ENCODING);
 		} catch (UnsupportedEncodingException e) {
