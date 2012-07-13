@@ -55,7 +55,7 @@ public class URLConnectionRequest {
 	 * @throws IOException
 	 */
     public static URLConnection getAuthorizedConnection(URLConnection uc, String userInfo, String authorizationType) {
-        // check authorization
+        // check authorization 
         if (userInfo != null) {
             uc.setRequestProperty(authorizationType, URL_CONNECTION_BASIC + encode(decodeString(userInfo)));
         }

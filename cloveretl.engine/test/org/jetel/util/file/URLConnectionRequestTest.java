@@ -28,7 +28,7 @@ public class URLConnectionRequestTest extends TestCase {
 
     public void testLongBasicAuthHeaderBase64Encoding() {
         final String base64EncodedAuthHeader = encode(decodeString(BASIC_AUTH_HEADER_VALUE));
-        assertNotNull(base64EncodedAuthHeader);
+        assertNotNull(base64EncodedAuthHeader); 
         assertFalse(base64EncodedAuthHeader.contains("\n"));
     }
 }
