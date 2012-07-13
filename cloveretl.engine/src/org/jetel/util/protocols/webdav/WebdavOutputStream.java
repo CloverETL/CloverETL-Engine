@@ -96,7 +96,7 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	public WebdavOutputStream(String url) throws IOException {
-		URL parsedUrl = new URL(URLDecoder.decode(url, "UTF-8"));
+		URL parsedUrl = new URL(url);
 		String username = getUsername(parsedUrl);
 		String password = getPassword(parsedUrl);
 		String outputURL = url;
