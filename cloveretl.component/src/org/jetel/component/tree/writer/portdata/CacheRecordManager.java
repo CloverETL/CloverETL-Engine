@@ -31,7 +31,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.jetel.component.tree.writer.portdata.btree;
+package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -100,6 +100,8 @@ public class CacheRecordManager extends RecordManagerImpl {
 			if (isDirty) {
 				changeWriteCache(page.lastMemoryUsage);
 			}
+		} else {
+			changeReadCache(-MemoryUtils.CACHE_ENTRY_OVERHEAD); // FIX of CL-2404: obj needs not to be BPage only (can be BTree)
 		}
 	}
 
@@ -405,7 +407,8 @@ public class CacheRecordManager extends RecordManagerImpl {
 	protected CacheEntry purgeEntry() throws IOException {
 		CacheEntry entry = first;
 		if (entry == null) {
-			changeReadCache(MemoryUtils.CACHE_ENTRY_OVERHEAD);
+			// changeReadCache(MemoryUtils.CACHE_ENTRY_OVERHEAD); FIX of CL-2404: this is must be done in place where
+				// the new CacheEntry is inserted into cache (in the cachePut() method, few lines below call to this method)
 			return new CacheEntry(-1, null, null, false);
 		}
 
