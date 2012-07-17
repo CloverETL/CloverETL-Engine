@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Dec 21 08:59:00 CET 2010" guiVersion="0.0.0.devel" id="1292922970306" licenseType="Evaluation Devel" modified="Fri Jun 17 12:28:17 CEST 2011" modifiedBy="avackova" name="CompareSamples" revision="1.178" showComponentDetails="true">
+<Graph author="avackova" created="Tue Dec 21 08:59:00 CET 2010" guiVersion="0.0.0.devel" id="1292922970306" licenseType="Evaluation Devel" modified="Mon Feb 20 18:26:08 CET 2012" modifiedBy="Kokon" name="CompareSamples" revision="1.179" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/sizes.fmt" id="Metadata1"/>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
@@ -126,37 +126,37 @@ Execute graphs, that create samples with various sampling methods]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="501" guiY="-37" id="AGGREGATE2" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="501" guiY="-37" id="AGGREGATE2" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Finds record's distribution in full data set]]></attr>
 </Node>
-<Node enabled="enabled" generateURL="${TRANS_DIR}/CreateHeader.java" guiHeight="69" guiName="Create header" guiWidth="133" guiX="20" guiY="-215" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
-<Node enabled="enabled" generateURL="${TRANS_DIR}/FullfillLookup.java" guiHeight="101" guiName="DataGenerator" guiWidth="137" guiX="18" guiY="-37" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<Node enabled="enabled" generateURL="${TRANS_DIR}/CreateHeader.java" guiHeight="67" guiName="Create header" guiWidth="128" guiX="20" guiY="-215" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR"/>
+<Node enabled="enabled" generateURL="${TRANS_DIR}/FullfillLookup.java" guiHeight="93" guiName="DataGenerator" guiWidth="128" guiX="18" guiY="-37" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
 <attr name="guiDescription"><![CDATA[Checks if file with strata distribution exist. If not creates it.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="194" guiY="-37" id="DATA_READER4" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="80" guiName="DataReader" guiWidth="128" guiX="194" guiY="-37" id="DATA_READER4" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[port:$0.header:source]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="guiDescription"><![CDATA[Reads input file]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node charset="${charset}" enabled="enabled" fileURL="port:$0.header:source" guiHeight="85" guiName="UniversalDataReader" guiWidth="181" guiX="194" guiY="71" id="DATA_READER5" type="DATA_READER">
+<Node charset="${charset}" enabled="enabled" fileURL="port:$0.header:source" guiHeight="80" guiName="UniversalDataReader" guiWidth="148" guiX="194" guiY="71" id="DATA_READER5" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads distribution file]]></attr>
 </Node>
-<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="85" guiName="UniversalDataWriter" guiWidth="176" guiX="213" guiY="-231" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node append="true" charset="${charset}" enabled="enabled" fileURL="${lookup_file}" guiHeight="101" guiName="UniversalDataWriter" guiWidth="176" guiX="1061" guiY="-128" id="DATA_WRITER1" type="DATA_WRITER">
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="80" guiName="UniversalDataWriter" guiWidth="145" guiX="213" guiY="-231" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${lookup_file}" guiHeight="93" guiName="UniversalDataWriter" guiWidth="145" guiX="1061" guiY="-128" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Creates file with distribution of "strata" in full data set]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="EXTSort" guiWidth="128" guiX="340" guiY="-37" id="EXT_SORT1" sortKey="${sampling_field}" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="93" guiName="EXTSort" guiWidth="128" guiX="340" guiY="-37" id="EXT_SORT1" sortKey="${sampling_field}" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sorts records acording to the field, that defines "strata"]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="LookupTableReaderWriter" guiWidth="219" guiX="1061" guiY="-21" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER">
+<Node enabled="enabled" guiHeight="93" guiName="LookupTableReaderWriter" guiWidth="178" guiX="1061" guiY="-21" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER">
 <attr name="guiDescription"><![CDATA[Loads distribution of "strata" in full data set to lookup table]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="LookupTableReaderWriter" guiWidth="219" guiX="1061" guiY="97" id="LOOKUP_TABLE_READER_WRITER1" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER">
+<Node enabled="enabled" guiHeight="93" guiName="LookupTableReaderWriter" guiWidth="178" guiX="1061" guiY="97" id="LOOKUP_TABLE_READER_WRITER1" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER">
 <attr name="guiDescription"><![CDATA[Loads distribution of "strata" in full data set to lookup table]]></attr>
 </Node>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" guiHeight="101" guiName="Rollup" guiWidth="128" guiX="666" guiY="-37" id="ROLLUP0" type="ROLLUP">
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" guiHeight="93" guiName="Rollup" guiWidth="128" guiX="666" guiY="-37" id="ROLLUP0" type="ROLLUP">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Called for the first data record in a new group. Starts the parsing of the new group.
@@ -252,7 +252,7 @@ function integer transform(integer counter, sizes groupAccumulator) {
 <Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge30" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="101" guiName="ExtMergeJoin" guiWidth="130" guiX="211" guiY="281" id="EXT_MERGE_JOIN1" joinKey="$result(a)#$result(a);#$result(a);#$result(a);" type="EXT_MERGE_JOIN">
+<Node enabled="enabled" guiHeight="93" guiName="ExtMergeJoin" guiWidth="128" guiX="211" guiY="281" id="EXT_MERGE_JOIN1" joinKey="$result(a)#$result(a);#$result(a);#$result(a);" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 function string format(decimal duration){
@@ -300,19 +300,19 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Joins and formats durations of graph's run times.]]></attr>
 </Node>
-<Node enabled="enabled" graphName="${GRAPH_DIR}/SimpleRandomSampling.grf" guiHeight="101" guiName="RunGraph" guiWidth="128" guiX="18" guiY="79" id="RUN_GRAPH0" logFile="${DATATMP_DIR}/SimpleRandomSampling_log.txt" type="RUN_GRAPH">
+<Node enabled="enabled" graphName="${GRAPH_DIR}/SimpleRandomSampling.grf" guiHeight="93" guiName="RunGraph" guiWidth="128" guiX="18" guiY="79" id="RUN_GRAPH0" logFile="${DATATMP_DIR}/SimpleRandomSampling_log.txt" paramsToPass="sampling_field;sampling_size;sort_data" type="RUN_GRAPH">
 <attr name="guiDescription"><![CDATA[SimpleRandomSampling]]></attr>
 </Node>
-<Node enabled="enabled" graphName="${GRAPH_DIR}/SystematicSampling.grf" guiHeight="101" guiName="RunGraph" guiWidth="128" guiX="18" guiY="191" id="RUN_GRAPH1" logFile="${DATATMP_DIR}/SystematicSampling_log.txt" type="RUN_GRAPH">
+<Node enabled="enabled" graphName="${GRAPH_DIR}/SystematicSampling.grf" guiHeight="93" guiName="RunGraph" guiWidth="128" guiX="18" guiY="191" id="RUN_GRAPH1" logFile="${DATATMP_DIR}/SystematicSampling_log.txt" paramsToPass="sampling_field;sampling_size;sort_data" type="RUN_GRAPH">
 <attr name="guiDescription"><![CDATA[SystematicSampling]]></attr>
 </Node>
-<Node enabled="enabled" graphName="${GRAPH_DIR}/StratifiedSampling.grf" guiHeight="101" guiName="RunGraph" guiWidth="128" guiX="18" guiY="302" id="RUN_GRAPH2" logFile="${DATATMP_DIR}/StratifiedSampling_log.txt" type="RUN_GRAPH">
+<Node enabled="enabled" graphName="${GRAPH_DIR}/StratifiedSampling.grf" guiHeight="80" guiName="RunGraph" guiWidth="128" guiX="18" guiY="302" id="RUN_GRAPH2" logFile="${DATATMP_DIR}/StratifiedSampling_log.txt" paramsToPass="sampling_field;sampling_size;sort_data" type="RUN_GRAPH">
 <attr name="guiDescription"><![CDATA[StratifiedSampling]]></attr>
 </Node>
-<Node enabled="enabled" graphName="${GRAPH_DIR}/PPSSampling.grf" guiHeight="85" guiName="RunGraph" guiWidth="128" guiX="18" guiY="416" id="RUN_GRAPH3" logFile="${DATATMP_DIR}/PPSSampling_log.txt" type="RUN_GRAPH">
+<Node enabled="enabled" graphName="${GRAPH_DIR}/PPSSampling.grf" guiHeight="80" guiName="RunGraph" guiWidth="128" guiX="18" guiY="416" id="RUN_GRAPH3" logFile="${DATATMP_DIR}/PPSSampling_log.txt" paramsToPass="sampling_field;sampling_size;sort_data" type="RUN_GRAPH">
 <attr name="guiDescription"><![CDATA[PPSSampling]]></attr>
 </Node>
-<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="368" guiY="281" id="STRUCTURE_WRITER1" mask="&lt;tr bgcolor=#FFFF99 align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$simple&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$systematic&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$stratified&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$pps&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER">
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" guiHeight="93" guiName="StructuredDataWriter" guiWidth="154" guiX="368" guiY="281" id="STRUCTURE_WRITER1" mask="&lt;tr bgcolor=#FFFF99 align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$simple&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$systematic&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$stratified&lt;/td&gt;&#10;&#9;&lt;td colspan=3&gt;$pps&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Creates in output table row with execution times of particular sampling methods.]]></attr>
 </Node>
 <Edge fromNode="EXT_MERGE_JOIN1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (Body port)" metadata="Metadata6" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
@@ -322,50 +322,50 @@ function integer transform() {
 <Edge fromNode="RUN_GRAPH3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 3 (slave)" metadata="Metadata4" outPort="Port 0 (regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing)" toNode="EXT_MERGE_JOIN1:3"/>
 </Phase>
 <Phase number="2">
-<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="361" guiY="623" id="AGGREGATE0" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="361" guiY="623" id="AGGREGATE0" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Finds record's distribution in simple random sample]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="1127" guiY="811" id="AGGREGATE1" mapping="$strata:=&quot;total sample size&quot;;$simple:=sum($simple);$systematic:=sum($systematic);$stratified:=sum($stratified);$pps:=sum($pps);" type="AGGREGATE">
+<Node enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="1127" guiY="811" id="AGGREGATE1" mapping="$strata:=&quot;total sample size&quot;;$simple:=sum($simple);$systematic:=sum($systematic);$stratified:=sum($stratified);$pps:=sum($pps);" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Aggregates sample data for all "strata"]]></attr>
 </Node>
-<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="362" guiY="734" id="AGGREGATE4" mapping="$strata:=$${sampling_field};$size:=count();" sorted="${sorted_data}" type="AGGREGATE">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="362" guiY="734" id="AGGREGATE4" mapping="$strata:=$${sampling_field};$size:=count();" sorted="${sorted_data}" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Finds record's distribution in systematic sample]]></attr>
 </Node>
-<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="361" guiY="847" id="AGGREGATE5" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="361" guiY="847" id="AGGREGATE5" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Finds record's distribution in stratified sample]]></attr>
 </Node>
-<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="101" guiName="Aggregate" guiWidth="128" guiX="362" guiY="960" id="AGGREGATE6" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
+<Node aggregateKey="${sampling_field}" enabled="enabled" guiHeight="93" guiName="Aggregate" guiWidth="128" guiX="362" guiY="960" id="AGGREGATE6" mapping="$strata:=$${sampling_field};$size:=count();" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Finds record's distribution in PPS sample]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="31" guiY="623" id="DATA_READER0" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="80" guiName="DataReader" guiWidth="128" guiX="31" guiY="623" id="DATA_READER0" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${DATAOUT_DIR}/randomSample.*]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="guiDescription"><![CDATA[Random sample]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="31" guiY="960" id="DATA_READER1" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="80" guiName="DataReader" guiWidth="128" guiX="31" guiY="960" id="DATA_READER1" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${DATAOUT_DIR}/ppsSample.*]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="guiDescription"><![CDATA[PPS sample]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="DataReader" guiWidth="128" guiX="30" guiY="847" id="DATA_READER2" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="80" guiName="DataReader" guiWidth="128" guiX="30" guiY="847" id="DATA_READER2" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${DATAOUT_DIR}/stratifiedSample.*]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="guiDescription"><![CDATA[Stratified sample]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="DataReader" guiWidth="128" guiX="31" guiY="734" id="DATA_READER3" type="${READER_TYPE}">
+<Node enabled="enabled" guiHeight="80" guiName="DataReader" guiWidth="128" guiX="31" guiY="734" id="DATA_READER3" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${DATAOUT_DIR}/systematicSample.*]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="guiDescription"><![CDATA[Systematic sample]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="555" guiY="656" id="EXT_HASH_JOIN0" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="93" guiName="ExtHashJoin" guiWidth="128" guiX="555" guiY="656" id="EXT_HASH_JOIN0" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 // Transforms input record into output record.
 
@@ -397,7 +397,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Joins strata distribution from diffrent methodst]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="595" guiY="785" id="EXT_HASH_JOIN1" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="93" guiName="ExtHashJoin" guiWidth="128" guiX="595" guiY="785" id="EXT_HASH_JOIN1" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -430,7 +430,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Joins strata distribution from diffrent methodst]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="673" guiY="917" id="EXT_HASH_JOIN2" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiHeight="93" guiName="ExtHashJoin" guiWidth="128" guiX="673" guiY="917" id="EXT_HASH_JOIN2" joinKey="$strata=$strata" joinType="fullOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -464,11 +464,11 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Joins strata distribution from diffrent methodst]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="EXTSort" guiWidth="128" guiX="196" guiY="623" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT">
+<Node enabled="enabled" guiHeight="93" guiName="EXTSort" guiWidth="128" guiX="196" guiY="623" id="EXT_SORT0" sortKey="${sampling_field}" type="EXT_SORT">
 <attr name="guiDescription"><![CDATA[Sorts records acording to the field, that defines "strata"]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="EXTSort" guiWidth="128" guiX="811" guiY="783" id="EXT_SORT2" sortKey="strata(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="69" guiName="Strata statistc" guiWidth="133" guiX="1313" guiY="728" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="80" guiName="EXTSort" guiWidth="128" guiX="811" guiY="783" id="EXT_SORT2" sortKey="strata(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="67" guiName="Strata statistc" guiWidth="128" guiX="1313" guiY="728" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 decimal simple;
 decimal systematic;
@@ -514,7 +514,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Total data" guiWidth="128" guiX="1313" guiY="811" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiHeight="67" guiName="Total data" guiWidth="128" guiX="1313" guiY="811" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer set_size;
 decimal simple;
@@ -566,7 +566,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="967" guiY="783" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&#10;" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="1460" guiY="696" header="&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#10;" id="STRUCTURE_WRITER0" mask="&lt;tr&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" recordCount="${max_compare_results}" type="STRUCTURE_WRITER">
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&#10;" guiHeight="93" guiName="StructuredDataWriter" guiWidth="154" guiX="1460" guiY="696" header="&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#10;" id="STRUCTURE_WRITER0" mask="&lt;tr&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" recordCount="${max_compare_results}" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Rows for particular "strata"]]></attr>
 </Node>
 <Edge fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
@@ -589,7 +589,7 @@ function integer transform() {
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="AGGREGATE1:0"/>
 </Phase>
 <Phase number="3">
-<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&lt;tr&gt;&#10;&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&lt;/tr&gt;&#10;&lt;tr align=\&quot;center\&quot;&gt;&#10;&lt;th&gt;${sampling_field}&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;simple sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;systematic sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;stratified sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;pps sampling&lt;/th&gt;&#10;&lt;/tr&gt;" guiHeight="101" guiName="StructuredDataWriter" guiWidth="188" guiX="1466" guiY="811" header="&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr bgcolor=#FF99CC align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER">
+<Node append="true" charset="${charset}" enabled="enabled" fileURL="${comparison_file}" footer="&lt;tr&gt;&#10;&#9;&lt;th&gt;&lt;/th&gt;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&#9;&lt;th&gt;sample size&lt;/th&gt;&lt;th&gt;dataset size&lt;/th&gt;&lt;th&gt;sample size ratio&lt;/th&gt;&#10;&lt;/tr&gt;&#10;&lt;tr align=\&quot;center\&quot;&gt;&#10;&lt;th&gt;${sampling_field}&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;simple sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;systematic sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;stratified sampling&lt;/th&gt;&#10;&#9;&lt;th colspan=3&gt;pps sampling&lt;/th&gt;&#10;&lt;/tr&gt;" guiHeight="93" guiName="StructuredDataWriter" guiWidth="154" guiX="1466" guiY="811" header="&#10;" id="STRUCTURE_WRITER3" mask="&lt;tr bgcolor=#FF99CC align=&quot;center&quot;&gt;&#10;&#9;&lt;td&gt;$strata&lt;/td&gt;&#10;&#9;&lt;td&gt;$simple&lt;/td&gt;&lt;td&gt;$setSize1&lt;/td&gt;&lt;td&gt;$simpleRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$systematic&lt;/td&gt;&lt;td&gt;$setSize2&lt;/td&gt;&lt;td&gt;$systematicRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$stratified&lt;/td&gt;&lt;td&gt;$setSize3&lt;/td&gt;&lt;td&gt;$stratifiedRatio&lt;/td&gt;&#10;&#9;&lt;td&gt;$pps&lt;/td&gt;&lt;td&gt;$setSize4&lt;/td&gt;&lt;td&gt;$ppsRatio&lt;/td&gt;&#10;&lt;/tr&gt;&#10;" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[Row for complete data sample]]></attr>
 </Node>
 </Phase>
