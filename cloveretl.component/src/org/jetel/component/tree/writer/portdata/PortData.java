@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import org.jetel.component.tree.writer.portdata.btree.CacheRecordManager;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;

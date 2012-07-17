@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jdbm.btree.BTree;
 import jdbm.helper.Tuple;
 import jdbm.helper.TupleBrowser;
 
