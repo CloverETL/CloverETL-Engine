@@ -42,6 +42,7 @@ import jdbm.helper.LongHashMap;
 import jdbm.helper.RecordManagerImpl;
 import jdbm.recman.BaseRecordManager;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.MemoryUtils;
 
 /**
@@ -125,6 +126,9 @@ public class CacheRecordManager extends RecordManagerImpl {
 		while (availableMemory < 0) {
 			if (first != null) {
 				purgeEntry();
+			} else if (writeCache == 0) {
+				// Should not happen: no more memory available, but cache is empty. At least prevent infinite loop as in issue CL-2404
+				throw new JetelRuntimeException("Cache management error (CL-2404)");
 			}
 			if (writeCache > 0) {
 				recman.commit();
