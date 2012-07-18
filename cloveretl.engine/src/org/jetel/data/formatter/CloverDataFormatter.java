@@ -37,6 +37,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -132,9 +134,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 		writer = Channels.newChannel(this.out);
         if (saveIndex) {//create temporary index file
             try{
-                idxTmpFile = File.createTempFile(fileName, null);
+                idxTmpFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(fileName, -1);
                 idxWriter = Channels.newChannel(new DataOutputStream(new FileOutputStream(idxTmpFile)));
-            }catch(IOException ex){
+            }catch(Exception ex){
                 throw new RuntimeException(ex);
             }
             idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);

@@ -1041,9 +1041,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// STR2BYTE
 	public class Str2ByteFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String charset = stack.popString();
 			String src = stack.popString();
@@ -1065,9 +1067,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// BYTE2STR
 	public class Byte2StrFunction implements TLFunctionPrototype {
 
+		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String charset = stack.popString();
 			byte[] src = stack.popByteArray();
@@ -1077,12 +1081,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts binary data into hex string.")
 	public static final String byte2hex(TLFunctionCallContext context, byte[] src) {
-		StringBuilder strVal = new StringBuilder(src.length);
-		for (int i = 0; i < src.length; i++) {
-			strVal.append(Character.forDigit((src[i] & 0xF0) >> 4, 16));
-			strVal.append(Character.forDigit(src[i] & 0x0F, 16));
-		}
-		return strVal.toString();
+		return StringUtils.bytesToHexString(src);
 	}
 	
 	// BYTE2HEX
@@ -1100,13 +1099,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts hex string into binary.")
 	public static final byte[] hex2byte(TLFunctionCallContext context, String src) {
-		char[] charArray = src.toCharArray();
-		byte[] byteArr = new byte[charArray.length / 2];
-		int j = 0;
-		for (int i = 0; i < charArray.length - 1; i = i + 2) {
-			byteArr[j++] = (byte) (((byte) Character.digit(charArray[i], 16) << 4) | (byte) Character.digit(charArray[i + 1], 16));
-		}
-    	return byteArr;
+		return StringUtils.hexStringToBytes(src);
 	}
 
 	// HEX2BYTE

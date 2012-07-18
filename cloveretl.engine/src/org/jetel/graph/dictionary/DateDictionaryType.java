@@ -29,6 +29,7 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents date element in the dictionary.
@@ -108,4 +109,9 @@ public class DateDictionaryType extends DictionaryType {
 		return TLTypePrimitive.DATETIME;
 	}
 	
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.DATE;
+	}
+
 }

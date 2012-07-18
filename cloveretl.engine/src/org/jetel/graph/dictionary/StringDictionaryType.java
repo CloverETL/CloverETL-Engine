@@ -24,6 +24,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents string-like element in the dictionary.
@@ -102,14 +103,17 @@ public class StringDictionaryType extends DictionaryType {
 	@Override
 	public boolean isValidValue(Object value) {
 		return value == null 
-				|| value instanceof String
-				|| value instanceof StringBuilder
-				|| value instanceof StringBuffer;
+				|| value instanceof CharSequence;
 	}
 
 	@Override
 	public TLType getTLType() {
 		return TLTypePrimitive.STRING;
+	}
+	
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.STRING;
 	}
 	
 }

@@ -36,7 +36,7 @@ import org.apache.commons.logging.Log;
  */
 public class ErrorMessage implements Serializable {
 
-	private static final long serialVersionUID = 3648320916057784857L;
+	private static final long serialVersionUID = 907686576819435587L;
 
 	/** The URL of imported file this error message applies to, <code>null</code> for the main file. */
 	private String importFileUrl;
@@ -52,6 +52,11 @@ public class ErrorMessage implements Serializable {
 	private String errorMessage;
 	/** The hint that suggest how to fix the error. */
 	private String hint;
+	
+	/**
+	 * Detailed information about the error. May be <code>null</code>
+	 */
+	private Detail detail;
 
 	/**
 	 * Constructs an <code>ErrorMessage</code> instance.
@@ -114,6 +119,21 @@ public class ErrorMessage implements Serializable {
 	public String getHint() {
 		return hint;
 	}
+	
+	/**
+	 * @return error details
+	 */
+	public Detail getDetail() {
+		return detail;
+	}
+
+	/**
+	 * Sets error details.
+	 * @param detail details of the error
+	 */
+	public void setDetail(Detail detail) {
+		this.detail = detail;
+	}
 
 	@Override
 	public String toString() {
@@ -175,5 +195,16 @@ public class ErrorMessage implements Serializable {
 		}
 		return sb.toString();
 	}
-	
+
+	/**
+	 * An interface providing additional information about the error.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Jul 4, 2012
+	 */
+	public interface Detail {
+		
+	}
 }

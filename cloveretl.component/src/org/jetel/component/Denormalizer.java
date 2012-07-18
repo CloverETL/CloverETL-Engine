@@ -54,6 +54,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.DenormalizerComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
@@ -726,6 +728,11 @@ public class Denormalizer extends Node {
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+	}
+
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new DenormalizerComponentTokenTracker(this, 1);
 	}
 
 }

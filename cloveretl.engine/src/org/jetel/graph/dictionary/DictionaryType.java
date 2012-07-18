@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -84,6 +85,11 @@ public abstract class DictionaryType implements IDictionaryType {
 		return null;
 	}
 
+	@Override
+	public DataFieldType getFieldType() {
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		return "[" + getClass().getName() + "] " + typeId + ", " + valueClass.getName();

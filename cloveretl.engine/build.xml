@@ -433,6 +433,7 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.IAuthorityProxy$RunResult"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.IThreadManager"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.GraphRuntimeContext"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.graph.runtime.GraphRuntimeContext$PropertyKey"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.EngineInitializer"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.CloverClassPath"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.CloverWorker"><field access="protected public"/><method access="protected public"/></keep>

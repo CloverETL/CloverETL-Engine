@@ -18,6 +18,7 @@
  */
 package org.jetel.graph;
 
+import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 
@@ -184,5 +185,16 @@ public interface IGraphElement {
      * @return true if the graph element is in first iteration of life cycle
      */
     public boolean firstRun();
+    
+    /**
+     * Returns kind of parent graph - {@link JobType#ETL_GRAPH} or {@link JobType#JOBFLOW}.
+     * The transformation graph can be driven in slightly different way in case jobflow run.  
+     */
+    public JobType getJobType();
+
+    /**
+     * @return dedicated logger for this graph element
+     */
+    public Logger getLog();
     
 }

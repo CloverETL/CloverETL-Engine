@@ -57,6 +57,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -84,7 +85,6 @@ public abstract class TreeWriter extends Node {
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
-	public static final String XML_TEMPORARY_DIR = "tmpDir";
 	public static final String XML_CACHE_SIZE = "cacheSize";
 	public static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	public static final String XML_SORTKEYS_ATTRIBUTE = "sortKeys";
@@ -113,9 +113,6 @@ public abstract class TreeWriter extends Node {
 			else {
 				// throw configuration exception
 				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
-			}
-			if (xattribs.exists(XML_TEMPORARY_DIR)) {
-				writer.setTmpDir(xattribs.getStringEx(XML_TEMPORARY_DIR, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_CACHE_SIZE)) {
 				writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
@@ -160,7 +157,6 @@ public abstract class TreeWriter extends Node {
 
 	private String mappingString;
 	private String mappingURL;
-	private String tmpDir;
 	private File tempDirectory;
 	private long cacheSize = DEFAULT_CACHE_SIZE;
 
@@ -341,36 +337,16 @@ public abstract class TreeWriter extends Node {
 			charset = getDefaultCharset();
 		}
 		designMapping = initMapping();
-		tempDirectory = newTreeWriterCacheTempDir();
-		compileMapping(designMapping, tempDirectory);
+		compileMapping(designMapping);
 
 		configureWriter();
-	}
-
-	private File newTreeWriterCacheTempDir() throws ComponentNotReadyException {
-		try {
-			return newTempDir("tree-writer-cache-");
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(this, "Could not create temp directory.", e);
-		}
-	}
-	
-	private File newTempDir(String prefix) throws IOException {
-		
-		synchronized (TreeWriter.class) {
-			File tmpDir = new File(this.tmpDir == null ? System.getProperty("java.io.tmpdir") : this.tmpDir);
-			File dir = File.createTempFile(prefix, null, tmpDir.exists() ? tmpDir : null);
-			dir.delete();
-			dir.mkdir();
-			return dir;
-		}
 	}
 
 	protected String getDefaultCharset() {
 		return Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER; 
 	}
 	
-	private void compileMapping(TreeWriterMapping mapping, File tmpDir) throws ComponentNotReadyException {
+	private void compileMapping(TreeWriterMapping mapping) throws ComponentNotReadyException {
 		AbstractMappingValidator validator = createValidator(prepareConnectedData());
 		if (validator != null) {
 			validator.setMapping(mapping);
@@ -389,7 +365,7 @@ public abstract class TreeWriter extends Node {
 
 		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
 
-		engineMapping = compiler.compile(inPorts, partition, tmpDir.getAbsolutePath());
+		engineMapping = compiler.compile(inPorts, partition);
 
 		portDataMap = compiler.getPortDataMap();
 		for (PortData portData : portDataMap.values()) {
@@ -449,20 +425,12 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
-			if (!tempDirectory.exists()) {
-				boolean dirCreated = tempDirectory.mkdir();
-				if (!dirCreated) {
-					throw new ComponentNotReadyException("Cannot create a temporary directory " + tempDirectory.getAbsolutePath());
-				}
-			}
-			File f = File.createTempFile("jdbm-cache-", null, tempDirectory);
-			/*
-			 * just unique name needed
-			 */
-			f.delete();
-
-			sharedCache = CacheRecordManager.createInstance(f.getAbsolutePath(), cacheSize);
+			File tmpDir = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
+			File file = new File(tmpDir, "jdbm-cache");
+			sharedCache = CacheRecordManager.createInstance(file.getAbsolutePath(), cacheSize);
 		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		} catch (TempFileCreationException e) {
 			throw new ComponentNotReadyException(e);
 		}
 
@@ -564,10 +532,6 @@ public abstract class TreeWriter extends Node {
 		try {
 			sharedCache.close();
 			writer.close();
-			// clear cache directory, but do not delete directory itself as it is to be reused in another run
-			if (tempDirectory!=null && tempDirectory.exists()) {
-				delete(tempDirectory);
-			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
 		}
@@ -581,19 +545,6 @@ public abstract class TreeWriter extends Node {
 				portData.free();
 			}
 		}
-		if (tempDirectory != null && tempDirectory.exists()) {
-			delete(tempDirectory);
-		}
-	}
-	
-	private void delete(File file) {
-		
-		if (file.isDirectory()) {
-			for (File child : file.listFiles()) {
-				delete(child);
-			}
-		}
-		file.delete();
 	}
 
 	public void setFileUrl(String fileURL) {
@@ -610,10 +561,6 @@ public abstract class TreeWriter extends Node {
 
 	public void setMappingURL(String mappingURL) {
 		this.mappingURL = mappingURL;
-	}
-
-	public void setTmpDir(String tmpDir) {
-		this.tmpDir = tmpDir;
 	}
 
 	public void setCacheSize(long cacheSize) {

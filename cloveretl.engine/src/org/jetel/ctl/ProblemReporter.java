@@ -69,33 +69,35 @@ public class ProblemReporter {
 		return errorLocation;
 	}
 
-	public void warn(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
-		createMessage(ErrorLevel.WARN, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
+	public ErrorMessage warn(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
+		return createMessage(ErrorLevel.WARN, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
 	}
 
-	public void warn(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
-		createMessage(ErrorLevel.WARN, new ErrorLocation(begin, end), error, hint);
+	public ErrorMessage warn(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
+		return createMessage(ErrorLevel.WARN, new ErrorLocation(begin, end), error, hint);
 	}
 
-	public void error(String error, String hint) {
-		createMessage(ErrorLevel.ERROR, null, error, hint);
+	public ErrorMessage error(String error, String hint) {
+		return createMessage(ErrorLevel.ERROR, null, error, hint);
 	}
 	
-	public void error(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
-		createMessage(ErrorLevel.ERROR, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
+	public ErrorMessage error(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
+		return createMessage(ErrorLevel.ERROR, new ErrorLocation(beginLine, beginColumn, endLine, endColumn), error, hint);
 	}
 
-	public void error(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
-		createMessage(ErrorLevel.ERROR, new ErrorLocation(begin, end), error, hint);
+	public ErrorMessage error(SyntacticPosition begin, SyntacticPosition end, String error, String hint) {
+		return createMessage(ErrorLevel.ERROR, new ErrorLocation(begin, end), error, hint);
 	}
 
-	private void createMessage(ErrorLevel level, ErrorLocation localErrorLocation, String error, String hint) {
+	private ErrorMessage createMessage(ErrorLevel level, ErrorLocation localErrorLocation, String error, String hint) {
 		if (level == ErrorLevel.ERROR) {
 			errorCount++;
 		} else {
 			warningCount++;
 		}
-		diagnosticMessages.add(new ErrorMessage(importFileUrl, level, errorLocation, localErrorLocation, error, hint));
+		ErrorMessage result = new ErrorMessage(importFileUrl, level, errorLocation, localErrorLocation, error, hint);
+		diagnosticMessages.add(result);
+		return result;
 	}
 
 	public List<ErrorMessage> getDiagnosticMessages() {

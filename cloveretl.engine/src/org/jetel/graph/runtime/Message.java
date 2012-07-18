@@ -18,7 +18,7 @@
  */
 package org.jetel.graph.runtime;
 
-import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 
 /**
@@ -35,8 +35,8 @@ public class Message<T> implements Comparable<Message>{
     }
     
     protected Type type;
-    protected GraphElement sender;
-    protected GraphElement recipient;
+    protected IGraphElement sender;
+    protected IGraphElement recipient;
     protected T body;
     protected int priority;
     
@@ -47,7 +47,7 @@ public class Message<T> implements Comparable<Message>{
      * @param type
      * @param body
      */
-    public Message(GraphElement sender, GraphElement recipient, Type type, T body) {
+    public Message(IGraphElement sender, IGraphElement recipient, Type type, T body) {
         this.type = type;
         this.body = body;
         this.sender = sender;
@@ -56,7 +56,7 @@ public class Message<T> implements Comparable<Message>{
     }
 
     
-    public Message(GraphElement sender, GraphElement recipient, Type type) {
+    public Message(IGraphElement sender, IGraphElement recipient, Type type) {
         this(sender, recipient, type, null);
     }
     
@@ -65,10 +65,14 @@ public class Message<T> implements Comparable<Message>{
         return new Message<ErrorMsgBody>(node, null, Type.ERROR, exception);
     }
     
-    public static Message<Object> createNodeFinishedMessage(Node node) {
-    	return new Message<Object>(node, null, Type.NODE_FINISHED);
+    public static Message<Void> createNodeFinishedMessage(Node node) {
+    	return new Message<Void>(node, null, Type.NODE_FINISHED);
     }
-    
+
+    public static Message<Object> createMessage(Node node, Object messageBody) {
+        return new Message<Object>(node, null, Type.MESSAGE, messageBody);
+    }
+
     /**
      * @return the body
      * @since 13.12.2006
@@ -89,7 +93,7 @@ public class Message<T> implements Comparable<Message>{
      * @return the recipientID
      * @since 13.12.2006
      */
-    public GraphElement getRecipient() {
+    public IGraphElement getRecipient() {
         return recipient;
     }
 
@@ -97,7 +101,7 @@ public class Message<T> implements Comparable<Message>{
      * @param recipientID the recipientID to set
      * @since 13.12.2006
      */
-    public void setRecipient(GraphElement recipient) {
+    public void setRecipient(IGraphElement recipient) {
         this.recipient = recipient;
     }
 
@@ -105,7 +109,7 @@ public class Message<T> implements Comparable<Message>{
      * @return the senderID
      * @since 13.12.2006
      */
-    public GraphElement getSender() {
+    public IGraphElement getSender() {
         return sender;
     }
 
@@ -113,7 +117,7 @@ public class Message<T> implements Comparable<Message>{
      * @param senderID the senderID to set
      * @since 13.12.2006
      */
-    public void setSender(GraphElement sender) {
+    public void setSender(IGraphElement sender) {
         this.sender = sender;
     }
 

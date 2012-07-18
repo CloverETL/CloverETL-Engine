@@ -133,7 +133,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking(int)
 	 */
 	@Override
-	public PortTracking getInputPortTracking(int portNumber) {
+	public InputPortTracking getInputPortTracking(int portNumber) {
 		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
 			if (inputPortDetail.getIndex() == portNumber) {
 				return inputPortDetail;
@@ -150,7 +150,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking(int)
 	 */
 	@Override
-	public PortTracking getOutputPortTracking(int portNumber) {
+	public OutputPortTracking getOutputPortTracking(int portNumber) {
 		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
 			if (outputPortDetail.getIndex() == portNumber) {
 				return outputPortDetail;
@@ -232,7 +232,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking()
 	 */
 	@Override
-	public PortTracking[] getInputPortTracking() {
+	public InputPortTracking[] getInputPortTracking() {
 		return inputPortsDetails;
 	}
 
@@ -241,7 +241,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking()
 	 */
 	@Override
-	public PortTracking[] getOutputPortTracking() {
+	public OutputPortTracking[] getOutputPortTracking() {
 		return outputPortsDetails;
 	}
 

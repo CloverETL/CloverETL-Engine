@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
@@ -45,6 +46,9 @@ import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
+import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -80,7 +84,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
 	protected volatile boolean runIt = true;
 
-	protected volatile Result runResult;
+	private volatile Result runResult;
     protected Throwable resultException;
     protected String resultMessage;
 	
@@ -102,6 +106,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     //synchronization barrier for all components in a phase
     //watchdog needs to have all components with thread assignment before can continue to watch the phase
     private CyclicBarrier preExecuteBarrier;
+    
+    /**
+     * Component token tracker encapsulates graph's token tracker.
+     * All jobflow logging for this component should be provided through this tracker.
+     * Tracker cannot be null, at least {@link PrimitiveComponentTokenTracker} is used. 
+     */
+    protected ComponentTokenTracker tokenTracker;    
     
 	/**
 	 *  Various PORT kinds identifiers
@@ -255,6 +266,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
 	/**
+	 * @return map with all output ports (key is index of output port)
+	 */
+	public Map<Integer, OutputPort> getOutputPorts() {
+		return outPorts;
+	}
+	
+	/**
 	 *  Gets the InPorts attribute of the Node object
 	 *
 	 *@return    Collection of InPorts
@@ -264,6 +282,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return inPorts.values();
 	}
 
+	/**
+	 * @return map with all input ports (key is index of input port)
+	 */
+	public Map<Integer, InputPort> getInputPorts() {
+		return inPorts;
+	}
+	
 	/**
 	 *  Gets the metadata on output ports of the Node object
 	 *
@@ -299,6 +324,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since            May 17, 2002
      *@deprecated
 	 */
+	@Deprecated
 	public int getRecordCount(char portType, int portNum) {
 		int count;
         // Integer used as key to TreeMap containing ports
@@ -328,7 +354,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since     July 29, 2002
      *@see       org.jetel.graph.Node.Result
 	 */
-	public Result getResultCode() {
+	public synchronized Result getResultCode() {
 		return runResult;
 	}
 
@@ -336,10 +362,22 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * Sets the result code of component.
 	 * @param result
 	 */
-	public void setResultCode(Result result) {
+	public synchronized void setResultCode(Result result) {
 		this.runResult = result;
 	}
 
+	/**
+	 * Sets the component result to new value if and only if the current result equals to the given expectation.
+	 * This is atomic operation for 'if' and 'set'. 
+	 * @param newResult new component result
+	 * @param expectedOldResult expected value of current result
+	 */
+	public synchronized void setResultCode(Result newResult, Result expectedOldResult) {
+		if (runResult == expectedOldResult) {
+			runResult = newResult;
+		}
+	}
+	
 	/**
 	 *  Gets the ResultMsg of finished Node.<br>
 	 *  This message briefly describes what caused and error (if there was any).
@@ -347,7 +385,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    The ResultMsg value
 	 *@since     July 29, 2002
 	 */
-	public String getResultMsg() {
+	public synchronized String getResultMsg() {
 		return runResult!=null ? runResult.message() : null;
 	}
 
@@ -372,6 +410,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         super.init();
 
         runResult = Result.READY;
+        
+        //initialise component token tracker if necessary
+        if ((getGraph().getJobType() == JobType.JOBFLOW) &&
+        		getGraph().getRuntimeContext().isTokenTracking()) {
+        	tokenTracker = createComponentTokenTracker();
+        } else {
+        	tokenTracker = new PrimitiveComponentTokenTracker(this);
+        }
+        
         refreshBufferedValues();
     }
 
@@ -394,10 +441,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public void run() {
         runResult = Result.RUNNING; // set running result, so we know run() method was started
         
-		//store the current thread like a node executor
-        setNodeThread(Thread.currentThread());
-
+		ContextProvider.registerNode(this);
         try {
+    		//store the current thread like a node executor
+            setNodeThread(Thread.currentThread());
+            
         	//we need a synchronization point for all components in a phase
         	//watchdog starts all components in phase and wait on this barrier for real startup
     		preExecuteBarrier.await();
@@ -421,7 +469,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             }
             
             if (runResult == Result.FINISHED_OK) {
-            	if (runIt = false) { //component returns ok tag, but the component was actually aborted
+            	if (runIt == false) { //component returns ok tag, but the component was actually aborted
             		runResult = Result.ABORTED;
             	} else {
 	            	//check whether all input ports are already closed
@@ -479,19 +527,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             return;
         } finally {
         	sendFinishMessage();
-
         	setNodeThread(null);
+			ContextProvider.unregister();
         }
     }
     
-    public abstract Result execute() throws Exception;
+    protected abstract Result execute() throws Exception;
     
     /**
      * This method should be called every time when node finishes its work.
      */
     private void sendFinishMessage() {
         //sends notification - node has finished
-        Message<Object> msg = Message.createNodeFinishedMessage(this);
+        Message<Void> msg = Message.createNodeFinishedMessage(this);
         if (getCloverPost() != null) //that condition should be removed - graph aborting is not well synchronized now
         	getCloverPost().sendMessage(msg);
     }
@@ -505,11 +553,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		abort(null);
 	}
 	
-	synchronized public void abort(Throwable cause ) {
+	public synchronized void abort(Throwable cause ) {
 		int attempts = 30;
 		runIt = false;
 		
-		while (runResult == Result.RUNNING && attempts-- > 0){
+		while (!runResult.isStop() && attempts-- > 0){
 			if (logger.isTraceEnabled())
 				logger.trace("try to interrupt thread "+getNodeThread());
 			getNodeThread().interrupt();
@@ -525,7 +573,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                     new ErrorMsgBody(runResult.code(), runResult.message(), cause));
             getCloverPost().sendMessage(msg);
             sendFinishMessage();
-		} else if (runResult == Result.RUNNING) {
+		} else if (!runResult.isStop()) {
 			logger.debug("Node '" + getId() + "' was not interrupted in legal way.");
 			runResult = Result.ABORTED;
 			sendFinishMessage();
@@ -552,7 +600,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
     		
 			String oldName = nodeThread.getName();
-    		ContextProvider.registerNode(this);
     		long runId = getGraph().getRuntimeContext().getRunId();
     		nodeThread.setName(getId()+"_"+runId);
 			MDC.put("runId", getGraph().getRuntimeContext().getRunId());
@@ -563,7 +610,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 			}
 			
 		} else {
-			ContextProvider.unregister();
 			MDC.remove("runId");
 			long runId = getGraph().getRuntimeContext().getRunId();
 			if (logger.isTraceEnabled()) 
@@ -601,6 +647,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since         April 2, 2002
 	 *@deprecated    Use the other method which takes 2 arguments (portNum, port)
 	 */
+	@Deprecated
 	public void addInputPort(InputPort port) {
 		Integer portNum;
 		int keyVal;
@@ -633,6 +680,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since         April 4, 2002
 	 *@deprecated    Use the other method which takes 2 arguments (portNum, port)
 	 */
+	@Deprecated
 	public void addOutputPort(OutputPort port) {
 		Integer portNum;
 		int keyVal;
@@ -893,6 +941,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *
 	 *@return    Description of the Returned Value
 	 *@since     May 21, 2002
+	 *@deprecated implementation of this method is for now useless and is not required
 	 */
 	public void toXML(Element xmlElement) {
 		// set basic XML attributes of all graph components
@@ -1259,5 +1308,20 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		abort(e.getException());
 	}
 	
+	/**
+	 * @return token tracker for this component or null cannot be returned,
+	 * at least {@link PrimitiveComponentTokenTracker} is returned.
+	 */
+	public ComponentTokenTracker getTokenTracker() {
+		return tokenTracker;
+	}
+	
+	/**
+	 * Creates suitable token tracker for this component. {@link ComplexComponentTokenTracker} is used by default.
+	 * This method is intended to be overridden if custom type of token tracking is necessary.
+	 */
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ComplexComponentTokenTracker(this);
+	}
 	
 }

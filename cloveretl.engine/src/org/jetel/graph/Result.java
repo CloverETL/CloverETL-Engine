@@ -38,7 +38,7 @@ package org.jetel.graph;
  * @since  11.1.2007
  *
  */
-public enum Result{
+public enum Result {
     
     N_A(3,"N/A", false),
     READY(2,"READY", false),
@@ -46,7 +46,8 @@ public enum Result{
     WAITING(4,"WAITING", false),
     FINISHED_OK(0,"FINISHED_OK", true),
     ERROR(-1,"ERROR", true),
-    ABORTED(-2,"ABORTED", true);
+    ABORTED(-2,"ABORTED", true),
+    TIMEOUT(-3, "TIMEOUT", true);
     
     private final int code;
     private final String message;

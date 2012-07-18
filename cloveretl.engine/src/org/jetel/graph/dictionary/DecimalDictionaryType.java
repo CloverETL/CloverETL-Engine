@@ -25,6 +25,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents decimal element in the dictionary.
@@ -98,4 +99,9 @@ public class DecimalDictionaryType extends DictionaryType {
 		return TLTypePrimitive.DECIMAL;
 	}
 	
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.DECIMAL;
+	}
+
 }

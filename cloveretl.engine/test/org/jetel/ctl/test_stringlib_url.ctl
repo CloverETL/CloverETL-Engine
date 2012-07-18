@@ -11,9 +11,12 @@ function integer transform() {
 	string[] url =
 		['http://example.com',
 		 'https://chuck:norris@server.javlin.eu:12345/backdoor/trojan.cgi?hash=SHA560;god=yes#autodestruct',
-		 'HEY! This is NOT valid URL!'
+		 'HEY! This is NOT valid URL!',
+		 'sandbox://cloveretl.test.scenarios/graph/UDR_FileURL_SFTP_OneGzipFileSpecified.grf',
+		 'unknown://cloveretl.test.scenarios/graph/UDR_FileURL_SFTP_OneGzipFileSpecified.grf',
+		 'zip:(sftp://test:test@koule/home/test/data-in/file2.zip)#innerfolder2/URLIn21.txt'
 		];
-	integer n = 3;
+	integer n = url.length();
 	
 	for (integer i = 0; i < n; i = ++i) {
 		urlValid[i] = isUrl(url[i]);

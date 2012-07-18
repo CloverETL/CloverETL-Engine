@@ -46,6 +46,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -159,7 +160,7 @@ public class SystemExecute extends Node{
 	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
 	private static final String XML_WORKING_DIRECTORY_ATTRIBUTE = "workingDirectory";
 	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
-	private static final String XML_DELETE_BATCH_ATTRIBUTE = "deleteBatch";
+	private static final String XML_SAVE_BATCH_FILE_ATTRIBUTE = "batchFile";
 	private static final String XML_WORKERS_TIMEOUT_ATTRIBUTE= "workersTimeout";
 	private static final String XML_CHARSET_ATTRIBUTE= "charset";
 	
@@ -177,11 +178,14 @@ public class SystemExecute extends Node{
 	private int capturedErrorLines;
 	private FileWriter outputFile = null;
 	private boolean append;
-	private boolean deleteBatch = true;
 	private int exitValue;
 	private Parser parser;
 	private Formatter formatter;
 	private File batch;
+	/**
+	 * Parameter to specify where to put script copy.
+	 */
+	private String batchFile;
 	private String interpreter;
 	private String outputFileName;
 	private File workingDirectory = null;
@@ -267,12 +271,24 @@ public class SystemExecute extends Node{
 	 * @throws IOException
 	 */
 	private String createBatch(String command)throws IOException{
-		batch =  File.createTempFile("tmp",".bat");
+		try {
+			batch = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
+		} catch (TempFileCreationException e) {
+			throw new IOException(e);
+		}
 		FileWriter batchWriter = new FileWriter(batch);
 		batchWriter.write(command);
 		batchWriter.close();
 		if (!batch.setExecutable(true)){
 			logger.warn("Can't set executable to " + batch.getAbsolutePath());
+		}
+		if (batchFile != null) {
+			try {
+				org.apache.commons.io.FileUtils.copyFile(batch,
+					new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), batchFile)));
+			} catch (IOException e) {
+				logger.warn("Could not save the script to file: " + getBatchFile(), e);
+			}
 		}
 		return batch.getCanonicalPath();
 	}
@@ -466,8 +482,6 @@ public class SystemExecute extends Node{
 		}
 //		broadcastEOF();
 		if (!runIt) {
-			resultMsg = resultMsg + "\n" + "STOPPED";
-			ok = false;;
 			return Result.ABORTED;
 		}
 		if (exitValue!=0){
@@ -505,10 +519,7 @@ public class SystemExecute extends Node{
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-		
-		if (deleteBatch) {
-			deleteBatch();
-		}
+		deleteBatch();
 	}
 	
 	private void deleteBatch(){
@@ -644,8 +655,8 @@ public class SystemExecute extends Node{
 			if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
 				sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_DELETE_BATCH_ATTRIBUTE)) {
-				sysExec.setDeleteBatch(xattribs.getBoolean(XML_DELETE_BATCH_ATTRIBUTE,true));
+			if (xattribs.exists(XML_SAVE_BATCH_FILE_ATTRIBUTE)) {
+				sysExec.setBatchFile(xattribs.getString(XML_SAVE_BATCH_FILE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
 				sysExec.setWorkersTimeout(xattribs.getLong(XML_WORKERS_TIMEOUT_ATTRIBUTE));
@@ -657,15 +668,6 @@ public class SystemExecute extends Node{
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
-	}
-	
-	 /**
-	  * Sets whether to delete or not temporary batch file
-	  * 
-	 * @param delete
-	 */
-	public void setDeleteBatch(boolean delete) {
-		this.deleteBatch = delete;
 	}
 
 	/**
@@ -718,7 +720,9 @@ public class SystemExecute extends Node{
 		if (outputFile!=null){
 			xmlElement.setAttribute(XML_OUTPUT_FILE_ATTRIBUTE,outputFileName);
 		}
-		xmlElement.setAttribute(XML_DELETE_BATCH_ATTRIBUTE,String.valueOf(deleteBatch));
+		if (batchFile != null) {
+			xmlElement.setAttribute(XML_SAVE_BATCH_FILE_ATTRIBUTE, batchFile);
+		}
 		if (!environment.isEmpty()){
 			StringBuilder env = new StringBuilder();
 			for (Entry variable : environment.entrySet()) {
@@ -1150,6 +1154,20 @@ public class SystemExecute extends Node{
 	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+	
+	/**
+	 * @return the batchFile
+	 */
+	public String getBatchFile() {
+		return batchFile;
+	}
+
+	/**
+	 * @param batchFile the batchFile to set
+	 */
+	public void setBatchFile(String batchFile) {
+		this.batchFile = batchFile;
 	}
 }
 

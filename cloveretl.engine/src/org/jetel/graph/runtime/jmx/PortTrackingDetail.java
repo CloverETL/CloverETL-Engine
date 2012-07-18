@@ -94,7 +94,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getTotalRecords()
 	 */
 	@Override
-	public int getTotalRecords() {
+	public long getTotalRecords() {
 		return totalRecords;
 	}
 	/* (non-Javadoc)
@@ -192,9 +192,6 @@ public abstract class PortTrackingDetail implements PortTracking {
 		this.usedMemory = usedMemory;
 	}
 
-	@Override
-	abstract public String getType();
-	
 	abstract void gatherTrackingDetails();
 	
 	protected void gatherTrackingDetails0(int newTotalRecords, long newTotalBytes, int waitingRecords) {

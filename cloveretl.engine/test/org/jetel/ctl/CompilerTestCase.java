@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.AssertionFailedError;
@@ -151,12 +152,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		return sb.toString();
 	}
 
+	@Override
 	protected void setUp() {
 		// set default locale to English to prevent various parsing errors
 		Locale.setDefault(Locale.ENGLISH);
 		initEngine();
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		inputRecords = null;
@@ -186,6 +189,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		g.addDataRecordMetadata(metadataMap);
 		g.addSequence(createDefaultSequence(g, "TestSequence"));
 		g.addLookupTable(createDefaultLookup(g, "TestLookup"));
+		Properties properties = new Properties();
+		properties.put("PROJECT", ".");
+		properties.put("DATAIN_DIR", "${PROJECT}/data-in");
+		g.setGraphProperties(properties);
 		initDefaultDictionary(g);
 		return g;
 	}
@@ -1408,6 +1415,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertDeepCopy(byte2, byteMap1.get(1));
 		}
 
+		{
+			// JJTARRAYACCESSEXPRESSION - Function call
+			List<String> testArrayAccessFunctionCallStringList = (List<String>) getVariable("testArrayAccessFunctionCallStringList");
+			DataRecord testArrayAccessFunctionCall = (DataRecord) getVariable("testArrayAccessFunctionCall");
+			Map<String, DataRecord> function_call_original_map = (Map<String, DataRecord>) getVariable("function_call_original_map");
+			Map<String, DataRecord> function_call_copied_map = (Map<String, DataRecord>) getVariable("function_call_copied_map");
+			List<DataRecord> function_call_original_list = (List<DataRecord>) getVariable("function_call_original_list");
+			List<DataRecord> function_call_copied_list = (List<DataRecord>) getVariable("function_call_copied_list");
+			
+			assertDeepEquals(testArrayAccessFunctionCallStringList, testArrayAccessFunctionCall.getField("stringListField").getValue());
+
+			assertEquals(1, function_call_original_map.size());
+			assertEquals(2, function_call_copied_map.size());
+			assertDeepEquals(Arrays.asList(null, testArrayAccessFunctionCall), function_call_original_list);
+			assertDeepEquals(Arrays.asList(null, testArrayAccessFunctionCall, testArrayAccessFunctionCall), function_call_copied_list);
+			
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_original_map.get("1"));
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_copied_map.get("1"));
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_copied_map.get("2"));
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_original_list.get(1));
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_copied_list.get(1));
+			assertDeepEquals(testArrayAccessFunctionCall, function_call_copied_list.get(2));
+			
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_original_map.get("1"));
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_map.get("1"));
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_map.get("2"));
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_original_list.get(1));
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_list.get(1));
+			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_list.get(2));
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -1601,6 +1638,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertDeepCopy(secondMultivalueOutput, multivalueInput);
 		assertDeepCopy(thirdMultivalueOutput, secondMultivalueOutput);
 	}
+	
+	public void test_assignment_array_access_function_call() {
+		doCompile("test_assignment_array_access_function_call");
+		Map<String, String> originalMap = new HashMap<String, String>();
+		originalMap.put("a", "b");
+		
+		Map<String, String> copiedMap = new HashMap<String, String>(originalMap);
+		copiedMap.put("c", "d");
+		
+		check("originalMap", originalMap);
+		check("copiedMap", copiedMap);
+	}
+
+	public void test_assignment_array_access_function_call_wrong_type() {
+		doCompileExpectErrors("test_assignment_array_access_function_call_wrong_type", 
+				Arrays.asList(
+						"Expression is not a composite type but is resolved to 'string'",
+						"Type mismatch: cannot convert from 'integer' to 'string'",
+						"Cannot convert from 'integer' to string"
+				));
+	}
 
 	@SuppressWarnings("unchecked")
 	public void test_assignment_returnvalue() {
@@ -1628,6 +1686,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			DataRecord testReturnValue11 = (DataRecord) getVariable("testReturnValue11");
 			List<String> testReturnValue12 = (List<String>) getVariable("testReturnValue12");
 			List<String> testReturnValue13 = (List<String>) getVariable("testReturnValue13");
+			Map<Integer, DataRecord> function_call_original_map = (Map<Integer, DataRecord>) getVariable("function_call_original_map");
+			Map<Integer, DataRecord> function_call_copied_map = (Map<Integer, DataRecord>) getVariable("function_call_copied_map");
+			DataRecord function_call_map_newrecord = (DataRecord) getVariable("function_call_map_newrecord");
+			List<DataRecord> function_call_original_list = (List<DataRecord>) getVariable("function_call_original_list");
+			List<DataRecord> function_call_copied_list = (List<DataRecord>) getVariable("function_call_copied_list");
+			DataRecord function_call_list_newrecord = (DataRecord) getVariable("function_call_list_newrecord");
 			
 			// identifier
 			assertFalse(stringList1.isEmpty());
@@ -1641,6 +1705,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// array access expression - map
 			assertDeepEquals("unmodified", recordMap1.get(0).getField("stringField").getValue());
 			assertDeepEquals("modified", recordMap1.get(1).getField("stringField").getValue());
+			
+			// array access expression - function call
+			assertDeepEquals(null, function_call_original_map.get(2));
+			assertDeepEquals("unmodified", function_call_map_newrecord.getField("stringField"));
+			assertDeepEquals("modified", function_call_copied_map.get(2).getField("stringField"));
+			assertDeepEquals(Arrays.asList(null, function_call_list_newrecord), function_call_original_list);
+			assertDeepEquals("unmodified", function_call_list_newrecord.getField("stringField"));
+			assertDeepEquals("modified", function_call_copied_list.get(2).getField("stringField"));
 
 			// field access expression
 			assertFalse(stringList4.isEmpty());
@@ -2061,6 +2133,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("dnel", false);
 		check("lned", false);
 		check("dned", false);
+		check("dned_different_scale", false);
 	}
 	
 	public void test_operator_in() {
@@ -2584,6 +2657,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		check("copyList", Arrays.asList(1, 2, 3, 4, 5));
 		check("returnedList", Arrays.asList(1, 2, 3, 4, 5));
+		
+		Map<String, String> expectedMap = new HashMap<String, String>();
+		expectedMap.put("a", "a");
+		expectedMap.put("b", "b");
+		expectedMap.put("c", "c");
+		expectedMap.put("d", "d");
+		
+		check("copyMap", expectedMap);
+		check("returnedMap", expectedMap);
 	}
 
 	public void test_containerlib_insert() {
@@ -3687,14 +3769,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_validUrl() {
 		doCompile("test_stringlib_url");
-		check("urlValid", Arrays.asList(true, true, false));
-		check("protocol", Arrays.asList("http", "https", null));
-		check("userInfo", Arrays.asList("", "chuck:norris", null));
-		check("host", Arrays.asList("example.com", "server.javlin.eu", null));
-		check("port", Arrays.asList(-1, 12345, -2));
-		check("path", Arrays.asList("", "/backdoor/trojan.cgi", null));
-		check("query", Arrays.asList("", "hash=SHA560;god=yes", null));
-		check("ref", Arrays.asList("", "autodestruct", null));
+		check("urlValid", Arrays.asList(true, true, false, true, false, true));
+		check("protocol", Arrays.asList("http", "https", null, "sandbox", null, "zip"));
+		check("userInfo", Arrays.asList("", "chuck:norris", null, "", null, ""));
+		check("host", Arrays.asList("example.com", "server.javlin.eu", null, "cloveretl.test.scenarios", null, ""));
+		check("port", Arrays.asList(-1, 12345, -2, -1, -2, -1));
+		check("path", Arrays.asList("", "/backdoor/trojan.cgi", null, "/graph/UDR_FileURL_SFTP_OneGzipFileSpecified.grf", null, "(sftp://test:test@koule/home/test/data-in/file2.zip)"));
+		check("query", Arrays.asList("", "hash=SHA560;god=yes", null, "", null, ""));
+		check("ref", Arrays.asList("", "autodestruct", null, "", null, "innerfolder2/URLIn21.txt"));
 	}
 	
 	public void test_stringlib_escapeUrl() {
@@ -3703,4 +3785,47 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("unescaped", "http://example.com/foo bar^");
 	}
 	
+	public void test_stringlib_resolveParams() {
+		doCompile("test_stringlib_resolveParams");
+		check("resultNoParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultFalseFalseParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultTrueFalseParams", "Special character representing new line is: \n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultFalseTrueParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
+		check("resultTrueTrueParams", "Special character representing new line is: \n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
+	}
+	
+	public void test_utillib_getEnvironmentVariables() {
+		doCompile("test_utillib_getEnvironmentVariables");
+		check("empty", false);
+	}
+
+	public void test_utillib_getJavaProperties() {
+		String key1 = "my.testing.property";
+		String key2 = "my.testing.property2";
+		String value = "my value";
+		String value2;
+		assertNull(System.getProperty(key1));
+		assertNull(System.getProperty(key2));
+		System.setProperty(key1, value);
+		try {
+			doCompile("test_utillib_getJavaProperties");
+			value2 = System.getProperty(key2);
+		} finally {
+			System.clearProperty(key1);
+			assertNull(System.getProperty(key1));
+			System.clearProperty(key2);
+			assertNull(System.getProperty(key2));
+		}
+		check("java_specification_name", "Java Platform API Specification");
+		check("my_testing_property", value);
+		assertEquals("my value 2", value2);
+	}
+
+	public void test_utillib_getParamValues() {
+		doCompile("test_utillib_getParamValues");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "./data-in");
+		check("params", params);
+	}
 }

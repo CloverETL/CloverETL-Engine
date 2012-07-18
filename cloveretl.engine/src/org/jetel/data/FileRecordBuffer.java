@@ -26,6 +26,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -44,7 +47,6 @@ public class FileRecordBuffer {
 
 	private FileChannel tmpFileChannel;
 	private File tmpFile;
-	private String tmpFilePath;
 
 	private CloverBuffer dataBuffer;
 
@@ -75,13 +77,10 @@ public class FileRecordBuffer {
 	/**
 	 *  Constructor for the FileRecordBuffer object
 	 *
-	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
 	 *@param  dataBufferSize  The size of internal in memory buffer. If smaller
 	 *      than DEFAULT_BUFFER_SIZE, then default is used
 	 */
-	public FileRecordBuffer(String tmpFilePath, int dataBufferSize) {
-		this.tmpFilePath = tmpFilePath;
+	public FileRecordBuffer(int dataBufferSize) {
 		readPosition = 0;
 		writePosition = 0;
 		mapPosition = 0;
@@ -94,12 +93,8 @@ public class FileRecordBuffer {
 
 	/**
 	 *  Constructor for the FileRecordBuffer object
-	 *
-	 *@param  tmpFilePath  Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
 	 */
-	public FileRecordBuffer(String tmpFilePath) {
-		this.tmpFilePath = tmpFilePath;
+	public FileRecordBuffer() {
 		readPosition = 0;
 		writePosition = 0;
 		mapPosition = 0;
@@ -117,12 +112,13 @@ public class FileRecordBuffer {
 	 *@since                   September 17, 2002
 	 */
 	private void openTmpFile() throws IOException {
-		if (tmpFilePath != null) {
-			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, new File(tmpFilePath));
-		} else {
-			tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
+		
+		try {
+			IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+			tmpFile = authorityProxy.newTempFile(TMP_FILE_PREFIX, -1);
+		} catch (TempFileCreationException e) {
+			throw new IOException("Failed to create temp file.", e);
 		}
-		tmpFile.deleteOnExit();
 		// we want the temp file be deleted on exit
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
 		hasFile=true;

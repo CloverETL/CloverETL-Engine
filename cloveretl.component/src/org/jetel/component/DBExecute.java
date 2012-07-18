@@ -50,6 +50,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
@@ -1045,6 +1047,11 @@ public class DBExecute extends Node {
 
 	public void setOutputFields(String[] outputFields) {
 		this.outputFields = outputFields;
+	}
+
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ReformatComponentTokenTracker(this);
 	}
 
 }

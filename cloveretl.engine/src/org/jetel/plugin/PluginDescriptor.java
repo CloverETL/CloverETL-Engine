@@ -229,6 +229,29 @@ public class PluginDescriptor {
         return version;
     }
 
+	/**
+	 * @return major version parsed out from {@link #getVersion()}
+	 */
+	public int getMajorVersion() {
+		String[] versionSegments = getVersionSegments();
+		return Integer.valueOf(versionSegments[0]);
+	}
+
+	/**
+	 * @return minor version parsed out from {@link #getVersion()}
+	 */
+	public int getMinorVersion() {
+		String[] versionSegments = getVersionSegments();
+		return Integer.valueOf(versionSegments[1]);
+	}
+	
+	private String[] getVersionSegments() {
+		PluginDescriptor pluginDescriptor = Plugins.getPluginDescriptor(getId());
+		String version = pluginDescriptor.getVersion();
+		String[] subversions = version.split("\\."); //$NON-NLS-1$
+		return subversions;
+	}
+
     public void setVersion(String version) {
         this.version = version;
     } 

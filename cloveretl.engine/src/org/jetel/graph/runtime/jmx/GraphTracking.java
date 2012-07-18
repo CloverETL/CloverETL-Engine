@@ -31,6 +31,8 @@ import org.jetel.graph.Result;
  * 
  * TODO: currently the start and endtime is used by all clients only to calculate exec time - refactor.
  * 
+ * Each change of this interface (rename, delete or add of an attribute) should be reflected in TrackingMetadataToolkit class.
+ * 
  * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
  *         (c) Javlin Consulting (www.javlin.cz)
  *

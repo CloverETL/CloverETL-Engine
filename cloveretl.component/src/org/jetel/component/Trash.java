@@ -39,6 +39,8 @@ import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ReaderWriterComponentTokenTracker;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.bytes.LogOutByteChannel;
@@ -488,4 +490,10 @@ public class Trash extends Node {
 			}
 		}
 	}
+	
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ReaderWriterComponentTokenTracker(this);
+	}
+	
 }

@@ -56,6 +56,9 @@ public class FunctionRegistry {
 		registerFunction(new LastNonNull());
 		registerFunction(new CRC32());
 		registerFunction(new MD5());
+		registerFunction(new MD5Sum());
+		registerFunction(new SHA1Sum());
+		registerFunction(new SHA256Sum());
 		registerFunction(new Median());
 		registerFunction(new Modus());
 	}

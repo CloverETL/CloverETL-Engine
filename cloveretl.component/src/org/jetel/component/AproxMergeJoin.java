@@ -622,7 +622,7 @@ public class AproxMergeJoin extends Node {
 		// tmp record for switching contents
 		DataRecord tmpRec;
 		// create file buffer for slave records - system TEMP path
-		recordBuffer = new FileRecordBuffer(null);
+		recordBuffer = new FileRecordBuffer();
 
 		// for the first time (as initialization), we expect that records are
 		// different

@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * This interface represents a type of a dictionary entry. 
@@ -91,5 +92,10 @@ public interface IDictionaryType {
 	 * @return CTL type or null if this type is not supported in CTL 
 	 */
 	public TLType getTLType();
+	
+	/**
+	 * @return corresponding metadata field type, i.e. DataFieldType.STRING, ... or <code>null</code> if does not exist
+	 */
+	public DataFieldType getFieldType();
 	
 }

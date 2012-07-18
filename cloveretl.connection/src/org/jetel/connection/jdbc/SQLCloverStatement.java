@@ -242,6 +242,16 @@ public class SQLCloverStatement {
 				}
 			}
 			cloverInputFields = inputFields.toArray(new String[inputFields.size()]);
+		} else {
+			if (cloverInputFields == null) { 
+				Matcher m = PREPARED_STMT_PATTERN.matcher(query);
+				if (!m.find()) {
+					// CL-2277: when not defined in "Clover fields" attribute nor in the query
+					// (and if there are no "?" placeholders), use an empty array;
+					// otherwise all fields would be used, causing misleading error messages
+					cloverInputFields = new String[0];
+				}
+			}
 		}
 		if (record != null) {
 			initTransMap();

@@ -24,8 +24,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+
+import org.jetel.data.Defaults;
 
 /**
  * Simple routines for streams manipulating.
@@ -72,30 +75,86 @@ public class StreamUtils {
     
     /**
      * Read all available bytes from one channel and copy them to the other.
+     * Can be more efficient when the target is a {@link FileChannel} 
+     * and the size of the source is known.
+     * 
+     * @param in
+     * @param out
+     * @param sourceSize the size of the source or 0 when unknown
+     * 
+     * @throws IOException
+     */
+	public static void copy(ReadableByteChannel in, WritableByteChannel out, long sourceSize) throws IOException {
+		if ((out instanceof FileChannel) && (sourceSize > 0)) {
+			FileChannel outputFileChannel = (FileChannel) out;
+			long pos = 0;
+			long transferred = 0;
+			long count = 0;
+			while (pos < sourceSize) {
+				count = Math.min(Defaults.MAX_MAPPED_FILE_TRANSFER_SIZE, sourceSize - pos); // CL-2313
+				transferred = outputFileChannel.transferFrom(in, pos, count);
+				if (transferred == 0) {
+					break;
+				}
+				pos += transferred;
+			}
+			if (pos != sourceSize) {
+				throw new IOException(String.format("Failed to copy the whole content: expected %d, transferred %d bytes", sourceSize, pos));
+			}
+		} else {
+			copy(in, out);
+		}
+	}
+    
+    /**
+     * Read all available bytes from one channel and copy them to the other.
+     * 
+     * The method should correctly check for current thread's interruption status,
+     * which is probably guaranteed by using NIO Channels.
+     * 
      * @param in
      * @param out
      * @throws IOException
      */
     public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
-    	// First, we need a buffer to hold blocks of copied bytes.
-    	ByteBuffer buffer = ByteBuffer.allocateDirect(32 * 1024);
+		if (in instanceof FileChannel) { // possibly more efficient
+			FileChannel inputFileChannel = (FileChannel) in;
+			long size = inputFileChannel.size();
+	        long pos = 0;
+	        long count = 0;
+	        long transferred = 0;
+	        while (pos < size) {
+				count = Math.min(Defaults.MAX_MAPPED_FILE_TRANSFER_SIZE, size - pos); // CL-2313
+				transferred = inputFileChannel.transferTo(pos, count, out);
+				if (transferred == 0) {
+					break;
+				}
+				pos += transferred;
+	        }
+	        if (pos != size) {
+	        	throw new IOException(String.format("Failed to copy the whole content: expected %d, transferred %d bytes", size, pos));
+	        }
+		} else {
+	    	// First, we need a buffer to hold blocks of copied bytes.
+	    	ByteBuffer buffer = ByteBuffer.allocateDirect(32 * 1024);
 
-    	// Now loop until no more bytes to read and the buffer is empty
-    	while (in.read(buffer) != -1 || buffer.position() > 0) {
-    		// The read() call leaves the buffer in "fill mode". To prepare
-    		// to write bytes from the bufferwe have to put it in "drain mode"
-    		// by flipping it: setting limit to position and position to zero
-    		buffer.flip();
+	    	// Now loop until no more bytes to read and the buffer is empty
+	    	while (in.read(buffer) != -1 || buffer.position() > 0) {
+	    		// The read() call leaves the buffer in "fill mode". To prepare
+	    		// to write bytes from the bufferwe have to put it in "drain mode"
+	    		// by flipping it: setting limit to position and position to zero
+	    		buffer.flip();
 
-    		// Now write some or all of the bytes out to the output channel
-    		out.write(buffer);
+	    		// Now write some or all of the bytes out to the output channel
+	    		out.write(buffer);
 
-    		// Compact the buffer by discarding bytes that were written,
-    		// and shifting any remaining bytes. This method also
-    		// prepares the buffer for the next call to read() by setting the
-    		// position to the limit and the limit to the buffer capacity.
-    		buffer.compact();
-    	}
+	    		// Compact the buffer by discarding bytes that were written,
+	    		// and shifting any remaining bytes. This method also
+	    		// prepares the buffer for the next call to read() by setting the
+	    		// position to the limit and the limit to the buffer capacity.
+	    		buffer.compact();
+	    	}
+		}
     }
 
     private static final int IO_BUFFER_SIZE = 4 * 1024;  
@@ -124,6 +183,11 @@ public class StreamUtils {
 			try {
 				final byte[] buffer = new byte[IO_BUFFER_SIZE];
 				for (int l; -1 != (l = src.read(buffer));) {
+					// check for interruption
+					// TODO do not do it every iteration
+					if (Thread.currentThread().isInterrupted()) {
+						throw new IOException("Interrupted");
+					}
 					if ( dst != null ) {
 						dst.write(buffer, 0, l);
 					}

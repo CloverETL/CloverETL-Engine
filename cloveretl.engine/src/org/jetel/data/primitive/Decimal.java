@@ -18,6 +18,7 @@
  */
 package org.jetel.data.primitive;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
@@ -33,7 +34,7 @@ import org.jetel.util.formatter.NumericFormatter;
  *@since      November 30, 2005
  *@see        org.jetel.data.DecimalDataField
  */
-public interface Decimal extends Numeric {
+public interface Decimal extends Numeric, Serializable {
 	
 	public int getPrecision();
 	
@@ -65,8 +66,21 @@ public interface Decimal extends Numeric {
 
     public void toByteBuffer(CloverBuffer dataBuffer);
 	
-	public void fromString(CharSequence seq, NumericFormatter numericFormatter);
+	public void fromString(CharSequence seq, NumericFormatter numericFormatter) throws OutOfPrecisionException;
 
 	public int compareTo(Object value); //nas numeric interface, java.lang.number a tento decimal
+	
+	public static class OutOfPrecisionException extends NumberFormatException {
+
+		private static final long serialVersionUID = 1694318707257376264L;
+
+		public OutOfPrecisionException() {
+		}
+
+		public OutOfPrecisionException(String s) {
+			super(s);
+		}
+		
+	}
 	
 }

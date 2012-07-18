@@ -18,12 +18,14 @@
  */
 package org.jetel.util.primitive;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -40,6 +42,12 @@ import org.jetel.util.property.RefResFlag;
  */
 public class TypedProperties extends Properties {
 
+	/**
+	 * Name of charset which is used for serialization and deserialization via load and store operations.
+	 * This charset is dedicated by definition - see {@link Properties#load(InputStream)}
+	 */
+	public static final String SERIALIZATION_CHARSET_NAME = "ISO-8859-1";
+	
 	private static final long serialVersionUID = -3251111555515215464L;
 	
 	private PropertyRefResolver propertyRefResolver;
@@ -215,6 +223,19 @@ public class TypedProperties extends Properties {
     	}
     }
     
+    /**
+     * Loads typed properties from string representation.
+     * @param serializedForm string representation of properties
+     * @throws IOException
+     */
+    public void load(String serializedForm) {
+    	try {
+			load(new ByteArrayInputStream(serializedForm.getBytes(SERIALIZATION_CHARSET_NAME)));
+		} catch (IOException e) {
+			throw new JetelRuntimeException("unexpected exception", e);
+		}
+    }
+        
 	public void print(Log logger, String message) {
         logger.debug(message + " " + this);
 	}

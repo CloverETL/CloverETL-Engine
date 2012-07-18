@@ -188,12 +188,9 @@ public class FixLenDataReader extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
-		if (firstRun()) {
-			reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-		}
-		else {
+		reader.preExecute();
+		if (!firstRun()) {
 			parser.reset();
-			reader.reset();
 		}
 	}	
 	
@@ -231,9 +228,9 @@ public class FixLenDataReader extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			reader.close();
+			reader.postExecute();
 		}
-		catch (IOException e) {
+		catch (ComponentNotReadyException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
 		}
 	}
@@ -293,6 +290,7 @@ public class FixLenDataReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
     @Override

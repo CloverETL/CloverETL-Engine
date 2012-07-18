@@ -59,7 +59,7 @@ public class SlaveReaderDup implements InputReader {
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
-		this.recBuf = new FileRecordBuffer(null);
+		this.recBuf = new FileRecordBuffer();
 		this.firstRun = true;
 	}
 	

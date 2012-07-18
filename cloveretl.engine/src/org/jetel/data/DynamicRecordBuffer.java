@@ -29,6 +29,8 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -44,8 +46,6 @@ import org.jetel.util.bytes.CloverBuffer;
  *@since      November 20, 2006
  */
 public class DynamicRecordBuffer {
-
-	private String tempDirectory;
 
 	protected CloverBuffer readDataBuffer;
     protected CloverBuffer writeDataBuffer;
@@ -76,26 +76,7 @@ public class DynamicRecordBuffer {
 	 * @param dataBufferSize
 	 */
 	public DynamicRecordBuffer() {
-	    this(System.getProperty("java.io.tmpdir"), Defaults.Record.RECORDS_BUFFER_SIZE);
-    }
-
-	/**
-	 * Constructor of the DynamicRecordBuffer with tmp file
-     * created under java.io.tmpdir dir.
-	 * @param dataBufferSize
-	 */
-	public DynamicRecordBuffer(int initialBufferSize){
-	    this(System.getProperty("java.io.tmpdir"), initialBufferSize);
-    }
-
-	/**
-	 *  Constructor of the DynamicRecordBuffer object
-	 *
-	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
-	 */
-	public DynamicRecordBuffer(String tempDirectory) {
-		this(tempDirectory, Defaults.Record.RECORDS_BUFFER_SIZE);
+	    this(Defaults.Record.RECORDS_BUFFER_SIZE);
     }
 
 	/**
@@ -107,8 +88,7 @@ public class DynamicRecordBuffer {
      *          buffers of exactly the same size are created - one for reading, one
      *          for writing.
 	 */
-	public DynamicRecordBuffer(String tempDirectory, int initialBufferSize) {
-		this.tempDirectory = tempDirectory;
+	public DynamicRecordBuffer(int initialBufferSize) {
         this.initialBufferSize = initialBufferSize;
     }
 
@@ -293,7 +273,7 @@ public class DynamicRecordBuffer {
 			if (tempFile != null) {
 				obsoleteTempFiles.addLast(tempFile);
 			}
-			tempFile = new TempFile(tempDirectory, requestedSlotSize);
+			tempFile = new TempFile(requestedSlotSize);
 			tempFile.open();
 
 			return tempFile.getDiskSlotForWrite();
@@ -474,7 +454,7 @@ public class DynamicRecordBuffer {
     }
     
     private static class TempFile {
-    	private String tempDirectory;
+    	
     	private File tempFile;
     	private FileChannel tempFileChannel;
         private final int slotSize;
@@ -482,8 +462,7 @@ public class DynamicRecordBuffer {
         private LinkedList<DiskSlot> fullFileBuffers;
         private int lastSlot;
 
-		public TempFile(String tempDirectory, int slotSize) {
-			this.tempDirectory = tempDirectory;
+		public TempFile(int slotSize) {
 	        emptyFileBuffers = new LinkedList<DiskSlot>();
 	        fullFileBuffers=new LinkedList<DiskSlot>();
 	        lastSlot = -1;
@@ -492,17 +471,10 @@ public class DynamicRecordBuffer {
 		
 		private void open() {
 			try {
-				if (tempDirectory != null) {
-					tempFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, new File(tempDirectory));
-				} else {
-					tempFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
-				}
-				
-				// we want the temp file be deleted on exit
-				tempFile.deleteOnExit();
+				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, -1);
 				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
-			} catch (IOException e) {
-				throw new JetelRuntimeException("Can't open TMP file in " + tempDirectory, e);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Can't open TMP file in", e);
 			}
 		}
 

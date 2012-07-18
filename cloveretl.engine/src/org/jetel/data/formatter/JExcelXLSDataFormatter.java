@@ -54,7 +54,6 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.formatter.DateUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -276,9 +275,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
             }else{
             	settings.setGCDisabled( true );
             	settings.setUseTemporaryFileDuringWrite( true );   
-            	if (tmpDir != null) {
-					settings.setTemporaryFileDuringWriteDirectory(tmpDir);
-				}
+            	settings.setTemporaryFileDuringWriteDirectory(tmpDir);
             }
     		os = null;
     		InputStream is = null;
@@ -286,8 +283,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
     			Object[] args = (Object[])outputDataTarget;
     			URL url = (URL) args[0];
         		String fName = (String) args[1];
-        		if (args.length >= 3 && args[2] instanceof de.schlichtherle.io.FileOutputStream) {
-        			((de.schlichtherle.io.FileOutputStream) args[2]).close();
+        		if (args.length >= 3 && args[2] instanceof OutputStream) {
+        			((OutputStream) args[2]).close();
         		}
         		try {
             		is = FileUtils.getInputStream(url, fName);

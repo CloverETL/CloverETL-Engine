@@ -29,10 +29,13 @@ import org.jetel.util.string.StringUtils;
  * Instances of this class are collected in ConfigurationStatus, which is return value of
  * all checkConfig() methods in the engine.
  * 
+ * NOTE: {@link ConfigurationException} is tighly related class which should be updated respectivelly
+ * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  *
  * @created 24.11.2006
+ * @see ConfigurationException
  */
 public class ConfigurationProblem {
     
@@ -62,11 +65,19 @@ public class ConfigurationProblem {
     	this(message, severity, graphElement, priority, null);
     }
 
-    public ConfigurationProblem(ComponentNotReadyException e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
-        this(e.getMessage(), severity, graphElement, priority, attributeName);
+    public ConfigurationProblem(Exception e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
+    	this(null, e, severity,graphElement, priority, attributeName);
+    }
+
+    public ConfigurationProblem(String message, Exception e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
+        this(message, severity, graphElement, priority, attributeName);
         
-        if(!StringUtils.isEmpty(e.getAttributeName()) && StringUtils.isEmpty(attributeName)) {
-            setAttributeName(e.getAttributeName());
+        setCauseException(e);
+        
+        if (e instanceof ComponentNotReadyException) {
+	        if (!StringUtils.isEmpty(((ComponentNotReadyException) e).getAttributeName()) && StringUtils.isEmpty(attributeName)) {
+	            setAttributeName(((ComponentNotReadyException) e).getAttributeName());
+	        }
         }
     }
 
@@ -137,14 +148,30 @@ public class ConfigurationProblem {
 		this.causeException = causeException;
 	}
 
+	/**
+	 * @return exception derived from this problem or null if the problem is not error
+	 */
+	public Exception toException() {
+		if (getSeverity() == Severity.ERROR) {
+			return new ConfigurationException(createMessage(), getCauseException());
+		} else {
+			return null;
+		}
+	}
+	
 	@Override
     public String toString() {
-    	String result = (getGraphElement() != null ? 
-    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+		String result = createMessage();
     	if (getCauseException() != null) {
     		result += "\n" + MiscUtils.stackTraceToString(getCauseException());
     	}
     	
     	return result;
     }
+	
+	private String createMessage() {
+    	return (getGraphElement() != null ? 
+    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+	}
+	
 }

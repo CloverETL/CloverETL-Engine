@@ -103,7 +103,7 @@ public class MappingTagger extends AbstractVisitor {
 		return portTagMap.keySet();
 	}
 
-	public Map<Integer, PortData> getPortDataMap(Map<Integer, InputPort> inPorts, String tempDir)
+	public Map<Integer, PortData> getPortDataMap(Map<Integer, InputPort> inPorts)
 			throws ComponentNotReadyException {
 		Map<Integer, PortData> portDataMap = new HashMap<Integer, PortData>(inPorts.size());
 		for (Entry<Integer, InputPort> entry : inPorts.entrySet()) {
@@ -111,7 +111,7 @@ public class MappingTagger extends AbstractVisitor {
 
 			PortTag portTag = portTagMap.get(inPortIndex);
 			if (portTag != null) {
-				PortData portData = PortData.getInstance(portTag.isCached(), entry.getValue(), portTag.getKeys(), sortHints.get(inPortIndex), tempDir);
+				PortData portData = PortData.getInstance(portTag.isCached(), entry.getValue(), portTag.getKeys(), sortHints.get(inPortIndex));
 				portDataMap.put(inPortIndex, portData);
 			}
 		}

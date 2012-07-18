@@ -346,7 +346,9 @@ public class ASTBuilder extends NavigatingVisitor {
 			if (fieldId >= 0) {
 				node.setFieldId(fieldId);
 			} else {
-				error(node, "Field '" + node.getFieldName() + "' does not exist in record '" + metadata.getName() + "'");
+				ErrorMessage m = error(node, "Field '" + node.getFieldName() + "' does not exist in record '" + metadata.getName() + "'");
+				m.setDetail(new MetadataErrorDetail(node));
+				
 				node.setType(TLType.ERROR);
 				return node;
 			}
@@ -1017,24 +1019,24 @@ public class ASTBuilder extends NavigatingVisitor {
 
 	// ----------------- Error Reporting --------------------------
 
-	private void error(SimpleNode node, String error) {
-		problemReporter.error(node.getBegin(), node.getEnd(),error, null);
+	private ErrorMessage error(SimpleNode node, String error) {
+		return problemReporter.error(node.getBegin(), node.getEnd(),error, null);
 	}
 
-	private void error(SimpleNode node, String error, String hint) {
-		problemReporter.error(node.getBegin(),node.getEnd(),error,hint);
+	private ErrorMessage error(SimpleNode node, String error, String hint) {
+		return problemReporter.error(node.getBegin(),node.getEnd(),error,hint);
 	}
 
-	private void warn(SimpleNode node, String warn) {
-		problemReporter.warn(node.getBegin(),node.getEnd(), warn, null);
+	private ErrorMessage warn(SimpleNode node, String warn) {
+		return problemReporter.warn(node.getBegin(),node.getEnd(), warn, null);
 	}
 
-	private void warn(SimpleNode node, String warn, String hint) {
-		problemReporter.warn(node.getBegin(),node.getEnd(), warn, hint);
+	private ErrorMessage warn(SimpleNode node, String warn, String hint) {
+		return problemReporter.warn(node.getBegin(),node.getEnd(), warn, hint);
 	}
 
-	private void warn(String warn, String hint) {
-		problemReporter.warn(1, 1, 1, 2, warn, hint);
+	private ErrorMessage warn(String warn, String hint) {
+		return problemReporter.warn(1, 1, 1, 2, warn, hint);
 	}
 
 }

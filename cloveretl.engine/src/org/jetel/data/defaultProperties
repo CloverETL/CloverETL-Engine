@@ -73,7 +73,7 @@ Lookup.LOOKUP_INITIAL_CAPACITY = 512
 
 #Determines default precision of decimal data field metatada.
 # Example: <Field type="decimal" name="usrid" <b>length="10"</b> scale="2" delimiter=";"  nullable="true" />
-DataFieldMetadata.DECIMAL_LENGTH = 8
+DataFieldMetadata.DECIMAL_LENGTH = 12
 
 #Determines default scale od decimal data field metadata.<br>
 # Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />

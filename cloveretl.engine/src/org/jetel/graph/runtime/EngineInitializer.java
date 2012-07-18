@@ -26,11 +26,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphAnalyzer;
@@ -178,6 +177,8 @@ public class EngineInitializer {
 
         //init framework constants
         Defaults.init(defaultPropertiesFile);
+        
+        FileManager.init();
     }
     
     private static void internalInit(URL defaultPropertiesFile, String logHost) {
@@ -256,14 +257,10 @@ public class EngineInitializer {
 		if (!runtimeContext.isSkipCheckConfig()) {
 			logger.info("Checking graph configuration...");
 			ConfigurationStatus status = graph.checkConfig(null);
-			if(status.isError()) {
+			if (status.isError()) {
 				logger.error("Graph configuration is invalid.");
 				status.log();
-				for (ConfigurationProblem s : status) {
-					// throw exception with the first error in the list
-					if (s.getSeverity() == Severity.ERROR)
-						throw new ComponentNotReadyException(graph, "Graph configuration is invalid.");
-				} // for
+				throw new ComponentNotReadyException(graph, "Graph configuration is invalid.", status.toException());
 			} else {
 				logger.info("Graph configuration is valid.");
 				status.log();

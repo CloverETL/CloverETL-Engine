@@ -23,7 +23,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.SandboxUrlUtils;
 
 /**
@@ -33,21 +32,23 @@ import org.jetel.util.file.SandboxUrlUtils;
  */
 public class SandboxStreamHandler extends URLStreamHandler {
 
-	private final TransformationGraph graph; 
-	
-	public SandboxStreamHandler(TransformationGraph graph) {
-		super();
-		this.graph = graph;
-	}
-
 	@Override
 	public URLConnection openConnection(URL url) throws IOException {
-		return new SandboxConnection(graph, url);
+		return new SandboxConnection(url);
 	}
 	
     @Override
 	protected void parseURL(URL url, String spec, int start, int limit) {
     	super.parseURL(url, spec, start, limit);
+    	String path = url.getPath();
+    	String query = url.getQuery();
+    	if (query!=null && !query.isEmpty()) {
+    		StringBuilder pathBuilder = new StringBuilder(path);
+    		pathBuilder.append("?").append(query);
+    		query = null; // set to null - empty string would cause a "?" to be appended to the URL
+    		path = pathBuilder.toString();
+    	}
+    	setURL(url, url.getProtocol(), url.getHost(), url.getPort(), url.getAuthority(), url.getUserInfo(), path, query, url.getRef());
 
     	if (!SandboxUrlUtils.isSandboxUrl(url)) {
     		throw new RuntimeException("Parse error: The URL protocol name must be sandbox!");

@@ -40,6 +40,8 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -403,5 +405,10 @@ public class SequenceChecker extends Node {
         this.useI18N = useI18N;
     }
 	
+    @Override
+    protected ComponentTokenTracker createComponentTokenTracker() {
+    	return new CopyComponentTokenTracker(this);
+    }
+    
 }
 

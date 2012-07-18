@@ -74,6 +74,7 @@ public class CharByteDataParser extends AbstractTextParser {
 	private boolean isInitialized;
 	private int recordCounter;
 	private String lastRawRecord;
+	private int numFields;
 	
 	/**
 	 * Sole constructor
@@ -237,7 +238,7 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
 				}
-				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx,
+				return parsingErrorFound(e.getSimpleMessage(), record, Math.min(consumerIdx, numFields - 1), //in case extra delimiter consumer is used - index of consumer does not need to match index of field 
 						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null);
 			} finally {
 				if (verboseInputReader != null) {
@@ -428,7 +429,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
 
-		int numFields = metadata.getNumFields();
+		numFields = metadata.getNumFields();
 
 		for (lastNonAutoFilledField = numFields - 1; lastNonAutoFilledField >= 0; lastNonAutoFilledField--) {
 			if (!metadata.getField(lastNonAutoFilledField).isAutoFilled()) {
@@ -713,21 +714,37 @@ public class CharByteDataParser extends AbstractTextParser {
 					throw new BadDataFormatException("Insufficient buffer capacity, try to increase Record.RECORD_LIMIT_SIZE");
 				}
 				if (ibt == CharByteInputReader.END_OF_INPUT) {
+					//end of file reached
 					if (i == 0) {
+						//don't worry, no bytes have been read yet, EOF was on correct place (at the end of a record)
 						return false;
 					} else {
-						throw new BadDataFormatException("End of input encountered instead of the closing quote");
+						//what about isEofAsDelimiter() switch? all fields at this position needs to have this switch turned on
+						for (int idx = 0; idx < fieldCount; idx++) {
+							if (!isAutoFilling[idx] && i >= fieldStart[idx] && i < fieldEnd[idx]) {
+								if (!record.getMetadata().getField(startFieldIdx + idx).isEofAsDelimiter()) {
+									throw new BadDataFormatException("End of input encountered instead of the closing quote");
+								}
+							}
+						}
+						//little bit unexpected EOF, but still correct, populate fields which we have data for
+						break;
 					}
 				}
 			}
 			CloverBuffer seq = inputReader.getByteSequence(0);
 			int startPos = seq.position();
+			int endPos = seq.limit();
 			for (int idx = 0; idx < fieldCount; idx++) {
 				if (isAutoFilling[idx]) {
 					continue;
 				}
+				if (startPos + fieldStart[idx] > endPos) {
+					//range of data for the field is out of read data (in case eofAsDelimiter)
+					continue;
+				}
 				seq.position(startPos + fieldStart[idx]);
-				seq.limit(startPos + fieldEnd[idx]);
+				seq.limit(Math.min(startPos + fieldEnd[idx], endPos)); //range of data for the field may be wider than read data (in case eofAsDelimiter)
 				record.getField(startFieldIdx + idx).fromByteBuffer(seq, decoder);
 			}
 			return true;

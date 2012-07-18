@@ -41,6 +41,7 @@ public class ReformatOrders extends DataRecordTransform{
 		if (!getGraph().firstRun()){
 			parser.reset();
 		}
+		parser.preExecute();
 		super.preExecute();
 	}
 

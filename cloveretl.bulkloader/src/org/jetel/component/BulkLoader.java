@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -36,6 +35,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -101,7 +101,6 @@ public abstract class BulkLoader extends Node {
 	protected Formatter formatter = null; // format data to load utility format and write them to dataFileName
 	protected String[] commandLine; // command line of load utility
 
-	private File tempDir = null;
 	
 	/**
 	 *  Flag that determine if execute() method was already executed.
@@ -140,7 +139,6 @@ public abstract class BulkLoader extends Node {
 				formatter.reset();
 			}
 		}
-		tempDir = null;
 	}
 
 
@@ -540,10 +538,11 @@ public abstract class BulkLoader extends Node {
 	 */
 	protected File createTempFile(String prefix, String suffix) throws ComponentNotReadyException {
 		try {
-			File file = File.createTempFile(prefix, suffix, getTempDir());
-			file.delete();
+			//File file = File.createTempFile(prefix, suffix, getTempDir());
+			//file.delete();
+			File file = getGraph().getAuthorityProxy().newTempFile(prefix, suffix, -1);
 			return file;
-		} catch (IOException e) {
+		} catch (TempFileCreationException e) {
 			free();
 			throw new ComponentNotReadyException(this, "Temporary data file wasn't created.", e);
 		}
@@ -727,17 +726,6 @@ public abstract class BulkLoader extends Node {
 		} else if (!properties.isEmpty()) {
 			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, getPropertiesAsString(properties));
 		}
-	}
-	
-	private File getTempDir() {
-		if (tempDir == null) {
-			if (getGraph().getRuntimeContext().getContextURL() != null) {
-				tempDir = new File(getGraph().getRuntimeContext().getContextURL().getPath());
-			} else {
-				tempDir = new File(".");
-			}
-		}
-		return tempDir;
 	}
 	
 	/**
