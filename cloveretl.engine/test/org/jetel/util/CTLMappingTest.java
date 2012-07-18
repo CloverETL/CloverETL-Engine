@@ -180,7 +180,7 @@ public class CTLMappingTest extends CloverTestCase {
     	assertFalse(ctlMapping.hasOutput("third"));
     }
 
-    public void testComplex() {
+    public void testComplex() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
     	DataRecordMetadata inMetadata = createMetadata("inMetadata", "field1_in", "field2_in", "field3_in");
@@ -223,7 +223,7 @@ public class CTLMappingTest extends CloverTestCase {
     	mapping.postExecute();
     }
 
-    public void testComplex1() {
+    public void testComplex1() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
     	DataRecordMetadata metadata = createMetadata("inMetadata", "field1", "field2", "field3");
@@ -265,7 +265,7 @@ public class CTLMappingTest extends CloverTestCase {
     	mapping.postExecute();
     }
 
-    public void testComplex2() {
+    public void testComplex2() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
     	DataRecordMetadata inMetadata0 = createMetadata("inMetadata1", "field1", "field2", "field3");
@@ -321,7 +321,7 @@ public class CTLMappingTest extends CloverTestCase {
     	mapping.postExecute();
     }
 
-    public void testComplex3() {
+    public void testComplex3() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
     	DataRecordMetadata inMetadata0 = createMetadata("inMetadata1", "field1", "field2", "field3");
