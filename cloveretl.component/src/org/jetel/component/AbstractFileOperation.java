@@ -25,6 +25,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -417,9 +418,51 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		
 		setDefaultParameters();
 		
-		inputMapping.init();
-		outputMapping.init();
-		errorMapping.init();
+		//initialize input mapping
+		try {
+			inputMapping.init();
+		} catch (MissingFieldException mfe) {
+			if (mfe.isOutput()) {
+				DataRecord record = inputMapping.getOutputRecord(mfe.getRecordId());
+				String fieldName = mfe.getFieldName();
+				if (record == inputMapping.getOutputRecord(PARAMS_RECORD_ID)) {
+					throw new ComponentNotReadyException(this, XML_INPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+				}
+			}
+			throw new ComponentNotReadyException(this, XML_INPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
+		}
+
+		//initialize output mapping
+		try {
+			outputMapping.init();
+		} catch (MissingFieldException mfe) {
+			if (!mfe.isOutput()) {
+				DataRecord record = outputMapping.getInputRecord(mfe.getRecordId());
+				String fieldName = mfe.getFieldName();
+				if (record == outputMapping.getInputRecord(RESULT_RECORD_ID)) {
+					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, "No such result field: " + fieldName);
+				} else if (record == outputMapping.getInputRecord(PARAMS_RECORD_ID)) {
+					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+				}
+			}
+			throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
+		}
+		
+		//initialize error mapping
+		try {
+			errorMapping.init();
+		} catch (MissingFieldException mfe) {
+			if (!mfe.isOutput()) {
+				DataRecord record = errorMapping.getInputRecord(mfe.getRecordId());
+				String fieldName = mfe.getFieldName();
+				if (record == errorMapping.getInputRecord(RESULT_RECORD_ID)) {
+					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, "No such error result field: " + fieldName);
+				} else if (record == errorMapping.getInputRecord(PARAMS_RECORD_ID)) {
+					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+				}
+			}
+			throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
+		}
 	}
 	
 	@Override
@@ -438,7 +481,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
         try {
         	tryToInit();
         } catch (Exception e) {
-        	status.add(FileOperationComponentMessages.getString("AbstractFileOperation.init_failed") + e.getMessage(), Severity.ERROR, this, Priority.NORMAL); //$NON-NLS-1$
+        	status.add(FileOperationComponentMessages.getString("AbstractFileOperation.init_failed"), e, Severity.ERROR, this, Priority.NORMAL); //$NON-NLS-1$
         }
     	
         return status;

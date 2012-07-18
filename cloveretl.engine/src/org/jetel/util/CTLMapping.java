@@ -33,6 +33,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -267,6 +268,28 @@ public class CTLMapping {
 	}
 
 	/**
+	 * @param index of requested input record
+	 * @return input data record at the given index
+	 */
+	public DataRecord getInputRecord(int index) {
+		if (index < 0 || index >= inputRecordsList.size()) {
+			return null;
+		}
+		return inputRecordsList.get(index);
+	}
+
+	/**
+	 * @param name index of requested output record
+	 * @return output data record at the given index
+	 */
+	public DataRecord getOutputRecord(int index) {
+		if (index < 0 || index >= outputRecordsList.size()) {
+			return null;
+		}
+		return outputRecordsList.get(index);
+	}
+
+	/**
 	 * @param name identifier of probed input record
 	 * @return <code>true</code> if and only if the CTL mapping has input record associated with the given identifier
 	 */
@@ -351,7 +374,7 @@ public class CTLMapping {
 	/**
 	 * CTL mapping initialization can be called only once. Output records content at the time is considered as default output.
 	 */
-	public void init() {
+	public void init() throws ComponentNotReadyException {
 		assert (!isInitialized);
 		isInitialized = true;
 		
@@ -377,6 +400,8 @@ public class CTLMapping {
 				ctlTransformation = RecordTransformFactory.createTransform(sourceCode, null, 
 						null, null, component, inputRecordsMetadata, outputRecordsMetadata,
 						classLoader, classpath);
+			} catch (MissingFieldException missingField) {
+				throw missingField;
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " is invalid.", e);
 			}
