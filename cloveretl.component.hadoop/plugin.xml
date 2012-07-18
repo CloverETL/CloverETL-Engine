@@ -5,6 +5,8 @@
 
 	<runtime>
 		<library path="bin/"/>
+		<library path="lib/commons-configuration-1.8.jar"/>
+		<library path="lib/commons-lang-2.6.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
