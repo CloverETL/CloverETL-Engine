@@ -398,21 +398,27 @@ public class HttpConnector extends Node {
     private static final String RP_CONTENT_NAME = "content";
 
 	/**
+	 * Result field representing the URL of an output file
+	 */
+    private static final int RP_OUTPUTFILE_INDEX = 1;
+    private static final String RP_OUTPUTFILE_NAME = "outputFilePath";
+    
+	/**
 	 * Result field representing the status code of the response
 	 */
-    private static final int RP_STATUS_CODE_INDEX = 1;
+    private static final int RP_STATUS_CODE_INDEX = 2;
     private static final String RP_STATUS_CODE_NAME = "statusCode";
-    
+
     /**
      * Result field representing the header of the response
      */
-    private static final int RP_HEADER_INDEX = 2;
+    private static final int RP_HEADER_INDEX = 3;
     private static final String RP_HEADER_NAME = "header";
 
    	/**
 	 * Result field representing the error message (can have a value only if error port is redirected to std port)
 	 */
-    private static final int RP_MESSAGE_INDEX = 3;
+    private static final int RP_MESSAGE_INDEX = 4;
     private static final String RP_MESSAGE_NAME = "errorMessage";
 
     
@@ -432,7 +438,7 @@ public class HttpConnector extends Node {
     
     
     private interface ResponseWriter {
-		public void writeResponse(String response) throws IOException;
+		public void writeResponse(HttpResponse response) throws IOException;
 	}
 
 	/**
@@ -447,44 +453,119 @@ public class HttpConnector extends Node {
 		}
 
 		@Override
-		public void writeResponse(String response) throws IOException {
-			outputField.setValue(response);
+		public void writeResponse(HttpResponse response) throws IOException {
+			if (outField != null) {
+				outputField.setValue(getResponseContent(response));
+			}
 		}
 	}
 
-	private class ResponseByFileNameWriter implements ResponseWriter {
+	private abstract class AbstractResponseFileWriter implements ResponseWriter {
 
-		private final DataField outputField;
+		private final DataField fileURLField;
+
+		public AbstractResponseFileWriter(DataField fileURLField) {
+			this.fileURLField = fileURLField;
+		}
+
+		/** Returns a file output channel. The method is guaranteed to be called before the 
+		 *  {@link #getFileOutputPath()}, so that the implementation may cache the data.
+		 * 
+		 * @return a file output channel
+		 */
+		abstract protected WritableByteChannel getFileOutputChannel() throws IOException;
+
+		/** Returns an output file path. The method is guaranteed to be called after the 
+		 *  {@link #getFileOutputChannel()}, so that the implementation may cache the data.
+		 * 
+		 * @return an output file path
+		 */
+		abstract protected String getFileOutputPath() throws IOException;
+		
+		@Override
+		public void writeResponse(HttpResponse response) throws IOException {
+			WritableByteChannel outputChannel = getFileOutputChannel();
+			
+			if (outputChannel == null) {
+				outputChannel = Channels.newChannel(System.out);
+			}
+			
+			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
+			
+			if (inputConnection != null) {
+				try {
+					StreamUtils.copy(inputConnection, outputChannel);
+				} finally {
+					inputConnection.close();
+				}
+			}
+			
+			// populate output field with the temporary file name
+			if (fileURLField != null) {
+				fileURLField.setValue(getFileOutputPath());
+			}
+		}
+	}
+	
+	private class ResponseTempFileWriter extends AbstractResponseFileWriter {
+
 		private final String prefix;
+		private File tempFile = null;
 
-		public ResponseByFileNameWriter(DataField outputField, String prefix) {
-			this.outputField = outputField;
+		public ResponseTempFileWriter(DataField fileURLField, String prefix) {
+			super(fileURLField);
 			this.prefix = prefix;
-
 		}
 
 		@Override
-		public void writeResponse(String response) throws IOException {
-			// write response to a temporary file
-			File tempFile = null;
+		protected WritableByteChannel getFileOutputChannel() throws IOException {
+			tempFile = null;
 			try {
 				tempFile = getGraph().getAuthorityProxy().newTempFile(prefix, ".tmp", -1);
+				
+				return Channels.newChannel(new FileOutputStream(tempFile, appendOutputToUse));
 			} catch (TempFileCreationException e) {
 				throw new IOException(e);
 			}
-			//final BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(tempFile), charsetToUse));
+		}		
+
+		@Override
+		protected String getFileOutputPath() throws IOException {
+			if (tempFile != null) {
+				return tempFile.getAbsolutePath();
+			}
 			
-			writer.write(response);
-			writer.flush();
-			writer.close();
-
-			// populate output field with the temporary file name
-			outputField.setValue(tempFile.getAbsolutePath());
+			return null;
 		}
-
 	}
 
+	private class ResponseFileWriter extends AbstractResponseFileWriter {
+
+		private final String fileName;
+
+		public ResponseFileWriter(DataField fileURLField, String fileName) {
+			super(fileURLField);
+			
+			this.fileName = fileName;
+		}
+
+		
+		@Override
+		protected WritableByteChannel getFileOutputChannel() throws IOException {
+			return FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileName, appendOutputToUse);
+		}		
+
+		@Override
+		protected String getFileOutputPath() throws IOException {
+			File file = FileUtils.getJavaFile(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileName); 
+			if (file != null) {
+				return file.getAbsolutePath();
+			}
+			
+			return null;
+		}
+	}
+	
 	public static class HTTPConnectorException extends Exception {
 		private static final long serialVersionUID = 1L;
 
@@ -1088,15 +1169,15 @@ public class HttpConnector extends Node {
 
 		tryToInit(false);
 		
-		// create response writer based on configuration - do it only when output port is connected
-		if (outField != null) {
-			// output port is connected (see validation above)
-			if (getStoreResponseToTempFile()) {
-				responseWriter = new ResponseByFileNameWriter(outField, temporaryFilePrefix);
-			} else {
-				// response is written to the output field
-				responseWriter = new ResponseByValueWriter(outField);
-			}
+		// create response writer based on the configuration
+		if (getOutputFileUrl() != null) {
+			responseWriter = new ResponseFileWriter(outField, outputFileUrl);
+			
+		} else if (getStoreResponseToTempFile()) {
+			responseWriter = new ResponseTempFileWriter(outField, temporaryFilePrefix);
+			
+		} else {
+			responseWriter = new ResponseByValueWriter(outField);
 		}
 
 		// build properties from raw request properties
@@ -1249,15 +1330,17 @@ public class HttpConnector extends Node {
 //		}
 		
 		if (resultRecord != null) {
-			DataField contentOutputField = resultRecord.getField(RP_CONTENT_INDEX);
-			
-			// output port is connected (see validation above)
-			if (getStoreResponseToTempFile()) {
-				responseWriter = new ResponseByFileNameWriter(contentOutputField, temporaryFilePrefix);
+			// create response writer based on the configuration
+			if (outputFileUrlToUse != null) {
+				responseWriter = new ResponseFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), outputFileUrlToUse);
+				
+			} else if (storeResponseToTempFileToUse) {
+				responseWriter = new ResponseTempFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), temporaryFilePrefixToUse);
+				
 			} else {
-				// response is written to the output field
-				responseWriter = new ResponseByValueWriter(contentOutputField);
+				responseWriter = new ResponseByValueWriter(resultRecord.getField(RP_CONTENT_INDEX));
 			}
+
 		}
 		
 		// filter multipart entities (ignored fields are removed from multipart entities record)
@@ -1643,8 +1726,9 @@ public class HttpConnector extends Node {
 		logProcessing();
 		
 		HttpResponse response = result.getResponse();
-		if (standardOutputPort != null) {
-			responseWriter.writeResponse(getResponseContent(response));
+		responseWriter.writeResponse(response);
+		
+		if (resultRecord != null) {
 			resultRecord.getField(RP_STATUS_CODE_INDEX).setValue(response.getStatusLine().getStatusCode());
 			
 			Header[] headers = response.getAllHeaders();
@@ -1653,27 +1737,7 @@ public class HttpConnector extends Node {
 				headersMap.put(header.getName(), header.getValue());
 			}
 			resultRecord.getField(RP_HEADER_INDEX).setValue(headersMap);
-		} else {
-			
-			// if we have an output file defined, write response there. Otherwise, write it to standard output 
-			WritableByteChannel outputFile = null;
-			if (!StringUtils.isEmpty(outputFileUrlToUse)) {
-				// if we have output file defined, send  
-				outputFile = FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, outputFileUrlToUse, appendOutputToUse);
-			} else {
-				outputFile = Channels.newChannel(System.out);
-			}
-			
-			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
-			
-			if (inputConnection != null) {
-				try {
-					StreamUtils.copy(inputConnection, outputFile);
-				} finally {
-					inputConnection.close();
-				}
-			}
-		}
+		} 
 	}
 	
 	@Override
@@ -1787,14 +1851,6 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.execute();
 		processInputParamsRecord();
 
-		if (hasInputPort) {
-//				// POTENTIAL RISK FOR BACKWARD COMPATIBILITY!
-//				mapByName(inputMappingInRecords, inputParamsRecord);
-//				
-//				mapLegacyInput();
-			
-
-		}
 	}	
 
 //	/** Maps fields based on the configuration to preserve compatibility.
@@ -2189,9 +2245,26 @@ public class HttpConnector extends Node {
 			status.add(new ConfigurationProblem("'Input file URL' will be ignored because input port is connected.", Severity.WARNING, this, Priority.NORMAL));
 		}
 
-		if (outputPort != null && !StringUtils.isEmpty(outputFileUrl)) {
-			status.add(new ConfigurationProblem("'Output file URL' will be ignored because output port is connected.", Severity.WARNING, this, Priority.NORMAL));
+		int outputCount = 0;
+		if (outputFileUrl != null) {
+			outputCount++;
 		}
+		if (outputFieldName != null) {
+			outputCount++;
+		}
+		if (storeResponseToTempFile) {
+			outputCount++;
+		}
+		
+		if (outputCount > 1) {
+			status.add(new ConfigurationProblem("Only one of 'Output file URL', 'Output field' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
+		}
+	
+		
+			
+//		if (outputPort != null && !StringUtils.isEmpty(outputFileUrl)) {
+//			status.add(new ConfigurationProblem("'Output file URL' will be ignored because output port is connected.", Severity.WARNING, this, Priority.NORMAL));
+//		}
 
 		if (!StringUtils.isEmpty(requestContent) && !StringUtils.isEmpty(inputFileUrl)) {
 			status.add(new ConfigurationProblem("You can set either 'Request content' or 'Input file URL'.", Severity.ERROR, this, Priority.NORMAL));
@@ -2860,6 +2933,7 @@ public class HttpConnector extends Node {
 		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
 		
 		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RP_STATUS_CODE_INDEX, new DataFieldMetadata(RP_STATUS_CODE_NAME, DataFieldType.INTEGER, DUMMY_DELIMITER));
 		
 		DataFieldMetadata header = new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, DUMMY_DELIMITER);
