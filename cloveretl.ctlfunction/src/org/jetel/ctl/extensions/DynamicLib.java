@@ -26,7 +26,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Decimal;
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 public class DynamicLib extends TLFunctionLibrary {
 
@@ -309,8 +309,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the boolean value of a field")
 	public static final void setBoolValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Boolean value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.BOOLEAN_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.BOOLEAN) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -318,8 +318,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the boolean value of a field")
 	public static final void setBoolValue(TLFunctionCallContext context, DataRecord record, String fieldName, Boolean value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.BOOLEAN_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.BOOLEAN) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -328,9 +328,9 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the byte value of a field")
 	public static final void setByteValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, byte[] value) {
 		DataField field = record.getField(fieldIndex);
-		if ((field.getType() != DataFieldMetadata.BYTE_FIELD)
-				&& (field.getType() != DataFieldMetadata.BYTE_FIELD_COMPRESSED)) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if ((field.getMetadata().getDataType() != DataFieldType.BYTE)
+				&& (field.getMetadata().getDataType() != DataFieldType.CBYTE)) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -338,9 +338,9 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the byte value of a field")
 	public static final void setByteValue(TLFunctionCallContext context, DataRecord record, String fieldName, byte[] value) {
 		DataField field = record.getField(fieldName);
-		if ((field.getType() != DataFieldMetadata.BYTE_FIELD)
-				&& (field.getType() != DataFieldMetadata.BYTE_FIELD_COMPRESSED)) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if ((field.getMetadata().getDataType() != DataFieldType.BYTE)
+				&& (field.getMetadata().getDataType() != DataFieldType.CBYTE)) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -349,8 +349,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the date value of a field")
 	public static final void setDateValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Date value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.DATE_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.DATE) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -358,8 +358,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the date value of a field")
 	public static final void setDateValue(TLFunctionCallContext context, DataRecord record, String fieldName, Date value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.DATE_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.DATE) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -368,8 +368,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the decimal value of a field")
 	public static final void setDecimalValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, BigDecimal value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.DECIMAL) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -377,8 +377,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the decimal value of a field")
 	public static final void setDecimalValue(TLFunctionCallContext context, DataRecord record, String fieldName, BigDecimal value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.DECIMAL) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -387,8 +387,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the integer value of a field")
 	public static final void setIntValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Integer value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.INTEGER_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.INTEGER) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -396,8 +396,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the integer value of a field")
 	public static final void setIntValue(TLFunctionCallContext context, DataRecord record, String fieldName, Integer value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.INTEGER_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.INTEGER) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -406,8 +406,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the long value of a field")
 	public static final void setLongValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Long value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.LONG_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.LONG) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -415,8 +415,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the long value of a field")
 	public static final void setLongValue(TLFunctionCallContext context, DataRecord record, String fieldName, Long value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.LONG_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.LONG) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -425,8 +425,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the number value of a field")
 	public static final void setNumValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, Double value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.NUMERIC_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.NUMBER) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -434,8 +434,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the number value of a field")
 	public static final void setNumValue(TLFunctionCallContext context, DataRecord record, String fieldName, Double value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.NUMERIC_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.NUMBER) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -444,8 +444,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the string value of a field")
 	public static final void setStringValue(TLFunctionCallContext context, DataRecord record, int fieldIndex, String value) {
 		DataField field = record.getField(fieldIndex);
-		if (field.getType() != DataFieldMetadata.STRING_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.STRING) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}
@@ -453,8 +453,8 @@ public class DynamicLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Sets the string value of a field")
 	public static final void setStringValue(TLFunctionCallContext context, DataRecord record, String fieldName, String value) {
 		DataField field = record.getField(fieldName);
-		if (field.getType() != DataFieldMetadata.STRING_FIELD) {
-			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getTypeAsString());
+		if (field.getMetadata().getDataType() != DataFieldType.STRING) {
+			throw new RuntimeException("Illegal set function for field " + field.getMetadata().getDataType().getName());
 		}
 		setFieldValue(field, value);
 	}

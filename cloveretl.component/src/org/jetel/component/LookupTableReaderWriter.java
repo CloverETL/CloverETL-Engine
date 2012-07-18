@@ -32,6 +32,8 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ReaderWriterComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -235,4 +237,10 @@ public class LookupTableReaderWriter extends Node {
 
         return status;
 	}
+	
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ReaderWriterComponentTokenTracker(this);
+	}
+
 }

@@ -320,4 +320,29 @@
 	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
 	    <parameter id="type" value="XSL_TRANSFORMER"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.ListFiles"/>
+	    <parameter id="type" value="LIST_FILES"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CreateFiles"/>
+	    <parameter id="type" value="CREATE_FILES"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DeleteFiles"/>
+	    <parameter id="type" value="DELETE_FILES"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CopyFiles"/>
+	    <parameter id="type" value="COPY_FILES"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MoveFiles"/>
+	    <parameter id="type" value="MOVE_FILES"/>
+	</extension>
 </plugin>

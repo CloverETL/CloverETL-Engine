@@ -101,7 +101,7 @@ public class MultiFileReader {
 
     /**
      * Initialization of multi file reader. Calls parser.init() with a given metadata.
-     * Tries open first data source.
+     * 
      * @param metadata
      * @throws ComponentNotReadyException
      */
@@ -112,17 +112,6 @@ public class MultiFileReader {
         parser.init();
     	if (metadata != null) autoFilling.addAutoFillingFields(metadata);
 		iSource = -1;
-        
-		initChannelIterator();
-        try {
-            if(!(initializeDataDependentSource = channelIterator.isGraphDependentSource()) && !nextSource()) {
-                noInputFile = true;
-                //throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
-            }
-        } catch (JetelException e) {
-            noInputFile = true;
-            throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + fileURL + ") doesn't contain valid file url."*/, e);
-        }
     }
 
     /**
@@ -488,9 +477,13 @@ public class MultiFileReader {
 	}
 	
 	/**
-	 * A method to be called by the owner before the start of each phase 
+	 * A method to be called by the owner before the start of each phase
+	 *  
+     * Tries to open the first data source.
 	 */
     public void preExecute() throws ComponentNotReadyException {
+		initChannelIterator();
+		
     	parser.preExecute();
     	
 		noInputFile = false;
@@ -500,7 +493,9 @@ public class MultiFileReader {
     		    noInputFile = true;
     		}
     	} catch (JetelException e) {
-			logger.error("preExecute", e);
+            noInputFile = true;
+            throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + fileURL + ") doesn't contain valid file url."*/, e);
+//			logger.error("preExecute", e);
 		}
     }
     

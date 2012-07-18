@@ -37,6 +37,8 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -114,8 +116,7 @@ public class ExtSort extends Node {
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
     private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
-    private static final String XML_TEMPORARY_DIRS = "tmpDirs";
-    private static final String XML_LOCALE_ATTRIBUTE = "locale";
+     private static final String XML_LOCALE_ATTRIBUTE = "locale";
 	private static final String XML_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
     
     
@@ -138,7 +139,6 @@ public class ExtSort extends Node {
 	private DataRecord inRecord;
 
 	private int internalBufferCapacity;
-	private String[] tmpDirs;
 	private int numberOfTapes;
 	private CloverBuffer recordBuffer;
 	private String localeStr;
@@ -260,7 +260,7 @@ public class ExtSort extends Node {
 		try {
 			// create sorter
 			sorter = new ExternalSortDataRecord(getInputPort(READ_FROM_PORT).getMetadata(),
-					sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, tmpDirs, localeStr, caseSensitive);
+					sortKeysNames, sortOrderings, internalBufferCapacity, DEFAULT_NUMBER_OF_TAPES, localeStr, caseSensitive);
 		} catch (Exception e) {
             throw new ComponentNotReadyException(e);
 		}
@@ -326,10 +326,6 @@ public class ExtSort extends Node {
        if (this.internalBufferCapacity > 0) {
        		xmlElement.setAttribute(XML_BUFFER_CAPACITY_ATTRIBUTE, String.valueOf(this.internalBufferCapacity));
        }
-       
-       if (tmpDirs!=null){
-           xmlElement.setAttribute(XML_TEMPORARY_DIRS,StringUtils.stringArraytoString(tmpDirs,';') );
-       }
     }
 
 	/**
@@ -366,10 +362,6 @@ public class ExtSort extends Node {
             }
             if (xattribs.exists(XML_BUFFER_CAPACITY_ATTRIBUTE)){
                 sort.setBufferCapacity(xattribs.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
-            }
-            
-            if (xattribs.exists(XML_TEMPORARY_DIRS)){
-                sort.setTmpDirs(xattribs.getStringEx(XML_TEMPORARY_DIRS,RefResFlag.SPEC_CHARACTERS_OFF).split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
 
             if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
@@ -443,14 +435,6 @@ public class ExtSort extends Node {
     private void setNumberOfTapes(int numberOfTapes) {
     	this.numberOfTapes = numberOfTapes;
 	}
-    
-    public String[] getTmpDirs() {
-        return tmpDirs;
-    }
-
-    public void setTmpDirs(String[] tmpDirs) {
-    	this.tmpDirs = tmpDirs;        
-    }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.Node#getType()
@@ -474,7 +458,12 @@ public class ExtSort extends Node {
 
 	public void setCaseSensitive(boolean caseSensitive) {
 		this.caseSensitive = caseSensitive;
-	}    
+	}
     
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new CopyComponentTokenTracker(this);
+	}
+
 }
 

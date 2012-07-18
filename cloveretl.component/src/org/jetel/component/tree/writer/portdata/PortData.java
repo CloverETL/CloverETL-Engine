@@ -43,8 +43,6 @@ public abstract class PortData {
 	protected int[][] primaryKey;
 	/** flag which means that data can be looked up without any key - e.g. iterator should return all the data */
 	protected boolean nullKey;
-	/** directory for temporary cache */
-	protected String tempDirectory;
 	
 	/**
 	 * Factory method
@@ -58,21 +56,20 @@ public abstract class PortData {
 	 * @return
 	 */
 	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
-			SortHint hint, String tempDirectory) {
+			SortHint hint) {
 		if (cached) {
 			if (keys.size() > 1) {
-				return new ExternalComplexPortData(inPort, keys, tempDirectory);
+				return new ExternalComplexPortData(inPort, keys);
 			} else {
-				return new ExternalSimplePortData(inPort, keys, tempDirectory);
+				return new ExternalSimplePortData(inPort, keys);
 			}
 		} else {
-			return new StreamedPortData(inPort, keys, hint, tempDirectory);
+			return new StreamedPortData(inPort, keys, hint);
 		}
 	}
 	
-	PortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
+	PortData(InputPort inPort, Set<List<String>> keys) {
 		this.inPort = inPort;
-		this.tempDirectory = tempDirectory;
 		DataRecordMetadata metadata = inPort.getMetadata();
 		
 		nullKey = keys.contains(null);

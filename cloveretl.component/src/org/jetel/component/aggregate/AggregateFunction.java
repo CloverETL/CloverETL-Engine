@@ -35,6 +35,7 @@ public abstract class AggregateFunction {
 	public static final String ERROR_LONG = "must be long";
 	public static final String ERROR_INT = "must be int";
 	public static final String ERROR_STRING = "must be string";
+	public static final String ERROR_BYTE = "must be byte or cbyte";
 	public static final String ERROR_NULLABLE = "must be nullable";
 	public static final String ERROR_NULLABLE_BECAUSE_INPUT = "must be nullable because input is nullable";
 	public static final String ERROR_OUTPUT_AS_INPUT = "must be the same type as input";

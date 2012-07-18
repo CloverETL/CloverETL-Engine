@@ -478,6 +478,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		try {
 			value.fromString(seq, numericFormatter);
 			setNull(value.isNaN());
+		} catch (Decimal.OutOfPrecisionException outOfPrecision) {
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\": %s", getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, outOfPrecision.getMessage()));
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",

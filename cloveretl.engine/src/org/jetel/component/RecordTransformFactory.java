@@ -33,14 +33,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.MetadataErrorDetail;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
-import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.CloverClassPath;
@@ -173,11 +174,12 @@ public class RecordTransformFactory {
      * @param classLoader
      * @param classPath 
      * @return
+     * @throws MissingFieldException if the CTL transformation tried to access non-existing field
      * @throws ComponentNotReadyException
      */
     public static RecordTransform createTransform(String transform, String transformClass, String transformURL,
     		String charset, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata,
-    		ClassLoader classLoader, CloverClassPath classPath) throws ComponentNotReadyException {
+    		ClassLoader classLoader, CloverClassPath classPath) throws ComponentNotReadyException, MissingFieldException {
     	
     	//if classpath wasn't passed, empty one is automatically prepared
     	if (classPath == null) {
@@ -225,7 +227,14 @@ public class RecordTransformFactory {
             	List<ErrorMessage> msgs = compiler.compile(transform, CTLRecordTransform.class, node.getId());
             	if (compiler.errorCount() > 0) {
             		String report = ErrorMessage.listToString(msgs, logger);
-            		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors" + report);
+            		String message = "CTL code compilation finished with " + compiler.errorCount() + " errors" + report;
+            		for (ErrorMessage msg: msgs) {
+            			if (msg.getDetail() instanceof MetadataErrorDetail) {
+            				MetadataErrorDetail detail = (MetadataErrorDetail) msg.getDetail();
+                			throw new MissingFieldException(message, detail.isOutput(), detail.getRecordId(), detail.getFieldName());
+            			}
+            		}
+        			throw new ComponentNotReadyException(message);
             	}
             	Object ret = compiler.getCompiledCode();
             	if (ret instanceof TransformLangExecutor) {

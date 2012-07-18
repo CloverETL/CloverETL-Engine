@@ -18,6 +18,8 @@
  */
 package org.jetel.util.file;
 
+import java.net.MalformedURLException;
+
 import junit.framework.TestCase;
 
 /**
@@ -62,4 +64,10 @@ public class SandboxUrlUtilsTest extends TestCase {
 		assertEquals(SANDBOX_GRAPH_FILE, SandboxUrlUtils.getRelativeUrl(SANDBOX_GRAPH_URL));
 	}
 
+	public void testGetSandboxUrl() throws MalformedURLException {
+		assertEquals("sandbox://mySandbox/", SandboxUrlUtils.getSandboxUrl("mySandbox", null).toString());
+		assertEquals("sandbox://mySandbox/path", SandboxUrlUtils.getSandboxUrl("mySandbox", "path").toString());
+		assertEquals("sandbox://mySandbox/path/to/folder/data.txt", SandboxUrlUtils.getSandboxUrl("mySandbox", "path/to/folder/data.txt").toString());
+	}
+	
 }

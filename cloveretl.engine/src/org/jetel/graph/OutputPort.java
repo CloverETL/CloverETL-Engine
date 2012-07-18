@@ -147,6 +147,11 @@ public interface OutputPort {
 	 */
 	public int getUsedMemory();
 
+	/**
+	 * @return associated edge with this output port
+	 */
+	public Edge getEdge();
+
 }
 /*
  *  end interface OutputPort

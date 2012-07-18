@@ -219,6 +219,48 @@ public class StringUtils {
         return stringBuilder.toString();
     }
 
+	//FIXME Move to Utils ---------------------------
+	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
+    /**
+	 * Converts the given byte array into its HEX representation (that can be used for display).
+	 * For instance byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65} will be converted to "010A0F107F81003F4041"
+     * @param buf converted byte array
+     * @return string hex representation of the given byte array
+     */
+    public static String bytesToHexString(byte[] buf) {
+    	if (buf == null) {
+    		return null;
+    	}
+    	
+        char[] chars = new char[2 * buf.length];
+        for (int i = 0; i < buf.length; ++i) {
+            chars[2 * i] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
+            chars[2 * i + 1] = HEX_CHARS[buf[i] & 0x0F];
+        }
+        return new String(chars);
+    }
+
+    /**
+	 * Converts the given string with HEX representation of an array into the byte array.
+	 * For instance "010A0F107F81003F4041" will be converted to byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65}
+     * @param str string to be converted
+     * @return represented byte array
+     */
+    public static byte[] hexStringToBytes(String str) {
+    	if (str == null) {
+    		return null;
+    	}
+    	
+		char[] charArray = str.toCharArray();
+		byte[] byteArr = new byte[charArray.length / 2];
+		int j = 0;
+		for (int i = 0; i < charArray.length - 1; i = i + 2) {
+			byteArr[j++] = (byte) (((byte) Character.digit(charArray[i], 16) << 4) | (byte) Character.digit(charArray[i + 1], 16));
+		}
+    	return byteArr;
+    }
+    
 	public static boolean isVowel(char ch){
 		return Arrays.binarySearch(vowels, ch) > -1;
 	}
@@ -2521,6 +2563,20 @@ public class StringUtils {
 			return toStringInternalMap((Map<?, ?>) o);
 		}
 		return o.toString();
+	}
+	
+	/**
+	 * Converts given object to string. For non-null object <code>o.toString()</code> is returned, <code>nullValue</code> otherwise.
+	 * @param o converted object
+	 * @param nullValue returned value in case null object <code>o</code>
+	 * @return string representation of the given object (<code>o.toString()</code>) or <code>nullValue</code> if <code>o==null</code>  
+	 */
+	public static String toString(Object o, String nullValue) {
+		if (o == null) {
+			return nullValue;
+		} else {
+			return String.valueOf(o);
+		}
 	}
 	
 	private static interface VariableResolver{

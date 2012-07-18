@@ -21,6 +21,7 @@ package org.jetel.graph.dictionary;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -90,6 +91,10 @@ public class Dictionary extends GraphElement {
 	
 	public DictionaryEntry getEntry(String key) {
 		return dictionary.get(key);
+	}
+	
+	public boolean hasEntry(String key) {
+		return dictionary.containsKey(key);
 	}
 	
 	public IDictionaryType getType(String key) {
@@ -262,6 +267,10 @@ public class Dictionary extends GraphElement {
 	
 	public Set<String> getKeys() {
 		return dictionary.keySet();
+	}
+	
+	public Set<Entry<String, DictionaryEntry>> getEntries() {
+		return dictionary.entrySet();
 	}
 	
 	public boolean isEmpty() {

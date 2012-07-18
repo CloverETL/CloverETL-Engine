@@ -574,6 +574,7 @@ public class XLSReader extends Node {
         	}
         }
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : 0);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
     }
 
     private void instantiateParser() {
@@ -587,12 +588,7 @@ public class XLSReader extends Node {
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-    	if (firstRun()) {//a phase-dependent part of initialization
-            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-    	}
-    	else {
-            reader.reset();
-    	}
+    	reader.preExecute();
     }    
     
     @Override
@@ -632,7 +628,7 @@ public class XLSReader extends Node {
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
     	try {
-            reader.close();
+            reader.postExecute();
     	}
     	catch (Exception e) {
     		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);

@@ -60,14 +60,13 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        * Used by main parser to create import parsers
        */
       public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){
-                          this(stream);
+                          this(stream, parent.encoding);
                           this.graph = parent.graph;
               this.propertyRefResolver = parent.propertyRefResolver;
                           this.parserHelper=parent.parserHelper;
                           this.hasEvalNode = false;
               this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;
-              this.encoding = parent.encoding;
               this.isImported  = true;
       }
 
@@ -83,8 +82,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 this.token_source.input_stream.setTabSize(size);
         }
 
-    @Override
-	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
@@ -297,8 +295,12 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         // identifier and field are valid LHS of assignment
                         return true;
                 case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
+                        SimpleNode child = (SimpleNode) lhs.jjtGetChild(0);
+                        if (child.getId() == TransformLangParserTreeConstants.JJTFUNCTIONCALL) {
+                                return true; // return type should be list or map, will be checked later
+                        }
                         // for array access, the 'array' must be a valid target (i.e. identifier)
-                        return checkAssignmentTarget((SimpleNode)lhs.jjtGetChild(0));
+                        return checkAssignmentTarget(child);
                 case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
                         // for member access, the source object must be a valid identifier (not a lookup, method..)
                         return checkAssignmentTarget((SimpleNode)lhs.jjtGetChild(0));
@@ -612,7 +614,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         problemReporter.setErrorLocation(errorLocation);
                         }
                 } else {
-                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of mport of the same file");
+                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of import of the same file");
                 }
     } finally {
           if (jjtc000) {
@@ -4342,21 +4344,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(9, xla); }
   }
 
-  private boolean jj_3R_148() {
-    if (jj_3R_158()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_168() {
-    if (jj_scan_token(DATETIME_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_147() {
-    if (jj_3R_157()) return true;
-    return false;
-  }
-
   private boolean jj_3R_87() {
     if (jj_scan_token(DECIMAL_VAR)) return true;
     return false;
@@ -5772,6 +5759,21 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_149() {
     if (jj_3R_159()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_148() {
+    if (jj_3R_158()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_168() {
+    if (jj_scan_token(DATETIME_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_147() {
+    if (jj_3R_157()) return true;
     return false;
   }
 

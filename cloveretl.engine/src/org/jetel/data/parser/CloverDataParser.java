@@ -176,7 +176,7 @@ public class CloverDataParser extends AbstractParser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+        recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
 	/* (non-Javadoc)

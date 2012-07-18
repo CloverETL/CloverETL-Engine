@@ -799,7 +799,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				stack.push(lhs.compareTo(rhs) >= 0);
 				break;// greater than equal
 			case NON_EQUAL:
-				stack.push(!lhs.equals(rhs));
+				stack.push(lhs.compareTo(rhs) != 0);
 				break;
 			default:
 				// this should never happen !!!

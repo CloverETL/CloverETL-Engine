@@ -40,7 +40,6 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class PhaseConnectionEdge extends EdgeBase {
 
-	private String tmpFilename;
 	private DataRecordTape dataTape;
 	private int writeCounter;
 	private int readCounter;
@@ -52,32 +51,15 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private boolean isEmpty;
 	
 	private CloverBuffer recordBuffer;
-	
-	/**
-	 *Constructor for the Edge object
-	 *
-	 * @param  proxy     Description of the Parameter
-	 * @since            April 2, 2002
-	 */
-	public PhaseConnectionEdge(Edge proxy) {
-		this(proxy,null);
-	}
-
 
 	/**
 	 *Constructor for the PhaseConnectionEdge object
 	 *
 	 * @param  proxy        Description of the Parameter
-	 * @param  tmpFilename  Description of the Parameter
 	 */
-	public PhaseConnectionEdge(Edge proxy, String tmpFilename) {
+	public PhaseConnectionEdge(Edge proxy) {
 		super(proxy);
-		this.tmpFilename = tmpFilename;
-		if (tmpFilename!=null){
-		    dataTape = new DataRecordTape(tmpFilename);
-		}else{
-		    dataTape = new DataRecordTape();
-		}
+		dataTape = new DataRecordTape();
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		isReadMode=false;
 		wasInitialized = false;
@@ -130,7 +112,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		if (!wasInitialized) {
 			writeCounter = readCounter=0;
             writeByteCounter=readByteCounter=0;
-			dataTape.open();
+			dataTape.open(-1);
 			dataTape.addDataChunk();
 			wasInitialized = true;
 		}
@@ -148,11 +130,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 			dataTape.clear();
 			dataTape.addDataChunk();
 		} catch (Exception e) {
-			if (tmpFilename!=null){
-			    dataTape = new DataRecordTape(tmpFilename);
-			}else{
-			    dataTape = new DataRecordTape();
-			}
+			dataTape = new DataRecordTape();
 		}
 	}
 

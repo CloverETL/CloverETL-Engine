@@ -18,8 +18,7 @@
  */
 package org.jetel.graph;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
@@ -42,7 +41,7 @@ import org.w3c.dom.Element;
  */
 public abstract class GraphElement implements IGraphElement {
 
-    private static Log logger = LogFactory.getLog(GraphElement.class);
+    protected Logger logger;
 
     final private String id;
 
@@ -53,6 +52,11 @@ public abstract class GraphElement implements IGraphElement {
     private boolean checked;
 
     private boolean initialized;
+
+	/**
+	 * Job type of the parent transformation graph of this graph element - {@link JobType#ETL_GRAPH} or {@link JobType#JOBFLOW}.
+	 */
+	protected JobType jobType = JobType.ETL_GRAPH;
     
     /**
      * This variable is here just for backward compatibility. Deprecated {@link #reset()} method
@@ -118,6 +122,8 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	synchronized public void init() throws ComponentNotReadyException {
         initialized = true;
+        logger = Logger.getLogger(this.getClass().getName() + "." + getId());
+        jobType = getGraph() != null ? getGraph().getJobType() : JobType.ETL_GRAPH;
     }
 
     /* (non-Javadoc)
@@ -243,6 +249,16 @@ public abstract class GraphElement implements IGraphElement {
     }
     
     @Override
+    public Logger getLog() {
+    	return logger;
+    }
+    
+    @Override
+	public JobType getJobType() {
+    	return jobType;
+    }
+
+    @Override
     public String toString() {
         return "[" + (StringUtils.isEmpty(getName()) ? "" : (getName() + ":")) +  getId() + "]";
     }
@@ -251,7 +267,7 @@ public abstract class GraphElement implements IGraphElement {
 	 * Only purpose of this implementation is obfuscation. 
 	 * Method fromXML() should not be obfuscated in all descendants.
 	 */
-	public static GraphElement fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+	public static IGraphElement fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
         throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
 	}
 

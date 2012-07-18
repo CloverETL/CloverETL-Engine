@@ -24,25 +24,19 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 
 public class SandboxConnection extends URLConnection {
 	
-	private static final Log log = LogFactory.getLog(SandboxConnection.class);
-	private final TransformationGraph graph;
-
 	/**
 	 * SFTP constructor.
 	 * @param graph 
 	 * 
 	 * @param url
 	 */
-	protected SandboxConnection(TransformationGraph graph, URL url) {
+	protected SandboxConnection(URL url) {
 		super(url);
-		this.graph = graph;
 	}
 
 	/*
@@ -53,13 +47,8 @@ public class SandboxConnection extends URLConnection {
 	public InputStream getInputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(graph);
-		if (graph != null) {
-			long runId = graph.getRuntimeContext().getRunId();
-			return authorityProxy.getSandboxResourceInput(runId, storageCode, path);
-		} else {
-			return authorityProxy.getSandboxResourceInput(0, storageCode, path);
-		}
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		return authorityProxy.getSandboxResourceInput(storageCode, path);
 	}
 
 	/*
@@ -70,12 +59,8 @@ public class SandboxConnection extends URLConnection {
 	public OutputStream getOutputStream() throws IOException {
 		String storageCode = url.getHost();
 		String path = url.getPath();
-		if (graph != null) {
-			long runId = graph.getRuntimeContext().getRunId();
-			return graph.getAuthorityProxy().getSandboxResourceOutput(runId, storageCode, path);
-		} else {
-			return IAuthorityProxy.getDefaultProxy().getSandboxResourceOutput(0, storageCode, path);
-		}
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		return authorityProxy.getSandboxResourceOutput(storageCode, path, false);
 	}
 
 	/*

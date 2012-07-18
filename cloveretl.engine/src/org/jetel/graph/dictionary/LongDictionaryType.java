@@ -24,6 +24,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents long element in the dictionary.
@@ -96,5 +97,10 @@ public class LongDictionaryType extends DictionaryType {
 	public TLType getTLType() {
 		return TLTypePrimitive.LONG;
 	}
-	
+
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.LONG;
+	}
+
 }

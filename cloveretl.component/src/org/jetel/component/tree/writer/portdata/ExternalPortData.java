@@ -58,8 +58,8 @@ abstract class ExternalPortData extends PortData {
 
 	protected CacheRecordManager sharedCache;
 	
-	ExternalPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
-		super(inPort, keys, tempDirectory);
+	ExternalPortData(InputPort inPort, Set<List<String>> keys) {
+		super(inPort, keys);
 	}
 
 	@Override

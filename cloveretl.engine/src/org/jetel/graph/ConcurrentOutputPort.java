@@ -37,7 +37,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 19.8.2009
  */
-public class ConcurrentOutputPort implements OutputPort, OutputPortDirect {
+public class ConcurrentOutputPort implements OutputPortDirect {
 
 	private OutputPortDirect outputPort;
 	
@@ -124,6 +124,11 @@ public class ConcurrentOutputPort implements OutputPort, OutputPortDirect {
 	@Override
 	public int getUsedMemory() {
 		return outputPort.getUsedMemory();
+	}
+
+	@Override
+	public Edge getEdge() {
+		return outputPort.getEdge();
 	}
 	
 }

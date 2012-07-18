@@ -414,6 +414,11 @@
 			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$MapEntry"><field access="private protected public"/><method access="private protected public"/></keep>
 			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$CollectionEntry"><field access="private protected public"/><method access="private protected public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.component.jobflow.JobflowUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldNameStructure"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldType"><field access="protected public"/><method access="protected public"/></keep>
+
 			<keep name="com.cloveretl.profiler.engine.DProfiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.functions.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.model.*"><field access="protected public"/><method access="protected public"/></keep>

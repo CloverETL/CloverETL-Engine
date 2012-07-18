@@ -269,7 +269,7 @@ public class PropertyRefResolver {
 			valueModified |= evaluateExpressions(value);
 		}
 
-		valueModified |= resolveReferences(value);
+		valueModified |= resolveReferences(value, flag.resolveCTLstatements());
 
 		//
 		// resolve special characters if desired
@@ -316,7 +316,7 @@ public class PropertyRefResolver {
 			} else {
 				// resolve property references that might be present in the CTL expression
 				StringBuilder resolvedExpression = new StringBuilder(expression);
-				resolveReferences(resolvedExpression);
+				resolveReferences(resolvedExpression, true);
 
 				// make sure that expression quotes are unescaped before evaluation of the CTL expression
 				StringUtils.unescapeCharacters(resolvedExpression, EXPRESSION_QUOTE);
@@ -342,13 +342,14 @@ public class PropertyRefResolver {
 
 	/**
 	 * Finds and resolves property references present in the given string buffer. CTL expressions present in the
-	 * referenced properties are evaluated after resolving. The result is stored back in the given string buffer.
+	 * referenced properties can be evaluated after resolving. The result is stored back in the given string buffer.
 	 *
 	 * @param value a string buffer containing property references
+	 * @param resolveCTLstatements True to resolve CTL statements.
 	 *
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveReferences(StringBuilder value) {
+	private boolean resolveReferences(StringBuilder value, boolean resolveCTLstatements) {
 		boolean anyReferenceResolved = false;
 		Matcher propertyMatcher = propertyPattern.matcher(value);
 
@@ -374,12 +375,14 @@ public class PropertyRefResolver {
 			if (resolvedReference != null) {
 				// evaluate the CTL expression that might be present in the property
 				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
-				evaluateExpressions(evaluatedReference);
-
+				if (resolveCTLstatements) {
+					evaluateExpressions(evaluatedReference);
+				}
 				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
 				propertyMatcher.reset(value);
-
-				anyReferenceResolved = true;
+				if (resolveCTLstatements) {
+					anyReferenceResolved = true;
+				}
 			} else {
 				errorMessages.add("Property '" + reference + "' is not defined.");
 				//this warn is turned off since this warning can disturb console log even in case everything is correct

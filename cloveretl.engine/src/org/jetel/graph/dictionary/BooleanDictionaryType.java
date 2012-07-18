@@ -24,6 +24,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents boolean element in the dictionary.
@@ -95,6 +96,11 @@ public class BooleanDictionaryType extends DictionaryType {
 	@Override
 	public TLType getTLType() {
 		return TLTypePrimitive.BOOLEAN;
+	}
+
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.BOOLEAN;
 	}
 	
 }

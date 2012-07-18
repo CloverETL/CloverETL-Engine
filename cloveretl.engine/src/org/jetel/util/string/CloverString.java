@@ -1522,5 +1522,18 @@ public class CloverString implements Appendable, CharSequence, Serializable {
 		
 		return false;
 	}
+
+	/**
+	 * Converts the given {@link CloverString} to string representation.
+	 * @param cloverString
+	 * @return string representation of the given non-null {@link CloverString} or null
+	 */
+	public static String stringValue(CloverString cloverString) {
+		if (cloverString == null) {
+			return null;
+		} else {
+			return cloverString.toString();
+		}
+	}
 	
 }

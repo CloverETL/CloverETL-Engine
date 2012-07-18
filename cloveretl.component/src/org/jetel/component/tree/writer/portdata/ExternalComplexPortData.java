@@ -47,14 +47,14 @@ class ExternalComplexPortData extends ExternalPortData {
 	private DirectDynamicRecordBuffer dataStorage;
 	private Map<String, BTree<byte[], byte[]>> dataMap;
 
-	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
-		super(inPort, keys, tempDirectory);
+	public ExternalComplexPortData(InputPort inPort, Set<List<String>> keys) {
+		super(inPort, keys);
 	}
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		dataStorage = new DirectDynamicRecordBuffer(tempDirectory);
+		dataStorage = new DirectDynamicRecordBuffer();
 		try {
 			dataStorage.init();
 		} catch (IOException e) {

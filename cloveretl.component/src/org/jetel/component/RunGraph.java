@@ -41,17 +41,19 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IAuthorityProxy.RunResult;
+import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -138,7 +140,7 @@ public class RunGraph extends Node{
 			
 	private static final String XML_OUTPUT_FILE_ATTRIBUTE = "logFile";
 	private static final String XML_APPEND_ATTRIBUTE = "logAppend";	
-	private static final String XML_GRAPH_NAME_ATTRIBUTE = "graphName";
+	public static final String XML_GRAPH_NAME_ATTRIBUTE = "graphName";
 	private static final String XML_SAME_INSTANCE_ATTRIBUTE = "sameInstance";
 	private static final String XML_ALTERNATIVE_JVM = "alternativeJavaCmdLine";
 	private static final String XML_GRAPH_EXEC_CLASS = "graphExecClass";	
@@ -421,7 +423,7 @@ public class RunGraph extends Node{
 		return val.toString().trim();
 	}
 	
-	private Result runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException {
+	private Result runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException, InterruptedException {
 		OutputRecordData outputRecordData = new OutputRecordData(output, graphName);
 		if (sameInstance) {			
 			logger.info("Running graph " + graphName + " in the same instance.");
@@ -519,35 +521,35 @@ public class RunGraph extends Node{
 	 * @param graphFileName
 	 * @param outputRecordData
 	 * @return
+	 * @throws InterruptedException 
 	 */
-	private Result runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) {
-		long runId = this.getGraph().getRuntimeContext().getRunId();
-
+	private Result runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) throws InterruptedException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphProperties()));
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
+		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
 		
-		RunResult rr = this.getGraph().getAuthorityProxy().executeGraph( runId, graphFileName, runtimeContext, outputFileName);
+		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
-		outputRecordData.setDescription(rr.description);
-		outputRecordData.setDuration(rr.duration);
+		outputRecordData.setDescription(rs.errMessage);
+		outputRecordData.setDuration(rs.duration);
 		outputRecordData.setGraphName(graphFileName);
-		outputRecordData.setMessage(rr.result.message());
-		outputRecordData.setRunId(rr.runId);
-		if (rr.result == Result.ABORTED) {
+		outputRecordData.setMessage(rs.status.message());
+		outputRecordData.setRunId(rs.runId);
+		if (rs.status == Result.ABORTED) {
         	outputRecordData.setResult("Aborted");
         	outputRecordData.setDescription("Graph execution aborted.");
         	logger.info(graphFileName + ": " + "Execution of graph aborted!");
-		} else if (rr.result == Result.FINISHED_OK) {
+		} else if (rs.status == Result.FINISHED_OK) {
         	outputRecordData.setResult("Finished successfully");
     		outputRecordData.setDescription("");
 		} else {
-        	outputRecordData.setResult(Result.ERROR.equals(rr.result) ? "Error" : rr.result.message());
-        	outputRecordData.setDescription("Execution of graph failed! " + rr.description);
-            logger.info(graphFileName + ": " + "Execution of graph failed! " + rr.description);
+        	outputRecordData.setResult(Result.ERROR.equals(rs.status) ? "Error" : rs.status.message());
+        	outputRecordData.setDescription("Execution of graph failed! " + rs.errMessage);
+            logger.info(graphFileName + ": " + "Execution of graph failed! " + rs.errMessage);
 		}
-		return rr.result;
+		return rs.status;
 	}
 
 		
@@ -1153,6 +1155,11 @@ public class RunGraph extends Node{
 			}
 		}
 		return false;
+	}
+
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ReformatComponentTokenTracker(this);
 	}
 
 }

@@ -31,14 +31,45 @@ import org.jetel.metadata.DataRecordMetadata;
 public final class DataRecordFactory {
 
     /**
-	 * Create new instance of DataRecord based on specified metadata (
+	 * Creates new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
 	 * 
 	 * @param _metadata  description of the record structure
      */
     @SuppressWarnings("deprecation")
 	public static DataRecord newRecord(DataRecordMetadata metadata) {
-		return new DataRecord(metadata);
+    	if (metadata.getNature() == DataRecordNature.TOKEN) {
+			return new Token(metadata);
+		} else {
+			return new DataRecord(metadata);
+		}
     }
 
+    /**
+     * Creates new instance of Token based on specified metadata.
+     */
+    public static Token newToken(DataRecordMetadata metadata) {
+		Token token = new Token(metadata);
+		token.init();
+		token.reset();
+		return token;
+    }
+    
+    /**
+     * Creates dummy token without fields. Can be used for token tracking purpose.
+     * Sometimes can be requested to log a token message and no token is available
+     * at the time. So this token can be used, initialised an unify later with
+     * a real token. 
+     * @param name name of artificial empty metadata which will be used for resulted token
+     * @return empty token
+     */
+    public static Token newToken(String name) {
+    	return newToken(createEmptyMetadata(name));
+    }
+    
+    private static DataRecordMetadata createEmptyMetadata(String name) {
+    	DataRecordMetadata result = new DataRecordMetadata(name);
+    	return result;
+    }
+    
 }

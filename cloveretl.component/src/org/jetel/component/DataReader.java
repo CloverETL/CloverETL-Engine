@@ -233,17 +233,12 @@ public class DataReader extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
-		if (firstRun()) {
-	        try {
-	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-	        } catch(ComponentNotReadyException e) {
-	            e.setAttributeName(XML_FILE_ATTRIBUTE);
-	            throw e;
-	        }
-		}
-		else {
-			reader.reset();
-		}
+        try {
+            reader.preExecute();
+        } catch(ComponentNotReadyException e) {
+            e.setAttributeName(XML_FILE_ATTRIBUTE);
+            throw e;
+        }
 	}
 	
 	@Override
@@ -338,9 +333,9 @@ public class DataReader extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
     	try {
-			reader.close();
+			reader.postExecute();
 		}
-		catch (IOException e) {
+		catch (ComponentNotReadyException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
 		}
 	}
@@ -419,6 +414,8 @@ public class DataReader extends Node {
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
         reader.setSkipSourceRows(skipSourceRows > 0 ? skipSourceRows : (skipFirstLine ? 1 : 0));
+
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 

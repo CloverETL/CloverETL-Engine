@@ -45,11 +45,13 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
+import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
@@ -101,6 +103,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     static private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
     private ObjectName jmxObjectName;
 
+    private TokenTracker tokenTracker;
 
 	/**
 	 *Constructor for the WatchDog object
@@ -133,6 +136,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		//at least simple thread manager will be used
 		if(threadManager == null) {
 			threadManager = new SimpleThreadManager();
+		}
+
+		//create token tracker if graph is jobflow type
+		if (graph.getJobType() == JobType.JOBFLOW) {
+			tokenTracker = new TokenTracker(graph);
 		}
 		
 		//start up JMX
@@ -378,7 +386,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         try {
         	String name = createMBeanName(mbeanId != null ? mbeanId : graph.getName(), this.getGraphRuntimeContext().getRunId());
             jmxObjectName = new ObjectName( name );
-            logger.info("register MBean with name:"+name);
+            logger.debug("register MBean with name:"+name);
             // Register the  MBean
             mbs.registerMBean(cloverJMX, jmxObjectName);
 
@@ -458,7 +466,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
-						outMsgMap.put(message.getRecipient(), message);
+						if (message.getRecipient() != null) {
+							outMsgMap.put(message.getRecipient(), message);
+						}
 					}
 					break;
 				case NODE_FINISHED:
@@ -476,7 +486,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 
 			// gather graph tracking
-			if (message == null) {
+			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
+			if (message == null || ContextProvider.getJobType() == JobType.JOBFLOW) {
 				cloverJMX.gatherTrackingDetails();
 			}
 		}
@@ -510,7 +521,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if (watchDogStatus == Result.RUNNING) { 
 		        watchDogStatus = Result.ABORTED;
 				// iterate through all the nodes and stop them
-		        for(Node node : currentPhase.getNodes().values()) {
+		        for (Node node : currentPhase.getNodes().values()) {
 					node.abort();
 					logger.warn("Interrupted node: " + node.getId());
 				}
@@ -562,7 +573,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				//this barrier is used for synchronization of all components between pre-execute and execute
 				//it is necessary to finish all pre-execute's before execution
 				CyclicBarrier executeBarrier = new CyclicBarrier(phase.getNodes().size());
-				for(Node node: phase.getNodes().values()) {
+				for (Node node: phase.getNodes().values()) {
 					node.setPreExecuteBarrier(preExecuteBarrier);
 					node.setExecuteBarrier(executeBarrier);
 					threadManager.executeNode(node);
@@ -628,7 +639,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 								logger.trace("rename thread "+t.getName()+" to " + newThreadName);
       			  		t.setName(newThreadName);
 	            		// explicit interruption of threads of failed graph; (some nodes may be still running)
-	            		if (node.getResultCode() == Result.RUNNING) {
+	            		if (!node.getResultCode().isStop()) {
 		    				if (logger.isTraceEnabled())
     								logger.trace("try to abort node "+node);
 	            			node.abort();
@@ -711,11 +722,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	Throwable throwable = getCauseException();
     	if (throwable != null && !StringUtils.isEmpty(throwable.getMessage())) {
     		message.append(throwable.getMessage());
-    	} else {
-    		message.append("<unknown>");
     	}
     	
-    	return message.toString();
+    	return message.length() > 0 ? message.toString() : null;
     }
     
     /**
@@ -759,8 +768,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
     public IAuthorityProxy getAuthorityProxy() {
-    	return getGraph().getAuthorityProxy();
+    	return getGraphRuntimeContext().getAuthorityProxy();
     }
 
+    public TokenTracker getTokenTracker() {
+    	return tokenTracker;
+    }
+    
 }
 

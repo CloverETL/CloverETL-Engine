@@ -44,6 +44,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
@@ -570,6 +572,11 @@ public class Partition extends Node {
 
 	public void setUseI18N(boolean useI18N) {
 		this.useI18N = useI18N;
+	}
+	
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new BasicComponentTokenTracker(this);
 	}
 
 }

@@ -42,6 +42,7 @@ public class ListFieldWrapperTest extends CloverTestCase {
 	private ListFieldWrapper<String> list = null;
 	private static String[] INITIAL_VALUE = {"aa", null, null, "bb", "cc"};
 
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		initEngine();
@@ -52,6 +53,7 @@ public class ListFieldWrapperTest extends CloverTestCase {
 		list = new ListFieldWrapper<String>(stringListField.getValue());
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		list = null;

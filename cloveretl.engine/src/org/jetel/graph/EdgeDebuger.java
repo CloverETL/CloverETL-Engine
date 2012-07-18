@@ -104,7 +104,7 @@ public class EdgeDebuger {
     	}
 
     	dataTape = new DataRecordTape(debugFile, !readMode, false);
-        dataTape.open();
+        dataTape.open(-1);
         dataTape.addDataChunk();
 
         if (readMode) {
@@ -140,7 +140,7 @@ public class EdgeDebuger {
 		dataTape = new DataRecordTape(debugFile, !readMode, false);
 
 		try {
-			dataTape.open();
+			dataTape.open(-1);
 	        dataTape.addDataChunk();
 	        if(readMode) dataTape.rewind();
 		} catch (Exception e) {
@@ -181,7 +181,7 @@ public class EdgeDebuger {
     }
     
     private void flushIfNeeded() throws IOException, InterruptedException {
-    	if ((System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES && dataTape != null) {
+    	if (dataTape != null && (getGraph().getJobType() == JobType.JOBFLOW || (System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
     		dataTape.flush(false);
     		lastFlushTime = System.currentTimeMillis();
     	}

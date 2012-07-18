@@ -37,6 +37,8 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -163,9 +165,7 @@ public class SortWithinGroups extends Node {
     private static final String XML_ATTRIBUTE_BUFFER_CAPACITY = "bufferCapacity";
     /** the XML attribute used to store the number of tapes */
     private static final String XML_ATTRIBUTE_NUMBER_OF_TAPES = "numberOfTapes";
-    /** the XML attribute used to store the temporary directories */
-    private static final String XML_ATTRIBUTE_TEMP_DIRECTORIES = "tempDirectories";
-
+    
     /** the ascending sort order */
     private static final char SORT_ASCENDING = 'a';
     /** the descending sort order */
@@ -178,9 +178,7 @@ public class SortWithinGroups extends Node {
     private static final int DEFAULT_BUFFER_CAPACITY = -1;
     /** the default number of tapes */
     private static final int DEFAULT_NUMBER_OF_TAPES = 8;
-    /** the default temporary directories */
-    private static final String[] DEFAULT_TEMP_DIRECTORIES = null;
-
+    
     /**
      * Creates an instance of the <code>SortWithinGroups</code> component from an XML element.
      *
@@ -221,11 +219,6 @@ public class SortWithinGroups extends Node {
             if (componentAttributes.exists(XML_ATTRIBUTE_NUMBER_OF_TAPES)) {
                 sortWithinGroups.setNumberOfTapes(componentAttributes.getInteger(XML_ATTRIBUTE_NUMBER_OF_TAPES));
             }
-
-            if (componentAttributes.exists(XML_ATTRIBUTE_TEMP_DIRECTORIES)) {
-                sortWithinGroups.setTempDirectories(componentAttributes.getStringEx(XML_ATTRIBUTE_TEMP_DIRECTORIES,RefResFlag.SPEC_CHARACTERS_OFF)
-                        .split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
-            }
         } catch (AttributeNotFoundException exception) {
             throw new XMLConfigurationException("Missing a required attribute!", exception);
         } catch (Exception exception) {
@@ -247,9 +240,7 @@ public class SortWithinGroups extends Node {
     private int bufferCapacity = DEFAULT_BUFFER_CAPACITY;
     /** the number of tapes used by the data record sorter */
     private int numberOfTapes = DEFAULT_NUMBER_OF_TAPES;
-    /** temporary directories used by the data record sorter */
-    private String[] tempDirectories = DEFAULT_TEMP_DIRECTORIES;
-
+    
     /** a data record sorter used to sort the record groups */
     private ISortDataRecord dataRecordSorter = null;
     /** a data record buffer used to retrieve data records from the above sorter */
@@ -309,14 +300,6 @@ public class SortWithinGroups extends Node {
         return numberOfTapes;
     }
 
-    public void setTempDirectories(String[] tempDirectories) {
-        this.tempDirectories = tempDirectories;
-    }
-
-    public String[] getTempDirectories() {
-        return tempDirectories;
-    }
-
     @Override
     public void toXML(Element xmlElement) {
         super.toXML(xmlElement);
@@ -331,11 +314,6 @@ public class SortWithinGroups extends Node {
 
         if (numberOfTapes != DEFAULT_NUMBER_OF_TAPES) {
             xmlElement.setAttribute(XML_ATTRIBUTE_NUMBER_OF_TAPES, Integer.toString(numberOfTapes));
-        }
-
-        if (tempDirectories != DEFAULT_TEMP_DIRECTORIES) {
-            xmlElement.setAttribute(XML_ATTRIBUTE_TEMP_DIRECTORIES,
-                    StringUtils.stringArraytoString(tempDirectories, Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
         }
     }
 
@@ -388,15 +366,6 @@ public class SortWithinGroups extends Node {
             }
         }
 
-        if (tempDirectories != DEFAULT_TEMP_DIRECTORIES) {
-            for (String tempDirectory : tempDirectories) {
-                if (!new File(tempDirectory).exists()) {
-                    status.add(new ConfigurationProblem("The temporary directory " + StringUtils.quote(tempDirectory)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.NORMAL));
-                }
-            }
-        }
-
         if (numberOfTapes <= 0) {
             status.add(new ConfigurationProblem("The number of tapes is less than 1!",
                     Severity.ERROR, this, Priority.NORMAL));
@@ -415,7 +384,7 @@ public class SortWithinGroups extends Node {
 
         try {
             dataRecordSorter = new ExternalSortDataRecord(getInputPort(INPUT_PORT_NUMBER).getMetadata(),
-                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes, tempDirectories);
+                    sortKeyFields, sortKeyOrdering, bufferCapacity, numberOfTapes);
         } catch (Exception exception) {
             throw new ComponentNotReadyException("Error creating a data record sorter!", exception);
         }
@@ -503,6 +472,11 @@ public class SortWithinGroups extends Node {
                 // OK, don't do anything
             }
         }
+    }
+
+    @Override
+    protected ComponentTokenTracker createComponentTokenTracker() {
+    	return new CopyComponentTokenTracker(this);
     }
 
 }

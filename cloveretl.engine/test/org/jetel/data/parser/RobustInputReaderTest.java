@@ -44,6 +44,7 @@ public class RobustInputReaderTest extends CloverTestCase {
 	
 	private RobustInputReader reader;
 
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		initEngine();
@@ -56,6 +57,7 @@ public class RobustInputReaderTest extends CloverTestCase {
 		return reader;
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		reader = null;

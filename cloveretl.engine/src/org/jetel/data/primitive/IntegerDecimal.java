@@ -129,12 +129,12 @@ public final class IntegerDecimal implements Decimal {
             setNaN(false);
             if(!satisfyPrecision()) {
                 setNaN(true);
-                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal));
+                throw new OutOfPrecisionException("Number is out of available precision ["+precision+","+scale+"], value: " + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal));
             }
         } else {
             BigInteger bi = decimal.getBigDecimal().setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
             if(HugeDecimal.precision(bi) > precision) {
-                throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal));
+                throw new OutOfPrecisionException("Number is out of available precision ["+precision+","+scale+"], value: " + (decimal.getBigDecimal() != null ? decimal.getBigDecimal() : decimal));
             }
             value = bi.longValue();
             setNaN(false);
@@ -153,7 +153,7 @@ public final class IntegerDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
+            throw new OutOfPrecisionException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
     }
 
@@ -167,7 +167,7 @@ public final class IntegerDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
+            throw new OutOfPrecisionException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
     }
 
@@ -181,7 +181,7 @@ public final class IntegerDecimal implements Decimal {
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
-            throw new NumberFormatException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
+            throw new OutOfPrecisionException("Number is out of available precision ["+precision+","+scale+"], value: " + _value);
         }
     }
 
@@ -210,7 +210,7 @@ public final class IntegerDecimal implements Decimal {
     	}
         BigInteger bi = _value.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
         if(HugeDecimal.precision(bi) > precision) {
-            throw new NumberFormatException("Too many digits before decimal dot, must be " + (precision - scale) + " at most (" + _value + "); specified precision ["+precision+","+scale+"]");
+            throw new OutOfPrecisionException("Too many digits before decimal dot, must be " + (precision - scale) + " at most (" + _value + "); specified precision ["+precision+","+scale+"]");
         }
         value = bi.longValue();
         setNaN(false);

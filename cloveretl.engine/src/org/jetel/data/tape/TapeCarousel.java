@@ -18,14 +18,10 @@
  */
 package org.jetel.data.tape;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.ContextProvider;
-import org.jetel.util.file.FileUtils;
 
 /**
  * @author david
@@ -39,7 +35,6 @@ public class TapeCarousel {
 	private static Log logger = LogFactory.getLog(TapeCarousel.class);
 
     private DataRecordTape[] tapeArray;
-    private File[] tmpDirs;
     private int currTape;
     
     /**
@@ -47,32 +42,10 @@ public class TapeCarousel {
      * @param numTapes how many tapes should this carousel contain
      */
     public TapeCarousel(int numTapes){
-        tapeArray=new DataRecordTape[numTapes];
-        currTape=0;
+        tapeArray = new DataRecordTape[numTapes];
+        currTape = 0;
     }
     
-    /**
-     * This constructor allows for tapes placed in different temporary directories.
-     * Tapes will be distributed to directories in round-robin order
-     * 
-     * @param numTapes how many tapes should this carousel contain
-     * @param tmpDirNames array of paths to directories which should be used for
-     * storing generated tmp files
-     */
-    public TapeCarousel(int numTapes,String[] tmpDirNames){
-        this(numTapes);
-        
-        if(tmpDirNames != null && tmpDirNames.length > 0) {
-            tmpDirs=new File[tmpDirNames.length];
-            for(int i=0;i<tmpDirNames.length;i++){
-                try {
-					tmpDirs[i] = new File(FileUtils.getFile(ContextProvider.getGraph().getRuntimeContext().getContextURL(), tmpDirNames[i]));
-				} catch (MalformedURLException e) {
-					throw new RuntimeException("Temp directory '" + tmpDirNames[i] + "' does not exist.", e);
-				}
-            }
-        }
-    }
     
     
     /**
@@ -82,11 +55,10 @@ public class TapeCarousel {
      * @throws IOException
      */
     public void open() throws IOException{
-        for(int i=0;i<tapeArray.length;i++){
+    	
+        for (int i = 0; i < tapeArray.length; i++){
             tapeArray[i]=new DataRecordTape();
-            if(tmpDirs != null)
-                tapeArray[i].setTmpDirectory(tmpDirs[i%tmpDirs.length]);
-            tapeArray[i].open();
+            tapeArray[i].open(i);
         }
     }
 

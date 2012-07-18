@@ -20,7 +20,6 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
-import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
 
 /**
@@ -31,7 +30,7 @@ import org.jetel.graph.InputPort;
  *
  * @created Jun 6, 2008
  */
-public class InputPortTrackingDetail extends PortTrackingDetail implements Serializable {
+public class InputPortTrackingDetail extends PortTrackingDetail implements InputPortTracking, Serializable {
 
 	private static final long serialVersionUID = 1796185855793703918L;
 	
@@ -56,9 +55,8 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
 	 */
 	@Override
-	public String getType() {
-		// TODO we should have a constant for this
-		return "Input";
+	public PortType getType() {
+		return InputPortTracking.TYPE;
 	}
 	
 	//******************* EVENTS ********************/
@@ -67,7 +65,7 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Seria
 		gatherTrackingDetails0(
 				inputPort.getInputRecordCounter(), 
 				inputPort.getInputByteCounter(),
-				((Edge) inputPort).getBufferedRecords());
+				(inputPort.getEdge()).getBufferedRecords());
 		
 		setUsedMemory(inputPort.getUsedMemory());
 	}

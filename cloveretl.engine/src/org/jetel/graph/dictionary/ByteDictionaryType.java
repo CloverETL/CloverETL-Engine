@@ -28,6 +28,7 @@ import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -108,6 +109,11 @@ public class ByteDictionaryType extends DictionaryType {
 	@Override
 	public TLType getTLType() {
 		return TLTypePrimitive.BYTEARRAY;
+	}
+
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.BYTE;
 	}
 
 }

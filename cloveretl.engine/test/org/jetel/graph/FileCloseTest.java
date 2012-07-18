@@ -11,8 +11,6 @@ import java.nio.channels.Channels;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.parser.DataParser;
@@ -25,6 +23,7 @@ import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.test.CloverTestCase;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -34,7 +33,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * 
  */
 
-public class FileCloseTest extends TestCase {
+public class FileCloseTest extends CloverTestCase {
 
 	private final static String EXAMPLE_PATH = "../cloveretl.examples/SimpleExamples/";
 
@@ -49,6 +48,7 @@ public class FileCloseTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		initEngine();
 		
 		properties = new Properties();
 		properties.load(new FileInputStream(new File(EXAMPLE_PATH + "workspace.prm")));
@@ -175,6 +175,7 @@ public class FileCloseTest extends TestCase {
 			int i = 0;
 			try {
 				multiFileReader.init(dataRecordMetadata);
+				multiFileReader.preExecute();
 				while (multiFileReader.getNext() != null) {i++;};
 				
 				if (!file1.delete() || !file2.delete()) {

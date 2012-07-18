@@ -18,13 +18,14 @@
  */
 package org.jetel.data.formatter.provider;
 
-import java.io.File;
-
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.data.formatter.XLSXDataFormatter;
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
  * Provides support for getting the delimited data formatter.
@@ -48,7 +49,6 @@ public class XLSFormatterProvider implements FormatterProvider {
 
 	private String[] excludedFieldNames;
 	private Boolean inMemory;
-	private File tmpDir;
 
 	public XLSFormatterProvider(boolean append, boolean removeSheets) {
 		this(append, removeSheets, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -76,9 +76,13 @@ public class XLSFormatterProvider implements FormatterProvider {
 		formatter.setExcludedFieldNames(excludedFieldNames);
 		if (inMemory != null) {
 			formatter.setInMemory(inMemory);
-		}
-		if (tmpDir != null) {
-			formatter.setTmpDir(tmpDir);
+		} else {
+			try {
+				IAuthorityProxy proxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+				formatter.setTmpDir(proxy.newTempDir("xls-tmp", -1));
+			} catch (TempFileCreationException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return formatter;
 	}
@@ -203,22 +207,6 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 */
 	public void setInMemory(boolean inMemory) {
 		this.inMemory = inMemory;
-	}
-
-	/**
-	 * @return directory for temporary files
-	 */
-	public File getTmpDir() {
-		return tmpDir;
-	}
-	
-	/**
-	 * Sets directory for temporary files
-	 * 
-	 * @param tmpDir
-	 */
-	public void setTmpDir(File tmpDir){
-		this.tmpDir = tmpDir;
 	}
 
 }

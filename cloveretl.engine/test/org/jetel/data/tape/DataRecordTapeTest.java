@@ -81,7 +81,7 @@ public void test_1_DataTape() throws InterruptedException, IOException {
     DataRecordTape tape=new DataRecordTape(TEST_FILE, true, false);
     // first chunk of data
     try{
-        tape.open();
+        tape.open(-1);
         tape.addDataChunk();
     }catch(IOException ex){
         throw new RuntimeException(ex);

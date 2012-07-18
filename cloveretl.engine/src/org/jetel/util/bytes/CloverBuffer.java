@@ -31,6 +31,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.graph.ContextProvider;
@@ -54,6 +55,8 @@ import org.jetel.graph.TransformationGraph;
  */
 public abstract class CloverBuffer {
 
+	private static final Logger logger = Logger.getLogger(CloverBuffer.class);
+	
 	private static final boolean DEFAULT_DIRECT = false;
 	
 	protected TransformationGraph associatedGraph;
@@ -675,14 +678,36 @@ public abstract class CloverBuffer {
      * @return new {@link ByteBuffer}
      */
     public static ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
-    	if (direct && Defaults.USE_DIRECT_MEMORY) {
+    	if (direct && Defaults.USE_DIRECT_MEMORY && isDirectMemoryAvailable()) {
     		try {
     			return ByteBuffer.allocateDirect(capacity);
     		} catch (OutOfMemoryError e) {
+    			logger.debug("Engine is out of direct memory. Heap memory is going to be used.");
+    			lastDirectMemoryAllocationFail = System.currentTimeMillis();
         		return ByteBuffer.allocate(capacity);
     		}
     	} else {
     		return ByteBuffer.allocate(capacity);
+    	}
+    }
+    
+    /**
+     * This simple method should decide whether some direct memory is available.
+     * The direct memory is considered unavailable if an unsuccessful attempt to allocate direct
+     * memory was performed in last 10 seconds.
+     */
+    private static long lastDirectMemoryAllocationFail = 0;
+    private static boolean isDirectMemoryAvailable() {
+    	if (lastDirectMemoryAllocationFail == 0) {
+    		return true;
+    	} else {
+	    	long currentTime = System.currentTimeMillis();
+	    	if (currentTime - lastDirectMemoryAllocationFail > 10000) {
+	    		lastDirectMemoryAllocationFail = 0;
+	    		return true;
+	    	} else {
+	    		return false;
+	    	}
     	}
     }
     
