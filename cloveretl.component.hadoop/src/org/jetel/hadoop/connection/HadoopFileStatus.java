@@ -35,6 +35,11 @@ public class HadoopFileStatus {
 	private long size;
 	private boolean isDir;
 	private long modified;
+	private long blocksize;
+	private String group;
+	private String owner;
+	private short replication;
+	private boolean extendedStatus;
 	
 	
 	public HadoopFileStatus(URI file, long size, boolean isDir,long modified) {
@@ -42,8 +47,25 @@ public class HadoopFileStatus {
 		this.size = size;
 		this.isDir = isDir;
 		this.modified=modified;
+		this.extendedStatus=false;
+	}
+	
+	public HadoopFileStatus(URI file, long size, boolean isDir,long modified, long blocksize,String group, String owner,short replication) {
+		this.file = file;
+		this.size = size;
+		this.isDir = isDir;
+		this.modified=modified;
+		this.blocksize=blocksize;
+		this.group=group;
+		this.owner=owner;
+		this.replication=replication;
+		this.extendedStatus=true;
 	}
 
+	public boolean isExtendedStatus(){
+		return extendedStatus;
+	}
+	
 	public URI getFile() {
 		return file;
 	}
@@ -64,5 +86,30 @@ public class HadoopFileStatus {
 		return modified;
 	}
 
+	public long getBlocksize() {
+			return blocksize;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public int getReplication() {
+		return replication;
+	}
+
+	@Override
+	public String toString(){
+		return file.toString();
+	}
+	
+	@Override
+	public int hashCode(){
+		return this.file.hashCode();
+	}
 	
 }

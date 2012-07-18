@@ -66,5 +66,7 @@ public interface IHadoopConnection {
     public boolean mkdir(URI file) throws IOException;
 	public boolean rename(URI src, URI dst) throws IOException;
 	public HadoopFileStatus[] listStatus(URI path) throws IOException;
+	public HadoopFileStatus getStatus(URI path) throws IOException;
+	public HadoopFileStatus getExtendedStatus(URI path) throws IOException;
 	
 }

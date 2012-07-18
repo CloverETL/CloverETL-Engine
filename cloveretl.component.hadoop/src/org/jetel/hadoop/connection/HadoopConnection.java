@@ -155,6 +155,18 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					
 		}
 			
+
+		public void close(){
+			if (connection!=null){
+				try{
+					connection.close();
+				}catch(Exception ex){
+					// do nothing
+				}
+				connection=null;
+			}
+		}
+		
 		private void initExternal() throws ComponentNotReadyException {
 			if (this.properties!=null && this.properties.isEmpty() ) {
 				loadFromTypedProperties(new TypedProperties(this.properties));
