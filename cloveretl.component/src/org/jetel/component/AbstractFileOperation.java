@@ -318,6 +318,22 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	}
 	
 	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		
+		tryToInit();
+	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
+		inputMapping.preExecute();
+		outputMapping.preExecute();
+		errorMapping.preExecute();
+	}
+
+	@Override
 	public Result execute() throws Exception {
 		boolean success = true;
 		if (hasInputPort) {
@@ -338,12 +354,14 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	}
 	
 	@Override
-	public void init() throws ComponentNotReadyException {
-		super.init();
-		
-		tryToInit();
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+
+		inputMapping.postExecute();
+		outputMapping.postExecute();
+		errorMapping.postExecute();
 	}
-	
+
 	/**
 	 * This method is invoked from component configuration check and from component initialization. 
 	 * @throws ComponentNotReadyException 
