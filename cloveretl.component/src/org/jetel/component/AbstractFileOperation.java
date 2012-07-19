@@ -65,22 +65,22 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
     protected static final int ERROR_OUTPUT_PORT_NUMBER = 1;
 
 	/** Input record identifier for CTL mappings */
-	private static final String INPUT_RECORD_ID = "input";
+	private static final String INPUT_RECORD_ID = "input"; //$NON-NLS-1$
 
 	/** Output record identifier for CTL mappings */
-	private static final String OUTPUT_RECORD_ID = "output";
+	private static final String OUTPUT_RECORD_ID = "output"; //$NON-NLS-1$
 
 	/** Error record identifier for CTL mappings */
-	private static final String ERROR_RECORD_ID = "error";
+	private static final String ERROR_RECORD_ID = "error"; //$NON-NLS-1$
 	
 	/** Input parameters record identifier for CTL mappings */
-	protected static final String PARAMS_RECORD_ID = "params";
+	protected static final String PARAMS_RECORD_ID = "params"; //$NON-NLS-1$
 	
 	/** Result record identifier for CTL mappings */
-	private static final String RESULT_RECORD_ID = "result";
+	private static final String RESULT_RECORD_ID = "result"; //$NON-NLS-1$
 	
 	/** Error result record identifier for CTL mappings */
-	private static final String ERROR_RESULT_RECORD_ID = "error_result";
+	private static final String ERROR_RESULT_RECORD_ID = "error_result"; //$NON-NLS-1$
 	
 	/** default delimiter string for artificial metadata */
 	static final String DUMMY_DELIMITER = ";"; //$NON-NLS-1$
@@ -382,19 +382,19 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		}
 		
 		//create input mapping
-		inputMapping = new CTLMapping("Input mapping", this);
+		inputMapping = new CTLMapping("Input mapping", this); //$NON-NLS-1$
 		inputMapping.setTransformation(inputMappingCode);
 		inputMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
 		inputMapping.setClassLoader(this.getClass().getClassLoader());
 		
 		//create output mapping
-		outputMapping = new CTLMapping("Output mapping", this);
+		outputMapping = new CTLMapping("Output mapping", this); //$NON-NLS-1$
 		outputMapping.setTransformation(outputMappingCode);
 		outputMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
 		outputMapping.setClassLoader(this.getClass().getClassLoader());
 
 		//create error mapping
-		errorMapping = new CTLMapping("Error mapping", this);
+		errorMapping = new CTLMapping("Error mapping", this); //$NON-NLS-1$
 		errorMapping.setTransformation(errorMappingCode);
 		errorMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
 		errorMapping.setClassLoader(this.getClass().getClassLoader());
@@ -444,7 +444,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 				DataRecord record = inputMapping.getOutputRecord(mfe.getRecordId());
 				String fieldName = mfe.getFieldName();
 				if (record == inputMapping.getOutputRecord(PARAMS_RECORD_ID)) {
-					throw new ComponentNotReadyException(this, XML_INPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+					throw new ComponentNotReadyException(this, XML_INPUT_MAPPING_ATTRIBUTE, FileOperationComponentMessages.getString("AbstractFileOperation.mapping_no_such_attribute") + fieldName); //$NON-NLS-1$
 				}
 			}
 			throw new ComponentNotReadyException(this, XML_INPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
@@ -458,9 +458,9 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 				DataRecord record = outputMapping.getInputRecord(mfe.getRecordId());
 				String fieldName = mfe.getFieldName();
 				if (record == outputMapping.getInputRecord(RESULT_RECORD_ID)) {
-					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, "No such result field: " + fieldName);
+					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, FileOperationComponentMessages.getString("AbstractFileOperation.mapping_no_such_result_field") + fieldName); //$NON-NLS-1$
 				} else if (record == outputMapping.getInputRecord(PARAMS_RECORD_ID)) {
-					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+					throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, FileOperationComponentMessages.getString("AbstractFileOperation.mapping_no_such_attribute") + fieldName); //$NON-NLS-1$
 				}
 			}
 			throw new ComponentNotReadyException(this, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
@@ -474,9 +474,9 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 				DataRecord record = errorMapping.getInputRecord(mfe.getRecordId());
 				String fieldName = mfe.getFieldName();
 				if (record == errorMapping.getInputRecord(RESULT_RECORD_ID)) {
-					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, "No such error result field: " + fieldName);
+					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, FileOperationComponentMessages.getString("AbstractFileOperation.mapping_no_such_error_result_field") + fieldName); //$NON-NLS-1$
 				} else if (record == errorMapping.getInputRecord(PARAMS_RECORD_ID)) {
-					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, "No such attribute: " + fieldName);
+					throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, FileOperationComponentMessages.getString("AbstractFileOperation.mapping_no_such_attribute") + fieldName); //$NON-NLS-1$
 				}
 			}
 			throw new ComponentNotReadyException(this, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, mfe.getMessage());
