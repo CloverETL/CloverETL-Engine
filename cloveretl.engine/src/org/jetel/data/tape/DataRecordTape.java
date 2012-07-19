@@ -32,6 +32,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -66,7 +68,6 @@ public class DataRecordTape {
 
     private FileChannel tmpFileChannel;
 	private File tmpFile;
-    private File tmpDirectory;
 	private String tmpFileName;
 
     private boolean deleteOnExit;
@@ -137,14 +138,13 @@ public class DataRecordTape {
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
-	public void open() throws IOException {
+	public void open(int allocationHint) throws IOException {
         if(tmpFileName == null)
 			try {
-				tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tmpDirectory);
-			} catch (IOException e) {
-				throw new IOException("Creating tmp file (prefix: " + TMP_FILE_PREFIX + ", suffix: " + TMP_FILE_SUFFIX + 
-						 " in directory: " + tmpDirectory + ") failed.", e);
-			}
+				tmpFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, allocationHint);
+			} catch (Exception e) {
+				throw new IOException("Creating tmp file (prefix: " + TMP_FILE_PREFIX + ", suffix: " + TMP_FILE_SUFFIX + ") failed.", e);
+			} 
 		else {
             tmpFile = new File(tmpFileName);
             if(deleteOnStart && tmpFile.exists()) {
@@ -820,26 +820,6 @@ public class DataRecordTape {
 		    return "start: "+offsetStart+" #records: "+nRecords+" length: "+length;
 		}
 	}
-
-    /**
-     * Returns previously set temporary directory where this DataRecordTape
-     * should create its file (temporary)
-     * 
-     * @return
-     */
-    public File getTmpDirectory() {
-        return tmpDirectory;
-    }
-
-    /**
-     * Allows to set the temporary directory in which this DataRecordTape will
-     * create temporary file to store data.
-     * 
-     * @param tmpDirectory
-     */
-    public void setTmpDirectory(File tmpDirectory) {
-        this.tmpDirectory = tmpDirectory;
-    }
 	
 }
 

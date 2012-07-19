@@ -62,7 +62,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private TapeCarousel tapeCarousel;
 	private boolean carouselInitialized;
 	private int numberOfTapes;
-	private String[] tmpDirs;
 	private String[] sortKeysNames;
 	private boolean[] sortOrderings;
 	private RecordOrderedKey sortKey;
@@ -89,24 +88,23 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	 * @param localeStr	String name of locale to use for collation. If null, no collator is used
 	 */
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
-			int numberOfTapes, String[] tmpDirs) {
-		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null);
+			int numberOfTapes) {
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, null);
 	}
 	
 	@Deprecated
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
-			int numberOfTapes, String[] tmpDirs, String localeStr) {
-		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, tmpDirs, null, false);
+			int numberOfTapes, String localeStr) {
+		this(metadata, keyItems, sortOrderings, internalBufferCapacity, numberOfTapes, null, false);
 	}
 	
 	@Deprecated
 	public ExternalSortDataRecord(DataRecordMetadata metadata, String[] keyItems, boolean[] sortOrderings, int internalBufferCapacity,
-				int numberOfTapes, String[] tmpDirs, String localeStr, boolean caseSensitive) {
+				int numberOfTapes, String localeStr, boolean caseSensitive) {
 
 		this.sortKeysNames = keyItems;		
 		this.sortOrderings = sortOrderings;
 		this.numberOfTapes = numberOfTapes;
-		this.tmpDirs = tmpDirs;
 		this.prevIndex = -1;
 		inMetadata = metadata;
 		if (internalBufferCapacity>0){	
@@ -243,7 +241,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private void flushToTapeSynchronously() throws IOException, InterruptedException {
         DataRecordTape tape;
         if (!carouselInitialized) {
-            tapeCarousel = new TapeCarousel(numberOfTapes, tmpDirs);
+            tapeCarousel = new TapeCarousel(numberOfTapes);
             tapeCarousel.open();
             tape = tapeCarousel.getFirstTape();
             carouselInitialized = true;
@@ -275,7 +273,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
     private void phaseMerge() throws IOException, InterruptedException {
         int index;
         DataRecordTape targetTape;
-        TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes(), tmpDirs);
+        TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes());
         sourceRecords = new DataRecord[tapeCarousel.numTapes()];
         sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 

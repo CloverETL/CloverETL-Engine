@@ -18,18 +18,29 @@
  */
 package org.jetel.graph.runtime;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.graph.runtime.jmx.GraphTracking;
+import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
+import org.jetel.util.property.PropertiesUtils;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -38,7 +49,6 @@ import org.jetel.util.file.WcardPattern;
  * @created Jul 11, 2008
  */
 public abstract class IAuthorityProxy {
-
 	/* This authority proxy is available all the time. */
 	private static IAuthorityProxy defaultProxy;
 	
@@ -52,7 +62,7 @@ public abstract class IAuthorityProxy {
 	public static void setDefaultProxy(IAuthorityProxy defaultProxy) {
 		IAuthorityProxy.defaultProxy = defaultProxy;
 	}
-	
+
 	/**
 	 * Returns authority proxy for given graph. If Graph is <code>null</code>, returns default proxy.
 	 * 
@@ -63,51 +73,200 @@ public abstract class IAuthorityProxy {
 		return (graph != null) ? graph.getAuthorityProxy() : getDefaultProxy();
 	}
 		
-	public static class RunResult {
-		public Result result;
-		public String description;
-		public long duration;
-		public long runId;
+	public static class FileOperationResult {
+		public enum ProblemType {
+			GENERAL_OPERATION_FAILURE, FILE_NOT_FOUND, FILE_UNREADABLE, FILE_UNCHANGEABLE, GENERAL_COPY_ERROR, GENERAL_MOVE_ERROR, GENERAL_DELETE_ERROR, NOT_SANDBOX_URL, NO_PROBLEM
+		};
+
+		public final Result result;
+		public final ProblemType problemType;
+		public final String filePath;
+		public final Exception exception;
+		public FileOperationResult(final Result result, final ProblemType problemType, String filePath, Exception exception) {
+			this.result = result;
+			this.problemType = problemType;
+			this.filePath = filePath;
+			this.exception = exception;
+		}
 	}
+	
+	public static class RunStatus {
+		public long runId;
+		public String clusterNodeId;
+		public String jobUrl;
+		public String version;
+		public Date startTime;
+		public Date endTime;
+		public long duration;
+		public Result status;
+		public String errException;
+		public String errMessage;
+		public String errNode;
+		public String errNodeType;
+		public Exception exception;
+		public Properties graphParameters;
+		public DictionaryValuesContainer dictionaryIn;
+		public DictionaryValuesContainer dictionaryOut;
+		public GraphTracking tracking;
+		public JobType jobType;
 		
+		@Override
+		public String toString() {
+			StringBuilder s = new StringBuilder();
+			s.append("Status: ").append(status)
+				.append(" Message: ").append(errMessage)
+				.append(" Duration: ").append(duration)
+				.append(" RunId: ").append(runId);
+			return s.toString();
+		}
+		
+		public Properties toProperties() {
+			Properties result = new Properties();
+			result.setProperty("runId", Long.toString(runId));
+			result.setProperty("clusterNodeId", String.valueOf(clusterNodeId));
+			result.setProperty("jobUrl", String.valueOf(jobUrl));
+			result.setProperty("graphVersion", String.valueOf(version));
+			result.setProperty("startTime", String.valueOf(startTime));
+			result.setProperty("endTime", String.valueOf(endTime));
+			result.setProperty("duration", Long.toString(duration));
+			result.setProperty("status", String.valueOf(status.name()));
+			result.setProperty("errException", String.valueOf(errException));
+			result.setProperty("errMessage", String.valueOf(errMessage));
+			result.setProperty("errNode", String.valueOf(errNode));
+			result.setProperty("errNodeType", String.valueOf(errNodeType));
+			result.setProperty("exception", String.valueOf(MiscUtils.stackTraceToString(exception)));
+			if (dictionaryIn != null) {
+				result.setProperty("dictionaryIn", PropertiesUtils.formatProperties(dictionaryIn.toProperties()));
+			}
+			if (dictionaryOut != null) {
+				result.setProperty("dictionaryOut", PropertiesUtils.formatProperties(dictionaryOut.toProperties()));
+			}
+			//tracking is omitted
+			return result;
+		}
+		
+		public String getErrorReport() {
+			StringBuilder s = new StringBuilder();
+			s.append("Status: ").append(status)
+			.append(", Job URL: ").append("\"").append(jobUrl).append("\"")
+			.append(", Message: ").append(errMessage != null ? "\""+errMessage+"\"" : "none")
+			.append(", Exception: ").append(exception != null ? exception.toString() : "none")
+			.append(", Error Node: ").append(errNode != null ? errNode : "none")
+			.append(", Error Node Type: ").append(errNodeType != null ? errNodeType : "none")
+			.append(", Duration: ").append(duration)
+			.append(", RunId: ").append(runId);
+			return s.toString();
+		}
+
+		
+	}
+
+	/**
+	 * Context of the "parent" graph run.
+	 * May be null when the AuthorityProxy instance is related to the graph which is not intended to be executed.
+	 */
+	protected GraphRuntimeContext runtimeContext;
+	
 	public abstract Sequence getSharedSequence(Sequence sequence);
 
 	public abstract void freeSharedSequence(Sequence sequence);
 
 	/**
-	 * Executes specified graph. 
-	 * 
-	 * @param runId - ID of parent run, which calls this method.  
-	 * @param graphFileName - path to graph to execute
-	 * @param runtimeContext - this is a part of request to run a graph (graph will be run with as similar runtime context as is possible), 
-	 * at least additionalProperties are taken into account, also contextURL should be correctly predefined
-	 * @param logFile - path to file where log output of graph will be saved;
+	 * Sets context for this graph run. Must be called just once for this instance just before graph run.
+	 * */
+	public void setGraphRuntimeContext(GraphRuntimeContext runtimeContext) {
+		this.runtimeContext = runtimeContext;
+	}
+	
+	/**
+	 * Executes graph synchronously. 
+	 * Thus it waits until the graph is finished or until the timeout expires.
+	 * If the graph isn't finished until timeout, it's aborted.
+	 * @param graphUrl
+	 * @param runtimeContext
+	 * @param timeout - If it's null, there is no time limit
 	 * @return
+	 * @throws InterruptedException if the thread is interrupted while waiting for final event 
 	 */
-	public abstract RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext runtimeContext, String logFile);
+	public abstract RunStatus executeGraphSync(String graphUrl, GraphRuntimeContext runtimeContext, Long timeout) throws InterruptedException;
+	
+	/**
+	 * Executes graph synchronously. 
+	 * Thus it waits until the graph is finished or until the timeout expires.
+	 * If the graph isn't finished until timeout, it's aborted.
+	 * @param graph - ETL transformation graph to execute
+	 * @param runtimeContext
+	 * @param timeout - If it's null, there is no time limit
+	 * @return
+	 * @throws InterruptedException if the thread is interrupted while waiting for final event 
+	 */
+	public abstract RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext runtimeContext, Long timeout) throws InterruptedException;
+	
+	/**
+	 * @param graphUrl - path to graph to execute
+	 * @param runtimeContext - this is a part of request to run a graph (graph will be run with as similar runtime context as is possible), 
+	 * at least additionalProperties, contextURL, executionGroup and daemon are taken into account
+	 * @return RunStatus of running graph
+	 * @throws an exception can be thrown if graph cannot be started
+	 */
+	public abstract RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext);
+	
+	/**
+	 * This method is used for tracking a running graphs. For already finished graphs this method returns
+	 * final run status (tracking info included) of the graph.
+	 * @param runId run identifier of graph, which is point of interest
+	 * @param trackingEvents list of tracking events, which are requested or null if current RunStatus is requested
+	 * @param timeout maximum milliseconds to wait for requested tracking events, in case trackingEvents is null,
+	 * this parameter is ignored, method is not blocking anyway
+	 * @return running information of the graph by specified event
+	 * @throws InterruptedException when the thread is waiting for specified events and it's interrupted
+	 */
+	public abstract RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException;
+	
+	/**
+	 * Ask authority to kill graph specified by run identifier. It may be any run, not just child run.
+	 * @param runId graph to kill
+	 * @param recursive - true if daemon children graphs should be killed as well
+	 * @return final run status for killed graphs (graph finished/failed before this request aren't included)
+	 */
+	public abstract List<RunStatus> killGraph(long runId, boolean recursive);
+	
+	/**
+	 * Ask authority to kill all children graphs belonging to specified execution group.
+	 * @param executionGroup name of execution group with graphs to be killed 
+	 * @param recursive - true if daemon children graphs should be killed as well
+	 * @return final run status for all killed graphs (graph finished/failed before this request aren't included)
+	 */
+	public abstract List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive);
 
 	/**
-	 * 
-	 * @param runId - ID of parent run, which calls this method.  
-	 * @param graph - ETL transformation graph to execute
-	 * @param launcherEntityName - Arbitrary identification of whoever is launching this graph
-	 * @param runtimeContext - this is a part of request to run a graph (graph will be run with as similar runtime context as is possible), 
-	 * at least additionalProperties are taken into account, also contextURL should be correctly predefined
-	 * @param logFile - path to file where log output of graph will be saved;
-	 * @param persistentRunRecord - whether to create run record for this graph run
-	 * @return
+	 * Ask authority to kill all children graphs.
+	 * @param recursive - true if daemon children graphs should be killed as well
+	 * @return final run status for all killed graphs (graph finished/failed before this request aren't included)
 	 */
-	public abstract RunResult executeGraph(long runId, TransformationGraph graph, String launcherEntityName, GraphRuntimeContext runtimeContext, String logFile, boolean persistentRunRecord);
+	public abstract List<RunStatus> killChildrenGraphs(boolean recursive);
 	
+	
+
 	/**
 	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
 	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
 	 *
-	 * @param runId 
 	 * @param storageCode
 	 * @param path
 	 */
-	public abstract void makeDirectories(long runId, String storageCode, String path) throws IOException;
+	public abstract boolean makeDirectories(String storageCode, String path, boolean makeParents) throws IOException;
+
+	/**
+	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
+	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
+	 *
+	 * @param storageCode
+	 * @param path
+	 */
+	public boolean makeDirectories(String storageCode, String path) throws IOException {
+		return makeDirectories(storageCode, path, true);
+	};
 
 	/**
 	 * Resolves all file names matching the given path eventually containing wildcards.
@@ -124,13 +283,12 @@ public abstract class IAuthorityProxy {
 	/**
 	 * Throws exception if user who executed graph doesn't have read permission for requested sandbox.
 	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
-	 * @param runId 
 	 * 
 	 * @param storageCode
 	 * @param path
 	 * @return
 	 */
-	public abstract InputStream getSandboxResourceInput(long runId, String storageCode, String path) throws IOException;
+	public abstract InputStream getSandboxResourceInput(String storageCode, String path) throws IOException;
 
 	/**
 	 * Returns output stream for updating of specified sandbox resource.
@@ -138,12 +296,13 @@ public abstract class IAuthorityProxy {
 	 * it should return stream to the resource, which is in location accessible locally. 
 	 * If there is no locally accessible location, it chooses any other location. 
 	 * 
-	 * @param runId
 	 * @param storageCode
 	 * @param path
+	 * @param append
+	 * 
 	 * @return
 	 */
-	public abstract OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) throws IOException;
+	public abstract OutputStream getSandboxResourceOutput(String storageCode, String path, boolean append) throws IOException;
 
 	/**
 	 * Returns true, if this worker instance is "primary" in curretn phase. 
@@ -153,7 +312,7 @@ public abstract class IAuthorityProxy {
 	 * @param runId
 	 * @return 
 	 */
-	public abstract boolean isPrimaryWorker(long runId);
+	public abstract boolean isPrimaryWorker();
 	
 	/**
 	 * Called by Cluster Partitioner component on "primary" worker.
@@ -161,12 +320,11 @@ public abstract class IAuthorityProxy {
 	 * 
 	 * MZa: will be removed
 	 * 
-	 * @param runId
 	 * @param componentId
 	 * @return streams array of size workersCount-1
 	 * @throws IOException
 	 */
-	public abstract OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException;
+	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
 	
 	/**
 	 * Called by Cluster Partitioner component on "slave" worker.
@@ -179,7 +337,7 @@ public abstract class IAuthorityProxy {
 	 * @return 
 	 * @throws IOException
 	 */
-	public abstract InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException;
+	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
 	
 	/**
 	 * Called by ClusterGather component on "primary" worker.
@@ -187,12 +345,11 @@ public abstract class IAuthorityProxy {
 	 * 
 	 * MZa: will be removed
 	 *  
-	 * @param runId
 	 * @param componentId
 	 * @return streams array of size workersCount-1
 	 * @throws IOException
 	 */
-	public abstract InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException;
+	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
 	
 	/**
 	 * Called by Cluster Gather component on "slave" worker. 
@@ -200,12 +357,11 @@ public abstract class IAuthorityProxy {
 	 * 
 	 * MZa: will be removed 
 	 * 
-	 * @param runId
 	 * @param componentId
 	 * @return
 	 * @throws IOException
 	 */
-	public abstract OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException;
+	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
@@ -213,7 +369,6 @@ public abstract class IAuthorityProxy {
 	 * be processed. This functionality makes available that each cluster node can process different
 	 * part of a single file.
 	 * 
-	 * @param runId
 	 * @param componentId
 	 * @param fileURL
 	 * @return
@@ -221,12 +376,11 @@ public abstract class IAuthorityProxy {
 	 * @see {@link FileConstrains}
 	 * @see {@link ParallelReader}
 	 */
-	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
+	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
 	
 	/**
 	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
 	 * Used for delimited data by ParallelReader in segment mode. 
-	 * @param runId
 	 * @param componentId
 	 * @param fileURL
 	 * @param channel The channel to be apportioned
@@ -235,12 +389,11 @@ public abstract class IAuthorityProxy {
 	 * @return
 	 * @throws IOException
 	 */
-	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException;
+	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException;
 
 	/**
 	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
 	 * Used for fixed-length data by ParallelReader in segment mode. 
-	 * @param runId
 	 * @param componentId
 	 * @param fileURL
 	 * @param channel The channel to be apportioned
@@ -248,6 +401,59 @@ public abstract class IAuthorityProxy {
 	 * @return
 	 * @throws IOException
 	 */
-	public abstract FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, int recordLength) throws IOException;
+	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, int recordLength) throws IOException;
 
+	/**
+	 * <p>
+	 * Provides new temporary file for graph execution. This method and {@link #newTempFile()} are the standard way how
+	 * a component gets temporary file for them to be managed in common way. Common management allows cleanup of
+	 * obsolete temporary files in cause of e. g. graph failure.
+	 * </p>
+	 * 
+	 * <p>
+	 * These methods obsolete {@link File#createTempFile(String, String)} method in whole CloverETL Engine.
+	 * </p>
+	 * 
+	 * <p>
+	 * There can be multiple temporary file locations, mainly in server environment. TemporaryFileProvider can choose a
+	 * random one or uses given hint to determine the right one. Hint can be used e. g. for cycling over all available
+	 * locations to maximize throughput of a component that utilizes massive IO parallelism (e. g. FastSort). More
+	 * precisely, if there are <code>n</code> temp. file locations and user specified hint <code>m</code>, location with
+	 * index <code>m % n</code> is chosen (<code>%</code> represents modular division).
+	 * </p>
+	 * 
+	 * <p>
+	 * If it is not possible to create temporary file in some location (e. g. disk full), next location is chosen.
+	 * </p>
+	 * 
+	 * <p>
+	 * Client is able to specify label of temp file. Label is used as a part of file name for better identification (e.
+	 * g. component name, temp purpose...).
+	 * </p>
+	 * 
+	 * @param label
+	 *            substring of desired temp. file name; may be <code>null</code> if no special label is desired
+	 * @param allocationHint
+	 *            hint to chose temp. file location if more are present; <code>-1</code> for random allocation
+	 * @return created temporary file
+	 * @throws TempFileCreationException 
+	 */
+	public abstract File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException;
+
+	public final File newTempFile(String label, int allocationHint) throws TempFileCreationException {
+		return newTempFile(label, null, allocationHint);
+	}
+	
+	/**
+	 * Returns new temporary file without custom label being part of its name. If more locations are present, random is
+	 * chosen. For more details see {@link #newTempFile(String, int)}.
+	 * 
+	 * @return created temporary file
+	 * @throws TempFileCreationException 
+	 */
+	public final File newTempFile() throws TempFileCreationException {
+		return newTempFile(null, null, -1);
+	}
+	
+	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
 }

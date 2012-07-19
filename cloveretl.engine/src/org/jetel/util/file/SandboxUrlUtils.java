@@ -18,6 +18,7 @@
  */
 package org.jetel.util.file;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -102,6 +103,28 @@ public final class SandboxUrlUtils {
 		}
 
 		return sandboxUrl.substring(slashIndex + 1);
+	}
+	
+	/**
+	 * Returns a URL of the form "sandbox://${storageCode}/".
+	 * 
+	 * @param storageCode
+	 * @return sandbox root URL
+	 * @throws MalformedURLException
+	 */
+	public static URL getSandboxUrl(String storageCode) throws MalformedURLException {
+		return getSandboxUrl(storageCode, null);
+	}
+
+	/**
+	 * Returns a URL of the form "sandbox://${storageCode}/${relativePath}".
+	 * 
+	 * @param storageCode
+	 * @return sandbox root URL
+	 * @throws MalformedURLException
+	 */
+	public static URL getSandboxUrl(String storageCode, String relativePath) throws MalformedURLException {
+		return FileUtils.getFileURL(FileUtils.appendSlash(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + storageCode), (relativePath != null ? relativePath : ""));
 	}
 
 	private SandboxUrlUtils() {

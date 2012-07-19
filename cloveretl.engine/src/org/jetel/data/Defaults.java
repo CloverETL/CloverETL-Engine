@@ -238,6 +238,7 @@ public final class Defaults {
         INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
         PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
         USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
+        MAX_MAPPED_FILE_TRANSFER_SIZE = getIntProperties("MAX_MAPPED_FILE_TRANSFER_SIZE", 8388608);
         
         Record.init();
         DataFieldMetadata.init();
@@ -259,6 +260,11 @@ public final class Defaults {
 	 * when buffering IO, what is the default size of the buffer
 	 */
 	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
+	
+	/**
+	 * Used in FileChannel.transferFrom() and FileChannel.transferTo() 
+	 */
+	public static int MAX_MAPPED_FILE_TRANSFER_SIZE; // = 8 MB;
 
 	/**
 	 * Default path to external binary files.
@@ -424,7 +430,7 @@ public final class Defaults {
 	 */
 	public final static class DataFieldMetadata {
 		public static void init() {
-			DECIMAL_LENGTH = getIntProperties("DataFieldMetadata.DECIMAL_LENGTH", 10);
+			DECIMAL_LENGTH = getIntProperties("DataFieldMetadata.DECIMAL_LENGTH", 12);
 			DECIMAL_SCALE = getIntProperties("DataFieldMetadata.DECIMAL_SCALE", 2);
 		}
 
@@ -432,7 +438,7 @@ public final class Defaults {
 		 * Determines default precision of decimal data field metatada. Example: <Field type="decimal" name="usrid"
 		 * <b>length="10"</b> scale="2" delimiter=";" nullable="true" />
 		 */
-		public static int DECIMAL_LENGTH;// = 10;
+		public static int DECIMAL_LENGTH;// = 12;
 
 		/**
 		 * Determines default scale od decimal data field metadata.<br>

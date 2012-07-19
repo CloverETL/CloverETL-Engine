@@ -544,7 +544,7 @@
  </FunctionalTest>
  
  <FunctionalTest ident="DBFWrite" graphFile="graph/graphDBFWrite.grf">
-	 <FlatFile outputFile="data-out/employees.dbf" supposedFile="supposed-out/employees.dbf"/>
+	 <FlatFile outputFile="data-out/DBFWrite_out.txt" supposedFile="supposed-out/DBFWrite_out.txt"/>
  </FunctionalTest>
 
 </TestScenario>

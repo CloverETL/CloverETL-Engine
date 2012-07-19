@@ -37,7 +37,6 @@ import org.jetel.util.bytes.CloverBuffer;
  * @revision   $Revision: 337 $
  */
 public class DirectEdgeFastPropagate extends EdgeBase {
-
     
     protected EdgeRecordBufferPool recordsBuffer;
     protected int recordCounter;
@@ -259,7 +258,10 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @since    June 5, 2002
      */
     static class EdgeRecordBufferPool {
-        private final static int MIN_NUM_BUFFERS = 2; // minimum number of internal buffers for correct behaviour
+
+    	private static final int INITIAL_BUFFER_CAPACITY = 100;
+
+		private final static int MIN_NUM_BUFFERS = 2; // minimum number of internal buffers for correct behaviour
         
         CloverBuffer buffers[];
         volatile int readPointer;
@@ -282,7 +284,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             readPointer=0;
             writePointer=0;
             for (int i = 0; i < size; i++) {
-                buffers[i] = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+                buffers[i] = CloverBuffer.allocateDirect(INITIAL_BUFFER_CAPACITY, Defaults.Record.RECORD_LIMIT_SIZE);
                 if (buffers[i] == null) {
                     throw new RuntimeException("Failed buffer allocation");
                 }

@@ -66,13 +66,14 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 	@Override
 	public void run() {
 		ContextProvider.registerNode(node);
-		MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
-		Thread.currentThread().setName(node.getId() + ":" + name);
-		synchronized (this) {
-			isRunning = true;
-			notifyAll();
-		}
 		try {
+			MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
+			Thread.currentThread().setName(node.getId() + ":" + name);
+			synchronized (this) {
+				isRunning = true;
+				notifyAll();
+			}
+			
 			work();
 			fireWorkerFinished(new CloverWorkerListener.Event(this));
 		} catch (InterruptedException e) {

@@ -51,7 +51,11 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 	private net.sf.saxon.sxpath.XPathEvaluator evaluator = new net.sf.saxon.sxpath.XPathEvaluator();
 	/* cache expression */
 	private Map<String, XPathExpression> expressions = new HashMap<String, XPathExpression>();
-
+	/*
+	 * Mule hack to increase performance, for clearing and setting namespaces on evaluator took too long.
+	 * TODO update to Saxon 9 and investigate all possibilities for best performance.
+	 */
+	private IndependentContext context = new IndependentContext();
 	public XmlXPathEvaluator() {
 		FunctionLibrary javaFunctionLibrary = evaluator.getConfiguration().getExtensionBinder();
 		Configuration.getPlatform().declareJavaClass(javaFunctionLibrary, TAG_NAME_FUNCTIONS_NAMESPACE_URI, TagName.class);
@@ -117,7 +121,7 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 	}
 
 	private void setNamespacesToEvaluator(Map<String, String> namespaceBinding) {
-		IndependentContext context = new IndependentContext();
+		context.clearAllNamespaces();
 		for (Entry<String, String> entry : namespaceBinding.entrySet()) {
 			if (entry.getKey().equals("")) {
 				evaluator.setDefaultElementNamespace(entry.getValue());
@@ -145,3 +149,4 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 	}
 
 }
+

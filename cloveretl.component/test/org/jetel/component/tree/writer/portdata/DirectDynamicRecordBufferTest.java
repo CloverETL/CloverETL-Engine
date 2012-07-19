@@ -47,7 +47,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 	}
 
 	public void testFirstUsage() throws IOException {
-		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
+		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer();
 		buffer.init();
 		
 		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
@@ -84,7 +84,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 	}
 	
 	public void testSecondUsage() throws IOException {
-		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
+		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer();
 		buffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
@@ -121,7 +121,7 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 	}
 
 	public void testEmptyBuffer() throws IOException {
-		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer(null);
+		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer();
 		buffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());

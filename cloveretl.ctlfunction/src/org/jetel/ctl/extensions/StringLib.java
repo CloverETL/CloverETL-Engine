@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,7 +35,12 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
@@ -62,6 +69,7 @@ public class StringLib extends TLFunctionLibrary {
 			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
 			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
 			"removeNonAscii".equals(functionName) ? new RemoveNonAsciiFunction() : //$NON-NLS-1$
+			"resolveParams".equals(functionName) ? new ResolveParamsFunction() : //$NON-NLS-1$
 			"getAlphanumericChars".equals(functionName) ? new GetAlphanumericCharsFunction() : //$NON-NLS-1$
 			"translate".equals(functionName) ? new TranslateFunction() : //$NON-NLS-1$
 			"join".equals(functionName) ? new JoinFunction() : //$NON-NLS-1$
@@ -79,6 +87,7 @@ public class StringLib extends TLFunctionLibrary {
 			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() : //$NON-NLS-1$
 			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
 			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
+			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
 			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
 			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
 
@@ -961,7 +970,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Checks whether specified string is valid URL")
 	public static final boolean isUrl(TLFunctionCallContext context, String url) {
 		try {
-			new URL(url);
+			FileUtils.getUrl(url);
 			return true;
 		} catch (MalformedURLException e) {
 			return false;
@@ -980,11 +989,11 @@ public class StringLib extends TLFunctionLibrary {
 			stack.push(isUrl(context, url));
 		}
 	}
-
+	
 	@TLFunctionAnnotation("Parses out protocol name from specified URL")
 	public static final String getUrlProtocol(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getProtocol();
+			return FileUtils.getUrl(url).getProtocol();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1006,7 +1015,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out user info from specified URL")
 	public static final String getUrlUserInfo(TLFunctionCallContext context, String url) {
 		try {
-			String ui = new URL(url).getUserInfo();
+			String ui = FileUtils.getUrl(url).getUserInfo();
 			return ui == null ? "" : ui; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
@@ -1029,7 +1038,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out host name from specified URL")
 	public static final String getUrlHost(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getHost();
+			return FileUtils.getUrl(url).getHost();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1051,7 +1060,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out port number from specified URL. Returns -1 if port not defined, -2 if URL has invalid syntax.")
 	public static final int getUrlPort(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getPort();
+			return FileUtils.getUrl(url).getPort();
 		} catch (MalformedURLException e) {
 			return -2;
 		}
@@ -1073,7 +1082,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out path part of specified URL")
 	public static final String getUrlPath(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getPath();
+			return FileUtils.getUrl(url).getPath();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1095,7 +1104,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out query (parameters) from specified URL")
 	public static final String getUrlQuery(TLFunctionCallContext context, String url) {
 		try {
-			String q = new URL(url).getQuery();
+			String q = FileUtils.getUrl(url).getQuery();
 			return q == null ? "" : q; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
@@ -1118,7 +1127,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out fragment after \"#\" character, also known as ref, reference or anchor, from specified URL")
 	public static final String getUrlRef(TLFunctionCallContext context, String url) {
 		try {
-			String query = new URL(url).getRef();
+			String query = FileUtils.getUrl(url).getRef();
 			return query == null ? "" : query; //$NON-NLS-1$
 		} catch (MalformedURLException e) {
 			return null;
@@ -1138,6 +1147,41 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
+	@TLFunctionAnnotation("Converts the URL passed as argument to the absolute file path")
+	public static final String toAbsolutePath(TLFunctionCallContext context, String url) {
+		URL contextUrl = context.getGraph().getRuntimeContext().getContextURL();
+		if (contextUrl == null) {
+			try {
+				contextUrl = new File(".").toURI().toURL(); //$NON-NLS-1$
+			} catch (MalformedURLException e) {}
+		}
+		try {
+			File file = FileUtils.getJavaFile(contextUrl, url);
+			if (file != null) {
+				try {
+					return file.getCanonicalPath();
+				} catch (IOException e) {
+					return file.getAbsolutePath();
+				}
+			}
+		} catch (JetelRuntimeException ex) {}
+		
+		return null;
+	}
+	
+	class ToAbsolutePathFunction implements TLFunctionPrototype {
+	
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(toAbsolutePath(context, url));
+		}
+	}
+	
 
 	// ESCAPE URL
 	
@@ -1145,7 +1189,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String escapeUrl(TLFunctionCallContext context, String urlStr) {
 		try {
 			// parse input string
-			URL url = new URL(urlStr);
+			URL url = FileUtils.getUrl(urlStr);
 			// create URI representation of the URL which handles character quoting
 			return new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toASCIIString();
 		} catch (MalformedURLException e) {
@@ -1175,7 +1219,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String unescapeUrl(TLFunctionCallContext context, String url) {
 		try {
 			// try to parse passed string as URL and convert it to URI which handles escaping of characters
-			URI uri = new URL(url).toURI();
+			URI uri = FileUtils.getUrl(url).toURI();
 			
 			// get unescaped parts of the URL
 			String scheme = uri.getScheme();
@@ -1192,7 +1236,7 @@ public class StringLib extends TLFunctionLibrary {
 			if (query != null) sb.append('?').append(query);
 			if (fragment != null) sb.append('#').append(fragment);
 			
-			return new URL(sb.toString()).toString();
+			return FileUtils.getUrl(sb.toString()).toString();
 		} catch (MalformedURLException e) {
 			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.failed_to_unescape_URL"), e); //$NON-NLS-1$
 		} catch (URISyntaxException e) {
@@ -1211,6 +1255,60 @@ public class StringLib extends TLFunctionLibrary {
 			final String url = stack.popString();
 			stack.push(unescapeUrl(context, url));
 		}
+	}
+	
+	// RESOLVE PARAMS
+	
+	@TLFunctionAnnotation("Resolves parameters at given string.")
+	public static final String resolveParams(TLFunctionCallContext context, String value) {
+		return resolveParams(context, value, false, false);
+	}
+	
+	@TLFunctionAnnotation("Resolves parameters at given string.")
+	public static final String resolveParams(TLFunctionCallContext context, String value, boolean resolveSpecialChars, boolean resolveCTL) {
+		RefResFlag refResFlag = null;
+		if (resolveSpecialChars) {
+			if (resolveCTL) {
+				refResFlag = RefResFlag.REGULAR;
+			} else {
+				refResFlag = RefResFlag.CTL_EXPRESSIONS_OFF;
+			}
+		} else {
+			if (resolveCTL) {
+				refResFlag = RefResFlag.SPEC_CHARACTERS_OFF;
+			} else {
+				refResFlag = RefResFlag.ALL_OFF;
+			}
+		}
+		PropertyRefResolver refResolver = ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver();
+		return refResolver.resolveRef(value, refResFlag);
+	}
+	
+	class ResolveParamsFunction implements TLFunctionPrototype {
+	
+		@Override
+		public void init(TLFunctionCallContext context) {
+			resolveParamsInit(context);
+		}
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams().length == 1) {
+				stack.push(resolveParams(context, stack.popString()));
+			} else if (context.getParams().length == 3) {
+				final boolean resolveCTL = stack.popBoolean();
+				final boolean resolveSpecialChars = stack.popBoolean();
+				final String value = stack.popString();
+				stack.push(resolveParams(context, value, resolveSpecialChars, resolveCTL));
+			}
+		}
+	}
+	
+	@TLFunctionInitAnnotation()
+	public static final void resolveParamsInit(TLFunctionCallContext context) {
+		TypedProperties props = context.getGraph() != null ? context.getGraph().getGraphProperties() : null;
+		PropertyRefResolver refResolver = new PropertyRefResolver(props);
+		context.setCache(new TLPropertyRefResolverCache(refResolver));
 	}
 	
 }

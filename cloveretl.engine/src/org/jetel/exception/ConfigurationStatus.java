@@ -56,12 +56,20 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
     	add(new ConfigurationProblem(message, severity, graphElement, priority, attributeName));
     }
 
-    public void add(ComponentNotReadyException e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
-    	add(new ConfigurationProblem(e, severity, graphElement, priority, attributeName));
+    public void add(Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(null, e, severity, graphElement, priority, attributeName));
+    }
+
+    public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(message, e, severity, graphElement, priority, attributeName));
     }
 
     public void add(String message, Severity severity, GraphElement graphElement, Priority priority) {
     	this.add(message, severity, graphElement, priority, null);
+    }
+
+    public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority) {
+    	this.add(message, e, severity, graphElement, priority, null);
     }
 
     /**
@@ -89,5 +97,16 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
     	
     	return null;
     }
+
+	/**
+	 * @return exception derived from first error in status or null if no error is in status
+	 */
+	public Exception toException() {
+		if (isError()) {
+			return firstError().toException();
+		} else {
+			return null;
+		}
+	}
     
 }

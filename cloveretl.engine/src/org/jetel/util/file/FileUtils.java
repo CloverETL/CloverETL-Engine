@@ -34,6 +34,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -45,8 +46,11 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,6 +62,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -78,12 +84,14 @@ import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
+import org.jetel.util.stream.StreamUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import java.net.URLDecoder;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -120,16 +128,75 @@ public class FileUtils {
 	private static final String TAR_PROTOCOL = "tar";
 	private static final String GZIP_PROTOCOL = "gzip";
 	private static final String ZIP_PROTOCOL = "zip";
+
+	// FTP-like protocol names
+	private static final String FTP_PROTOCOL = "ftp";
+	private static final String SFTP_PROTOCOL = "sftp";
+	private static final String SCP_PROTOCOL = "scp";
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
+
+	/**
+	 * Maps known URL protocols to their handlers
+	 */
+	public static final Map<String, URLStreamHandler> handlers;
+
+	static {
+		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
+		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(ZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(TAR_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(FTP_PROTOCOL, ftpStreamHandler);
+		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
+		h.put(SCP_PROTOCOL, sFtpStreamHandler);
+		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
+			h.put(p.toString(), proxyHandler);
+		}
+		h.put(SandboxUrlUtils.SANDBOX_PROTOCOL, new SandboxStreamHandler());
+		handlers = Collections.unmodifiableMap(h);
+	}
 	
 	/**
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
     private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
     private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+
+    /**
+     * Used only to extract the protocol name in a generic manner
+     */
+	private static final URLStreamHandler GENERIC_HANDLER = new URLStreamHandler() {
+		@Override
+		protected URLConnection openConnection(URL u) throws IOException {
+			return null;
+		}
+	};
+
+	/**
+	 * If the given string is an valid absolute URL
+	 * with a known protocol, returns the URL.
+	 * 
+	 * Throws MalformedURLException otherwise.
+	 * 
+	 * @param url
+	 * @return URL constructed from <code>url</code>
+	 * @throws MalformedURLException
+	 */
+	public static final URL getUrl(String url) throws MalformedURLException {
+		try {
+			return new URL(url);
+		} catch (MalformedURLException e) {
+			String protocol = new URL(null, url, GENERIC_HANDLER).getProtocol();
+			URLStreamHandler handler = FileUtils.handlers.get(protocol.toLowerCase());
+			if (handler != null) {
+				return new URL(null, url, handler);
+			} else {
+				throw e;
+			}
+		}
+	}
 
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
@@ -198,9 +265,8 @@ public class FileUtils {
 
         // sandbox url
 		if (SandboxUrlUtils.isSandboxUrl(fileURL)){
-    		TransformationGraph graph = ContextProvider.getGraph();
         	try {
-        		return new URL(contextURL, fileURL, new SandboxStreamHandler(graph));
+        		return new URL(contextURL, fileURL, new SandboxStreamHandler());
             } catch(MalformedURLException e) {}
 		}
         
@@ -386,9 +452,17 @@ public class FileUtils {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
+			String proxyUserInfo = null;
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+			if (proxy != null) {
+				try {
+					proxyUserInfo = new URI(innerSource).getUserInfo();
+				} catch (URISyntaxException ex) {
+				}
+			}
+
 			innerStream = proxy == null ? getInputStream(contextURL, innerSource) 
-					: getAuthorizedConnection(getFileURL(contextURL, input), proxy).getInputStream();
+					: getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getInputStream();
 		}
 		
 		// get archive type
@@ -477,6 +551,12 @@ public class FileUtils {
         
         // if doesn't exist inner input, inner input is input
         if (innerInput.length() == 0) innerInput.append(input);
+        
+        // remove parentheses - fixes incorrect URL resolution
+        if (innerInput.length() >= 2 && innerInput.charAt(0) == '(' && innerInput.charAt(innerInput.length()-1) == ')') {
+        	innerInput.deleteCharAt(innerInput.length()-1);
+        	innerInput.deleteCharAt(0);
+        }
         
         return archiveType;
     }
@@ -666,14 +746,31 @@ public class FileUtils {
     /**
      * Creates an authorized stream.
      * @param url
+     * @param proxy
+     * @param proxyUserInfo username and password to access the proxy
+     * 
      * @return
      * @throws IOException
      */
-    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy) throws IOException {
+    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
         return URLConnectionRequest.getAuthorizedConnection(
         		url.openConnection(proxy),
-        		url.getUserInfo(), 
+        		proxyUserInfo, 
         		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
+    }
+
+    /**
+     * Creates an authorized stream.
+     * @param url
+     * @return
+     * @throws IOException
+     * 
+     * @deprecated Use {@link #getAuthorizedConnection(URL, Proxy, String)} instead
+     */
+    @Deprecated
+    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy) throws IOException {
+    	// user info is obtained from the URL, most likely different from proxy user info 
+        return getAuthorizedConnection(url, proxy, url.getUserInfo());
     }
 
     /**
@@ -735,7 +832,7 @@ public class FileUtils {
 		return input.startsWith("zip:");
 	}
 	
-	private static boolean isRemoteFile(String input) {
+	public static boolean isRemoteFile(String input) {
 		return input.startsWith("http:")
 			|| input.startsWith("https:")
 			|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
@@ -749,8 +846,19 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
-	private static boolean isLocalFile(String input) {
-		return !isRemoteFile(input) && !isConsole(input) && !isSandbox(input) && !isArchive(input);
+	public static boolean isLocalFile(URL contextUrl, String input) {
+		if (input.startsWith("file:")) {
+			return true;
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input)) {
+			return false;
+		} else {
+			try {
+				URL url = getFileURL(contextUrl, input);
+				return !isSandbox(url.toString());
+			} catch (MalformedURLException e) {}
+		}
+
+		return false;
 	}
 	
 	private static boolean isHttp(String input) {
@@ -865,7 +973,7 @@ public class FileUtils {
 			
 			return ret;
 		}
-		else if (isLocalFile(input) && nestLevel > 0) {
+		else if (isLocalFile(contextURL, input) && nestLevel > 0) {
 			assert(path.length() == 0);			
 			path.append(input);
 			return true;
@@ -947,8 +1055,15 @@ public class FileUtils {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
+			String proxyUserInfo = null;
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy).getOutputStream();
+			if (proxy != null) {
+				try {
+					proxyUserInfo = new URI(innerSource).getUserInfo();
+				} catch (URISyntaxException ex) {
+				}
+			}
+			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getOutputStream();
 		}
 		
 		// get archive type
@@ -985,10 +1100,18 @@ public class FileUtils {
 					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
         		}
     			URL url = FileUtils.getFileURL(contextURL, input);
-            	return graph.getAuthorityProxy().getSandboxResourceOutput(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
+            	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
     		} else {
-    			// file input stream 
+    			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
+    			if (isSandbox(url.toString())) {
+        			TransformationGraph graph = ContextProvider.getGraph();
+            		if (graph == null) {
+    					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+            		}
+                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+    			}
+    			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
     			os = new FileOutputStream(filePath, appendData);
     		}
@@ -998,6 +1121,9 @@ public class FileUtils {
 		// zip channel
 		if(archiveType == ArchiveType.ZIP) {
 			// resolve url format for zip files
+			if (appendData) {
+				throw new IOException("Appending to remote archives is not supported");
+			}
 			de.schlichtherle.util.zip.ZipOutputStream zout = new de.schlichtherle.util.zip.ZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
@@ -1011,6 +1137,9 @@ public class FileUtils {
 		
 		// gzip channel
 		else if (archiveType == ArchiveType.GZIP) {
+			if (appendData) {
+				throw new IOException("Appending to remote archives is not supported");
+			}
             GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
             return gzos;
         } 
@@ -1106,7 +1235,7 @@ public class FileUtils {
 			}
 
 			try {
-				graph.getAuthorityProxy().makeDirectories(graph.getRuntimeContext().getRunId(), url.getHost(), url.getPath());
+				graph.getAuthorityProxy().makeDirectories(url.getHost(), url.getPath());
 			} catch (IOException exception) {
 				throw new ComponentNotReadyException("Making of sandbox directories failed!", exception);
 			}
@@ -1315,6 +1444,17 @@ public class FileUtils {
 			}
 		}
 		URL url = getFileURL(contextURL, input);
+		if (SandboxUrlUtils.isSandboxUrl(url)) { // CLS-754
+			try {
+				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				File file = FileManager.getInstance().getFile(cloverUri); 
+				if (file != null) {
+					return file.toString();
+				}
+			} catch (Exception e) {
+				log.debug("Failed to resolve sandbox URL", e);
+			}
+		}
 		if (url.getRef() != null) return url.getRef();
 		else {
 			input = getUrlFile(url);
@@ -1435,7 +1575,8 @@ public class FileUtils {
 	 * @see http://weblogs.java.net/blog/kohsuke/archive/2007/04/how_to_convert.html
 	 */
 	public static File convertUrlToFile(URL url) throws MalformedURLException {
-		if (url.getProtocol().equals("file")) {
+		String protocol = url.getProtocol();
+		if (protocol.equals(FILE_PROTOCOL)) {
 			try {
 				return new File(url.toURI());
 			} catch(URISyntaxException e) {
@@ -1443,9 +1584,18 @@ public class FileUtils {
 			} catch(IllegalArgumentException e2) {
 				return new File(url.getPath());
 			}
-		} else {
-			throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
+			try {
+				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				File file = FileManager.getInstance().getFile(cloverUri); 
+				if (file != null) {
+					return file;
+				}
+			} catch (Exception e) {
+				log.debug("Failed to resolve sandbox URL", e);
+			}
 		}
+		throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
 	}
 	
 	/**
@@ -1562,6 +1712,35 @@ public class FileUtils {
 	}
 
 	/**
+	 * Closes all objects passed as the argument.
+	 * If any of them throws an exception, the first exception is thrown.
+	 * 
+	 * @param closeables
+	 * @throws IOException
+	 */
+	public static void closeAll(Closeable... closeables) throws IOException {
+		if (closeables != null) {
+			IOException firstException = null;
+			
+			for (Closeable closeable: closeables) {
+				if (closeable != null) {
+					try {
+						closeable.close();
+					} catch (IOException ex) {
+						if (firstException == null) {
+							firstException = ex;
+						}
+					}
+				}
+			}
+			
+			if (firstException != null) {
+				throw firstException;
+			}
+		}
+	}
+
+	/**
      * Efficiently copies file contents from source to target.
      * Creates the target file, if it does not exist.
      * The parent directories of the target file are not created.
@@ -1582,20 +1761,37 @@ public class FileUtils {
 			outputStream = new FileOutputStream(target);
 			inputChannel = inputStream.getChannel();
 			outputChannel = outputStream.getChannel();
-	        long size = inputChannel.size();
-	        long pos = 0;
-	        while (pos < size) {
-	            pos += outputChannel.transferFrom(inputChannel, pos, size - pos);
-	        }
-			return pos == size;
+	        StreamUtils.copy(inputChannel, outputChannel);
+			return true;
 		} finally {
-			close(outputChannel);
-			close(outputStream);
-			close(inputChannel);
-			close(inputStream);
+			closeAll(outputChannel, outputStream, inputChannel, inputStream);
 		}
 	}
 
+	/**
+	 * Delete the supplied {@link File} - for directories,
+	 * recursively delete any nested directories or files as well.
+	 * @param root the root <code>File</code> to delete
+	 * @return <code>true</code> if the <code>File</code> was deleted,
+	 * otherwise <code>false</code>
+	 */
+	public static boolean deleteRecursively(File root) throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException("Interrupted");
+		}
+		if (root != null && root.exists()) {
+			if (root.isDirectory()) {
+				File[] children = root.listFiles();
+				if (children != null) {
+					for (int i = 0; i < children.length; i++) {
+						deleteRecursively(children[i]);
+					}
+				}
+			}
+			return root.delete();
+		}
+		return false;
+	}
 
 }
 

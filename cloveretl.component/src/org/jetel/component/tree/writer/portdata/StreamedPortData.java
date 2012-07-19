@@ -55,8 +55,8 @@ class StreamedPortData extends PortData {
 
 	private boolean unusedData = false;
 
-	public StreamedPortData(InputPort inPort, Set<List<String>> keys, SortHint sortHint, String tempDirectory) {
-		super(inPort, keys, tempDirectory);
+	public StreamedPortData(InputPort inPort, Set<List<String>> keys, SortHint sortHint) {
+		super(inPort, keys);
 		if (sortHint != null) {
 			this.ascending = sortHint.getAscending();
 
@@ -82,7 +82,7 @@ class StreamedPortData extends PortData {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		cacheData = new DirectDynamicRecordBuffer(tempDirectory);
+		cacheData = new DirectDynamicRecordBuffer();
 		try {
 			cacheData.init();
 		} catch (IOException e) {

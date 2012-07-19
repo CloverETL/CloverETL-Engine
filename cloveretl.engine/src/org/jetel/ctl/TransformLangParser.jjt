@@ -120,12 +120,11 @@ public class TransformLangParser extends ExpParser {
       /**
        * Used by main parser to create import parsers
        */
-      public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){			  this(stream);
+      public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){			  this(stream, parent.encoding);
 			  this.graph = parent.graph;              this.propertyRefResolver = parent.propertyRefResolver;
 			  this.parserHelper=parent.parserHelper;
 			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
-              this.parsedImports = parent.parsedImports;              this.encoding = parent.encoding;
-              this.isImported  = true;
+              this.parsedImports = parent.parsedImports;              this.isImported  = true;
       }
       
 	public void reset(java.io.InputStream stream) {
@@ -353,8 +352,12 @@ public class TransformLangParser extends ExpParser {
 			// identifier and field are valid LHS of assignment
 			return true;
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
+			SimpleNode child = (SimpleNode) lhs.jjtGetChild(0);
+			if (child.getId() == TransformLangParserTreeConstants.JJTFUNCTIONCALL) {
+				return true; // return type should be list or map, will be checked later
+			}
 			// for array access, the 'array' must be a valid target (i.e. identifier)
-			return checkAssignmentTarget((SimpleNode)lhs.jjtGetChild(0));
+			return checkAssignmentTarget(child);
 		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
 			// for member access, the source object must be a valid identifier (not a lookup, method..)
 			return checkAssignmentTarget((SimpleNode)lhs.jjtGetChild(0));
@@ -894,7 +897,7 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
         		problemReporter.setImportFileUrl(importFileUrl);
         		problemReporter.setErrorLocation(errorLocation);
 			}
-		} else {                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of mport of the same file");
+		} else {                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of import of the same file");
 		}		  
 
 	}}

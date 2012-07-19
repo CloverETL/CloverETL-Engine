@@ -67,7 +67,8 @@ public class TLFunctionLibraryDescription extends PluginableItemDescription {
     
     public boolean hasFunction(String functionName) {
         return functionNames.contains(functionName) || 
-                (functionName.startsWith(libraryName) && functionNames.contains(functionName.substring(libraryName.length() + 1)));
+        		(functionName.startsWith(libraryName) && 
+        		functionNames.contains(functionName.substring(libraryName.length() + 1)));
     }
 
     public TLFunctionPrototype getFunction(String functionName) {

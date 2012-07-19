@@ -57,6 +57,7 @@ public class URLConnectionRequest {
     public static URLConnection getAuthorizedConnection(URLConnection uc, String userInfo, String authorizationType) {
         // check authorization
         if (userInfo != null) {
+        	// FIXME does not work for SOCKS proxies
             uc.setRequestProperty(authorizationType, URL_CONNECTION_BASIC + encode(decodeString(userInfo)));
         }
         return uc;

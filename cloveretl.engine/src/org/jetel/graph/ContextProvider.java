@@ -20,9 +20,8 @@ package org.jetel.graph;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.runtime.CloverWorker;
 
 /**
@@ -44,53 +43,117 @@ import org.jetel.graph.runtime.CloverWorker;
  */
 public class ContextProvider {
 
-    private static final Log logger = LogFactory.getLog(ContextProvider.class);
-
-	private static final Map<Thread, Node> nodesCache = new HashMap<Thread, Node>(); 
-
-	private static final Map<Thread, TransformationGraph> graphsCache = new HashMap<Thread, TransformationGraph>(); 
-    
+	private static final Map<Thread, Stack<Context>> contextCache = new HashMap<Thread, Stack<Context>>(); 
+	
+	/**
+	 * @return transformation graph associated with current thread or <code>null</code>
+	 */
 	public static synchronized TransformationGraph getGraph() {
-    	Node node = nodesCache.get(Thread.currentThread());
-    	if (node != null) {
-        	return node.getGraph();
-    	} else {
-	    	return graphsCache.get(Thread.currentThread());
-    	}
+		Context context = getContext();
+		return (context != null) ? context.getGraph() : null;
     }
 
+	/**
+	 * @return component associated with current thread or <code>null</code>
+	 */
 	public static synchronized Node getNode() {
-    	return nodesCache.get(Thread.currentThread());
+		Context context = getContext();
+		return (context != null) ? context.getNode() : null;
+		
+//    	return nodesCache.get(Thread.currentThread());
     }
 
-	public static synchronized void registerNode(Node node) {
-		Thread currentThread = Thread.currentThread();
-		if (nodesCache.containsKey(currentThread) && nodesCache.get(currentThread) != node) {
-			logger.warn(String.format("Current thread '%s' is already registered with different node (%s).", currentThread.getName(), nodesCache.get(currentThread).toString()));
-		}
-		if (graphsCache.containsKey(currentThread) && node.getGraph() != graphsCache.get(currentThread)) {
-			logger.warn(String.format("Current thread '%s' is already registered with different graph (%s).", currentThread.getName(), graphsCache.get(currentThread).toString()));
-		}
-		nodesCache.put(currentThread, node);
-	}
-
-	public static synchronized void registerGraph(TransformationGraph graph) {
-		Thread currentThread = Thread.currentThread();
-		if (graphsCache.containsKey(currentThread) && graph != graphsCache.get(currentThread)) {
-			logger.warn(String.format("Current thread '%s' is already registered with different graph (%s).", currentThread.getName(), graphsCache.get(currentThread).toString()));
-		}
-		graphsCache.put(currentThread, graph);
-	}
-
-	public static synchronized void unregister() {
-		if (nodesCache.containsKey(Thread.currentThread())) {
-			nodesCache.remove(Thread.currentThread());
+	private static Context getContext() {
+		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
+		if (threadCache != null) {
+			assert(!threadCache.isEmpty()); //threadCache cannot be empty - it is class ContextProvider invariant
+			return threadCache.peek();
 		} else {
-			if (graphsCache.containsKey(Thread.currentThread())) {
-				graphsCache.remove(Thread.currentThread());
-			} else {
-				logger.warn("Attempt to unregister non-registered thread in the ContextProvider.");
-			}
+			return null;
+		}
+	}
+	
+	/**
+	 * @return job type of current graph or {@link JobType#DEFAULT} if current graph cannot be specified
+	 */
+	public static synchronized JobType getJobType() {
+    	TransformationGraph currentGraph = ContextProvider.getGraph();
+    	
+    	if (currentGraph != null) {
+    		return currentGraph.getJobType();
+    	} else {
+    		return JobType.DEFAULT;
+    	}
+	}
+	
+	/**
+	 * Associates the given component with current thread.
+	 */
+	public static synchronized void registerNode(Node node) {
+		registerContext(new Context(node, node.getGraph()));
+	}
+
+	/**
+	 * Associates the given graph with current thread.
+	 */
+	public static synchronized void registerGraph(TransformationGraph graph) {
+		registerContext(new Context(null, graph));
+	}
+
+	private static void registerContext(Context context) {
+		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
+		if (threadCache == null) {
+			threadCache = new Stack<Context>();
+			contextCache.put(Thread.currentThread(), threadCache);
+		}
+		threadCache.push(context);
+	}
+	
+	/**
+	 * Unregister last registered context associated with current thread.
+	 */
+	public static synchronized void unregister() {
+		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
+		if (!threadCache.isEmpty()) {
+			threadCache.pop();
+		}
+		if (threadCache.isEmpty()) {
+			contextCache.remove(Thread.currentThread());
+		}
+	}
+
+	/**
+	 * Full context stack for current thread is released.
+	 */
+	public static synchronized void unregisterAll() {
+		contextCache.remove(Thread.currentThread());
+	}
+	
+	/**
+	 * This class represents all context information managed by {@link ContextProvider}.
+	 * Can be used in following pattern:<br>
+	 * <pre>
+	 * ContextProvider.Context formerContext = ContextProvider.getContext();
+	 * try {
+	 *   ContextProvider.regitesterNode(node);
+	 *   ...
+	 * } finally {
+	 *   ContextProvider.setContext(formerContext);
+	 * }
+	 * </pre>
+	 */
+	private static class Context {
+		private Node node;
+		private TransformationGraph graph;
+		Context(Node node, TransformationGraph graph) {
+			this.node = node;
+			this.graph = graph;
+		}
+		public Node getNode() {
+			return node;
+		}
+		public TransformationGraph getGraph() {
+			return graph;
 		}
 	}
 	

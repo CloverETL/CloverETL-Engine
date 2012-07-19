@@ -799,7 +799,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				stack.push(lhs.compareTo(rhs) >= 0);
 				break;// greater than equal
 			case NON_EQUAL:
-				stack.push(!lhs.equals(rhs));
+				stack.push(lhs.compareTo(rhs) != 0);
 				break;
 			default:
 				// this should never happen !!!
@@ -2350,7 +2350,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFFunctionCall node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
-			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";  
+			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";
 			node.getExtecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);

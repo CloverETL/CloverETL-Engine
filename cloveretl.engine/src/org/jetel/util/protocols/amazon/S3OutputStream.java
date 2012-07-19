@@ -26,6 +26,9 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.model.S3Bucket;
@@ -48,8 +51,11 @@ public class S3OutputStream extends OutputStream {
 	
 	public S3OutputStream(URL url) throws FileNotFoundException, IOException {
 		this.uploaded = false;
-		this.tempFile = File.createTempFile("cloveretl-amazons3-buffer", null);
-		tempFile.deleteOnExit();
+		try {
+			tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile("cloveretl-amazons3-buffer", -1);
+		} catch (TempFileCreationException e) {
+			throw new IOException(e);
+		}
 		this.os = new FileOutputStream(tempFile);
 		this.url = url;
 	}

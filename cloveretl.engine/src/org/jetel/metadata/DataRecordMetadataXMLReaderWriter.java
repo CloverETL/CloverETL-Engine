@@ -36,7 +36,9 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataRecordNature;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.KeyFieldNamesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
@@ -161,9 +163,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRows";
 	private static final String QUOTED_STRINGS = "quotedStrings";
 	private static final String QUOTE_CHAR = "quoteChar";
+	private static final String KEY_FIELD_NAMES_ATTR = "keyFieldNames";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	public static final String CONNECTION_ATTR = "connection";
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
+	private static final String NATURE_ATTR = "nature";
 	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
@@ -333,6 +337,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         	metadataElement.setAttribute(QUOTE_CHAR, String.valueOf(record.getQuoteChar()));
         }
 
+        if (record.getKeyFieldNames() != null && !record.getKeyFieldNames().isEmpty()) {
+        	metadataElement.setAttribute(KEY_FIELD_NAMES_ATTR, KeyFieldNamesUtils.getFieldNamesAsString(record.getKeyFieldNames()));
+        }
+        
+
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
 			Enumeration<?> enumeration = prop.propertyNames();
@@ -342,12 +351,13 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}
 		}
 
+		
+		Document doc = metadataElement.getOwnerDocument();
+		
 		// OUTPUT FIELDS
 		
 //		MessageFormat fieldForm = new MessageFormat(
 //				"\t<Field name=\"{0}\" type=\"{1}\" ");
-
-		Document doc = metadataElement.getOwnerDocument();
 		for (int i = 0; i < record.getNumFields(); i++) {
 			field = record.getField(i);			
 			
@@ -471,6 +481,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String quotedStrings = null;
 		String quoteChar = null;
 		String collatorSensitivity = null;
+		String nature = null;
+		String keyFieldNamesStr = null;
 		Properties recordProperties = null;
 
 		/*
@@ -501,10 +513,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				quotedStrings = itemValue;
 			} else if (itemName.equalsIgnoreCase(QUOTE_CHAR)) {
 				quoteChar = itemValue;
+			} else if (itemName.equalsIgnoreCase(KEY_FIELD_NAMES_ATTR)) {
+				keyFieldNamesStr = itemValue;
 			} else if (itemName.equalsIgnoreCase(SKIP_SOURCE_ROW_ATTR)) {
 				skipSourceRows = itemValue;
 			} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
 				collatorSensitivity = itemValue;
+			} else if (itemName.equalsIgnoreCase(NATURE_ATTR)) {
+				nature = itemValue;
 			} else {
 				if (recordProperties == null) {
 					recordProperties = new Properties();
@@ -565,11 +581,19 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		if (!StringUtils.isEmpty(quotedStrings)) {
 			recordMetadata.setQuotedStrings(Boolean.valueOf(quotedStrings));
 		}
+		
+		if (!StringUtils.isEmpty(keyFieldNamesStr)) {
+			recordMetadata.setKeyFieldNames(KeyFieldNamesUtils.getFieldNamesAsList(keyFieldNamesStr));
+		}
 
 		if (!StringUtils.isEmpty(collatorSensitivity)) {
 			recordMetadata.setCollatorSensitivity(collatorSensitivity);
 		}
 		
+		if (!StringUtils.isEmpty(nature)) {
+			recordMetadata.setNature(DataRecordNature.fromString(nature));
+		}
+
 		/*
 		 * parse metadata of FIELDs
 		 */

@@ -144,7 +144,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
-							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf"); // ok, is to fail
+							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
+							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf"); // remove after CL-2239 solved
 				}
 			});
 			

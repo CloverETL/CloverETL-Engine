@@ -44,11 +44,13 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
+import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.util.JetelVersion;
@@ -128,6 +130,7 @@ public class runGraph {
     public final static String NO_JMX = "-noJMX";
     public final static String CONFIG_SWITCH = "-config";
     public final static String NO_DEBUG_SWITCH = "-nodebug";
+    public final static String NO_TOKEN_TRACKING_SWITCH = "-notokentracking";
     public final static String DEBUG_DIRECTORY_SWITCH = "-debugdirectory";
     public final static String CONTEXT_URL_SWITCH = "-contexturl";
     //private command line options
@@ -157,6 +160,7 @@ public class runGraph {
         boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
         boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
+        boolean tokenTracking = GraphRuntimeContext.DEFAULT_TOKEN_TRACKING;
         boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
         URL contextURL = null;
@@ -244,6 +248,8 @@ public class runGraph {
             } else if (args[i].startsWith(CONFIG_SWITCH)) {
                 i++;
                 configFileName = args[i];
+            } else if (args[i].startsWith(NO_TOKEN_TRACKING_SWITCH)){
+            	tokenTracking = false;
             } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
                 debugMode = false;
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
@@ -298,6 +304,7 @@ public class runGraph {
         runtimeContext.setWaitForJMXClient(waitForJMXClient);
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
+        runtimeContext.setTokenTracking(tokenTracking);
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
@@ -429,6 +436,14 @@ public class runGraph {
 			EngineInitializer.initGraph(graph);
 		}
 
+		//load dictionary content from runtime context
+		DictionaryValuesContainer dictContainer = runtimeContext.getDictionaryContent();
+		for (String key : runtimeContext.getDictionaryContent().getKeys()) {
+			graph.getDictionary().setValue(key, dictContainer.getValue(key));
+		}
+		
+		PrimitiveAuthorityProxy pap = new PrimitiveAuthorityProxy();
+		runtimeContext.setAuthorityProxy(pap);
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
         threadManager.initWatchDog(watchDog);

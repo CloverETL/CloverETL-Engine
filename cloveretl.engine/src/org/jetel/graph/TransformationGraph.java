@@ -50,8 +50,8 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.bytes.MemoryTracker;
@@ -112,8 +112,6 @@ public final class TransformationGraph extends GraphElement {
 
 	private TypedProperties graphProperties;
 
-	private IAuthorityProxy authorityProxy;
-	
 	/**
 	 * Memory tracker associated with this graph.
 	 */
@@ -153,6 +151,9 @@ public final class TransformationGraph extends GraphElement {
 	public TransformationGraph(String id) {
 		super(id);
 		
+		//graph is graph for itself
+		setGraph(this);
+		
 		phases = new HashMap<Integer,Phase>();
 		connections = new HashMap <String,IConnection> ();
 		sequences = new HashMap<String,Sequence> ();
@@ -160,7 +161,6 @@ public final class TransformationGraph extends GraphElement {
 		dataRecordMetadata = new HashMap<String,Object> ();
 		graphProperties = new TypedProperties();
 		dictionary = new Dictionary(this);
-		authorityProxy = new PrimitiveAuthorityProxy();
 		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
 		vfsEntries = new TrueZipVFSEntries();
@@ -217,6 +217,14 @@ public final class TransformationGraph extends GraphElement {
         } else {
         	return false;
         }
+    }
+    
+    /**
+     * Sets 'jobflow' type for this transformation graph.
+     * The graph can be driven in slightly different way in case jobflow run.  
+     */
+    public void setJobType(JobType jobType) {
+    	this.jobType = jobType;
     }
     
     /**
@@ -385,10 +393,9 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+		ContextProvider.registerGraph(this);
 		try {
-			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-			ContextProvider.registerGraph(this);
-			
 	        if(isInitialized()) return;
 			super.init();
 	
@@ -698,7 +705,12 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				final Sequence seq = (Sequence) iterator.next();
 				if (seq.isShared()) {
-					getAuthorityProxy().freeSharedSequence(seq);
+					IAuthorityProxy ap = getAuthorityProxy();
+					if (ap == null) { // CLD-3693: graph runs on the server
+						// try with the default authority proxy instead - should be a ServerAuthorityProxy
+						ap = IAuthorityProxy.getDefaultProxy();
+					}
+					ap.freeSharedSequence(seq);
 				} else {
 					seq.free();
 				}
@@ -787,21 +799,33 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public void addDataRecordMetadata(DataRecordMetadata metadata) {
 		this.dataRecordMetadata.put(metadata.getName(), metadata);
+		metadata.setGraph(this);
 	}
 	
 	public String addDataRecordMetadata(String id, DataRecordMetadata metadata) {
 		String newId = getUniqueId(id, dataRecordMetadata);
 		this.dataRecordMetadata.put(newId, metadata);
+		metadata.setGraph(this);
 		return newId;
 	}
 
 	/**
-	 * Bulk registration of metadata objects. Mainly used by TransformationGraphXMLReaderWriter
+	 * Bulk registration of metadata objects. Mainly used by TransformationGraphXMLReaderWriter.
+	 * <p>
+	 * <b>Important!</b><br />
+	 * Map values are usually {@link DataRecordMetadata}, 
+	 * but may contain other classes, specifically {@link DataRecordMetadataStub}.
+	 * </p> 
 	 * 
-	 * @param metadata	Map object containing metadata IDs and metadata objects
+	 * @param metadata	Map object containing metadata IDs and metadata objects.
 	 */
-	public void addDataRecordMetadata(Map<String, DataRecordMetadata> metadata){
+	public void addDataRecordMetadata(Map<String, ?> metadata){
 	    dataRecordMetadata.putAll(metadata);
+	    for (Object md : metadata.values()) {
+	    	if (md instanceof DataRecordMetadata) { // prevents a ClassCastException - can also be DataRecordMetadataStub
+	    		((DataRecordMetadata) md).setGraph(this);
+	    	}
+	    }
 	}
 	
 	/**
@@ -810,7 +834,7 @@ public final class TransformationGraph extends GraphElement {
 	 * @param metadata
 	 */
 	public void addDataRecordMetadata(DataRecordMetadata... metadata){
-		for(DataRecordMetadata md : metadata) {
+		for (DataRecordMetadata md : metadata) {
 			addDataRecordMetadata(md);
 		}
 	}
@@ -824,7 +848,7 @@ public final class TransformationGraph extends GraphElement {
 		for (Phase phase : getPhases()) {
 			logger.info("--- Phase [" + phase.getPhaseNum() + "] ---");
 			logger.info("\t... nodes ...");
-			for(Node node : phase.getNodes().values()) {
+			for (Node node : phase.getNodes().values()) {
 				logger.info("\t" + node.getId() + " : " + (node.getName() !=null ? node.getName() : "") + " phase: " + node.getPhase().getPhaseNum());
 			}
 			logger.info("\t... edges ...");
@@ -950,16 +974,13 @@ public final class TransformationGraph extends GraphElement {
      */
     @Override
 	public void free() {
+		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+		ContextProvider.registerGraph(this);
 		try {
-			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-			ContextProvider.registerGraph(this);
-			
 	        freeResources();
 	    	
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
 	    	dictionary.free();
-	    	
-	    	vfsEntries.freeAll();
 	    	
 	    	setWatchDog(null);
 		} finally {
@@ -1062,14 +1083,20 @@ public final class TransformationGraph extends GraphElement {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
+		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+		ContextProvider.registerGraph(this);
 		try {
-			//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-			ContextProvider.registerGraph(this);
-			
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
 	        }
 	        
+	    	if (getJobType() != getRuntimeContext().getJobType()) {
+				status.add(new ConfigurationProblem("Inconsitent runtime setup. " +
+						"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
+								"Probably internal graph nature does not corespond to graph file suffix.",
+						Severity.ERROR, null, Priority.NORMAL));
+	    	}
+	    	
 	        //check dictionary
 	        dictionary.checkConfig(status);
 	        
@@ -1156,6 +1183,17 @@ public final class TransformationGraph extends GraphElement {
     }
     
     /**
+     * @return token tracker for this graph provided by {@link WatchDog}
+     */
+    public TokenTracker getTokenTracker() {
+    	if (watchDog != null) {
+    		return watchDog.getTokenTracker();
+    	} else {
+    		return null;
+    	}
+    }
+    
+    /**
      * Sets an instance of runtime context which is used during initialization time.
      * @param initialRuntimeContext
      */
@@ -1179,17 +1217,9 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
     public IAuthorityProxy getAuthorityProxy() {
-    	return authorityProxy;
+    	return getRuntimeContext().getAuthorityProxy();
     }
 
-    public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
-    	if (authorityProxy == null) {
-    		this.authorityProxy = new PrimitiveAuthorityProxy();
-    	} else {
-    		this.authorityProxy = authorityProxy;
-    	}
-	}
-    
     /**
      * @return memory tracker associated with this graph
      */

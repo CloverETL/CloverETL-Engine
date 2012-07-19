@@ -45,6 +45,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
@@ -840,14 +841,16 @@ public class DB2DataWriter extends Node {
 				batchFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), batchURL));
 			}
 			if (batchFile == null) {
-				batchFile = File.createTempFile("tmp", ".bat", new File("."));
+				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
 			}
 			if (!batchFile.canWrite()) {
 				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (IOException e) {
 			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
-		}        	
+		} catch (TempFileCreationException e) {
+			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+		}
         return status;
 	}
 
@@ -893,9 +896,12 @@ public class DB2DataWriter extends Node {
 			}
 			try {
 				if (dataFile == null) {
-					dataFile = File.createTempFile("data", ".tmp");
-				}		
-				dataFile.delete();
+					dataFile = getGraph().getAuthorityProxy().newTempFile("data", ".tmp", -1);
+				}
+				/*
+				 * why?!
+				 */
+				//dataFile.delete();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Can't create temporary data file", e);
 			}			
@@ -1513,7 +1519,11 @@ public class DB2DataWriter extends Node {
 			}
 		}
 		if (batchFile == null) {
-			batchFile = File.createTempFile("tmp", ".bat", new File("."));
+			try {
+				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
+			} catch (TempFileCreationException e) {
+				throw new IOException(e);
+			}
 		}		
 		// TODO Labels:
 		//Writer batchWriter = new OutputStreamWriter(new FileOutputStream(batchFile), Charset.forName(FILE_ENCODING));

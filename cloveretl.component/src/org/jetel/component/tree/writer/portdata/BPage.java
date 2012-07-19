@@ -31,7 +31,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.jetel.component.tree.writer.portdata.btree;
+package org.jetel.component.tree.writer.portdata;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,8 +39,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-
-import org.jetel.util.MemoryUtils;
 
 import jdbm.Serializer;
 import jdbm.SerializerInput;
@@ -53,6 +51,8 @@ import jdbm.helper.OpenByteArrayOutputStream;
 import jdbm.helper.Serialization;
 import jdbm.helper.Tuple;
 import jdbm.helper.TupleBrowser;
+
+import org.jetel.util.MemoryUtils;
 /**
  * Page of a B+Tree with ability to measure its own memory footprint. Based on JDBM BPage.
  * 

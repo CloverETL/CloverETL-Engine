@@ -23,7 +23,6 @@ import java.nio.BufferOverflowException;
 import java.util.List;
 import java.util.Set;
 
-import jdbm.btree.BTree;
 import jdbm.helper.Tuple;
 import jdbm.helper.TupleBrowser;
 
@@ -42,8 +41,8 @@ class ExternalSimplePortData extends ExternalPortData {
 
 	private BTree<byte[], byte[]> tree;
 
-	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
-		super(inPort, keys, tempDirectory);
+	public ExternalSimplePortData(InputPort inPort, Set<List<String>> keys) {
+		super(inPort, keys);
 	}
 
 	@Override

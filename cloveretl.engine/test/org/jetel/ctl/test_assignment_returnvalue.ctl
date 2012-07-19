@@ -19,6 +19,12 @@ firstMultivalueOutput testReturnValue11;
 string[] testReturnValue12;
 string[] testReturnValue13;
 map[string, integer] integerMap1;
+map[integer, firstMultivalueOutput] function_call_original_map;
+map[integer, firstMultivalueOutput] function_call_copied_map;
+firstMultivalueOutput function_call_map_newrecord;
+firstMultivalueOutput[] function_call_original_list;
+firstMultivalueOutput[] function_call_copied_list;
+firstMultivalueOutput function_call_list_newrecord;
 
 
 // stupid implementation - poor performance
@@ -58,6 +64,18 @@ function integer transform() {
 	recordMap1[0] = tmpReturnValueRecord1;
 	recordMap1[0].stringField = "unmodified";
 	(recordMap1[1] = recordMap1[0]).modifyRecord(); 
+	
+	// array access expression - function call
+	function_call_original_map[1] = tmpReturnValueRecord1;
+	function_call_original_map[1].stringField = "unmodified";
+	function_call_map_newrecord = tmpReturnValueRecord1;
+	function_call_map_newrecord.stringField = "unmodified";
+	(copy(function_call_copied_map, function_call_original_map)[2] = function_call_map_newrecord).modifyRecord();
+	function_call_original_list[1] = tmpReturnValueRecord1;
+	function_call_original_list[1].stringField = "unmodified";
+	function_call_list_newrecord = tmpReturnValueRecord1;
+	function_call_list_newrecord.stringField = "unmodified";
+	(copy(function_call_copied_list, function_call_original_list)[2] = function_call_list_newrecord).modifyRecord();
 	
 	// field access expression - check conversion of CloverString and Decimal
 	stringFieldValue = ($out.firstOutput.Name = "aa");

@@ -693,6 +693,60 @@ public class StringUtilsTest extends CloverTestCase {
 		assertFalse(StringUtils.equalsWithNulls("abcdefghtjki", "cba"));
 	}
 	
+	public void testBytesToHexString() {
+		assertNull(StringUtils.bytesToHexString(null));
+		
+		assertEquals("", StringUtils.bytesToHexString(new byte[0]));
+		
+		byte[] bytes = new byte[1];
+		assertEquals("00", StringUtils.bytesToHexString(bytes));
+
+		bytes[0] = 1;
+		assertEquals("01", StringUtils.bytesToHexString(bytes));
+
+		bytes[0] = 10;
+		assertEquals("0a", StringUtils.bytesToHexString(bytes));
+
+		bytes[0] = 15;
+		assertEquals("0f", StringUtils.bytesToHexString(bytes));
+
+		bytes[0] = 16;
+		assertEquals("10", StringUtils.bytesToHexString(bytes));
+
+		bytes[0] = 127;
+		assertEquals("7f", StringUtils.bytesToHexString(bytes));
+
+		bytes = new byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65};
+		assertEquals("010a0f107f81003f4041", StringUtils.bytesToHexString(bytes));
+	}
+
+	public void testHexStringToBytes() {
+		assertNull(StringUtils.hexStringToBytes(null));
+		
+		assertTrue(Arrays.equals(new byte[0], StringUtils.hexStringToBytes("")));
+		
+		byte[] bytes = new byte[1];
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("00")));
+
+		bytes[0] = 1;
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("01")));
+
+		bytes[0] = 10;
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("0a")));
+
+		bytes[0] = 15;
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("0F")));
+
+		bytes[0] = 16;
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("10")));
+
+		bytes[0] = 127;
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("7F")));
+
+		bytes = new byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65};
+		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("010A0F107f81003F4041")));
+	}
+
 }
 
 /*

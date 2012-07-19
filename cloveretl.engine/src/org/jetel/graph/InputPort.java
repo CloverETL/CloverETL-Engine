@@ -149,6 +149,11 @@ public interface InputPort {
 	 */
 	public int getUsedMemory();
 	
+	/**
+	 * @return associated edge with this input port
+	 */
+	public Edge getEdge();
+	
 }
 /*
  *  end interface InputPort

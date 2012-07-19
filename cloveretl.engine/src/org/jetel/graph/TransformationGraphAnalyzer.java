@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.graph;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,11 +42,11 @@ import org.jetel.exception.GraphConfigurationException;
  */
 /**
  * A class that analyzes relations between Nodes and Edges of the Transformation Graph
- *
- * @author      D.Pavlis
- * @since       April 2, 2002
- * @revision    $Revision$
- * @see         OtherClasses
+ * 
+ * @author D.Pavlis
+ * @since April 2, 2002
+ * @revision $Revision$
+ * @see OtherClasses
  */
 
 public class TransformationGraphAnalyzer {
@@ -55,14 +56,15 @@ public class TransformationGraphAnalyzer {
 	static PrintStream log = System.out;// default info messages to stdout
 
 	/**
-	 *  Returns list (precisely array) of all Nodes. The order of Nodes listed is such that
-	 *  any parent Node is guaranteed to be listed befor child Node.
-	 *  The circular references between nodes should be detected.
-	 *
-	 * @param  nodes                            Description of the Parameter
-	 * @return                                  Description of the Returned Value
-	 * @exception  GraphConfigurationException  Description of the Exception
-	 * @since                                   July 29, 2002
+	 * Returns list (precisely array) of all Nodes. The order of Nodes listed is such that any parent Node is guaranteed
+	 * to be listed befor child Node. The circular references between nodes should be detected.
+	 * 
+	 * @param nodes
+	 *            Description of the Parameter
+	 * @return Description of the Returned Value
+	 * @exception GraphConfigurationException
+	 *                Description of the Exception
+	 * @since July 29, 2002
 	 */
 	public static List<Node> analyzeGraphTopology(List<Node> nodes) throws GraphConfigurationException {
 		Set<Node> set1 = new HashSet<Node>();
@@ -72,7 +74,7 @@ public class TransformationGraphAnalyzer {
 		Stack<AnalyzedNode> nodesStack = new Stack<AnalyzedNode>();
 		List<Node> rootNodes;
 		Node node;
-		Iterator iterator;
+		Iterator<Node> iterator;
 
 		// initial populating of set1 - with root Nodes only
 		iterator = nodes.iterator();
@@ -84,8 +86,7 @@ public class TransformationGraphAnalyzer {
 		}
 
 		if (set1.isEmpty()) {
-			logger.error("No root Nodes detected! There must be at least one root node defined." +
-					" (Root node is node with output ports defined only.)");
+			logger.error("No root Nodes detected! There must be at least one root node defined." + " (Root node is node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
 
@@ -125,30 +126,28 @@ public class TransformationGraphAnalyzer {
 		return Arrays.asList(enumerationOfNodes.toArray(new Node[enumerationOfNodes.size()]));
 	}
 
-	
 	/**
-	 * Method which analyzes the need of forcing buffered edge in case
-	 * when one component feeds through multiple output ports other components
-	 * and dead-lock could occure. See inspectMultipleFeeds() method.
+	 * Method which analyzes the need of forcing buffered edge in case when one component feeds through multiple output
+	 * ports other components and dead-lock could occure. See inspectMultipleFeeds() method.
 	 * 
 	 * @param nodes
 	 */
-	public static void analyzeMultipleFeeds(List nodes){
-		Stack nodesStack = new Stack();
-		List nodesToAnalyze = new LinkedList();
+	public static void analyzeMultipleFeeds(List<Node> nodes) {
+		Stack<AnalyzedNode> nodesStack = new Stack<AnalyzedNode>();
+		List<Node> nodesToAnalyze = new LinkedList<Node>();
 		Node node;
-		Iterator iterator;
-		
+		Iterator<Node> iterator;
+
 		// set up initial list of nodes to analyze
 		// ontly those with 2 or more input ports need inspection
 		iterator = nodes.iterator();
 		while (iterator.hasNext()) {
 			node = (Node) iterator.next();
-			if (node.getInPorts().size()>1 ) {
+			if (node.getInPorts().size() > 1) {
 				nodesToAnalyze.add(node);
 			}
 		}
-		//	DETECTING buffering needs
+		// DETECTING buffering needs
 		iterator = nodesToAnalyze.iterator();
 		while (iterator.hasNext()) {
 			nodesStack.clear();
@@ -156,19 +155,20 @@ public class TransformationGraphAnalyzer {
 			inspectMultipleFeeds(nodesStack);
 		}
 	}
-	
+
 	/**
-	 *  Tests whether there is no loop/cycle in path from root node to leaf node
-	 *  This test must be run for each root note to ensure that the whole graph is free of cycles
-	 *  It assumes that the IDs of individual nodes are unique -> it is constraint imposed by design
-	 *
-	 * @param  nodesStack  Stack with one elemen - root node from which to start analyzing
-	 * @return             true if path has no loops, otherwise false
+	 * Tests whether there is no loop/cycle in path from root node to leaf node This test must be run for each root note
+	 * to ensure that the whole graph is free of cycles It assumes that the IDs of individual nodes are unique -> it is
+	 * constraint imposed by design
+	 * 
+	 * @param nodesStack
+	 *            Stack with one elemen - root node from which to start analyzing
+	 * @return true if path has no loops, otherwise false
 	 */
-	private static boolean inspectCircularReference(Stack nodesStack) {
+	private static boolean inspectCircularReference(Stack<AnalyzedNode> nodesStack) {
 		OutputPort port;
 		Node nextNode;
-		Set nodesEncountered = new HashSet();
+		Set<String> nodesEncountered = new HashSet<String>();
 		while (!nodesStack.empty()) {
 			port = ((AnalyzedNode) nodesStack.peek()).getNextOutPort();
 			if (port == null) {
@@ -177,7 +177,7 @@ public class TransformationGraphAnalyzer {
 				nodesEncountered.remove(((AnalyzedNode) nodesStack.pop()).getNode().getId());
 			} else {
 				nextNode = port.getReader();
-				//DEBUG ! System.out.println("-"+nextNode.getID());
+				// DEBUG ! System.out.println("-"+nextNode.getID());
 				if (nextNode != null) {
 					// have we seen this node before ? if yes, then it is a loop
 					if (!nodesEncountered.add(nextNode.getId())) {
@@ -193,19 +193,19 @@ public class TransformationGraphAnalyzer {
 
 	/**
 	 * Method which checks components which concentrate more than one input for potential deadlocks.<br>
-	 * If, for example, join component merges data from two flows which both originate at the same 
-	 * node (e.g. data reader) then deadlock situation can occure when the join waits for data reader to send next
-	 * record on one port and the reader waits for join to consume record on the other port.<br>
-	 * If such situation is found, all input ports (Edges) of join has to be buffered. 
+	 * If, for example, join component merges data from two flows which both originate at the same node (e.g. data
+	 * reader) then deadlock situation can occure when the join waits for data reader to send next record on one port
+	 * and the reader waits for join to consume record on the other port.<br>
+	 * If such situation is found, all input ports (Edges) of join has to be buffered.
 	 * 
 	 * @param nodesStack
 	 * @return
 	 */
-	private static void inspectMultipleFeeds(Stack nodesStack) {
+	private static void inspectMultipleFeeds(Stack<AnalyzedNode> nodesStack) {
 		InputPort port;
 		Node prevNode;
-		Set nodesEncountered = new HashSet();
-		Node startNode=((AnalyzedNode) nodesStack.peek()).getNode();
+		Set<String> nodesEncountered = new HashSet<String>();
+		Node startNode = ((AnalyzedNode) nodesStack.peek()).getNode();
 		while (!nodesStack.empty()) {
 			port = ((AnalyzedNode) nodesStack.peek()).getNextInPort();
 			if (port == null) {
@@ -218,15 +218,13 @@ public class TransformationGraphAnalyzer {
 					// have we seen this node before ? if yes, then we need to buffer start node (its
 					// input ports
 					if (!nodesEncountered.add(prevNode.getId())) {
-						for (int i=0;i<startNode.getInPorts().size();i++){
-							//TODO: potential problem if port is not backed by EDGE - this should not happen
-							Object edge=startNode.getInputPort(i);
-							//assert edge instanceof Edge : "Port not backed by Edge object !";
-							if(((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT || ((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
-								((Edge)edge).setEdgeType(EdgeTypeEnum.BUFFERED);
-								// DEBUG
-								//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
-								logger.debug(((Edge)edge).getId()+" edge has been set to TYPE_BUFFERED.");
+						for (int i = 0; i < startNode.getInPorts().size(); i++) {
+							// TODO: potential problem if port is not backed by EDGE - this should not happen
+							Edge edge = startNode.getInputPort(i).getEdge();
+							// assert edge instanceof Edge : "Port not backed by Edge object !";
+							if (edge.getEdgeType() == EdgeTypeEnum.DIRECT || edge.getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
+								edge.setEdgeType(EdgeTypeEnum.BUFFERED);
+								logger.debug(edge.getId() + " edge has been set to TYPE_BUFFERED.");
 							}
 						}
 					}
@@ -236,18 +234,21 @@ public class TransformationGraphAnalyzer {
 		}
 	}
 
-
 	/**
-	 *  Finds all the successors of Nodes from source Set
-	 *
-	 * @param  source                           Set of source Nodes
-	 * @param  destination                      Set of all immediate successors of Nodes from <source> set
-	 * @exception  GraphConfigurationException  Description of the Exception
-	 * @since                                   April 18, 2002
+	 * Finds all the successors of Nodes from source Set
+	 * 
+	 * @param source
+	 *            Set of source Nodes
+	 * @param destination
+	 *            Set of all immediate successors of Nodes from <source> set
+	 * @exception GraphConfigurationException
+	 *                Description of the Exception
+	 * @since April 18, 2002
 	 */
-	protected static void findNodesSuccessors(Set source, Set destination) throws GraphConfigurationException {
-		Iterator nodeIterator = source.iterator();
-		Iterator portIterator;
+	protected static void findNodesSuccessors(Set<Node> source, Set<Node> destination)
+			throws GraphConfigurationException {
+		Iterator<Node> nodeIterator = source.iterator();
+		Iterator<OutputPort> portIterator;
 		OutputPort outPort;
 		Node currentNode;
 		Node nextNode;
@@ -265,9 +266,7 @@ public class TransformationGraphAnalyzer {
 				nextNode = outPort.getReader();
 				if (nextNode != null) {
 					if (currentNode.getPhase().getPhaseNum() > nextNode.getPhase().getPhaseNum()) {
-						logger.error("Wrong phase order between components: " +
-								currentNode.getId() + " phase: " + currentNode.getPhase() + " and " +
-								nextNode.getId() + " phase: " + nextNode.getPhase());
+						logger.error("Wrong phase order between components: " + currentNode.getId() + " phase: " + currentNode.getPhase() + " and " + nextNode.getId() + " phase: " + nextNode.getPhase());
 						throw new GraphConfigurationException("Wrong phase order !");
 					}
 					destination.add(nextNode);
@@ -276,52 +275,54 @@ public class TransformationGraphAnalyzer {
 		}
 	}
 
-
 	/**
-	 *  This is only for reporting problems
-	 *
-	 * @param  iterator     Description of the Parameter
-	 * @param  problemNode  Description of the Parameter
+	 * This is only for reporting problems
+	 * 
+	 * @param iterator
+	 *            Description of the Parameter
+	 * @param problemNode
+	 *            Description of the Parameter
 	 */
-	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
-	    logger.debug("Dump of references between nodes:");
-	    logger.debug("Detected loop when encountered node " + problemNode.getId());
-	    logger.debug("Chain of references:");
-		StringBuffer buffer=new StringBuffer(64);
-	    while (iterator.hasNext()) {
+	protected static void dumpNodesReferences(Iterator<AnalyzedNode> iterator, Node problemNode) {
+		logger.debug("Dump of references between nodes:");
+		logger.debug("Detected loop when encountered node " + problemNode.getId());
+		logger.debug("Chain of references:");
+		StringBuffer buffer = new StringBuffer(64);
+		while (iterator.hasNext()) {
 			buffer.append(((AnalyzedNode) iterator.next()).getNode().getId());
 			buffer.append(" -> ");
 
 		}
 		buffer.append(problemNode.getId());
-        logger.debug(buffer.toString());
+		logger.debug(buffer.toString());
 	}
 
-
 	/**
-	 *  This method puts Nodes of the graph into appropriate Phase objects (Edges too).
-	 *  Phases are run one by one and when finished, all Nodes&Edges in phase are
-	 *  destroyed (memory is freed and resources reclaimed).<br>
-	 *  Then next phase is started.
-	 *
-	 * @param  nodes       Description of the Parameter
-	 * @param  edges       Description of the Parameter
-	 * @param  phases      Description of the Parameter
-	 * @throws GraphConfigurationException 
+	 * This method puts Nodes of the graph into appropriate Phase objects (Edges too). Phases are run one by one and
+	 * when finished, all Nodes&Edges in phase are destroyed (memory is freed and resources reclaimed).<br>
+	 * Then next phase is started.
+	 * 
+	 * @param nodes
+	 *            Description of the Parameter
+	 * @param edges
+	 *            Description of the Parameter
+	 * @param phases
+	 *            Description of the Parameter
+	 * @throws GraphConfigurationException
 	 */
-	public static void analyzeEdges(List edges) throws GraphConfigurationException {
+	public static void analyzeEdges(List<Edge> edges) throws GraphConfigurationException {
 		Phase readerPhase;
 		Phase writerPhase;
 		Edge edge;
 
 		// analyze edges (whether they need to be buffered and put them into proper phases
 		// edges connecting nodes from two different phases has to be put into both phases
-		for (Iterator iterator=edges.iterator();iterator.hasNext();) {
+		for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
 			edge = (Edge) iterator.next();
 			readerPhase = edge.getReader().getPhase();
-            writerPhase = edge.getWriter().getPhase();
-            writerPhase.addEdge(edge);
-			if (readerPhase != writerPhase ) {
+			writerPhase = edge.getWriter().getPhase();
+			writerPhase.addEdge(edge);
+			if (readerPhase != writerPhase) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
@@ -329,24 +330,23 @@ public class TransformationGraphAnalyzer {
 		}
 	}
 
-
 	/**
-	 *  Description of the Class
-	 *
-	 * @author      dpavlis
-	 * @since       12. ???nor 2004
-	 * @revision    $Revision$
+	 * Description of the Class
+	 * 
+	 * @author dpavlis
+	 * @since 12. ???nor 2004
+	 * @revision $Revision$
 	 */
 	private static class AnalyzedNode {
 		Node node;
 		int analyzedOutPort;
 		int analyzedInPort;
 
-
 		/**
-		 *Constructor for the AnalyzedNode object
-		 *
-		 * @param  node  Description of the Parameter
+		 * Constructor for the AnalyzedNode object
+		 * 
+		 * @param node
+		 *            Description of the Parameter
 		 */
 		AnalyzedNode(Node node) {
 			this.node = node;
@@ -354,11 +354,10 @@ public class TransformationGraphAnalyzer {
 			analyzedInPort = 0;
 		}
 
-
 		/**
-		 *  Gets the nextPort attribute of the AnalyzedNode object
-		 *
-		 * @return    The nextPort value
+		 * Gets the nextPort attribute of the AnalyzedNode object
+		 * 
+		 * @return The nextPort value
 		 */
 		OutputPort getNextOutPort() {
 			if (analyzedOutPort >= node.getOutPorts().size()) {
@@ -377,157 +376,166 @@ public class TransformationGraphAnalyzer {
 		}
 
 		/**
-		 *  Gets the node attribute of the AnalyzedNode object
-		 *
-		 * @return    The node value
+		 * Gets the node attribute of the AnalyzedNode object
+		 * 
+		 * @return The node value
 		 */
 		Node getNode() {
 			return node;
 		}
 	}
 
-    /**
-     * Apply disabled property of node to graph. Called in graph initial phase. 
-     * @throws GraphConfigurationException 
-     */
-    public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
-        Set<Node> nodesToRemove = new HashSet<Node>();
-        Phase[] phases = graph.getPhases();
-        
-        for (int i = 0; i < phases.length; i++) {
-            nodesToRemove.clear();
-            for (Node node : phases[i].getNodes().values()) {
-                if (node.getEnabled() == EnabledEnum.DISABLED) {
-                    nodesToRemove.add(node);
-                    disconnectAllEdges(node);
-                } else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
-                    nodesToRemove.add(node);
-                    final Edge inEdge = (Edge) node.getInputPort(node
-                            .getPassThroughInputPort());
-                    final Edge outEdge = (Edge) node.getOutputPort(node
-                            .getPassThroughOutputPort());
-                    if (inEdge == null || outEdge == null
-                    		//if the component has an output edge which is directly connected into its input port
-                    		//whole component is removed even with the edge
-                    		//this is not normally possible however see issue #4960
-                    		|| inEdge == outEdge) { 
-                        disconnectAllEdges(node);
-                        continue;
-                    }
-                    final Node sourceNode = inEdge.getWriter();
-                    final Node targetNode = outEdge.getReader();
-                    final int sourceIdx = inEdge.getOutputPortNumber();
-                    final int targetIdx = outEdge.getInputPortNumber();
-                    disconnectAllEdges(node);
-                    sourceNode.addOutputPort(sourceIdx, inEdge);
-                    targetNode.addInputPort(targetIdx, inEdge);
-                    try {
-                        node.getGraph().addEdge(inEdge);
-                    } catch (GraphConfigurationException e) {
-                        logger.error("Unexpected error: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            }
-            for(Node node : nodesToRemove) {
-            	phases[i].deleteNode(node);
-            }
-        }
-    }
-    
-    /**
-     * Disconnect all edges connected to the given node.
-     * @param node
-     * @throws GraphConfigurationException 
-     */
-    private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
-        for(Iterator it1 = node.getInPorts().iterator(); it1.hasNext();) {
-            final Edge edge = (Edge) it1.next();
-            Node writer = edge.getWriter();
-            if(writer != null) writer.removeOutputPort(edge);
-            node.getGraph().deleteEdge(edge);
-        }
+	/**
+	 * Apply disabled property of node to graph. Called in graph initial phase.
+	 * 
+	 * @throws GraphConfigurationException
+	 */
+	public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
+		Set<Node> nodesToRemove = new HashSet<Node>();
+		Phase[] phases = graph.getPhases();
 
-        for(Iterator it1 = node.getOutPorts().iterator(); it1.hasNext();) {
-            final Edge edge = (Edge) it1.next();
-            final Node reader = edge.getReader();
-            if(reader != null) reader.removeInputPort(edge);
-            node.getGraph().deleteEdge(edge);
-        }
-    }
+		for (int i = 0; i < phases.length; i++) {
+			nodesToRemove.clear();
+			for (Node node : phases[i].getNodes().values()) {
+				if (node.getEnabled() == EnabledEnum.DISABLED) {
+					nodesToRemove.add(node);
+					disconnectAllEdges(node);
+				} else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+					nodesToRemove.add(node);
+					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
+					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());
+					if (inputPort == null || outputPort == null
+					// if the component has an output edge which is directly connected into its input port
+					// whole component is removed even with the edge
+					// this is not normally possible however see issue #4960
+					|| inputPort.getEdge() == outputPort.getEdge()) {
+						disconnectAllEdges(node);
+						continue;
+					}
+					final Edge inEdge = inputPort.getEdge();
+					final Edge outEdge = outputPort.getEdge();
+					final Node sourceNode = inEdge.getWriter();
+					final Node targetNode = outEdge.getReader();
+					final int sourceIdx = inEdge.getOutputPortNumber();
+					final int targetIdx = outEdge.getInputPortNumber();
+					disconnectAllEdges(node);
+					sourceNode.addOutputPort(sourceIdx, inEdge);
+					targetNode.addInputPort(targetIdx, inEdge);
+					try {
+						node.getGraph().addEdge(inEdge);
+					} catch (GraphConfigurationException e) {
+						logger.error("Unexpected error: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}
+			for (Node node : nodesToRemove) {
+				phases[i].deleteNode(node);
+			}
+		}
+	}
 
-    
-    /**
-     * @param node
-     * @param reflectedNodes reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of nodes
-     * @return list of all precedent nodes for given node
-     */
-    private static List<Node> findPrecedentNodes(Node node, Collection<Node> reflectedNodes) {
-    	List<Node> result = new ArrayList<Node>();
-    	
-    	for (InputPort inputPort : node.getInPorts()) {
-    		final Node writer = inputPort.getWriter();
-    		if (reflectedNodes.contains(writer)) {
-        		result.add(writer);
-    		}
-    	}
-    	
-    	return result;
-    }
+	/**
+	 * Disconnect all edges connected to the given node.
+	 * 
+	 * @param node
+	 * @throws GraphConfigurationException
+	 */
+	private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
+		for (Iterator<InputPort> it1 = node.getInPorts().iterator(); it1.hasNext();) {
+			final Edge edge = it1.next().getEdge();
+			Node writer = edge.getWriter();
+			if (writer != null)
+				writer.removeOutputPort(edge);
+			node.getGraph().deleteEdge(edge);
+		}
 
-    /**
-     * @param node
-     * @param reflectedNodes reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of nodes
-     * @return list of all successive nodes for given node
-     */
-    private static List<Node> findSuccessiveNodes(Node node, Collection<Node> reflectedNodes) {
-    	List<Node> result = new ArrayList<Node>();
-    	
-    	for (OutputPort outputPort : node.getOutPorts()) {
-    		final Node reader = outputPort.getReader();
-    		if (reflectedNodes.contains(reader)) {
-        		result.add(reader);
-    		}
-    	}
-    	
-    	return result;
-    }
+		for (Iterator<OutputPort> it1 = node.getOutPorts().iterator(); it1.hasNext();) {
+			final Edge edge = it1.next().getEdge();
+			final Node reader = edge.getReader();
+			if (reader != null)
+				reader.removeInputPort(edge);
+			node.getGraph().deleteEdge(edge);
+		}
+	}
 
-    /**
-     * Components topological sorting based on depth-first search. This algorithm is used mainly for user friendly nodes visualization.
-     * @param givenNodes
-     * @return
-     * @note algorithm is described for example at http://en.wikipedia.org/wiki/Topological_sorting
-     */
-    public static List<Node> nodesTopologicalSorting(List<Node> givenNodes) {
-    	List<Node> result = new ArrayList<Node>();
-    	List<Node> roots = new ArrayList<Node>();
-    	
-    	//find root nodes - nodes without precedent nodes in the given list of nodes
-    	for (Node givenNode : givenNodes) {
-    		if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
-    			roots.add(givenNode);
-    		}
-    	}
-    	
-    	//topological sorting
-    	Stack<Node> nodesToProcess = new Stack<Node>();
-    	nodesToProcess.addAll(roots);
-    	List<Node> visited = new ArrayList<Node>();
-    	while (!nodesToProcess.isEmpty()) {
-    		Node nodeToProcess = nodesToProcess.pop();
-    		if (!visited.contains(nodeToProcess)) {
-    			visited.add(nodeToProcess);
-    			nodesToProcess.addAll(findSuccessiveNodes(nodeToProcess, givenNodes));
-    			result.add(nodeToProcess);
-    		}
-    	}
-    	
-    	return result;
-    }
-    
+	/**
+	 * @param node
+	 * @param reflectedNodes
+	 *            reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of
+	 *            nodes
+	 * @return list of all precedent nodes for given node
+	 */
+	private static List<Node> findPrecedentNodes(Node node, Collection<Node> reflectedNodes) {
+		List<Node> result = new ArrayList<Node>();
+
+		for (InputPort inputPort : node.getInPorts()) {
+			final Node writer = inputPort.getWriter();
+			if (reflectedNodes.contains(writer)) {
+				result.add(writer);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * @param node
+	 * @param reflectedNodes
+	 *            reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of
+	 *            nodes
+	 * @return list of all successive nodes for given node
+	 */
+	private static List<Node> findSuccessiveNodes(Node node, Collection<Node> reflectedNodes) {
+		List<Node> result = new ArrayList<Node>();
+
+		for (OutputPort outputPort : node.getOutPorts()) {
+			final Node reader = outputPort.getReader();
+			if (reflectedNodes.contains(reader)) {
+				result.add(reader);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Components topological sorting based on depth-first search. This algorithm is used mainly for user friendly nodes
+	 * visualization.
+	 * 
+	 * @param givenNodes
+	 * @return
+	 * @note algorithm is described for example at http://en.wikipedia.org/wiki/Topological_sorting
+	 */
+	public static List<Node> nodesTopologicalSorting(List<Node> givenNodes) {
+		List<Node> result = new ArrayList<Node>();
+		List<Node> roots = new ArrayList<Node>();
+
+		// find root nodes - nodes without precedent nodes in the given list of nodes
+		for (Node givenNode : givenNodes) {
+			if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
+				roots.add(givenNode);
+			}
+		}
+
+		// topological sorting
+		Stack<Node> nodesToProcess = new Stack<Node>();
+		nodesToProcess.addAll(roots);
+		List<Node> visited = new ArrayList<Node>();
+		while (!nodesToProcess.isEmpty()) {
+			Node nodeToProcess = nodesToProcess.pop();
+			if (!visited.contains(nodeToProcess)) {
+				visited.add(nodeToProcess);
+				nodesToProcess.addAll(findSuccessiveNodes(nodeToProcess, givenNodes));
+				result.add(nodeToProcess);
+			}
+		}
+
+		return result;
+	}
+
 }
 /*
- *  end class TransformationGraphAnalyzer
+ * end class TransformationGraphAnalyzer
  */
 

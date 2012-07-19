@@ -18,104 +18,116 @@
  */
 package org.jetel.component;
 
+import java.io.IOException;
+
 import org.jetel.data.Defaults;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- *  <h3>Simple Gather Component</h3>
- *
+ * <h3>Simple Gather Component</h3>
+ * 
  * <!-- All records from all input ports are gathered and copied onto output port [0] -->
- *
+ * 
  * <table border="1">
- *  <th>Component:</th>
- * <tr><td><h4><i>Name:</i></h4></td>
- * <td>Simple Gather</td></tr>
- * <tr><td><h4><i>Category:</i></h4></td>
- * <td></td></tr>
- * <tr><td><h4><i>Description:</i></h4></td>
+ * <th>Component:</th>
+ * <tr>
+ * <td>
+ * <h4><i>Name:</i></h4></td>
+ * <td>Simple Gather</td>
+ * </tr>
+ * <tr>
+ * <td>
+ * <h4><i>Category:</i></h4></td>
+ * <td></td>
+ * </tr>
+ * <tr>
+ * <td>
+ * <h4><i>Description:</i></h4></td>
  * <td>All records from all input ports are gathered and copied onto output port [0].<br>
- *  It goes port by port (waiting/blocked) if there is currently no data on port.<br>
- *  Implements inverse RoundRobin.<br>
- * </td></tr>
- * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>At least one connected output port.</td></tr>
- * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0]- output records (gathered)</td></tr>
- * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td></tr>
+ * It goes port by port (waiting/blocked) if there is currently no data on port.<br>
+ * Implements inverse RoundRobin.<br>
+ * </td>
+ * </tr>
+ * <tr>
+ * <td>
+ * <h4><i>Inputs:</i></h4></td>
+ * <td>At least one connected output port.</td>
+ * </tr>
+ * <tr>
+ * <td>
+ * <h4><i>Outputs:</i></h4></td>
+ * <td>[0]- output records (gathered)</td>
+ * </tr>
+ * <tr>
+ * <td>
+ * <h4><i>Comment:</i></h4></td>
+ * <td></td>
+ * </tr>
  * </table>
- *  <br>
- *  <table border="1">
- *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"SIMPLE_GATHER"</td></tr>
- *  <tr><td><b>id</b></td>
- *  <td>component identification</td>
- *  </tr>
- *  </table>
- *
- * @author      dpavlis
- * @since       April 4, 2002
- * @revision    $Revision$
+ * <br>
+ * <table border="1">
+ * <th>XML attributes:</th>
+ * <tr>
+ * <td><b>type</b></td>
+ * <td>"SIMPLE_GATHER"</td>
+ * </tr>
+ * <tr>
+ * <td><b>id</b></td>
+ * <td>component identification</td>
+ * </tr>
+ * </table>
+ * 
+ * @author dpavlis
+ * @since April 4, 2002
+ * @revision $Revision$
  */
 public class SimpleGather extends Node {
 
-	/**  Description of the Field */
+	/** Description of the Field */
 	public final static String COMPONENT_TYPE = "SIMPLE_GATHER";
 
-	private final static int WRITE_TO_PORT = 0;
-
-	/*
-	 * how many empty loops till thead wait() is called
+	/**
+	 * how many empty loops till thread wait() is called
 	 */
 	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 29;
-	
-	/*	 how many millis to wait if we reached the specified number of empty loops (when no data
-	 * has been read).
-	 */
-	private final static int EMPTY_LOOPS_WAIT = 10 ;  
 
 	/**
-	 *Constructor for the SimpleGather object
-	 *
-	 * @param  id  Description of the Parameter
+	 * how many millis to wait if we reached the specified number of empty loops (when no data has been read).
 	 */
-	public SimpleGather(String id) {
-		super(id);
+	private final static int EMPTY_LOOPS_WAIT = 10;
+
+	public SimpleGather(String id, TransformationGraph graph) {
+		super(id, graph);
 	}
 
 	@Override
 	public Result execute() throws Exception {
-		OutputPortDirect outPort = (OutputPortDirect) getOutputPort(WRITE_TO_PORT);
 		InputPortDirect inPort;
 		/*
-		 *  we need to keep track of all input ports - it they contain data or
-		 *  signalized that they are empty.
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
 		 */
 		int numActive;
-		int emptyLoopCounter=0;
+		int emptyLoopCounter = 0;
 		/*
-		 *  we need to keep track of all input ports - it they contain data or
-		 *  signalized that they are empty.
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
 		 */
 		int readFromPort;
 		boolean[] isEOF = new boolean[getInPorts().size()];
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
-		InputPortDirect inputPorts[]= (InputPortDirect[])getInPorts().toArray(new InputPortDirect[0]);
+		InputPortDirect inputPorts[] = (InputPortDirect[]) getInPorts().toArray(new InputPortDirect[0]);
 		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
@@ -128,7 +140,7 @@ public class SimpleGather extends Node {
 				forceReading = false;
 				emptyLoopCounter = 0;
 				if (inPort.readRecordDirect(recordBuffer)) {
-					outPort.writeRecordDirect(recordBuffer);
+					writeRecordToOutputPorts(recordBuffer);
 					lastReadPort = readFromPort;
 				} else {
 					isEOF[readFromPort] = true;
@@ -138,114 +150,62 @@ public class SimpleGather extends Node {
 			} else {
 				readFromPort = (++readFromPort) % (inputPorts.length);
 				inPort = inputPorts[readFromPort];
-				
+
 				if (lastReadPort == readFromPort) {
 					forceReading = true;
 				}
 				// have we reached the maximum empty loops count ?
 				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
-					Thread.sleep(EMPTY_LOOPS_WAIT);
+					Thread.sleep(getSleepTime());
 				} else {
 					emptyLoopCounter++;
 				}
 			}
 		}
-		
+
 		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
-	 */
-	@Override
-	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-		
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException(getId() + " at least one input port has to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException(getId() + " at least one output port has to be defined!");
-		}
+	protected void writeRecordToOutputPorts(CloverBuffer recordBuffer) throws IOException, InterruptedException {
+		writeRecordBroadcastDirect(recordBuffer);
 	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
+	
+	protected long getSleepTime() {
+		return EMPTY_LOOPS_WAIT;
 	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of Parameter
-	 * @return          Description of the Returned Value
-	 * @since           May 21, 2002
-	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			return new SimpleGather(xattribs.getString(XML_ID_ATTRIBUTE));
+			return new SimpleGather(xattribs.getString(XML_ID_ATTRIBUTE), graph);
 		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 	}
 
-
-	/**  Description of the Method */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-    		super.checkConfig(status);
-   		 
-    		if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
-    				|| !checkOutputPorts(status, 1, 1)) {
-    			return status;
-    		}
-    		
-            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
-
-            try {
-                init();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            } finally {
-            	free();
-            }
-            
-            return status;
-       }
-	
+	/** Description of the Method */
 	@Override
-	public String getType(){
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+
+		if (!checkInputPorts(status, 1, Integer.MAX_VALUE) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
+
+		checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+
+		return status;
+	}
+
+	@Override
+	public String getType() {
 		return COMPONENT_TYPE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
 	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		// no implementation needed
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new BasicComponentTokenTracker(this);
 	}
-	
 }
-

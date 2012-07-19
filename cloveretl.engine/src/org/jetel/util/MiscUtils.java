@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.DateFormat;
@@ -27,8 +28,12 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 public final class MiscUtils {
@@ -134,10 +139,14 @@ public final class MiscUtils {
 	 * @return stack trace of the given throwable as a string
 	 */
 	public static String stackTraceToString(Throwable throwable) {
-		StringWriter stringWriter = new StringWriter();
-		throwable.printStackTrace(new PrintWriter(stringWriter));
-
-		return stringWriter.toString();
+		if (throwable == null) {
+			return null;
+		} else {
+			StringWriter stringWriter = new StringWriter();
+			throwable.printStackTrace(new PrintWriter(stringWriter));
+	
+			return stringWriter.toString();
+		}
 	}
 
 	/**
@@ -151,5 +160,80 @@ public final class MiscUtils {
     public static boolean equals(Object o1, Object o2) {
         return o1 == null ? o2 == null : o1.equals(o2);
     }
+
+    /**
+     * Extract message from the given exception chain. All messages from all exceptions are concatenated
+     * to the resulted string.
+     * @param message prefixed message text which will be in the start of resulted string
+     * @param exception converted exception
+     * @return resulted overall message
+     */
+    public static String exceptionChainToMessage(String message, Throwable exception) {
+    	StringBuffer result = new StringBuffer();
+    	if (message != null) {
+    		result.append(message);
+    	}
+    	if (exception == null) {
+    		return result.toString();
+    	}
+    	Throwable exceptionIterator = exception;
+    	String lastMessage = "";
+    	while (true) {
+    		if (!StringUtils.isEmpty(exceptionIterator.getMessage())
+    				&& !lastMessage.equals(exceptionIterator.getMessage())) {
+    			lastMessage = exceptionIterator.getMessage();
+	    		if (!StringUtils.isEmpty(result)) {
+	    			result.append("\nCaused by: ");
+	    		}
+	    		result.append(lastMessage);
+    		}
+
+    		if (exceptionIterator.getCause() == null || exceptionIterator.getCause() == exceptionIterator) {
+    			break;
+    		} else {
+    			exceptionIterator = exceptionIterator.getCause();
+    		}
+    	}
+    	return result.toString();
+    }
+    
+	/**
+	 * @return array of metadata derived from the given array of records
+	 */
+	public static DataRecordMetadata[] extractMetadata(DataRecord[] records) {
+		DataRecordMetadata[] result = new DataRecordMetadata[records.length];
+		
+		int i = 0;
+		for (DataRecord record : records) {
+			if (record != null) {
+				result[i] = record.getMetadata();
+			}
+			i++;
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Just send the given record to the given port.
+	 */
+	public static void sendRecordToPort(OutputPort outputPort, DataRecord record) throws InterruptedException {
+		try {
+			outputPort.writeRecord(record);
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
+	}
+
+	/**
+	 * Resets all given records.
+	 */
+	public static void resetRecords(DataRecord[] records) {
+		for (DataRecord record : records) {
+			if (record != null) {
+				record.reset();
+			}
+		}
+	}
 
 }

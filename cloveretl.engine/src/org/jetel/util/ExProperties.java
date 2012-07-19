@@ -242,12 +242,17 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 		return getValuesAsString(key, 0, -1);
 	}
 	
+
+	public String getValuesAsString(String key, int startIndex, int endIndex) {
+		return getValuesAsString(key, startIndex, endIndex, true);
+	}
+
 	/**
 	 * Returns values of a key in serialized (String) form
 	 * @param startIndex First value to serialize (till end)
 	 * @return
 	 */
-	public String getValuesAsString(String key, int startIndex, int endIndex) {
+	public String getValuesAsString(String key, int startIndex, int endIndex, boolean escape) {
 		StringBuilder sb = new StringBuilder();
 		ArrayList<String> values = getValues(key);
 		boolean atLeastSome = false;
@@ -262,7 +267,7 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 			if (i > startIndex) {
 				sb.append("|");
 			}
-			sb.append(escape(values.get(i)));
+			sb.append(escape ? escape(values.get(i)) : values.get(i));
 		}
 		return atLeastSome ? sb.toString() : null;
 	}
@@ -272,7 +277,10 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 	}
 
 	static String deEscape(String s) {
-		return s == null ? null : s.replaceAll("\\\\\\|", "|");
+		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n");
 	}
 
+
+	
+	
 }

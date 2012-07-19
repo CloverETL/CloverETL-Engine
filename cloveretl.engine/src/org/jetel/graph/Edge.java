@@ -44,6 +44,7 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.PhaseConnectionEdge
  * @see        org.jetel.graph.InputPort
  * @see        org.jetel.graph.OutputPort
+ * @see EdgeFactory
  * @revision   $Revision$
  */
 public class Edge extends GraphElement implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
@@ -68,9 +69,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     
     private boolean eofSent;
     
-	private EdgeTypeEnum edgeType;
+	protected EdgeTypeEnum edgeType;
 
-	private EdgeBase edge;
+	protected EdgeBase edge;
 
 	/**
 	 *  Constructor for the EdgeStub object
@@ -541,6 +542,16 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		// TODO Auto-generated method stub
 		
 	}
+
+	/**
+	 * @see InputPort#getEdge()
+	 * @see OutputPort#getEdge()
+	 */
+	@Override
+	public Edge getEdge() {
+		return this;
+	}
+	
 }
 /*
  *  end class EdgeStub

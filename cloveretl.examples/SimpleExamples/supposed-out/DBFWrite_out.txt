@@ -1,0 +1,51 @@
+2,Robert,Nelson,250,28/12/1988,600,VP,2.0,USA,105900.0,Nelson, Robert
+4,Bruce,Young,233,28/12/1988,621,Eng,2.0,USA,97500.0,Young, Bruce
+5,Kim,Lambert,22,06/02/1989,130,Eng,2.0,USA,102750.0,Lambert, Kim
+8,Leslie,Johnson,410,05/04/1989,180,Mktg,3.0,USA,64635.0,Johnson, Leslie
+9,Phil,Forest,229,17/04/1989,622,Mngr,3.0,USA,75060.0,Forest, Phil
+1,Nancy,Davolio,5467,01/05/1992,,Sales Representative,2.0,USA,0.0,Davolio, Nancy
+11,K. J.,Weston,34,17/01/1990,130,SRep,4.0,USA,86292.9375,Weston, K. J.
+12,Terri,Lee,256,01/05/1990,000,Admin,4.0,USA,53793.0,Lee, Terri
+14,Stewart,Hall,227,04/06/1990,900,Finan,3.0,USA,69482.625,Hall, Stewart
+15,Katherine,Young,231,14/06/1990,623,Mngr,3.0,USA,67241.25,Young, Katherine
+20,Chris,Papadopoulos,887,01/01/1990,671,Mngr,3.0,USA,89655.0,Papadopoulos, Chris
+24,Pete,Fisher,888,12/09/1990,671,Eng,3.0,USA,81810.1875,Fisher, Pete
+28,Ann,Bennet,5,01/02/1991,120,Admin,5.0,England,22935.0,Bennet, Ann
+29,Roger,De Souza,288,18/02/1991,623,Eng,3.0,USA,69482.625,De Souza, Roger
+34,Janet,Baldwin,2,21/03/1991,110,Sales,3.0,USA,61637.8125,Baldwin, Janet
+36,Roger,Reeves,6,25/04/1991,120,Sales,3.0,England,33620.625,Reeves, Roger
+37,Willie,Stansbury,7,25/04/1991,120,Eng,4.0,England,39224.0625,Stansbury, Willie
+44,Leslie,Phong,216,03/06/1991,623,Eng,4.0,USA,56034.375,Phong, Leslie
+45,Ashok,Ramanathan,209,01/08/1991,621,Eng,3.0,USA,80689.5,Ramanathan, Ashok
+46,Walter,Steadman,210,09/08/1991,900,CFO,1.0,USA,116100.0,Steadman, Walter
+52,Carol,Nordstrom,420,02/10/1991,180,PRel,4.0,USA,42742.5,Nordstrom, Carol
+61,Luke,Leung,3,18/02/1992,110,SRep,4.0,USA,68805.0,Leung, Luke
+65,Sue Anne,O'Brien,877,23/03/1992,670,Admin,5.0,USA,31275.0,O'Brien, Sue Anne
+71,Jennifer M.,Burbank,289,15/04/1992,622,Eng,3.0,USA,53167.5,Burbank, Jennifer M.
+72,Claudia,Sutherland,null,20/04/1992,140,SRep,4.0,Canada,100914.0,Sutherland, Claudia
+83,Dana,Bishop,290,01/06/1992,621,Eng,3.0,USA,62550.0,Bishop, Dana
+85,Mary S.,MacDonald,477,01/06/1992,100,VP,2.0,USA,111262.5,MacDonald, Mary S.
+94,Randy,Williams,892,08/08/1992,672,Mngr,4.0,USA,56295.0,Williams, Randy
+105,Oliver H.,Bender,255,08/10/1992,000,CEO,1.0,USA,212850.0,Bender, Oliver H.
+107,Kevin,Cook,894,01/02/1993,670,Dir,2.0,USA,111262.5,Cook, Kevin
+109,Kelly,Brown,202,04/02/1993,600,Admin,5.0,USA,27000.0,Brown, Kelly
+110,Yuki,Ichida,22,04/02/1993,115,Eng,3.0,Japan,6000000.0,Ichida, Yuki
+113,Mary,Page,845,12/04/1993,671,Eng,4.0,USA,48000.0,Page, Mary
+114,Bill,Parker,247,01/06/1993,623,Eng,5.0,USA,35000.0,Parker, Bill
+118,Takashi,Yamamoto,23,01/07/1993,115,SRep,4.0,Japan,7480000.0,Yamamoto, Takashi
+121,Roberto,Ferrari,1,12/07/1993,125,SRep,4.0,Italy,9.9E7,Ferrari, Roberto
+127,Michael,Yanowski,492,09/08/1993,100,SRep,4.0,USA,44000.0,Yanowski, Michael
+134,Jacques,Glon,null,23/08/1993,123,SRep,4.0,France,390500.0,Glon, Jacques
+136,Scott,Johnson,265,13/09/1993,623,Doc,3.0,USA,60000.0,Johnson, Scott
+138,T.J.,Green,218,01/11/1993,621,Eng,4.0,USA,36000.0,Green, T.J.
+141,Pierre,Osborne,null,03/01/1994,121,SRep,4.0,Switzerland,110000.0,Osborne, Pierre
+144,John,Montgomery,820,30/03/1994,672,Eng,5.0,USA,35000.0,Montgomery, John
+145,Mark,Guckenheimer,221,02/05/1994,622,Eng,5.0,USA,32000.0,Guckenheimer, Mark
+2,Andrew,Fuller,3457,14/08/1992,,Vice President,0.0,Sales,0.0,USA,0.0,Fuller, Andrew
+3,Janet,Leverling,3355,01/04/1992,,Sales Representative,2.0,USA,0.0,Leverling, Janet
+7,Robert,King,465,02/01/1994,,Sales Representative,5.0,UK,0.0,King, Robert
+0,Robert,King1,465,02/01/1994,,Sales Representative,5.0,UK,0.0,King1, Robert
+7,Robert,King2,465,02/01/1994,,Sales Representative,5.0,UK,0.0,King2, Robert
+8,Laura,Callahan,2344,05/03/1994,,Inside Sales Coordinator,2.0,USA,0.0,Callahan, Laura
+9,Anne,Dodsworth,452,15/11/1994,,Sales Representative,5.0,UK,0.0,Dodsworth, Anne
+73,Claudia,Sutherland,43268,20/04/1992,140,SRep,4.0,Canada,100914.0,Sutherland, Claudia

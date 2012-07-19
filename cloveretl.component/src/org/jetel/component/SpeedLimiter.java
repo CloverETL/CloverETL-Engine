@@ -27,6 +27,8 @@ import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -185,4 +187,10 @@ public class SpeedLimiter extends Node {
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
+	
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new BasicComponentTokenTracker(this);
+	}
+	
 }

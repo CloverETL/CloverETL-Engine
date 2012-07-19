@@ -25,7 +25,9 @@ import org.jetel.graph.Result;
 /**
  * Interface for the tracking information about a graph node. This interface should be used
  * by JMX clients.
-
+ * 
+ * Each change of this interface (rename, delete or add of an attribute) should be reflected in TrackingMetadataToolkit class.
+ * 
  * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
  *         (c) Javlin Consulting (www.javlin.cz)
  *
@@ -94,24 +96,24 @@ public interface NodeTracking extends Serializable {
 	/**
 	 * @return tracking of all input ports.
 	 */
-	PortTracking[] getInputPortTracking();
+	InputPortTracking[] getInputPortTracking();
 	
 	/**
 	 * @param portNumber
 	 * @return tracking of the specified input port, or <code>null</code> if the port is not found.
 	 */
-	PortTracking getInputPortTracking(int portNumber);
+	InputPortTracking getInputPortTracking(int portNumber);
 	
 	/**
 	 * @return tracking of all output ports.
 	 */
-	PortTracking[] getOutputPortTracking();
+	OutputPortTracking[] getOutputPortTracking();
 	
 	/**
 	 * @param portNumber
 	 * @return tracking of the specified output port, or <code>null</code> if the port is not found.
 	 */
-	PortTracking getOutputPortTracking(int portNumber);
+	OutputPortTracking getOutputPortTracking(int portNumber);
 	
 	/**
 	 * @return size of memory footprint in bytes for the node (not guaranteed)

@@ -18,15 +18,20 @@
  */
 package org.jetel.graph.runtime;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -37,12 +42,18 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.IGraphElement;
+import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.main.runGraph;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
@@ -54,6 +65,15 @@ import org.jetel.util.file.FileUtils;
  */
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
+	/**
+	 * Suffix of temp files created by standalone engine
+	 */
+	private static final String CLOVER_TMP_FILE_SUFFIX = ".clover.tmp";
+
+	public PrimitiveAuthorityProxy(){
+		super();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSharedSequence(org.jetel.data.sequence.Sequence)
@@ -71,79 +91,27 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public void freeSharedSequence(Sequence sequence) {
 		sequence.free();
 	}
-
-	/**
-	 * Implementation taken from original RunGraph component created by Juraj Vicenik.
-	 * 
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
-	 */
-	@Override
-	public RunResult executeGraph(long runId, String graphFileName, GraphRuntimeContext givenRuntimeContext, String logFile) {
-        RunResult rr = new RunResult();
-
-		InputStream in = null;		
-
-		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
-        } catch (IOException e) {
-        	rr.description = "Error - graph definition file can't be read: " + e.getMessage();
-        	rr.result = Result.ERROR;
-        	return rr;
-        }
-        
-        GraphRuntimeContext runtimeContext = prepareGraphContext(runId, givenRuntimeContext, logFile);
-        
-        TransformationGraph graph = null;
-		try {
-			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
-        } catch (XMLConfigurationException e) {
-        	rr.description = "Error in reading graph from XML !" + e.getMessage();
-        	rr.result = Result.ERROR;
-        	return rr;
-        } catch (GraphConfigurationException e) {
-        	rr.description = "Error - graph's configuration invalid !" + e.getMessage();
-        	rr.result = Result.ERROR;
-        	return rr;
-		} 
-
-        return executeGraphBase(rr, runtimeContext, graph);
-	}
-
-	/**
-	 * @param runId
-	 * @param givenRuntimeContext
-	 * @param logFile
-	 * @return
-	 */
-	private GraphRuntimeContext prepareGraphContext(long runId, GraphRuntimeContext givenRuntimeContext, String logFile) {
-		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-        runtimeContext.setRunId(getUniqueRunId(runId));
+	
+	private GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
+        GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+        runtimeContext.setRunId(runId);
         runtimeContext.setLogLevel(Level.ALL);
-        runtimeContext.setLogLocation(logFile);
-        if (logFile != null) {
+        if (runtimeContext.getLogLocation() != null) {
         	prepareLogger(runtimeContext);
         }
         runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
         runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
+        runtimeContext.setDictionaryContent(givenRuntimeContext.getDictionaryContent());
         
-
         // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
-		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
+		// after resolve issue CL-416 (https://bug.javlin.eu/browse/CL-416) next line should be removed
         runtimeContext.setDebugMode(false);
-		return runtimeContext;
+        
+        return runtimeContext;
 	}
 
-	/**
-	 * @param rr
-	 * @param runtimeContext
-	 * @param futureResult
-	 * @param graph
-	 * @return
-	 */
-	private RunResult executeGraphBase(RunResult rr, GraphRuntimeContext runtimeContext,
-			TransformationGraph graph) {
-		Future<Result> futureResult = null;
-		long startTime = System.currentTimeMillis();
+	private RunStatus executeGraphSync(RunStatus rr, TransformationGraph graph, GraphRuntimeContext runtimeContext, Long timeout) {
+		Future<Result> futureResult = null;                
         Result result = Result.N_A;
         try {
     		try {
@@ -151,47 +119,135 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     			futureResult = runGraph.executeGraph(graph, runtimeContext);
 
     		} catch (ComponentNotReadyException e) {
-    			rr.description = "Error during graph initialization: " + e.getMessage();           
-            	rr.result = Result.ERROR;
+            	rr.endTime = new Date(System.currentTimeMillis());
+            	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+    			rr.errMessage = "Error during graph initialization: " + e.getMessage();           
+            	rr.errException = MiscUtils.stackTraceToString(e);
+            	rr.status = Result.ERROR;
             	return rr;
             } catch (RuntimeException e) {
-            	rr.description = "Error during graph initialization: " +  e.getMessage();           
-            	rr.result = Result.ERROR;
+            	rr.endTime = new Date(System.currentTimeMillis());
+            	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+            	rr.errMessage = "Error during graph initialization: " +  e.getMessage();           
+            	rr.errException = MiscUtils.stackTraceToString(e);
+            	rr.status = Result.ERROR;
             	return rr;
             }
             
     		try {
-    			result = futureResult.get();
+    			if (timeout == null) {
+    				result = futureResult.get();
+    			} else {
+    				result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
+    			}
+    		} catch (TimeoutException e) {
+    			graph.getWatchDog().abort();
+    			
+            	rr.endTime = new Date(System.currentTimeMillis());
+            	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+    			rr.errMessage = "Timeout expired ! (" + timeout + " ms)";            
+            	rr.status = Result.ABORTED;
+            	return rr;
     		} catch (InterruptedException e) {
-    			rr.description = "Graph was unexpectedly interrupted !" + e.getMessage();            
-            	rr.result = Result.ERROR;
+            	rr.endTime = new Date(System.currentTimeMillis());
+            	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+    			rr.errMessage = "Graph was unexpectedly interrupted !" + e.getMessage();            
+            	rr.errException = MiscUtils.stackTraceToString(e);
+            	rr.status = Result.ERROR;
             	return rr;
     		} catch (ExecutionException e) {
-    			rr.description = "Error during graph processing !" + e.getMessage();            
-            	rr.result = Result.ERROR;
+            	rr.endTime = new Date(System.currentTimeMillis());
+            	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+    			rr.errMessage = "Error during graph processing !" + e.getMessage();            
+            	rr.errException = MiscUtils.stackTraceToString(e);
+            	rr.status = Result.ERROR;
             	return rr;
     		}
-    		rr.description = graph.getWatchDog().getErrorMessage();
+    		IGraphElement causeGraphElement = graph.getWatchDog().getCauseGraphElement();
+    		rr.endTime = new Date(System.currentTimeMillis());
+        	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+            rr.dictionaryOut = DictionaryValuesContainer.getInstance(graph.getDictionary());
+            rr.tracking = graph.getWatchDog().getCloverJmx().getGraphTracking();
+            rr.status = result;
+    		rr.errMessage = graph.getWatchDog().getErrorMessage();            
+        	rr.errException = MiscUtils.stackTraceToString(graph.getWatchDog().getCauseException());
+        	rr.errNode = causeGraphElement != null ? causeGraphElement.getId() : null;
+        	rr.errNodeType = (causeGraphElement instanceof Node) ? ((Node) causeGraphElement).getType() : null;
         } finally {
     		if (graph != null)
     			graph.free();
         }
 		
-        long totalTime = System.currentTimeMillis() - startTime;
-        rr.result = result;
-        rr.duration = totalTime;
-        
 		return rr;
+	}
+
+	/**
+	 * Implementation taken from original RunGraph component created by Juraj Vicenik.
+	 * 
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
+	 */
+	@Override
+	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) {
+		RunStatus rr = new RunStatus();
+        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
+        
+		InputStream in = null;		
+
+		long startTime = System.currentTimeMillis();
+		rr.startTime = new Date(startTime);
+		
+		try {
+            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
+        } catch (IOException e) {
+        	rr.endTime = new Date(System.currentTimeMillis());
+        	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+        	rr.errMessage = "Error - graph definition file can't be read: " + e.getMessage();
+        	rr.errException = MiscUtils.stackTraceToString(e);
+        	rr.status = Result.ERROR;
+        	return rr;
+        }
+		
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+        runtimeContext.setUseJMX(givenRuntimeContext.useJMX());
+        
+        TransformationGraph graph = null;
+		try {
+			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
+			rr.jobUrl = graphFileName;
+			rr.version = graph.getGuiVersion();
+        } catch (XMLConfigurationException e) {
+        	rr.endTime = new Date(System.currentTimeMillis());
+        	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+        	rr.errMessage = "Error in reading graph from XML !" + e.getMessage();
+        	rr.errException = MiscUtils.stackTraceToString(e);
+        	rr.status = Result.ERROR;
+        	return rr;
+        } catch (GraphConfigurationException e) {
+        	rr.endTime = new Date(System.currentTimeMillis());
+        	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
+        	rr.errMessage = "Error - graph's configuration invalid !" + e.getMessage();
+        	rr.errException = MiscUtils.stackTraceToString(e);
+        	rr.status = Result.ERROR;
+        	return rr;
+		} 
+
+		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
 	
 	@Override
-	public RunResult executeGraph(long runId, TransformationGraph graph, String launcherEntityName, GraphRuntimeContext givenRuntimeContext,
-			String logFile, boolean persistentRunRecord) {
-        GraphRuntimeContext runtimeContext = prepareGraphContext(runId, givenRuntimeContext, logFile);
-        RunResult rr = new RunResult();
-        return executeGraphBase(rr, runtimeContext, graph);
+	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout)
+			throws InterruptedException {
+		RunStatus rr = new RunStatus();
+        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
+        
+		long startTime = System.currentTimeMillis();
+		rr.startTime = new Date(startTime);
+
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+
+		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
-	
+
 	private static long getUniqueRunId(long parentRunId) {
 		Random random = new Random();
 		long runId = Math.abs((random.nextLong() % 999));
@@ -257,7 +313,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public void makeDirectories(long runId, String storageCode, String path) {
+	public boolean makeDirectories(String storageCode, String path, boolean makeParents) {
 		throw new UnsupportedOperationException("Sandbox directory may be created only in CloverETL Server environment!");
 	}
 
@@ -268,95 +324,154 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(long, java.lang.String, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public InputStream getSandboxResourceInput(long runId, String storageCode, String path) {
+	public InputStream getSandboxResourceInput(String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(long, java.lang.String, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public OutputStream getSandboxResourceOutput(long runId, String storageCode, String path) {
+	public OutputStream getSandboxResourceOutput(String storageCode, String path, boolean append) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceInput(long, java.lang.String, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
-	public InputStream[] getPartitionedSandboxResourceInput(long runId, String storageCode, String path) {
+	public InputStream[] getPartitionedSandboxResourceInput(String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceOutput(long, java.lang.String, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getPartitionedSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
-	public OutputStream[] getPartitionedSandboxResourceOutput(long runId, String storageCode, String path) {
+	public OutputStream[] getPartitionedSandboxResourceOutput(String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveOutputStreams(long)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterPartitionerOutputStreams(java.lang.String)
 	 */
 	@Override
-	public OutputStream[] getClusterPartitionerOutputStreams(long runId, String componentId) throws IOException {
+	public OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterPartitioner output streams are available only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSlaveInputStream(long)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterPartitionerInputStream(java.lang.String)
 	 */
 	@Override
-	public InputStream getClusterPartitionerInputStream(long runId, String componentId) throws IOException {
+	public InputStream getClusterPartitionerInputStream(String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterPartitioner input stream is available only in CloverETL Server environment!");
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherInputStreams(long, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherInputStreams(java.lang.String)
 	 */
 	@Override
-	public InputStream[] getClusterGatherInputStreams(long runId, String componentId) throws IOException {
+	public InputStream[] getClusterGatherInputStreams(String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterGather input streams are available only in CloverETL Server environment!");
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherOutputStream(long, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherOutputStream(java.lang.String)
 	 */
 	@Override
-	public OutputStream getClusterGatherOutputStream(long runId, String componentId) throws IOException {
+	public OutputStream getClusterGatherOutputStream(String componentId) throws IOException {
 		throw new UnsupportedOperationException("ClusterGather output stream is available only in CloverETL Server environment!");
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#isMaster(long)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#isPrimaryWorker()
 	 */
 	@Override
-	public boolean isPrimaryWorker(long runId) {
+	public boolean isPrimaryWorker() {
 		throw new UnsupportedOperationException("Primary worker does has sense only in CloverETL Server environment!");
 	}
 
 	@Override
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL,
+	public FileConstrains assignFilePortion(String componentId, String fileURL,
 			SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException {
 		return null;
 	}
 
 	@Override
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL,
+	public FileConstrains assignFilePortion(String componentId, String fileURL,
 			SeekableByteChannel channel, int recordLength) throws IOException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(long, java.lang.String, java.lang.String)
+	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public FileConstrains assignFilePortion(long runId, String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
+	public FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
 		return null;
 	}
 
+
+	@Override
+	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) {
+		throw new UnsupportedOperationException("Graph execution status is available only in CloverETL Server environment!");
+	}
+
+	@Override
+	public List<RunStatus> killGraph(long runId, boolean recursive) {
+		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
+	}
+
+	@Override
+	public List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive) {
+		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
+	}
+
+	@Override
+	public List<RunStatus> killChildrenGraphs(boolean recursive) {
+		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
+	}
+
+	@Override
+	public RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("This graph execution type is available only in CloverETL Server environment!");
+	}
+
+	@Override
+	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
+		
+		try {
+			return File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+		} catch (IOException e) {
+			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
+		}
+	}
+
+	@Override
+	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
+		
+		/*
+		 * TODO as soon as Java 1.7 will be required, use built-in facility.
+		 */
+		try {
+			File tmp = File.createTempFile(label, "");
+			if (!tmp.exists()) {
+				throw new IOException("Temporary file does no exist: " + tmp.getAbsolutePath());
+			}
+			if (!tmp.delete()) {
+				throw new IOException("Temporary directory could not be created.");
+			}
+			if (!tmp.mkdir()) {
+				throw new IOException("Temporary directory could not be created.");
+			}
+			return tmp;
+		} catch (IOException e) {
+			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
+		}
+	}
+	
 }

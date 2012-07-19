@@ -41,9 +41,9 @@ import org.jetel.component.tree.writer.model.design.MappingProperty;
 import org.jetel.component.tree.writer.model.design.TreeWriterMapping;
 import org.jetel.component.tree.writer.model.runtime.PortBinding;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping;
+import org.jetel.component.tree.writer.portdata.CacheRecordManager;
 import org.jetel.component.tree.writer.portdata.DataIterator;
 import org.jetel.component.tree.writer.portdata.PortData;
-import org.jetel.component.tree.writer.portdata.btree.CacheRecordManager;
 import org.jetel.component.tree.writer.util.AbstractMappingValidator;
 import org.jetel.component.tree.writer.util.MappingCompiler;
 import org.jetel.component.tree.writer.util.MappingError;
@@ -57,6 +57,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -84,7 +85,6 @@ public abstract class TreeWriter extends Node {
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
-	public static final String XML_TEMPORARY_DIR = "tmpDir";
 	public static final String XML_CACHE_SIZE = "cacheSize";
 	public static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	public static final String XML_SORTKEYS_ATTRIBUTE = "sortKeys";
@@ -113,9 +113,6 @@ public abstract class TreeWriter extends Node {
 			else {
 				// throw configuration exception
 				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
-			}
-			if (xattribs.exists(XML_TEMPORARY_DIR)) {
-				writer.setTmpDir(xattribs.getStringEx(XML_TEMPORARY_DIR, RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_CACHE_SIZE)) {
 				writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
@@ -160,7 +157,6 @@ public abstract class TreeWriter extends Node {
 
 	private String mappingString;
 	private String mappingURL;
-	private String tmpDir;
 	private File tempDirectory;
 	private long cacheSize = DEFAULT_CACHE_SIZE;
 
@@ -369,16 +365,7 @@ public abstract class TreeWriter extends Node {
 
 		boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
 
-		try {
-			tempDirectory = File.createTempFile("xmlCache", "", tmpDir != null ? new File(tmpDir) : null);
-			tempDirectory.delete();
-			tempDirectory.mkdir();
-			tempDirectory.deleteOnExit();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-
-		engineMapping = compiler.compile(inPorts, partition, tempDirectory.getAbsolutePath());
+		engineMapping = compiler.compile(inPorts, partition);
 
 		portDataMap = compiler.getPortDataMap();
 		for (PortData portData : portDataMap.values()) {
@@ -438,12 +425,12 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
-			File f = File.createTempFile("cache", "", tempDirectory);
-			String fileName = f.getAbsolutePath();
-			f.delete();
-
-			sharedCache = CacheRecordManager.createInstance(fileName, cacheSize);
+			File tmpDir = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
+			File file = new File(tmpDir, "jdbm-cache");
+			sharedCache = CacheRecordManager.createInstance(file.getAbsolutePath(), cacheSize);
 		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		} catch (TempFileCreationException e) {
 			throw new ComponentNotReadyException(e);
 		}
 
@@ -545,15 +532,6 @@ public abstract class TreeWriter extends Node {
 		try {
 			sharedCache.close();
 			writer.close();
-
-			// clear cache directory, but do not delete directory itself as it is to be reused in another run
-			if (tempDirectory.exists()) {
-				File[] files = tempDirectory.listFiles();
-				for (int i = 0; i < files.length; i++) {
-					files[i].deleteOnExit();
-					files[i].delete();
-				}
-			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
 		}
@@ -566,14 +544,6 @@ public abstract class TreeWriter extends Node {
 			for (PortData portData : portDataMap.values()) {
 				portData.free();
 			}
-		}
-		if (tempDirectory != null && tempDirectory.exists()) {
-			File[] files = tempDirectory.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				files[i].delete();
-			}
-			tempDirectory.deleteOnExit();
-			tempDirectory.delete();
 		}
 	}
 
@@ -591,10 +561,6 @@ public abstract class TreeWriter extends Node {
 
 	public void setMappingURL(String mappingURL) {
 		this.mappingURL = mappingURL;
-	}
-
-	public void setTmpDir(String tmpDir) {
-		this.tmpDir = tmpDir;
 	}
 
 	public void setCacheSize(long cacheSize) {

@@ -41,6 +41,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.TargetFile;
@@ -478,5 +480,10 @@ public class XSLDataTransformer extends Node {
 		return COMPONENT_TYPE;
 	}
     
+	@Override
+	protected ComponentTokenTracker createComponentTokenTracker() {
+		return new ReformatComponentTokenTracker(this);
+	}
+	
 }
 

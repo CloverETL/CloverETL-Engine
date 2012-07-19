@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.StringReader;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -92,4 +93,40 @@ public class XmlUtils {
     	return XMLChar.isValidName(name);
     }
     
+    /**
+	 * Expands a prefixed element or attribute name to a universal name.
+	 * I.e. the namespace prefix is replaced by augmented URI.
+	 * The URIs are taken from the namespaceBindings parameter.
+	 * 
+	 * @param prefixedName XML element or attribute name e.g. <code>mov:movies</code>
+	 * 
+	 * @return Universal XML name in the form: <code>{http://www.javlin.eu/movies}title</code>
+	 */
+	public static String createQualifiedName(String prefixedName, Map<String, String> namespaceBindings) {
+		if (prefixedName == null || prefixedName.isEmpty()) {
+			return prefixedName;
+		}
+		
+		// check if universal XML name exists
+		int indexOfOpenBracket = prefixedName.indexOf("{");
+		if (-1<indexOfOpenBracket && indexOfOpenBracket<prefixedName.indexOf("}")) {
+			return prefixedName;
+		}
+		
+		final String[] parsed = prefixedName.split(":");
+		
+		if (parsed.length < 2) {
+			return "{}" + parsed[0];
+		}
+		
+		/*
+		 * Prefixed element:
+		 * Get the URI (already in Clark's notation) and use it to create qualified name
+		 */
+		String namespaceURI = namespaceBindings.get(parsed[0]);
+		namespaceURI = namespaceURI == null ? "{}" : namespaceURI;
+		
+		
+		return namespaceURI + parsed[1];
+	}
 }

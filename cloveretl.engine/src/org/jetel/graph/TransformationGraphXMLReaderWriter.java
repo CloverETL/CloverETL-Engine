@@ -157,6 +157,10 @@ import org.xml.sax.SAXParseException;
  * @since    May 21, 2002
  */
 public class TransformationGraphXMLReaderWriter {
+	/**
+	 * 
+	 */
+	public static final String JOBFLOW_NATURE = "jobflow";
 	private final static String GRAPH_ELEMENT = "Graph";
 	//unused private final static String GLOBAL_ELEMENT = "Global";
 	private final static String NODE_ELEMENT = "Node";
@@ -187,6 +191,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LICENSE_TYPE_ATTRIBUTE = "licenseType";
 	public final static String LICENSE_CODE_ATTRIBUTE = "licenseCode";
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
+	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
 	
 	
@@ -305,81 +310,84 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since         May 21, 2002
 	 */
 	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
-		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
-	//	List<Phase> phases = new LinkedList<Phase>();
-	//	Map<String,Node> allNodes = new LinkedHashMap<String,Node>(ALLOCATE_MAP_SIZE);
-	//	Map<String,Edge> edges = new HashMap<String,Edge>(ALLOCATE_MAP_SIZE);
+		try {
+			Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
+			graph = null;
+			
+			// process document
+			NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+			String id = ((Element)graphElement.item(0)).getAttribute("id");
+	        //get graph id
+			graph = new TransformationGraph(id);
 
-		// delete all Nodes & Edges possibly held by TransformationGraph
-		//graph.free();
-		graph = null;
-		
-		// process document
-		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-		String id = ((Element)graphElement.item(0)).getAttribute("id");
-        //get graph id
-		graph = new TransformationGraph(id);
-		graph.setInitialRuntimeContext(runtimeContext);
-		graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
-		// get graph name
-		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
-		try{
-			graph.setName(grfAttributes.getString("name"));
-		}catch(AttributeNotFoundException ex){
-			throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
+			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
+			ContextProvider.registerGraph(graph);
+			
+			graph.setInitialRuntimeContext(runtimeContext);
+			graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
+			// get graph name
+			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
+			try{
+				graph.setName(grfAttributes.getString("name"));
+			}catch(AttributeNotFoundException ex){
+				throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
+			}
+	        
+	        grfAttributes.setResolveReferences(false);
+	        //get debug mode
+	        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
+	//        //get debug directory
+	//        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
+	        //get debugMaxRecords
+	        graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
+	        
+	        graph.setAuthor(grfAttributes.getString(AUTHOR_ATTRIBUTE, null));
+	        graph.setRevision(grfAttributes.getString(REVISION_ATTRIBUTE, null));
+	        graph.setCreated(grfAttributes.getString(CREATED_ATTRIBUTE, null));
+	        graph.setModified(grfAttributes.getString(MODIFIED_ATTRIBUTE, null));
+	        graph.setModifiedBy(grfAttributes.getString(MODIFIED_BY_ATTRIBUTE, null));
+	        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
+	        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
+	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
+	        graph.setJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
+	
+			// handle all defined Properties
+			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
+			instantiateProperties(PropertyElements);
+	
+			// handle dictionary
+			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
+			instantiateDictionary(dictionaryElements);
+			
+			// handle all defined DB connections
+			NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+			instantiateDBConnections(dbConnectionElements);
+	
+			// handle all defined DB connections
+			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+			instantiateSequences(sequenceElements);
+			
+			//create metadata
+			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+			instantiateMetadata(metadataElements, metadata);
+	
+			// register all metadata (DataRecordMetadata) within transformation graph
+			graph.addDataRecordMetadata(metadata);
+	
+			// handle all defined lookup tables
+			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+			instantiateLookupTables(lookupsElements);
+	
+			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
+			instantiatePhases(phaseElements);
+	
+			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
+			instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
+	
+	        return graph;
+		} finally {
+			ContextProvider.unregister();
 		}
-        
-        grfAttributes.setResolveReferences(false);
-        //get debug mode
-        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
-//        //get debug directory
-//        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
-        //get debugMaxRecords
-        graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
-        
-        graph.setAuthor(grfAttributes.getString(AUTHOR_ATTRIBUTE, null));
-        graph.setRevision(grfAttributes.getString(REVISION_ATTRIBUTE, null));
-        graph.setCreated(grfAttributes.getString(CREATED_ATTRIBUTE, null));
-        graph.setModified(grfAttributes.getString(MODIFIED_ATTRIBUTE, null));
-        graph.setModifiedBy(grfAttributes.getString(MODIFIED_BY_ATTRIBUTE, null));
-        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
-        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
-        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
-
-		// handle all defined Properties
-		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
-		instantiateProperties(PropertyElements);
-
-		// handle dictionary
-		NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
-		instantiateDictionary(dictionaryElements);
-		
-		// handle all defined DB connections
-		NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
-		instantiateDBConnections(dbConnectionElements);
-
-		// handle all defined DB connections
-		NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
-		instantiateSequences(sequenceElements);
-		
-		//create metadata
-		NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-		instantiateMetadata(metadataElements, metadata);
-
-		// register all metadata (DataRecordMetadata) within transformation graph
-		graph.addDataRecordMetadata(metadata);
-
-		// handle all defined lookup tables
-		NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
-		instantiateLookupTables(lookupsElements);
-
-		NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
-		instantiatePhases(phaseElements);
-
-		NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-		instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
-
-        return graph;
 	}
 
 
@@ -472,7 +480,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since                May 24, 2002
 	 */
 	private void instantiateNodes(Phase phase, NodeList nodeElements) throws XMLConfigurationException,GraphConfigurationException {
-		org.jetel.graph.Node graphNode;
+		Node graphNode;
 		String nodeType;
 		String nodeID="unknown";
 		String nodeEnabled;
@@ -578,10 +586,10 @@ public class TransformationGraphXMLReaderWriter {
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
 				// real
-				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj);
+				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) metadataObj);
 			}else{ 
 				// stub
-				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj);
+				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
 			}
 			graphEdge.setDebugMode(debugMode);
 			graphEdge.setDebugMaxRecords(debugMaxRecords);
@@ -841,10 +849,12 @@ public class TransformationGraphXMLReaderWriter {
 	    }
 	}
 
+	@Deprecated
 	public Document getOutputXMLDocumentReference() {
 		return(this.outputXMLDocument);
 	}
 	
+	@Deprecated
 	public boolean write(Document outputDocument) {
 		// store reference to allow usage of getOutputXMLDocument() function
 		this.outputXMLDocument = outputDocument;
@@ -922,9 +932,9 @@ public class TransformationGraphXMLReaderWriter {
 				}
 				
 				Collection<Node> nodes = phases[i].getNodes().values();
-				Iterator iter = nodes.iterator();
+				Iterator<Node> iter = nodes.iterator();
 				while (iter.hasNext()) {
-					Node graphNode = (Node)iter.next();
+					Node graphNode = iter.next();
 					HashMap nodeAtts = new HashMap();
 					nodeAtts.put(Node.XML_ID_ATTRIBUTE, graphNode.getId());
 					nodeAtts.put(Node.XML_TYPE_ATTRIBUTE, graphNode.getType());
@@ -947,7 +957,7 @@ public class TransformationGraphXMLReaderWriter {
      * Simple implementation of Node, used for "disabled" and "pass through" nodes 
      * by reading graph from xml. In next graph processing will be this nodes removed from graph.
      */
-    static class SimpleNode extends Node {
+    private static class SimpleNode extends Node {
 
         public SimpleNode(String id) {
             super(id);

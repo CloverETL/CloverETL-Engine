@@ -59,6 +59,7 @@ public class MapFieldWrapperTest extends CloverTestCase {
 			}}
 	);
 	
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		initEngine();
@@ -69,6 +70,7 @@ public class MapFieldWrapperTest extends CloverTestCase {
 		map = new MapFieldWrapper<String>(stringMapField.getValue());
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		map = null;

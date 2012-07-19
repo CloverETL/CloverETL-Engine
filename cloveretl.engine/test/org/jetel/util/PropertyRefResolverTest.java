@@ -26,6 +26,8 @@ import org.jetel.util.property.RefResFlag;
 
 public class PropertyRefResolverTest extends CloverTestCase {
 
+	private static final String TEST_STRING = "\\n `uppercase(\"message\")`";
+	
 	private PropertyRefResolver resolver;
 
 	@Override
@@ -67,6 +69,11 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		
 		assertEquals("xxxyyyzzz", resolver.resolveRef("`'$' + '{' + 'pwd' + '}'`"));
 		assertEquals("'done'", resolver.resolveRef("`'$' + '{' + 'ctl' + '}'`"));
+		
+		assertEquals("\n MESSAGE", resolver.resolveRef(TEST_STRING, RefResFlag.REGULAR));
+		assertEquals("\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.CTL_EXPRESSIONS_OFF));
+		assertEquals("\\n MESSAGE", resolver.resolveRef(TEST_STRING, RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("\\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.ALL_OFF));
 	}
 	
 	public void testUnlimitedRecursion() {

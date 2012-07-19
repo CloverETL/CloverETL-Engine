@@ -25,6 +25,9 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
+import org.jetel.graph.JobType;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -45,8 +48,11 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_SYNCHRONIZED_RUN = false;
 	public static final boolean DEFAULT_TRANSACTION_MODE = false;
 	public static final boolean DEFAULT_BATCH_MODE = true;
+	public static final boolean DEFAULT_TOKEN_TRACKING = true;
 	
 	private long runId;
+	private String executionGroup;
+	private boolean daemon;
 	private String logLocation;
 	private Level logLevel;
 	private int trackingInterval;
@@ -56,9 +62,12 @@ public class GraphRuntimeContext {
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
+	private boolean clearObsoleteTempFiles;
 	private String password;
 	private boolean debugMode;
 	private String debugDirectory;
+	private boolean tokenTracking;
+	
 	/**
 	 * This classpath is extension of 'current' classpath used for loading extra classes specified inside the graph.
 	 * External transformations for Reformat components, java classes for ExecuteJava components, ...
@@ -72,9 +81,13 @@ public class GraphRuntimeContext {
 	private boolean transactionMode;
 	private boolean batchMode;
 	private URL contextURL;
+	private DictionaryValuesContainer dictionaryContent;
+	/** Hint for the server environment where to execute the graph */
+	private String clusterNodeId;
 	private ClassLoader classLoader;
+	private JobType jobType;
+	private IAuthorityProxy authorityProxy;
 	
-
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -86,8 +99,13 @@ public class GraphRuntimeContext {
 		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
 		transactionMode = DEFAULT_TRANSACTION_MODE;
 		batchMode = DEFAULT_BATCH_MODE;
+		tokenTracking = DEFAULT_TOKEN_TRACKING;
 		runtimeClassPath = new URL[0];
 		compileClassPath = new URL[0];
+		dictionaryContent = new DictionaryValuesContainer();
+		clusterNodeId = null;
+		jobType = JobType.DEFAULT;
+		authorityProxy = new PrimitiveAuthorityProxy();
 	}
 	
 	/* (non-Javadoc)
@@ -112,7 +130,14 @@ public class GraphRuntimeContext {
 		ret.transactionMode = isTransactionMode();
 		ret.batchMode = isBatchMode();
 		ret.contextURL = getContextURL();
+		ret.dictionaryContent = DictionaryValuesContainer.duplicate(getDictionaryContent());
+		ret.executionGroup = executionGroup;
+		ret.daemon = daemon;
+		ret.clusterNodeId = clusterNodeId;
 		ret.classLoader = getClassLoader();
+		ret.jobType = getJobType();
+		ret.authorityProxy = getAuthorityProxy();
+		ret.clearObsoleteTempFiles = isClearObsoleteTempFiles();
 		
 		return ret;
 	}
@@ -122,7 +147,7 @@ public class GraphRuntimeContext {
 		
 		prop.setProperty("additionProperties", String.valueOf(getAdditionalProperties()));
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
-		prop.setProperty("skipCheckConfig", Boolean.toString(isSkipCheckConfig()));
+		prop.setProperty(PropertyKey.SKIP_CHECK_CONFIG.getKey(), Boolean.toString(isSkipCheckConfig()));
 		prop.setProperty("verboseMode", Boolean.toString(isVerboseMode()));
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
 		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
@@ -135,6 +160,12 @@ public class GraphRuntimeContext {
 		prop.setProperty("transactionMode", Boolean.toString(isTransactionMode()));
 		prop.setProperty("batchMode", Boolean.toString(isBatchMode()));
 		prop.setProperty("contextURL", String.valueOf(getContextURL()));
+		prop.setProperty("dictionaryContent", String.valueOf(getDictionaryContent()));
+		prop.setProperty("executionGroup", String.valueOf(getExecutionGroup()));
+		prop.setProperty("deamon", Boolean.toString(isDaemon()));
+		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
+		prop.setProperty("graphNature", String.valueOf(getJobType()));
+		prop.setProperty(PropertyKey.CLEAR_OBSOLETE_TEMP_FILES.getKey(), String.valueOf(isClearObsoleteTempFiles()));
 		
 		return prop;
 	}
@@ -282,7 +313,9 @@ public class GraphRuntimeContext {
 	 */
 	public void setAdditionalProperties(Properties properties) {
 		additionalProperties.clear();
-		additionalProperties.putAll(properties);
+		if (properties != null) {
+			additionalProperties.putAll(properties);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -432,6 +465,28 @@ public class GraphRuntimeContext {
 	public void setBatchMode(boolean batchMode) {
 		this.batchMode = batchMode;
 	}
+	
+	/**
+	 * Returns <code>true</code> if jobflow token tracking is enabled.
+	 * 
+	 * Enabled by default.
+	 * 
+	 * @return <code>true</code> if token tracking is enabled
+	 */
+    public boolean isTokenTracking() {
+		return tokenTracking;
+	}
+
+	/**
+	 * Enables or disables jobflow token tracking.
+	 * 
+	 * Enabled by default.
+	 * 
+	 * @param tokenTracking
+	 */
+	public void setTokenTracking(boolean tokenTracking) {
+		this.tokenTracking = tokenTracking;
+	}
 
     public URL getContextURL() {
         return contextURL;
@@ -450,6 +505,74 @@ public class GraphRuntimeContext {
 		this.classLoader = classLoader;
 	}
     
+    public DictionaryValuesContainer getDictionaryContent() {
+    	return dictionaryContent;
+    }
+    
+    public void setDictionaryContent(DictionaryValuesContainer dictionaryContent) {
+    	if (dictionaryContent == null) {
+    		this.dictionaryContent.clear();
+    	} else {
+    		this.dictionaryContent = dictionaryContent.duplicate();
+    	}
+    }
+
+	/**
+	 * @return the executionGroup
+	 */
+	public String getExecutionGroup() {
+		return executionGroup;
+	}
+
+	/**
+	 * @param executionGroup the executionGroup to set
+	 */
+	public void setExecutionGroup(String executionGroup) {
+		this.executionGroup = executionGroup;
+	}
+
+	/**
+	 * @return the daemon
+	 */
+	public boolean isDaemon() {
+		return daemon;
+	}
+
+	/**
+	 * @param daemon the daemon to set
+	 */
+	public void setDaemon(boolean daemon) {
+		this.daemon = daemon;
+	}
+
+	/**
+	 * @return the clusterNodeId
+	 */
+	public String getClusterNodeId() {
+		return clusterNodeId;
+	}
+
+	/**
+	 * @param clusterNodeId the clusterNodeId to set
+	 */
+	public void setClusterNodeId(String clusterNodeId) {
+		this.clusterNodeId = clusterNodeId;
+	}
+	
+	/**
+	 * @return the clearObsoleteTempFiles
+	 */
+	public boolean isClearObsoleteTempFiles() {
+		return clearObsoleteTempFiles;
+	}
+	
+	/**
+	 * @param clearObsoleteTempFiles the clearObsoleteTempFiles to set
+	 */
+	public void setClearObsoleteTempFiles(boolean clearObsoleteTempFiles) {
+		this.clearObsoleteTempFiles = clearObsoleteTempFiles;
+	}
+	
 	/**
 	 * Returns a class loader to be used for loading classes used in a graph
 	 * 
@@ -459,22 +582,102 @@ public class GraphRuntimeContext {
 		return classLoader;
 	}
 
+	/**
+	 * Expected job type is confrontated with type defined in {@link TransformationGraph#getJobType()}.
+	 * @return expected job type of executed graph
+	 * @see TransformationGraph#checkConfig(org.jetel.exception.ConfigurationStatus)
+	 */
+	public JobType getJobType() {
+		return jobType;
+	}
+
+	/**
+	 * Sets expected job type. 
+	 * @param jobType the jobType to set
+	 * @see #getJobType()
+	 */
+	public void setJobType(JobType jobType) {
+		this.jobType = jobType;
+	}
+
+	/**
+	 * @return authority proxy associated with this run
+	 */
+	public IAuthorityProxy getAuthorityProxy() {
+		return authorityProxy;
+	}
 	
-//	/**
-//	 * @return trackingFlushInterval
-//	 */
-//	public int getTrackingFlushInterval() {
-//		return trackingFlushInterval;
-//	}
-//
-//	/**
-//	 * Sets interval which is used for flushing of tracking info to logging output.
-//	 * @param trackingFlushInterval to set
-//	 */
-//	public void setTrackingFlushInterval(int trackingFlushInterval) {
-//		this.trackingFlushInterval = trackingFlushInterval;
-//	}
-	
-	
-	
+	/**
+	 * Sets authority proxy with this run.
+	 * @param authorityProxy
+	 */
+	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+		this.authorityProxy = authorityProxy;
+		authorityProxy.setGraphRuntimeContext(this);
+	}
+
+	/**
+	 * This enum is attempt to provide a more generic way to this runtime configuration.
+	 * Should not be used by third-party applications, can be changed in the future.
+	 */
+	public enum PropertyKey {
+		
+		SKIP_CHECK_CONFIG("skipCheckConfig", Boolean.class) {
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
+			}
+		},
+		LOG_LEVEL("logLevel", Level.class) {
+			@Override
+			public Object parseValue(String s) {
+				if (s == null) {
+					return null;
+				}
+				return Level.toLevel(s);
+			}
+		},
+		CLEAR_OBSOLETE_TEMP_FILES("clearObsoleteTempFiles", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
+			}
+		};
+		
+		String key;
+		Class<?> valueType;
+		
+		PropertyKey(String key, Class<?> valueType){
+			this.key = key;
+			this.valueType = valueType;
+		}
+		
+		/**
+		 * use this method for validation of config values.
+		 * @param s
+		 * @return
+		 */
+		public abstract Object parseValue(String s);
+		
+		private static Boolean parseBoolean(String s) {
+			if (s == null || s.trim().length() == 0) {
+				return null;
+			} else {
+				return Boolean.valueOf(s);
+			}
+		}
+
+		/**
+		 * String used as parameter key of this property in various APIs.
+		 */
+		public String getKey() {
+			return key;
+		}
+		
+		public Class<?> getValueType() { 
+			return this.valueType;
+		}
+	}
+
 }

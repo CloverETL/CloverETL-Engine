@@ -18,6 +18,7 @@
  */
 package org.jetel.component;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -417,6 +418,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					return Result.ERROR;
 				} else if (e.getCause() instanceof Exception) { // TODO BadDataFormatException / Exception ?
 					throw (Exception) e.getCause();
+				}
+			} finally {
+				if (inputData instanceof Closeable) {
+					try {
+						((Closeable) inputData).close();
+					} catch (Exception ex) {
+						LOG.error("Failed to close input");
+					}
 				}
 			}
 			inputData = getNextSource();

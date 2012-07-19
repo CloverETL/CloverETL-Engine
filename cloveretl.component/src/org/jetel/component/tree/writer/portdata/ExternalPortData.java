@@ -20,7 +20,6 @@ package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +29,6 @@ import jdbm.SerializerInput;
 import jdbm.SerializerOutput;
 import jdbm.helper.Tuple;
 
-import org.jetel.component.tree.writer.portdata.btree.CacheRecordManager;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -60,8 +58,8 @@ abstract class ExternalPortData extends PortData {
 
 	protected CacheRecordManager sharedCache;
 	
-	ExternalPortData(InputPort inPort, Set<List<String>> keys, String tempDirectory) {
-		super(inPort, keys, tempDirectory);
+	ExternalPortData(InputPort inPort, Set<List<String>> keys) {
+		super(inPort, keys);
 	}
 
 	@Override

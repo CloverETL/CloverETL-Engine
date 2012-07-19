@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -37,6 +38,8 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.util.HttpURLConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.file.FileUtils;
+
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
 import com.googlecode.sardine.impl.SardineException;
@@ -54,10 +57,11 @@ public class WebdavOutputStream extends OutputStream {
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
-	public static String getUsername(URL url) {
+	public static String getUsername(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return userInfo;
@@ -71,10 +75,11 @@ public class WebdavOutputStream extends OutputStream {
 		}
 	}
 	
-	public static String getPassword(URL url) {
+	public static String getPassword(URL url) throws UnsupportedEncodingException {
 		String userInfo = url.getUserInfo();
 		
 		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, "UTF-8");
 			int colon = userInfo.indexOf(':');
 			if (colon == -1) {
 				return "";
@@ -93,7 +98,7 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	public WebdavOutputStream(String url) throws IOException {
-		URL parsedUrl = new URL(URLDecoder.decode(url, "UTF-8"));
+		URL parsedUrl = new URL(url);
 		String username = getUsername(parsedUrl);
 		String password = getPassword(parsedUrl);
 		String outputURL = url;
@@ -186,44 +191,79 @@ public class WebdavOutputStream extends OutputStream {
 				}
 				
 				sardine.put(URL, is);
+			} catch (SardineException e) {
+				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
+				// close the input stream, so that IOException is thrown when writing to the corresponding OutputStream
+				FileUtils.close(is); 
 			}
+		}
+	}
+	
+	/*
+	 * The exception may have been caused by an exception 
+	 * thrown in the sardine thread.
+	 */
+	private void processException(IOException ioe) throws IOException {
+		try {
+			sardineThread.join();
+			Throwable error = sardineThread.getError();
+			if (error != null) {
+				throw error instanceof IOException ? (IOException)error : new IOException(error);
+			}
+		} catch (InterruptedException e) {
+			throw new IOException(e.getCause());
+		}
+		if (ioe != null) {
+			throw ioe;
 		}
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		os.write(b);
+		try {
+			os.write(b);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	@Override
 	public void close() throws IOException {
-		os.close();
 		try {
-			sardineThread.join();
-			Throwable error = sardineThread.getError();
-			if (error != null) {
-				throw new IOException(error);
-			}
-		} catch (InterruptedException e) {
-			throw new IOException(e.getCause());
+			os.close();
+			processException(null);
+		} catch (IOException ioe) {
+			processException(ioe);
 		}
 	}
 	
 	@Override
 	public void flush() throws IOException {
-		os.flush();
+		try {
+			os.flush();
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	@Override
 	public void write(byte[] b) throws IOException {
-		os.write(b);
+		try {
+			os.write(b);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		os.write(b, off, len);
+		try {
+			os.write(b, off, len);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	/**

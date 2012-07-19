@@ -149,7 +149,6 @@ public class XLSWriter extends Node {
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
     private static final String XML_IN_MEMORY_ATTRIBUTE = "inMemory";
-    private static final String XML_TMP_DIR_ATTRIBUTE = "tmpDir";
 
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
@@ -214,9 +213,6 @@ public class XLSWriter extends Node {
             if(xattribs.exists(XML_IN_MEMORY_ATTRIBUTE)) {
                 xlsWriter.setInMemory(xattribs.getBoolean(XML_IN_MEMORY_ATTRIBUTE));
             }
-            if(xattribs.exists(XML_TMP_DIR_ATTRIBUTE)) {
-                xlsWriter.setTmpDir(xattribs.getString(XML_TMP_DIR_ATTRIBUTE));
-            }
 
             return xlsWriter;
         } catch (Exception ex) {
@@ -245,7 +241,6 @@ public class XLSWriter extends Node {
 	private boolean mkDir;
 
     private String excludeFields;
-	private String tmpDir;
 
 
     /**
@@ -438,15 +433,6 @@ public class XLSWriter extends Node {
 		formatterProvider.setInMemory(inMemory);
 	}
 
-	/**
-	 * Sets directory for temporary files
-	 * 
-	 * @param tmpDir
-	 */
-	public void setTmpDir(String tmpDir) {
-		this.tmpDir = tmpDir;
-	}
-
     @Override
 	public void toXML(org.w3c.dom.Element xmlElement) {
         super.toXML(xmlElement);
@@ -498,9 +484,6 @@ public class XLSWriter extends Node {
         if (formatterProvider.isInMemory() != null) {
 			xmlElement.setAttribute(XML_IN_MEMORY_ATTRIBUTE, String.valueOf(formatterProvider.isInMemory()));
 		}
-        if (tmpDir != null) {
-			xmlElement.setAttribute(XML_TMP_DIR_ATTRIBUTE, tmpDir);
-		}
    }
 
 	@Override
@@ -533,21 +516,6 @@ public class XLSWriter extends Node {
 		    status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this,
 		    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
 		}
-        
-        if (tmpDir != null) {
-            try {
-                FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, tmpDir);
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
-                        this, ConfigurationStatus.Priority.NORMAL);
-
-                if (!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-
-                status.add(problem);
-            }
-        }
         
         if (!StringUtils.isEmpty(excludeFields)) {
             DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
@@ -592,9 +560,6 @@ public class XLSWriter extends Node {
 
         if (!StringUtils.isEmpty(excludeFields)) {
             formatterProvider.setExcludedFieldNames(excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-        }
-        if (tmpDir != null) {
-    		formatterProvider.setTmpDir(FileUtils.getJavaFile(getGraph().getRuntimeContext().getContextURL(), tmpDir));
         }
 
         if (fileURL != null) {

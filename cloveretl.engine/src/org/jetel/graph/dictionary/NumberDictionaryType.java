@@ -24,6 +24,7 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * String dictionary type represents number element in the dictionary.
@@ -97,4 +98,9 @@ public class NumberDictionaryType extends DictionaryType {
 		return TLTypePrimitive.DOUBLE;
 	}
 	
+	@Override
+	public DataFieldType getFieldType() {
+		return DataFieldType.NUMBER;
+	}
+
 }

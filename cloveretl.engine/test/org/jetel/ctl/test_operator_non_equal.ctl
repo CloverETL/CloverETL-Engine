@@ -18,6 +18,7 @@ boolean jned;
 boolean dnel;
 boolean lned;
 boolean dned;
+boolean dned_different_scale;
 
 function integer transform() {
 	i=10;
@@ -79,6 +80,9 @@ function integer transform() {
 	
 	dned=d.ne.d;
 	printErr("dned=" + dned);
+	
+	dned_different_scale = (0.0D != 0.00D);
+	printErr("dned_different_scale=" + dned_different_scale);
 	
 	return 0;
 }

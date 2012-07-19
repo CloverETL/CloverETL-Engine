@@ -21,6 +21,7 @@ package org.jetel.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,13 +30,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.DataRecordNature;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.data.Token;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.JobType;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.QuotingDecoder;
@@ -70,6 +77,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	
 	public static final String EMPTY_NAME = "_";
 
+	/** Parent graph of this metadata */
+	private TransformationGraph graph;
 	/** Name of the data record. */
 	private String name;
 	/** Description of the data record. */
@@ -99,9 +108,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
+	
+	private List<DataFieldMetadata> keyFields = new ArrayList<DataFieldMetadata>();
 
 	/** an array of field names specifying a primary key */
-	private String[] keyFieldNames = null;
+	private List<String> keyFieldNames = new ArrayList<String>();
 
 	private short numNullableFields = 0;
 
@@ -121,6 +132,18 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * See Collator.setStregth(String strength).
 	 */
 	private String collatorSensitivity = null;
+	
+	/**
+	 * Metadadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Different implementations of DataRecord are used for various natures.
+	 * Nature {@link DataRecordNature#DATA_RECORD} is represented by {@link DataRecord}.
+	 * Nature {@link DataRecordNature#TOKEN} is represented by {@link Token}.
+	 * Record nature is by default derived from graph nature. The {@link GraphNature#ETL_GRAPH}
+	 * corresponds with {@link DataRecordNature#DATA_RECORD} and the {@link GraphNature#JOBFLOW}
+	 * corresponds with {@link DataRecordNature#TOKEN}. 
+	 * @see DataRecordFactory
+	 */
+	private DataRecordNature nature = null;
 	
 	/**
 	 * @deprecated use {@link DataRecordParsingType#DELIMITED} instead
@@ -695,6 +718,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		updateFieldTypes();
 		updateFieldOffset();
 		updateFieldNumbers();
+		updateKeyFields();
 	}
 
 	private void updateFieldNumbers() {
@@ -713,6 +737,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 	}
 
+	private void updateKeyFields() {
+		keyFields.clear();
+		for (String keyFieldName : keyFieldNames) {
+			DataFieldMetadata keyField = this.getField(keyFieldName);
+			if (keyField != null) {
+				keyFields.add(keyField);
+			}
+		}
+	}
+
+	
 	/**
 	 * @return an array of field names sorted by the fields' ordinal numbers
 	 */
@@ -810,21 +845,43 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
-	 * Sets the array of field names specifying a primary key of the data record.
+	 * Sets field names specifying a primary key of the data record.
+	 * 
+	 * The names can then be retrieved back by getKeyFieldNames(),
+	 * or they can be resolved into field metadata by getKeyFields().
 	 *
 	 * @param keyFieldNames the array of field names to be used
 	 */
-	public void setKeyFieldNames(String[] keyFieldNames) {
-		this.keyFieldNames = keyFieldNames;
+	public void setKeyFieldNames(List<String> keyFieldNames) {
+		this.keyFieldNames.clear();
+		this.keyFieldNames.addAll(keyFieldNames);
+		updateKeyFields();
 	}
 
 	/**
-	 * @return an array of field names specifying a primary key of the data record
+	 * Returns a list of field names specifying a primary key of the data record.
+	 * 
+	 * Note that it is not guaranteed that all field names point to an existing field. On the other hand it is checked in configCheck()
+	 * 
+	 * @return a list of field names specifying a primary key of the data record
 	 */
-	public String[] getKeyFieldNames() {
-		return keyFieldNames;
+	public List<String> getKeyFieldNames() {
+		return Collections.unmodifiableList(keyFieldNames);
 	}
 
+	/**
+	 * Returns a list of fields specifying a primary key of the data record
+	 * 
+	 * Note that it may return shorter list than getKeyFieldNames, if some of field names do not point to an existing field.
+	 * Matching of field names is checked in checkConfig. 
+	 * 
+	 * @return a list of fields specifying a primary key of the data record
+	 */
+	public List<DataFieldMetadata> getKeyFields() {
+		return Collections.unmodifiableList(keyFields);
+	}
+
+	
 	/**
 	 * Creates and initializes a record key for the specified key field names.
 	 *
@@ -833,11 +890,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @throw RuntimeException if any of the field names is invalid
 	 */
 	public RecordKey getRecordKey() {
-		if (keyFieldNames == null) {
+		if (keyFieldNames.isEmpty()) {
 			return null;
 		}
 
-		RecordKey recordKey = new RecordKey(keyFieldNames, this);
+		RecordKey recordKey = new RecordKey(keyFieldNames.toArray(new String[keyFieldNames.size()]), this);
 		recordKey.init();
 
 		return recordKey;
@@ -1012,12 +1069,46 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		// verify field names
 		verifyFieldNames(status);
 		
+		//verify field names that define a primary key
+		verifyKeyFieldNames(status);
+		
+		//verify job type - has to be same as job type of parent graph
+		TransformationGraph parentGraph = getGraph();
+		if (parentGraph != null) {
+			if (parentGraph.getJobType() == JobType.JOBFLOW && getNature() != DataRecordNature.TOKEN) {
+				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
+						Severity.ERROR, null, Priority.NORMAL));
+			}
+		}
+		
 		// call checkConfig at meta fields
 		for (DataFieldMetadata field: fields) {
 			field.checkConfig(status);
 		}
 		
 		return status;
+	}
+
+	/**
+	 * Verifies that all field names that define a primary key of a record are names of
+	 * existing fields
+	 * 
+	 * @param status
+	 */
+	private void verifyKeyFieldNames(ConfigurationStatus status) {
+		if (!keyFieldNames.isEmpty()) {
+			Set<String> fieldNames = new HashSet<String>();
+			for (DataFieldMetadata field: fields) {
+				fieldNames.add(field.getName());
+			}
+			
+			for (String keyFieldName : keyFieldNames) {
+				if (!fieldNames.contains(keyFieldName)) {
+					status.add(new ConfigurationProblem("Field with name '" + keyFieldName + "' that is listed in a record key " +
+							"does not exist", Severity.ERROR, null, Priority.NORMAL));
+				}
+			}
+		}
 	}
 
 	/**
@@ -1388,6 +1479,47 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return collatorSensitivity;
 	}
 	
+	/**
+	 * Sets metadadata nature which should correspond with graph job type, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Different implementations of DataRecord are used for various natures.<br>
+	 * Nature {@link JobType#ETL_GRAPH} is represented by {@link DataRecord}.<br>
+	 * Nature {@link JobType#JOBFLOW} is represented by {@link Token}.<br>
+	 * @param nature nature of this metadata
+	 */
+	public void setNature(DataRecordNature nature) {
+		this.nature = nature;
+	}
+	
+	/**
+	 * Record nature is by default derived from graph job type if is available.
+	 * @return nature associated with this metadata
+	 * @see #setNature(DataRecordNature)
+	 */
+	public DataRecordNature getNature() {
+		if (nature != null) {
+			return nature;
+		} else if (getGraph() != null) {
+			return DataRecordNature.fromJobType(getGraph().getJobType());
+		} else {
+			return DataRecordNature.DEFAULT;
+		}
+	}
+	
+	/**
+	 * @return the parent graph of this metadata or null if no parent graph is specified
+	 */
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	/**
+	 * Sets the parent graph of this metadata
+	 * @param graph the parent graph to set
+	 */
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
+	}
+
 	/**
 	 * The main method for record and field names normalization.
 	 * 

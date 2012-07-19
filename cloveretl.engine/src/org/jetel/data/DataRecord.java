@@ -103,30 +103,26 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
     }
 
 	/**
-	 * Private constructor used when clonning/copying DataRecord objects.<br>
-     * It takes numFields parameter to speed-up creation.
-	 * 
-	 * @param _metadata metadata describing this record
-	 * @param numFields number of fields this record should contain
-	 */
-	private DataRecord(DataRecordMetadata _metadata, int numFields){
-	    this.metadata = _metadata;
-	    fields = new DataField[numFields];
-	}
-
-	
-	
-	/**
 	 * Creates deep copy of existing record (field by field).
 	 * 
 	 * @return new DataRecord
 	 */
-	public DataRecord duplicate(){
-	    DataRecord newRec=new DataRecord(metadata,fields.length);
-	    for (int i=0;i<fields.length;i++){
-	        newRec.fields[i]=fields[i].duplicate();
-	    }
-	    return newRec;
+	public DataRecord duplicate() {
+		DataRecord newRec = newInstance(metadata);
+		for (int i = 0; i < fields.length; i++) {
+			newRec.fields[i] = fields[i].duplicate();
+		}
+		return newRec;
+	}
+	
+	/**
+	 * Creates new instance of this class. This method should be overridden in descendants.
+	 * @param metadata metadata of created record
+	 * @return new instance of this class
+	 * @see #duplicate()
+	 */
+	protected DataRecord newInstance(DataRecordMetadata metadata) {
+		return new DataRecord(metadata);
 	}
 	
 	/**
@@ -180,7 +176,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	/**
 	 * Set fields by copying name-matching fields' values from the record passed as argument.<br>
      * If two fields match by name but not by type, target field is set to default value.
-     * For incompatible fields default value is setted.
+     * For incompatible fields default value is set.
      * This operation is not intended for time critical purposes - in this case 
      * consider to use copyFrom() method instead.
 	 *  
@@ -202,7 +198,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
             if (srcFieldPos >= 0) {
                 sourceField = sourceRecord.getField(srcFieldPos);
                 result[i] = true;
-                if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
+                if (sourceField.getMetadata().isSubtype(targetField.getMetadata())) {
                     targetField.setValue(sourceField);
                 } else {
                     targetField.setToDefaultValue();

@@ -16,23 +16,36 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.tree.writer.portdata.btree;
+package org.jetel.data.xml.mapping.runtime;
 
-import java.io.IOException;
+import org.jetel.data.xml.mapping.XMLMappingContext;
 
-import jdbm.recman.BaseRecordManager;
 
-/**
- * @author lkrejci (info@cloveretl.com)
+/** Class representing a mapping of XML element onto a data record used on the runtime.
+ * 
+ * @author Tomas Laurincik (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 2.11.2011
+ * @created 20.6.2012
  */
-public class CacheRecordManagerFactory {
+public class XMLRuntimeMappingModel {
+	// === Mapping context ===
 	
-	public static CacheRecordManager createManager(String tempFile, long cacheSize) throws IOException {
-		BaseRecordManager recMan = new BaseRecordManager(tempFile);
-		recMan.disableTransactions();
-		return new CacheRecordManager(recMan, cacheSize);
+	private XMLMappingContext context;
+	
+	public XMLRuntimeMappingModel(XMLRuntimeMappingModel source, XMLRuntimeMappingModel parent) {
+		this.context = parent.context;		
+	}
+	
+	public XMLRuntimeMappingModel(XMLMappingContext context) {
+		this.context = context;
+	}
+
+	public XMLMappingContext getContext() {
+		return context;
+	}
+
+	public void setContext(XMLMappingContext context) {
+		this.context = context;
 	}
 }

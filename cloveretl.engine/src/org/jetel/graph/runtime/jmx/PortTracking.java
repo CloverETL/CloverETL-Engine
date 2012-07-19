@@ -23,13 +23,45 @@ import java.io.Serializable;
 /**
  * Interface for the tracking information about component's port. This interface should be used
  * by JMX clients.
-
+ * 
+ * Each change of this interface (rename, delete or add of an attribute) should be reflected in TrackingMetadataToolkit class.
+ * 
  * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
  *         (c) Javlin Consulting (www.javlin.cz)
  *
  * @since May 14, 2009
  */
 public interface PortTracking extends Serializable {
+	
+	/**
+	 * Enumeration of port types - input and output type.
+	 * Instances of this enumeration are returned by {@link PortTracking#getType()} method.
+	 */
+	public static enum PortType {
+		
+		INPUT("INPUT"),
+		OUTPUT("OUTPUT");
+		
+		private String id;
+		
+		private PortType(String id) {
+			this.id = id;
+		}
+
+		/**
+		 * @return unique String representation of this enum item.
+		 */
+		public String getId() {
+			return id;
+		}
+		
+		@Override
+		public String toString() {
+			return super.toString().toLowerCase();
+		};
+		
+	}
+	
 	/**
 	 * @return tracking of the port's node.
 	 */
@@ -43,7 +75,7 @@ public interface PortTracking extends Serializable {
 	/**
 	 * @return port type, value is either "Input" or "Output".
 	 */
-	String getType();
+	PortType getType();
 	
 	/**
 	 * @return current byte flow.
@@ -73,7 +105,7 @@ public interface PortTracking extends Serializable {
 	/**
 	 * @return total record flow.
 	 */
-	int getTotalRecords();
+	long getTotalRecords();
 	
 	/**
 	 * @return current record waiting for processing (cached).

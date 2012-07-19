@@ -25,9 +25,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -126,6 +128,58 @@ public class PropertiesUtils {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Converts the given string to {@link Properties}.
+	 * Inverse function for {@link #formatProperties(Properties)}.
+	 * @param s string representation of properties
+	 * @return properties parsed from the given string
+	 */
+	public static Properties parseProperties(String s) {
+		if (s == null) {
+			return null;
+		} else {
+			Properties result = new Properties();
+			try {
+				result.load(new StringReader(s));
+			} catch (IOException e) {
+				throw new JetelRuntimeException("properties cannot be parsed from string '" + s + "'");
+			}
+			return result;
+		}
+	}
+	
+	/**
+	 * Formats the given properties to string.
+	 * Inverse function for {@link #parseProperties(String)}.
+	 * @param p properties to be converted to string
+	 * @return string representation of the given properties
+	 */
+	public static String formatProperties(Properties p) {
+		if (p == null) {
+			return null;
+		}
+		StringWriter result = new StringWriter();
+		try {
+			p.store(result, null);
+		} catch (IOException e) {
+			throw new JetelRuntimeException("properties cannot be formatted to string '" + p + "'");
+		}
+		return removeFirstLine(result.toString());
+	}
+
+	private static final String LINE_SEPARATOR = System.getProperties().getProperty("line.separator");
+
+	private static String removeFirstLine(String s) {
+		if (s == null) {
+			return null;
+		}
+		if (s.indexOf(LINE_SEPARATOR) != -1) {
+			return s.substring(s.indexOf(LINE_SEPARATOR) + LINE_SEPARATOR.length());
+		} else {
+			return s;
 		}
 	}
 

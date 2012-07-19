@@ -56,6 +56,13 @@ string[] testReturnValue3;
 firstMultivalueOutput[] testReturnValue4;
 map[integer, firstMultivalueOutput] testReturnValue5;
 
+string[] testArrayAccessFunctionCallStringList;
+firstMultivalueOutput testArrayAccessFunctionCall;
+map[string, firstMultivalueOutput] function_call_original_map;
+map[string, firstMultivalueOutput] function_call_copied_map;
+firstMultivalueOutput[] function_call_original_list;
+firstMultivalueOutput[] function_call_copied_list;
+
 // stupid implementation - poor performance
 function string listToString(string[] input) {
 	string result = "[";
@@ -121,6 +128,15 @@ function integer transform() {
 	byteMap1[1] = hex2byte("DEF");
 	byte2 = byteMap1[1];
 	
+	// ------------- JJTARRAYACCESSEXPRESSION - Function call -------
+	testArrayAccessFunctionCallStringList = ["aa", "bb", "cc"];
+	testArrayAccessFunctionCall.stringListField = testArrayAccessFunctionCallStringList;
+	
+	function_call_original_map["1"] = testArrayAccessFunctionCall;
+	copy(function_call_copied_map, function_call_original_map)["2"] = testArrayAccessFunctionCall;
+	function_call_original_list[1] = testArrayAccessFunctionCall;
+	copy(function_call_copied_list, function_call_original_list)[2] = testArrayAccessFunctionCall;
+
 	//---------------- JJTFIELDACCESSEXPRESSION ---------------
 	testFieldAccessDate1 = long2date(12000);
 	testFieldAccessString1 = "a";

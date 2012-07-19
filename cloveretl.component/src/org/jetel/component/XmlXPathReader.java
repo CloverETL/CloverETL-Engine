@@ -220,13 +220,14 @@ public class XmlXPathReader extends Node {
     			}
     		}
     			
-    		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-            ports = parser.getPorts().toArray();
+        	parser.preExecute(); // must be called after parser.setXPath()
+            ports = parser.getPorts().toArray(); // must be called after parser.preExecute()
     	}
     	else {
        		parser.reset();
-       		reader.reset();
+        	parser.preExecute();
     	}
+    	reader.preExecute();
     }
 
 	@Override
@@ -294,6 +295,7 @@ public class XmlXPathReader extends Node {
         reader.setCharset(charset);
         reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
         reader.setDictionary(graph.getDictionary());
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
     @Override
@@ -301,7 +303,7 @@ public class XmlXPathReader extends Node {
     	super.postExecute();
 
     	try {
-    		reader.close();
+    		reader.postExecute();
     	}
     	catch (Exception e) {
     		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
