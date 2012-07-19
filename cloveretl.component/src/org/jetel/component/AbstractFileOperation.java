@@ -416,7 +416,6 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 			standardOutputRecord = outputMapping.addOutputMetadata(OUTPUT_RECORD_ID, standardOutputPort.getMetadata());
 
 			outputMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
-			outputMapping.addAutoMapping(PARAMS_RECORD_ID, OUTPUT_RECORD_ID);
 			outputMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
 			
 		}
@@ -429,8 +428,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 			errorOutputRecord = errorMapping.addOutputMetadata(ERROR_RESULT_RECORD_ID, errorOutputPort.getMetadata());
 
 			errorMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
-			errorMapping.addAutoMapping(PARAMS_RECORD_ID, OUTPUT_RECORD_ID);
-			errorMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
+			errorMapping.addAutoMapping(ERROR_RECORD_ID, OUTPUT_RECORD_ID);
 			
 		}
 		
