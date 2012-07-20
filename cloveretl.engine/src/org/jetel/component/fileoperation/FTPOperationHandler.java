@@ -486,7 +486,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	@Override
 	public List<Info> list(SingleCloverURI parent, ListParameters params) throws IOException {
 		URI parentUri = parent.toURI();
-		FTPClient ftp = connect(parentUri);
+		FTPClient ftp = null;
 		try {
 			ftp = connect(parentUri);
 			return list(parentUri, ftp, params);
