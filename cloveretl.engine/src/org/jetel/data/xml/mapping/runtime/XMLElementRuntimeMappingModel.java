@@ -187,7 +187,7 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	/**
 	 * Flag indicating whether the mapping should be treated as nested.
 	 */
-	private boolean nested = false;
+	private boolean usingParentRecord = false;
 
 	/**
 	 * Flag indicating whether the implicit mapping should used.
@@ -377,7 +377,7 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */
 	public DataRecord getOutputRecord() {
 		// are we contributing to a parent record? If so, return that one.
-		if (nested && producingParent != null) {
+		if (usingParentRecord && producingParent != null) {
 			return producingParent.getOutputRecord();
 		} 
 		
@@ -767,12 +767,12 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 		this.producingParent = producingParent;
 	}
 
-	public boolean isNested() {
-		return nested;
+	public boolean isUsingParentRecord() {
+		return usingParentRecord;
 	}
 
-	public void setNested(boolean nested) {
-		this.nested = nested;
+	public void setUsingParentRecord(boolean nested) {
+		this.usingParentRecord = nested;
 	}
 
 	public boolean isImplicit() {

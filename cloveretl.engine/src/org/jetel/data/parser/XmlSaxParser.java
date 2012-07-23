@@ -646,7 +646,7 @@ public class XmlSaxParser {
 	                                autoFilling.setAutoFillingFields(outRecord);
 	                                
 	                                // can I do the map? it depends on skip and numRecords.
-	                                if (m_activeMapping.doMap()  && !m_activeMapping.isNested()) {
+	                                if (m_activeMapping.doMap()  && !m_activeMapping.isUsingParentRecord()) {
 		                                //send off record
 	                                	outPort.writeRecord(outRecord);
 	                                }

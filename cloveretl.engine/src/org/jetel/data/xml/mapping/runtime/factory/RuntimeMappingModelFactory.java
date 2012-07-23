@@ -86,7 +86,7 @@ public class RuntimeMappingModelFactory {
 			mapping.setParent(parent);
 			mapping.setElementName(mappingDefinition.getElementName());
 			mapping.setImplicit(mappingDefinition.isImplicit());
-			mapping.setNested(mappingDefinition.isNested());
+			mapping.setUsingParentRecord(mappingDefinition.isUsingParentRecord());
 			mapping.setOutputPortNumber(mappingDefinition.getOutputPort());
 			mapping.setParentKeyFields(mappingDefinition.getParentKey());
 			mapping.setGeneratedKeyFields(mappingDefinition.getGeneratedKey());
