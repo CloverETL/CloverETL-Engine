@@ -102,7 +102,8 @@ public class XmlSaxParser {
 	private static final String FEATURES_ASSIGN = ":=";
 	
 	private static final String XML_MAPPING = "Mapping";
-    public static final String XML_NESTED = "nested";
+    public static final String XML_USE_PARENT_RECORD = "useParentRecord";
+    public static final String XML_IMPLICIT = "implicit";
     public static final String XML_ELEMENT = "element";
     public static final String XML_OUTPORT = "outPort";
     public static final String XML_PARENTKEY = "parentKey";
