@@ -37,6 +37,13 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * The class has the only public method findUsedInputFields that is used to find all fields
+ * used on a right side of assignment in a given CTL transformation.
+ * 
+ * Limitations:
+ *   - Name of the field must appear explicitly in an expression (no star mapping support)
+ *   - Only a list of fields is returned - if a field is shared by two metadata it is not clear from which metadata the field comes from 
+ * 
  * @author Pavel Simecek (pavel.simecek@javlin.eu)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -111,6 +118,16 @@ public class CTLTransformUtils {
 		}
     }
 
+    /**
+     * The method returns all fields used on right sides of assignments in a CTL transformation.
+     * Note: See class description for limitations.
+     * 
+     * @param graph
+     * @param inMeta
+     * @param outMeta
+     * @param code
+     * @return
+     */
     static public List<DataFieldMetadata> findUsedInputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code) {
     	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
