@@ -29,7 +29,8 @@ public enum ArchiveType {
 	// archive types
 	ZIP("zip"),
 	TAR("tar"),
-	GZIP("gzip");
+	GZIP("gzip"),
+	TGZ("tgz");
 
 	private String id;
     
