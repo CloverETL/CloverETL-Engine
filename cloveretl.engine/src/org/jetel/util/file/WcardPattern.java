@@ -65,7 +65,7 @@ public class WcardPattern {
 	// for embedded source
 	//     "[zip|gzip|tar]     :       ^(       something   )          [[#|$]something]?
 	//      ((zip|gzip|tar)    :       ([^\\(]  .*          [^\\)])    #(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)
-	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)");
+	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar|tgz):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar|tgz):([^\\(].*[^\\)])$)");
 	
 	// Wildcard characters.
 	@SuppressWarnings("MS")
@@ -284,6 +284,11 @@ public class WcardPattern {
             } else if (archiveType == ArchiveType.TAR) {
             	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
             
+            // tgz archive
+            } else if (archiveType == ArchiveType.TGZ) {
+            	processTGZArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
+            
+            	
             // return original names
             } else {
             	processProxy(fileStreamName, originalFileName, fileStreamNames);
@@ -372,6 +377,39 @@ public class WcardPattern {
     	}
     }
 
+    /**
+     * Gets list of tar/gzipped files with full anchor names.
+     * @param fileStreamName
+     * @param originalFileName
+     * @param anchor
+     * @param iPreName
+     * @param iPostName
+     * @param newFileStreamNames
+     * @throws IOException
+     */
+    private void processTGZArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+		// add original name
+    	if (fileStreamName.getInputStream() == null) {
+    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		return;
+    	}
+    	
+		// look into an archive and check the anchor
+		List<String> mfiles = new ArrayList<String>();
+    	List<InputStream> lis = FileUtils.getTarInputStreams(new GZIPInputStream(fileStreamName.getInputStream()), anchor, mfiles);
+    	
+    	// create list of new names generated from the anchor
+    	for (int i=0; lis != null && i<lis.size(); i++) {
+    		newFileStreamNames.add(
+    				new FileStreamName(
+    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+    					lis.get(i)));
+    	}
+    }
+
+    
+    
     /**
      * Gets gzip file.
      * @param fileStreamName
