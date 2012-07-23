@@ -114,7 +114,7 @@ public class RuntimeMappingModelFactory {
 
 			// expand template
 			if (mappingDefinition.getTemplateReference() != null && mappingDefinition.getTemplateNestedDepth() != -1) {
-				int depth = mappingDefinition.getTemplateNestedDepth() == -1? 1 : -1;
+				int depth = mappingDefinition.getTemplateNestedDepth() == -1? 1 : mappingDefinition.getTemplateNestedDepth();
 				XMLElementRuntimeMappingModel currentMapping = mapping;
 				while (depth > 0) {
 					currentMapping = new XMLElementRuntimeMappingModel(currentMapping, currentMapping);
