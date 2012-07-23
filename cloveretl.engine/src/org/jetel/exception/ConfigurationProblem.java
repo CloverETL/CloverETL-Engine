@@ -137,14 +137,30 @@ public class ConfigurationProblem {
 		this.causeException = causeException;
 	}
 
+	/**
+	 * @return exception derived from this problem or null if the problem is not error
+	 */
+	public Exception toException() {
+		if (getSeverity() == Severity.ERROR) {
+			return new ConfigurationException(createMessage(), getCauseException());
+		} else {
+			return null;
+		}
+	}
+	
 	@Override
     public String toString() {
-    	String result = (getGraphElement() != null ? 
-    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+		String result = createMessage();
     	if (getCauseException() != null) {
     		result += "\n" + MiscUtils.stackTraceToString(getCauseException());
     	}
     	
     	return result;
     }
+	
+	private String createMessage() {
+    	return (getGraphElement() != null ? 
+    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+	}
+	
 }

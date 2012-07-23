@@ -109,11 +109,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
         } catch (XMLConfigurationException e) {
-        	rr.description = "Error in reading graph from XML !" + e.getMessage();
+        	rr.description = MiscUtils.exceptionChainToMessage("Error in reading graph from XML!", e);
         	rr.result = Result.ERROR;
         	return rr;
         } catch (GraphConfigurationException e) {
-        	rr.description = "Error - graph's configuration invalid !" + e.getMessage();
+        	rr.description = MiscUtils.exceptionChainToMessage("Error - graph's configuration invalid!", e);
         	rr.result = Result.ERROR;
         	return rr;
 		} 
@@ -126,7 +126,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     			futureResult = runGraph.executeGraph(graph, runtimeContext);
 
     		} catch (ComponentNotReadyException e) {
-    			rr.description = "Error during graph initialization: " + e.getMessage();           
+    			rr.description = MiscUtils.exceptionChainToMessage("Error during graph initialization.", e);           
             	rr.result = Result.ERROR;
             	return rr;
             } catch (RuntimeException e) {
@@ -138,11 +138,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		try {
     			result = futureResult.get();
     		} catch (InterruptedException e) {
-    			rr.description = "Graph was unexpectedly interrupted !" + e.getMessage();            
+    			rr.description = "Graph was unexpectedly interrupted !" +  MiscUtils.stackTraceToString(e);            
             	rr.result = Result.ERROR;
             	return rr;
     		} catch (ExecutionException e) {
-    			rr.description = "Error during graph processing !" + e.getMessage();            
+    			rr.description = "Error during graph processing !" +  MiscUtils.stackTraceToString(e);            
             	rr.result = Result.ERROR;
             	return rr;
     		}

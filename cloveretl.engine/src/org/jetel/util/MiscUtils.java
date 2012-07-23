@@ -140,4 +140,40 @@ public final class MiscUtils {
 		return stringWriter.toString();
 	}
 
+    /**
+     * Extract message from the given exception chain. All messages from all exceptions are concatenated
+     * to the resulted string.
+     * @param message prefixed message text which will be in the start of resulted string
+     * @param exception converted exception
+     * @return resulted overall message
+     */
+    public static String exceptionChainToMessage(String message, Throwable exception) {
+    	StringBuffer result = new StringBuffer();
+    	if (message != null) {
+    		result.append(message);
+    	}
+    	if (exception == null) {
+    		return result.toString();
+    	}
+    	Throwable exceptionIterator = exception;
+    	String lastMessage = "";
+    	while (true) {
+    		if (!StringUtils.isEmpty(exceptionIterator.getMessage())
+    				&& !lastMessage.equals(exceptionIterator.getMessage())) {
+    			lastMessage = exceptionIterator.getMessage();
+	    		if (!StringUtils.isEmpty(result)) {
+	    			result.append("\nCaused by: ");
+	    		}
+	    		result.append(lastMessage);
+    		}
+
+    		if (exceptionIterator.getCause() == null || exceptionIterator.getCause() == exceptionIterator) {
+    			break;
+    		} else {
+    			exceptionIterator = exceptionIterator.getCause();
+    		}
+    	}
+    	return result.toString();
+    }
+
 }
