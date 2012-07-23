@@ -19,14 +19,12 @@
 package org.jetel.component;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -93,9 +91,9 @@ import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -1983,8 +1981,16 @@ public class HttpConnector extends Node {
 	 */
 	private void mapLegacyOutput() throws Exception {
 		// output field connected - set the value there.
+		// NOTE: no output mapping is defined.
 		if (outField != null) {
-			outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
+			if (outputFileUrlToUse != null || storeResponseToTempFileToUse) {
+				// if we are storing the response to file, set the file URL into output field
+				outField.setValue(resultRecord.getField(RP_OUTPUTFILE_INDEX));
+				
+			} else {
+				// otherwise store the content
+				outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
+			}			
 		}		
 	}
 	
@@ -2245,27 +2251,11 @@ public class HttpConnector extends Node {
 			status.add(new ConfigurationProblem("'Input file URL' will be ignored because input port is connected.", Severity.WARNING, this, Priority.NORMAL));
 		}
 
-		int outputCount = 0;
-		if (outputFileUrl != null) {
-			outputCount++;
+		if (storeResponseToTempFile && outputFileUrl != null) {
+			status.add(new ConfigurationProblem("Only one of 'Output file URL' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
 		}
-		if (outputFieldName != null) {
-			outputCount++;
-		}
-		if (storeResponseToTempFile) {
-			outputCount++;
-		}
-		
-		if (outputCount > 1) {
-			status.add(new ConfigurationProblem("Only one of 'Output file URL', 'Output field' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
-		}
-	
 		
 			
-//		if (outputPort != null && !StringUtils.isEmpty(outputFileUrl)) {
-//			status.add(new ConfigurationProblem("'Output file URL' will be ignored because output port is connected.", Severity.WARNING, this, Priority.NORMAL));
-//		}
-
 		if (!StringUtils.isEmpty(requestContent) && !StringUtils.isEmpty(inputFileUrl)) {
 			status.add(new ConfigurationProblem("You can set either 'Request content' or 'Input file URL'.", Severity.ERROR, this, Priority.NORMAL));
 		}
