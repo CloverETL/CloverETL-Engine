@@ -171,8 +171,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
             rr.status = result;
     		rr.errMessage = graph.getWatchDog().getErrorMessage();            
         	rr.errException = MiscUtils.stackTraceToString(graph.getWatchDog().getCauseException());
-        	rr.errNode = causeGraphElement != null ? causeGraphElement.getId() : null;
-        	rr.errNodeType = (causeGraphElement instanceof Node) ? ((Node) causeGraphElement).getType() : null;
+        	rr.errComponent = causeGraphElement != null ? causeGraphElement.getId() : null;
+        	rr.errComponentType = (causeGraphElement instanceof Node) ? ((Node) causeGraphElement).getType() : null;
         } finally {
     		if (graph != null)
     			graph.free();

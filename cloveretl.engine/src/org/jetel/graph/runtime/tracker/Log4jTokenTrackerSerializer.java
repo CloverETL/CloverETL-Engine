@@ -129,8 +129,8 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 
 	private String getErrorDescription(RunStatus runStatus) {
 		if (runStatus.status == Result.ERROR) {
-			if (!StringUtils.isEmpty(runStatus.errNode)) {
-				return String.format(" on component %s with message '%s'", runStatus.errNode, runStatus.errMessage);
+			if (!StringUtils.isEmpty(runStatus.errComponent)) {
+				return String.format(" on component %s with message '%s'", runStatus.errComponent, runStatus.errMessage);
 			} else {
 				return String.format(" with message '%s'", runStatus.errMessage);
 			}
