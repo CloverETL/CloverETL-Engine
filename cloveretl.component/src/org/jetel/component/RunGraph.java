@@ -532,7 +532,7 @@ public class RunGraph extends Node{
 		
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
-		outputRecordData.setDescription(rs.errMessage);
+		outputRecordData.setDescription(assembleDescription(rs));
 		outputRecordData.setDuration(rs.duration);
 		outputRecordData.setGraphName(graphFileName);
 		outputRecordData.setMessage(rs.status.message());
@@ -546,12 +546,21 @@ public class RunGraph extends Node{
     		outputRecordData.setDescription("");
 		} else {
         	outputRecordData.setResult(Result.ERROR.equals(rs.status) ? "Error" : rs.status.message());
-        	outputRecordData.setDescription("Execution of graph failed! " + rs.errMessage);
-            logger.info(graphFileName + ": " + "Execution of graph failed! " + rs.errMessage);
+        	outputRecordData.setDescription("Execution of graph failed! " + assembleDescription(rs));
+            logger.info(graphFileName + ": " + "Execution of graph failed! " + assembleDescription(rs));
 		}
 		return rs.status;
 	}
 
+	private String assembleDescription(RunStatus runStatus) {
+		String message = runStatus.errMessage;
+		String exception = runStatus.errException;
+		if (!StringUtils.isEmpty(message)) {
+			return message + (!StringUtils.isEmpty(exception) ? "\nDetails:\n" + exception : "");
+		} else {
+			return (!StringUtils.isEmpty(exception)) ? exception : "";
+		}
+	}
 		
 	/**
 	 * Returns Properties with some of specified properties according to "paramsToPass" attribute. 
@@ -671,9 +680,18 @@ public class RunGraph extends Node{
         OutputPort errOutPort = getOutputPort(ERR_OUTPUT_PORT);
         InputPort inPort = getInputPort(INPUT_PORT);
         
+        //both output metadata need to have required fields
         if (outPort != null && !checkOutMetadata(outPort.getMetadata())  || 
         	errOutPort != null && !checkOutMetadata(errOutPort.getMetadata())) {
     		ConfigurationProblem problem = new ConfigurationProblem("Wrong output metadata", 
+    				Severity.ERROR, this, Priority.NORMAL);
+        	status.add(problem);
+        	return false;
+        }
+        
+        //both output metadata need to have same structure (see CL-2416)
+        if (outPort != null && errOutPort != null && !outPort.getMetadata().equals(errOutPort.getMetadata(), false)) {
+    		ConfigurationProblem problem = new ConfigurationProblem("Both output metadata must have same structure.", 
     				Severity.ERROR, this, Priority.NORMAL);
         	status.add(problem);
         	return false;
