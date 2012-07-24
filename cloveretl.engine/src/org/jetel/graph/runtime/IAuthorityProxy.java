@@ -101,8 +101,8 @@ public abstract class IAuthorityProxy {
 		public Result status;
 		public String errException;
 		public String errMessage;
-		public String errNode;
-		public String errNodeType;
+		public String errComponent;
+		public String errComponentType;
 		public Exception exception;
 		public Properties graphParameters;
 		public DictionaryValuesContainer dictionaryIn;
@@ -132,8 +132,8 @@ public abstract class IAuthorityProxy {
 			result.setProperty("status", String.valueOf(status.name()));
 			result.setProperty("errException", String.valueOf(errException));
 			result.setProperty("errMessage", String.valueOf(errMessage));
-			result.setProperty("errNode", String.valueOf(errNode));
-			result.setProperty("errNodeType", String.valueOf(errNodeType));
+			result.setProperty("errComponent", String.valueOf(errComponent));
+			result.setProperty("errComponentType", String.valueOf(errComponentType));
 			result.setProperty("exception", String.valueOf(MiscUtils.stackTraceToString(exception)));
 			if (dictionaryIn != null) {
 				result.setProperty("dictionaryIn", PropertiesUtils.formatProperties(dictionaryIn.toProperties()));
@@ -151,8 +151,8 @@ public abstract class IAuthorityProxy {
 			.append(", Job URL: ").append("\"").append(jobUrl).append("\"")
 			.append(", Message: ").append(errMessage != null ? "\""+errMessage+"\"" : "none")
 			.append(", Exception: ").append(exception != null ? exception.toString() : "none")
-			.append(", Error Node: ").append(errNode != null ? errNode : "none")
-			.append(", Error Node Type: ").append(errNodeType != null ? errNodeType : "none")
+			.append(", Error Component: ").append(errComponent != null ? errComponent : "none")
+			.append(", Error Component Type: ").append(errComponentType != null ? errComponentType : "none")
 			.append(", Duration: ").append(duration)
 			.append(", RunId: ").append(runId);
 			return s.toString();
