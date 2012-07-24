@@ -1213,7 +1213,7 @@ public class HttpConnector extends Node {
 	 * @param index
 	 * @return a Boolean value of given field in input record.
 	 */
-	private Boolean getBooleanInputParameterValue(int index) {
+	private Boolean getBooleanInputParameterValue(int index, Boolean defaultValue) {
 		Object value = inputParamsRecord.getField(index).getValue();
 		
 		if (Boolean.FALSE.equals(value)) {
@@ -1222,7 +1222,7 @@ public class HttpConnector extends Node {
 			return true;
 		} 
 		
-		return null;
+		return defaultValue;
 	}	
 
 	/** Returns a string value of the given field in input record.
@@ -1252,16 +1252,16 @@ public class HttpConnector extends Node {
 //		inputFieldNameToUse = getStringInputParameterValue(IP_INPUT_FIELD_NAME_INDEX);
 //		outputFieldNameToUse = getStringInputParameterValue(IP_OUTPUT_FIELD_NAME_INDEX);
 		outputFileUrlToUse = getStringInputParameterValue(IP_OUTPUT_FILE_URL_INDEX);
-		appendOutputToUse = getBooleanInputParameterValue(IP_APPEND_OUTPUT_INDEX);
+		appendOutputToUse = getBooleanInputParameterValue(IP_APPEND_OUTPUT_INDEX, Boolean.FALSE);
 		charsetToUse = getStringInputParameterValue(IP_CHARSET_INDEX);
 		rawRequestPropertiesToUse = getStringInputParameterValue(IP_REQUEST_PROPERTIES_INDEX);
-		addInputFieldsAsParametersToUse = getBooleanInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX);
+		addInputFieldsAsParametersToUse = getBooleanInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, Boolean.FALSE);
 		addInputFieldsAsParametersToToUse = getStringInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX);
 		ignoredFieldsToUse = getStringInputParameterValue(IP_IGNORED_FIELDS_INDEX);
 		authenticationMethodToUse = getStringInputParameterValue(IP_AUTHENTICATION_METHOD_INDEX);
 		usernameToUse = getStringInputParameterValue(IP_USERNAME_INDEX);
 		passwordToUse = getStringInputParameterValue(IP_PASSWORD_INDEX);
-		storeResponseToTempFileToUse = getBooleanInputParameterValue(IP_STORE_RESPONSE_TO_TEMP_INDEX);
+		storeResponseToTempFileToUse = getBooleanInputParameterValue(IP_STORE_RESPONSE_TO_TEMP_INDEX, Boolean.FALSE);
 		temporaryFilePrefixToUse = getStringInputParameterValue(IP_TEMP_FILE_PREFIX_INDEX);
 		multipartEntitiesToUse = getStringInputParameterValue(IP_MULTIPART_ENTITIES_INDEX);
 		consumerKeyToUse = getStringInputParameterValue(IP_CONSUMER_KEY_INDEX);
@@ -1327,20 +1327,17 @@ public class HttpConnector extends Node {
 //			}
 //		}
 		
-		if (resultRecord != null) {
-			// create response writer based on the configuration
-			if (outputFileUrlToUse != null) {
-				responseWriter = new ResponseFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), outputFileUrlToUse);
-				
-			} else if (storeResponseToTempFileToUse) {
-				responseWriter = new ResponseTempFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), temporaryFilePrefixToUse);
-				
-			} else {
-				responseWriter = new ResponseByValueWriter(resultRecord.getField(RP_CONTENT_INDEX));
-			}
-
+		// create response writer based on the configuration
+		if (outputFileUrlToUse != null) {
+			responseWriter = new ResponseFileWriter(resultRecord != null? resultRecord.getField(RP_OUTPUTFILE_INDEX) : null, outputFileUrlToUse);
+			
+		} else if (storeResponseToTempFileToUse) {
+			responseWriter = new ResponseTempFileWriter(resultRecord != null? resultRecord.getField(RP_OUTPUTFILE_INDEX) : null, temporaryFilePrefixToUse);
+			
+		} else {
+			responseWriter = new ResponseByValueWriter(resultRecord != null? resultRecord.getField(RP_CONTENT_INDEX) : null);
 		}
-		
+
 		// filter multipart entities (ignored fields are removed from multipart entities record)
 		if (!ignoredFieldsSet.isEmpty() && !StringUtils.isEmpty(multipartEntities)) {
 			List<String> multipartEntitiesList = new ArrayList<String>();
@@ -2349,7 +2346,7 @@ public class HttpConnector extends Node {
 		
 		
 		// process parameters
-		if (addInputFieldsAsParametersToToUse.equals("BODY")) {
+		if ("BODY".equals(addInputFieldsAsParametersToToUse)) {
 			//set request body if any
 			//FIXME: this replaces the multipart entity set in the previous step
 			//we leave it as-is to make the behavior compatible with older version using httpClient 3.x
@@ -2411,10 +2408,10 @@ public class HttpConnector extends Node {
 		HttpRequestBase method = null;
 		
 		// configure the request method
-		if (requestMethodToUse.equals(POST)) {
+		if (POST.equals(requestMethodToUse)) {
 			method = preparePostMethod(configuration);
 			
-		} else if (requestMethodToUse.equals(GET)) {
+		} else if (GET.equals(requestMethodToUse)) {
 			method = prepareGetMethod(configuration);
 			
 		} else {
@@ -2546,13 +2543,13 @@ public class HttpConnector extends Node {
 			
 			//set authentication method
 			String authMethod = null;
-			if (authenticationMethodToUse.equals("BASIC")) {
+			if ("BASIC".equals(authenticationMethodToUse)) {
 				//basic http authentication
 				authMethod = AuthPolicy.BASIC;
-			} else if (authenticationMethodToUse.equals("DIGEST")) {
+			} else if ("DIGEST".equals(authenticationMethodToUse)) {
 				//digest http authentication
 				authMethod = AuthPolicy.DIGEST;
-			} else if (authenticationMethodToUse.equals("ANY")) {
+			} else if ("ANY".equals(authenticationMethodToUse)) {
 				//one of the possible authentication method will be used
 				authMethod = "ANY";
 			}
@@ -2687,6 +2684,10 @@ public class HttpConnector extends Node {
 	 * @throws IOException
 	 */
 	private String prepareURL(String urlTemplate, Set<String> substituedPlaceHolders) throws ComponentNotReadyException {
+		if (urlTemplate == null) {
+			throw new ComponentNotReadyException("Invalid URL: null");
+		}
+		
 		// FIXME: is this check really necessary? The URL is checked at the end for unresolved references 
 		if (!isPossibleToMapVariables(urlTemplate)) {
 			throw new ComponentNotReadyException("Invalid input. Can't create URL or map fields to URL");
