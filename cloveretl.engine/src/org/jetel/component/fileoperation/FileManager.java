@@ -804,6 +804,7 @@ public class FileManager {
 			throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.not_a_directory"), base)); //$NON-NLS-1$
 		}
 		if (hasWildcards(part)) {
+			part = URIUtils.urlDecode(part);
 			List<Info> children = list(CloverURI.createSingleURI(base.getURI())).getResult();
 			List<Info> result = new ArrayList<Info>();
 			WildcardInfoFilter filter = new WildcardInfoFilter(part, directory);
@@ -814,7 +815,7 @@ public class FileManager {
 			}
 			return result; 
 		} else {
-			URI child = URIUtils.getChildURI(base.getURI(), part); 
+			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part)); 
 			Info info = getInstance().info(CloverURI.createSingleURI(child)).getInfo();
 			if (info != null) {
 				return Arrays.asList(info);

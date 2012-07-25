@@ -18,7 +18,11 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.regex.Pattern;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -34,14 +38,31 @@ public class URIUtils {
 	
 	public static final String PARENT_DIR_NAME = ".."; //$NON-NLS-1$
 	
+	public static final String CHARSET = "US-ASCII"; //$NON-NLS-1$
 	
+	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
+	
+	private static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
 
-	public static URI getChildURI(URI parentDir, String name) {
+	public static URI getChildURI(URI parentDir, URI name) {
 		String uriString = parentDir.toString();
 		if (!uriString.endsWith(PATH_SEPARATOR)) {
 			parentDir = URI.create(uriString + PATH_SEPARATOR);
 		}
 		return parentDir.resolve(name);
+	}
+
+	public static URI getChildURI(URI parentDir, String name) {
+		StringBuilder sb = new StringBuilder(name);
+		int end = name.endsWith(PATH_SEPARATOR) ? name.length() - 1 : name.length();
+		// prevent trailing slash from being encoded
+		// there mustn't be any other slashes 
+		sb.replace(0, end, urlEncode(sb.substring(0, end)));
+		String uriString = parentDir.toString();
+		if (!uriString.endsWith(PATH_SEPARATOR)) {
+			parentDir = URI.create(uriString + PATH_SEPARATOR);
+		}
+		return parentDir.resolve(sb.toString());
 	}
 	
 	public static URI getParentURI(URI uri) {
@@ -53,4 +74,19 @@ public class URIUtils {
 		return uriString.substring(uriString.lastIndexOf('/') + 1);
 	}
 
+	public static String urlEncode(String str) {
+		try {
+			return PLUS_PATTERN.matcher(URLEncoder.encode(str, CHARSET)).replaceAll(ENCODED_SPACE);
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+	}
+
+	public static String urlDecode(String str) {
+		try {
+			return URLDecoder.decode(str, CHARSET);
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+	}
 }
