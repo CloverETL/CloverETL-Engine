@@ -145,7 +145,18 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
 							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
-							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf"); // remove after CL-2239 solved
+							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
+							&& !pathname.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_error_unknownhost.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_error_unknownprotocol.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_inputfield.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_inputfileURL.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_requestcontent.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
+							&& !pathname.getName().equals("HttpConector_errHandlingNoRedir.grf"); // ok, is to fail
+					
 				}
 			});
 			
