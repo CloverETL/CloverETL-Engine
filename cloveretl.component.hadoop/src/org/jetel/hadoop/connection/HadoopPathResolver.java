@@ -10,6 +10,7 @@ import java.net.URL;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.file.CustomPathResolver;
@@ -30,7 +31,12 @@ public class HadoopPathResolver implements CustomPathResolver {
 
 				final String hadoopConnName = inputURI.getHost();
 
-				IConnection  conn = ContextProvider.getGraph().getConnection(hadoopConnName);
+				TransformationGraph graph=ContextProvider.getGraph();
+				if (graph==null){
+					throw new IOException(String.format("Internal error: Cannot find HDFS connection [%s] referenced in fileURL \"%s\". Missing TransformationGraph instance.",hadoopConnName,input));
+				}
+				
+				IConnection  conn = graph.getConnection(hadoopConnName);
 				if (conn==null)
 					throw new IOException(String.format("Cannot find HDFS connection [%s] referenced in fileURL \"%s\".",hadoopConnName,input));
 				if (!(conn instanceof HadoopConnection)){
@@ -70,7 +76,12 @@ public class HadoopPathResolver implements CustomPathResolver {
 
 				final String hadoopConnName = inputURI.getHost();
 				
-				IConnection  conn = ContextProvider.getGraph().getConnection(hadoopConnName);
+				TransformationGraph graph=ContextProvider.getGraph();
+				if (graph==null){
+					throw new IOException(String.format("Internal error: Cannot find HDFS connection [%s] referenced in fileURL \"%s\". Missing TransformationGraph instance.",hadoopConnName,input));
+				}
+				
+				IConnection  conn = graph.getConnection(hadoopConnName);
 				if (conn==null)
 					throw new IOException(String.format("Cannot find HDFS connection [%s] referenced in fileURL \"%s\".",hadoopConnName,input));
 				if (!(conn instanceof HadoopConnection)){

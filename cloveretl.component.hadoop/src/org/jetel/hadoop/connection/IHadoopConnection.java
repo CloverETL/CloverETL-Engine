@@ -42,6 +42,8 @@ public interface IHadoopConnection {
 	
 	public void close() throws IOException;
 	
+	public Object getDFS();
+	
 	
 	public IHadoopInputStream open(URI file) throws IOException;
 	public IHadoopInputStream open(URI file, int bufferSize) throws IOException;

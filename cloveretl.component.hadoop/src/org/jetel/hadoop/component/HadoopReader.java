@@ -20,12 +20,11 @@
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -39,11 +38,11 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
-import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -91,7 +90,7 @@ public class HadoopReader extends Node {
 	private String keyFieldName;
 	private String valueFieldName;
 
-	private IHadoopConnection connection;
+	private HadoopConnection connection;
 	private IHadoopSequenceFileParser parser;
 
 	IParserExceptionHandler exceptionHandler = null;
@@ -115,50 +114,20 @@ public class HadoopReader extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		if (firstRun()) {
-			DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-			
-			IConnection conn = getGraph().getConnection(connectionID);
-			if (conn == null) {
-				throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
-			}
-			if (!(conn instanceof HadoopConnection)) {
-				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
-			}
-			
-			logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
-			
-			try {
-				this.connection= ((HadoopConnection) conn).getConnection();
-				this.parser=connection.createParser(this.keyFieldName, this.valueFieldName, metadata);
-				this.parser.setDataSource(new URI(this.fileURL));
-				this.parser.init();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
-			} catch (URISyntaxException e) {
-				throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
-			}
-			
-			//TODO: enable when multifilerreader is activated/updated  reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-		} else {
-			reader.reset();
-		}
+		reader.preExecute();
 	}
 
 	@Override
 	public Result execute() throws Exception {
-		// we need to create data record - take the metadata from first output
-		// port
-		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT)
-				.getMetadata());
+		// we need to create data record - take the metadata from first output port
+		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
-		record.reset();
 
 		// till it reaches end of data or it is stopped from outside
 		try {
 			while (record != null && runIt) {
 				try {
-					if ((record = parser.getNext(record)) != null) {
+					if ((record = reader.getNext(record)) != null) {
 						// broadcast the record to all connected Edges
 						writeRecordBroadcast(record);
 					}
@@ -182,12 +151,11 @@ public class HadoopReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		try {
-			if (parser!=null) parser.free();
-			if (reader!=null) reader.close();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": "
-					+ e.getMessage(), e);
+    	try {
+			reader.postExecute();
+		}
+		catch (ComponentNotReadyException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
 		}
 	}
 
@@ -241,18 +209,44 @@ public class HadoopReader extends Node {
 		if (isInitialized())
 			return;
 		super.init();
-		
+		if(connection==null)
+			prepareConnection();
+		prepareMultiFileReader();
 	}
 
 	
-	//TODO: not used for now - need to be able to pass-in just URLs
-	/*
+	private void prepareConnection() throws ComponentNotReadyException{
+		IConnection conn = getGraph().getConnection(connectionID);
+		if (conn == null) {
+			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
+		}
+		if (!(conn instanceof HadoopConnection)) {
+			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
+		}
+		
+		logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
+		
+		conn.init();
+		this.connection= (HadoopConnection)conn;
+	}
+	
+	
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+		TransformationGraph graph = getGraph();
 		
+		if (connection==null)
+			prepareConnection();
+		
+		try {
+			parser = connection.getConnection().createParser(this.keyFieldName, this.valueFieldName, metadata);
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(this,e);
+		}
+		
+		parser.setGraph(graph);
 		parser.setExceptionHandler(exceptionHandler);
 
-		TransformationGraph graph = getGraph();
 
 		// initialize multifile reader based on prepared parser
 		reader = new MultiFileReader(parser, graph != null ? graph
@@ -280,7 +274,8 @@ public class HadoopReader extends Node {
 		reader.setPropertyRefResolver(new PropertyRefResolver(graph
 				.getGraphProperties()));
 		reader.setDictionary(graph.getDictionary());
-	}*/
+		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	}
 
 	/**
 	 * Description of the Method
@@ -384,52 +379,40 @@ public class HadoopReader extends Node {
 		exceptionHandler = handler;
 	}
 
-	/** Description of the Method */
-	@Override
-	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		super.checkConfig(status);
+	/**  Description of the Method */
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
+        
+        if(!checkInputPorts(status, 0, 1)
+        		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+        	return status;
+        }
+        
+        checkMetadata(status, getOutMetadata());
 
-		if (!checkInputPorts(status, 0, 1)
-				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
-			return status;
-		}
-
-
-		checkMetadata(status, getOutMetadata());
-		
-		/* TODO: enable when MultifilerReader is used
-		
-		try {
-			// check inputs
-			//prepareMultiFileReader();
-			DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT)
-					.getMetadata();
-			if (!metadata.hasFieldWithoutAutofilling()) {
-				status.add(new ConfigurationProblem(
-						"No field elements without autofilling for '"
-								+ getOutputPort(OUTPUT_PORT).getMetadata()
-										.getName() + "' have been found!",
-						ConfigurationStatus.Severity.ERROR, this,
-						ConfigurationStatus.Priority.NORMAL));
-			}
-			
-			reader.checkConfig(metadata);
-			
-		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(
-					e.getMessage(), ConfigurationStatus.Severity.WARNING, this,
-					ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
-		} finally {
-			free();
-		}
-		*/
-		return status;
-	}
-
+        try { 
+            // check inputs
+            prepareMultiFileReader();
+            DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+    		if (!metadata.hasFieldWithoutAutofilling()) {
+    			status.add(new ConfigurationProblem(
+                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
+                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+    		}
+            reader.checkConfig(metadata);
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        } finally {
+        	free();
+        }
+        
+        return status;
+    }
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;

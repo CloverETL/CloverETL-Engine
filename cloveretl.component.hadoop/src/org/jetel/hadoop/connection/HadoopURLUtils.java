@@ -11,27 +11,40 @@ public class HadoopURLUtils {
 		public static final String HDFS_PROTOCOL_URL_PREFIX = HDFS_PROTOCOL + "://";
 
 		/**
-		 * Checks whether or not a given URL string is a HDFS URL.
+		 * Checks whether or not a given URL string is a Hadoop/HDFS URL.
 		 *
 		 * @param url a string URL to be checked
 		 *
-		 * @return <code>true</code> if the given URL is a sandbox URL, <code>false</code> otherwise 
+		 * @return <code>true</code> if the given URL is a Hadoop/HDFS URL, <code>false</code> otherwise 
 		 */
 		public static boolean isHDFSUrl(String url) {
 			return (url != null && url.startsWith(HDFS_PROTOCOL_URL_PREFIX));
 		}
 
 		/**
-		 * Checks whether or not an URL is a sandbox URL.
+		 * Checks whether or not an URL is a Hadoop/HDFS URL.
 		 *
 		 * @param url an URL to be checked
 		 *
-		 * @return <code>true</code> if the given URL is a HDFS URL, <code>false</code> otherwise 
+		 * @return <code>true</code> if the given URL is a Hadoop/HDFS URL, <code>false</code> otherwise 
 		 */
 		public static boolean isHDFSUrl(URL url) {
 			return (url != null && url.getProtocol().equals(HDFS_PROTOCOL));
 		}
 
+		
+		/**
+		 * Checks whether or not an URI is a Hadoop URI.
+		 *
+		 * @param uri an URI to be checked
+		 *
+		 * @return <code>true</code> if the given URL is a Hadoop/HDFS URL, <code>false</code> otherwise 
+		 */
+		public static boolean isHDFSUri(URI uri) {
+			return (uri != null &&  uri.getScheme().equals(HDFS_PROTOCOL));
+		}
+		
+		
 		/**
 		 * Extracts a connection name from a given HDFS URL.
 		 *
@@ -75,11 +88,11 @@ public class HadoopURLUtils {
 		/**
 		 * Extracts a relative URL from a given sandbox URL.
 		 *
-		 * @param hdfsUrl a sandbox URL
+		 * @param hdfsUrl a Hadoop/HDFS URL
 		 *
 		 * @return a relative URL extracted from the given sandbox URL
 		 *
-		 * @throws IllegalArgumentException if the given url is not a sanbox URL  
+		 * @throws IllegalArgumentException if the given url is not a Hadoop/HDFS URL  
 		 */
 		public static String getRelativeUrl(String hdfsUrl) {
 			if (!isHDFSUrl(hdfsUrl)) {
