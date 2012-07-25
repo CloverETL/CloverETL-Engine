@@ -262,6 +262,45 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.copy(source, target);
 		assertFalse(result.success());
 		assertTrue(manager.exists(source));
+
+		{
+			String sourceDir = "spaces/source/";
+			String targetDir = "spaces/target/";
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			source = relativeURI(sourceDir, dirName);
+			assertFalse(String.format("%s already exists", source), manager.exists(source));
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			System.out.println(source.getAbsoluteURI());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+
+			target = relativeURI(targetDir);
+			assertTrue(manager.create(target, new CreateParameters().setMakeParents(true).setDirectory(true)).success());
+			
+			source = relativeURI(sourceDir, dirName);
+			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			
+			target = relativeURI(targetDir, dirName);
+			info = manager.info(target);
+			assertTrue(String.format("%s does not exist", target), info.exists());
+			assertTrue(String.format("%s is not a directory", target), info.isDirectory());
+			assertEquals(dirName, info.getName());
+			
+			target = relativeURI(targetDir, dirName + "/" + fileName);
+			info = manager.info(target);
+			assertTrue(String.format("%s is not a file", target), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			assertTrue(manager.delete(target).success());
+			assertTrue(manager.copy(source, target).success());
+			info = manager.info(target);
+			assertTrue(info.isFile());
+			assertEquals(fileName, info.getName());
+		}
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -316,6 +355,25 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		info = manager.info(uri);
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a file", uri), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			uri = relativeURI(dirName);
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+			assertEquals(dirName, info.getName());
+		}
 	}
 	
 	protected void prepareData(Map<String, String> texts) throws Exception {
@@ -491,6 +549,46 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.move(source, target);
 		assertFalse(result.success());
 		assertTrue(manager.exists(source));
+
+		{
+			String sourceDir = "spaces/source/";
+			String targetDir = "spaces/target/";
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			source = relativeURI(sourceDir, dirName);
+			assertFalse(String.format("%s already exists", source), manager.exists(source));
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			System.out.println(source.getAbsoluteURI());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+
+			target = relativeURI(targetDir);
+			assertTrue(manager.create(target, new CreateParameters().setMakeParents(true).setDirectory(true)).success());
+			
+			source = relativeURI(sourceDir, dirName);
+			assertTrue(manager.move(source, target).success());
+			
+			target = relativeURI(targetDir, dirName);
+			info = manager.info(target);
+			assertTrue(String.format("%s does not exist", target), info.exists());
+			assertTrue(String.format("%s is not a directory", target), info.isDirectory());
+			assertEquals(dirName, info.getName());
+			
+			target = relativeURI(targetDir, dirName + "/" + fileName);
+			info = manager.info(target);
+			assertTrue(String.format("%s is not a file", target), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			assertTrue(manager.delete(target).success());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+			assertTrue(manager.move(source, target).success());
+			info = manager.info(target);
+			assertTrue(info.isFile());
+			assertEquals(fileName, info.getName());
+		}
 	}
 	
 	protected String read(ReadableByteChannel channel) {
@@ -537,6 +635,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
 		texts.put("srcdir/found.tmp", "V lese padají šišky");
 		texts.put("root.tmp", "Root file");
+		texts.put("directory with spaces/file with spaces.tmp", "Spaces");
 		prepareData(texts);
 		assumeTrue(manager.isDirectory(relativeURI("srcdir")));
 		
@@ -577,6 +676,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
 		texts.put("srcdir/found.tmp", "V lese padají šišky");
 		texts.put("root.tmp", "Root file");
+		texts.put("directory with spaces/file with spaces.tmp", "Spaces");
 
 		CloverURI uri = null;
 		
@@ -597,7 +697,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		}
 		
 		{
-			assumeTrue(manager.create(relativeURI("srcdir/")).success());
+			assumeTrue(manager.create(relativeURI("srcdir/;directory with spaces/")).success());
 		}
 
 		try {
@@ -639,6 +739,18 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(1, provider.size());
 			write(provider.channel(), newContent);
 			assertEquals(newContent, read(manager.getInput(relativeURI(provider.getURI().toString())).channel()));
+		}
+
+		{
+			String path = "directory with spaces/file with spaces.tmp";
+			uri = relativeURI(path);
+			String newContent = "New content";
+			assertEquals(1, manager.getOutput(uri).size());
+			WritableContentProvider provider = manager.getOutput(uri);
+			for (int i = 0; i < provider.size(); i++) {
+				write(provider.channel(i), newContent);
+				assertEquals(newContent, read(manager.getInput(relativeURI(provider.getURI(i).toString())).channel()));
+			}
 		}
 	}
 
@@ -715,6 +827,25 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		} else {
 			System.err.println("Could not test deleting 'wildcardsDir/*.tmp'");
 		}
+
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			
+			assertTrue(manager.delete(uri).success());
+			assertFalse(manager.exists(uri));
+			
+			uri = relativeURI(dirName);
+			assertTrue(manager.delete(uri).success());
+			assertFalse(manager.exists(uri));
+		}
 	}
 
 	public void testResolve() throws Exception {
@@ -729,6 +860,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assumeTrue(manager.isDirectory(relativeURI("subdir/tmpdir")));
 			assumeTrue(manager.create(relativeURI("subdir/tmpfile.tmp")).success());
 			assumeTrue(manager.isFile(relativeURI("subdir/tmpfile.tmp")));
+			assumeTrue(manager.create(relativeURI("spaces/directory with spaces/file with spaces.tmp"), new CreateParameters().setMakeParents(true)).success());
 		}
 		
 		ResolveResult result;
@@ -744,6 +876,46 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertEquals(2, result.successCount());
 
 		result = manager.resolve(relativeURI("subdir/*/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/*/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory?with?spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory with spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20with%20spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20wit*"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory with?spaces/file with%20spaces.tmp"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20with?spaces/file?with spaces.tmp"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20wit*/file%20wit*.tmp"));
 		System.out.println(result);
 		assertTrue(result.success());
 		assertEquals(1, result.successCount());
@@ -792,6 +964,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			result = manager.create(relativeURI("dir2-Install/", files), new CreateParameters().setMakeParents(true));
 			assumeTrue(result.successCount() == files.split(";").length);
 			result = manager.create(relativeURI("dir2-Insight/", files), new CreateParameters().setMakeParents(true));
+			assumeTrue(result.successCount() == files.split(";").length);
+			files = "directory with space/file with space.tmp";
+			result = manager.create(relativeURI("spaces/", files), new CreateParameters().setMakeParents(true));
 			assumeTrue(result.successCount() == files.split(";").length);
 		}
 		
@@ -857,6 +1032,11 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(2, listResult.errorCount());
 		}
 		
+		result = manager.list(relativeURI("spaces"), new ListParameters().setRecursive(true)).getResult();
+		System.out.println(result);
+		assertEquals("Different list result", new HashSet<String>(Arrays.asList("spaces/directory%20with%20space/;spaces/directory%20with%20space/file%20with%20space.tmp".split(";"))), new HashSet<String>(getRelativePaths(baseUri, result)));
+		printInfo(baseUri, result);
+
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {
@@ -945,6 +1125,27 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(manager.create(uri).success());
 		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
 		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
+
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a file", uri), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			uri = relativeURI(dirName);
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+			assertEquals(dirName, info.getName());
+		}
 
 	}
 	

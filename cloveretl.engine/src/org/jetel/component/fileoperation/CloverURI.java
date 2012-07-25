@@ -131,6 +131,7 @@ public abstract class CloverURI {
 		if (uri.contains(SEPARATOR)) {
 			throw new IllegalArgumentException(FileOperationMessages.getString("CloverURI.not_a_single_URI")); //$NON-NLS-1$
 		}
+		uri = preprocess(uri);
 		return new SingleCloverURI(context, uri);
 	}
 	

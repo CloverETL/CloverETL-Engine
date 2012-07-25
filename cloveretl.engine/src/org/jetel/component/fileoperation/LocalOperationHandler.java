@@ -337,6 +337,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), base)); //$NON-NLS-1$
 		}
+		part = URIUtils.urlDecode(part);
 		if (hasWildcards(part)) {
 			File[] children = base.listFiles(new WildcardFileFilter(part, directory));
 			return children != null ? Arrays.asList(children) : new ArrayList<File>(0); 

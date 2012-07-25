@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -88,11 +87,10 @@ public class FTPOperationHandler implements IOperationHandler {
 			this.file = file;
 			this.parent = parent;
 			String name = file.getName();
-			String encodedName = URLEncoder.encode(name, "US-ASCII"); //$NON-NLS-1$
-			if (file.isDirectory() && !name.endsWith("/")) { //$NON-NLS-1$
-				encodedName = encodedName + "/"; //$NON-NLS-1$
+			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
+				name = name + URIUtils.PATH_SEPARATOR;
 			}
-			URI tmp = URIUtils.getChildURI(parent, encodedName);
+			URI tmp = URIUtils.getChildURI(parent, name);
 			this.uri = tmp;
 		}
 
@@ -253,6 +251,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
 				fileName = fileName.substring(0, fileName.length()-1);
 			}
+			fileName = URIUtils.urlDecode(fileName);
 			FTPFile[] files = ftp.listFiles(parentUri.getPath());
 			if (files != null) {
 				for (FTPFile file: files) {
