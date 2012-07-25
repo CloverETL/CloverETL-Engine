@@ -1,6 +1,5 @@
 package org.jetel.component.hadooploader;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -11,11 +10,18 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.jetel.component.hadooploader.HadoopCloverConvert.Hadoop2Clover;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
+import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.hadoop.connection.HadoopURLUtils;
+import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -33,6 +39,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	private Hadoop2Clover keyCopy;
 	private Hadoop2Clover valCopy;
 	private DataRecordMetadata metadata;
+	private TransformationGraph graph;
 	
 	private IParserExceptionHandler exceptionHandler;
 	
@@ -55,7 +62,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		 // create a new data record
-        DataRecord record = new DataRecord(metadata);
+        DataRecord record = DataRecordFactory.newRecord(metadata);
         record.init();
         return getNext(record);
 	}
@@ -92,9 +99,11 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 				throw new ComponentNotReadyException("Can't find value field of name \""+keyFieldName+"\" in metadata.");
 			}
 		}
-		
+	}
+
+	private void initCopyObjects() throws IOException{
 		if (reader==null)
-			throw new ComponentNotReadyException("No source data reader defined.");
+			throw new IOException("No source data reader defined.");
 		
 		DataFieldType hKeyType;
 		DataFieldType hValueType;
@@ -106,53 +115,87 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 			keyValue = (Writable) reader.getKeyClass().newInstance();
 			dataValue = (Writable) reader.getValueClass().newInstance();
 		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
+			throw ex;
 		}catch(Exception ex){
-			throw new ComponentNotReadyException("Error when initializing HadoopSequenceFile parser.",ex);
+			throw new IOException("Error when initializing HadoopSequenceFile parser.",ex);
 		}
 		
 		if (metadata.getField(keyField).getDataType() !=hKeyType)
-			throw new ComponentNotReadyException(String.format("Incompatible Clover & Hadoop data types for Key \"%s\" (%s <> %s/%s).",
+			throw new IOException(String.format("Incompatible Clover & Hadoop data types for Key \"%s\" (%s <> %s/%s).",
 					metadata.getField(keyField).getName(),metadata.getField(keyField).getDataType(),reader.getKeyClassName(),hKeyType));
 		
 		if (metadata.getField(valueField).getDataType() !=hValueType)
-			throw new ComponentNotReadyException(String.format("Incompatible Clover & Hadoop data types for Value \"%s\" (%s <> %s/%s).",
+			throw new IOException(String.format("Incompatible Clover & Hadoop data types for Value \"%s\" (%s <> %s/%s).",
 					metadata.getField(valueField).getName(),metadata.getField(keyField).getDataType(),reader.getValueClassName(),hValueType));
 	}
-
+	
+	
 	@Override
 	public void setDataSource(Object inputDataSource) throws IOException,
-			ComponentNotReadyException {
-		if (inputDataSource instanceof SequenceFile.Reader){
-			reader=(SequenceFile.Reader)inputDataSource;
+	ComponentNotReadyException {
+		FileSystem tmpDFS;
+		if (inputDataSource instanceof SequenceFile.Reader) {
+			reader = (SequenceFile.Reader) inputDataSource;
 			return;
 		}
-		if (dfs==null){
-			throw new IOException("Can't create input data stream - no Hadoop FileSystem object defined");
-		}
-		
-		ClassLoader formerContextClassloader = Thread.currentThread()
-				.getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(
-					this.getClass().getClassLoader());
 
-			if (inputDataSource instanceof URI) {
-				reader = new SequenceFile.Reader(dfs, new Path(
-						((URI) inputDataSource).getPath()), new Configuration());
-			} else if (inputDataSource instanceof File) {
-				reader = new SequenceFile.Reader(dfs, new Path(
-						((File) inputDataSource).getPath()),
-						new Configuration());
-			} else {
-				throw new IOException("Unsupported data source type: "
-						+ inputDataSource.getClass().getName());
+		if (inputDataSource instanceof URI) {
+			if (!HadoopURLUtils.isHDFSUri((URI)inputDataSource))
+				throw new IOException("Not a valid HDFS/Hadoop URL - "+inputDataSource);
+			final String connectionName = ((URI) inputDataSource).getHost();
+
+			if (graph==null) graph = ContextProvider.getGraph();
+			if (graph == null) {
+				throw new IOException(
+						String.format(
+								"Internal error: Cannot find HDFS connection [%s] referenced in fileURL \"%s\". Missing TransformationGraph instance.",
+								connectionName, inputDataSource));
 			}
-		} finally {
-			Thread.currentThread().setContextClassLoader(
-					formerContextClassloader);
-		}
 
+			ClassLoader formerContextClassloader = Thread.currentThread()
+					.getContextClassLoader();
+			try {
+				Thread.currentThread().setContextClassLoader(
+						this.getClass().getClassLoader());
+
+				if (dfs==null){
+
+					IConnection conn = graph.getConnection(connectionName);
+					if (conn == null)
+						throw new IOException(
+								String.format(
+										"Cannot find HDFS connection [%s] referenced in fileURL \"%s\".",
+										connectionName, inputDataSource));
+					if (!(conn instanceof HadoopConnection)) {
+						throw new IOException(String.format(
+								"Connection [%s:%s] is not of HDFS type.",
+								conn.getId(), conn.getName()));
+					}
+					conn.init(); // try to init - in case it was not already initialized
+					tmpDFS=(FileSystem) ((HadoopConnection) conn).getConnection().getDFS();
+				}else{
+					tmpDFS=dfs;
+				}
+				
+				try{
+					reader = new SequenceFile.Reader(tmpDFS, 
+							new Path(((URI) inputDataSource).getPath()),
+							new Configuration());
+				}catch(IOException ex){
+					//TODO:may try to improve error message
+					throw ex;
+				}
+
+			} finally {
+				Thread.currentThread().setContextClassLoader(
+						formerContextClassloader);
+			}
+
+		} else {
+			throw new IOException("Unsupported data source type: "
+					+ inputDataSource.getClass().getName());
+		}
+		initCopyObjects();
 	}
 
 	@Override
@@ -251,7 +294,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	}
 
 	@Override
-	public boolean isFileSourcePreferred() {
+	public boolean isURISourcePreferred() {
 		return true;
 	}
 
@@ -269,6 +312,17 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	
 	public void setDFS(FileSystem dfs){
 		this.dfs=dfs;
+	}
+
+	@Override
+	public void setHadoopConnection(IHadoopConnection conn) {
+		this.dfs = (FileSystem)conn.getDFS();
+	}
+
+	@Override
+	public void setGraph(TransformationGraph graph) {
+		this.graph=graph;
+		
 	}
 
 }

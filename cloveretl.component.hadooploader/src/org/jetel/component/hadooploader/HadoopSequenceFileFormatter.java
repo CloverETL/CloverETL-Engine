@@ -1,6 +1,5 @@
 package org.jetel.component.hadooploader;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
@@ -10,9 +9,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.jetel.component.hadooploader.HadoopCloverConvert.Clover2Hadoop;
 import org.jetel.data.DataRecord;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
+import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.hadoop.connection.HadoopURLUtils;
+import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.metadata.DataRecordMetadata;
+
 
 public class HadoopSequenceFileFormatter implements
 		IHadoopSequenceFileFormatter {
@@ -25,6 +31,7 @@ public class HadoopSequenceFileFormatter implements
 	private String valueFieldName;
 	private Clover2Hadoop keyCopy;
 	private Clover2Hadoop valCopy;
+	private TransformationGraph graph;
 	
 	
 	public HadoopSequenceFileFormatter(FileSystem dfs) {
@@ -77,49 +84,68 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {
-		if (outputDataTarget instanceof SequenceFile.Writer){
-			writer=(SequenceFile.Writer)outputDataTarget;
+		FileSystem tmpDFS;
+		
+		if (outputDataTarget instanceof SequenceFile.Writer) {
+			writer = (SequenceFile.Writer) outputDataTarget;
 			return;
 		}
-		if (dfs==null){
-			throw new IOException("Can't create output data stream - no Hadoop FileSystem object defined");
-		}
-		if (outputDataTarget instanceof URI){
-			ClassLoader formerContextClassloader = Thread.currentThread().getContextClassLoader();
-			try {
-				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-				
-				writer = SequenceFile.createWriter(dfs,                    // FileSystem
-		                new Configuration(),                  // Configuration
-		                new Path(((URI)outputDataTarget).getPath()), // Path to new file in HDFS
-		                keyCopy.getValueClass(),     		// Key Data Type
-		                valCopy.getValueClass(),            // Value Data Type
-		                SequenceFile.CompressionType.NONE);
-			} finally {
-				Thread.currentThread().setContextClassLoader(formerContextClassloader);
-			}
+
+		if (outputDataTarget instanceof URI) {
+			if (!HadoopURLUtils.isHDFSUri((URI)outputDataTarget))
+				throw new IOException("Not a valid HDFS/Hadoop URL - "+outputDataTarget);
 			
-		}else if (outputDataTarget instanceof File){
+			final String connectionName = ((URI) outputDataTarget).getHost();
+
+			if(graph==null) graph = ContextProvider.getGraph();
+			if (graph == null) {
+				throw new IOException(
+						String.format(
+								"Internal error: Cannot find HDFS connection [%s] referenced in fileURL \"%s\". Missing TransformationGraph instance.",
+								connectionName, outputDataTarget));
+			}
+
 			ClassLoader formerContextClassloader = Thread.currentThread()
 					.getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(
+					this.getClass().getClassLoader());
 			try {
-				Thread.currentThread().setContextClassLoader(
-						this.getClass().getClassLoader());
 
-				writer = SequenceFile.createWriter(dfs, // FileSystem
+				if(dfs==null){
+					IConnection conn = graph.getConnection(connectionName);
+					if (conn == null)
+						throw new IOException(
+								String.format(
+										"Cannot find HDFS connection [%s] referenced in fileURL \"%s\".",
+										connectionName, outputDataTarget));
+					if (!(conn instanceof HadoopConnection)) {
+						throw new IOException(String.format(
+								"Connection [%s:%s] is not of HDFS type.",
+								conn.getId(), conn.getName()));
+					}
+					conn.init(); // try to init - in case it was not already initialized
+					tmpDFS=(FileSystem) ((HadoopConnection) conn)
+							.getConnection().getDFS();
+
+				}else{
+					tmpDFS=dfs;
+				}
+				writer = SequenceFile.createWriter(tmpDFS, // FileSystem
 						new Configuration(), // Configuration
-						new Path(((File) outputDataTarget).getPath()), // Path to  new file in HDFS
+						new Path(((URI) outputDataTarget).getPath()), // Path to new file in HDFS
 						keyCopy.getValueClass(), // Key Data Type
 						valCopy.getValueClass(), // Value Data Type
 						SequenceFile.CompressionType.NONE);
-
+			} catch(ComponentNotReadyException ex){
+				throw new IOException(ex);
 			} finally {
 				Thread.currentThread().setContextClassLoader(
 						formerContextClassloader);
 			}
 
-		}else{
-			throw new IOException("Unsupported data target type: "+outputDataTarget.getClass().getName());
+		} else {
+			throw new IOException("Unsupported data target type: "
+					+ outputDataTarget.getClass().getName());
 		}
 
 	}
@@ -160,7 +186,7 @@ public class HadoopSequenceFileFormatter implements
 	}
 
 	@Override
-	public boolean isFileTargetPreferred() {
+	public boolean isURITargetPreferred() {
 		return true;
 	}
 
@@ -177,6 +203,16 @@ public class HadoopSequenceFileFormatter implements
 		this.keyFieldName=keyFieldName;
 		this.valueFieldName=valueFieldName;
 		
+	}
+
+	@Override
+	public void setHadoopConnection(IHadoopConnection conn) {
+		this.dfs = (FileSystem)conn.getDFS();
+	}
+
+	@Override
+	public void setGraph(TransformationGraph graph) {
+		this.graph=graph;
 	}
 	
 }

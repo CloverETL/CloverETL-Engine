@@ -23,15 +23,12 @@ import java.net.URI;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
-import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopFileStatus;
 import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.hadoop.connection.IHadoopInputStream;
@@ -304,5 +301,25 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		return new HadoopSequenceFileParser(dfs,metadata, keyFieldName, valueFieldName);
 	}
 
+	@Override
+	public HadoopFileStatus getStatus(URI path) throws IOException {
+		FileStatus status = dfs.getFileStatus(new Path(path));
+		return new HadoopFileStatus(status.getPath().toUri(),
+				status.getLen(), status.isDir(),
+				status.getModificationTime());
+	}
 	
+	@Override
+	public HadoopFileStatus getExtendedStatus(URI path) throws IOException {
+		FileStatus status = dfs.getFileStatus(new Path(path));
+		return new HadoopFileStatus(status.getPath().toUri(),
+				status.getLen(), status.isDir(),
+				status.getModificationTime(), status.getBlockSize(),status.getGroup(),status.getOwner(),status.getReplication());
+	}
+
+	@Override
+	public Object getDFS() {
+		return dfs;
+	}
+
 }
