@@ -29,7 +29,7 @@ package org.jetel.data.parser;
 public abstract class AbstractParser implements Parser {
 
 	@Override
-	public boolean isFileSourcePreferred() {
+	public boolean isURISourcePreferred() {
 		return false;
 	}
 	

@@ -42,14 +42,14 @@ public class ReadableChannelIteratorTest extends CloverTestCase {
 	
 	public void testFileSourcePreferred() throws JetelException, ComponentNotReadyException, MalformedURLException {
 		ReadableChannelIterator sourceIterator = new ReadableChannelIterator(null, FileUtils.getFileURL("."), "neco/neco.txt");
-		sourceIterator.setFileSourcePreferred(true);
+		sourceIterator.setURISourcePreferred(true);
 		sourceIterator.init();
 		assertTrue(sourceIterator.next() instanceof File);
 	}
 
 	public void testNextChannel() throws JetelException, ComponentNotReadyException, MalformedURLException {
 		ReadableChannelIterator sourceIterator = new ReadableChannelIterator(null, FileUtils.getFileURL("."), "neco/neco.txt");
-		sourceIterator.setFileSourcePreferred(true);
+		sourceIterator.setURISourcePreferred(true);
 		sourceIterator.init();
 		assertNull(sourceIterator.nextChannel());
 	}

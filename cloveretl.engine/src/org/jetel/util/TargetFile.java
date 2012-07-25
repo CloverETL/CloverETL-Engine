@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -560,10 +561,10 @@ public class TargetFile {
             	fName = addUnassignedName(fName);
             }
         	
-        	if (isFileSourcePreferred()) {
+        	if (isURISourcePreferred()) {
         		//formatter request java.io.File as data target
         		try {
-        			setDataTarget(FileUtils.getJavaFile(contextURL, fName));
+        			setDataTarget(CloverURI.createSingleURI(contextURL.toURI(), fName).toURI());
         			return;
         		} catch (Exception e) {
 					//DO NOTHING - just try to open a stream based on the fName in the next step
@@ -599,8 +600,8 @@ public class TargetFile {
     /**
      * @return <code>true</code> if java.io.File source type is preferred instead of channel
      */
-    private boolean isFileSourcePreferred() {
-    	return formatter.isFileTargetPreferred();
+    private boolean isURISourcePreferred() {
+    	return formatter.isURITargetPreferred();
     }
 
     /**

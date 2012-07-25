@@ -130,7 +130,7 @@ public class MultiFileReaderTest extends CloverTestCase {
 		}
 
 		@Override
-		public boolean isFileSourcePreferred() {
+		public boolean isURISourcePreferred() {
 			return true;
 		}
 		

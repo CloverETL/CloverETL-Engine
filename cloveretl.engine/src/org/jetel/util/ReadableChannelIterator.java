@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -87,8 +89,8 @@ public class ReadableChannelIterator {
 	// true if fileURL contains port protocol 
 	private boolean bInputPort;
 
-	// true if java.io.File is preferred as a source provided by this iterator
-	private boolean isFileSourcePreferred = false;
+	// true if java.net.URI is preferred as a source provided by this iterator
+	private boolean isURISourcePreferred = false;
 
 	// others
 	private int firstPortProtocolPosition;
@@ -241,10 +243,11 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(currentFileName);
 
-			//sometimes source in form of 'java.io.File' is preferred instead of providing an anonymous channel
-			if (isFileSourcePreferred) {
+			//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+			if (isURISourcePreferred) {
 				try {
-					return FileUtils.getJavaFile(contextURL, currentFileName);
+					//TODO: use contectURL ?? return  contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI() : new URI(currentFileName);  
+					return  new URI(currentFileName);
 				} catch (Exception e) {
 					//DO NOTHING - just try to open a stream based on the currentFileName in the next step
 				}
@@ -276,8 +279,10 @@ public class ReadableChannelIterator {
 			if (FileURLParser.isServerURL(fileName) || FileURLParser.isArchiveURL(fileName)) return currentFileName;
 			
 			// unify only local files
-			URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
-			if (fileURL.getProtocol().equals(PROTOCOL_FILE)) {
+			//URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
+			URL fileURL = CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI().toURL();
+			
+			if ( fileURL.getProtocol().equals(PROTOCOL_FILE)) {
 				String sPath = fileURL.getRef() != null ? fileURL.getFile() + "#" + fileURL.getRef() : fileURL.getFile();
 				currentFileName = new File(sPath).getCanonicalFile().toString();
 			}
@@ -399,17 +404,17 @@ public class ReadableChannelIterator {
 	}
 	
 	/**
-	 * @return true if {@link File} is preferred as a source provided by this iterator.
+	 * @return true if {@link URI} is preferred as a source provided by this iterator.
 	 */
-	public boolean isFileSourcePreferred() {
-		return isFileSourcePreferred;
+	public boolean isURISourcePreferred() {
+		return isURISourcePreferred;
 	}
 
 	/**
-	 * Set true if {@link File} is preferred as a source provided by this iterator.
+	 * Set true if {@link URI} is preferred as a source provided by this iterator.
 	 */
-	public void setFileSourcePreferred(boolean isFileSourcePreferred) {
-		this.isFileSourcePreferred = isFileSourcePreferred;
+	public void setURISourcePreferred(boolean isFileSourcePreferred) {
+		this.isURISourcePreferred = isFileSourcePreferred;
 	}
 
 }

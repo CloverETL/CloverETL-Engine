@@ -171,11 +171,11 @@ public interface Parser {
 
     /**
      * Parser should return true if preferred type of source passed into {@link #setDataSource(Object)}
-     * is {@link File}. It is intended just a hint for source provider, so other types of source 
+     * is {@link URI}. It is intended just a hint for source provider, so other types of source 
      * should be expected.
-     * @return true if {@link File} type of source is preferred
+     * @return true if {@link URI} type of source is preferred
      */
-    public boolean isFileSourcePreferred();
+    public boolean isURISourcePreferred();
 
 }
 /*

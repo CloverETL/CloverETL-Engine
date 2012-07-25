@@ -97,11 +97,11 @@ public interface Formatter {
 	
     /**
      * Formatter should return true if preferred type of data target passed into {@link #setDataTarget(Object)}
-     * is {@link File}. It is intended just a hint for source provider, so other types of data targets 
+     * is {@link URI}. It is intended just a hint for source provider, so other types of data targets 
      * should be expected.
-     * @return true if {@link File} type of source is preferred
+     * @return true if {@link URI} type of source is preferred
      */
-    public boolean isFileTargetPreferred();
+    public boolean isURITargetPreferred();
 
     /**
      * This method should be used to inform formatter about type of writing to data target.
