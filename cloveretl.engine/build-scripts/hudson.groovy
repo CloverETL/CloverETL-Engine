@@ -17,7 +17,7 @@ versionSuffix = jobNameM[0][4]
 if( !jobGoal ) jobGoal = "after-commit"
 runTests = jobGoal.startsWith("tests") && jobGoal.contains("java") 
 if( runTests ) {
-	testNameM = jobGoal =~ /^tests-(.+)-(java-[^-]+-[^-]+)(-(.*))?$/
+	testNameM = jobGoal =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 	assert testNameM.matches() 
 	testName = testNameM[0][1]
 	testJVM = testNameM[0][2]
