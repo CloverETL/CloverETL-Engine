@@ -97,55 +97,55 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		uri = relativeURI("file");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri);
+		assertTrue(manager.create(uri).success());
 		assertTrue(manager.isFile(uri));
 		
 		uri = relativeURI("topdir1/subdir/subsubdir/file");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri);
+		assertFalse(manager.create(uri).success());
 		assertFalse(manager.exists(uri));
 		
 		uri = relativeURI("topdir1/subdir/subsubdir/file");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setMakeParents(true));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
 		assertTrue(manager.isFile(uri));
 		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setDirectory(true));
+		assertFalse(manager.create(uri, new CreateParameters().setDirectory(true)).success());
 		assertFalse(manager.exists(uri));
 
 		uri = relativeURI("topdir2/subdir/subsubdir/dir");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setDirectory(true).setMakeParents(true));
+		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true).setMakeParents(true)).success());
 		assertTrue(manager.isDirectory(uri));
 		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir2/");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setMakeParents(true));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
 		assertTrue(manager.isDirectory(uri));
 		
 		uri = relativeURI("datedFile");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setMakeParents(true));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
 		assertTrue(manager.isFile(uri));
 		
 		uri = relativeURI("datedDir1");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters().setDirectory(true));
+		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true)).success());
 		assertTrue(manager.isDirectory(uri));
 
 		uri = relativeURI("datedDir2/");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(manager.exists(uri));
-		manager.create(uri, new CreateParameters());
+		assertTrue(manager.create(uri, new CreateParameters()).success());
 		assertTrue(manager.isDirectory(uri));
 	}
 
