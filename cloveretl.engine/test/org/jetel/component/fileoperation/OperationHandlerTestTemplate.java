@@ -1123,6 +1123,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
 		uri = relativeURI("fileShouldBeDirectory/");
 		assertFalse(manager.create(uri).success());
+		uri = relativeURI("fileShouldBeDirectory");
 		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
 		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
 
@@ -1189,6 +1190,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	public void testInterruptDelete() throws Exception {
 		Thread mainThread = Thread.currentThread();
+		System.out.println(mainThread);
 		assumeTrue(!mainThread.isInterrupted());
 
 		CloverURI uri = relativeURI("InterruptDelete");
