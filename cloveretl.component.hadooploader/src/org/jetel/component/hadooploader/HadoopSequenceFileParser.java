@@ -283,9 +283,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 
 	@Override
 	public void free() throws ComponentNotReadyException, IOException {
-		close();
 		reader=null;
-
 	}
 
 	@Override
