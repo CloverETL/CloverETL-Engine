@@ -125,14 +125,6 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 	}
 
 	@Override
-	protected void populateInputParamsRecord() {
-		//store target URI
-		inputParamsRecord.getField(IP_TARGET_INDEX).setValue(target);
-		//store recursive mode
-		inputParamsRecord.getField(IP_RECURSIVE_INDEX).setValue(recursive);
-	}
-
-	@Override
 	protected void logSuccess() {
 		SingleCloverURI uri = result.getResult(index);
 		String message = MessageFormat.format(FileOperationComponentMessages.getString("DeleteFiles.delete_success"), uri.getPath());  //$NON-NLS-1$

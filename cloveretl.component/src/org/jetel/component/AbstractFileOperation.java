@@ -412,24 +412,20 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		if (hasStandardOutputPort) {
 			outputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
 			resultRecord = outputMapping.addInputMetadata(RESULT_RECORD_ID, createResultMetadata());
-			outputMapping.addInputRecord(PARAMS_RECORD_ID, inputParamsRecord);
 			standardOutputRecord = outputMapping.addOutputMetadata(OUTPUT_RECORD_ID, standardOutputPort.getMetadata());
 
 			outputMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
 			outputMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
-			
 		}
 
 		if (hasErrorOutputPort) {
 			errorMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
 			errorRecord = errorMapping.addInputMetadata(ERROR_RECORD_ID, createErrorMetadata());
-			errorMapping.addInputRecord(PARAMS_RECORD_ID, inputParamsRecord);
 			errorMapping.addOutputMetadata(OUTPUT_RECORD_ID, null); // dummy metadata to ensure the error metadata will be available under index 1, for example $out.1.errMsg
 			errorOutputRecord = errorMapping.addOutputMetadata(ERROR_RESULT_RECORD_ID, errorOutputPort.getMetadata());
 
 			errorMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
 			errorMapping.addAutoMapping(ERROR_RECORD_ID, OUTPUT_RECORD_ID);
-			
 		}
 		
 		setDefaultParameters();
@@ -547,8 +543,6 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	
 	protected abstract void populateErrorRecord();
 	
-	protected abstract void populateInputParamsRecord();
-
 	protected abstract DataRecordMetadata createInputParamsMetadata();
 	
 	protected abstract DataRecordMetadata createResultMetadata();
@@ -560,7 +554,6 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 			resultRecord.reset();
 			inputParamsRecord.reset();
 			populateResultRecord();
-			populateInputParamsRecord();
 
 			outputMapping.execute();
 
@@ -575,7 +568,6 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 			errorRecord.reset();
 			inputParamsRecord.reset();
 			populateErrorRecord();
-			populateInputParamsRecord();
 
 			errorMapping.execute();
 			

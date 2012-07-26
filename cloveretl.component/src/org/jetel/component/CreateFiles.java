@@ -137,18 +137,6 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 	}
 
 	@Override
-	protected void populateInputParamsRecord() {
-		//store target URI
-		inputParamsRecord.getField(IP_TARGET_INDEX).setValue(target);
-		//store directory mode
-		inputParamsRecord.getField(IP_DIRECTORY_INDEX).setValue(directory);
-		//store make parents
-		inputParamsRecord.getField(IP_MAKE_PARENTS_INDEX).setValue(makeParents);
-		//store modified date
-		inputParamsRecord.getField(IP_MODIFIED_DATE_INDEX).setValue(modifiedDate);
-	}
-
-	@Override
 	protected void logSuccess() {
 		SingleCloverURI uri = result.getResult(index);
 		String message = MessageFormat.format(FileOperationComponentMessages.getString("CreateFiles.create_success"), uri.getPath());  //$NON-NLS-1$
