@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.result.InfoResult;
 
 public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	
@@ -147,6 +148,27 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertFalse(manager.exists(uri));
 		assertTrue(manager.create(uri, new CreateParameters()).success());
 		assertTrue(manager.isDirectory(uri));
+
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a file", uri), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			uri = relativeURI(dirName);
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+			assertEquals(dirName, info.getName());
+		}
 	}
 
 	@Override
