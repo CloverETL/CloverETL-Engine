@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -248,7 +249,10 @@ public class ReadableChannelIterator {
 				try {
 					//TODO: use contectURL ?? return  contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI() : new URI(currentFileName);  
 					return  new URI(currentFileName);
-				} catch (Exception e) {
+				
+        		} catch(URISyntaxException ex){
+        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
+        		} catch (Exception e) {
 					//DO NOTHING - just try to open a stream based on the currentFileName in the next step
 				}
 			}

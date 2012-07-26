@@ -21,6 +21,9 @@ package org.jetel.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
@@ -564,8 +567,13 @@ public class TargetFile {
         	if (isURISourcePreferred()) {
         		//formatter request java.io.File as data target
         		try {
-        			setDataTarget(CloverURI.createSingleURI(contextURL.toURI(), fName).toURI());
+        			//TODO: use contectURL ?? setDataTarget(CloverURI.createSingleURI(contextURL.toURI(), fName).toURI());
+        			setDataTarget(new URI(fName));
         			return;
+        		} catch(IOException ex){
+        			throw ex;
+        		} catch(URISyntaxException ex){
+        			throw new IOException(ex);
         		} catch (Exception e) {
 					//DO NOTHING - just try to open a stream based on the fName in the next step
         		}
