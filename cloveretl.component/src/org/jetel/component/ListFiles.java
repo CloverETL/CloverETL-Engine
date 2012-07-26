@@ -154,14 +154,6 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 	}
 
 	@Override
-	protected void populateInputParamsRecord() {
-		//store target URI
-		inputParamsRecord.getField(IP_TARGET_INDEX).setValue(target);
-		//store recursive mode
-		inputParamsRecord.getField(IP_RECURSIVE_INDEX).setValue(recursive);
-	}
-
-	@Override
 	protected void populateResultRecord() {
 		Exception ex = result.getException();
 		if (ex != null) {

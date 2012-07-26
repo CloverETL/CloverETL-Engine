@@ -171,21 +171,6 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 	}
 
 	@Override
-	protected void populateInputParamsRecord() {
-		//store source URI
-		inputParamsRecord.getField(IP_SOURCE_INDEX).setValue(source);
-		//store target URI
-		inputParamsRecord.getField(IP_TARGET_INDEX).setValue(target);
-		//store recursive mode
-		inputParamsRecord.getField(IP_RECURSIVE_INDEX).setValue(recursive);
-		//store update mode
-		inputParamsRecord.getField(IP_UPDATE_INDEX).setValue(OverwriteMode.UPDATE.equals(overwrite));
-		inputParamsRecord.getField(IP_NO_OVERWRITE_INDEX).setValue(OverwriteMode.NEVER.equals(overwrite));
-	}
-	
-	
-
-	@Override
 	protected void logSuccess() {
 		SingleCloverURI sourceUri = result.getSource(index);
 		SingleCloverURI resultUri = result.getResult(index);
