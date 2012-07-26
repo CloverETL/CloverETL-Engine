@@ -239,7 +239,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				if (getGraph().getRuntimeContext().isBatchMode()) {
 					if (connection !=null) connection.close();
 					connection = null;
-				} else {
+				} else { //for now no difference between batch & non-batch
 					if (connection !=null) connection.close();
 					connection = null;
 				}

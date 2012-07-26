@@ -21,12 +21,12 @@
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.enums.PartitionFileTagType;
@@ -37,7 +37,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
-import org.jetel.hadoop.connection.IHadoopConnection;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -59,6 +58,7 @@ public class HadoopWriter extends Node {
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
@@ -68,12 +68,13 @@ public class HadoopWriter extends Node {
 	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 	
 
+	private boolean mkDir;
 	private String fileURL;
 	private String connectionID;
 	private boolean appendData;
 	private String keyField;
 	private String valueField;
-	private IHadoopConnection connection;
+	private HadoopConnection connection;
 	private IHadoopSequenceFileFormatter formatter;
 	private MultiFileWriter writer;
     private int skip;
@@ -88,8 +89,6 @@ public class HadoopWriter extends Node {
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	
-	private InputPort inPort;
-
 	public final static String COMPONENT_TYPE = "HADOOP_WRITER";
 	private final static int READ_FROM_PORT = 0;
 	//private final static int OUTPUT_PORT = 0;
@@ -129,48 +128,26 @@ public class HadoopWriter extends Node {
 		super.preExecute();
 		
 		if (firstRun()) {
-	         //TODO:  writer.init(getInputPort(READ_FROM_PORT).getMetadata()); - not used for now, need change once isFile preffered is impemented
-			
-			IConnection conn = getGraph().getConnection(connectionID);
-			if (conn == null) {
-				throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
-			}
-			if (!(conn instanceof HadoopConnection)) {
-				throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
-			}
-			
-			logger.debug(String.format("Connecting to HDFS via [%s:%s].",conn.getName(),conn.getId()));
-			try {
-				this.connection= ((HadoopConnection) conn).getConnection();
-				inPort = getInputPort(READ_FROM_PORT);
-				this.formatter=connection.createFormatter( this.keyField, this.valueField,! this.appendData);
-				this.formatter.init(inPort.getMetadata());
-				this.formatter.setDataTarget(new URI(this.fileURL));
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this,"Can't create Hadoop formatter.",e);
-			} catch (URISyntaxException e) {
-				throw new ComponentNotReadyException(this,"Invalid fileURL format.",e);
-			}
-			
-		}
-		else {
-			//TODO: writer.reset(); - see above
+	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+		} else {
+			writer.reset();
 		}
 	}
-
+	
+	
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
-		        formatter.write(record);
+				writer.write(record);
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		formatter.finish();
+		writer.finish();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
@@ -178,7 +155,7 @@ public class HadoopWriter extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			if (formatter!=null) formatter.close();
+			writer.close();
 		}
 		catch (IOException e) {
 			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
@@ -189,19 +166,17 @@ public class HadoopWriter extends Node {
 	public synchronized void free() {
 		super.free();
 			try {
-				if (formatter != null) formatter.close();
-				if (connection !=null) connection.close();
+				if (writer != null){
+					writer.close();
+					writer=null;
+				}
+				if (connection!=null) {
+					connection.close();
+					connection=null;
+				}
 			} catch(Throwable t) {
 				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
 			}
-		
-		/*if (writer != null)
-			try {
-				writer.close();
-			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
-			}
-			*/
 	}
 
 	/* (non-Javadoc)
@@ -216,59 +191,68 @@ public class HadoopWriter extends Node {
 			return status;
 		}
 
-		/*  can't easily check writability - would need also Hadoop connection
-		   
-        try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() 
-        			: null, fileURL);
-        } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
-        }
-        */
+		/*  can't easily check writability - would need also Hadoop connection */
+		
         return status;
     }
+    
+    private void prepareConnection() throws ComponentNotReadyException{
+		IConnection conn = getGraph().getConnection(connectionID);
+		if (conn == null) {
+			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
+		}
+		if (!(conn instanceof HadoopConnection)) {
+			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
+		}
+		
+		logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
+		
+		conn.init();
+		this.connection= (HadoopConnection)conn;
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-		
-		initLookupTable();
-		
-		
-		/*  We don't use MultiFileWriter - we need Formatter to create Hadoop structured data output streams
+		  if(isInitialized()) return;
+			super.init();
+			
+			initLookupTable();
 
-		// based on file mask, create/open output file
-		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
-		} else {
-			if (writableByteChannel == null) {
-		        writableByteChannel =  new SystemOutByteChannel();
+			if (connection==null)
+				prepareConnection();
+			
+			try {
+				formatter = connection.getConnection().createFormatter(this.keyField, this.valueField, !this.appendData);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this,e);
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
-		}
-        writer.setLogger(logger);
-        writer.setBytesPerFile(bytesPerFile);
-        writer.setRecordsPerFile(recordsPerFile);
-        writer.setAppendData(appendData);
-        writer.setSkip(skip);
-        writer.setNumRecords(numRecords);
-        writer.setDictionary(graph.getDictionary());
-        if (attrPartitionKey != null) {
-            writer.setLookupTable(lookupTable);
-            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            writer.setPartitionFileTag(partitionFileTagType);
-        	if (attrPartitionOutFields != null) {
-        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-        	}
-        }
-        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
-        */
-		
+			
+			formatter.setGraph(getGraph());
+			
+			// based on file mask, create/open output file
+			writer = new MultiFileWriter(formatter,  null /*no context */, fileURL); 
+
+			writer.setLogger(logger);
+	        writer.setRecordsPerFile(recordsPerFile);
+	        writer.setAppendData(appendData);
+	        writer.setSkip(skip);
+	        writer.setNumRecords(numRecords);
+	        writer.setDictionary(getGraph().getDictionary());
+	        if (attrPartitionKey != null) {
+	            writer.setLookupTable(lookupTable);
+	            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+	            writer.setPartitionFileTag(partitionFileTagType);
+	            //writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+	        	if (attrPartitionOutFields != null) {
+	        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+	        	}
+	        }
+	        
+	        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+	        writer.setMkDir(mkDir);
 	}
 
 	/**
@@ -326,6 +310,9 @@ public class HadoopWriter extends Node {
             }
 			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
 				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
@@ -477,6 +464,14 @@ public class HadoopWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+	
+	/**
+	 * Sets make directory.
+	 * @param mkDir - true - creates output directories for output file
+	 */
+	public void setMkDirs(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 
 }

@@ -174,8 +174,14 @@ public class HadoopReader extends Node {
 	public synchronized void free() {
 		super.free();
 			try {
-				if (reader != null) reader.close();
-				if (connection!=null) connection.close();
+				if (reader != null){
+					reader.free();
+					reader=null;
+				}
+				if (connection!=null) {
+					connection.close();
+					connection=null;
+				}
 			} catch(Throwable t) {
 				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
 			}
