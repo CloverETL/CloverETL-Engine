@@ -81,13 +81,11 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 
     private static final int IP_SOURCE_INDEX = 0;
     private static final int IP_TARGET_INDEX = 1;
-    private static final int IP_UPDATE_INDEX = 2;
-    private static final int IP_NO_OVERWRITE_INDEX = 3;
+    private static final int IP_OVERWRITE_INDEX = 2;
 
     private static final String IP_SOURCE_NAME = XML_SOURCE_ATTRIBUTE;
     private static final String IP_TARGET_NAME = XML_TARGET_ATTRIBUTE;
-    private static final String IP_UPDATE_NAME = "update"; //$NON-NLS-1$
-    private static final String IP_NO_OVERWRITE_NAME = "noOverwrite"; //$NON-NLS-1$
+    private static final String IP_OVERWRITE_NAME = XML_OVERWRITE_ATTRIBUTE;
 
 	private String source;
 	private String target;
@@ -144,21 +142,15 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		target = runtimeTarget != null ? resolver.resolveRef(runtimeTarget.toString(), RefResFlag.SPEC_CHARACTERS_OFF) : null;
 
 		//set overwrite mode
-		if (Boolean.TRUE.equals(inputParamsRecord.getField(IP_NO_OVERWRITE_INDEX).getValue())) {
-			overwrite = OverwriteMode.NEVER;
-		} else if (Boolean.TRUE.equals(inputParamsRecord.getField(IP_UPDATE_INDEX).getValue())) {
-			overwrite = OverwriteMode.UPDATE;
-		} else {
-			overwrite = null;
-		}
+		CharSequence runtimeOverwrite = (CharSequence) inputParamsRecord.getField(IP_OVERWRITE_INDEX).getValue();
+		overwrite = runtimeOverwrite != null ? OverwriteMode.fromStringIgnoreCase(runtimeOverwrite.toString()) : null;
 	}
 
 	@Override
 	protected void setDefaultParameters() {
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_SOURCE_NAME, defaultSource);
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_TARGET_NAME, defaultTarget);
-		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_UPDATE_NAME, defaultOverwrite == OverwriteMode.UPDATE);
-		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_NO_OVERWRITE_NAME, defaultOverwrite == OverwriteMode.NEVER);
+		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_OVERWRITE_NAME, (defaultOverwrite != null) ? defaultOverwrite.toString() : null);
 	}
 
 	@Override
@@ -247,8 +239,7 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		
 		metadata.addField(IP_SOURCE_INDEX, new DataFieldMetadata(IP_SOURCE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_TARGET_INDEX, new DataFieldMetadata(IP_TARGET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_UPDATE_INDEX, new DataFieldMetadata(IP_UPDATE_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
-		metadata.addField(IP_NO_OVERWRITE_INDEX, new DataFieldMetadata(IP_NO_OVERWRITE_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
+		metadata.addField(IP_OVERWRITE_INDEX, new DataFieldMetadata(IP_OVERWRITE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		
 		return metadata;
 	}
