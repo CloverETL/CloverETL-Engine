@@ -1159,9 +1159,9 @@ public class StringLib extends TLFunctionLibrary {
 			File file = FileUtils.getJavaFile(contextUrl, url);
 			if (file != null) {
 				try {
-					return file.getCanonicalPath();
+					return file.getCanonicalPath().replace('\\', '/');
 				} catch (IOException e) {
-					return file.getAbsolutePath();
+					return file.getAbsolutePath().replace('\\', '/');
 				}
 			}
 		} catch (JetelRuntimeException ex) {}
