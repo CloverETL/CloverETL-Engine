@@ -53,27 +53,27 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
     private static final String COMPONENT_TYPE = "MOVE_FILES"; //$NON-NLS-1$
 
 	// XML attribute names
-	private static final String XML_SOURCE_ATTRIBUTE = "source"; //$NON-NLS-1$
-	private static final String XML_TARGET_ATTRIBUTE = "target"; //$NON-NLS-1$
+	private static final String XML_SOURCE_ATTRIBUTE = "sourceURL"; //$NON-NLS-1$
+	private static final String XML_TARGET_ATTRIBUTE = "targetURL"; //$NON-NLS-1$
 	private static final String XML_OVERWRITE_ATTRIBUTE = "overwrite"; //$NON-NLS-1$
 
-    private static final int ERR_SOURCE_URI_INDEX = 2;
-    private static final int ERR_TARGET_URI_INDEX = 3;
+    private static final int ERR_SOURCE_URL_INDEX = 2;
+    private static final int ERR_TARGET_URL_INDEX = 3;
     
-    private static final String ERR_SOURCE_URI_NAME = "sourceUri"; //$NON-NLS-1$
-    private static final String ERR_TARGET_URI_NAME = "targetUri"; //$NON-NLS-1$
+    private static final String ERR_SOURCE_URL_NAME = XML_SOURCE_ATTRIBUTE; //$NON-NLS-1$
+    private static final String ERR_TARGET_URL_NAME = XML_TARGET_ATTRIBUTE; //$NON-NLS-1$
 
     private static final String RESULT_RECORD_NAME = "Result"; //$NON-NLS-1$
 
-    private static final int RS_SOURCE_URI_INDEX = 0;
-    private static final int RS_TARGET_URI_INDEX = 1;
-    private static final int RS_RESULT_URI_INDEX = 2;
+    private static final int RS_SOURCE_URL_INDEX = 0;
+    private static final int RS_TARGET_URL_INDEX = 1;
+    private static final int RS_RESULT_URL_INDEX = 2;
     private static final int RS_RESULT_INDEX = 3;
     private static final int RS_ERROR_MESSAGE_INDEX = 4;
 
-    private static final String RS_SOURCE_URI_NAME = ERR_SOURCE_URI_NAME;
-    private static final String RS_TARGET_URI_NAME = ERR_TARGET_URI_NAME;
-    private static final String RS_RESULT_URI_NAME = "resultUri"; //$NON-NLS-1$
+    private static final String RS_SOURCE_URL_NAME = XML_SOURCE_ATTRIBUTE;
+    private static final String RS_TARGET_URL_NAME = XML_TARGET_ATTRIBUTE;
+    private static final String RS_RESULT_URL_NAME = "resultURL"; //$NON-NLS-1$
     private static final String RS_RESULT_NAME = ERR_RESULT_NAME;
     private static final String RS_ERROR_MESSAGE_NAME = ERR_ERROR_MESSAGE_NAME;
 
@@ -204,18 +204,18 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		if (ex != null) {
 			resultRecord.getField(RS_RESULT_INDEX).setValue(false);
 			resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-			resultRecord.getField(RS_SOURCE_URI_INDEX).setValue(source);
-			resultRecord.getField(RS_TARGET_URI_INDEX).setValue(target);
+			resultRecord.getField(RS_SOURCE_URL_INDEX).setValue(source);
+			resultRecord.getField(RS_TARGET_URL_INDEX).setValue(target);
 		} else {
 			boolean success = result.success(index);
 			resultRecord.getField(RS_RESULT_INDEX).setValue(success);
 			if (success) {
-				resultRecord.getField(RS_RESULT_URI_INDEX).setValue(result.getResult(index).getPath());
+				resultRecord.getField(RS_RESULT_URL_INDEX).setValue(result.getResult(index).getPath());
 			} else {
 				resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
 			}
-			resultRecord.getField(RS_SOURCE_URI_INDEX).setValue(result.getSource(index).getPath());
-			resultRecord.getField(RS_TARGET_URI_INDEX).setValue(result.getTarget(index).getPath());
+			resultRecord.getField(RS_SOURCE_URL_INDEX).setValue(result.getSource(index).getPath());
+			resultRecord.getField(RS_TARGET_URL_INDEX).setValue(result.getTarget(index).getPath());
 		}
 	}
 	
@@ -225,12 +225,12 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		Exception ex = result.getException();
 		if (ex != null) {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-			errorRecord.getField(ERR_SOURCE_URI_INDEX).setValue(source);
-			errorRecord.getField(ERR_TARGET_URI_INDEX).setValue(target);
+			errorRecord.getField(ERR_SOURCE_URL_INDEX).setValue(source);
+			errorRecord.getField(ERR_TARGET_URL_INDEX).setValue(target);
 		} else {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
-			errorRecord.getField(ERR_SOURCE_URI_INDEX).setValue(result.getSource(index).getPath());
-			errorRecord.getField(ERR_TARGET_URI_INDEX).setValue(result.getTarget(index).getPath());
+			errorRecord.getField(ERR_SOURCE_URL_INDEX).setValue(result.getSource(index).getPath());
+			errorRecord.getField(ERR_TARGET_URL_INDEX).setValue(result.getTarget(index).getPath());
 		}
 	}
 
@@ -247,9 +247,9 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 	public static DataRecordMetadata staticCreateResultMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
 		
-		metadata.addField(RS_SOURCE_URI_INDEX, new DataFieldMetadata(RS_SOURCE_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(RS_TARGET_URI_INDEX, new DataFieldMetadata(RS_TARGET_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(RS_RESULT_URI_INDEX, new DataFieldMetadata(RS_RESULT_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RS_SOURCE_URL_INDEX, new DataFieldMetadata(RS_SOURCE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RS_TARGET_URL_INDEX, new DataFieldMetadata(RS_TARGET_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RS_RESULT_URL_INDEX, new DataFieldMetadata(RS_RESULT_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RS_RESULT_INDEX, new DataFieldMetadata(RS_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(RS_ERROR_MESSAGE_INDEX, new DataFieldMetadata(RS_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
@@ -261,8 +261,8 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		
 		metadata.addField(ERR_RESULT_INDEX, new DataFieldMetadata(ERR_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(ERR_ERROR_MESSAGE_INDEX, new DataFieldMetadata(ERR_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(ERR_SOURCE_URI_INDEX, new DataFieldMetadata(ERR_SOURCE_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(ERR_TARGET_URI_INDEX, new DataFieldMetadata(ERR_TARGET_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(ERR_SOURCE_URL_INDEX, new DataFieldMetadata(ERR_SOURCE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(ERR_TARGET_URL_INDEX, new DataFieldMetadata(ERR_TARGET_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
 		return metadata;
 	}
